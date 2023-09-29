@@ -15,6 +15,9 @@ import fi.espoo.evaka.espoo.EspooAsyncJobRegistration
 import fi.espoo.evaka.espoo.EspooScheduledJob
 import fi.espoo.evaka.espoo.EspooScheduledJobs
 import fi.espoo.evaka.espoo.bi.EspooBiClient
+import fi.espoo.evaka.espoo.bi.EspooBiHttpClient
+import fi.espoo.evaka.espoo.bi.EspooBiJob
+import fi.espoo.evaka.espoo.bi.MockEspooBiClient
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.integration.EspooInvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -151,11 +154,13 @@ class EspooConfig {
 
     @Bean @Lazy fun espooBiEnv(env: Environment) = EspooBiEnv.fromEnvironment(env)
 
+    @Bean fun espooBiJob(client: EspooBiClient) = EspooBiJob(client)
+
     @Bean
-    fun espooBiSender(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>, fuel: FuelManager) =
-        when (env.espooBiEnabled) {
-            true -> EspooBiClient(fuel, biEnv.getObject())
-            false -> null
+    fun espooBiClient(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>, fuel: FuelManager) =
+        when (env.biIntegrationEnabled) {
+            true -> EspooBiHttpClient(fuel, biEnv.getObject())
+            false -> MockEspooBiClient()
         }
 
     @Bean
@@ -206,7 +211,7 @@ class EspooConfig {
 data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
-    val espooBiEnabled: Boolean
+    val biIntegrationEnabled: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -218,7 +223,7 @@ data class EspooEnv(
                     )
                         ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
-                espooBiEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
+                biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
             )
     }
 }

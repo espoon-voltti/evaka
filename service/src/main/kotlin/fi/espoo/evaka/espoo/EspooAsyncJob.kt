@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.espoo
 
-import fi.espoo.evaka.espoo.bi.EspooBiClient
+import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.espoo.bi.EspooBiTable
 import fi.espoo.evaka.shared.async.AsyncJobPayload
 import fi.espoo.evaka.shared.async.AsyncJobPool
@@ -26,11 +26,8 @@ sealed interface EspooAsyncJob : AsyncJobPayload {
     }
 }
 
-class EspooAsyncJobRegistration(
-    runner: AsyncJobRunner<EspooAsyncJob>,
-    espooBiClient: EspooBiClient?
-) {
+class EspooAsyncJobRegistration(runner: AsyncJobRunner<EspooAsyncJob>, espooBiJob: EspooBiJob) {
     init {
-        espooBiClient?.let { runner.registerHandler(it::sendBiTable) }
+        espooBiJob.let { runner.registerHandler(it::sendBiTable) }
     }
 }
