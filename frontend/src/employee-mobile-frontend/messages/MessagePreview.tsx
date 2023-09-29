@@ -13,7 +13,7 @@ import {
   Header,
   TitleAndDate,
   Truncated
-} from 'lib-components/molecules/ThreadListItem'
+} from 'lib-components/messages/ThreadListItem'
 
 export function MessagePreview({
   thread,

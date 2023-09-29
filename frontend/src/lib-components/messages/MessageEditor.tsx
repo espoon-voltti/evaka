@@ -24,15 +24,15 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
   receiversAsSelectorNode,
   SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
-import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { modalZIndex } from 'lib-components/layout/z-helpers'
+} from 'lib-components/messages/SelectorNode'
+import { SaveDraftParams } from 'lib-components/messages/types'
+import { Draft, useDraft } from 'lib-components/messages/useDraft'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { Bold } from 'lib-components/typography'
@@ -44,10 +44,10 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
-import Combobox from '../../atoms/dropdowns/Combobox'
-import Checkbox from '../../atoms/form/Checkbox'
-import { useTranslations } from '../../i18n'
-import { InfoBox } from '../../molecules/MessageBoxes'
+import Combobox from '../atoms/dropdowns/Combobox'
+import Checkbox from '../atoms/form/Checkbox'
+import { useTranslations } from '../i18n'
+import { InfoBox } from '../molecules/MessageBoxes'
 
 type Message = Omit<
   UpdatableDraftContent,

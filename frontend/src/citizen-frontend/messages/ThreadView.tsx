@@ -31,10 +31,10 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
+import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'

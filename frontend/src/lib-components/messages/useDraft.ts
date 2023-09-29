@@ -10,7 +10,7 @@ import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
+import { SaveDraftParams } from 'lib-components/messages/types'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 

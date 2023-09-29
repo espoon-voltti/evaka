@@ -15,7 +15,7 @@ import {
 import { UUID } from 'lib-common/types'
 import Linkify from 'lib-components/atoms/Linkify'
 import TextArea from 'lib-components/atoms/form/TextArea'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
+import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import { fontWeights } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins } from 'lib-components/white-space'

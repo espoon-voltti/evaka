@@ -18,8 +18,8 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import Container from 'lib-components/layout/Container'
+import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 
 import {

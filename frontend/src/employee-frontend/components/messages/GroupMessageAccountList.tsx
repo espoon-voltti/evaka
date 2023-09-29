@@ -7,7 +7,7 @@ import React, { ReactNode, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { GroupMessageAccount } from 'lib-components/employee/messages/types'
+import { GroupMessageAccount } from 'lib-components/messages/types'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
