@@ -22,6 +22,7 @@ import FreeTextSearch from '../common/FreeTextSearch'
 import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { zIndex } from '../constants'
 import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
@@ -32,23 +33,23 @@ import { attendanceStatusesQuery, childrenQuery } from './queries'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 export default React.memo(function AttendancePageWrapper() {
-  const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
+  const { unitId, attendanceStatus } = useNonNullableParams<{
     unitId: string
-    groupId: string
     attendanceStatus: ChildAttendanceUIState
   }>()
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
+  const { selectedGroupId } = useSelectedGroup()
 
   const selectedGroup = useMemo(
     () =>
-      groupId === 'all'
+      selectedGroupId.type === 'all'
         ? undefined
         : unitInfoResponse
-            .map((res) => res.groups.find((g) => g.id === groupId))
+            .map((res) => res.groups.find((g) => g.id === selectedGroupId.id))
             .getOrElse(undefined),
-    [groupId, unitInfoResponse]
+    [selectedGroupId, unitInfoResponse]
   )
 
   const unitChildren = useQueryResult(childrenQuery(unitId))
@@ -117,7 +118,6 @@ export default React.memo(function AttendancePageWrapper() {
           ([children, attendanceStatuses]) => (
             <AttendanceList
               unitId={unitId}
-              groupId={groupId}
               activeStatus={mapChildAttendanceUIState(attendanceStatus)}
               unitChildren={children}
               attendanceStatuses={attendanceStatuses}

@@ -13,8 +13,8 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  MessageThread,
-  AuthorizedMessageAccount
+  AuthorizedMessageAccount,
+  MessageThread
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
@@ -25,9 +25,9 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
 
 import { UserContext } from '../auth/state'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import { ReplyToThreadParams } from './api'
@@ -88,10 +88,7 @@ export const MessageContextProvider = React.memo(
     const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
-    const { groupId } = useNonNullableParams<{
-      // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-      groupId: UUID | 'all'
-    }>()
+    const { selectedGroupId } = useSelectedGroup()
 
     const accounts = useQueryResult(messagingAccountsQuery(unitId ?? ''), {
       enabled:
@@ -114,10 +111,12 @@ export const MessageContextProvider = React.memo(
 
     const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
       () =>
-        groupAccounts.find(
-          ({ daycareGroup }) => daycareGroup?.id === groupId
-        ) ?? groupAccounts[0],
-      [groupAccounts, groupId]
+        (selectedGroupId.type === 'all'
+          ? undefined
+          : groupAccounts.find(
+              ({ daycareGroup }) => daycareGroup?.id === selectedGroupId.id
+            )) ?? groupAccounts[0],
+      [groupAccounts, selectedGroupId]
     )
 
     const { data, transformPages, error, isFetching, isFetchingNextPage } =

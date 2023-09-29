@@ -24,6 +24,7 @@ import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
 import ChildNameBackButton from '../common/ChildNameBackButton'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
 
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
@@ -83,11 +84,11 @@ export default React.memo(function ChildNotes() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId, groupId } = useNonNullableParams<{
+  const { unitId, childId } = useNonNullableParams<{
     unitId: string
     childId: string
-    groupId: string
   }>()
+  const { selectedGroupId } = useSelectedGroup()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
@@ -112,9 +113,12 @@ export default React.memo(function ChildNotes() {
     [child]
   )
 
-  const { data: groupNotes } = useQuery(groupNotesQuery(groupId), {
-    enabled: groupId !== 'all'
-  })
+  const { data: groupNotes } = useQuery(
+    groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
+    {
+      enabled: selectedGroupId.type !== 'all'
+    }
+  )
 
   const dailyNoteCount = dailyNote ? 1 : 0
   const stickyNoteCount = stickyNotes.length
@@ -131,7 +135,7 @@ export default React.memo(function ChildNotes() {
         title: `${i18n.common.nb}!`,
         noteCount: stickyNoteCount
       },
-      groupId !== 'all'
+      selectedGroupId.type !== 'all'
         ? {
             type: 'GROUP' as const,
             title: i18n.common.group,
@@ -152,7 +156,7 @@ export default React.memo(function ChildNotes() {
     ))
   }, [
     i18n,
-    groupId,
+    selectedGroupId,
     dailyNoteCount,
     stickyNoteCount,
     groupNoteCount,
@@ -197,8 +201,11 @@ export default React.memo(function ChildNotes() {
             notes={stickyNotes}
           />
         )}
-        {groupId !== 'all' && selectedTab === 'GROUP' && (
-          <GroupNotesTab groupId={groupId} notes={groupNotes ?? []} />
+        {selectedGroupId.type !== 'all' && selectedTab === 'GROUP' && (
+          <GroupNotesTab
+            groupId={selectedGroupId.id}
+            notes={groupNotes ?? []}
+          />
         )}
       </FixedSpaceColumn>
     </TallContentArea>

@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
+import { Success, combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
@@ -44,10 +44,9 @@ export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId, groupId } = useNonNullableParams<{
+  const { childId, unitId } = useNonNullableParams<{
     unitId: string
     childId: string
-    groupId: string
   }>()
 
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -79,7 +78,11 @@ export default React.memo(function MarkPresent() {
     } else return true
   }, [childLatestDeparture, time])
 
-  const groupNotes = useQueryResult(groupNotesQuery(groupId))
+  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
+  const rawGroupNotes = useQueryResult(groupNotesQuery(groupId ?? ''), {
+    enabled: !!groupId
+  })
+  const groupNotes = groupId ? rawGroupNotes : Success.of([])
 
   return (
     <TallContentArea

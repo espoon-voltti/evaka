@@ -19,11 +19,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import {
   faChild,
-  fasChild,
   faEnvelope,
+  fasChild,
   fasEnvelope,
-  faUser,
-  fasUser
+  fasUser,
+  faUser
 } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -31,6 +31,7 @@ import { UserContext } from '../auth/state'
 import { MessageContext } from '../messages/state'
 
 import { useTranslation } from './i18n'
+import { useSelectedGroup } from './selected-group'
 import { UnitContext } from './unit'
 
 export type NavItem = 'child' | 'staff' | 'messages'
@@ -98,11 +99,10 @@ export type BottomNavbarProps = {
 export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId, groupId } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: UUID
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'all'
   }>()
+  const { groupRoute } = useSelectedGroup()
 
   const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
   const { user } = useContext(UserContext)
@@ -120,8 +120,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             text={i18n.common.children}
             selected={selected === 'child'}
             onClick={() =>
-              selected !== 'child' &&
-              navigate(`/units/${unitId}/groups/${groupId}/child-attendance`)
+              selected !== 'child' && navigate(`${groupRoute}/child-attendance`)
             }
           >
             <CustomIcon
@@ -138,8 +137,8 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               selected !== 'staff' &&
               navigate(
                 unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                  ? `/units/${unitId}/groups/${groupId}/staff-attendance`
-                  : `/units/${unitId}/groups/${groupId}/staff`
+                  ? `${groupRoute}/staff-attendance`
+                  : `${groupRoute}/staff`
               )
             }
           >

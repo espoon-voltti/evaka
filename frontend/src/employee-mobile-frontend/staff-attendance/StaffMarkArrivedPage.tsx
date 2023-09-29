@@ -42,6 +42,7 @@ import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
@@ -53,12 +54,11 @@ export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, groupId, employeeId } = useNonNullableParams<{
+  const { unitId, employeeId } = useNonNullableParams<{
     unitId: UUID
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'all'
     employeeId: UUID
   }>()
+  const { selectedGroupId } = useSelectedGroup()
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
   useEffect(() => {
@@ -89,7 +89,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   )
 
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
-    groupId !== 'all' ? groupId : undefined
+    selectedGroupId.type !== 'all' ? selectedGroupId.id : undefined
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
@@ -98,7 +98,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const groupOptions = useMemo(
     () =>
-      groupId === 'all'
+      selectedGroupId.type === 'all'
         ? combine(staffMember, unitInfoResponse).map(
             ([staffMember, unitInfoResponse]) => {
               const groupIds = staffMember?.groupIds ?? []
@@ -108,7 +108,7 @@ export default React.memo(function StaffMarkArrivedPage() {
             }
           )
         : Success.of([]),
-    [groupId, staffMember, unitInfoResponse]
+    [selectedGroupId, staffMember, unitInfoResponse]
   )
 
   useEffect(() => {
