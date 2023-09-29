@@ -23,7 +23,7 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
-import { ConfirmDeleteThread } from './MessageComponents'
+import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import ThreadListItem from './ThreadListItem'
 import { MessageContext } from './state'
 

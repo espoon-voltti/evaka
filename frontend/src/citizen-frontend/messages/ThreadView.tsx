@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import {
   Message,
@@ -45,11 +45,7 @@ import { faTrash } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments'
 import { Translations, useTranslation } from '../localization'
 
-import {
-  ConfirmDeleteThread,
-  MessageContainer,
-  ReplyEditorContainer
-} from './MessageComponents'
+import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
 import { MessageContext } from './state'
 
@@ -109,6 +105,29 @@ const ActionRow = styled(FixedSpaceRow)`
 
 const ReplyToThreadButton = styled(InlineButton)`
   align-self: flex-start;
+`
+
+const messageContainerStyles = css`
+  background-color: ${colors.grayscale.g0};
+  padding: ${defaultMargins.s};
+
+  @media (min-width: ${desktopMin}) {
+    padding: ${defaultMargins.L};
+  }
+
+  margin: ${defaultMargins.xxs} ${defaultMargins.xxs} ${defaultMargins.s}
+    ${defaultMargins.xxs};
+`
+
+export const MessageContainer = styled.li`
+  ${messageContainerStyles}
+  h2 {
+    margin: 0;
+  }
+`
+
+export const ReplyEditorContainer = styled.div`
+  ${messageContainerStyles}
 `
 
 const formatMessageAccountName = (
