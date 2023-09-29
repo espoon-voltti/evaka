@@ -29,7 +29,7 @@ enum class EspooScheduledJob(
     ),
     PlanBiJobs(
         EspooScheduledJobs::planBiJobs,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
     )
 }
 

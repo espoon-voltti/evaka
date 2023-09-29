@@ -19,18 +19,18 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 
-class EspooBiClientTest : PureJdbiTest(resetDbBeforeEach = true) {
+class EspooBiJobTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val credentials = BasicAuthCredentials(username = "user", password = "password")
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2023, 1, 1, 1, 0)))
     private val fuel = FuelManager()
     private lateinit var server: MockBiServer
-    private lateinit var client: EspooBiClient
+    private lateinit var job: EspooBiJob
 
     @BeforeAll
     fun beforeAll() {
         server = MockBiServer.start(credentials)
-        client =
-            EspooBiClient(
+        val client =
+            EspooBiHttpClient(
                 fuel,
                 EspooBiEnv(
                     url = "http://localhost:${server.port}",
@@ -38,6 +38,7 @@ class EspooBiClientTest : PureJdbiTest(resetDbBeforeEach = true) {
                     password = Sensitive(credentials.password)
                 )
             )
+        job = EspooBiJob(client)
     }
 
     @AfterAll
@@ -54,7 +55,7 @@ class EspooBiClientTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `BI client sends a stream successfully`() {
         val record = "line\n"
         val recordCount = 100_000
-        client.sendBiTable(db, clock, "test") { _ -> generateSequence { record }.take(recordCount) }
+        job.sendBiTable(db, clock, "test") { _ -> generateSequence { record }.take(recordCount) }
 
         val request = server.getCapturedRequests().values.single()
         val expected = record.toByteArray(CSV_CHARSET)
