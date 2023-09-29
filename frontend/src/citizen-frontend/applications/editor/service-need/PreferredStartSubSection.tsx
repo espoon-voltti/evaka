@@ -191,7 +191,6 @@ export default React.memo(function PreferredStartSubSection({
                   onUpload={uploadUrgencyAttachment}
                   onDelete={deleteUrgencyAttachment}
                   getDownloadUrl={getAttachmentUrl}
-                  i18n={{ upload: t.fileUpload }}
                   data-qa="urgent-file-upload"
                 />
               </>

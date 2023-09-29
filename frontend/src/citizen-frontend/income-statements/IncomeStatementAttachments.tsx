@@ -90,7 +90,6 @@ export default React.memo(function Attachments({
           onUpload={handleUpload}
           onDelete={handleDelete}
           getDownloadUrl={getAttachmentUrl}
-          i18n={{ upload: t.fileUpload }}
         />
       </FixedSpaceColumn>
     </ContentArea>

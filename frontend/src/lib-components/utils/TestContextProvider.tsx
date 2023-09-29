@@ -49,6 +49,22 @@ export const testTranslations: Translations = {
       COMPLETED: ''
     }
   },
+  fileUpload: {
+    deleteFile: '',
+    input: {
+      title: '',
+      text: []
+    },
+    loading: '',
+    loaded: '',
+    error: {
+      FILE_TOO_LARGE: '',
+      EXTENSION_INVALID: '',
+      EXTENSION_MISSING: '',
+      INVALID_CONTENT_TYPE: '',
+      SERVER_ERROR: ''
+    }
+  },
   loginErrorModal: {
     header: '',
     message: '',

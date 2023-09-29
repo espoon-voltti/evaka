@@ -42,6 +42,22 @@ export interface Translations {
     noSelection: string
     documentStates: Record<DocumentStatus, string>
   }
+  fileUpload: {
+    deleteFile: string
+    input: {
+      title: string
+      text: string[]
+    }
+    loading: string
+    loaded: string
+    error: {
+      FILE_TOO_LARGE: string
+      EXTENSION_INVALID: string
+      EXTENSION_MISSING: string
+      INVALID_CONTENT_TYPE: string
+      SERVER_ERROR: string
+    }
+  }
   loginErrorModal: {
     header: string
     message: string

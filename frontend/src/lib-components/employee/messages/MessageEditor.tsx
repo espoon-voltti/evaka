@@ -33,7 +33,7 @@ import { SaveDraftParams } from 'lib-components/employee/messages/types'
 import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
-import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+import FileUpload from 'lib-components/molecules/FileUpload'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -129,7 +129,7 @@ interface Props {
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
-  i18n: MessageEditorI18n & FileUploadI18n
+  i18n: MessageEditorI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean
   accounts: AuthorizedMessageAccount[]
@@ -347,16 +347,6 @@ export default React.memo(function MessageEditor({
   )
 
   function desktopEditor() {
-    const i18nWithReplacedTitle = {
-      ...i18n,
-      upload: {
-        ...i18n.upload,
-        input: {
-          ...i18n.upload.input,
-          title: i18n.addAttachmentInfo
-        }
-      }
-    }
     const messageType =
       senderAccountType === 'MUNICIPAL' ? (
         <FixedSpaceRow>
@@ -517,7 +507,6 @@ export default React.memo(function MessageEditor({
                 disabled={!draftId}
                 data-qa="upload-message-attachment"
                 files={message.attachments}
-                i18n={i18nWithReplacedTitle}
                 getDownloadUrl={getAttachmentUrl}
                 onUpload={handleAttachmentUpload}
                 onDelete={handleAttachmentDelete}

@@ -45,6 +45,27 @@ const components: Translations = {
       COMPLETED: 'Valmis'
     }
   },
+  fileUpload: {
+    loading: 'Ladataan...',
+    loaded: 'Ladattu',
+    error: {
+      EXTENSION_MISSING: 'Tiedostopääte puuttuu',
+      EXTENSION_INVALID: 'Virheellinen tiedostopääte',
+      INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
+      FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+      SERVER_ERROR: 'Lataus ei onnistunut'
+    },
+    input: {
+      title: 'Lisää liite',
+      text: [
+        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+        'Tiedoston maksimikoko: 10MB.',
+        'Sallitut tiedostomuodot:',
+        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+      ]
+    },
+    deleteFile: 'Poista tiedosto'
+  },
   loginErrorModal: {
     header: 'Kirjautuminen epäonnistui',
     message:

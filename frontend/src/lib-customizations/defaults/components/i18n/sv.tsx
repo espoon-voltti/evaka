@@ -46,6 +46,27 @@ const components: Translations = {
       COMPLETED: 'Färdig'
     }
   },
+  fileUpload: {
+    loading: 'Uppladdas...',
+    loaded: 'Uppladdad',
+    error: {
+      EXTENSION_MISSING: 'Filtillägget saknas',
+      EXTENSION_INVALID: 'Ogiltigt filtillägg',
+      INVALID_CONTENT_TYPE: 'Ogiltig filtyp',
+      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      SERVER_ERROR: 'Uppladdningen misslyckades'
+    },
+    input: {
+      title: 'Lägg till bilaga',
+      text: [
+        'Tryck här eller dra en bilaga åt gången till lådan.',
+        'Maximal storlek för filen: 10 MB.',
+        'Tillåtna format:',
+        'PDF, JPEG/JPG, PNG och DOC/DOCX'
+      ]
+    },
+    deleteFile: 'Radera fil'
+  },
   loginErrorModal: {
     header: 'Inloggningen misslyckades',
     message:

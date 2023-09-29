@@ -303,7 +303,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             onUpload={uploadExtendedCareAttachment}
             onDelete={deleteExtendedCareAttachment}
             getDownloadUrl={getAttachmentUrl}
-            i18n={{ upload: t.fileUpload }}
           />
         </>
       )}
