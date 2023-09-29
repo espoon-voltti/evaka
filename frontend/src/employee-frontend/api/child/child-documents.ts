@@ -31,6 +31,7 @@ export async function getChildDocuments(
       res.data.map(({ data: doc, permittedActions }) => ({
         data: {
           ...doc,
+          modifiedAt: HelsinkiDateTime.parseIso(doc.modifiedAt),
           publishedAt: doc.publishedAt
             ? HelsinkiDateTime.parseIso(doc.publishedAt)
             : null

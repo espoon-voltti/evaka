@@ -96,16 +96,8 @@ data class ChildDocumentSummary(
     val status: DocumentStatus,
     val type: DocumentType,
     val templateName: String,
+    val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?
-)
-
-data class ChildDocumentCitizenSummary(
-    val id: ChildDocumentId,
-    val status: DocumentStatus,
-    val type: DocumentType,
-    val templateName: String,
-    val publishedAt: HelsinkiDateTime,
-    val unread: Boolean
 )
 
 data class ChildBasics(
@@ -120,6 +112,7 @@ data class ChildDocumentDetails(
     val status: DocumentStatus,
     val publishedAt: HelsinkiDateTime?,
     @Json val content: DocumentContent,
+    @Json val publishedContent: DocumentContent?,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate
 )

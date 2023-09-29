@@ -113,6 +113,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     templateId = templateId,
                     content = documentContent,
                     publishedContent = null,
+                    modifiedAt = clock.now(),
                     publishedAt = null
                 )
             )
@@ -146,7 +147,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             getDocumentsByChild(testChild_1.id)
         )
         assertEquals(
-            ChildDocumentDetails(
+            ChildDocumentCitizenDetails(
                 id = documentId,
                 status = DocumentStatus.DRAFT,
                 publishedAt = clock.now(),

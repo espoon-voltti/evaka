@@ -9,7 +9,10 @@ import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { useForm } from 'lib-common/form/hooks'
-import { ChildDocumentDetails } from 'lib-common/generated/api-types/document'
+import {
+  ChildDocumentCitizenDetails,
+  ChildDocumentDetails
+} from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -73,7 +76,7 @@ export default React.memo(function ChildDocumentPage() {
 const ChildDocumentView = React.memo(function ChildDocumentView({
   document
 }: {
-  document: ChildDocumentDetails
+  document: ChildDocumentDetails | ChildDocumentCitizenDetails
 }) {
   const i18n = useTranslation()
 

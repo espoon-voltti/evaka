@@ -92,6 +92,7 @@ beforeEach(async () => {
     await Fixture.childDocument()
       .withTemplate(templateIdPed)
       .withChild(child.id)
+      .withModifiedAt(mockedNow)
       .withPublishedAt(mockedNow)
       .withPublishedContent({
         answers: [

@@ -66,7 +66,7 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of same type")
                     }
 
-                    tx.insertChildDocument(body)
+                    tx.insertChildDocument(body, clock.now())
                 }
             }
             .also { Audit.ChildDocumentCreate.log(targetId = it) }
@@ -176,7 +176,7 @@ class ChildDocumentController(
 
                     validateContentAgainstTemplate(body, document.template.content)
 
-                    tx.updateChildDocumentContent(documentId, document.status, body)
+                    tx.updateChildDocumentContent(documentId, document.status, body, clock.now())
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = documentId) }
         }
@@ -301,7 +301,7 @@ class ChildDocumentController(
                             requestedStatus = body.newStatus,
                             goingForward = false
                         )
-                    tx.changeStatus(documentId, statusTransition)
+                    tx.changeStatus(documentId, statusTransition, clock.now())
                 }
             }
             .also {

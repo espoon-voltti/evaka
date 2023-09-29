@@ -52,7 +52,7 @@ class ChildDocumentControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocumentDetails {
+    ): ChildDocumentCitizenDetails {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(

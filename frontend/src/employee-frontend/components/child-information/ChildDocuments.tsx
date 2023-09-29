@@ -85,6 +85,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
         <Thead>
           <Tr>
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
+            <Th>{i18n.childInformation.childDocuments.table.modified}</Th>
             <Th>{i18n.childInformation.childDocuments.table.published}</Th>
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>
@@ -102,6 +103,7 @@ const ChildDocuments = React.memo(function ChildDocuments({
                   data-qa="open-document"
                 />
               </Td>
+              <Td>{document.modifiedAt.format()}</Td>
               <Td data-qa="document-published-at">
                 {document.publishedAt?.format() ?? '-'}
               </Td>

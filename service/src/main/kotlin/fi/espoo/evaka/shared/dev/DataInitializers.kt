@@ -1501,8 +1501,8 @@ fun Database.Transaction.insertTestChildDocument(row: DevChildDocument) =
     insertTestDataRow(
             row,
             """
-INSERT INTO child_document (id, status, child_id, template_id, content, published_content, published_at)
-VALUES (:id, :status, :childId, :templateId, :content, :publishedContent, :publishedAt)
+INSERT INTO child_document (id, status, child_id, template_id, content, published_content, modified_at, published_at)
+VALUES (:id, :status, :childId, :templateId, :content, :publishedContent, :modifiedAt, :publishedAt)
 """
         )
         .let(::ChildDocumentId)

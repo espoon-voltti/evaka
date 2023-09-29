@@ -50,7 +50,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     lateinit var employeeUser: AuthenticatedUser
 
-    final val now = MockEvakaClock(2022, 1, 1, 15, 0)
+    final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
     final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
     final val templateIdHojks = DocumentTemplateId(UUID.randomUUID())
@@ -101,7 +101,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             id = templateIdPed,
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             name = "Pedagoginen arvio 2023",
-            validity = DateRange(now.today(), now.today()),
+            validity = DateRange(clock.today(), clock.today()),
             content = templateContent
         )
 
@@ -110,7 +110,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             id = templateIdHojks,
             type = DocumentType.HOJKS,
             name = "HOJKS 2023",
-            validity = DateRange(now.today(), now.today()),
+            validity = DateRange(clock.today(), clock.today()),
             content = templateContent
         )
 
@@ -128,8 +128,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                startDate = now.today(),
-                endDate = now.today().plusDays(5)
+                startDate = clock.today(),
+                endDate = clock.today().plusDays(5)
             )
             tx.insertTestDocumentTemplate(devTemplatePed)
             tx.insertTestDocumentTemplate(devTemplateHojks)
@@ -142,11 +142,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdPed)
             )
 
-        val document = controller.getDocument(dbInstance(), employeeUser, now, documentId)
+        val document = controller.getDocument(dbInstance(), employeeUser, clock, documentId)
         assertEquals(
             ChildDocumentWithPermittedActions(
                 data =
@@ -155,6 +155,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         status = DocumentStatus.DRAFT,
                         publishedAt = null,
                         content = DocumentContent(answers = emptyList()),
+                        publishedContent = null,
                         child =
                             ChildBasics(
                                 id = testChild_1.id,
@@ -188,7 +189,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             document
         )
 
-        val summaries = controller.getDocuments(dbInstance(), employeeUser, now, testChild_1.id)
+        val summaries = controller.getDocuments(dbInstance(), employeeUser, clock, testChild_1.id)
         assertEquals(
             listOf(
                 ChildDocumentSummary(
@@ -196,6 +197,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     status = DocumentStatus.DRAFT,
                     type = devTemplatePed.type,
                     templateName = devTemplatePed.name,
+                    modifiedAt = clock.now(),
                     publishedAt = null
                 )
             ),
@@ -209,7 +211,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             db.transaction {
                 it.insertTestDocumentTemplate(
                     DevDocumentTemplate(
-                        validity = DateRange(now.today().minusDays(9), now.today().minusDays(1)),
+                        validity =
+                            DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
                         content = templateContent
                     )
                 )
@@ -218,7 +221,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, template2)
             )
         }
@@ -230,7 +233,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             db.transaction {
                 it.insertTestDocumentTemplate(
                     DevDocumentTemplate(
-                        validity = DateRange(now.today(), now.today()),
+                        validity = DateRange(clock.today(), clock.today()),
                         published = false,
                         content = templateContent
                     )
@@ -240,7 +243,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, template2)
             )
         }
@@ -252,13 +255,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
-        controller.publishDocument(dbInstance(), employeeUser, now, documentId)
+        controller.publishDocument(dbInstance(), employeeUser, clock, documentId)
         assertEquals(
-            now.now(),
-            controller.getDocument(dbInstance(), employeeUser, now, documentId).data.publishedAt
+            clock.now(),
+            controller.getDocument(dbInstance(), employeeUser, clock, documentId).data.publishedAt
         )
     }
 
@@ -268,12 +271,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
-        controller.deleteDraftDocument(dbInstance(), employeeUser, now, documentId)
+        controller.deleteDraftDocument(dbInstance(), employeeUser, clock, documentId)
         assertThrows<NotFound> {
-            controller.getDocument(dbInstance(), employeeUser, now, documentId)
+            controller.getDocument(dbInstance(), employeeUser, clock, documentId)
         }
     }
 
@@ -283,7 +286,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
@@ -300,10 +303,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         AnsweredQuestion.StaticTextDisplayAnswer("q5", null)
                     )
             )
-        controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+        controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         assertEquals(
             content,
-            controller.getDocument(dbInstance(), employeeUser, now, documentId).data.content
+            controller.getDocument(dbInstance(), employeeUser, clock, documentId).data.content
         )
     }
 
@@ -313,14 +316,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
-        controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+        controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         assertEquals(
             content,
-            controller.getDocument(dbInstance(), employeeUser, now, documentId).data.content
+            controller.getDocument(dbInstance(), employeeUser, clock, documentId).data.content
         )
     }
 
@@ -330,19 +333,19 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         controller.nextStatus(
             dbInstance(),
             employeeUser,
-            now,
+            clock,
             documentId,
             ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED)
         )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
         assertThrows<BadRequest> {
-            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+            controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         }
     }
 
@@ -352,13 +355,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q999", "hello")))
         assertThrows<BadRequest> {
-            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+            controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         }
     }
 
@@ -368,12 +371,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content = DocumentContent(answers = listOf(AnsweredQuestion.CheckboxAnswer("q1", true)))
         assertThrows<BadRequest> {
-            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+            controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         }
     }
 
@@ -383,7 +386,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
@@ -397,7 +400,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     )
             )
         assertThrows<BadRequest> {
-            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+            controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         }
     }
 
@@ -407,13 +410,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         val content =
             DocumentContent(answers = listOf(AnsweredQuestion.RadioButtonGroupAnswer("q3", "d")))
         assertThrows<BadRequest> {
-            controller.updateDocumentContent(dbInstance(), employeeUser, now, documentId, content)
+            controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)
         }
     }
 
@@ -423,7 +426,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdHojks)
             )
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
@@ -450,7 +453,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             controller.createDocument(
                 dbInstance(),
                 employeeUser,
-                now,
+                clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
@@ -470,13 +473,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     private fun getDocument(id: ChildDocumentId) =
-        controller.getDocument(dbInstance(), employeeUser, now, id).data
+        controller.getDocument(dbInstance(), employeeUser, clock, id).data
 
     private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
         controller.nextStatus(
             dbInstance(),
             employeeUser,
-            now,
+            clock,
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )
@@ -485,7 +488,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         controller.prevStatus(
             dbInstance(),
             employeeUser,
-            now,
+            clock,
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )

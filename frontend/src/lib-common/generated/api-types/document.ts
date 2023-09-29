@@ -92,6 +92,18 @@ export interface ChildBasics {
 }
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenDetails
+*/
+export interface ChildDocumentCitizenDetails {
+  child: ChildBasics
+  content: DocumentContent
+  id: UUID
+  publishedAt: HelsinkiDateTime | null
+  status: DocumentStatus
+  template: DocumentTemplate
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenSummary
 */
 export interface ChildDocumentCitizenSummary {
@@ -119,6 +131,7 @@ export interface ChildDocumentDetails {
   content: DocumentContent
   id: UUID
   publishedAt: HelsinkiDateTime | null
+  publishedContent: DocumentContent | null
   status: DocumentStatus
   template: DocumentTemplate
 }
@@ -128,6 +141,7 @@ export interface ChildDocumentDetails {
 */
 export interface ChildDocumentSummary {
   id: UUID
+  modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
   status: DocumentStatus
   templateName: string

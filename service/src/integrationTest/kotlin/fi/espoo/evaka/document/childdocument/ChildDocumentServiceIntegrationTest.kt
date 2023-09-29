@@ -126,6 +126,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     templateId = activeTemplateId,
                     content = content,
                     publishedContent = null,
+                    modifiedAt = clock.now(),
                     publishedAt = null
                 )
             )
@@ -137,6 +138,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     templateId = expiredTemplateId,
                     content = content,
                     publishedContent = updatedContent,
+                    modifiedAt = clock.now(),
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),
@@ -152,6 +154,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     templateId = expiredTemplateId,
                     content = content,
                     publishedContent = updatedContent,
+                    modifiedAt = clock.now().minusMonths(1),
                     publishedAt = clock.now().minusMonths(1)
                 )
             )
@@ -194,6 +197,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     templateId = expiredTemplateId,
                     content = content,
                     publishedContent = content,
+                    modifiedAt = clock.now(),
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),

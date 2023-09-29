@@ -2156,6 +2156,7 @@ export class Fixture {
       childId: 'not_set',
       templateId: 'not_set',
       status: 'DRAFT',
+      modifiedAt: HelsinkiDateTime.now(),
       publishedAt: null,
       content: {
         answers: [
@@ -2924,6 +2925,11 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 
   withStatus(status: DocumentStatus) {
     this.data.status = status
+    return this
+  }
+
+  withModifiedAt(modifiedAt: HelsinkiDateTime | null) {
+    this.data.modifiedAt = modifiedAt
     return this
   }
 
