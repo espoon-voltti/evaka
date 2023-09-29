@@ -787,7 +787,7 @@ class ApplicationStateService(
                 decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
             ) {
                 decisions.find {
-                    (it.type === DecisionType.PRESCHOOL_DAYCARE ||
+                    (it.type == DecisionType.PRESCHOOL_DAYCARE ||
                         it.type == DecisionType.PRESCHOOL_CLUB) &&
                         it.status == DecisionStatus.PENDING
                 }
@@ -842,7 +842,7 @@ class ApplicationStateService(
         }
 
         if (asDraft) {
-            if (original.status !== CREATED)
+            if (original.status != CREATED)
                 throw BadRequest("Cannot save as draft, application already sent")
         } else {
             validateApplication(tx, original.type, updatedForm, currentDate, strict = true)

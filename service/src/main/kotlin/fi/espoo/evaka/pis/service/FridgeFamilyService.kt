@@ -73,7 +73,7 @@ class FridgeFamilyService(
                 logger.info(
                     "Partner lives in the same address and has ${partner.children.size} children"
                 )
-                if (head === partner) {
+                if (head == partner) {
                     logger.info(
                         "Partner has a fridge family, so adding the new children to that family"
                     )

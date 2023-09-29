@@ -9,10 +9,6 @@ buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath(files("custom-ktlint-rules/custom-ktlint-rules.jar"))
-        classpath(libs.ktlint)
-    }
 }
 
 plugins {
@@ -23,8 +19,8 @@ plugins {
     alias(libs.plugins.flyway)
 
     alias(libs.plugins.versions)
-    alias(libs.plugins.kotlinter)
     alias(libs.plugins.ktfmt)
+    alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.owasp)
 
     idea
@@ -162,6 +158,8 @@ dependencies {
 
     implementation(project(":sficlient"))
     implementation(project(":vtjclient"))
+
+    ktlint(project(":custom-ktlint-rules"))
 }
 
 allOpen {
@@ -197,6 +195,7 @@ allprojects {
                 }
                 .groupBy({ (_, count) -> count }) { (name, _) -> name }
                 .forEach { (count, names) ->
+                    @Suppress("ktlint:evaka:no-println")
                     println(
                         "Resolved $count dependency files for configurations: ${names.joinToString(", ")}"
                     )
@@ -267,4 +266,8 @@ tasks {
 
 ktfmt {
     kotlinLangStyle()
+}
+
+ktlint {
+    version.set(libs.versions.ktlint.asProvider().get())
 }

@@ -218,13 +218,11 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments
-                .filter { it.type === AttachmentType.EXTENDED_CARE }
-                .size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size
         )
     }
 
@@ -271,13 +269,11 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments
-                .filter { it.type === AttachmentType.EXTENDED_CARE }
-                .size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size
         )
     }
 
@@ -330,12 +326,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size
+            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
-                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .filter { it.type == AttachmentType.EXTENDED_CARE }
                 .size
         )
     }
@@ -389,12 +385,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size
+            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
-                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .filter { it.type == AttachmentType.EXTENDED_CARE }
                 .size
         )
     }

@@ -159,7 +159,7 @@ data class VasuContent(
     fun followupEntriesMissing(content: VasuContent): Boolean =
         content.sections.withIndex().any { section ->
             section.value.questions.withIndex().any { question ->
-                if (question.value.type === VasuQuestionType.FOLLOWUP) {
+                if (question.value.type == VasuQuestionType.FOLLOWUP) {
                     val followup = question.value as VasuQuestion.Followup
                     val storedFollowup =
                         this.sections[section.index].questions[question.index]
@@ -533,13 +533,13 @@ fun updateVasuDocumentState(
     val currentState = document.documentState
     events.forEach {
         when (it) {
-                VasuDocumentEventType.PUBLISHED -> currentState !== VasuDocumentState.CLOSED
-                VasuDocumentEventType.MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
+                VasuDocumentEventType.PUBLISHED -> currentState != VasuDocumentState.CLOSED
+                VasuDocumentEventType.MOVED_TO_READY -> currentState == VasuDocumentState.DRAFT
                 VasuDocumentEventType.RETURNED_TO_READY ->
-                    currentState === VasuDocumentState.REVIEWED
-                VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
+                    currentState == VasuDocumentState.REVIEWED
+                VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState == VasuDocumentState.READY
                 VasuDocumentEventType.RETURNED_TO_REVIEWED ->
-                    currentState === VasuDocumentState.CLOSED
+                    currentState == VasuDocumentState.CLOSED
                 VasuDocumentEventType.MOVED_TO_CLOSED -> true
             }
             .exhaust()

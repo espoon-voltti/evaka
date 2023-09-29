@@ -511,7 +511,7 @@ WHERE
     tp.last_received_timestamp IS NOT NULL AND
     NOT t.is_copy AND
     ${
-        if (folderId === null) {
+        if (folderId == null) {
             "tp.folder_id IS NULL"
         } else {
             "tp.folder_id = :folderId"

@@ -155,7 +155,7 @@ class VasuController(
                     val employeeIds =
                         doc.content.sections.flatMap { section ->
                             section.questions.flatMap { question ->
-                                if (question.type === VasuQuestionType.FOLLOWUP) {
+                                if (question.type == VasuQuestionType.FOLLOWUP) {
                                     val followup = question as VasuQuestion.Followup
                                     followup.value.flatMap {
                                         setOfNotNull(it.authorId, it.edited?.editorId)
@@ -175,7 +175,7 @@ class VasuController(
                             doc.copy(
                                 content =
                                     doc.content.mapQuestions { question, _, _ ->
-                                        if (question.type === VasuQuestionType.FOLLOWUP) {
+                                        if (question.type == VasuQuestionType.FOLLOWUP) {
                                             (question as VasuQuestion.Followup).withEmployeeNames(
                                                 employeeNames
                                             )
@@ -219,7 +219,7 @@ class VasuController(
                     body.copy(
                         content =
                             body.content.mapQuestions { question, sectionIndex, questionIndex ->
-                                if (question.type === VasuQuestionType.FOLLOWUP) {
+                                if (question.type == VasuQuestionType.FOLLOWUP) {
                                     val followup = question as VasuQuestion.Followup
                                     val storedFollowup =
                                         vasu.content.sections[sectionIndex].questions[questionIndex]

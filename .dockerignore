@@ -20,11 +20,7 @@
 !service/codegen/*.kts
 !service/codegen/src
 
-!service/custom-ktlint-rules/build.gradle
-!service/custom-ktlint-rules/custom-ktlint-rules.jar
-!service/custom-ktlint-rules/gradle/wrapper
-!service/custom-ktlint-rules/gradlew
-!service/custom-ktlint-rules/settings.gradle.kts
+!service/custom-ktlint-rules/*.kts
 !service/custom-ktlint-rules/src
 
 !service/evaka-bom/*.kts

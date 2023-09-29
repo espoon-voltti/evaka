@@ -342,7 +342,7 @@ fun createDecisionPdf(
 ): ByteArray {
     val sendAddress = getSendAddress(messageProvider, guardian, lang)
     val template = createTemplate(templateProvider, decision, isTransferApplication)
-    val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
+    val isPartTimeDecision: Boolean = decision.type == DecisionType.DAYCARE_PART_TIME
 
     val pages =
         generateDecisionPages(

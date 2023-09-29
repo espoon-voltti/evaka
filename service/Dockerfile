@@ -47,16 +47,11 @@ COPY ./service/sficlient/ ./sficlient/
 COPY ./service/vtjclient/ ./vtjclient/
 RUN ./gradlew --no-daemon :sficlient:wsdl2java :vtjclient:wsdl2java
 
-RUN cd custom-ktlint-rules && ./gradlew dependencies
-
 COPY . /evaka
 
 # --offline is used to be sure that all dependencies are installed in previous steps
 RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
-
-RUN cd custom-ktlint-rules \
- && ./gradlew --no-daemon assemble
 
 FROM base
 

@@ -192,7 +192,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works with draft status parameter`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val drafts =
-            testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
+            testInvoices.filter { it.status == InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
         val result =
             searchInvoices(
@@ -208,7 +208,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `search works with sent status parameter`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
-        val sent = testInvoices.filter { it.status === InvoiceStatus.SENT }
+        val sent = testInvoices.filter { it.status == InvoiceStatus.SENT }
 
         val result =
             searchInvoices(
@@ -220,7 +220,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `search works with canceled status parameter`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
-        val canceled = testInvoices.filter { it.status === InvoiceStatus.CANCELED }
+        val canceled = testInvoices.filter { it.status == InvoiceStatus.CANCELED }
 
         val result =
             searchInvoices(

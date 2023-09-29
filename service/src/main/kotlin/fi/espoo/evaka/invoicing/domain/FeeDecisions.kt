@@ -227,7 +227,7 @@ data class FeeDecisionDetailed(
 
     val requiresManualSending
         get(): Boolean {
-            if (decisionType !== FeeDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+            if (decisionType != FeeDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
                 return true
             }
 

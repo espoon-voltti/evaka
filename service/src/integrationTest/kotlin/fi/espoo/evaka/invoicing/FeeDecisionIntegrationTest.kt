@@ -339,7 +339,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `search works with draft status parameter`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val drafts = testDecisions.filter { it.status === FeeDecisionStatus.DRAFT }
+        val drafts = testDecisions.filter { it.status == FeeDecisionStatus.DRAFT }
 
         val result =
             searchDecisions(
@@ -356,7 +356,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `search works with sent status parameter`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val sent = testDecisions.filter { it.status === FeeDecisionStatus.SENT }
+        val sent = testDecisions.filter { it.status == FeeDecisionStatus.SENT }
 
         val result =
             searchDecisions(
@@ -737,7 +737,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `confirmDrafts works with draft decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
+        val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
 
         confirmDrafts(listOf(draft.id))
     }
@@ -745,7 +745,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `confirmDrafts updates status, decision number, approver on draft`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
+        val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
 
         confirmDrafts(listOf(draft.id))
 
@@ -767,7 +767,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `confirmDrafts updates status, decision number, approver on relief decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
+        val draft = testDecisions.find { it.decisionType == FeeDecisionType.RELIEF_ACCEPTED }!!
 
         confirmDrafts(listOf(draft.id))
 
@@ -790,7 +790,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `confirmDrafts updates status, decision number, approver on relief partly accepted`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft =
-            testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
+            testDecisions.find { it.decisionType == FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
 
         confirmDrafts(listOf(draft.id))
 
@@ -812,7 +812,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `confirmDrafts updates status, decision number, approver on relief rejected`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_REJECTED }!!
+        val draft = testDecisions.find { it.decisionType == FeeDecisionType.RELIEF_REJECTED }!!
 
         confirmDrafts(listOf(draft.id))
 
@@ -835,7 +835,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `confirmDrafts picks decision handler from unit when decision is not a relief decision nor retroactive`() {
         val draft =
             testDecisions
-                .find { it.status === FeeDecisionStatus.DRAFT }!!
+                .find { it.status == FeeDecisionStatus.DRAFT }!!
                 .copy(
                     validDuring =
                         DateRange(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(1))
@@ -869,7 +869,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `confirmDrafts uses approver as decision handler when decision is a relief decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
+        val draft = testDecisions.find { it.decisionType == FeeDecisionType.RELIEF_ACCEPTED }!!
         db.transaction {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
@@ -934,7 +934,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `sendDecisions does not send if ssn missing`() {
         val draft =
             testDecisions.find {
-                it.status === FeeDecisionStatus.DRAFT && it.headOfFamilyId === testAdult_3.id
+                it.status == FeeDecisionStatus.DRAFT && it.headOfFamilyId == testAdult_3.id
             }!!
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }

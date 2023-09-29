@@ -50,6 +50,9 @@ dependencies {
         api(libs.flyingsaucer.core)
         api(libs.flyingsaucer.pdf.openpdf)
         api("org.yaml:snakeyaml:2.2")
+        api(libs.ktlint.cli.ruleset.core)
+        api(libs.ktlint.rule.engine.core)
+        api(libs.ktlint.test)
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
