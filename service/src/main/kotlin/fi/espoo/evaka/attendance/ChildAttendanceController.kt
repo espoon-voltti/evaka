@@ -12,8 +12,8 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.insertAbsences
-import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
-import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
+import fi.espoo.evaka.note.child.daily.getChildDailyNotesForChildren
+import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChildren
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
@@ -88,16 +88,15 @@ class ChildAttendanceController(
                     val preschoolTerms = tx.getPreschoolTerms()
 
                     val childrenBasics = tx.fetchChildrenBasics(unitId, now)
-                    val dailyNotesForChildrenInUnit = tx.getChildDailyNotesInUnit(unitId, today)
-                    val stickyNotesForChildrenInUnit = tx.getChildStickyNotesForUnit(unitId, today)
+                    val childIds = childrenBasics.asSequence().map { it.id }.toSet()
+
+                    val dailyNotes =
+                        tx.getChildDailyNotesForChildren(childIds).associateBy { it.childId }
+                    val stickyNotes =
+                        tx.getChildStickyNotesForChildren(childIds).groupBy { it.childId }
                     val reservations = tx.getUnitReservations(unitId, today)
 
                     childrenBasics.map { child ->
-                        val dailyNote =
-                            dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
-                        val stickyNotes =
-                            stickyNotesForChildrenInUnit.filter { it.childId == child.id }
-
                         AttendanceChild(
                             id = child.id,
                             firstName = child.firstName,
@@ -110,8 +109,8 @@ class ChildAttendanceController(
                             groupId = child.groupId,
                             backup = child.backup,
                             dailyServiceTimes = child.dailyServiceTimes?.times,
-                            dailyNote = dailyNote,
-                            stickyNotes = stickyNotes,
+                            dailyNote = dailyNotes[child.id],
+                            stickyNotes = stickyNotes[child.id] ?: emptyList(),
                             imageUrl = child.imageUrl,
                             reservations = reservations[child.id] ?: listOf()
                         )

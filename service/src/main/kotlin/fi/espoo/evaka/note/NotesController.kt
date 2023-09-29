@@ -6,7 +6,7 @@ package fi.espoo.evaka.note
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
-import fi.espoo.evaka.note.child.daily.getChildDailyNotesInGroup
+import fi.espoo.evaka.note.child.daily.getChildDailyNotesForGroup
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForGroup
 import fi.espoo.evaka.note.group.GroupNote
@@ -40,7 +40,7 @@ class NotesController(private val ac: AccessControl) {
                 dbc.read {
                     ac.requirePermissionFor(it, user, clock, Action.Group.READ_NOTES, groupId)
                     NotesByGroupResponse(
-                        childDailyNotes = it.getChildDailyNotesInGroup(groupId, clock.today()),
+                        childDailyNotes = it.getChildDailyNotesForGroup(groupId, clock.today()),
                         childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),
                         groupNotes = it.getGroupNotesForGroup(groupId)
                     )
