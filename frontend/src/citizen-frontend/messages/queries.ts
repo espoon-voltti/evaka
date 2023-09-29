@@ -18,8 +18,7 @@ import {
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
-  allReceivedMessages: () => ['receivedMessages'],
-  receivedMessages: (pageSize: number) => ['receivedMessages', pageSize],
+  receivedMessages: () => ['receivedMessages'],
   receivers: () => ['receivers'],
   unreadMessagesCount: () => ['unreadMessagesCount'],
   messageAccount: () => ['messageAccount']
@@ -58,15 +57,15 @@ export const markThreadReadMutation = mutation({
 
 export const sendMessageMutation = mutation({
   api: sendMessage,
-  invalidateQueryKeys: () => [queryKeys.allReceivedMessages()]
+  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
 })
 
 export const replyToThreadMutation = mutation({
   api: replyToThread,
-  invalidateQueryKeys: () => []
+  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
 })
 
 export const archiveThreadMutation = mutation({
   api: archiveThread,
-  invalidateQueryKeys: () => [queryKeys.allReceivedMessages()]
+  invalidateQueryKeys: () => [queryKeys.receivedMessages()]
 })

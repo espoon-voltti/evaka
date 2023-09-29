@@ -518,7 +518,7 @@ WHERE
         }
     } AND
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
-ORDER BY tp.last_received_timestamp DESC
+ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
             )
