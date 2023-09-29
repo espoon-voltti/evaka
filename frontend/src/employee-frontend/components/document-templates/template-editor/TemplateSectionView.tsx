@@ -80,49 +80,52 @@ export default React.memo(function TemplateSectionView({
 
   return (
     <Wrapper $readOnly={readOnly} data-qa="template-section">
-      {!readOnly && (
-        <SectionActionsRow
-          justifyContent="flex-end"
-          className="section-actions"
+      <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
+        <ExpandingInfo
+          info={infoText.state}
+          closeLabel={i18n.common.close}
+          ariaLabel=""
         >
-          <IconButton
-            icon={faPlus}
-            aria-label={i18n.documentTemplates.templateEditor.addQuestion}
-            onClick={() => setCreatingQuestion(true)}
-            data-qa="create-question-button"
-          />
-          <IconButton
-            icon={faPen}
-            aria-label={i18n.common.edit}
-            onClick={() => setEditing(true)}
-          />
-          <IconButton
-            icon={faArrowUp}
-            aria-label={i18n.documentTemplates.templateEditor.moveUp}
-            disabled={first}
-            onClick={onMoveUp}
-          />
-          <IconButton
-            icon={faArrowDown}
-            aria-label={i18n.documentTemplates.templateEditor.moveDown}
-            disabled={last}
-            onClick={onMoveDown}
-          />
-          <IconButton
-            icon={faTrash}
-            aria-label={i18n.common.remove}
-            disabled={questionElems.length > 0}
-            onClick={onDelete}
-          />
-        </SectionActionsRow>
-      )}
-      <ExpandingInfo
-        info={infoText.state}
-        closeLabel={i18n.common.close}
-        ariaLabel=""
-      >
-        <H2>{label.value()}</H2>
-      </ExpandingInfo>
+          <H2>{label.value()}</H2>
+        </ExpandingInfo>
+
+        {!readOnly && (
+          <SectionActionsRow
+            justifyContent="flex-end"
+            className="section-actions"
+          >
+            <IconButton
+              icon={faPlus}
+              aria-label={i18n.documentTemplates.templateEditor.addQuestion}
+              onClick={() => setCreatingQuestion(true)}
+              data-qa="create-question-button"
+            />
+            <IconButton
+              icon={faPen}
+              aria-label={i18n.common.edit}
+              onClick={() => setEditing(true)}
+            />
+            <IconButton
+              icon={faArrowUp}
+              aria-label={i18n.documentTemplates.templateEditor.moveUp}
+              disabled={first}
+              onClick={onMoveUp}
+            />
+            <IconButton
+              icon={faArrowDown}
+              aria-label={i18n.documentTemplates.templateEditor.moveDown}
+              disabled={last}
+              onClick={onMoveDown}
+            />
+            <IconButton
+              icon={faTrash}
+              aria-label={i18n.common.remove}
+              disabled={questionElems.length > 0}
+              onClick={onDelete}
+            />
+          </SectionActionsRow>
+        )}
+      </FixedSpaceRow>
       <QuestionList spacing="L">
         {questionElems.map((question, index) => (
           <TemplateQuestionView
