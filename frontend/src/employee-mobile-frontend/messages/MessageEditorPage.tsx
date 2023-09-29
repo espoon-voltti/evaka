@@ -105,11 +105,6 @@ export default function MessageEditorPage() {
         deleteAttachment={deleteAttachment}
         draftContent={undefined}
         getAttachmentUrl={getAttachmentUrl}
-        i18n={{
-          ...i18n.messages.messageEditor,
-          ...i18n.fileUpload,
-          ...i18n.common
-        }}
         initDraftRaw={initDraft}
         mobileVersion={true}
         accounts={accounts}

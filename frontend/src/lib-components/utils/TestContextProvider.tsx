@@ -21,7 +21,12 @@ export const testTranslations: Translations = {
     close: '',
     confirm: '',
     no: '',
+    noResults: '',
+    open: '',
     remove: '',
+    saved: '',
+    saving: '',
+    search: '',
     yes: ''
   },
   datePicker: {
@@ -71,6 +76,35 @@ export const testTranslations: Translations = {
     returnMessage: ''
   },
   messages: { staffAnnotation: '' },
+  messageEditor: {
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipients: '',
+    recipientsPlaceholder: '',
+    title: '',
+    message: '',
+    deleteDraft: '',
+    send: '',
+    sending: ''
+  },
+  messageReplyEditor: {
+    discard: ''
+  },
   notifications: {
     close: ''
   },

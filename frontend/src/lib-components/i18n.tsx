@@ -18,7 +18,12 @@ export interface Translations {
     close: string
     confirm: string
     no: string
+    noResults: string
+    open: string
     remove: string
+    saving: string
+    saved: string
+    search: string
     yes: string
   }
   datePicker: {
@@ -64,6 +69,35 @@ export interface Translations {
     returnMessage: string
   }
   messages: { staffAnnotation: string }
+  messageEditor: {
+    newMessage: string
+    to: {
+      label: string
+      placeholder: string
+      noOptions: string
+    }
+    type: {
+      label: string
+      message: string
+      bulletin: string
+    }
+    urgent: {
+      heading: string
+      info: string
+      label: string
+    }
+    sender: string
+    recipients: string
+    recipientsPlaceholder: string
+    title: string
+    message: string
+    deleteDraft: string
+    send: string
+    sending: string
+  }
+  messageReplyEditor: {
+    discard: string
+  }
   notifications: {
     close: string
   }

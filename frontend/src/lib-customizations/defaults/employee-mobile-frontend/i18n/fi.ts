@@ -357,10 +357,10 @@ export const fi = {
       recipientsPlaceholder: 'Valitse...',
       title: 'Otsikko',
       message: 'Viesti',
+      discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään',
-      addAttachmentInfo: 'Lisää liite PDF-muodossa'
+      sending: 'Lähetetään'
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
     unreadMessages: 'Uudet viestit',

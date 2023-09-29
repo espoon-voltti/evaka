@@ -215,11 +215,11 @@ export function SingleThreadView({
   const editorLabels = useMemo(
     () => ({
       add: i18n.common.add,
-      message: i18n.messages.messageEditor.message,
-      recipients: i18n.messages.messageEditor.receivers,
-      send: i18n.messages.messageEditor.send,
-      sending: i18n.messages.messageEditor.sending,
-      discard: i18n.messages.messageEditor.discard
+      message: i18n.components.messageEditor.message,
+      recipients: i18n.components.messageEditor.recipients,
+      send: i18n.components.messageEditor.send,
+      sending: i18n.components.messageEditor.sending,
+      discard: i18n.components.messageReplyEditor.discard
     }),
     [i18n]
   )

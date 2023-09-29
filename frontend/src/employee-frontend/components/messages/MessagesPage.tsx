@@ -227,11 +227,6 @@ export default React.memo(function MessagesPage({
               deleteAttachment={deleteAttachment}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
-              i18n={{
-                ...i18n.messages.messageEditor,
-                ...i18n.fileUpload,
-                ...i18n.common
-              }}
               initDraftRaw={initDraft}
               accounts={accounts.value}
               onClose={onHide}

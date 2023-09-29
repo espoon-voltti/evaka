@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Close',
     confirm: 'Confirm',
     no: 'No',
+    noResults: 'No results',
+    open: 'Open',
     remove: 'Remove',
+    saving: 'Saving',
+    saved: 'Saved',
+    search: 'Search',
     yes: 'Yes'
   },
   datePicker: {
@@ -75,6 +80,37 @@ const components: Translations = {
   },
   messages: {
     staffAnnotation: 'Staff'
+  },
+  messageEditor: {
+    // Currently only used for Finnish frontends
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipients: '',
+    recipientsPlaceholder: '',
+    title: '',
+    message: '',
+    deleteDraft: '',
+    send: '',
+    sending: ''
+  },
+  messageReplyEditor: {
+    // Currently only used for Finnish frontends
+    discard: ''
   },
   notifications: {
     close: 'Close'

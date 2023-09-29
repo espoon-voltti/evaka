@@ -4012,34 +4012,6 @@ export const fi = {
       receivers: 'Vastaanottajat',
       confirmText: 'Lähetä viesti valituille'
     },
-    messageEditor: {
-      newMessage: 'Uusi viesti',
-      to: {
-        label: 'Vastaanottaja',
-        placeholder: 'Valitse ryhmä',
-        noOptions: 'Ei ryhmiä'
-      },
-      type: {
-        label: 'Viestin tyyppi',
-        message: 'Viesti',
-        bulletin: 'Tiedote (ei voi vastata)'
-      },
-      urgent: {
-        heading: 'Merkitse kiireelliseksi',
-        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-        label: 'Kiireellinen'
-      },
-      sender: 'Lähettäjä',
-      receivers: 'Vastaanottajat',
-      recipientsPlaceholder: 'Valitse...',
-      title: 'Otsikko',
-      message: 'Viesti',
-      discard: 'Hylkää',
-      deleteDraft: 'Hylkää luonnos',
-      send: 'Lähetä',
-      sending: 'Lähetetään',
-      addAttachmentInfo: 'Lisää liite PDF-muodossa'
-    },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
     editDraft: 'Muokkaa luonnosta',

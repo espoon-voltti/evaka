@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Sulje',
     confirm: 'Vahvista',
     no: 'Ei',
+    noResults: 'Ei hakutuloksia',
+    open: 'Avaa',
     remove: 'Poista',
+    saving: 'Tallennetaan',
+    saved: 'Tallennettu',
+    search: 'Hae',
     yes: 'Kyllä'
   },
   datePicker: {
@@ -74,6 +79,35 @@ const components: Translations = {
   },
   messages: {
     staffAnnotation: 'Henkilökunta'
+  },
+  messageEditor: {
+    newMessage: 'Uusi viesti',
+    to: {
+      label: 'Vastaanottaja',
+      placeholder: 'Valitse ryhmä',
+      noOptions: 'Ei ryhmiä'
+    },
+    type: {
+      label: 'Viestin tyyppi',
+      message: 'Viesti',
+      bulletin: 'Tiedote (ei voi vastata)'
+    },
+    urgent: {
+      heading: 'Merkitse kiireelliseksi',
+      info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+      label: 'Kiireellinen'
+    },
+    sender: 'Lähettäjä',
+    recipients: 'Vastaanottajat',
+    recipientsPlaceholder: 'Valitse...',
+    title: 'Otsikko',
+    message: 'Viesti',
+    deleteDraft: 'Hylkää luonnos',
+    send: 'Lähetä',
+    sending: 'Lähetetään'
+  },
+  messageReplyEditor: {
+    discard: 'Hylkää'
   },
   notifications: {
     close: 'Sulje'

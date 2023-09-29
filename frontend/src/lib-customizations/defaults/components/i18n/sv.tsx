@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Stäng',
     confirm: 'Bekräfta',
     no: 'Nej',
+    noResults: 'Inga sökresultat',
+    open: 'Öppna',
     remove: 'Ta bort',
+    saving: 'Sparar',
+    saved: 'Sparad',
+    search: 'Sök',
     yes: 'Ja'
   },
   datePicker: {
@@ -75,6 +80,37 @@ const components: Translations = {
   },
   messages: {
     staffAnnotation: 'Personal'
+  },
+  messageEditor: {
+    // Currently only used for Finnish frontends
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipients: '',
+    recipientsPlaceholder: '',
+    title: '',
+    message: '',
+    deleteDraft: '',
+    send: '',
+    sending: ''
+  },
+  messageReplyEditor: {
+    // Currently only used for Finnish frontends
+    discard: ''
   },
   notifications: {
     close: 'Stäng'
