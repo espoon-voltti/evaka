@@ -75,7 +75,13 @@ export const testTranslations: Translations = {
     message: '',
     returnMessage: ''
   },
-  messages: { staffAnnotation: '' },
+  messages: {
+    staffAnnotation: '',
+    recipients: '',
+    message: '',
+    send: '',
+    sending: ''
+  },
   messageEditor: {
     newMessage: '',
     to: {
@@ -94,16 +100,13 @@ export const testTranslations: Translations = {
       label: ''
     },
     sender: '',
-    recipients: '',
     recipientsPlaceholder: '',
     title: '',
-    message: '',
-    deleteDraft: '',
-    send: '',
-    sending: ''
+    deleteDraft: ''
   },
   messageReplyEditor: {
-    discard: ''
+    discard: '',
+    messagePlaceholder: undefined
   },
   notifications: {
     close: ''

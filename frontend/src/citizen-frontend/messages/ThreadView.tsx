@@ -7,7 +7,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
@@ -236,19 +235,6 @@ export default React.memo(function ThreadView({
     [messages, recipients, replyContent, sendReply]
   )
 
-  const editorLabels = useMemo(
-    () => ({
-      add: i18n.common.add,
-      message: i18n.messages.types.MESSAGE,
-      messagePlaceholder: i18n.messages.messagePlaceholder,
-      recipients: i18n.messages.recipients,
-      send: i18n.messages.send,
-      sending: `${i18n.messages.sending}...`,
-      discard: i18n.messages.messageEditor.discard
-    }),
-    [i18n]
-  )
-
   const sendEnabled =
     !!replyContent &&
     recipients.some((r) => r.selected && isPrimaryRecipient(r))
@@ -304,7 +290,6 @@ export default React.memo(function ThreadView({
             recipients={recipients}
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
-            i18n={editorLabels}
             sendEnabled={sendEnabled}
           />
         </ReplyEditorContainer>

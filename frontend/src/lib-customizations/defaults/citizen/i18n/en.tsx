@@ -9,6 +9,7 @@ import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
@@ -20,6 +21,15 @@ import fi from './fi'
 
 const yes = 'Yes'
 const no = 'No'
+
+const componentTranslations: ComponentTranslations = {
+  ...components,
+  messageReplyEditor: {
+    ...components.messageReplyEditor,
+    messagePlaceholder:
+      'Content... Note! Do not enter sensitive information here.'
+  }
+}
 
 const en: Translations = {
   common: {
@@ -409,8 +419,6 @@ const en: Translations = {
     send: 'Send',
     sender: 'Sender',
     sending: 'Sending',
-    messagePlaceholder:
-      'Content... Note! Do not enter sensitive information here.',
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'
@@ -2382,7 +2390,7 @@ const en: Translations = {
     mainContent: 'Skip to main content',
     applyingSubNav: 'Skip to applications navigation'
   },
-  components
+  components: componentTranslations
 }
 
 export default en

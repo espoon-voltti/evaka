@@ -9,11 +9,21 @@ import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/fi'
+
+const componentTranslations: ComponentTranslations = {
+  ...components,
+  messageReplyEditor: {
+    ...components.messageReplyEditor,
+    messagePlaceholder:
+      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.'
+  }
+}
 
 const yes = 'Kyllä'
 const no = 'Ei'
@@ -406,8 +416,6 @@ export default {
     send: 'Lähetä',
     sender: 'Lähettäjä',
     sending: 'Lähetetään',
-    messagePlaceholder:
-      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
@@ -2604,5 +2612,5 @@ export default {
     mainContent: 'Siirry pääsisältöön',
     applyingSubNav: 'Siirry hakemusnavigaatioon'
   },
-  components
+  components: componentTranslations
 }

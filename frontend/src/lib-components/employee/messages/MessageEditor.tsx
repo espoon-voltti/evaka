@@ -400,7 +400,7 @@ export default React.memo(function MessageEditor({
                 </HorizontalField>
                 <Gap size="s" />
                 <HorizontalField>
-                  <Bold>{i18n.messageEditor.recipients}</Bold>
+                  <Bold>{i18n.messages.recipients}</Bold>
                   <TreeDropdown
                     tree={receiverTree}
                     onChange={updateReceivers}
@@ -468,7 +468,7 @@ export default React.memo(function MessageEditor({
               </>
             )}
             <Gap size="m" />
-            <Bold>{i18n.messageEditor.message}</Bold>
+            <Bold>{i18n.messages.message}</Bold>
             <Gap size="xs" />
             <StyledTextArea
               value={message.content}
@@ -500,9 +500,7 @@ export default React.memo(function MessageEditor({
               <Gap horizontal />
             )}
             <Button
-              text={
-                sending ? i18n.messageEditor.sending : i18n.messageEditor.send
-              }
+              text={sending ? i18n.messages.sending : i18n.messages.send}
               primary
               disabled={!sendEnabled}
               onClick={sendHandler}
@@ -531,7 +529,7 @@ export default React.memo(function MessageEditor({
         {message.sender.label}
         <div>
           <Gap size="s" />
-          <Bold>{i18n.messageEditor.recipients}</Bold>
+          <Bold>{i18n.messages.recipients}</Bold>
           <Gap size="xs" />
         </div>
         <TreeDropdown
@@ -557,7 +555,7 @@ export default React.memo(function MessageEditor({
           data-qa="input-title"
         />
         <Gap size="m" />
-        <Bold>{i18n.messageEditor.message}</Bold>
+        <Bold>{i18n.messages.message}</Bold>
         <Gap size="xs" />
         <MessageAreaMobile
           value={message.content}
@@ -578,7 +576,7 @@ export default React.memo(function MessageEditor({
           <Gap horizontal />
         )}
         <Button
-          text={sending ? i18n.messageEditor.sending : i18n.messageEditor.send}
+          text={sending ? i18n.messages.sending : i18n.messages.send}
           primary
           disabled={!sendEnabled}
           onClick={sendHandler}

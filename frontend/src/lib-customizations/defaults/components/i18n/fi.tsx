@@ -78,7 +78,11 @@ const components: Translations = {
     returnMessage: 'Palaa takaisin'
   },
   messages: {
-    staffAnnotation: 'Henkilökunta'
+    staffAnnotation: 'Henkilökunta',
+    message: 'Viesti',
+    recipients: 'Vastaanottajat',
+    send: 'Lähetä',
+    sending: 'Lähetetään'
   },
   messageEditor: {
     newMessage: 'Uusi viesti',
@@ -98,15 +102,12 @@ const components: Translations = {
       label: 'Kiireellinen'
     },
     sender: 'Lähettäjä',
-    recipients: 'Vastaanottajat',
     recipientsPlaceholder: 'Valitse...',
     title: 'Otsikko',
-    message: 'Viesti',
-    deleteDraft: 'Hylkää luonnos',
-    send: 'Lähetä',
-    sending: 'Lähetetään'
+    deleteDraft: 'Hylkää luonnos'
   },
   messageReplyEditor: {
+    messagePlaceholder: undefined,
     discard: 'Hylkää'
   },
   notifications: {

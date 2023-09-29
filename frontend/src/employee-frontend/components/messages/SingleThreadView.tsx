@@ -7,7 +7,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
@@ -212,18 +211,6 @@ export function SingleThreadView({
   }, [setReplyContent, setReplyEditorVisible, threadId])
 
   const canReply = type === 'MESSAGE'
-  const editorLabels = useMemo(
-    () => ({
-      add: i18n.common.add,
-      message: i18n.components.messageEditor.message,
-      recipients: i18n.components.messageEditor.recipients,
-      send: i18n.components.messageEditor.send,
-      sending: i18n.components.messageEditor.sending,
-      discard: i18n.components.messageReplyEditor.discard
-    }),
-    [i18n]
-  )
-
   const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
 
   return (
@@ -271,7 +258,6 @@ export function SingleThreadView({
                 recipients={recipients}
                 onToggleRecipient={onToggleRecipient}
                 replyContent={replyContent}
-                i18n={editorLabels}
                 sendEnabled={sendEnabled}
               />
             </MessageContainer>

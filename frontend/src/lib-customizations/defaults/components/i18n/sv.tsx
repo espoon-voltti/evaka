@@ -79,7 +79,11 @@ const components: Translations = {
     returnMessage: 'Gå tillbaka till inloggningen'
   },
   messages: {
-    staffAnnotation: 'Personal'
+    staffAnnotation: 'Personal',
+    message: 'Meddelande',
+    recipients: 'Mottagare',
+    send: 'Skicka',
+    sending: 'Skickar'
   },
   messageEditor: {
     // Currently only used for Finnish frontends
@@ -100,17 +104,14 @@ const components: Translations = {
       label: ''
     },
     sender: '',
-    recipients: '',
     recipientsPlaceholder: '',
     title: '',
-    message: '',
-    deleteDraft: '',
-    send: '',
-    sending: ''
+    deleteDraft: ''
   },
   messageReplyEditor: {
     // Currently only used for Finnish frontends
-    discard: ''
+    discard: '',
+    messagePlaceholder: undefined
   },
   notifications: {
     close: 'Stäng'

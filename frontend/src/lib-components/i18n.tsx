@@ -68,7 +68,13 @@ export interface Translations {
     message: string
     returnMessage: string
   }
-  messages: { staffAnnotation: string }
+  messages: {
+    staffAnnotation: string
+    message: string
+    recipients: string
+    send: string
+    sending: string
+  }
   messageEditor: {
     newMessage: string
     to: {
@@ -87,15 +93,12 @@ export interface Translations {
       label: string
     }
     sender: string
-    recipients: string
     recipientsPlaceholder: string
     title: string
-    message: string
     deleteDraft: string
-    send: string
-    sending: string
   }
   messageReplyEditor: {
+    messagePlaceholder: string | undefined
     discard: string
   }
   notifications: {
