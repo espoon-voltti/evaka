@@ -136,9 +136,6 @@ beforeEach(async () => {
       roles: []
     })
     .withDaycareAcl(unit.id, 'STAFF')
-    .withGroupAcl(daycareGroup.data.id)
-    .withGroupAcl(daycareGroup2.data.id)
-    .withGroupAcl(daycareGroup3.data.id)
     .save()
 
   await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()

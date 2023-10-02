@@ -108,11 +108,12 @@ fun Database.Transaction.resetDatabase() {
 fun Database.Transaction.ensureDevData() {
     if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
         listOf(
-                "espoo-dev-data.sql",
+                "dev-data.sql",
                 "service-need-options.sql",
                 "employees.sql",
                 "preschool-terms.sql",
-                "club-terms.sql"
+                "club-terms.sql",
+                "holidays.sql"
             )
             .forEach { runDevScript(it) }
     }

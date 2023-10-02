@@ -46,6 +46,8 @@ let previewPage: AssistanceNeedPreschoolDecisionPreviewPage
 let childId: UUID
 let assistanceNeedDecision: DevAssistanceNeedPreschoolDecision
 
+const mockedTime = LocalDate.of(2022, 12, 20)
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -67,6 +69,9 @@ beforeEach(async () => {
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 })
 
+const openPage = async (addDays = 0) =>
+  await Page.open({ mockedTime: mockedTime.addDays(addDays).toSystemTzDate() })
+
 describe('Assistance Need Preschool Decisions - Editing', () => {
   beforeEach(async () => {
     assistanceNeedDecision = (
@@ -77,7 +82,7 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
         .save()
     ).data
 
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, serviceWorker)
     await page.goto(
       `${
@@ -162,7 +167,7 @@ describe('Assistance Need Decisions - Decision process', () => {
         .save()
     ).data
 
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, serviceWorker)
     await page.goto(
       `${
@@ -280,7 +285,7 @@ describe('Decision visibility for role', () => {
         .withForm({ validFrom: LocalDate.of(2022, 8, 1) })
         .save()
 
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, staff)
     })
 

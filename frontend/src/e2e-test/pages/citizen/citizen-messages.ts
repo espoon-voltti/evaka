@@ -28,7 +28,6 @@ export default class CitizenMessagesPage {
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()
     const editor = new CitizenMessageEditor(this.#messageEditor)
-    await this.page.pause()
     await editor.waitUntilVisible()
     return editor
   }

@@ -40,6 +40,8 @@ let director: EmployeeDetail
 let unitId: UUID
 let childId: UUID
 
+const mockedTime = LocalDate.of(2021, 8, 16)
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -63,7 +65,7 @@ beforeEach(async () => {
 
 describe('Assistance need decisions report', () => {
   beforeEach(async () => {
-    page = await Page.open()
+    page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   })
 
   const baseReportRow = {
@@ -402,7 +404,6 @@ describe('Assistance need decisions report', () => {
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
 
     const assistanceNeedDecisionsPage = new AssistanceNeedDecisionsReport(page)
-
     await waitUntilEqual(() => assistanceNeedDecisionsPage.rows.count(), 1)
     await waitUntilEqual(() => assistanceNeedDecisionsPage.row(0), {
       ...baseReportRow,
