@@ -49,6 +49,8 @@ let child: PersonDetailWithDependantsAndGuardians
 let templateId: UUID
 let daycarePlacementFixture: DaycarePlacement
 
+const mockedTime = LocalDate.of(2022, 12, 20)
+
 beforeAll(async () => {
   await resetDatabase()
 
@@ -94,10 +96,13 @@ beforeAll(async () => {
   ])
 })
 
+const openPage = async (addDays = 0) =>
+  await Page.open({ mockedTime: mockedTime.addDays(addDays).toSystemTzDate() })
+
 describe('Child Information - Vasu documents section', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
@@ -119,8 +124,8 @@ describe('Child Information - Vasu language', () => {
       .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })
       .save()
     const placementDateRange = new FiniteDateRange(
-      LocalDate.todayInSystemTz().subMonths(1),
-      LocalDate.todayInSystemTz().addMonths(5)
+      mockedTime.subMonths(1),
+      mockedTime.addMonths(5)
     )
     await Fixture.placement()
       .daycare(swedishUnit)
@@ -135,7 +140,7 @@ describe('Child Information - Vasu language', () => {
       valid: placementDateRange
     })
 
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, admin)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     childInformationPage = new ChildInformationPage(page)
@@ -179,7 +184,7 @@ describe('Vasu document page', () => {
 
   describe('Fill out document', () => {
     test('Fill the basic info section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -227,7 +232,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the authoring section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -273,7 +278,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the multidisciplinary cooperation section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -297,7 +302,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the vasu goals section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -326,7 +331,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the goals section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -390,7 +395,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the other info section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -408,7 +413,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the other documents and plans section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -427,7 +432,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the info shared to section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -446,7 +451,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the discussion section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -472,7 +477,7 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the evaluation section', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuEditPage = await editDocument()
@@ -497,7 +502,7 @@ describe('Vasu document page', () => {
     })
 
     test('An unpublished vasu document has no followup questions', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       const vasuPage = await openDocument()
@@ -506,13 +511,13 @@ describe('Vasu document page', () => {
 
     describe('With a finalized document', () => {
       beforeAll(async () => {
-        page = await Page.open()
+        page = await openPage()
         await employeeLogin(page, admin)
         await finalizeDocument()
       })
 
       test('A published vasu document has one followup question', async () => {
-        page = await Page.open()
+        page = await openPage()
         await employeeLogin(page, admin)
 
         const vasuPage = await openDocument()
@@ -520,7 +525,7 @@ describe('Vasu document page', () => {
       })
 
       test('Adding a followup comment renders it on the page', async () => {
-        page = await Page.open()
+        page = await openPage()
         await employeeLogin(page, admin)
 
         const vasuEditPage = await editDocument()
@@ -564,10 +569,10 @@ describe('Vasu document page', () => {
       })
 
       test('Followup comments are editable', async () => {
-        page = await Page.open()
+        page = await openPage()
         await employeeLogin(page, admin)
 
-        page = await Page.open()
+        page = await openPage()
         await employeeLogin(page, unitSupervisor)
 
         const vasuEditPage = await editDocument()
@@ -582,7 +587,7 @@ describe('Vasu document page', () => {
         await vasuEditPage.waitUntilSaved()
         const refreshedVasuEditPage = await editDocument()
 
-        const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa, muokattu ${LocalDate.todayInSystemTz().format()} Essi Esimies`
+        const expectedMetadataStr = `${LocalDate.todayInHelsinkiTz().format()} Seppo Sorsa, muokattu ${mockedTime.format()} Essi Esimies`
         await refreshedVasuEditPage
           .followupEntryMetadata(0, 0)
           .assertTextEquals(expectedMetadataStr)
@@ -610,7 +615,7 @@ describe('Vasu document page', () => {
     })
 
     test('Finalize a document', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       let vasuPage = await openDocument()
@@ -653,12 +658,14 @@ describe('Vasu document page', () => {
     }
 
     test('Publish a document as reviewed', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin)
 
       let vasuPage = await openDocument()
-
       await finalizeDocument()
+
+      page = await openPage(1)
+      await employeeLogin(page, admin)
       await markDocumentReviewed()
 
       vasuPage = await openDocument()
@@ -679,13 +686,17 @@ describe('Vasu document page', () => {
     }
 
     test('Mark a document closed', async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, unitSupervisor)
 
       let vasuPage = await openDocument()
 
       await finalizeDocument()
+
+      page = await openPage(1)
+      await employeeLogin(page, unitSupervisor)
       await markDocumentReviewed()
+
       await markDocumentClosed()
 
       vasuPage = await openDocument()

@@ -39,6 +39,8 @@ let childId: UUID
 let assistanceNeedDecision: AssistanceNeedDecision
 let preFilledAssistanceNeedDecision: AssistanceNeedDecision
 
+const mockedTime = LocalDate.of(2022, 12, 20)
+
 beforeEach(async () => {
   await resetDatabase()
 
@@ -91,9 +93,12 @@ beforeEach(async () => {
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 })
 
+const openPage = async (addDays = 0) =>
+  await Page.open({ mockedTime: mockedTime.addDays(addDays).toSystemTzDate() })
+
 describe('Assistance Need Decisions - Edit page', () => {
   beforeEach(async () => {
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, serviceWorker)
     await page.goto(
       `${
@@ -163,7 +168,7 @@ describe('Assistance Need Decisions - Edit page', () => {
 
 describe('Assistance Need Decisions - Language', () => {
   beforeEach(async () => {
-    page = await Page.open()
+    page = await openPage()
     await employeeLogin(page, serviceWorker)
     await page.goto(
       `${
@@ -201,7 +206,7 @@ describe('Assistance Need Decisions - Preview page', () => {
 
   describe('Service worker', () => {
     beforeEach(async () => {
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, serviceWorker)
       await page.goto(
         `${
@@ -288,7 +293,7 @@ describe('Assistance Need Decisions - Preview page', () => {
     test('Decision can be sent to the decision maker', async () => {
       await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
       await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
-        LocalDate.todayInSystemTz().format()
+        mockedTime.format()
       )
       await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
         'disabled',
@@ -327,7 +332,7 @@ describe('Assistance Need Decisions - Preview page', () => {
           .save()
       ).data
 
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, staff)
       await page.goto(
         `${
@@ -420,7 +425,7 @@ describe('Assistance Need Decisions - Preview page', () => {
     test('Sent decision can be reverted by admin', async () => {
       const admin = await Fixture.employeeAdmin().save()
 
-      page = await Page.open()
+      page = await openPage()
       await employeeLogin(page, admin.data)
 
       await page.goto(
@@ -436,7 +441,7 @@ describe('Assistance Need Decisions - Preview page', () => {
 
       await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
       await assistanceNeedDecisionPreviewPage.decisionSentAt.assertTextEquals(
-        LocalDate.todayInSystemTz().format()
+        mockedTime.format()
       )
       await assistanceNeedDecisionPreviewPage.sendDecisionButton.assertAttributeEquals(
         'disabled',
