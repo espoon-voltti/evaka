@@ -639,6 +639,6 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         )
         .bind("today", today)
         .bind("guardianId", guardianId)
-        .bind("invoicedPlacementTypes", PlacementType.invoiced)
+        .bind("invoicedPlacementTypes", PlacementType.invoicedNonTemporary)
         .mapTo<ChildBasicInfo>()
         .list()

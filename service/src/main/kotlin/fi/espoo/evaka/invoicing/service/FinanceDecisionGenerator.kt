@@ -113,7 +113,7 @@ FROM ids;
         }
 
         if (v2FeeDecisions) {
-            generateAndInsertFeeDecisionsV2(
+            generateAndInsertFinanceDecisionsV2(
                 tx = tx,
                 clock = clock,
                 jsonMapper = jsonMapper,
@@ -168,7 +168,7 @@ FROM ids;
                 if (skipPropagation) setOf(personId)
                 else getAllPossiblyAffectedAdultsByAdult(tx, personId)
             adults.forEach { adult ->
-                generateAndInsertFeeDecisionsV2(
+                generateAndInsertFinanceDecisionsV2(
                     tx = tx,
                     clock = clock,
                     jsonMapper = jsonMapper,
@@ -192,7 +192,7 @@ FROM ids;
 
         if (v2FeeDecisions) {
             getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
-                generateAndInsertFeeDecisionsV2(
+                generateAndInsertFinanceDecisionsV2(
                     tx = tx,
                     clock = clock,
                     jsonMapper = jsonMapper,

@@ -42,6 +42,23 @@ enum class PlacementType : DatabaseEnum {
             SCHOOL_SHIFT_CARE -> false
         }
 
+    fun providesSiblingDiscount(): Boolean =
+        when (this) {
+            CLUB -> false
+            DAYCARE -> true
+            DAYCARE_PART_TIME -> true
+            DAYCARE_FIVE_YEAR_OLDS -> true
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> true
+            PRESCHOOL -> true
+            PRESCHOOL_DAYCARE -> true
+            PRESCHOOL_CLUB -> true
+            PREPARATORY -> true
+            PREPARATORY_DAYCARE -> true
+            TEMPORARY_DAYCARE -> false
+            TEMPORARY_DAYCARE_PART_DAY -> false
+            SCHOOL_SHIFT_CARE -> false
+        }
+
     fun absenceCategories(): Set<AbsenceCategory> =
         when (this) {
             PRESCHOOL,
@@ -91,7 +108,8 @@ enum class PlacementType : DatabaseEnum {
 
     companion object {
         val temporary = listOf(TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY)
-        val invoiced = values().filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
+        val invoicedNonTemporary =
+            values().filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
         val requiringAttendanceReservations =
             values().filter { it != CLUB && it != PRESCHOOL && it != PREPARATORY }
     }

@@ -81,7 +81,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 )
 
         val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
-        val permanentPlacements = tx.getInvoiceablePlacements(range, PlacementType.invoiced)
+        val permanentPlacements =
+            tx.getInvoiceablePlacements(range, PlacementType.invoicedNonTemporary)
         val temporaryPlacements = tx.getInvoiceableTemporaryPlacements(range)
         val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
 
@@ -568,7 +569,10 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().list()
+    return createQuery(sql)
+        .bind("invoicedTypes", PlacementType.invoicedNonTemporary)
+        .mapTo<ChildId>()
+        .list()
 }
 
 private fun placementOn(year: Int, month: Int): String {

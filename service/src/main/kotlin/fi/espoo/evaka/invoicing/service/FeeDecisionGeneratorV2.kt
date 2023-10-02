@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -24,6 +25,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
@@ -51,7 +53,7 @@ import org.jdbi.v3.core.mapper.Nested
 
 const val mergeFamilies = true
 
-fun generateAndInsertFeeDecisionsV2(
+fun generateAndInsertFinanceDecisionsV2(
     tx: Database.Transaction,
     clock: EvakaClock,
     jsonMapper: JsonMapper,
@@ -61,12 +63,65 @@ fun generateAndInsertFeeDecisionsV2(
     retroactiveFrom: LocalDate? = null // ignores other min dates
 ) {
     tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
+    // todo: lock vv decisions
 
-    val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusMonths(15))
-    val activePeriod = DateRange(minDate, null)
+    val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
+    val hardMinDate = retroactiveFrom ?: financeMinDate
+
+    val feeBases =
+        getFeeBases(
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetAdultId = headOfFamilyId,
+            minDate = maxOf(rollingMinDate, hardMinDate)
+        )
+
+    generateAndInsertFeeDecisions(
+        tx = tx,
+        rangeOverlapFilter = DateRange(rollingMinDate, null),
+        hardRangeLimit = DateRange(hardMinDate, null),
+        headOfFamilyId = headOfFamilyId,
+        feeBases = feeBases
+    )
+
+    // todo
+    /*    generateAndInsertVoucherValueDecisions(
+        tx = tx,
+        minDate = minDate,
+        headOfFamilyId = headOfFamilyId,
+        useV2Tables = useV2Tables,
+        feeBases = feeBases
+    )*/
+}
+
+private fun generateAndInsertFeeDecisions(
+    tx: Database.Transaction,
+    headOfFamilyId: PersonId,
+    feeBases: List<FeeBasis>,
+    rangeOverlapFilter: DateRange,
+    hardRangeLimit: DateRange
+) {
+    val existingActiveFeeDecisions =
+        tx.findFeeDecisionsForHeadOfFamily(
+            headOfFamilyId,
+            period = null,
+            status =
+                listOf(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionStatus.WAITING_FOR_SENDING,
+                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
+                )
+        )
+
     val newDrafts =
-        generateFeeDecisionsDrafts(tx, jsonMapper, incomeTypesProvider, headOfFamilyId, minDate)
-            .filter { draft -> draft.validDuring.overlaps(activePeriod) }
+        generateFeeDecisionsDrafts(feeBases, existingActiveFeeDecisions)
+            .filter { draft -> draft.validDuring.overlaps(rangeOverlapFilter) }
+            .mapNotNull { draft ->
+                draft.validDuring.intersection(hardRangeLimit)?.let { limitedRange ->
+                    draft.copy(validDuring = limitedRange)
+                }
+            }
 
     val existingDraftDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
@@ -106,33 +161,20 @@ fun generateAndInsertFeeDecisionsV2(
 }
 
 fun generateFeeDecisionsDrafts(
-    tx: Database.Read,
-    jsonMapper: JsonMapper,
-    incomeTypesProvider: IncomeTypesProvider,
-    targetAdultId: PersonId,
-    minDate: LocalDate
+    feeBases: List<FeeBasis>,
+    existingActiveDecisions: List<FeeDecision>
 ): List<FeeDecision> {
-    val existingActiveDecisions =
-        tx.findFeeDecisionsForHeadOfFamily(
-            targetAdultId,
-            period = null,
-            status =
-                listOf(
-                    FeeDecisionStatus.SENT,
-                    FeeDecisionStatus.WAITING_FOR_SENDING,
-                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
-                )
-        )
-    val feeBases =
-        getFeeBases(
-            tx,
-            jsonMapper,
-            incomeTypesProvider,
-            targetAdultId,
-            existingActiveDecisions,
-            minDate
-        )
-    val newDrafts = feeBases.map { it.toFeeDecision() }
+    val datesOfChange =
+        getDatesOfChange(*feeBases.toTypedArray()) +
+            existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+
+    val newDrafts =
+        buildDateRanges(datesOfChange).mapNotNull { range ->
+            feeBases
+                .firstOrNull { it.range.contains(range) }
+                ?.toFeeDecision()
+                ?.copy(validDuring = range)
+        }
 
     if (newDrafts.isEmpty()) return emptyList()
 
@@ -178,7 +220,6 @@ private fun getFeeBases(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
-    existingActiveDecisions: List<FeeDecision>,
     minDate: LocalDate
 ): List<FeeBasis> {
     val familyRelations =
@@ -226,7 +267,7 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray()
-        ) + existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+        )
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -267,7 +308,7 @@ private fun getFeeBases(
                     .mapNotNull { child ->
                         placementDetailsByChild[child.id]
                             ?.find { it.range.contains(range) }
-                            ?.takeIf { it.affectsSiblingDiscount() }
+                            ?.takeIf { it.placementType.providesSiblingDiscount() }
                             ?.let { placement -> child to placement }
                     }
                     .mapIndexedNotNull childMapping@{ siblingIndex, (child, placement) ->
@@ -350,6 +391,10 @@ data class FeeBasis(
             difference = emptySet()
         )
     }
+
+    fun toVoucherValueDecisions(): List<VoucherValueDecision> {
+        return children.mapNotNull { it.toVoucherValueDecision() }
+    }
 }
 
 data class ChildFeeBasis(
@@ -410,6 +455,10 @@ data class ChildFeeBasis(
             finalFee,
             income
         )
+    }
+
+    fun toVoucherValueDecision(): VoucherValueDecision? {
+        TODO()
     }
 }
 
@@ -525,30 +574,24 @@ data class PlacementDetails(
     val placementType: PlacementType,
     val unitId: DaycareId,
     val invoicedUnit: Boolean,
+    val providerType: ProviderType,
     val hasServiceNeed: Boolean,
     val serviceNeedOption: ServiceNeedOption,
+    val serviceNeedOptionVoucherValue: ServiceNeedOptionVoucherValue?
 ) : WithFiniteRange {
     fun displayOnFeeDecision(): Boolean {
-        if (!affectsSiblingDiscount()) return false
-
-        if (!invoicedUnit) return false
-
-        if (serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) == 0) return false
-
-        return true
+        return invoicedUnit &&
+            providerType != ProviderType.PRIVATE_SERVICE_VOUCHER &&
+            !PlacementType.temporary.contains(placementType) &&
+            serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) != 0
     }
 
-    fun affectsSiblingDiscount(): Boolean {
-        val excludedTypes =
-            listOf(
-                PlacementType.CLUB,
-                PlacementType.TEMPORARY_DAYCARE,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                PlacementType.SCHOOL_SHIFT_CARE
-            )
-        if (excludedTypes.contains(placementType)) return false
-
-        return true
+    fun displayOnVoucherValueDecision(): Boolean {
+        return !invoicedUnit &&
+            providerType == ProviderType.PRIVATE_SERVICE_VOUCHER &&
+            !PlacementType.temporary.contains(placementType) &&
+            serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) !=
+                0 // TODO: also in vouchers?
     }
 }
 
@@ -557,7 +600,8 @@ private data class Placement(
     override val finiteRange: FiniteDateRange,
     val type: PlacementType,
     val unitId: DaycareId,
-    val invoicedUnit: Boolean
+    val invoicedUnit: Boolean,
+    val providerType: ProviderType
 ) : WithFiniteRange
 
 private data class ServiceNeed(
@@ -565,6 +609,17 @@ private data class ServiceNeed(
     override val finiteRange: FiniteDateRange,
     val optionId: ServiceNeedOptionId
 ) : WithFiniteRange
+
+data class ServiceNeedOptionVoucherValue(
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    override val range: DateRange,
+    val baseValue: Int,
+    val coefficient: BigDecimal,
+    val value: Int,
+    val baseValueUnder3y: Int,
+    val coefficientUnder3y: BigDecimal,
+    val valueUnder3y: Int
+) : WithRange
 
 private fun getPlacementDetails(
     tx: Database.Read,
@@ -574,6 +629,19 @@ private fun getPlacementDetails(
 
     val serviceNeedOptions = tx.getServiceNeedOptions()
 
+    val serviceNeedOptionVoucherValues =
+        tx.createQuery(
+                """
+        SELECT
+            service_need_option_id, validity as range,
+            base_value, coefficient, value,
+            base_value_under_3y, coefficient_under_3y, value_under_3y
+        FROM service_need_option_voucher_value
+    """
+            )
+            .mapTo<ServiceNeedOptionVoucherValue>()
+            .groupBy { it.serviceNeedOptionId }
+
     val placements =
         tx.createQuery(
                 """
@@ -582,7 +650,8 @@ private fun getPlacementDetails(
             daterange(pl.start_date, pl.end_date, '[]') as finite_range, 
             pl.type,
             pl.unit_id,
-            invoiced_by_municipality as invoiced_unit
+            d.invoiced_by_municipality as invoiced_unit,
+            d.provider_type
         FROM placement pl
         JOIN daycare d ON pl.unit_id = d.id
         WHERE child_id = ANY(:ids)
@@ -608,7 +677,8 @@ private fun getPlacementDetails(
     val dateRanges =
         buildFiniteDateRanges(
             *placements.flatMap { it.value }.toTypedArray(),
-            *serviceNeeds.flatMap { it.value }.toTypedArray()
+            *serviceNeeds.flatMap { it.value }.toTypedArray(),
+            *serviceNeedOptionVoucherValues.flatMap { it.value }.toTypedArray()
         )
 
     return childIds.associateWith { childId ->
@@ -627,14 +697,21 @@ private fun getPlacementDetails(
                     }
                         ?: throw Error("Missing default service need option for ${placement.type}")
                 }
+            val serviceNeedOptionVoucherValue =
+                serviceNeedOptionVoucherValues[serviceNeedOption.id]?.firstOrNull {
+                    it.range.contains(range)
+                }
+
             PlacementDetails(
                 childId = childId,
                 finiteRange = range,
                 placementType = placement.type,
                 unitId = placement.unitId,
                 invoicedUnit = placement.invoicedUnit,
+                providerType = placement.providerType,
                 hasServiceNeed = serviceNeed != null,
-                serviceNeedOption = serviceNeedOption
+                serviceNeedOption = serviceNeedOption,
+                serviceNeedOptionVoucherValue = serviceNeedOptionVoucherValue
             )
         }
     }
