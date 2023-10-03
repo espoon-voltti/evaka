@@ -76,7 +76,11 @@ export default React.memo(function TopBar({
         </TopBarIconContainer>
       )}
       <Title>
-        <Label data-qa="top-bar-title" white={!invertedColors}>
+        <Label
+          data-qa="top-bar-title"
+          primary={invertedColors}
+          white={!invertedColors}
+        >
           {title}
         </Label>
       </Title>
