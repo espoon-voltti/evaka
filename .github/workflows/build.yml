@@ -679,7 +679,8 @@ jobs:
           docker cp frontend_instance:/static ./frontend-build
           docker rm -f frontend_instance
 
-      - run: |
+      - name: Clean build from non-versioned files
+        run: |
           cd ./frontend-build/
           for filename in index.html service-worker.js service-worker.js.map; do
             find . -name "$filename" -type f -delete
@@ -754,3 +755,16 @@ jobs:
                 version: '${{ github.event.pull_request.head.sha || github.sha }}'
               }
             })
+
+  notify:
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    needs:
+      - deploy
+    steps:
+      - name: Report failure
+        uses: espoon-voltti/voltti-actions/notify@master
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: "#evaka-dev-alerts"
+          message: "CI job failed"
