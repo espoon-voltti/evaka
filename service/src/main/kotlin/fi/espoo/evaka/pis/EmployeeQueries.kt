@@ -72,7 +72,6 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
         .bindKotlin("employee", employee)
         .executeAndReturnGeneratedKeys()
         .mapTo<Employee>()
-        .asSequence()
         .first()
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
@@ -138,7 +137,7 @@ private fun Database.Read.searchEmployees(
     id: EmployeeId? = null,
     externalId: ExternalId? = null,
     temporaryInUnitId: DaycareId? = null
-) =
+): Database.Result<Employee> =
     createQuery(
             // language=SQL
             """
@@ -153,7 +152,6 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.exte
         .bind("externalId", externalId)
         .bind("temporaryInUnitId", temporaryInUnitId)
         .mapTo<Employee>()
-        .asSequence()
 
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) =
     createQuery(
@@ -168,7 +166,6 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
         )
         .bind("id", id)
         .mapTo<Employee>()
-        .asSequence()
 
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
 

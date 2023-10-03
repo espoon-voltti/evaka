@@ -26,8 +26,10 @@ class EspooBiJob(private val client: EspooBiClient) {
         val fileName = "evaka_${tableName}_$timestamp.csv"
         db.read { tx ->
             tx.setStatementTimeout(Duration.ofMinutes(5))
-            val stream = CsvInputStream(CSV_CHARSET, query(tx))
-            client.sendBiCsvFile(fileName, stream)
+            query(tx) { records ->
+                val stream = CsvInputStream(CSV_CHARSET, records)
+                client.sendBiCsvFile(fileName, stream)
+            }
         }
     }
 

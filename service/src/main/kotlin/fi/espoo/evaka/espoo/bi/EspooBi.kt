@@ -4,11 +4,9 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QuerySql
-import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.servlet.function.ServerResponse
+import kotlin.reflect.KClass
 
 object EspooBi {
     val getAreas =
@@ -341,34 +339,28 @@ private fun printEspooBiCsvField(value: Any?): String =
     // only option is to remove quotes from the original data completely
     printCsvField(value).replace("\"", "")
 
-typealias StreamingCsvRoute = (db: Database, user: AuthenticatedUser.Integration) -> ServerResponse
+interface CsvQuery {
+    operator fun <R> invoke(tx: Database.Read, useResults: (records: Sequence<String>) -> R): R
+}
 
-typealias CsvQuery = (tx: Database.Read) -> Sequence<String>
+class StreamingCsvQuery<T : Any>(
+    private val clazz: KClass<T>,
+    private val query: (Database.Read) -> Database.Result<T>
+) : CsvQuery {
+    override operator fun <R> invoke(
+        tx: Database.Read,
+        useResults: (records: Sequence<String>) -> R
+    ): R =
+        query(tx).useIterable { rows ->
+            useResults(toCsvRecords(::printEspooBiCsvField, clazz, rows.asSequence()))
+        }
+}
 
 private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
 private inline fun <reified T : Any> csvQuery(
     crossinline f: QuerySql.Builder<T>.() -> QuerySql<T>
-): CsvQuery = { tx ->
-    toCsvRecords(
-        ::printEspooBiCsvField,
-        T::class,
-        tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>().asSequence()
-    )
-}
-
-fun streamingCsvRoute(query: CsvQuery): StreamingCsvRoute = { db, _ ->
-    ServerResponse.ok().build { _, response ->
-        db.connect { dbc ->
-            dbc.read { tx ->
-                val records = query(tx)
-                val charset = CSV_CHARSET
-                response.setHeader("Content-Type", "text/csv;charset=${charset.name()}")
-                val writer = response.outputStream.bufferedWriter(charset)
-                records.forEach { writer.append(it) }
-                writer.flush()
-            }
-        }
-        ModelAndView()
+): CsvQuery =
+    StreamingCsvQuery(T::class) { tx ->
+        tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()
     }
-}

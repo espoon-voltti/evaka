@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import io.javalin.security.BasicAuthCredentials
@@ -55,7 +56,17 @@ class EspooBiJobTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `BI client sends a stream successfully`() {
         val record = "line\n"
         val recordCount = 100_000
-        job.sendBiTable(db, clock, "test") { _ -> generateSequence { record }.take(recordCount) }
+        job.sendBiTable(
+            db,
+            clock,
+            "test",
+            object : CsvQuery {
+                override fun <R> invoke(
+                    tx: Database.Read,
+                    useResults: (records: Sequence<String>) -> R
+                ) = useResults(generateSequence { record }.take(recordCount))
+            }
+        )
 
         val request = server.getCapturedRequests().values.single()
         val expected = record.toByteArray(CSV_CHARSET)

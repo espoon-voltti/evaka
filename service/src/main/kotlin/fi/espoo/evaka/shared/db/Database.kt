@@ -381,7 +381,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun firstOrNull(): T? = useIterable { it.firstOrNull() }
 
-        fun asSequence(): Sequence<T> = inner.asSequence()
+        @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = inner.asSequence()
 
         fun list(): List<T> = toList()
 

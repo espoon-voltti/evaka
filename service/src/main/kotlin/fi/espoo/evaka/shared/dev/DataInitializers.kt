@@ -125,12 +125,7 @@ fun Database.Transaction.ensureDevData() {
  * * SQL must return "id" column of type UUID
  */
 private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID =
-    createUpdate(sql)
-        .bindKotlin(row)
-        .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
-        .asSequence()
-        .single()
+    createUpdate(sql).bindKotlin(row).executeAndReturnGeneratedKeys().mapTo<UUID>().single()
 
 fun Database.Transaction.insertTestCareArea(area: DevCareArea): AreaId =
     insertTestDataRow(

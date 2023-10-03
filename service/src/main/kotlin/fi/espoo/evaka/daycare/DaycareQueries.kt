@@ -178,7 +178,6 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
         )
         .bind("id", id)
         .mapTo<Boolean>()
-        .asSequence()
         .single()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
@@ -192,7 +191,6 @@ WHERE id = :daycareId
         )
         .bind("daycareId", daycareId)
         .mapTo<UnitStub>()
-        .asSequence()
         .firstOrNull()
 
 fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
