@@ -53,6 +53,7 @@ export const fi = {
     staff: 'Henkilökunta',
     messages: 'Viestit',
     back: 'Takaisin',
+    return: 'Palaa',
     close: 'Sulje',
     open: 'Avaa',
     hours: 'Tuntia',
@@ -335,6 +336,9 @@ export const fi = {
     title: 'Saapuneet viestit',
     inputPlaceholder: 'Kirjoita...',
     newMessage: 'Uusi viesti',
+    thread: {
+      reply: 'Vastaa viestiin'
+    },
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {

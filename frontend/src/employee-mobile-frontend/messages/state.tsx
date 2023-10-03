@@ -47,7 +47,7 @@ export interface MessagesState {
   receivedMessages: Result<MessageThread[]>
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => void
+  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -59,7 +59,7 @@ const defaultState: MessagesState = {
   receivedMessages: Loading.of(),
   selectedThread: undefined,
   selectThread: () => undefined,
-  sendReply: () => undefined,
+  sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -190,6 +190,7 @@ export const MessageContextProvider = React.memo(
         if (result.isSuccess) {
           setReplyContent(result.value.threadId, '')
         }
+        return result
       },
       [sendReply, setReplyContent]
     )

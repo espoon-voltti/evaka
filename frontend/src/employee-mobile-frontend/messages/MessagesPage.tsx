@@ -23,7 +23,7 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import { MessagePreview } from './MessagePreview'
-import { ThreadView } from './ThreadView'
+import ThreadView from './ThreadView'
 import { MessageContext } from './state'
 
 export default function MessagesPage() {
@@ -51,7 +51,7 @@ export default function MessagesPage() {
 
   return selectedThread && selectedAccount ? (
     <ContentArea
-      opaque
+      opaque={false}
       fullHeight
       paddingHorizontal="zero"
       paddingVertical="zero"
@@ -60,7 +60,7 @@ export default function MessagesPage() {
       <ThreadView
         thread={selectedThread}
         onBack={onBack}
-        senderAccountId={selectedAccount.account.id}
+        accountId={selectedAccount.account.id}
       />
     </ContentArea>
   ) : !selectedThread && selectedAccount ? (
