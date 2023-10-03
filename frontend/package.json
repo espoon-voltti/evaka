@@ -36,7 +36,7 @@
     "chart.js": "^4.4.0",
     "chartjs-adapter-date-fns": "^3.0.0",
     "classnames": "^2.3.2",
-    "compute-scroll-into-view": "^3.0.3",
+    "compute-scroll-into-view": "^3.1.0",
     "core-js": "^3.33.0",
     "csstype": "^3.1.2",
     "date-fns": "^2.30.0",
