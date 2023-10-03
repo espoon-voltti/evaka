@@ -32,7 +32,7 @@ evaka:
     days_in_advance: 1
     generator:
       v1_enabled: true
-      v2_enabled: true
+      v2_enabled: false
   voucher_value_decision:
     days_in_advance: 1
   oph:

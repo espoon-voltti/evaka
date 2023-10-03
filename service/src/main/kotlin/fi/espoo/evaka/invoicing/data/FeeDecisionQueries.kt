@@ -34,7 +34,7 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.LocalDate
 import java.util.UUID
 
-fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue(), v2: Boolean = false) =
+fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue()) =
     QuerySql.of<Any> {
         sql(
             """
@@ -85,7 +85,7 @@ SELECT
         FROM fee_decision_child as part
         WHERE part.fee_decision_id = decision.id
     ), '[]'::jsonb) AS children
-FROM fee_decision${if (v2) "_v2" else ""} as decision
+FROM fee_decision as decision
 WHERE ${predicate(predicate.forTable("decision"))}
 """
         )
@@ -190,10 +190,10 @@ fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
     replaceChildren(decisions)
 }
 
-fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>, v2: Boolean = false) {
+fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>) {
     val sql =
         """
-        INSERT INTO fee_decision${if (v2) "_v2" else ""} (
+        INSERT INTO fee_decision (
             id,
             status,
             decision_number,
@@ -230,7 +230,7 @@ fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>, v2: Bo
     decisions.forEach { decision -> batch.bindKotlin(decision).add() }
     batch.execute()
 
-    insertChildren(decisions.map { it.id to it.children }, v2)
+    insertChildren(decisions.map { it.id to it.children })
 }
 
 private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
@@ -294,12 +294,11 @@ private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
 }
 
 private fun Database.Transaction.insertChildren(
-    decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>,
-    v2: Boolean = false
+    decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>
 ) {
     val sql =
         """
-        INSERT INTO fee_decision_child${if (v2) "_v2" else ""} (
+        INSERT INTO fee_decision_child (
             id,
             fee_decision_id,
             child_id,
@@ -371,12 +370,10 @@ fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecision
         .execute()
 }
 
-fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>, v2: Boolean = false) {
+fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision${if (v2) "_v2" else ""} WHERE id = ANY(:ids)")
-        .bind("ids", ids)
-        .execute()
+    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)").bind("ids", ids).execute()
 }
 
 fun Database.Read.searchFeeDecisions(
@@ -643,8 +640,7 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
     headOfFamilyId: PersonId,
     period: DateRange?,
-    status: List<FeeDecisionStatus>?,
-    v2: Boolean = false
+    status: List<FeeDecisionStatus>?
 ): List<FeeDecision> {
     val headPredicate = Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
     val validPredicate =
@@ -659,7 +655,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
-    return createQuery(feeDecisionQuery(predicate, v2)).mapTo<FeeDecision>().list()
+    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().list()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(
@@ -821,13 +817,8 @@ fun Database.Transaction.removeFeeDecisionIgnore(id: FeeDecisionId) {
         .updateExactlyOne()
 }
 
-fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(
-    headOfFamily: PersonId,
-    v2: Boolean = false
-) {
-    createUpdate(
-            "SELECT id FROM fee_decision${if (v2) "_v2" else ""} WHERE head_of_family_id = :headOfFamily FOR UPDATE"
-        )
+fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId) {
+    createUpdate("SELECT id FROM fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
 }
