@@ -38,11 +38,16 @@ data class EvakaEnv(
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val feeDecisionGeneratorV1Enabled: Boolean,
-    val feeDecisionGeneratorV2Enabled: Boolean
+    val feeDecisionGeneratorV2Enabled: Boolean,
+    val voucherValueDecisionGeneratorV2: Boolean
 ) {
     init {
         if (feeDecisionGeneratorV1Enabled && feeDecisionGeneratorV2Enabled) {
             error("Both v1 and v2 fee decision generators must not be enabled at the same time")
+        }
+
+        if (voucherValueDecisionGeneratorV2 && !feeDecisionGeneratorV2Enabled) {
+            error("Voucher value generator v2 cannot be used without fee decision generator v2")
         }
     }
 
@@ -95,7 +100,9 @@ data class EvakaEnv(
                 feeDecisionGeneratorV1Enabled =
                     env.lookup("evaka.fee_decision.generator.v1_enabled") ?: true,
                 feeDecisionGeneratorV2Enabled =
-                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false
+                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false,
+                voucherValueDecisionGeneratorV2 =
+                    env.lookup("evaka.voucher_value_decision.generator.v2") ?: false
             )
         }
     }

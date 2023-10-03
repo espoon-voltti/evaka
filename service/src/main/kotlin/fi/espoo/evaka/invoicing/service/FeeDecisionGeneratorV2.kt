@@ -62,6 +62,8 @@ import org.jdbi.v3.core.mapper.Nested
 
 const val mergeFamilies = true
 
+// TODO: Rename file after v1 is removed
+
 fun generateAndInsertFinanceDecisionsV2(
     tx: Database.Transaction,
     clock: EvakaClock,
@@ -69,10 +71,16 @@ fun generateAndInsertFinanceDecisionsV2(
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveFrom: LocalDate? = null // ignores other min dates
+    retroactiveFrom: LocalDate? = null, // ignores other min dates
+    includeFeeDecisions: Boolean = true,
+    includeVoucherValueDecisions: Boolean = true
 ) {
-    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
-    // todo: lock vv decisions
+    if (includeFeeDecisions) {
+        tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
+    }
+    if (includeVoucherValueDecisions) {
+        // todo: lock vv decisions
+    }
 
     val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
     val hardMinDate = retroactiveFrom ?: financeMinDate
@@ -86,22 +94,25 @@ fun generateAndInsertFinanceDecisionsV2(
             minDate = maxOf(rollingMinDate, hardMinDate)
         )
 
-    generateAndInsertFeeDecisions(
-        tx = tx,
-        rangeOverlapFilter = DateRange(rollingMinDate, null),
-        hardRangeLimit = DateRange(hardMinDate, null),
-        headOfFamilyId = headOfFamilyId,
-        feeBases = feeBases
-    )
+    if (includeFeeDecisions) {
+        generateAndInsertFeeDecisions(
+            tx = tx,
+            rangeOverlapFilter = DateRange(rollingMinDate, null),
+            hardRangeLimit = DateRange(hardMinDate, null),
+            headOfFamilyId = headOfFamilyId,
+            feeBases = feeBases
+        )
+    }
 
-    // todo
-    /*    generateAndInsertVoucherValueDecisions(
-        tx = tx,
-        minDate = minDate,
-        headOfFamilyId = headOfFamilyId,
-        useV2Tables = useV2Tables,
-        feeBases = feeBases
-    )*/
+    if (includeVoucherValueDecisions) {
+        generateAndInsertVoucherValueDecisions(
+            /*tx = tx,
+            rangeOverlapFilter = DateRange(rollingMinDate, null),
+            hardRangeLimit = DateRange(hardMinDate, null),
+            headOfFamilyId = headOfFamilyId,
+            feeBases = feeBases*/
+            )
+    }
 }
 
 private fun generateAndInsertFeeDecisions(
@@ -181,6 +192,16 @@ private fun generateAndInsertFeeDecisions(
             }
         }
         .let { tx.insertFeeDecisions(it) }
+}
+
+private fun generateAndInsertVoucherValueDecisions(
+/*tx: Database.Transaction,
+headOfFamilyId: PersonId,
+feeBases: List<FeeBasis>,
+rangeOverlapFilter: DateRange,
+hardRangeLimit: DateRange*/
+) {
+    TODO()
 }
 
 fun <T : FinanceDecision<T>> generateDecisionDrafts(
