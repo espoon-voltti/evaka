@@ -148,7 +148,6 @@ export default function MessagesPage() {
 
 export const HeaderContainer = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
-  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 const NoAccounts = styled.div`
