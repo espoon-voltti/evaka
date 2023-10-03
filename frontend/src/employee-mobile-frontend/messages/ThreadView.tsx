@@ -204,13 +204,13 @@ const SingleMessage = React.memo(
     return (
       <MessageContainer tabIndex={-1} ref={ref}>
         <TitleRow>
-          <SenderName>{sender}</SenderName>
+          <SenderName data-qa="single-message-sender-name">{sender}</SenderName>
           <InformationText>
             {message.sentAt.toLocalDate().format()}
           </InformationText>
         </TitleRow>
         <InformationText>{recipients}</InformationText>
-        <MessageContent data-qa="thread-reader-content">
+        <MessageContent data-qa="single-message-content">
           <Linkify text={message.content} />
         </MessageContent>
         {message.attachments.length > 0 && (
