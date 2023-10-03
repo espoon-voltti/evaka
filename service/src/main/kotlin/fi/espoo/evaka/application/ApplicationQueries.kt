@@ -559,10 +559,9 @@ fun Database.Read.fetchApplicationSummaries(
             summary.preferredUnits.map { unit -> unit.id }
         }
     val unitMap =
-        createQuery(unitSql)
-            .bind("unitIds", unitIds)
-            .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
-            .toMap()
+        createQuery(unitSql).bind("unitIds", unitIds).toMap {
+            columnPair<DaycareId, String>("id", "name")
+        }
 
     return applicationSummaries.copy(
         data =
@@ -817,10 +816,9 @@ fun Database.Read.fetchApplicationDetails(
                 .trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap =
-            createQuery(unitSql)
-                .bind("unitIds", unitIds)
-                .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
-                .toMap()
+            createQuery(unitSql).bind("unitIds", unitIds).toMap {
+                columnPair<DaycareId, String>("id", "name")
+            }
 
         return application.copy(
             form =

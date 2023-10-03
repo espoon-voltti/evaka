@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -143,5 +142,4 @@ GROUP BY d.child_id
         )
         .bind("today", today)
         .bind("userId", userId)
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Int>("unread_count") }
-        .toMap()
+        .toMap { columnPair("child_id", "unread_count") }

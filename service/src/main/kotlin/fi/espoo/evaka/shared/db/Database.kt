@@ -8,7 +8,10 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import java.time.Duration
+import java.util.Optional
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -17,6 +20,7 @@ import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.ResultIterable
+import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.json.Json
 
 // What does it mean when a function accepts a Database/Database.* parameter?
@@ -304,15 +308,149 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun setFetchSize(fetchSize: Int): Query = this.also { raw.setFetchSize(fetchSize) }
 
+        /** Runs the query and maps the results automatically to a list */
+        inline fun <reified T> toList(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): List<T> = mapTo(createQualifiedType<T>(*qualifiers)).toList()
+
+        /** Runs the query and maps the results automatically to a set */
+        inline fun <reified T> toSet(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): Set<T> = mapTo(createQualifiedType<T>(*qualifiers)).toSet()
+
+        /** Runs the query, checks that it returns exactly one row, and maps it automatically */
+        inline fun <reified T> exactlyOne(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): T = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOne()
+
+        /**
+         * Runs the query, checks that it returns at most one row, and maps it automatically if it
+         * exists
+         */
+        inline fun <reified T> exactlyOneOrNull(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): T? = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOneOrNull()
+
         inline fun <reified T> mapTo(
             qualifiers: Array<KClass<out Annotation>> = defaultQualifiers<T>()
-        ): ResultIterable<T> = mapTo(createQualifiedType(*qualifiers))
+        ): Result<T> = mapTo(createQualifiedType(*qualifiers))
 
-        override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+        override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
-        override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
-        override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
+
+        override fun <T> map(mapper: Row.() -> T): Result<T> =
+            Result(raw.map { row -> mapper(Row(row)) })
+    }
+
+    @JvmInline
+    value class Result<T> internal constructor(private val inner: ResultIterable<T>) {
+        fun <R> useIterable(f: (Iterable<T>) -> R): R = inner.iterator().use { f(Iterable { it }) }
+
+        fun toList(): List<T> = useIterable { it.toList() }
+
+        fun toSet(): Set<T> = useIterable { it.toSet() }
+
+        fun exactlyOne(): T =
+            inner.iterator().use {
+                if (!it.hasNext()) error("Expected exactly one result, got none")
+                val result = it.next()
+                if (it.hasNext()) error("Expected exactly one result, got more than one")
+                result
+            }
+
+        fun exactlyOneOrNull(): T? =
+            inner.iterator().use {
+                if (!it.hasNext()) null
+                else {
+                    val result = it.next()
+                    if (it.hasNext()) error("Expected 0-1 results, got more than one")
+                    result
+                }
+            }
+
+        // legacy functions
+
+        fun <R> map(f: (T) -> R): List<R> = useIterable { it.map(f) }
+
+        fun <R> mapNotNull(f: (T) -> R?): List<R> = useIterable { it.mapNotNull(f) }
+
+        fun first() = inner.first()
+
+        fun firstOrNull(): T? = useIterable { it.firstOrNull() }
+
+        fun asSequence(): Sequence<T> = inner.asSequence()
+
+        fun list(): List<T> = toList()
+
+        fun set(): Set<T> = toSet()
+
+        fun one(): T = exactlyOne()
+
+        fun single(): T = exactlyOne()
+
+        fun singleOrNull(): T? = useIterable { it.singleOrNull() }
+
+        fun findOne(): Optional<T> = inner.findOne()
+
+        fun any(): Boolean = useIterable { it.any() }
+
+        inline fun all(crossinline predicate: (T) -> Boolean): Boolean = useIterable {
+            it.all(predicate)
+        }
+
+        inline fun forEach(crossinline action: (T) -> Unit) = useIterable { it.forEach(action) }
+
+        fun <R> flatMap(transform: (T) -> Iterable<R>): List<R> = useIterable {
+            it.flatMap(transform)
+        }
+
+        inline fun <K, V> associate(crossinline transform: (T) -> Pair<K, V>): Map<K, V> =
+            useIterable {
+                it.associate(transform)
+            }
+
+        inline fun <K> associateBy(crossinline keySelector: (T) -> K): Map<K, T> = useIterable {
+            it.associateBy(keySelector)
+        }
+
+        inline fun <K, V> associateBy(
+            crossinline keySelector: (T) -> K,
+            crossinline valueTransform: (T) -> V
+        ): Map<K, V> = useIterable { it.associateBy(keySelector, valueTransform) }
+
+        inline fun <K, V, M : MutableMap<in K, in V>> associateByTo(
+            destination: M,
+            crossinline keySelector: (T) -> K,
+            crossinline valueTransform: (T) -> V
+        ): M = useIterable { it.associateByTo(destination, keySelector, valueTransform) }
+
+        inline fun <K> groupBy(crossinline f: (T) -> K): Map<K, List<T>> = useIterable {
+            it.groupBy(f)
+        }
+
+        inline fun <K, V> groupBy(
+            crossinline keySelector: (T) -> K,
+            crossinline valueTransform: (T) -> V
+        ): Map<K, List<V>> = useIterable { it.groupBy(keySelector, valueTransform) }
+
+        inline fun <R> fold(initial: R, crossinline operation: (acc: R, T) -> R): R = useIterable {
+            it.fold(initial, operation)
+        }
+
+        inline fun partition(crossinline predicate: (T) -> Boolean): Pair<List<T>, List<T>> =
+            useIterable {
+                it.partition(predicate)
+            }
+
+        inline fun <R : Comparable<R>> sortedBy(crossinline selector: (T) -> R?): List<T> =
+            useIterable {
+                it.sortedBy(selector)
+            }
+
+        fun shuffled(): List<T> = useIterable { it.shuffled() }
     }
 
     class Update internal constructor(override val raw: org.jdbi.v3.core.statement.Update) :
@@ -358,23 +496,73 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     @JvmInline
     value class UpdateResult(private val raw: org.jdbi.v3.core.result.ResultBearing) :
         ResultBearing {
+        /** Runs the query and maps the results automatically to a list */
+        inline fun <reified T : Any> toList(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): List<T> = mapTo(createQualifiedType<T>(*qualifiers)).toList()
+
+        /** Runs the query and maps the results automatically to a set */
+        inline fun <reified T : Any> toSet(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): Set<T> = mapTo(createQualifiedType<T>(*qualifiers)).toSet()
+
+        /** Runs the query, checks that it returns exactly one row, and maps it automatically */
+        inline fun <reified T : Any> exactlyOne(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): T = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOne()
+
+        /**
+         * Runs the query, checks that it returns at most one row, and maps it automatically if it
+         * exists
+         */
+        inline fun <reified T : Any> exactlyOneOrNull(
+            vararg qualifiers: KClass<out Annotation> = defaultQualifiers<T>()
+        ): T? = mapTo(createQualifiedType<T>(*qualifiers)).exactlyOneOrNull()
+
         inline fun <reified T> mapTo(
             qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
-        ): ResultIterable<T> = mapTo(createQualifiedType(*qualifiers))
+        ): Result<T> = mapTo(createQualifiedType(*qualifiers))
 
-        override fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T> = raw.mapTo(type)
+        override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
-        override fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
-        override fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T> = raw.map(mapper)
+        override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
+
+        override fun <T> map(mapper: Row.() -> T): Result<T> =
+            Result(raw.map { row -> mapper(Row(row)) })
     }
 
     interface ResultBearing {
-        fun <T> mapTo(type: QualifiedType<T>): ResultIterable<T>
+        fun <T> mapTo(type: QualifiedType<T>): Result<T>
 
-        fun <T> map(mapper: ColumnMapper<T>): ResultIterable<T>
+        fun <T> map(mapper: ColumnMapper<T>): Result<T>
 
-        fun <T> map(mapper: RowViewMapper<T>): ResultIterable<T>
+        fun <T> map(mapper: RowViewMapper<T>): Result<T>
+
+        fun <T> map(mapper: Row.() -> T): Result<T>
+
+        /** Runs the query and maps the results to a list using the given mapper */
+        fun <T> toList(mapper: Row.() -> T): List<T> = map(mapper).toList()
+
+        /** Runs the query and maps the results to a set using the given mapper */
+        fun <T> toSet(mapper: Row.() -> T): Set<T> = map(mapper).toSet()
+
+        /** Runs the query and maps the results to a map using the given mapper */
+        fun <K, V> toMap(mapper: Row.() -> Pair<K, V>): Map<K, V> =
+            map(mapper).useIterable { it.toMap() }
+
+        /**
+         * Runs the query, checks that it returns exactly one row, and maps it using the given
+         * mapper
+         */
+        fun <T> exactlyOne(mapper: Row.() -> T): T = map(mapper).exactlyOne()
+
+        /**
+         * Runs the query, checks that it returns at most one row, and maps it using the given
+         * mapper if it exists
+         */
+        fun <T> exactlyOneOrNull(mapper: Row.() -> T): T? = map(mapper).exactlyOneOrNull()
     }
 }
 
@@ -521,4 +709,29 @@ class PredicateSql<@Suppress("unused") in Tag>(
             return PredicateSql(PredicateSqlString(sql), bindings)
         }
     }
+}
+
+@JvmInline
+value class Row(private val row: RowView) {
+    inline fun <reified K, reified V> columnPair(
+        firstColumn: String,
+        secondColumn: String
+    ): Pair<K, V> = column<K>(firstColumn) to column<V>(secondColumn)
+
+    inline fun <reified T> column(name: String, vararg annotations: KClass<out Annotation>): T {
+        val type = createQualifiedType<T>(*annotations)
+        val value = column(name, type)
+        if (null !is T && value == null) {
+            error("Non-nullable column $name was null")
+        }
+        return value
+    }
+
+    fun <T> column(name: String, type: QualifiedType<T>): T = row.getColumn(name, type)
+
+    inline fun <reified T> jsonColumn(name: String): T = column(name, Json::class)
+
+    inline fun <reified T> row(): T = row(typeOf<T>()) as T
+
+    fun row(type: KType): Any? = row.getRow(type.asJdbiJavaType())
 }

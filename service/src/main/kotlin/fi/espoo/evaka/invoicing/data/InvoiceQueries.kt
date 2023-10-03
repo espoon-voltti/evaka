@@ -133,7 +133,9 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
         ORDER BY invoice.id, row.idx
     """
 
-    return createQuery(sql).bind("ids", ids).map(toDetailedInvoice).let(::flattenDetailed)
+    return createQuery(sql).bind("ids", ids).map(toDetailedInvoice).useIterable {
+        flattenDetailed(it)
+    }
 }
 
 fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
@@ -144,7 +146,7 @@ fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
         ORDER BY invoice.id, row.idx
     """
 
-    return createQuery(sql).bind("id", id).map(toInvoice).let(::flatten).firstOrNull()
+    return createQuery(sql).bind("id", id).map(toInvoice).useIterable { flatten(it) }.firstOrNull()
 }
 
 fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
@@ -157,7 +159,7 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
     return createQuery(sql)
         .bind("id", id)
         .map(toDetailedInvoice)
-        .let(::flattenDetailed)
+        .useIterable { flattenDetailed(it) }
         .firstOrNull()
 }
 
@@ -168,7 +170,9 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invo
         WHERE invoice.head_of_family = :headOfFamilyId
         ORDER BY invoice.id, row.idx
     """
-    return createQuery(sql).bind("headOfFamilyId", headOfFamilyUuid).map(toInvoice).let(::flatten)
+    return createQuery(sql).bind("headOfFamilyId", headOfFamilyUuid).map(toInvoice).useIterable {
+        flatten(it)
+    }
 }
 
 fun Database.Read.getInvoiceIdsByDates(
@@ -341,7 +345,7 @@ ORDER BY status DESC, due_date, invoice.id, row.idx
             )
         }
         .map(toDetailedInvoice)
-        .let(::flattenDetailed)
+        .useIterable { flattenDetailed(it) }
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {

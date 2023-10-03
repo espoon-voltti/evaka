@@ -229,12 +229,9 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, now: HelsinkiDateTime):
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("date", now.toLocalDate())
-        .mapTo<ChildBasicsRow>()
-        .map { it.toChildBasics() }
-        .list()
+    return createQuery(sql).bind("unitId", unitId).bind("date", now.toLocalDate()).toList {
+        row<ChildBasicsRow>().toChildBasics()
+    }
 }
 
 private data class UnitChildAttendancesRow(

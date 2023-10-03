@@ -9,7 +9,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.Instant
@@ -569,8 +568,4 @@ GROUP BY evaka_child_id
         )
         .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .map { row ->
-            row.mapColumn<ChildId>("child_id") to
-                row.mapColumn<List<ServiceNeedId>>("service_need_ids")
-        }
-        .toMap()
+        .toMap { columnPair("child_id", "service_need_ids") }

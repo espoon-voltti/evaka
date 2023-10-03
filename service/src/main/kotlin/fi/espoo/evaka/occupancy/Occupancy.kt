@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -364,7 +363,7 @@ WHERE $daterange && :period AND $groupingId = ANY(:keys)
     return this.createQuery(query)
         .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
-        .mapTo()
+        .toList<Placement>()
 }
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedPlacements(
@@ -440,7 +439,7 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
     return this.createQuery(query)
         .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
-        .mapTo()
+        .toList<Placement>()
 }
 
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
@@ -461,9 +460,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     val childBirthdays =
         this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
             .bind("childIds", childIds)
-            .mapTo<Child>()
-            .map { it.id to it.dateOfBirth }
-            .toMap()
+            .toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
 
     val serviceNeeds =
         this.createQuery(
@@ -511,11 +508,9 @@ WHERE sn.placement_id = ANY(:placementIds)
                 FROM service_need_option WHERE default_option
                 """
             )
-            .map { row ->
-                row.mapColumn<PlacementType>("valid_placement_type") to
-                    row.mapRow<ServiceNeedCoefficients>()
+            .toMap {
+                column<PlacementType>("valid_placement_type") to row<ServiceNeedCoefficients>()
             }
-            .toMap()
 
     val assistanceFactors =
         createQuery<Any> {
@@ -739,8 +734,6 @@ private data class PlacementPlan(
     val preschoolDaycareStartDate: LocalDate?,
     val preschoolDaycareEndDate: LocalDate?
 )
-
-private data class Child(val id: ChildId, val dateOfBirth: LocalDate)
 
 data class ServiceNeed(
     val placementId: PlacementId,

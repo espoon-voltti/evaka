@@ -320,7 +320,6 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         .bind("id", decisionId)
         .mapTo<Boolean>()
         .first()
-        ?: false
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {

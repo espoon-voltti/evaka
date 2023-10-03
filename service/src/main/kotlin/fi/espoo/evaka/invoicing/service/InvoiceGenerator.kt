@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -264,13 +263,10 @@ GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
                 )
-                .map { rv ->
-                    Pair<InvoiceCorrectionId, List<InvoicedTotal>>(
-                        rv.mapColumn("id"),
-                        rv.mapJsonColumn("invoiced_corrections")
-                    )
+                .toMap {
+                    column<InvoiceCorrectionId>("id") to
+                        jsonColumn<List<InvoicedTotal>>("invoiced_corrections")
                 }
-                .toMap()
 
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
             .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
@@ -519,9 +515,7 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
         SELECT daycare.id AS unit_id, area.id AS area_id
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
-    return createQuery(sql)
-        .map { row -> row.mapColumn<DaycareId>("unit_id") to row.mapColumn<AreaId>("area_id") }
-        .toMap()
+    return createQuery(sql).toMap { columnPair("unit_id", "area_id") }
 }
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
