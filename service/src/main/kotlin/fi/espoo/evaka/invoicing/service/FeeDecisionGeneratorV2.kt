@@ -24,11 +24,19 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
+import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
+import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.pis.determineHeadOfFamily
@@ -41,6 +49,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -115,11 +124,25 @@ private fun generateAndInsertFeeDecisions(
         )
 
     val newDrafts =
-        generateFeeDecisionsDrafts(feeBases, existingActiveFeeDecisions)
+        generateDecisionDrafts(feeBases, existingActiveFeeDecisions) { feeBasis ->
+                listOf(feeBasis.toFeeDecision())
+            }
             .filter { draft -> draft.validDuring.overlaps(rangeOverlapFilter) }
             .mapNotNull { draft ->
                 draft.validDuring.intersection(hardRangeLimit)?.let { limitedRange ->
                     draft.copy(validDuring = limitedRange)
+                }
+            }
+            .let { newDraftsWithoutDifferences ->
+                newDraftsWithoutDifferences.map { draft ->
+                    draft.copy(
+                        difference =
+                            draft.getDifferencesWithPrevious(
+                                newDrafts = newDraftsWithoutDifferences,
+                                existingActiveDecisions = existingActiveFeeDecisions,
+                                FeeDecisionDifference::getDifference
+                            )
+                    )
                 }
             }
 
@@ -160,20 +183,22 @@ private fun generateAndInsertFeeDecisions(
         .let { tx.insertFeeDecisions(it) }
 }
 
-fun generateFeeDecisionsDrafts(
+fun <T : FinanceDecision<T>> generateDecisionDrafts(
     feeBases: List<FeeBasis>,
-    existingActiveDecisions: List<FeeDecision>
-): List<FeeDecision> {
+    existingActiveDecisions: List<T>,
+    mapper: (FeeBasis) -> List<T>
+): List<T> {
     val datesOfChange =
         getDatesOfChange(*feeBases.toTypedArray()) +
             existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     val newDrafts =
-        buildDateRanges(datesOfChange).mapNotNull { range ->
+        buildDateRanges(datesOfChange).flatMap { range ->
             feeBases
                 .firstOrNull { it.range.contains(range) }
-                ?.toFeeDecision()
-                ?.copy(validDuring = range)
+                ?.let(mapper)
+                ?.map { it.withValidity(range) }
+                ?: emptyList()
         }
 
     if (newDrafts.isEmpty()) return emptyList()
@@ -188,8 +213,8 @@ fun generateFeeDecisionsDrafts(
                 )
             }
             .filterNot { draft ->
-                // drop drafts without children unless there exists an active decision that overlaps
-                draft.children.isEmpty() &&
+                // drop empty drafts unless there exists an active decision that overlaps
+                draft.isEmpty() &&
                     existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
             }
             .let(::mergeAdjacentIdenticalDrafts)
@@ -201,18 +226,7 @@ fun generateFeeDecisionsDrafts(
                 )
             }
 
-    val newDraftsWithDifferences =
-        filteredAndMergedDrafts.map {
-            it.copy(
-                difference =
-                    it.getDifferences(
-                        newDrafts = newDrafts,
-                        existingActiveDecisions = existingActiveDecisions
-                    )
-            )
-        }
-
-    return newDraftsWithDifferences
+    return filteredAndMergedDrafts
 }
 
 private fun getFeeBases(
@@ -393,7 +407,93 @@ data class FeeBasis(
     }
 
     fun toVoucherValueDecisions(): List<VoucherValueDecision> {
-        return children.mapNotNull { it.toVoucherValueDecision() }
+        val parentIncomes =
+            if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
+            else listOf(headOfFamilyIncome)
+
+        return children.mapNotNull { child ->
+            val placement = child.placement
+            if (!placement.displayOnVoucherValueDecision()) return@mapNotNull null
+
+            val voucherValue =
+                placement.serviceNeedOptionVoucherValue?.let {
+                    getVoucherValues(range, child.child.dateOfBirth, it)
+                }
+                    ?: error(
+                        "Cannot generate voucher value decision: Missing voucher value for service need option ${placement.serviceNeedOption.id} during $range"
+                    )
+
+            val siblingDiscount =
+                child.serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = child.siblingIndex + 1)
+                    ?: feeThresholds.siblingDiscount(siblingOrdinal = child.siblingIndex + 1)
+
+            val baseFee =
+                child.serviceNeedOptionFee?.baseFee
+                    ?: calculateBaseFee(
+                        feeThresholds,
+                        familySize,
+                        parentIncomes + listOfNotNull(child.income)
+                    )
+
+            val feeBeforeAlterations =
+                calculateFeeBeforeFeeAlterations(
+                    baseFee,
+                    placement.serviceNeedOption.feeCoefficient,
+                    siblingDiscount,
+                    feeThresholds.minFee
+                )
+
+            val feeAlterationsWithEffects =
+                toFeeAlterationsWithEffects(feeBeforeAlterations, child.feeAlterations)
+
+            val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
+
+            val assistanceNeedCoefficient = BigDecimal.ZERO // TODO
+
+            VoucherValueDecision(
+                id = VoucherValueDecisionId(UUID.randomUUID()),
+                validFrom = range.start,
+                validTo = range.end,
+                headOfFamilyId = headOfFamilyId,
+                status = VoucherValueDecisionStatus.DRAFT,
+                decisionType = VoucherValueDecisionType.NORMAL,
+                partnerId = partnerId,
+                headOfFamilyIncome = headOfFamilyIncome,
+                partnerIncome = partnerIncome,
+                childIncome = child.income,
+                familySize = familySize,
+                feeThresholds = feeThresholds.getFeeDecisionThresholds(familySize),
+                child = ChildWithDateOfBirth(child.child.id, child.child.dateOfBirth),
+                placement =
+                    VoucherValueDecisionPlacement(
+                        unitId = placement.unitId,
+                        type = placement.placementType
+                    ),
+                serviceNeed =
+                    VoucherValueDecisionServiceNeed(
+                        feeCoefficient = placement.serviceNeedOption.feeCoefficient,
+                        voucherValueCoefficient = voucherValue.coefficient,
+                        feeDescriptionFi = placement.serviceNeedOption.feeDescriptionFi,
+                        feeDescriptionSv = placement.serviceNeedOption.feeDescriptionSv,
+                        voucherValueDescriptionFi =
+                            placement.serviceNeedOption.voucherValueDescriptionFi,
+                        voucherValueDescriptionSv =
+                            placement.serviceNeedOption.voucherValueDescriptionSv,
+                        missing = !placement.hasServiceNeed
+                    ),
+                baseCoPayment = baseFee,
+                siblingDiscount = feeThresholds.siblingDiscount(child.siblingIndex).percent,
+                coPayment = feeBeforeAlterations,
+                feeAlterations = feeAlterationsWithEffects,
+                finalCoPayment = finalFee,
+                baseValue = voucherValue.baseValue,
+                assistanceNeedCoefficient = assistanceNeedCoefficient,
+                voucherValue =
+                    roundToEuros(BigDecimal(voucherValue.value) * assistanceNeedCoefficient)
+                        .toInt(),
+                difference = emptySet()
+            )
+        }
     }
 }
 
@@ -455,10 +555,6 @@ data class ChildFeeBasis(
             finalFee,
             income
         )
-    }
-
-    fun toVoucherValueDecision(): VoucherValueDecision? {
-        TODO()
     }
 }
 
@@ -580,18 +676,19 @@ data class PlacementDetails(
     val serviceNeedOptionVoucherValue: ServiceNeedOptionVoucherValue?
 ) : WithFiniteRange {
     fun displayOnFeeDecision(): Boolean {
-        return invoicedUnit &&
-            providerType != ProviderType.PRIVATE_SERVICE_VOUCHER &&
-            !PlacementType.temporary.contains(placementType) &&
-            serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) != 0
+        return displayOnFinanceDecision() &&
+            invoicedUnit &&
+            providerType != ProviderType.PRIVATE_SERVICE_VOUCHER
     }
 
     fun displayOnVoucherValueDecision(): Boolean {
-        return !invoicedUnit &&
-            providerType == ProviderType.PRIVATE_SERVICE_VOUCHER &&
+        return displayOnFinanceDecision() && providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
+    }
+
+    private fun displayOnFinanceDecision(): Boolean {
+        return placementType.isInvoiced() &&
             !PlacementType.temporary.contains(placementType) &&
-            serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) !=
-                0 // TODO: also in vouchers?
+            serviceNeedOption.feeCoefficient != BigDecimal.ZERO
     }
 }
 
@@ -610,6 +707,7 @@ private data class ServiceNeed(
     val optionId: ServiceNeedOptionId
 ) : WithFiniteRange
 
+// TODO: duplicated from domain package, remove that after v1 generation is removed
 data class ServiceNeedOptionVoucherValue(
     val serviceNeedOptionId: ServiceNeedOptionId,
     override val range: DateRange,
@@ -730,10 +828,12 @@ private data class ServiceNeedOptionFeeRange(
     val serviceNeedOptionFee: ServiceNeedOptionFee
 ) : WithRange
 
-data class FeeAlterationRange(override val range: DateRange, val feeAlteration: FeeAlteration) :
-    WithRange
+private data class FeeAlterationRange(
+    override val range: DateRange,
+    val feeAlteration: FeeAlteration
+) : WithRange
 
-fun mergeAdjacentIdenticalDrafts(decisions: List<FeeDecision>): List<FeeDecision> {
+fun <T : FinanceDecision<T>> mergeAdjacentIdenticalDrafts(decisions: List<T>): List<T> {
     return decisions
         .sortedBy { it.validFrom }
         .fold(emptyList()) { acc, next ->
@@ -743,17 +843,17 @@ fun mergeAdjacentIdenticalDrafts(decisions: List<FeeDecision>): List<FeeDecision
                     periodsCanMerge(prev.validDuring, next.validDuring) &&
                     prev.contentEquals(next)
             ) {
-                acc.dropLast(1) + prev.copy(validDuring = DateRange(prev.validFrom, next.validTo))
+                acc.dropLast(1) + prev.withValidity(DateRange(prev.validFrom, next.validTo))
             } else {
                 acc + next
             }
         }
 }
 
-private fun existsActiveDuplicateThatWillRemainEffective(
-    draft: FeeDecision,
-    activeDecisions: List<FeeDecision>,
-    drafts: List<FeeDecision>,
+fun <T : FinanceDecision<T>> existsActiveDuplicateThatWillRemainEffective(
+    draft: T,
+    activeDecisions: List<T>,
+    drafts: List<T>,
 ): Boolean {
     val activeDuplicate =
         activeDecisions.find {
@@ -780,10 +880,11 @@ private fun existsActiveDuplicateThatWillRemainEffective(
     return newActiveRange.contains(draft.validDuring)
 }
 
-private fun FeeDecision.getDifferences(
-    newDrafts: List<FeeDecision>,
-    existingActiveDecisions: List<FeeDecision>
-): Set<FeeDecisionDifference> {
+private fun <Decision : FinanceDecision<Decision>, Diff> Decision.getDifferencesWithPrevious(
+    newDrafts: List<Decision>,
+    existingActiveDecisions: List<Decision>,
+    getDifferences: (d1: Decision, d2: Decision) -> Set<Diff>
+): Set<Diff> {
     if (this.isEmpty()) {
         return emptySet()
     }
@@ -793,7 +894,7 @@ private fun FeeDecision.getDifferences(
             .filter { other ->
                 !other.isEmpty() && periodsCanMerge(other.validDuring, this.validDuring)
             }
-            .flatMap { other -> FeeDecisionDifference.getDifference(other, this) }
+            .flatMap { other -> getDifferences(other, this) }
 
     if (draftDifferences.isNotEmpty()) {
         return draftDifferences.toSet()
@@ -802,7 +903,35 @@ private fun FeeDecision.getDifferences(
     val activeDifferences =
         existingActiveDecisions
             .filter { active -> periodsCanMerge(active.validDuring, this.validDuring) }
-            .flatMap { active -> FeeDecisionDifference.getDifference(active, this) }
+            .flatMap { active -> getDifferences(active, this) }
 
     return activeDifferences.toSet()
+}
+
+// TODO: duplicated from domain package, remove that after v1 generation is removed
+private fun getVoucherValues(
+    period: DateRange,
+    dateOfBirth: LocalDate,
+    voucherValues: ServiceNeedOptionVoucherValue
+): VoucherValue {
+    val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
+    val periodStartInMiddleOfTargetPeriod =
+        period.includes(thirdBirthdayPeriodStart) &&
+            thirdBirthdayPeriodStart != period.start &&
+            thirdBirthdayPeriodStart != period.end
+
+    check(!periodStartInMiddleOfTargetPeriod) {
+        "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
+    }
+
+    return when {
+        period.start < thirdBirthdayPeriodStart ->
+            VoucherValue(
+                voucherValues.baseValueUnder3y,
+                voucherValues.coefficientUnder3y,
+                voucherValues.valueUnder3y
+            )
+        else ->
+            VoucherValue(voucherValues.baseValue, voucherValues.coefficient, voucherValues.value)
+    }
 }

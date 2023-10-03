@@ -186,7 +186,11 @@ private fun createFeeBasis(): FeeBasis {
             ),
         children =
             listOf(
-                createChildFeeBasis(placementType = PlacementType.CLUB, siblingIndex = 0),
+                createChildFeeBasis(
+                    placementType = PlacementType.CLUB,
+                    serviceNeedOption = snClub,
+                    siblingIndex = 0
+                ),
                 createChildFeeBasis(
                     placementType = PlacementType.DAYCARE,
                     siblingIndex = 1,
@@ -205,6 +209,7 @@ private fun createFeeBasis(): FeeBasis {
 
 private fun createChildFeeBasis(
     placementType: PlacementType = PlacementType.DAYCARE,
+    serviceNeedOption: ServiceNeedOption = snDaycareFullDay35,
     invoicedUnit: Boolean = true,
     siblingIndex: Int = 0
 ): ChildFeeBasis {
@@ -221,7 +226,7 @@ private fun createChildFeeBasis(
                 unitId = DaycareId(UUID.randomUUID()),
                 invoicedUnit = invoicedUnit,
                 hasServiceNeed = true,
-                serviceNeedOption = snDaycareFullDay35,
+                serviceNeedOption = serviceNeedOption,
                 serviceNeedOptionVoucherValue = null
             ),
         serviceNeedOptionFee = null,
@@ -247,10 +252,34 @@ val snDaycareFullDay35 =
         contractDaysPerMonth = null,
         partDay = false,
         partWeek = false,
-        feeDescriptionFi = "",
-        feeDescriptionSv = "",
+        feeDescriptionFi = "Kokopäiväinen, vähintään 35h",
+        feeDescriptionSv = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
+        active = true
+    )
+
+val snClub =
+    ServiceNeedOption(
+        id = ServiceNeedOptionId(UUID.randomUUID()),
+        nameFi = "Club",
+        nameSv = "Club",
+        nameEn = "Club",
+        validPlacementType = PlacementType.CLUB,
+        defaultOption = true,
+        feeCoefficient = BigDecimal("0.00"),
+        occupancyCoefficient = BigDecimal("1.00"),
+        occupancyCoefficientUnder3y = BigDecimal("1.75"),
+        realizedOccupancyCoefficient = BigDecimal("1.00"),
+        realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
+        daycareHoursPerWeek = 0,
+        contractDaysPerMonth = null,
+        partDay = true,
+        partWeek = true,
+        feeDescriptionFi = "",
+        feeDescriptionSv = "",
+        voucherValueDescriptionFi = "",
+        voucherValueDescriptionSv = "",
         active = true
     )
 

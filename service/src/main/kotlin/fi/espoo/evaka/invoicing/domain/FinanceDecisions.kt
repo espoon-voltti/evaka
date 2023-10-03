@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
@@ -14,6 +15,9 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val validFrom: LocalDate
     val validTo: LocalDate?
     val headOfFamilyId: PersonId
+
+    val validDuring: DateRange
+        @JsonIgnore get() = DateRange(validFrom, validTo)
 
     fun withRandomId(): Decision
 
