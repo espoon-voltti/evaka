@@ -60,6 +60,7 @@ data class ApplicationSummary(
     val attachmentCount: Int,
     val additionalDaycareApplication: Boolean,
     val placementProposalStatus: PlacementProposalStatus?,
+    val placementProposalStartDate: LocalDate?,
     val placementProposalUnitName: String?,
     val currentPlacementUnit: PreferredUnit?
 )

@@ -329,7 +329,11 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <Bold>{application.dueDate?.format()}</Bold>
       </Td>
-      <Td>{application.startDate?.format() ?? '-'}</Td>
+      <Td data-qa="start-date">
+        {application.placementProposalStartDate?.format() ??
+          application.startDate?.format() ??
+          '-'}
+      </Td>
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (

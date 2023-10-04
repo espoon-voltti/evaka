@@ -4,6 +4,7 @@
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilTrue } from '../../utils'
@@ -176,6 +177,12 @@ export class ApplicationWorkbenchPage {
   async openPlacementProposalQueue() {
     await this.#applicationsWaitingUnitConfirmation.click()
     await this.waitUntilLoaded()
+  }
+
+  async assertApplicationStartDate(index: number, date: LocalDate) {
+    const rows = this.page.findAllByDataQa('table-application-row')
+    const row = rows.nth(index)
+    await row.findByDataQa('start-date').assertTextEquals(date.format())
   }
 
   async assertApplicationStatusTextMatches(

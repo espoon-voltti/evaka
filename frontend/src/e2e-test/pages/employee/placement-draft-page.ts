@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { Combobox, Page } from '../../utils/page'
+import { Combobox, DatePickerDeprecated, Page } from '../../utils/page'
 
 export class PlacementDraftPage {
   constructor(private page: Page) {}
@@ -12,6 +13,13 @@ export class PlacementDraftPage {
   #restrictedDetailsWarning = this.page.find(
     '[data-qa="restricted-details-warning"]'
   )
+
+  setStartDate = async (date: LocalDate) => {
+    const datePicker = new DatePickerDeprecated(
+      this.page.findByDataQa('start-date')
+    )
+    await datePicker.fill(date)
+  }
 
   #unitCard = (unitId: UUID) =>
     this.page
