@@ -181,8 +181,7 @@ fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAcco
     createQuery("SELECT account_id FROM message_draft WHERE id = :id")
         .bind("id", id)
         .mapTo<MessageAccountId>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
 
 fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
     createQuery(
@@ -207,5 +206,4 @@ WHERE content.id = :id
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
     createQuery("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")
         .mapTo<MessageAccountId>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()

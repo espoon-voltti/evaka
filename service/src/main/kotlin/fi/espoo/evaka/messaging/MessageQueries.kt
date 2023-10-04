@@ -1418,8 +1418,8 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
             .bind("accountId", accountId)
             .bind("messageId", messageId)
             .mapTo<MessageToUndo>()
-            .findOne()
-            .orElseThrow { throw BadRequest("No message found with messageId $messageId") }
+            .exactlyOneOrNull()
+            ?: throw BadRequest("No message found with messageId $messageId")
 
     if (messageToUndo.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
         throw BadRequest(
@@ -1479,8 +1479,8 @@ WHERE c.id = :contentId
             )
             .bind("contentId", contentId)
             .mapTo<UpdatableDraftContent>()
-            .findOne()
-            .orElseThrow { error("Multiple draft contents found") }
+            .exactlyOneOrNull()
+            ?: error("Multiple draft contents found")
 
     this.deleteApplicationNotesLinkedToMessages(messagesToUndo.map { it.contentId }.toSet())
     this.deleteMessages(messagesToUndo)

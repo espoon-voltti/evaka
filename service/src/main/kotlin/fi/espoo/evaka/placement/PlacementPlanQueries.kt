@@ -93,8 +93,7 @@ WHERE application_id = :applicationId AND deleted = false
         )
         .bind("applicationId", applicationId)
         .mapTo<QueryResult>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
         ?.let {
             PlacementPlan(
                 id = it.id,
@@ -126,8 +125,8 @@ WHERE application_id = :applicationId AND deleted = false
         )
         .bind("applicationId", applicationId)
         .mapTo<String>()
-        .findOne()
-        .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
+        .exactlyOneOrNull()
+        ?: throw NotFound("Placement plan for application $applicationId not found")
 }
 
 fun Database.Read.getPlacementPlans(

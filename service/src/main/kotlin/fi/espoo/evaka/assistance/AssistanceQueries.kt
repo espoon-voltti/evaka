@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import kotlin.jvm.optionals.getOrNull
 
 private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
     QuerySql.of<DatabaseTable.AssistanceFactor> {
@@ -36,8 +35,7 @@ fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
         .mapTo<AssistanceFactor>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
@@ -90,8 +88,7 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<AssistanceFactor>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {

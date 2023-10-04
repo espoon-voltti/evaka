@@ -1798,9 +1798,9 @@ fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: Extern
         createQuery("SELECT id FROM employee WHERE external_id = :externalId")
             .bind("externalId", externalId)
             .mapTo<EmployeeId>()
-            .findOne()
-    if (employeeId.isPresent) {
-        deleteAndCascadeEmployee(employeeId.get())
+            .exactlyOneOrNull()
+    if (employeeId != null) {
+        deleteAndCascadeEmployee(employeeId)
     }
 }
 

@@ -81,8 +81,8 @@ fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
         .mapTo<Boolean>()
-        .findOne()
-        .orElse(false)
+        .exactlyOneOrNull()
+        ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
     createQuery(
@@ -325,8 +325,7 @@ RETURNING id
         .bind("id", id)
         .executeAndReturnGeneratedKeys()
         .mapTo<PersonId>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
 
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL

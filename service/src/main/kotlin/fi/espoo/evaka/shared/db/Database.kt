@@ -398,7 +398,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun singleOrNull(): T? = useIterable { it.singleOrNull() }
 
-        fun findOne(): Optional<T> = inner.findOne()
+        @Deprecated("Use exactlyOneOrNull instead") fun findOne(): Optional<T> = inner.findOne()
 
         fun any(): Boolean = useIterable { it.any() }
 
