@@ -117,18 +117,20 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
     // language=SQL
     val sql =
         """
-        SELECT 1
-        FROM daycare_group
-        WHERE id = :id
-        AND daterange(start_date, end_date, '[]') @> :date
+        SELECT EXISTS (
+            SELECT 1
+            FROM daycare_group
+            WHERE id = :id
+            AND daterange(start_date, end_date, '[]') @> :date
+        )
         """
             .trimIndent()
 
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
-        .mapTo<Int>()
-        .any()
+        .mapTo<Boolean>()
+        .exactlyOne()
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {

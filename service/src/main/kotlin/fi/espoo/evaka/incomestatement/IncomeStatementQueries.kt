@@ -611,12 +611,12 @@ fun Database.Read.incomeStatementExistsForStartDate(
     startDate: LocalDate
 ): Boolean =
     createQuery(
-            "SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate"
+            "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
         )
         .bind("personId", personId)
         .bind("startDate", startDate)
-        .mapTo<Int>()
-        .any()
+        .mapTo<Boolean>()
+        .exactlyOne()
 
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 

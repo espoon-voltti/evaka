@@ -400,6 +400,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         @Deprecated("Use exactlyOneOrNull instead") fun findOne(): Optional<T> = inner.findOne()
 
+        @Deprecated("Use SELECT EXISTS + exactlyOne instead")
         fun any(): Boolean = useIterable { it.any() }
 
         inline fun all(crossinline predicate: (T) -> Boolean): Boolean = useIterable {
