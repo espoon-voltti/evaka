@@ -456,6 +456,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 it.sortedBy(selector)
             }
 
+        @Deprecated("Use either toList or useIterable and call shuffled on it instead")
         fun shuffled(): List<T> = useIterable { it.shuffled() }
     }
 
