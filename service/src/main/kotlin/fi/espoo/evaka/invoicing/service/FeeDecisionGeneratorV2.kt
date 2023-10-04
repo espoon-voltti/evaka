@@ -8,11 +8,15 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
+import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.findValueDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.insertFeeDecisions
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.lockValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -28,6 +32,7 @@ import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -79,7 +84,7 @@ fun generateAndInsertFinanceDecisionsV2(
         tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
     }
     if (includeVoucherValueDecisions) {
-        // todo: lock vv decisions
+        tx.lockValueDecisionsForHeadOfFamily(headOfFamilyId)
     }
 
     val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
@@ -106,12 +111,12 @@ fun generateAndInsertFinanceDecisionsV2(
 
     if (includeVoucherValueDecisions) {
         generateAndInsertVoucherValueDecisions(
-            /*tx = tx,
+            tx = tx,
             rangeOverlapFilter = DateRange(rollingMinDate, null),
             hardRangeLimit = DateRange(hardMinDate, null),
             headOfFamilyId = headOfFamilyId,
-            feeBases = feeBases*/
-            )
+            feeBases = feeBases
+        )
     }
 }
 
@@ -122,26 +127,21 @@ private fun generateAndInsertFeeDecisions(
     rangeOverlapFilter: DateRange,
     hardRangeLimit: DateRange
 ) {
-    val existingActiveFeeDecisions =
+    val existingActiveDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
             headOfFamilyId,
             period = null,
-            status =
-                listOf(
-                    FeeDecisionStatus.SENT,
-                    FeeDecisionStatus.WAITING_FOR_SENDING,
-                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
-                )
+            status = FeeDecisionStatus.effective.toList()
         )
 
     val newDrafts =
-        generateDecisionDrafts(feeBases, existingActiveFeeDecisions) { feeBasis ->
+        generateDecisionDrafts(feeBases, existingActiveDecisions) { feeBasis ->
                 listOf(feeBasis.toFeeDecision())
             }
             .filter { draft -> draft.validDuring.overlaps(rangeOverlapFilter) }
             .mapNotNull { draft ->
                 draft.validDuring.intersection(hardRangeLimit)?.let { limitedRange ->
-                    draft.copy(validDuring = limitedRange)
+                    draft.withValidity(limitedRange)
                 }
             }
             .let { newDraftsWithoutDifferences ->
@@ -150,7 +150,7 @@ private fun generateAndInsertFeeDecisions(
                         difference =
                             draft.getDifferencesWithPrevious(
                                 newDrafts = newDraftsWithoutDifferences,
-                                existingActiveDecisions = existingActiveFeeDecisions,
+                                existingActiveDecisions = existingActiveDecisions,
                                 FeeDecisionDifference::getDifference
                             )
                     )
@@ -195,13 +195,72 @@ private fun generateAndInsertFeeDecisions(
 }
 
 private fun generateAndInsertVoucherValueDecisions(
-/*tx: Database.Transaction,
-headOfFamilyId: PersonId,
-feeBases: List<FeeBasis>,
-rangeOverlapFilter: DateRange,
-hardRangeLimit: DateRange*/
+    tx: Database.Transaction,
+    headOfFamilyId: PersonId,
+    feeBases: List<FeeBasis>,
+    rangeOverlapFilter: DateRange,
+    hardRangeLimit: DateRange
 ) {
-    TODO()
+    val existingActiveDecisions =
+        tx.findValueDecisionsForHeadOfFamily(
+            headOfFamilyId,
+            period = null,
+            statuses = VoucherValueDecisionStatus.effective.toList()
+        )
+
+    val newDrafts =
+        generateDecisionDrafts(feeBases, existingActiveDecisions) { feeBasis ->
+                feeBasis.toVoucherValueDecisions()
+            }
+            .filter { draft -> draft.validDuring.overlaps(rangeOverlapFilter) }
+            .mapNotNull { draft ->
+                draft.validDuring.intersection(hardRangeLimit)?.let { limitedRange ->
+                    draft.withValidity(limitedRange)
+                }
+            }
+            .let { newDraftsWithoutDifferences ->
+                newDraftsWithoutDifferences.map { draft ->
+                    draft.copy(
+                        difference =
+                            draft.getDifferencesWithPrevious(
+                                newDrafts = newDraftsWithoutDifferences,
+                                existingActiveDecisions = existingActiveDecisions,
+                                VoucherValueDecisionDifference::getDifference
+                            )
+                    )
+                }
+            }
+
+    val existingDraftDecisions =
+        tx.findValueDecisionsForHeadOfFamily(
+            headOfFamilyId,
+            period = null,
+            statuses = listOf(VoucherValueDecisionStatus.DRAFT)
+        )
+
+    val ignoredDrafts = emptyList<VoucherValueDecision>() // status not yet implemented
+
+    tx.deleteValueDecisions(existingDraftDecisions.map { it.id })
+
+    // insert while preserving created dates
+    newDrafts
+        .filter { newDraft ->
+            !ignoredDrafts.any {
+                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
+            }
+        }
+        .map { newDraft ->
+            val duplicateOldDraft =
+                existingDraftDecisions.find { oldDraft ->
+                    newDraft.contentEquals(oldDraft) && newDraft.validDuring == oldDraft.validDuring
+                }
+            if (duplicateOldDraft != null) {
+                newDraft.copy(created = duplicateOldDraft.created)
+            } else {
+                newDraft
+            }
+        }
+        .let { tx.upsertValueDecisions(it) }
 }
 
 fun <T : FinanceDecision<T>> generateDecisionDrafts(
@@ -469,7 +528,7 @@ data class FeeBasis(
 
             val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
-            val assistanceNeedCoefficient = BigDecimal.ZERO // TODO
+            val assistanceNeedCoefficient = BigDecimal.ONE // TODO
 
             VoucherValueDecision(
                 id = VoucherValueDecisionId(UUID.randomUUID()),

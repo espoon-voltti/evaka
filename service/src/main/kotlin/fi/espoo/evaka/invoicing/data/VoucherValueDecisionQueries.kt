@@ -284,6 +284,67 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
         .toList()
 }
 
+fun Database.Read.findValueDecisionsForHeadOfFamily(
+    headOfFamilyId: PersonId,
+    period: DateRange?,
+    statuses: List<VoucherValueDecisionStatus>?
+): List<VoucherValueDecision> {
+    // language=sql
+    val sql =
+        """
+SELECT
+    id,
+    valid_from,
+    valid_to,
+    head_of_family_id,
+    status,
+    decision_number,
+    decision_type,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    child_income,
+    family_size,
+    fee_thresholds,
+    child_id,
+    child_date_of_birth,
+    placement_type,
+    placement_unit_id,
+    service_need_fee_coefficient,
+    service_need_voucher_value_coefficient,
+    service_need_fee_description_fi,
+    service_need_fee_description_sv,
+    service_need_voucher_value_description_fi,
+    service_need_voucher_value_description_sv,
+    service_need_missing,
+    base_co_payment,
+    sibling_discount,
+    co_payment,
+    fee_alterations,
+    final_co_payment,
+    base_value,
+    assistance_need_coefficient,
+    voucher_value,
+    difference,
+    document_key,
+    approved_at,
+    approved_by,
+    sent_at,
+    created
+FROM voucher_value_decision
+WHERE head_of_family_id = :headOfFamilyId
+AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
+AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))
+"""
+
+    return createQuery(sql)
+        .bind("headOfFamilyId", headOfFamilyId)
+        .bind("period", period)
+        .bind("statuses", statuses)
+        .mapTo<VoucherValueDecision>()
+        .toList()
+}
+
 fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>) {
     if (ids.isEmpty()) return
 
@@ -699,6 +760,14 @@ fun Database.Transaction.annulVoucherValueDecisions(
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE child_id = :childId FOR UPDATE")
         .bind("childId", childId)
+        .execute()
+}
+
+fun Database.Transaction.lockValueDecisionsForHeadOfFamily(headOfFamilyId: PersonId) {
+    createUpdate(
+            "SELECT id FROM voucher_value_decision WHERE head_of_family_id = :headOfFamilyId FOR UPDATE"
+        )
+        .bind("headOfFamilyId", headOfFamilyId)
         .execute()
 }
 
