@@ -772,22 +772,6 @@ export default createBrowserRouter(
           )
         },
         {
-          path: '/child-information/:childId/curriculum-document/:id',
-          element: (
-            <EmployeeRoute title="vasuPage">
-              <VasuPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/child-information/:childId/curriculum-document/:id/edit',
-          element: (
-            <EmployeeRoute title="vasuPage">
-              <VasuEditPage />
-            </EmployeeRoute>
-          )
-        },
-        {
           path: '/vasu-templates',
           element: (
             <EmployeeRoute title="vasuTemplates">

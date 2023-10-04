@@ -42,7 +42,7 @@ export function VasuStateTransitionButtons({
   state
 }: {
   childId: UUID
-  childIdFromUrl: UUID | undefined
+  childIdFromUrl: UUID | null
   documentId: UUID
   permittedActions: Action.VasuDocument[]
   state: VasuDocumentState
@@ -134,9 +134,13 @@ export function VasuStateTransitionButtons({
                 text={i18n.common.edit}
                 disabled={!permittedActions.includes('UPDATE')}
                 onClick={() =>
-                  navigate(
-                    `/child-information/${childIdFromUrl}/curriculum-document/${documentId}/edit`
-                  )
+                  navigate({
+                    pathname: `/vasu/${documentId}/edit`,
+                    search:
+                      childIdFromUrl !== null
+                        ? `?childId=${childIdFromUrl}`
+                        : undefined
+                  })
                 }
               />
             )}
