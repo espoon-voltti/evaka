@@ -366,7 +366,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>() }
+        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().toList() }
             .sortedBy { it.validFrom }
     }
 

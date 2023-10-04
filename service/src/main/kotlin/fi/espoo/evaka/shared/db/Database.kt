@@ -452,6 +452,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 it.partition(predicate)
             }
 
+        @Deprecated("Use either toList or useIterable and call sortedBy on it instead")
         inline fun <R : Comparable<R>> sortedBy(crossinline selector: (T) -> R?): List<T> =
             useIterable {
                 it.sortedBy(selector)
