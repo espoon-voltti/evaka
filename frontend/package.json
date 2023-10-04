@@ -118,7 +118,7 @@
     "jest-junit": "^16.0.0",
     "make-error-cause": "^2.3.0",
     "playwright": "^1.38.0",
-    "postcss": "^8.4.24",
+    "postcss": "^8.4.31",
     "postcss-loader": "^7.3.3",
     "postcss-preset-env": "^9.1.1",
     "prettier": "^3.0.0",
