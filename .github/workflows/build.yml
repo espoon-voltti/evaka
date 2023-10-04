@@ -766,5 +766,5 @@ jobs:
         uses: espoon-voltti/voltti-actions/notify@master
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          channel: "#evaka-dev-alerts"
-          message: "CI job failed"
+          channel: "#evaka-alerts"
+          message: "CI job for master branch failed"
