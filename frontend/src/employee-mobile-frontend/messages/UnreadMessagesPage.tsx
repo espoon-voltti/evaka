@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Failure, Success } from 'lib-common/api'
+import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -29,6 +30,7 @@ import { UnitContext } from '../common/unit'
 import { WideLinkButton } from '../pairing/components'
 
 import { HeaderContainer } from './MessagesPage'
+import { unreadCountsQuery } from './queries'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
   const { unitId } = useNonNullableParams<{
@@ -36,8 +38,9 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
   }>()
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
+  const { unitInfoResponse } = useContext(UnitContext)
   const { user } = useContext(UserContext)
+  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
   const { pushNotifications } = useContext(ServiceWorkerContext)
 
   return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (

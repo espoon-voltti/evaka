@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
+import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import {
@@ -28,6 +29,7 @@ import {
 
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
+import { unreadCountsQuery } from '../messages/queries'
 import { MessageContext } from '../messages/state'
 
 import { useTranslation } from './i18n'
@@ -104,8 +106,9 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   }>()
   const { groupRoute } = useSelectedGroup()
 
-  const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
+  const { unitInfoResponse } = useContext(UnitContext)
   const { user } = useContext(UserContext)
+  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
   const { groupAccounts } = useContext(MessageContext)
 
   const groupAccountIds = groupAccounts.map(({ account }) => account.id)
