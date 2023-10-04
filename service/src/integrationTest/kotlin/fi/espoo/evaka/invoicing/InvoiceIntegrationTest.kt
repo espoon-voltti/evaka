@@ -598,7 +598,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         row.mapColumn<String>("saved_sub_cost_center")
                     )
                 }
-                .single()
+                .exactlyOne()
 
         val draft = testInvoices[0]
         db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }

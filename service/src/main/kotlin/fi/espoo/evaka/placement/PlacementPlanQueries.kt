@@ -70,7 +70,7 @@ RETURNING id"""
         .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
         .executeAndReturnGeneratedKeys()
         .mapTo<PlacementPlanId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(

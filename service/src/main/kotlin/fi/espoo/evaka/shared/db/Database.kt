@@ -393,6 +393,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated("Use exactlyOne instead", ReplaceWith("exactlyOne()"))
         fun one(): T = exactlyOne()
 
+        @Deprecated("Use exactlyOne instead", ReplaceWith("exactlyOne()"))
         fun single(): T = exactlyOne()
 
         fun singleOrNull(): T? = useIterable { it.singleOrNull() }

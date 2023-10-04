@@ -76,7 +76,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             0,
-            db.read { it.createQuery("SELECT count(*) FROM async_job").mapTo<Int>().single() }
+            db.read { it.createQuery("SELECT count(*) FROM async_job").mapTo<Int>().exactlyOne() }
         )
     }
 

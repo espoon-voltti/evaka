@@ -150,7 +150,7 @@ SELECT EXISTS (
                                     )
                                 }
                                 .mapTo<Boolean>()
-                                .single()
+                                .exactlyOne()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }
@@ -298,7 +298,7 @@ SELECT EXISTS (
                                     )
                                 }
                                 .mapTo<Boolean>()
-                                .single()
+                                .exactlyOne()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }

@@ -29,7 +29,7 @@ fun Database.Read.getEnabledEmailTypes(personId: PersonId): List<EmailMessageTyp
             sql("SELECT enabled_email_types FROM person WHERE id = ${bind(personId)}")
         }
         .mapTo<List<EmailMessageType>?>()
-        .single()
+        .exactlyOne()
         ?: EmailMessageType.values().toList()
 }
 

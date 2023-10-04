@@ -131,7 +131,7 @@ fun Database.Transaction.archiveThread(
                 .bind("accountId", accountId)
                 .executeAndReturnGeneratedKeys()
                 .mapTo<MessageThreadFolderId>()
-                .single()
+                .exactlyOne()
     }
 
     return this.createUpdate(
@@ -1565,4 +1565,4 @@ WHERE id = ${bind(id)}
             )
         }
         .mapTo<MessageThreadStub>()
-        .single()
+        .exactlyOne()

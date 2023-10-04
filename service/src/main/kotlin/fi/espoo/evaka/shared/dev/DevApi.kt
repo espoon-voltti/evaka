@@ -675,7 +675,7 @@ RETURNING id
                     .bindKotlin(employee)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<EmployeeId>()
-                    .single()
+                    .exactlyOne()
             }
         }
 

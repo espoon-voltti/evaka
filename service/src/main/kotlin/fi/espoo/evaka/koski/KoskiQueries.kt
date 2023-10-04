@@ -96,7 +96,7 @@ RETURNING id, void_date IS NOT NULL AS voided
         .map { row ->
             Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided"))
         }
-        .single()
+        .exactlyOne()
         .let { (id, voided) ->
             if (voided) {
                 createQuery(
@@ -185,7 +185,7 @@ USING (child_id, unit_id, type)
         .bindKotlin(key)
         .bind("payload", payload)
         .mapTo<Boolean>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
     createUpdate(

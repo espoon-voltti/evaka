@@ -75,5 +75,5 @@ WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKe
                 )
             }
             .mapTo<VapidJwt>()
-            .single()
+            .exactlyOne()
 }

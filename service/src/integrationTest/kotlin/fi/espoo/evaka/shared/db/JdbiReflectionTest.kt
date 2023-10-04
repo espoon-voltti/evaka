@@ -20,7 +20,9 @@ class JdbiReflectionTest : PureJdbiTest(resetDbBeforeEach = false) {
         vararg annotations: KClass<out Annotation>
     ) =
         db.read { tx ->
-            tx.createQuery(query).map { row -> row.mapColumn<T>("result", *annotations) }.single()
+            tx.createQuery(query)
+                .map { row -> row.mapColumn<T>("result", *annotations) }
+                .exactlyOne()
         }
 
     @Test

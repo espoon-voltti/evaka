@@ -178,7 +178,7 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
         )
         .bind("id", id)
         .mapTo<Boolean>()
-        .single()
+        .exactlyOne()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery(
@@ -474,7 +474,7 @@ SELECT EXISTS(
             )
         }
         .mapTo<Boolean>()
-        .single()
+        .exactlyOne()
 
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 

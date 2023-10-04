@@ -33,12 +33,12 @@ private inline fun <reified T : Any> Database.Read.passThrough(input: T) =
         )
         .bind("input", input)
         .map { row -> row.mapColumn<T>("output") }
-        .single()
+        .exactlyOne()
 
 private inline fun <reified T : Any> Database.Read.checkMatch(
     @Language("sql") sql: String,
     input: T
-) = createQuery(sql).bind("input", input).mapTo<Boolean>().single()
+) = createQuery(sql).bind("input", input).mapTo<Boolean>().exactlyOne()
 
 class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val utc: ZoneId = ZoneId.of("UTC")
@@ -59,7 +59,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         data class QueryResult(val value: Coordinate?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::point AS value").mapTo<QueryResult>().single() }
+            db.read {
+                it.createQuery("SELECT NULL::point AS value").mapTo<QueryResult>().exactlyOne()
+            }
         assertNull(result.value)
     }
 
@@ -73,7 +75,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                         "SELECT array[point(22.0, 11.0), point(44.0, 33.0)]::point[] AS values"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         assertEquals(
             listOf(Coordinate(lat = 11.0, lon = 22.0), Coordinate(lat = 33.0, lon = 44.0)),
@@ -127,7 +129,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         val result =
             db.read {
-                it.createQuery("SELECT NULL::daterange AS value").mapTo<QueryResult>().single()
+                it.createQuery("SELECT NULL::daterange AS value").mapTo<QueryResult>().exactlyOne()
             }
         assertNull(result.value)
     }
@@ -142,7 +144,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                         "SELECT array[daterange('2020-06-07', NULL, '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         assertEquals(
             listOf(
@@ -173,7 +175,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         val result =
             db.read {
-                it.createQuery("SELECT NULL::daterange AS value").mapTo<QueryResult>().single()
+                it.createQuery("SELECT NULL::daterange AS value").mapTo<QueryResult>().exactlyOne()
             }
         assertNull(result.value)
     }
@@ -188,7 +190,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                         "SELECT array[daterange('2020-06-07', '2021-01-01', '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         assertEquals(
             listOf(
@@ -232,7 +234,9 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
-                it.createQuery("SELECT NULL::datemultirange AS value").mapTo<QueryResult>().single()
+                it.createQuery("SELECT NULL::datemultirange AS value")
+                    .mapTo<QueryResult>()
+                    .exactlyOne()
             }
         assertNull(result.value)
     }
@@ -253,7 +257,9 @@ SELECT :input = datemultirange(
         data class QueryResult(val value: ExternalId?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::text AS value").mapTo<QueryResult>().single() }
+            db.read {
+                it.createQuery("SELECT NULL::text AS value").mapTo<QueryResult>().exactlyOne()
+            }
         assertNull(result.value)
     }
 
@@ -265,7 +271,7 @@ SELECT :input = datemultirange(
             db.read {
                 it.createQuery("SELECT array['test:123456', 'more:42']::text[] AS values")
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         assertEquals(
             listOf(
@@ -295,7 +301,9 @@ SELECT :input = datemultirange(
         data class QueryResult(val value: PersonId?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::uuid AS value").mapTo<QueryResult>().single() }
+            db.read {
+                it.createQuery("SELECT NULL::uuid AS value").mapTo<QueryResult>().exactlyOne()
+            }
         assertNull(result.value)
     }
 
@@ -309,7 +317,7 @@ SELECT :input = datemultirange(
                         "SELECT array['5ea2618c-3e9d-4fd3-8094-8d2f35311962', '2db6c1c7-402f-4d86-a308-a7f1b19bb313']::uuid[] AS values"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         assertEquals(
             listOf(
@@ -331,7 +339,7 @@ SELECT :input = datemultirange(
                         "SELECT jsonb_build_object('value', '5ea2618c-3e9d-4fd3-8094-8d2f35311962'::uuid) AS jsonb"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         val expected = PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962"))
         assertEquals(expected, result.jsonb.value)
@@ -357,7 +365,9 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
-                it.createQuery("SELECT NULL::timestamptz AS value").mapTo<QueryResult>().single()
+                it.createQuery("SELECT NULL::timestamptz AS value")
+                    .mapTo<QueryResult>()
+                    .exactlyOne()
             }
         assertNull(result.value)
     }
@@ -372,7 +382,7 @@ SELECT :input = datemultirange(
                         "SELECT array['2020-05-07T10:59Z', '2021-01-10T06:42Z']::timestamptz[] AS values"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         val values = result.values.map { it.toZonedDateTime().withZoneSameInstant(utc) }
         assertEquals(
@@ -395,7 +405,7 @@ SELECT :input = datemultirange(
                         "SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb"
                     )
                     .mapTo<QueryResult>()
-                    .single()
+                    .exactlyOne()
             }
         val expected = ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc)
         assertEquals(expected, result.jsonb.value.toZonedDateTime().withZoneSameInstant(utc))

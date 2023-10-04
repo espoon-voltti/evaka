@@ -172,7 +172,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("type", type)
             .executeAndReturnGeneratedKeys()
             .mapTo<StaffAttendanceId>()
-            .single()
+            .exactlyOne()
     } else {
         createUpdate(
                 """
@@ -283,7 +283,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("occupancyCoefficient", occupancyCoefficient)
             .executeAndReturnGeneratedKeys()
             .mapTo<StaffAttendanceExternalId>()
-            .single()
+            .exactlyOne()
     } else {
         return createUpdate(
                 """

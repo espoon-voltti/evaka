@@ -66,7 +66,7 @@ SELECT EXISTS (
                         )
                     }
                     .mapTo<Boolean>()
-                    .single()
+                    .exactlyOne()
             else -> false
         }
 
