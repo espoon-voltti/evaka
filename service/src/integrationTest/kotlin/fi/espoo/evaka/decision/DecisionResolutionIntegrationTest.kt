@@ -232,7 +232,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(ApplicationStatus.REJECTED, it.getApplicationStatus(ids.applicationId))
                 assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
                 assertTrue(
-                    it.getDecisionRowsByApplication(ids.applicationId).all {
+                    it.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
                     }
                 )
@@ -293,7 +293,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
                 assertTrue(r.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
                 assertTrue(
-                    r.getDecisionRowsByApplication(ids.applicationId).all {
+                    r.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
                     }
                 )
@@ -343,7 +343,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
                 assertTrue(r.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
                 assertTrue(
-                    r.getDecisionRowsByApplication(ids.applicationId).all {
+                    r.getDecisionRowsByApplication(ids.applicationId).toList().all {
                         it.status == DecisionStatus.REJECTED
                     }
                 )
