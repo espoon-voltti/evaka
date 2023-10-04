@@ -401,7 +401,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     connectedDaycareOnly = true
                 )
             ),
-            details.recentlyTerminatedPlacements
+            details.recentlyTerminatedPlacements.sortedBy { it.endDate }
         )
     }
 
