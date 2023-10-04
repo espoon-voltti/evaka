@@ -41,7 +41,7 @@ fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId 
         )
         .bind("accountId", accountId)
         .mapTo<MessageDraftId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateDraft(

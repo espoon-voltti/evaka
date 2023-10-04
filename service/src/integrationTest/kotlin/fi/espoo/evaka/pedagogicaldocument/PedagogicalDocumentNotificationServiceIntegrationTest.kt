@@ -144,7 +144,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                     )
                     .bind("id", doc.id)
                     .mapTo<HelsinkiDateTime>()
-                    .one()
+                    .exactlyOne()
             assertTrue(
                 HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1)
             )
@@ -195,7 +195,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
                     .bind("id", id)
                     .mapTo<Boolean>()
-                    .one()
+                    .exactlyOne()
             }
         )
     }

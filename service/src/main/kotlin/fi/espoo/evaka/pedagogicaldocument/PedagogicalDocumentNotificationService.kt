@@ -99,7 +99,7 @@ SELECT EXISTS(
             )
             .bind("id", id)
             .mapTo<Boolean>()
-            .one()
+            .exactlyOne()
     }
 
     fun maybeScheduleEmailNotification(tx: Database.Transaction, id: PedagogicalDocumentId) {

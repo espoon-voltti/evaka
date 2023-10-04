@@ -205,7 +205,7 @@ SELECT :name, :areaId
         .bind("areaId", areaId)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareId>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
     createUpdate(

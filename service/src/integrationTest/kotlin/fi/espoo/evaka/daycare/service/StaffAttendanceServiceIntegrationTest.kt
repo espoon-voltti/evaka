@@ -231,7 +231,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 it.createQuery("SELECT MAX(updated) FROM staff_attendance WHERE date = :date")
                     .bind("date", firstDay)
                     .mapTo<HelsinkiDateTime>()
-                    .one()
+                    .exactlyOne()
             },
             unitResult.updated
         )

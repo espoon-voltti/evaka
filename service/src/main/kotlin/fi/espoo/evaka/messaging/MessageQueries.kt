@@ -188,7 +188,7 @@ fun Database.Transaction.insertMessage(
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<MessageId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.insertMessageContent(
@@ -202,7 +202,7 @@ fun Database.Transaction.insertMessageContent(
         .bind("content", content)
         .bind("authorId", sender)
         .mapTo<MessageContentId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.insertRecipients(
@@ -390,7 +390,7 @@ fun Database.Transaction.insertThread(
         .bind("urgent", urgent)
         .bind("isCopy", isCopy)
         .mapTo<MessageThreadId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.reAssociateMessageAttachments(
@@ -1007,7 +1007,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             .bind("accountId", accountId)
             .bind("threadId", threadId)
             .mapTo<ReceivedThread>()
-            .one()
+            .exactlyOne()
 
     val messagesByThread =
         getThreadMessages(

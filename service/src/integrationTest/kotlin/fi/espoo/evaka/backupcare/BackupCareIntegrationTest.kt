@@ -86,7 +86,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         )
 
         db.read { r ->
-            r.getBackupCareRowsByChild(testChild_1.id).one().also {
+            r.getBackupCareRowsByChild(testChild_1.id).exactlyOne().also {
                 assertEquals(id, it.id)
                 assertEquals(testChild_1.id, it.childId)
                 assertEquals(testDaycare.id, it.unitId)
@@ -261,7 +261,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val id = result.id
 
         db.read { r ->
-            r.getBackupCareRowById(id).one().also {
+            r.getBackupCareRowById(id).exactlyOne().also {
                 assertEquals(id, it.id)
                 assertEquals(childId, it.childId)
                 assertEquals(unitId, it.unitId)

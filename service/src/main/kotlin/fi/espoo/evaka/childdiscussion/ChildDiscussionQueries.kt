@@ -49,7 +49,7 @@ fun Database.Transaction.createChildDiscussion(
         .bindKotlin(dto)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDiscussionId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateChildDiscussion(id: ChildDiscussionId, dto: ChildDiscussionBody) {

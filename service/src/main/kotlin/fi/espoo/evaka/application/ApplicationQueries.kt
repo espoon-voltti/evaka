@@ -950,7 +950,7 @@ SELECT type FROM application WHERE id = :id
         )
         .bind("id", id)
         .mapTo<ApplicationType>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateForm(
     id: ApplicationId,
@@ -1298,7 +1298,7 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().one()
+    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().exactlyOne()
 }
 
 fun Database.Read.personHasSentApplicationWithId(
@@ -1319,5 +1319,5 @@ fun Database.Read.personHasSentApplicationWithId(
         .bind("citizenId", citizenId)
         .bind("applicationId", applicationId)
         .mapTo<Boolean>()
-        .one()
+        .exactlyOne()
 }

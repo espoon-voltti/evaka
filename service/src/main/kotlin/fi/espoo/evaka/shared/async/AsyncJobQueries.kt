@@ -31,7 +31,7 @@ RETURNING id
         .bindJson("payload", jobParams.payload)
         .executeAndReturnGeneratedKeys()
         .mapTo<UUID>()
-        .one()
+        .exactlyOne()
 
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,

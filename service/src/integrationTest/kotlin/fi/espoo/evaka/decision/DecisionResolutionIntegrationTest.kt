@@ -92,7 +92,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
                 assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
-                r.getPlacementRowsByChild(testChild_1.id).one().also {
+                r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.DAYCARE, it.type)
                     assertEquals(testDaycare.id, it.unitId)
                     assertEquals(period, it.period())
@@ -106,7 +106,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             }
         }
         db.read { r ->
-            assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).one().deleted)
+            assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
         }
     }
 
@@ -125,7 +125,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
                 assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
-                r.getPlacementRowsByChild(testChild_1.id).one().also {
+                r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.DAYCARE_PART_TIME, it.type)
                     assertEquals(testDaycare.id, it.unitId)
                     assertEquals(period, it.period())
@@ -138,7 +138,9 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
             }
         }
-        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).one().deleted) }
+        db.read {
+            assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
+        }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -156,7 +158,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
                 assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
-                r.getPlacementRowsByChild(testChild_1.id).one().also {
+                r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.PRESCHOOL, it.type)
                     assertEquals(testDaycare.id, it.unitId)
                     assertEquals(period, it.period())
@@ -169,7 +171,9 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
             }
         }
-        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).one().deleted) }
+        db.read {
+            assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
+        }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -190,7 +194,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
                 assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
-                r.getPlacementRowsByChild(testChild_1.id).one().also {
+                r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.PRESCHOOL, it.type)
                     assertEquals(testDaycare.id, it.unitId)
                     assertEquals(period, it.period())
@@ -218,7 +222,9 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         it[1].period()
                     )
                 }
-                assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).one().deleted)
+                assertTrue(
+                    r.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted
+                )
             }
         } else {
             rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
@@ -252,7 +258,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
             db.read { r ->
                 assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
-                r.getPlacementRowsByChild(testChild_1.id).one().also {
+                r.getPlacementRowsByChild(testChild_1.id).exactlyOne().also {
                     assertEquals(PlacementType.PREPARATORY, it.type)
                     assertEquals(testDaycare.id, it.unitId)
                     assertEquals(period, it.period())
@@ -367,7 +373,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            r.getDecisionRowById(decisionId).one().also {
+            r.getDecisionRowById(decisionId).exactlyOne().also {
                 assertEquals(DecisionStatus.ACCEPTED, it.status)
                 assertNotNull(it.resolved)
                 assertEquals(requestedStartDate, it.requestedStartDate)
@@ -393,7 +399,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            r.getDecisionRowById(decisionId).one().also {
+            r.getDecisionRowById(decisionId).exactlyOne().also {
                 assertEquals(DecisionStatus.REJECTED, it.status)
                 assertNotNull(it.resolved)
                 assertNull(it.requestedStartDate)

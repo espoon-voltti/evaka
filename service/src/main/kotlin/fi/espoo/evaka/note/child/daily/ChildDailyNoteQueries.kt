@@ -73,7 +73,7 @@ RETURNING id
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDailyNoteId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateChildDailyNote(
@@ -101,7 +101,7 @@ RETURNING *
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDailyNote>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {

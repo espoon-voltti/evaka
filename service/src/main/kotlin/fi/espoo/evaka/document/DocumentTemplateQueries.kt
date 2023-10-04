@@ -20,7 +20,7 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest)
         .bindKotlin(template)
         .bind("content", DocumentTemplateContent(sections = emptyList()))
         .mapTo<DocumentTemplate>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.duplicateTemplate(
@@ -38,7 +38,7 @@ fun Database.Transaction.duplicateTemplate(
         .bind("id", id)
         .bindKotlin(template)
         .mapTo<DocumentTemplate>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {

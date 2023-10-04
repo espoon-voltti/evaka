@@ -21,7 +21,7 @@ fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
 """
-    return this.createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
+    return this.createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().exactlyOne()
 }
 
 fun Database.Read.getEmployeeMessageAccountIds(
@@ -113,7 +113,10 @@ fun Database.Transaction.createDaycareGroupMessageAccount(
         RETURNING id
     """
             .trimIndent()
-    return createQuery(sql).bind("daycareGroupId", daycareGroupId).mapTo<MessageAccountId>().one()
+    return createQuery(sql)
+        .bind("daycareGroupId", daycareGroupId)
+        .mapTo<MessageAccountId>()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
@@ -134,7 +137,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
         RETURNING id
     """
             .trimIndent()
-    return createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
+    return createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().exactlyOne()
 }
 
 fun Database.Transaction.upsertEmployeeMessageAccount(
@@ -153,7 +156,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(
         .bind("employeeId", employeeId)
         .bind("accountType", accountType)
         .mapTo<MessageAccountId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
@@ -171,7 +174,7 @@ fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountTyp
     return this.createQuery("SELECT type FROM message_account WHERE id = :accountId")
         .bind("accountId", accountId)
         .mapTo<AccountType>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =

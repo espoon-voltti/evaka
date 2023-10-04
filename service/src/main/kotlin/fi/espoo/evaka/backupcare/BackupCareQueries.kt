@@ -140,7 +140,7 @@ RETURNING id
         .bind("end", backupCare.period.end)
         .executeAndReturnGeneratedKeys()
         .mapTo<BackupCareId>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateBackupCare(
     id: BackupCareId,
@@ -185,7 +185,7 @@ fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
         )
         .bind("id", id)
         .mapTo<ChildId>()
-        .one()
+        .exactlyOne()
 
 /** Recreates backup cares for a child so that they are always within placements. */
 fun Database.Transaction.recreateBackupCares(childId: ChildId) {

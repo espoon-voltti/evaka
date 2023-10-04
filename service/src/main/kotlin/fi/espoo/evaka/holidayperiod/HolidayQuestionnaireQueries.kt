@@ -123,7 +123,7 @@ RETURNING id
         .bindKotlin(data)
         .bind("type", QuestionnaireType.FIXED_PERIOD)
         .mapTo<HolidayQuestionnaireId>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,

@@ -25,7 +25,7 @@ fun Database.Transaction.insertVasuDocument(
         createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
             .bind("id", childId)
             .mapTo<VasuChild>(qualifiers = emptyArray())
-            .one()
+            .exactlyOne()
 
     val guardiansAndFosterParents =
         createQuery(
@@ -75,7 +75,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("basics", basics)
             .bind("templateId", template.id)
             .mapTo<VasuDocumentId>()
-            .one()
+            .exactlyOne()
 
     createUpdate(
             """
@@ -331,7 +331,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
         .bind("createdBy", createdBy)
         .bind("eventType", eventType)
         .mapTo<VasuDocumentEvent>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {

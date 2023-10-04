@@ -115,7 +115,7 @@ fun Database.Transaction.createIncomeNotification(
         .bind("notificationType", notificationType)
         .executeAndReturnGeneratedKeys()
         .mapTo<IncomeNotificationId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =

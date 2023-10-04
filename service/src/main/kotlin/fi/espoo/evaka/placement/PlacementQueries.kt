@@ -170,7 +170,7 @@ fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
     createQuery("SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = :id")
         .bind("id", placementId)
         .mapTo<PlacementChildAndRange>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
@@ -655,7 +655,7 @@ fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean =
         )
         .bind("groupId", groupId)
         .mapTo<Boolean>()
-        .one()
+        .exactlyOne()
 
 fun Database.Read.getGroupPlacementsAtDaycare(
     daycareId: DaycareId,
@@ -748,7 +748,7 @@ fun Database.Transaction.createGroupPlacement(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<GroupPlacementId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateGroupPlacementStartDate(
@@ -920,7 +920,7 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         .bind("childId", childId)
         .bind("range", range)
         .mapTo<Boolean>()
-        .one()
+        .exactlyOne()
 
 fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDate): Language? =
     createQuery(

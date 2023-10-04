@@ -252,7 +252,7 @@ SELECT EXISTS (
         .bind("childId", childId)
         .bind("personId", personId)
         .mapTo<Boolean>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.fetchFamilyContacts(clock: EvakaClock, childId: ChildId): List<FamilyContact> {

@@ -33,7 +33,7 @@ WHERE id = :applicationId
         )
         .bind("applicationId", applicationId)
         .mapTo<ApplicationStatus>()
-        .one()
+        .exactlyOne()
 
 data class DecisionTableRow(
     val id: DecisionId,

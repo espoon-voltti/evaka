@@ -88,7 +88,7 @@ class MessageService(
                     .bind("threadId", msg.threadId)
                     .bind("recipientIds", msg.recipientIds)
                     .mapTo<MessageContentId>()
-                    .one()
+                    .exactlyOne()
             tx.upsertReceiverThreadParticipants(contentId, msg.sentAt)
         }
     }

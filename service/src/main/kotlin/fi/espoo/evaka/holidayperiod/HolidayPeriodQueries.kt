@@ -45,7 +45,7 @@ RETURNING *
         .bind("period", period)
         .bind("reservationDeadline", reservationDeadline)
         .mapTo<HolidayPeriod>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,

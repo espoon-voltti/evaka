@@ -151,7 +151,7 @@ fun Database.Transaction.insertServiceNeed(
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
         .mapTo<ServiceNeedId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateServiceNeed(

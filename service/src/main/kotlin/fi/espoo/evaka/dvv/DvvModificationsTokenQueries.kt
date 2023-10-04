@@ -37,7 +37,7 @@ LIMIT 1
                 .trimIndent()
         )
         .mapTo<String>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
@@ -51,7 +51,7 @@ WHERE token = :token
         )
         .bind("token", token)
         .mapTo<DvvModificationToken>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deleteDvvModificationToken(token: String) {

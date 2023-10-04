@@ -32,7 +32,7 @@ fun Database.Transaction.insertVasuTemplate(
         .bind("language", language)
         .bind("content", content)
         .mapTo<VasuTemplateId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {

@@ -134,7 +134,7 @@ fun Database.Transaction.markStaffArrival(
         .bind("occupancyCoefficient", occupancyCoefficient)
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffAttendanceId>()
-        .one()
+        .exactlyOne()
 
 data class StaffAttendance(
     val id: StaffAttendanceId?,
@@ -240,7 +240,7 @@ fun Database.Transaction.markExternalStaffArrival(
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffAttendanceExternalId>()
-        .one()
+        .exactlyOne()
 
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,

@@ -403,7 +403,7 @@ RETURNING id
         .bind("personId", personId)
         .also { it.bindIncomeStatementBody(body) }
         .mapTo<IncomeStatementId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateIncomeStatement(
@@ -567,7 +567,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             .bind("sentEndDate", sentEndDate)
             .bind("placementValidDate", placementValidDate)
             .mapTo<Int>()
-            .one()
+            .exactlyOne()
     val sortColumn =
         when (sortBy) {
             IncomeStatementSortParam.CREATED -> "i.created ${sortDirection.name}, i.start_date"

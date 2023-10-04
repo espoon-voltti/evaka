@@ -27,7 +27,7 @@ fun Database.Transaction.insertChildDocument(
         .bind("content", DocumentContent(answers = emptyList()))
         .bind("now", now)
         .mapTo<ChildDocumentId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
