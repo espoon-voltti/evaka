@@ -73,7 +73,7 @@ UNION
 SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 """
 
-    return createQuery(sql).bind("today", today).bind("userId", userId).mapTo<ChildId>().list()
+    return createQuery(sql).bind("today", today).bind("userId", userId).mapTo<ChildId>().toList()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(
@@ -85,7 +85,7 @@ fun Database.Read.getFixedPeriodQuestionnaire(
         .firstOrNull()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().list()
+    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().toList()
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
@@ -202,4 +202,4 @@ WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
         .bind("questionnaireId", id)
         .bind("childIds", childIds)
         .mapTo<HolidayQuestionnaireAnswer>()
-        .list()
+        .toList()

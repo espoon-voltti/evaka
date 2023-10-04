@@ -386,7 +386,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = inner.asSequence()
 
-        fun list(): List<T> = toList()
+        @Deprecated("Use toList instead", ReplaceWith("toList()")) fun list(): List<T> = toList()
 
         fun set(): Set<T> = toSet()
 

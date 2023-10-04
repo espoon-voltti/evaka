@@ -36,7 +36,7 @@ fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
 fun Database.Read.getChildDailyNotesForChildren(
     children: Collection<ChildId>,
 ): List<ChildDailyNote> =
-    getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).list()
+    getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildDailyNotesForGroup(
     groupId: GroupId,
@@ -55,7 +55,7 @@ $it.child_id IN (
                 )
             }
         )
-        .list()
+        .toList()
 
 fun Database.Transaction.createChildDailyNote(
     childId: ChildId,

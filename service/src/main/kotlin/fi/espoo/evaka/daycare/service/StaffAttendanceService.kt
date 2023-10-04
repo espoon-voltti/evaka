@@ -178,7 +178,7 @@ fun Database.Read.getStaffAttendanceByRange(
         .bind("groupId", groupId)
         .bind("range", range)
         .mapTo<GroupStaffAttendance>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getUnitStaffAttendanceForDate(
@@ -201,7 +201,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
             .bind("unitId", unitId)
             .bind("date", date)
             .mapTo<GroupStaffAttendance>()
-            .list()
+            .toList()
 
     val count = groupAttendances.sumOf { it.count }
     val countOther = groupAttendances.sumOf { it.countOther }

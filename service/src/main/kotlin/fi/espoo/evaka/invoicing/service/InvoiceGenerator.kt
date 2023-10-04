@@ -336,7 +336,7 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
             )
         )
         .mapTo<FeeDecision>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
@@ -348,7 +348,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
         .bind("period_end", period.end)
         .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING))
         .mapTo<PersonId>()
-        .list()
+        .toList()
 }
 
 data class AbsenceStub(
@@ -506,7 +506,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
                 )
             )
         }
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
@@ -562,7 +562,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().list()
+    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().toList()
 }
 
 private fun placementOn(year: Int, month: Int): String {

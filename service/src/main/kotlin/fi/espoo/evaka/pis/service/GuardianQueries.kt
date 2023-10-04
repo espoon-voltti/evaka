@@ -88,7 +88,7 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<PersonId>().list()
+    return createQuery(sql).bind("childId", childId).mapTo<PersonId>().toList()
 }
 
 fun Database.Read.getChildGuardiansAndFosterParents(
@@ -105,7 +105,7 @@ fun Database.Read.getChildGuardiansAndFosterParents(
         .bind("childId", childId)
         .bind("today", today)
         .mapTo<PersonId>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
@@ -118,7 +118,7 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", guardianId).mapTo<ChildId>().list()
+    return createQuery(sql).bind("guardianId", guardianId).mapTo<ChildId>().toList()
 }
 
 fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {

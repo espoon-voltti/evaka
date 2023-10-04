@@ -155,7 +155,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from"
                 )
                 .mapTo<BigDecimal>()
-                .list()
+                .toList()
         }
     }
 }

@@ -63,7 +63,7 @@ class PedagogicalDocumentNotificationService(
                     language = getLanguage(row.mapColumn("language"))
                 )
             }
-            .list()
+            .toList()
     }
 
     private fun Database.Transaction.updateDocumentEmailJobCreatedAt(

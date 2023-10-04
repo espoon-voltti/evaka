@@ -67,7 +67,7 @@ fun Database.Read.getVasuTemplates(
         )
         .apply { if (validOnly) bind("today", clock.today()) }
         .mapTo<VasuTemplateSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {

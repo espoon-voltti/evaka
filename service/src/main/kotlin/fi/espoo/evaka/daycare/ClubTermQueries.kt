@@ -31,7 +31,7 @@ data class ClubTerm(
 fun Database.Read.getClubTerms(): List<ClubTerm> {
     return createQuery("SELECT term, application_period, term_breaks FROM club_term order by term")
         .mapTo<ClubTerm>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? {

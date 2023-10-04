@@ -30,7 +30,7 @@ WHERE child_id = :childId
         )
         .bind("childId", childId)
         .mapTo<ChildConsent>()
-        .list()
+        .toList()
 
 fun Database.Read.getCitizenChildConsentsForGuardian(
     guardianId: PersonId,

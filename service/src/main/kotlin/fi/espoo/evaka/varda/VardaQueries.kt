@@ -223,7 +223,7 @@ WHERE update_failed = true
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
         .mapTo<ChangedChildServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
@@ -244,7 +244,7 @@ WHERE evaka_child_id = :evakaChildId
         )
         .bind("evakaChildId", evakaChildId)
         .mapTo<VardaServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
     eVakaServiceNeedId: ServiceNeedId
@@ -337,7 +337,7 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
         .bind("feeDecisionStatus", feeDecisionStatus)
         .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
         .mapTo<FeeDataByServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
     // The default application date is set to be 15 days before the start because it's the minimum
@@ -422,7 +422,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
         )
         .bind("serviceNeedId", serviceNeedId)
         .mapTo<Boolean>()
-        .list()
+        .toList()
         .isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
@@ -457,7 +457,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
 fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
         .mapTo<ChildId>()
-        .list()
+        .toList()
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
     createUpdate(
@@ -534,7 +534,7 @@ fun Database.Transaction.getVardaChildrenToReset(
         )
         .bind("limit", limit)
         .mapTo<ChildId>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.calculateDeletedChildServiceNeeds(

@@ -271,5 +271,5 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
             )
             .mapTo<Absence>()
-            .list()
+            .toList()
 }

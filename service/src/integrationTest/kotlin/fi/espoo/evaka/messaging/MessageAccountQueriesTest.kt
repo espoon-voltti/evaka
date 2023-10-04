@@ -302,7 +302,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val allAccounts =
                 tx.createQuery("SELECT id, name, 'PERSONAL' as type from message_account_view")
                     .mapTo<MessageAccount>()
-                    .list()
+                    .toList()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId =

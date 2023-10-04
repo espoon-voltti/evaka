@@ -213,7 +213,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
         )
         .bind("child_id", childId)
         .mapTo<PedagogicalDocument>()
-        .list()
+        .toList()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 

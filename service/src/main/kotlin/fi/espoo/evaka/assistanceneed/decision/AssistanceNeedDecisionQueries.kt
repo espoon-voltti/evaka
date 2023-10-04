@@ -311,7 +311,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
             )
         }
         .mapTo<AssistanceNeedDecisionBasics>()
-        .list()
+        .toList()
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
     // language=sql
@@ -363,7 +363,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<AssistanceNeedDecisionCitizenListItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisionId): String? {
@@ -435,7 +435,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.decideAssistanceNeedDecision(

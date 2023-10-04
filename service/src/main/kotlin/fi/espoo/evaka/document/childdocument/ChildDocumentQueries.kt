@@ -41,7 +41,7 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
         )
         .bind("childId", childId)
         .mapTo<ChildDocumentSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {

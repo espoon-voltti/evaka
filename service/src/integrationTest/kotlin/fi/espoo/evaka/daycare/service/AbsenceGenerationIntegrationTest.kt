@@ -429,7 +429,7 @@ ORDER BY a.date, a.category
 """
                 )
                 .mapTo<Absence>()
-                .list()
+                .toList()
         }
     }
 }

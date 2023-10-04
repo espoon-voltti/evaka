@@ -30,7 +30,7 @@ fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
         )
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
-        .list()
+        .toList()
 
 fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
     return this.createQuery(

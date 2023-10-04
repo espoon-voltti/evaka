@@ -31,7 +31,7 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
         .mapTo<AssistanceFactor>()
-        .list()
+        .toList()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
@@ -104,7 +104,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<DaycareAssistance>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
@@ -163,7 +163,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<PreschoolAssistance>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
@@ -222,7 +222,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<OtherAssistanceMeasure>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,

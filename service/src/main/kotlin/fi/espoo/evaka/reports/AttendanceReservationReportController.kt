@@ -265,7 +265,7 @@ WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
             )
         }
         .mapTo<AssistanceNeedRow>()
-        .list()
+        .toList()
 
 private data class ReservationRow(
     val date: LocalDate,

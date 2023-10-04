@@ -360,7 +360,7 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
         .bind("period", period)
         .bind("childId", childId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {

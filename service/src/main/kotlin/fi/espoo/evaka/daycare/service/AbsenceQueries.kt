@@ -356,7 +356,7 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().list()
+    return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().toList()
 }
 
 data class ChildAbsenceDateRow(val childId: ChildId, val date: LocalDate)

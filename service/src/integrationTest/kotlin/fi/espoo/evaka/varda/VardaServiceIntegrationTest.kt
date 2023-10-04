@@ -1609,7 +1609,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                         "SELECT update_failed FROM varda_service_need WHERE update_failed = true"
                     )
                     .mapTo<Boolean>()
-                    .list()
+                    .toList()
             }
         assertEquals(n, failures.size)
     }

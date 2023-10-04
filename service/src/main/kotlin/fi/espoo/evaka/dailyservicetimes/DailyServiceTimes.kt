@@ -415,7 +415,7 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
         .bind("childId", childId)
         .bind("range", range)
         .mapTo<DailyServiceTimesValidityWithId>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(

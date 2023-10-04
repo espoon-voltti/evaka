@@ -50,7 +50,7 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
                 .trimIndent()
         )
         .mapTo<DocumentTemplateSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {

@@ -62,7 +62,7 @@ WHERE soc.daycare_id = :unitId
         )
         .bind("unitId", unitId)
         .mapTo<StaffOccupancyCoefficient>()
-        .list()
+        .toList()
 
 fun Database.Transaction.upsertOccupancyCoefficient(
     params: OccupancyCoefficientUpsert

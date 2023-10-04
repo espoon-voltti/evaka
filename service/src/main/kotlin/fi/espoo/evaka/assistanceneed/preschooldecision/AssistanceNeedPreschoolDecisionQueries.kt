@@ -260,7 +260,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         createQuery(sql)
             .bind("childId", childId)
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .list()
+            .toList()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -286,7 +286,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
                 )
             }
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .list()
+            .toList()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -481,7 +481,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(

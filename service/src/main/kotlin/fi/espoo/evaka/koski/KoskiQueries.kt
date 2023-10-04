@@ -54,7 +54,7 @@ AND ${predicate(daycarePredicate.forTable("kvsr"))}
             )
         }
         .mapTo<KoskiStudyRightKey>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.beginKoskiUpload(

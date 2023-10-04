@@ -46,7 +46,7 @@ fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
     return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<MobileDevice>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {

@@ -234,7 +234,7 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().list()
+    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().toList()
 }
 
 fun Database.Transaction.finalizeDecisions(
@@ -255,7 +255,7 @@ fun Database.Transaction.finalizeDecisions(
         .bind("applicationId", applicationId)
         .bind("today", today)
         .mapTo<DecisionId>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.markApplicationDecisionsSent(

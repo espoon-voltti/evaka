@@ -58,7 +58,7 @@ GROUP BY ce.id, cea.unit_id
         .bind("unitId", unitId)
         .bind("range", range)
         .mapTo<CalendarEvent>()
-        .list()
+        .toList()
 
 fun Database.Transaction.createCalendarEvent(event: CalendarEventForm): CalendarEventId {
     val eventId =
@@ -213,7 +213,7 @@ WHERE cp.period && ce.period
         .bind("guardianId", guardianId)
         .bind("range", range)
         .mapTo<CitizenCalendarEventRow>()
-        .list()
+        .toList()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
     this.createQuery(
@@ -325,5 +325,5 @@ GROUP BY mp.parent_id, p.language
                 events = row.mapJsonColumn<List<CalendarEventNotificationData>>("events")
             )
         }
-        .list()
+        .toList()
 }

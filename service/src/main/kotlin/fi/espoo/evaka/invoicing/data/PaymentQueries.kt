@@ -50,7 +50,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
         )
         .bind("ids", ids)
         .mapTo<Payment>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.readPayments(): List<Payment> {
@@ -65,7 +65,7 @@ fun Database.Read.readPayments(): List<Payment> {
         """
         )
         .mapTo<Payment>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> {

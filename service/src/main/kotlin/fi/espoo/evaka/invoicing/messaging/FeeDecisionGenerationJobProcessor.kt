@@ -75,7 +75,7 @@ fun planFinanceDecisionGeneration(
                 )
                 .bind("dateRange", dateRange)
                 .mapTo<PersonId>()
-                .list()
+                .toList()
         }
 
     asyncJobRunner.plan(

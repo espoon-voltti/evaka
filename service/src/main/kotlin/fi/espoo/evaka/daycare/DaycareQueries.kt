@@ -395,7 +395,7 @@ WHERE daycare_id = :daycareId
         )
         .bind("daycareId", daycareId)
         .mapTo<DaycareGroupSummary>()
-        .list()
+        .toList()
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
     createQuery(
@@ -407,7 +407,7 @@ fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
                 .trimIndent()
         )
         .mapTo<UnitFeatures>()
-        .list()
+        .toList()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,

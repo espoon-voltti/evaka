@@ -1771,7 +1771,7 @@ AND state != 'idle'
                 .trimIndent()
         )
         .mapTo<ActiveConnection>()
-        .list()
+        .toList()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql

@@ -47,7 +47,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("id", childId)
             .bind("today", now.toLocalDate())
             .mapTo<VasuGuardian>(qualifiers = emptyArray())
-            .list()
+            .toList()
 
     val basics =
         VasuBasics(
@@ -373,7 +373,7 @@ private fun Database.Read.getVasuPlacements(
         .bind("today", today)
         .bind("id", id)
         .mapTo<VasuPlacement>(qualifiers = emptyArray())
-        .list()
+        .toList()
 }
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =

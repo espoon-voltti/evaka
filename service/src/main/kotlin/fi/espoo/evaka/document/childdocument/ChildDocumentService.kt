@@ -52,7 +52,7 @@ class ChildDocumentService(
                     )
                 }
                 .mapTo<ChildDocumentId>()
-                .list()
+                .toList()
 
         if (documentIds.isNotEmpty()) {
             documentIds

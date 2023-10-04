@@ -118,7 +118,7 @@ fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
     createQuery("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = :id")
         .bind("id", id)
         .map(toPersonDTO)
-        .list()
+        .toList()
 
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
@@ -508,7 +508,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
         order by source.relname, attr.attname
     """
             .trimIndent()
-    return createQuery(sql).mapTo<PersonReference>().list()
+    return createQuery(sql).mapTo<PersonReference>().toList()
 }
 
 fun Database.Read.getGuardianDependants(personId: PersonId) =

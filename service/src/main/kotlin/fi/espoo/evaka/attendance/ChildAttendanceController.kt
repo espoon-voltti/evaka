@@ -603,7 +603,7 @@ private fun Database.Read.fetchChildPlacementBasics(
         .bind("unitId", unitId)
         .bind("today", today)
         .mapTo<ChildPlacementBasics>()
-        .list()
+        .toList()
         .firstOrNull()
         ?: throw BadRequest("Child $childId has no placement in unit $unitId on date $today")
 }
@@ -632,7 +632,7 @@ private fun Database.Read.fetchChildPlacementTypeDates(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<PlacementTypeDate>()
-        .list()
+        .toList()
 }
 
 private fun getChildAttendanceStatus(

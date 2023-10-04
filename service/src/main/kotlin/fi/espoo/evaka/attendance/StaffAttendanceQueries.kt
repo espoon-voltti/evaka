@@ -77,7 +77,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         .bind("rangeEnd", now.atEndOfDay())
         .bind("now", now)
         .mapTo<StaffMember>()
-        .list()
+        .toList()
 
 fun Database.Read.getExternalStaffAttendance(
     id: StaffAttendanceExternalId,
@@ -111,7 +111,7 @@ fun Database.Read.getExternalStaffAttendances(
         .bind("unitId", unitId)
         .bind("now", now)
         .mapTo<ExternalStaffMember>()
-        .list()
+        .toList()
 
 fun Database.Transaction.markStaffArrival(
     employeeId: EmployeeId,
@@ -356,7 +356,7 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<RawAttendance>()
-        .list()
+        .toList()
 
 fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
@@ -413,7 +413,7 @@ WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_T
         .bind("start", start)
         .bind("end", end)
         .mapTo<RawAttendanceEmployee>()
-        .list()
+        .toList()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
@@ -432,7 +432,7 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<ExternalAttendance>()
-        .list()
+        .toList()
 
 private data class EmployeeGroups(val employeeId: EmployeeId, val groupIds: List<GroupId>)
 
@@ -510,7 +510,7 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
 }
 
 fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> =
-    createQuery("SELECT * FROM staff_attendance_realtime").mapTo<StaffMemberAttendance>().list()
+    createQuery("SELECT * FROM staff_attendance_realtime").mapTo<StaffMemberAttendance>().toList()
 
 fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,

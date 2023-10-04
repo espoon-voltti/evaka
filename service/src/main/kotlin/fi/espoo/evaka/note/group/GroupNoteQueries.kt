@@ -24,7 +24,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
         )
         .bind("groupIds", groupIds)
         .mapTo<GroupNote>()
-        .list()
+        .toList()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate(

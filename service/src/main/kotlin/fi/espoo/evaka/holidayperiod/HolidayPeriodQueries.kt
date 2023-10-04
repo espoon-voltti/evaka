@@ -17,12 +17,12 @@ fun Database.Read.getHolidayPeriodsInRange(
         )
         .bind("range", range)
         .mapTo<HolidayPeriod>()
-        .list()
+        .toList()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
         .mapTo<HolidayPeriod>()
-        .list()
+        .toList()
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE id = :id")

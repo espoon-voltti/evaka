@@ -120,7 +120,7 @@ fun Database.Read.duplicateApplicationExists(
         .bind("guardianId", guardianId)
         .bind("type", type)
         .mapTo<Int>()
-        .list()
+        .toList()
         .isNotEmpty()
 }
 
@@ -160,7 +160,7 @@ fun Database.Read.activePlacementExists(
         .bind("types", placementTypes)
         .bind("today", today)
         .mapTo<Int>()
-        .list()
+        .toList()
         .isNotEmpty()
 }
 
@@ -702,7 +702,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
         .bind("citizenId", citizenId)
         .bind("today", today)
         .mapTo<CitizenChildren>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.fetchApplicationDetails(
@@ -906,7 +906,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                 status = row.mapColumn("status")
             )
         }
-        .list()
+        .toList()
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true) data class FormWithType(val type: String)
@@ -1279,7 +1279,7 @@ RETURNING id
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
         .mapTo<ApplicationId>()
-        .list()
+        .toList()
 
 fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int {
     // language=SQL

@@ -591,7 +591,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .mapTo<IncomeStatementAwaitingHandler>()
-            .list()
+            .toList()
 
     return if (rows.isEmpty()) {
         Paged(listOf(), 0, 1)
@@ -604,7 +604,7 @@ fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalD
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
         .bind("personId", personId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 
 fun Database.Read.incomeStatementExistsForStartDate(
     personId: PersonId,
@@ -641,4 +641,4 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .mapTo<ChildBasicInfo>()
-        .list()
+        .toList()

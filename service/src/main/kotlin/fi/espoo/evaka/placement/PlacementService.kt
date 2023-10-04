@@ -482,7 +482,7 @@ fun Database.Read.getUnitChildrenCapacities(
         .bind("unitId", unitId)
         .bind("date", date)
         .mapTo<UnitChildrenCapacityFactors>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
@@ -647,7 +647,7 @@ WHERE bc.unit_id = :unitId AND bc.group_id IS NULL
             .bind("unitId", unitId)
             .bind("evakaLaunch", evakaLaunch)
             .mapTo<MissingGroupPlacement>()
-            .list()
+            .toList()
 
     return missingGroupPlacements + missingBackupCareGroups
 }

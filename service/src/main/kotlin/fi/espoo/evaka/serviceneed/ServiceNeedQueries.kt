@@ -212,7 +212,7 @@ fun Database.Read.getOverlappingServiceNeeds(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<ServiceNeed>()
-        .list()
+        .toList()
         .filter { it.id != excluding }
 }
 
@@ -247,7 +247,7 @@ ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_f
                 .trimIndent()
         )
         .mapTo<ServiceNeedOption>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
@@ -301,7 +301,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
     return createQuery(sql)
         .bind("placementTypes", placementTypes)
         .mapTo<ServiceNeedOptionPublicInfo>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getGroupedActualServiceNeedInfosByRangeAndUnit(

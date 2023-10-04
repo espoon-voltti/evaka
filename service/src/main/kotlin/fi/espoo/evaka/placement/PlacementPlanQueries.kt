@@ -191,7 +191,7 @@ WHERE
         .bind("to", to)
         .bind("statuses", statuses)
         .mapTo<QueryResult>()
-        .list()
+        .toList()
         .map {
             PlacementPlanDetails(
                 id = it.id,
@@ -254,7 +254,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
         )
         .bind("id", childId)
         .mapTo<PlacementDraftChild>()
-        .list()
+        .toList()
         .singleOrNull()
 }
 

@@ -231,7 +231,7 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
         .bind("range", range)
         .bind("childId", childId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 }
 
 data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
@@ -390,7 +390,7 @@ ORDER BY p.date_of_birth, p.duplicate_of
         .bind("guardianId", guardianId)
         .bind("today", today)
         .mapTo<ReservationChild>()
-        .list()
+        .toList()
 }
 
 data class ReservationPlacement(

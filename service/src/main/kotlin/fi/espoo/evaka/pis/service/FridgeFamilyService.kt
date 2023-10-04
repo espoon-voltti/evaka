@@ -158,7 +158,7 @@ class FridgeFamilyService(
             .bind("today", clock.today())
             .bind("personId", personId)
             .mapTo<ChildId>()
-            .list()
+            .toList()
             .toHashSet()
     }
 

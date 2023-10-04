@@ -100,7 +100,7 @@ fun Database.Read.getAccountNames(
         .bind("ids", accountIds)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<String>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.createDaycareGroupMessageAccount(
@@ -199,7 +199,7 @@ WHERE content.id = :id
         )
         .bind("id", id)
         .mapTo<MessageAccountId>()
-        .list()
+        .toList()
 
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
     createQuery("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")

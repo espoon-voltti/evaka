@@ -59,7 +59,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
     return createQuery(sql)
         .bind("childId", childId)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
@@ -115,5 +115,5 @@ fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
         .bind("childId", childId)
         .bind("range", range)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .list()
+        .toList()
 }

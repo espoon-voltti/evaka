@@ -28,12 +28,12 @@ WHERE ${predicate(predicate.forTable("csn"))}
         .mapTo<ChildStickyNote>()
 
 fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> =
-    getChildStickyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).list()
+    getChildStickyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).toList()
 
 fun Database.Read.getChildStickyNotesForChildren(
     children: Collection<ChildId>
 ): List<ChildStickyNote> =
-    getChildStickyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).list()
+    getChildStickyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildStickyNotesForGroup(
     groupId: GroupId,
@@ -52,7 +52,7 @@ $it.child_id IN (
                 )
             }
         )
-        .list()
+        .toList()
 
 fun Database.Transaction.createChildStickyNote(
     childId: ChildId,
