@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
@@ -15,6 +16,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val validFrom: LocalDate
     val validTo: LocalDate?
     val headOfFamilyId: PersonId
+    val created: HelsinkiDateTime
 
     val validDuring: DateRange
         @JsonIgnore get() = DateRange(validFrom, validTo)
@@ -22,6 +24,8 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     fun withRandomId(): Decision
 
     fun withValidity(period: DateRange): Decision
+
+    fun withCreated(created: HelsinkiDateTime): Decision
 
     fun contentEquals(decision: Decision): Boolean
 
