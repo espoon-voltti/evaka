@@ -447,6 +447,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             it.fold(initial, operation)
         }
 
+        @Deprecated("Use either toList or useIterable and call partition on it instead")
         inline fun partition(crossinline predicate: (T) -> Boolean): Pair<List<T>, List<T>> =
             useIterable {
                 it.partition(predicate)
