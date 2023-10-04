@@ -80,9 +80,8 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   const [preview, setPreview] = useState(document.publishedAt !== null)
   const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
-  const { mutateAsync: updateChildDocumentContent, isIdle } = useMutationResult(
-    updateChildDocumentContentMutation
-  )
+  const { mutateAsync: updateChildDocumentContent, isLoading: submitting } =
+    useMutationResult(updateChildDocumentContentMutation)
 
   // invalidate cached document on onmount
   const queryClient = useQueryClient()
@@ -124,11 +123,11 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
       !preview &&
       debouncedValidContent !== null &&
       !isEqual(lastSavedContent, debouncedValidContent) &&
-      isIdle
+      !submitting
     ) {
       void save(debouncedValidContent)
     }
-  }, [preview, debouncedValidContent, lastSavedContent, save, isIdle])
+  }, [preview, debouncedValidContent, lastSavedContent, save, submitting])
 
   const goBack = () => navigate(`/child-information/${document.child.id}`)
 
