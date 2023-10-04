@@ -388,7 +388,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         @Deprecated("Use toList instead", ReplaceWith("toList()")) fun list(): List<T> = toList()
 
-        fun set(): Set<T> = toSet()
+        @Deprecated("Use toSet instead", ReplaceWith("toSet()")) fun set(): Set<T> = toSet()
 
         fun one(): T = exactlyOne()
 
