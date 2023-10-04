@@ -7,6 +7,7 @@ package fi.espoo.evaka.document.childdocument
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
+import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -88,7 +89,11 @@ class ChildDocumentController(
                         Action.Child.READ_CHILD_DOCUMENT,
                         childId
                     )
-                    val documents = tx.getChildDocuments(childId)
+                    val documents =
+                        tx.getChildDocuments(childId) +
+                            tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
+                                tx.getChildDocuments(duplicate.id)
+                            }
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
                             tx,
@@ -96,11 +101,10 @@ class ChildDocumentController(
                             clock,
                             documents.map { it.id }
                         )
-                    documents.map {
-                        ChildDocumentSummaryWithPermittedActions(
-                            it,
-                            permittedActions[it.id] ?: emptySet()
-                        )
+                    documents.mapNotNull { document ->
+                        permittedActions[document.id]
+                            ?.takeIf { it.contains(Action.ChildDocument.READ) }
+                            ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
                     }
                 }
             }

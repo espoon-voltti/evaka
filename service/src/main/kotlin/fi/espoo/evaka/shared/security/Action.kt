@@ -2118,7 +2118,13 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfDuplicateChildOfHojksChildDocument()
         ),
         UPDATE(
             HasGlobalRole(ADMIN),
