@@ -8,14 +8,19 @@ version: '3.5'
 
 services:
   evaka-proxy:
-    image: ${EVAKA_FRONTEND_IMAGE:-evaka/frontend}
+    image: ${FRONTEND_IMAGE:-ghcr.io/espoon-voltti/evaka/frontend-common}:${TAG:-master}
+    build:
+      context: ../frontend/
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-master
     ports:
       - "9099:8080"
     environment:
       RESOLVER: "127.0.0.11 ipv6=off"
       ENDUSER_GW_URL: "http://api-gw:3000"
       INTERNAL_GW_URL: "http://api-gw:3000"
-      STATIC_FILES_ENDPOINT_URL: "http://s3.mock.evaka:9090/static/frontend"
+      STATIC_FILES_ENDPOINT_URL: "http://s3-mock:9090/static/frontend"
       RATE_LIMIT_CIDR_WHITELIST: "0.0.0.0/0;::/0"
       HTTP_SCHEME: "http"
     # Enable for debug logging
@@ -27,10 +32,15 @@ services:
       - api-gw
       - evaka-srv
       - keycloak
-      - s3.mock.evaka
+      - s3-mock
 
   api-gw:
-    image: ${EVAKA_GW_IMAGE}
+    image: ghcr.io/espoon-voltti/evaka/api-gateway:${TAG:-master}
+    build:
+      context: ../apigw/
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/api-gateway:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/api-gateway:cache-master
     ports:
       - "3000"
     hostname: api-gw
@@ -39,8 +49,6 @@ services:
       - evaka-srv
     volumes:
       - ../apigw/config/test-cert:/home/evaka/test-cert
-    env_file:
-      - .env
     environment:
       VOLTTI_ENV: local
       NODE_ENV: local
@@ -56,13 +64,19 @@ services:
       PRETTY_LOGS: "false"
 
   evaka-srv:
-    image: ${EVAKA_SRV_IMAGE}
+    image: ghcr.io/espoon-voltti/evaka/service:${TAG:-master}
+    build:
+      context: ..
+      dockerfile: service/Dockerfile
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/service:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/service:cache-master
     ports:
       - "8888"
     hostname: evaka-srv
     depends_on:
       - db
-      - s3.mock.evaka
+      - s3-mock
     environment:
       VOLTTI_ENV: local
       SPRING_PROFILES_ACTIVE: local
@@ -83,7 +97,7 @@ services:
       FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_CLUBDECISION: evaka-clubdecisions-dev
       FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_DAYCAREDECISION: evaka-daycaredecisions-dev
       FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_PAYMENTDECISION: evaka-paymentdecisions-dev
-      FI_ESPOO_VOLTTI_S3MOCK_URL: ${S3MOCK_URL}
+      FI_ESPOO_VOLTTI_S3MOCK_URL: ${S3MOCK_URL:-http://s3-mock:9090}
       EVAKA_BUCKET_PROXY_THROUGH_NGINX: "true"
       FI_ESPOO_INTEGRATION_INVOICE_ENABLED: "false"
       FI_ESPOO_EVAKA_MESSAGE_ENABLED: "false"
@@ -98,12 +112,6 @@ services:
       APPLICATION_FRONTEND_BASEURL: ""
       APPLICATION_FRONTEND_BASEURL_SV: ""
     restart: unless-stopped
-
-  db:
-
-  redis:
-
-  s3.mock.evaka:
 
 volumes:
   db-data:

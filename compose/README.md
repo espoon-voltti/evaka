@@ -109,30 +109,17 @@ the frontends at following URLs:
 
 ## Running the full stack for E2E tests
 
-Running the application with `./compose-e2e` is mainly
-designed for running E2E tests locally and in continuous integration
+Running the application with `./compose-e2e` is designed
+for running E2E tests locally and in continuous integration
 (CI) pipelines.
 
-First, you need to build frontends and all the Docker images.
-
-With [free icons](../frontend/README.md#using-free-icons)
-
-```sh
-./build.sh
-```
-
-With [pro icons](../frontend/README.md#using-professional-icons)
-
-```sh
-ICONS=pro ./build.sh
-```
-
-Then, start the whole stack locally. `compose-e2e` is just a
-wrapper for `docker-compose`.
+Start the whole stack locally:
 
 ```sh
 ./compose-e2e up -d
 ```
+
+`compose-e2e` is simple wrapper for `docker-compose`.
 
 Access the frontends at
 
@@ -192,12 +179,6 @@ superuser to create this extension".
 
 This can be fixed by recreating the database docker image and resetting the database docker volume.
 
-The service specific database setup scripts are located in the
-service repositories. The database image using them is built with
-`build.sh` script. If a service specific database setup script is
-changed, then `build.sh` must be run to get the change as a part of the
-build.
-
 ```bash
 # To clear the database simply zap the volumes with:
 docker volume rm <volume_name>
@@ -213,6 +194,8 @@ docker volume prune
 
 # or take down services and volumes altogether with
 docker-compose down -v
+
+docker-compose build db
 ```
 
 ### Unable to start services correctly

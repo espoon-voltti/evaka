@@ -15,15 +15,19 @@ export FORCE_COLOR=1
 export PROXY_URL=${PROXY_URL:-http://localhost:9099}
 export KEYCLOAK_URL=${KEYCLOAK_URL:-http://localhost:8080}
 
+# shellcheck disable=SC1091
+. "${NVM_DIR}/nvm.sh" \
+
 cd /repo/frontend
+nvm use
+yarn set version self
+yarn install --immutable
 
 echo 'INFO: Waiting for compose stack to be up ...'
 ./wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
 ./wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "200"
 
 echo "Running tests ..."
-
-yarn install --immutable
 
 if test -f playwright-filenames.txt; then
     mapfile -t FILENAMES < playwright-filenames.txt

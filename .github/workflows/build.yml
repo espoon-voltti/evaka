@@ -67,8 +67,6 @@ jobs:
           name: evaka/keycloak
           path: ./keycloak
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -104,8 +102,6 @@ jobs:
           name: evaka/frontend-common
           path: ./frontend
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
@@ -123,8 +119,6 @@ jobs:
           path: ./frontend
           target: builder
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=false
             build=${{ github.run_number }}
@@ -189,8 +183,6 @@ jobs:
           name: evaka/frontend
           path: ./frontend
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
@@ -272,8 +264,6 @@ jobs:
           push: false
           load: true
           target: test
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -287,8 +277,6 @@ jobs:
           name: evaka/api-gateway
           path: ./apigw
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -329,8 +317,6 @@ jobs:
           path: .
           dockerfile: service/Dockerfile
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -347,8 +333,6 @@ jobs:
           path: .
           dockerfile: service/Dockerfile
           push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -392,8 +376,6 @@ jobs:
           dockerfile: service/test.Dockerfile
           push: false
           load: true
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
@@ -460,38 +442,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure AWS credentials
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-duration-seconds: 1200
-
-      - name: Login to Amazon ECR
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: 'true'
-
-      - name: Pull compose images
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        shell: bash
-        run: |
-          export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
-          cd ./compose
-          ./compose-integration pull
-
       - name: Run service integration tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
+        env:
+          TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
+          BUILD: "false"
         run: |
-          export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
           mkdir -p test-results/
+          ./compose-integration pull
           ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
           ./compose-integration logs db > test-results/db.log
 
@@ -499,9 +459,7 @@ jobs:
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          ./service/build-docker.sh
           cd ./compose
-          ./compose-integration build
           ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
 
       - name: Store test results
@@ -517,6 +475,7 @@ jobs:
       - service
       - api-gateway
       - keycloak
+      - frontend-common
       - frontend
     runs-on: ubuntu-latest
 
@@ -535,54 +494,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Configure AWS credentials
+      - name: Login to GitHub Container Registry
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: docker/login-action@v2
         with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-duration-seconds: 1200
-
-      - name: Login to Amazon ECR
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: 'true'
-
-      - name: Login to Amazon ECR Public
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
-        env:
-          AWS_REGION: "us-east-1"
-        with:
-          mask-password: 'true'
-          registry-type: public
-
-      - name: Prepare e2e tests
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        run: |
-          cd ./compose
-          export EVAKA_FRONTEND_IMAGE=${{ needs.frontend.outputs.image }}
-          export EVAKA_GW_IMAGE=${{ needs.api-gateway.outputs.image }}
-          export EVAKA_SRV_IMAGE=${{ needs.service.outputs.image }}
-          export EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}
-          ./test-e2e pull
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run e2e tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
+          BUILD: "false"
+          FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
         run: |
           set -eo pipefail
           ./bin/timings.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}" | tee -a frontend/playwright-filenames.txt
           cd ./compose
-          export EVAKA_FRONTEND_IMAGE=${{ needs.frontend.outputs.image }}
-          export EVAKA_GW_IMAGE=${{ needs.api-gateway.outputs.image }}
-          export EVAKA_SRV_IMAGE=${{ needs.service.outputs.image }}
-          export EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}
-          BUILD=false ./test-e2e run playwright | tee e2e.log
+          ./test-e2e pull
+          ./test-e2e run playwright | tee e2e.log
 
       - name: Run e2e tests for fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
@@ -590,9 +521,7 @@ jobs:
           set -eo pipefail
           ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
           cd ./compose
-          ./build.sh
-          ./test-e2e build
-          BUILD=false ./test-e2e run playwright | tee e2e.log
+          ./test-e2e run playwright | tee e2e.log
 
       - name: Get logs
         if: always()

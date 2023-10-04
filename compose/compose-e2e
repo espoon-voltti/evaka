@@ -1,11 +1,12 @@
 #!/bin/sh -e
 
-# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-if [ "${BUILD:-true}" = "true" ] && [ "$1" = "up" ]; then
-    ./build.sh
+if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
+    docker-compose -f docker-compose.yml -f docker-compose.e2e.yml build --parallel
 fi
 
 docker-compose -f docker-compose.yml -f docker-compose.e2e.yml $@
+
