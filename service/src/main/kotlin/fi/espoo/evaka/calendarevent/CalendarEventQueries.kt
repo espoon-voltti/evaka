@@ -73,7 +73,7 @@ RETURNING id
             .bindKotlin(event)
             .executeAndReturnGeneratedKeys()
             .mapTo<CalendarEventId>()
-            .first()
+            .exactlyOne()
 
     if (event.tree != null) {
         event.tree.forEach { (groupId, childIds) ->
@@ -224,7 +224,7 @@ SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = :unitId
         )
         .bind("unitId", unitId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 
 data class ParentWithEvents(
     val parentId: PersonId,

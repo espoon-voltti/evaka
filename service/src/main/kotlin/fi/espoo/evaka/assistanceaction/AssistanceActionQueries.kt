@@ -45,7 +45,7 @@ fun Database.Transaction.insertAssistanceAction(
             .bind("updatedBy", user.evakaUserId)
             .bind("otherAction", data.otherAction)
             .mapTo<AssistanceActionId>()
-            .first()
+            .exactlyOne()
 
     insertAssistanceActionOptionRefs(id, data.actions)
 
@@ -81,7 +81,7 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
         GROUP BY aa.id, child_id, start_date, end_date, other_action
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().first()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().exactlyOne()
 }
 
 fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {

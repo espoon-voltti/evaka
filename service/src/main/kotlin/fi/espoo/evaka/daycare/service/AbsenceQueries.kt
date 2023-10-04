@@ -255,7 +255,7 @@ fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<DaycareId>().first()
+    return createQuery(sql).bind("groupId", groupId).mapTo<DaycareId>().exactlyOne()
 }
 
 // language=sql

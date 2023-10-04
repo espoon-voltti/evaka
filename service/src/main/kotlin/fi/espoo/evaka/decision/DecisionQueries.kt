@@ -319,7 +319,7 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         )
         .bind("id", decisionId)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
@@ -335,7 +335,7 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
         )
         .bind("id", decisionId)
         .mapTo<DocumentLang>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.markDecisionAccepted(

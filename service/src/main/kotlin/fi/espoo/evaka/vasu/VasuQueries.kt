@@ -406,7 +406,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
                 )
                 .bind("id", guardianId)
                 .mapTo<VasuGuardian>(qualifiers = emptyArray())
-                .first()
+                .exactlyOne()
         }
 
     createUpdate(

@@ -94,7 +94,7 @@ fun Database.Transaction.insertApplication(
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
         .mapTo<ApplicationId>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.duplicateApplicationExists(

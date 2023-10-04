@@ -94,7 +94,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                         "SELECT count(*) FROM varda_reset_child WHERE reset_timestamp IS NULL"
                     )
                     .mapTo<Int>()
-                    .first()
+                    .exactlyOne()
             }
 
         assertEquals(0, countChildrenToBeReset())
@@ -1868,7 +1868,7 @@ WHERE sn.id = :serviceNeedId
         )
         .bind("serviceNeedId", serviceNeedId)
         .mapTo<ChildId>()
-        .first()
+        .firstOrNull()
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
     FeeDecisionServiceNeed(

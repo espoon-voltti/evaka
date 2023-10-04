@@ -771,4 +771,4 @@ SELECT EXISTS(
         .bind("childId", childId)
         .bind("today", today)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()

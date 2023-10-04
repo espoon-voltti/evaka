@@ -458,7 +458,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         """
                 .trimIndent()
         return db.read {
-            it.createQuery(sql).bind("daycareGroupId", groupId).mapTo<Boolean>().first()
+            it.createQuery(sql).bind("daycareGroupId", groupId).mapTo<Boolean>().exactlyOne()
         }
     }
 }

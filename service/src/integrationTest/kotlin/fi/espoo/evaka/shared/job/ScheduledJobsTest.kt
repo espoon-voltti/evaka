@@ -550,7 +550,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             it.createQuery("SELECT status FROM application WHERE id = :id")
                 .bind("id", applicationId)
                 .mapTo<ApplicationStatus>()
-                .first()
+                .exactlyOne()
         }
     }
 }

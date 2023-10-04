@@ -56,7 +56,7 @@ fun Database.Read.getUnitStats(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<Caretakers>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getGroupStats(

@@ -52,7 +52,7 @@ RETURNING id, daycare_id, name, start_date, end_date, true AS deletable
         .bind("startDate", startDate)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareGroup>()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.updateGroup(
     groupId: GroupId,

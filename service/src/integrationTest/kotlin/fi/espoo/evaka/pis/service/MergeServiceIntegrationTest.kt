@@ -457,7 +457,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     .map { r ->
                         r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
                     }
-                    .first()
+                    .exactlyOne()
 
             assertEquals(duplicate.id, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
@@ -474,7 +474,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     .map { r ->
                         r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
                     }
-                    .first()
+                    .exactlyOne()
 
             assertEquals(null, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)

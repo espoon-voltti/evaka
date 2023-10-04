@@ -106,7 +106,7 @@ fun Database.Transaction.resetDatabase() {
 }
 
 fun Database.Transaction.ensureDevData() {
-    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
+    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().exactlyOne() == 0) {
         listOf(
                 "dev-data.sql",
                 "service-need-options.sql",
@@ -927,7 +927,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
             .bind("selectedUnit", data.selectedUnit?.id)
             .mapTo<AssistanceNeedDecisionId>()
-            .first()
+            .exactlyOne()
 
     // language=sql
     val guardianSql =
@@ -1315,7 +1315,7 @@ fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
     createQuery("SELECT id FROM employee WHERE external_id = :id")
         .bind("id", externalId)
         .mapTo<EmployeeId>()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) =
     createUpdate(

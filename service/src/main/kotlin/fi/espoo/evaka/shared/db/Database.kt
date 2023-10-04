@@ -377,6 +377,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun <R> mapNotNull(f: (T) -> R?): List<R> = useIterable { it.mapNotNull(f) }
 
+        @Deprecated(
+            "Use exactlyOne/exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
+        )
         fun first() = inner.first()
 
         fun firstOrNull(): T? = useIterable { it.firstOrNull() }

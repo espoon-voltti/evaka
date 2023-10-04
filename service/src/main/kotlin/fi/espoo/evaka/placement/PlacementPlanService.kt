@@ -345,6 +345,6 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             )
             .bind("unitId", unitId)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()
     }
 }

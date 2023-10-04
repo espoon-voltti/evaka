@@ -909,7 +909,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
                     .bind("contentId", messageContentId)
                     .mapTo<MessageThreadId>()
-                    .first()
+                    .exactlyOne()
             assertEquals(messageThreadId, note.messageThreadId)
         }
     }

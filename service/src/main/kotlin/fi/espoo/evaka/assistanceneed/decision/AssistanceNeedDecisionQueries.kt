@@ -119,7 +119,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
             .bind("selectedUnit", data.selectedUnit?.id)
             .mapTo<AssistanceNeedDecisionId>()
-            .first()
+            .exactlyOne()
 
     // language=sql
     val guardianSql =
@@ -505,7 +505,7 @@ fun Database.Read.hasLaterAssistanceNeedDecisions(
         .bind("childId", childId)
         .bind("startDate", startDate)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.annulAssistanceNeedDecision(

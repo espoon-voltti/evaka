@@ -294,4 +294,4 @@ AND pp.unit_confirmation_status != :unitConfirmationStatus::confirmation_status
         )
         .bind("unitConfirmationStatus", PlacementPlanConfirmationStatus.REJECTED)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()

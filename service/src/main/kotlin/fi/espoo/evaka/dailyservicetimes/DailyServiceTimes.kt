@@ -390,7 +390,7 @@ fun Database.Transaction.createChildDailyServiceTimes(
         .bindKotlin(times.asUpdateRow())
         .bind("childId", childId)
         .mapTo<DailyServiceTimesId>()
-        .first()
+        .exactlyOne()
 }
 
 data class DailyServiceTimesValidityWithId(

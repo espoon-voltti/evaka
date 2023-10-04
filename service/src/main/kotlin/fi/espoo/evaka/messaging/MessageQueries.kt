@@ -744,7 +744,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
         .bind("senderId", senderId)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<Message>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getCitizenReceivers(
@@ -1550,7 +1550,7 @@ SELECT EXISTS (
             )
         }
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =

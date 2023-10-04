@@ -84,7 +84,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         .bind("createdBy", createdBy)
         .bind("messageContentId", messageContentId)
         .mapTo<ApplicationNote>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateApplicationNote(
@@ -111,7 +111,7 @@ FROM updated_note n
         .bind("updatedBy", updatedBy)
         .bind("id", id)
         .mapTo<ApplicationNote>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) {

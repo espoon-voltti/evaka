@@ -169,7 +169,7 @@ private fun Database.Transaction.createDocument(
         .bind("created_by", user.evakaUserId)
         .executeAndReturnGeneratedKeys()
         .mapTo<PedagogicalDocument>()
-        .first()
+        .exactlyOne()
 }
 
 private fun Database.Transaction.updateDocument(
@@ -192,7 +192,7 @@ private fun Database.Transaction.updateDocument(
         .bind("updated_by", user.evakaUserId)
         .executeAndReturnGeneratedKeys()
         .mapTo<PedagogicalDocument>()
-        .first()
+        .exactlyOne()
 }
 
 private fun Database.Read.findPedagogicalDocumentsByChild(
