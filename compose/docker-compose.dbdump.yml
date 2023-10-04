@@ -8,7 +8,7 @@ version: '3.5'
 
 services:
   dbdump:
-    build: ./db
+    build: ./db/
     ports:
     - "5432:5432"
     environment:

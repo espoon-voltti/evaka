@@ -16,17 +16,20 @@ version: '3.5'
 
 services:
   integration-test:
-    image: ${EVAKA_SERVICE_BUILDER_IMAGE:-evaka-service-builder}
+    image: ghcr.io/espoon-voltti/evaka/service-builder:${TAG:-master}
     build:
       context: ..
       target: builder
       dockerfile: service/Dockerfile
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/service-builder:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/service-builder:cache-master
     volumes:
       - ./test-results/:/evaka/service/build/test-results/
     depends_on:
       - db
       - redis
-      - s3.mock.evaka
+      - s3-mock
     ipc: host
     network_mode: host
     entrypoint: ./gradlew integrationTest
