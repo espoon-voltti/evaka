@@ -5640,6 +5640,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"compute-scroll-into-view@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "compute-scroll-into-view@npm:3.1.0"
+  checksum: 224549d6dd1d40342230de5c6d69cac5c3ed5c2f6a4437310f959aadc8db1d20b03da44a6e0de14d9419c6f9130ce51ec99a91b11bde55d4640f10551c89c213
+  languageName: node
+  linkType: hard
+
 "computed-style@npm:~0.1.3":
   version: 0.1.4
   resolution: "computed-style@npm:0.1.4"
@@ -7003,7 +7010,7 @@ __metadata:
     chart.js: ^4.4.0
     chartjs-adapter-date-fns: ^3.0.0
     classnames: ^2.3.2
-    compute-scroll-into-view: ^3.0.3
+    compute-scroll-into-view: ^3.1.0
     concurrently: ^8.2.0
     core-js: ^3.33.0
     css-loader: ^6.8.1
