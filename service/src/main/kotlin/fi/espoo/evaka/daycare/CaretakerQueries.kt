@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.time.LocalDate
-import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     // language=SQL
@@ -84,9 +83,5 @@ fun Database.Read.getGroupStats(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .bind("unitId", unitId)
-        .mapTo<GroupStats>()
-        .associateByTo(mutableMapOf(), GroupStats::groupId, GroupStats::stats)
-        .toMap()
+        .toMap { column<GroupId>("group_id") to row<Caretakers>() }
 }
-
-private data class GroupStats(val groupId: GroupId, @Nested val stats: Caretakers)

@@ -434,8 +434,6 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
         .mapTo<ExternalAttendance>()
         .toList()
 
-private data class EmployeeGroups(val employeeId: EmployeeId, val groupIds: List<GroupId>)
-
 fun Database.Read.getGroupsForEmployees(
     unitId: DaycareId,
     employeeIds: Set<EmployeeId>
@@ -453,8 +451,7 @@ fun Database.Read.getGroupsForEmployees(
         )
         .bind("unitId", unitId)
         .bind("employeeIds", employeeIds)
-        .mapTo<EmployeeGroups>()
-        .associateBy({ it.employeeId }, { it.groupIds })
+        .toMap { columnPair("employee_id", "group_ids") }
 
 fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
     createUpdate(

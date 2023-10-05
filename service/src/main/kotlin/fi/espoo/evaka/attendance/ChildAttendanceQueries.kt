@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.json.Json
 
 fun Database.Transaction.insertAttendance(
     childId: ChildId,
@@ -293,11 +292,6 @@ WHERE
         .filter { it.value.isNotEmpty() }
 }
 
-private data class UnitChildAbsencesRow(
-    val childId: ChildId,
-    @Json val absences: List<ChildAbsence>
-)
-
 fun Database.Read.getUnitChildAbsences(
     unitId: DaycareId,
     date: LocalDate,
@@ -319,12 +313,8 @@ GROUP BY a.child_id
         )
         .bind("unitId", unitId)
         .bind("date", date)
-        .mapTo<UnitChildAbsencesRow>()
-        .associateBy { it.childId }
-        .mapValues { it.value.absences }
+        .toMap { column<ChildId>("child_id") to jsonColumn<List<ChildAbsence>>("absences") }
 }
-
-private data class ChildPlacementTypeRow(val childId: ChildId, val placementType: PlacementType)
 
 fun Database.Read.getChildPlacementTypes(
     childIds: Set<ChildId>,
@@ -339,9 +329,7 @@ WHERE p.child_id = ANY(:childIds) AND :today BETWEEN p.start_date AND p.end_date
         )
         .bind("childIds", childIds)
         .bind("today", today)
-        .mapTo<ChildPlacementTypeRow>()
-        .associateBy { it.childId }
-        .mapValues { it.value.placementType }
+        .toMap { columnPair("child_id", "placement_type") }
 }
 
 fun Database.Read.getChildAttendanceStartDatesByRange(

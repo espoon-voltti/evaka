@@ -497,11 +497,6 @@ WHERE
         .groupBy { it.childId }
 }
 
-private data class ChildContractDays(
-    val childId: ChildId,
-    val contractDays: DateSet,
-)
-
 fun Database.Read.getReservationContractDayRanges(
     childIds: Set<PersonId>,
     range: FiniteDateRange
@@ -525,6 +520,5 @@ fun Database.Read.getReservationContractDayRanges(
         )
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ChildContractDays>()
-        .associate { it.childId to it.contractDays }
+        .toMap { columnPair("child_id", "contract_days") }
 }

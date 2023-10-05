@@ -418,20 +418,24 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             it.flatMap(transform)
         }
 
+        @Deprecated("Use either toList or useIterable and call associate on it instead")
         inline fun <K, V> associate(crossinline transform: (T) -> Pair<K, V>): Map<K, V> =
             useIterable {
                 it.associate(transform)
             }
 
+        @Deprecated("Use either toList or useIterable and call associateBy on it instead")
         inline fun <K> associateBy(crossinline keySelector: (T) -> K): Map<K, T> = useIterable {
             it.associateBy(keySelector)
         }
 
+        @Deprecated("Use either toList or useIterable and call associateBy on it instead")
         inline fun <K, V> associateBy(
             crossinline keySelector: (T) -> K,
             crossinline valueTransform: (T) -> V
         ): Map<K, V> = useIterable { it.associateBy(keySelector, valueTransform) }
 
+        @Deprecated("Use either toList or useIterable and call associateByTo on it instead")
         inline fun <K, V, M : MutableMap<in K, in V>> associateByTo(
             destination: M,
             crossinline keySelector: (T) -> K,

@@ -190,5 +190,3 @@ data class EvakaServiceNeedInfoForVarda(
             evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated)
         )
 }
-
-data class VardaChildIdPair(val vardaChildId: Long, val evakaChildId: ChildId)

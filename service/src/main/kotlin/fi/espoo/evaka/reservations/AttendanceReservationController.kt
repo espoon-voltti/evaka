@@ -26,8 +26,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -491,30 +489,25 @@ WHERE p.id = ANY(:childIds)
         )
         .bind("dateRange", dateRange)
         .bind("childIds", childIds)
-        .map { row ->
-            ChildData(
-                child =
-                    UnitAttendanceReservations.Child(
-                        id = row.mapColumn("id"),
-                        firstName = row.mapColumn("first_name"),
-                        lastName = row.mapColumn("last_name"),
-                        preferredName = row.mapColumn("preferred_name"),
-                        dateOfBirth = row.mapColumn("date_of_birth")
-                    ),
-                reservations =
-                    row.mapJsonColumn<List<ReservationTimesForDate>>("reservations")
-                        .groupBy({ it.date }, { it.toReservationTimes() }),
-                attendances =
-                    row.mapJsonColumn<List<AttendanceTimesForDate>>("attendances")
-                        .groupBy({ it.date }, { it.toAttendanceTimes() }),
-                // The SQL query can return multiple absences for the same date, but here we only
-                // take one
-                absences =
-                    row.mapJsonColumn<List<AbsenceForDate>>("absences")
-                        .associateBy({ it.date }, { it.toAbsence() })
-            )
+        .toMap {
+            val childId = column<ChildId>("id")
+            childId to
+                ChildData(
+                    child = row<UnitAttendanceReservations.Child>(),
+                    reservations =
+                        jsonColumn<List<ReservationTimesForDate>>("reservations")
+                            .groupBy({ it.date }, { it.toReservationTimes() }),
+                    attendances =
+                        jsonColumn<List<AttendanceTimesForDate>>("attendances")
+                            .groupBy({ it.date }, { it.toAttendanceTimes() }),
+                    // The SQL query can return multiple absences for the same date, but here we
+                    // only
+                    // take one
+                    absences =
+                        jsonColumn<List<AbsenceForDate>>("absences")
+                            .associateBy({ it.date }, { it.toAbsence() })
+                )
         }
-        .associateBy { it.child.id }
 }
 
 private fun toChildDayRows(

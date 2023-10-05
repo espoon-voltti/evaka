@@ -480,8 +480,7 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
         """
                 .trimIndent()
         )
-        .mapTo<VardaChildIdPair>()
-        .associate { it.vardaChildId to it.evakaChildId }
+        .toMap { columnPair("varda_child_id", "evaka_child_id") }
 
 fun Database.Transaction.getVardaChildrenToReset(
     limit: Int,
