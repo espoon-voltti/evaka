@@ -176,8 +176,7 @@ fun Database.Transaction.insertValidReservations(
                     bind("start", it.range.start).bind("end", it.range.end)
                 }
             }
-            .mapTo<AttendanceReservationId>()
-            .singleOrNull()
+            .exactlyOneOrNull<AttendanceReservationId>()
     }
 }
 

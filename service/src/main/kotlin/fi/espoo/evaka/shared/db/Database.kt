@@ -398,6 +398,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated("Use exactlyOne instead", ReplaceWith("exactlyOne()"))
         fun single(): T = exactlyOne()
 
+        @Deprecated(
+            "Use exactlyOneOrNull if you expect 0-1 results. If you really want to map >1 counts to null, use useIterable instead"
+        )
         fun singleOrNull(): T? = useIterable { it.singleOrNull() }
 
         @Deprecated("Use exactlyOneOrNull instead") fun findOne(): Optional<T> = inner.findOne()

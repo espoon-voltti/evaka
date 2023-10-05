@@ -206,7 +206,7 @@ WHERE id = :id
         .execute()
 
 fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? =
-    createEmployeeUserQuery("WHERE id = :id").bind("id", id).mapTo<EmployeeUser>().singleOrNull()
+    createEmployeeUserQuery("WHERE id = :id").bind("id", id).exactlyOneOrNull<EmployeeUser>()
 
 fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles? {
     // language=SQL

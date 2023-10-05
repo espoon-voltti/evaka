@@ -38,8 +38,7 @@ GROUP BY md.id, md.name, md.employee_id
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
     createQuery("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token")
         .bind("token", token)
-        .mapTo<MobileDeviceIdentity>()
-        .singleOrNull()
+        .exactlyOneOrNull<MobileDeviceIdentity>()
         ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {

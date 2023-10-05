@@ -122,8 +122,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                     )
                     .bind("id", id)
                     .bind("today", today)
-                    .mapTo<KoskiVoidedDataRaw>()
-                    .singleOrNull()
+                    .exactlyOneOrNull<KoskiVoidedDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid)
             } else {
                 createQuery(
@@ -156,8 +155,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                     )
                     .bind("id", id)
                     .bind("today", today)
-                    .mapTo<KoskiActiveDataRaw>()
-                    .singleOrNull()
+                    .exactlyOneOrNull<KoskiActiveDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
             }
         }

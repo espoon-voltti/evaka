@@ -313,8 +313,7 @@ RETURNING id
 
 fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
     createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
-        .mapTo<MessageAccountId>()
-        .singleOrNull()
+        .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
