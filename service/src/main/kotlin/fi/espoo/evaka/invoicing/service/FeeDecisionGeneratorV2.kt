@@ -508,15 +508,18 @@ private fun Database.Read.getChildRelations(
         )
         .bind("ids", parentIds.toTypedArray())
         .mapTo<ChildRelation>()
-        .mapNotNull {
-            val under18 =
-                FiniteDateRange(
-                    it.child.dateOfBirth,
-                    it.child.dateOfBirth.plusYears(18).minusDays(1)
-                )
-            it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
+        .useIterable { rows ->
+            rows
+                .mapNotNull {
+                    val under18 =
+                        FiniteDateRange(
+                            it.child.dateOfBirth,
+                            it.child.dateOfBirth.plusYears(18).minusDays(1)
+                        )
+                    it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
+                }
+                .groupBy { it.headOfChild }
         }
-        .groupBy { it.headOfChild }
 }
 
 data class PlacementDetails(

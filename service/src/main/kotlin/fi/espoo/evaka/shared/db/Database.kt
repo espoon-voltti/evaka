@@ -375,6 +375,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun <R> map(f: (T) -> R): List<R> = useIterable { it.map(f) }
 
+        @Deprecated("Use either toList or useIterable and map it instead")
         fun <R> mapNotNull(f: (T) -> R?): List<R> = useIterable { it.mapNotNull(f) }
 
         @Deprecated(
