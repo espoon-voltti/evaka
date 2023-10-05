@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.result.RowView
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery(
@@ -33,8 +32,7 @@ WHERE p.id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<Placement>()
-        .firstOrNull()
+        .exactlyOneOrNull<Placement>()
 }
 
 fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> {
@@ -99,8 +97,7 @@ AND daterange(p.start_date, p.end_date, '[]') @> :today
         )
         .bind("childId", childId)
         .bind("today", clock.today())
-        .mapTo<Placement>()
-        .firstOrNull()
+        .exactlyOneOrNull<Placement>()
 }
 
 data class ChildPlacementType(
@@ -466,7 +463,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).map(toDaycarePlacement).firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull(toDaycarePlacement)
 }
 
 fun Database.Read.getTerminatedPlacements(
@@ -588,7 +585,7 @@ fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPl
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<DaycareGroupPlacement>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getIdenticalPrecedingGroupPlacement(
@@ -616,8 +613,7 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
         .bind("placementId", daycarePlacementId)
         .bind("groupId", groupId)
         .bind("endDate", startDate.minusDays(1))
-        .mapTo<DaycareGroupPlacement>()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getIdenticalPostcedingGroupPlacement(
@@ -645,8 +641,7 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
         .bind("placementId", daycarePlacementId)
         .bind("groupId", groupId)
         .bind("startDate", endDate.plusDays(1))
-        .mapTo<DaycareGroupPlacement>()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
 fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean =
@@ -762,8 +757,7 @@ fun Database.Transaction.updateGroupPlacementStartDate(
     return createQuery(sql)
         .bind("id", id)
         .bind("startDate", startDate)
-        .mapTo<GroupPlacementId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
 fun Database.Transaction.updateGroupPlacementEndDate(
@@ -776,8 +770,7 @@ fun Database.Transaction.updateGroupPlacementEndDate(
     return createQuery(sql)
         .bind("id", id)
         .bind("endDate", endDate)
-        .mapTo<GroupPlacementId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
 fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
@@ -793,32 +786,32 @@ fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 
-    return createQuery(sql).bind("id", id).mapTo<GroupPlacementId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<GroupPlacementId>() != null
 }
 
-private val toDaycarePlacement: (RowView) -> DaycarePlacement = { row ->
+private val toDaycarePlacement: Row.() -> DaycarePlacement = {
     DaycarePlacement(
-        id = row.mapColumn("placement_id"),
+        id = column("placement_id"),
         child =
             ChildBasics(
-                id = ChildId(row.mapColumn("child_id")),
-                socialSecurityNumber = row.mapColumn("child_ssn"),
-                firstName = row.mapColumn("child_first_name"),
-                lastName = row.mapColumn("child_last_name"),
-                dateOfBirth = row.mapColumn("child_date_of_birth")
+                id = ChildId(column("child_id")),
+                socialSecurityNumber = column("child_ssn"),
+                firstName = column("child_first_name"),
+                lastName = column("child_last_name"),
+                dateOfBirth = column("child_date_of_birth")
             ),
         daycare =
             DaycareBasics(
-                id = DaycareId(row.mapColumn("unit_id")),
-                name = row.mapColumn("unit_name"),
-                area = row.mapColumn("area_name"),
-                providerType = row.mapColumn("provider_type"),
-                enabledPilotFeatures = row.mapColumn("enabled_pilot_features"),
-                language = row.mapColumn("language")
+                id = DaycareId(column("unit_id")),
+                name = column("unit_name"),
+                area = column("area_name"),
+                providerType = column("provider_type"),
+                enabledPilotFeatures = column("enabled_pilot_features"),
+                language = column("language")
             ),
-        startDate = row.mapColumn("placement_start"),
-        endDate = row.mapColumn("placement_end"),
-        type = row.mapColumn("placement_type")
+        startDate = column("placement_start"),
+        endDate = column("placement_end"),
+        type = column("placement_type")
     )
 }
 
@@ -933,5 +926,4 @@ fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDat
         )
         .bind("childId", childId)
         .bind("date", date)
-        .mapTo<Language>()
-        .firstOrNull()
+        .exactlyOneOrNull<Language>()

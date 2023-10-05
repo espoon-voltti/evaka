@@ -74,8 +74,7 @@ fun Database.Transaction.updateGroup(
 
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
     createDaycareGroupQuery(groupId = groupId, daycareId = null, period = null)
-        .mapTo<DaycareGroup>()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareGroup>()
 
 fun Database.Read.getDaycareGroups(
     daycareId: DaycareId,

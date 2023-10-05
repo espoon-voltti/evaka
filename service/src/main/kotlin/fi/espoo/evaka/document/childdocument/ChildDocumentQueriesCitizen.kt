@@ -60,8 +60,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
         """
         )
         .bind("id", id)
-        .mapTo<ChildDocumentCitizenDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildDocumentCitizenDetails>()
 }
 
 fun Database.Transaction.markChildDocumentAsRead(

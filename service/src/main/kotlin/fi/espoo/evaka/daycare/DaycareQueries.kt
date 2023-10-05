@@ -165,8 +165,7 @@ WHERE id = ANY(:ids)
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery(daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }))
-        .mapTo<Daycare>()
-        .firstOrNull()
+        .exactlyOneOrNull<Daycare>()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
     createQuery(
@@ -190,8 +189,7 @@ WHERE id = :daycareId
 """
         )
         .bind("daycareId", daycareId)
-        .mapTo<UnitStub>()
-        .firstOrNull()
+        .exactlyOneOrNull<UnitStub>()
 
 fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
     createUpdate(
@@ -382,8 +380,7 @@ fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
                 .trimIndent()
         )
         .bind("unitId", unitId)
-        .mapTo<DaycareManager>()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareManager>()
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
     createQuery(
@@ -457,8 +454,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<UnitFeatures>()
-        .firstOrNull()
+        .exactlyOneOrNull<UnitFeatures>()
 
 fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
     createQuery<Any> {

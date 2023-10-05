@@ -9,8 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -120,8 +118,7 @@ RETURNING id
         .bind("type", type)
         .bind("given", given)
         .bind("givenBy", givenBy)
-        .mapTo<ChildConsentId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<ChildConsentId>() != null
 
 fun Database.Read.getCitizenConsentedChildConsentTypes(
     guardianId: PersonId,
@@ -147,8 +144,6 @@ WHERE EXISTS(
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .toList {
-            column<ChildId>("child_id") to column<ChildConsentType?>("type")
-        }
+        .toList { column<ChildId>("child_id") to column<ChildConsentType?>("type") }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }

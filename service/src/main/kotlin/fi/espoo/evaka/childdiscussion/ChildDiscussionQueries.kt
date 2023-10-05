@@ -17,7 +17,7 @@ fun Database.Read.getChildDiscussionById(id: ChildDiscussionId): ChildDiscussion
         WHERE id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<ChildDiscussionData>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ChildDiscussionData>()
 }
 
 fun Database.Read.getChildDiscussions(childId: ChildId): List<ChildDiscussionData> {

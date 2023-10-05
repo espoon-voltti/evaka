@@ -16,8 +16,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -242,7 +240,7 @@ fun Database.Read.getGroupName(groupId: GroupId): String? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("groupId", groupId).exactlyOneOrNull<String>()
 }
 
 fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
@@ -398,9 +396,7 @@ AND daterange(bc.start_date, bc.end_date, '[]') && :period
         )
         .bind("groupId", groupId)
         .bind("period", period)
-        .toList {
-            column<ChildId>("child_id") to column<FiniteDateRange>("period")
-        }
+        .toList { column<ChildId>("child_id") to column<FiniteDateRange>("period") }
         .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
@@ -436,10 +432,7 @@ AND EXISTS (
             val date: LocalDate = column("date")
             val reservation =
                 ChildReservation(
-                    Reservation.fromLocalTimes(
-                        column("start_time"),
-                        column("end_time")
-                    ),
+                    Reservation.fromLocalTimes(column("start_time"), column("end_time")),
                     column("created_by_evaka_user_type"),
                     column("created_date")
                 )

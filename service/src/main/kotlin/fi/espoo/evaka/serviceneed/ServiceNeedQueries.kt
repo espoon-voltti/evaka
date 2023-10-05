@@ -106,7 +106,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<ServiceNeed>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeed>()
         ?: throw NotFound("Service need $id not found")
 }
 
@@ -121,7 +121,7 @@ fun Database.Read.getServiceNeedChildRange(id: ServiceNeedId): ServiceNeedChildR
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<ServiceNeedChildRange>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeedChildRange>()
         ?: throw NotFound("Service need $id not found")
 }
 
@@ -280,8 +280,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<ServiceNeedOption>()
-        .firstOrNull()
+        .exactlyOneOrNull<ServiceNeedOption>()
 }
 
 fun Database.Read.getServiceNeedOptionPublicInfos(

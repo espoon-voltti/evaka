@@ -129,8 +129,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<String>()
-        .firstOrNull()
+        .exactlyOneOrNull<String>()
 
 private fun Database.Read.searchEmployees(
     id: EmployeeId? = null,
@@ -174,10 +173,11 @@ fun Database.Read.getTemporaryEmployees(unitId: DaycareId): List<Employee> =
 fun Database.Read.getFinanceDecisionHandlers(): List<Employee> =
     searchFinanceDecisionHandlers().toList()
 
-fun Database.Read.getEmployee(id: EmployeeId): Employee? = searchEmployees(id = id).firstOrNull()
+fun Database.Read.getEmployee(id: EmployeeId): Employee? =
+    searchEmployees(id = id).exactlyOneOrNull()
 
 fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? =
-    searchEmployees(externalId = externalId).firstOrNull()
+    searchEmployees(externalId = externalId).exactlyOneOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) =
     createQuery(
@@ -231,7 +231,7 @@ WHERE id = :id
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<EmployeeWithDaycareRoles>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
@@ -402,15 +402,13 @@ RETURNING locked
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {

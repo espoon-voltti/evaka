@@ -34,7 +34,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).map(toPartnership("p1", "p2")).firstOrNull()
+    return createQuery(sql).bind("id", id).map(toPartnership("p1", "p2")).exactlyOneOrNull()
 }
 
 fun Database.Read.getPartnershipsForPerson(
@@ -157,7 +157,7 @@ fun Database.Transaction.updatePartnershipDuration(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<PartnershipId>()
-        .firstOrNull() != null
+        .useIterable { it.firstOrNull() } != null
 }
 
 fun Database.Transaction.retryPartnership(id: PartnershipId) {
@@ -171,7 +171,9 @@ fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
 
-    return createQuery(sql).bind("id", id).mapTo<PartnershipId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).mapTo<PartnershipId>().useIterable {
+        it.firstOrNull()
+    } != null
 }
 
 private val toPartnership: (String, String) -> (RowView) -> Partnership =

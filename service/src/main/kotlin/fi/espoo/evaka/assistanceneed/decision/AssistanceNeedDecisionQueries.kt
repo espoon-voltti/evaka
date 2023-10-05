@@ -188,7 +188,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
         GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecision>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecision>()
         ?: throw NotFound("Assistance need decision $id not found")
 }
 
@@ -322,7 +322,7 @@ fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecision
         RETURNING id;
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecisionId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 }
 
 fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDecisionId) {
@@ -375,7 +375,7 @@ fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisio
         WHERE ad.id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.updateAssistanceNeedDocumentKey(

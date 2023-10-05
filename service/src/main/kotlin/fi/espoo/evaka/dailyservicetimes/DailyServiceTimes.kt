@@ -241,8 +241,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<DailyServiceTimesValidity>()
-        .firstOrNull()
+        .exactlyOneOrNull<DailyServiceTimesValidity>()
 }
 
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {

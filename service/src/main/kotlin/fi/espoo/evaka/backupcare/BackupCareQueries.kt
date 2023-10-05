@@ -118,8 +118,7 @@ fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<BackupCareInfo>()
-        .firstOrNull()
+        .exactlyOneOrNull<BackupCareInfo>()
 
 fun Database.Transaction.createBackupCare(
     childId: ChildId,

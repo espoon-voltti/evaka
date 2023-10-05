@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
@@ -123,7 +122,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
@@ -173,7 +172,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
@@ -337,8 +336,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
-        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
-        .firstOrNull()
+        .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?.let { basics ->
             createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
@@ -379,8 +377,7 @@ private fun Database.Read.getVasuPlacements(
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
-        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
-        .firstOrNull()
+        .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?: throw NotFound("Vasu document $id not found")
 
 fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(

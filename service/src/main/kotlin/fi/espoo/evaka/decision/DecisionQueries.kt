@@ -92,7 +92,7 @@ private fun decisionFromResultSet(row: RowView): Decision =
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(decision = Predicate { where("$it.id = ${bind(decisionId)}") })
         .map(::decisionFromResultSet)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
@@ -100,7 +100,7 @@ fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
                 Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
         )
         .map(::decisionFromResultSet)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,

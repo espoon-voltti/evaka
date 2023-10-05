@@ -967,8 +967,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             .trimIndent()
     return this.createQuery(sql)
         .bind("messageId", messageId)
-        .mapTo<ThreadWithParticipants>()
-        .firstOrNull()
+        .exactlyOneOrNull<ThreadWithParticipants>()
 }
 
 fun Database.Read.getMessageThread(
@@ -1051,12 +1050,12 @@ FROM message_thread t
 WHERE t.application_id = :applicationId
   AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
 GROUP BY t.id
+LIMIT 1
         """
             )
             .bind("accountId", accountId)
             .bind("applicationId", applicationId)
-            .mapTo<ReceivedThread>()
-            .firstOrNull()
+            .exactlyOneOrNull<ReceivedThread>()
 
     if (thread != null) {
         val messagesByThread =
@@ -1390,8 +1389,7 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
             "SELECT id FROM message_thread_folder WHERE owner_id = :accountId AND name = 'ARCHIVE'"
         )
         .bind("accountId", accountId)
-        .mapTo<MessageThreadFolderId>()
-        .firstOrNull()
+        .exactlyOneOrNull<MessageThreadFolderId>()
 
 data class MessageToUndo(
     val created: HelsinkiDateTime,

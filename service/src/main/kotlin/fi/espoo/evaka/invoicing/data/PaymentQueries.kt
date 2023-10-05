@@ -121,7 +121,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
 }
 
 fun Database.Read.getMaxPaymentNumber(): Long {
-    return createQuery("SELECT max(number) FROM payment").mapTo<Long>().firstOrNull() ?: 0
+    return createQuery("SELECT max(number) FROM payment").exactlyOneOrNull<Long>() ?: 0
 }
 
 fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now: HelsinkiDateTime) {

@@ -31,7 +31,7 @@ WHERE ${predicate(predicate.forTable("cdn"))}
         .mapTo<ChildDailyNote>()
 
 fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
-    getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).firstOrNull()
+    getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
 
 fun Database.Read.getChildDailyNotesForChildren(
     children: Collection<ChildId>,

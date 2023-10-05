@@ -70,8 +70,7 @@ fun Database.Read.getChildAttendance(
         .bind("unitId", unitId)
         .bind("date", now.toLocalDate())
         .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
-        .mapTo<ChildAttendance>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildAttendance>()
 }
 
 data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
@@ -85,8 +84,7 @@ fun Database.Read.getChildOngoingAttendance(
         )
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .mapTo<OngoingAttendance>()
-        .firstOrNull()
+        .exactlyOneOrNull<OngoingAttendance>()
 
 data class ChildBasics(
     val id: ChildId,

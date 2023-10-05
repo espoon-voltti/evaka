@@ -10,8 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -92,8 +90,7 @@ fun Database.Read.getExternalStaffAttendance(
         )
         .bind("id", id)
         .bind("now", now)
-        .mapTo<ExternalStaffMember>()
-        .firstOrNull()
+        .exactlyOneOrNull<ExternalStaffMember>()
 
 fun Database.Read.getExternalStaffAttendances(
     unitId: DaycareId,

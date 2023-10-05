@@ -110,7 +110,7 @@ fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<GroupInfo>().firstOrNull()
+    return createQuery(sql).bind("groupId", groupId).exactlyOneOrNull<GroupInfo>()
 }
 
 fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean {

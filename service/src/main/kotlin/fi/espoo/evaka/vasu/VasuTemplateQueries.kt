@@ -45,7 +45,7 @@ fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuTemplate>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplate>()
 }
 
 fun Database.Read.getVasuTemplates(
@@ -100,7 +100,7 @@ FOR UPDATE
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuTemplateSummary>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplateSummary>()
 }
 
 fun Database.Transaction.updateVasuTemplate(id: VasuTemplateId, params: VasuTemplateUpdate) {

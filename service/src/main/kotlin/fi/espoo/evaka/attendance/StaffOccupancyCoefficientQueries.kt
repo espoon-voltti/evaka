@@ -43,8 +43,7 @@ WHERE soc.employee_id = :employeeId
         )
         .bind("employeeId", employeeId)
         .bind("groupId", groupId)
-        .mapTo<BigDecimal>()
-        .firstOrNull()
+        .exactlyOneOrNull<BigDecimal>()
 
 fun Database.Read.getOccupancyCoefficientsByUnit(
     unitId: DaycareId

@@ -266,8 +266,7 @@ WHERE evaka_service_need_id = :eVakaServiceNeedId
 """
         )
         .bind("eVakaServiceNeedId", eVakaServiceNeedId)
-        .mapTo<VardaServiceNeed>()
-        .firstOrNull()
+        .exactlyOneOrNull<VardaServiceNeed>()
 
 fun Database.Read.getServiceNeedFeeData(
     serviceNeedId: ServiceNeedId,
@@ -388,8 +387,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
     return createQuery(sql)
         .bind("id", id)
         .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
-        .mapTo<EvakaServiceNeedInfoForVarda>()
-        .firstOrNull()
+        .exactlyOneOrNull<EvakaServiceNeedInfoForVarda>()
         ?: throw NotFound("Service need $id not found")
 }
 

@@ -124,8 +124,7 @@ fun Database.Transaction.updateAssistanceAction(
         .bind("endDate", data.endDate)
         .bind("updatedBy", user.evakaUserId)
         .bind("otherAction", data.otherAction)
-        .mapTo<AssistanceActionId>()
-        .firstOrNull()
+        .exactlyOneOrNull<AssistanceActionId>()
         ?: throw NotFound("Assistance action $id not found")
 
     deleteAssistanceActionOptionRefsByActionId(id, data.actions)

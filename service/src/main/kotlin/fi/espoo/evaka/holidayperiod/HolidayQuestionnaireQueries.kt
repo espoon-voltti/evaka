@@ -31,8 +31,7 @@ FROM holiday_period_questionnaire q
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE active @> :date")
         .bind("date", date)
-        .mapTo<FixedPeriodQuestionnaire>()
-        .firstOrNull()
+        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getChildrenWithContinuousPlacement(
     today: LocalDate,
@@ -81,8 +80,7 @@ fun Database.Read.getFixedPeriodQuestionnaire(
 ): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE q.id = :id")
         .bind("id", id)
-        .mapTo<FixedPeriodQuestionnaire>()
-        .firstOrNull()
+        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
     this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().toList()

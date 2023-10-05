@@ -119,7 +119,7 @@ fun Database.Read.getIncome(
         )
         .bind("id", id)
         .map(toIncome(mapper, incomeTypesProvider.get()))
-        .firstOrNull()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.getIncomesForPerson(

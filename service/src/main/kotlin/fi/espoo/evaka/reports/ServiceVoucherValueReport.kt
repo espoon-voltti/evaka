@@ -462,12 +462,11 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
     return createQuery(
-            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month"
+            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month LIMIT 1"
         )
         .bind("year", year)
         .bind("month", month)
-        .mapTo<HelsinkiDateTime>()
-        .firstOrNull()
+        .exactlyOneOrNull<HelsinkiDateTime>()
         ?.toLocalDate()
 }
 
@@ -477,8 +476,7 @@ fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
     return createQuery(
             "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
         )
-        .mapTo<MonthOfYear>()
-        .firstOrNull()
+        .exactlyOneOrNull<MonthOfYear>()
 }
 
 private fun Database.Read.getSnapshotVoucherValues(

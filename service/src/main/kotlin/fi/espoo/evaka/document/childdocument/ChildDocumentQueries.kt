@@ -73,8 +73,7 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
         """
         )
         .bind("id", id)
-        .mapTo<ChildDocumentDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
 fun Database.Transaction.updateChildDocumentContent(
@@ -104,8 +103,7 @@ fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boole
     """
         )
         .bind("id", id)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: throw NotFound("Document $id not found")
 }
 

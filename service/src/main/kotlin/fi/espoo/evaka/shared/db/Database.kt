@@ -384,6 +384,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         )
         fun first() = inner.first()
 
+        @Deprecated(
+            "Use exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
+        )
         fun firstOrNull(): T? = useIterable { it.firstOrNull() }
 
         @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = inner.asSequence()

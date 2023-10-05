@@ -56,8 +56,7 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
     return createQuery("SELECT * FROM document_template WHERE id = :id")
         .bind("id", id)
-        .mapTo<DocumentTemplate>()
-        .firstOrNull()
+        .exactlyOneOrNull<DocumentTemplate>()
 }
 
 fun Database.Transaction.updateDraftTemplateContent(

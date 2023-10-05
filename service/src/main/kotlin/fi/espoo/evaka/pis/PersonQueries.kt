@@ -59,8 +59,7 @@ data class CitizenUser(val id: PersonId)
 fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? =
     createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
         .bind("ssn", ssn)
-        .mapTo<CitizenUser>()
-        .firstOrNull()
+        .exactlyOneOrNull<CitizenUser>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(
@@ -74,7 +73,7 @@ WHERE id = :id
         )
         .bind("id", id)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
@@ -97,7 +96,7 @@ FOR UPDATE
         )
         .bind("ssn", ssn)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery(
@@ -111,7 +110,7 @@ WHERE social_security_number = :ssn
         )
         .bind("ssn", ssn)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
@@ -377,8 +376,7 @@ fun Database.Transaction.updatePersonBasicContactInfo(
         .bind("id", id)
         .bind("email", email)
         .bind("phone", phone)
-        .mapTo<PersonId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<PersonId>() != null
 }
 
 // Update those person fields which do not come from VTJ
@@ -401,7 +399,7 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
@@ -429,7 +427,7 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {

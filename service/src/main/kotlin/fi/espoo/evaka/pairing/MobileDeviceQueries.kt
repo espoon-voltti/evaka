@@ -30,8 +30,7 @@ GROUP BY md.id, md.name, md.employee_id
 """
         )
         .bind("id", id)
-        .mapTo<MobileDeviceDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<MobileDeviceDetails>()
         ?: throw NotFound("Device $id not found")
 }
 

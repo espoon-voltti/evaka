@@ -1867,8 +1867,7 @@ WHERE sn.id = :serviceNeedId
         """
         )
         .bind("serviceNeedId", serviceNeedId)
-        .mapTo<ChildId>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildId>()
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
     FeeDecisionServiceNeed(

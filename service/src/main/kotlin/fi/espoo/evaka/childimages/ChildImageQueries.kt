@@ -21,6 +21,5 @@ fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
 fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {
     return createQuery("DELETE FROM child_images WHERE child_id = :childId RETURNING id")
         .bind("childId", childId)
-        .mapTo<ChildImageId>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildImageId>()
 }

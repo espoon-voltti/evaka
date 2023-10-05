@@ -622,8 +622,7 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
-        .mapTo<FeeDecisionDetailed>()
-        .firstOrNull()
+        .exactlyOneOrNull<FeeDecisionDetailed>()
         ?.let { it ->
             it.copy(
                 partnerIsCodebtor =
@@ -785,7 +784,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? 
         WHERE id = :id
     """
 
-    return createQuery(sql).bind("id", decisionId).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("id", decisionId).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {

@@ -27,8 +27,7 @@ fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE id = :id")
         .bind("id", id)
-        .mapTo<HolidayPeriod>()
-        .firstOrNull()
+        .exactlyOneOrNull<HolidayPeriod>()
 
 fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,

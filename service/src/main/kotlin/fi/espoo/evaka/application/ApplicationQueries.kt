@@ -762,48 +762,45 @@ fun Database.Read.fetchApplicationDetails(
             .trimIndent()
 
     val application =
-        createQuery(sql)
-            .bind("id", applicationId)
-            .map { row ->
-                val childRestricted = row.mapColumn("child_restricted") ?: false
-                val guardianRestricted = row.mapColumn("guardian_restricted") ?: false
-                val deserializedForm =
-                    if (row.mapJsonColumn<FormWithType>("document").type == "CLUB") {
-                        row.mapJsonColumn<ClubFormV0>("document")
-                    } else {
-                        row.mapJsonColumn<DaycareFormV0>("document")
-                    }
+        createQuery(sql).bind("id", applicationId).exactlyOneOrNull {
+            val childRestricted = column("child_restricted") ?: false
+            val guardianRestricted = column("guardian_restricted") ?: false
+            val deserializedForm =
+                if (jsonColumn<FormWithType>("document").type == "CLUB") {
+                    jsonColumn<ClubFormV0>("document")
+                } else {
+                    jsonColumn<DaycareFormV0>("document")
+                }
 
-                ApplicationDetails(
-                    id = row.mapColumn("id"),
-                    type = row.mapColumn("type"),
-                    form =
-                        deserializedForm.let {
-                            ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
-                        },
-                    status = row.mapColumn("status"),
-                    origin = row.mapColumn("origin"),
-                    childId = row.mapColumn("child_id"),
-                    guardianId = row.mapColumn("guardian_id"),
-                    otherGuardianId = row.mapColumn("other_guardian_id"),
-                    otherGuardianLivesInSameAddress = null,
-                    childRestricted = childRestricted,
-                    guardianRestricted = guardianRestricted,
-                    guardianDateOfDeath = row.mapColumn("guardian_date_of_death"),
-                    transferApplication = row.mapColumn("transferapplication"),
-                    additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
-                    createdDate = row.mapColumn("created"),
-                    modifiedDate = row.mapColumn("updated"),
-                    sentDate = row.mapColumn("sentdate"),
-                    dueDate = row.mapColumn("duedate"),
-                    dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
-                    checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                    hideFromGuardian = row.mapColumn("hidefromguardian"),
-                    allowOtherGuardianAccess = row.mapColumn("allow_other_guardian_access"),
-                    attachments = row.mapJsonColumn("attachments")
-                )
-            }
-            .firstOrNull()
+            ApplicationDetails(
+                id = column("id"),
+                type = column("type"),
+                form =
+                    deserializedForm.let {
+                        ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
+                    },
+                status = column("status"),
+                origin = column("origin"),
+                childId = column("child_id"),
+                guardianId = column("guardian_id"),
+                otherGuardianId = column("other_guardian_id"),
+                otherGuardianLivesInSameAddress = null,
+                childRestricted = childRestricted,
+                guardianRestricted = guardianRestricted,
+                guardianDateOfDeath = column("guardian_date_of_death"),
+                transferApplication = column("transferapplication"),
+                additionalDaycareApplication = column("additionaldaycareapplication"),
+                createdDate = column("created"),
+                modifiedDate = column("updated"),
+                sentDate = column("sentdate"),
+                dueDate = column("duedate"),
+                dueDateSetManuallyAt = column("duedate_set_manually_at"),
+                checkedByAdmin = column("checkedbyadmin"),
+                hideFromGuardian = column("hidefromguardian"),
+                allowOtherGuardianAccess = column("allow_other_guardian_access"),
+                attachments = jsonColumn("attachments")
+            )
+        }
 
     if (application != null) {
         // language=sql

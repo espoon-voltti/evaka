@@ -826,8 +826,7 @@ RETURNING id
                 val uuid =
                     tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                         .bind("ssn", person.socialSecurityNumber)
-                        .mapTo<PersonId>()
-                        .firstOrNull()
+                        .exactlyOneOrNull<PersonId>()
 
                 uuid?.let {
                     // Refresh Pis data by forcing refresh from VTJ

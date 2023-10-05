@@ -245,7 +245,7 @@ fun Database.Read.readIncomeStatementForPerson(
         .bind("personId", personId)
         .bind("id", incomeStatementId)
         .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
     this.bind("startDate", body.startDate)

@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -46,17 +45,14 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             """
                 .trimIndent()
         val feeAffectingDateRange =
-            tx.createQuery(feeAffectingDatesSQL)
-                .bind("id_duplicate", duplicate)
-                .map { row ->
-                    DateRange(
-                        row.mapColumn("min_date"),
-                        row.mapColumn<LocalDate?>("max_date")?.takeIf {
-                            it.isBefore(LocalDate.of(2200, 1, 1))
-                        } // infinity -> null
-                    )
-                }
-                .firstOrNull()
+            tx.createQuery(feeAffectingDatesSQL).bind("id_duplicate", duplicate).exactlyOneOrNull {
+                DateRange(
+                    column("min_date"),
+                    column<LocalDate?>("max_date")?.takeIf {
+                        it.isBefore(LocalDate.of(2200, 1, 1))
+                    } // infinity -> null
+                )
+            }
 
         val personReferences = tx.getTransferablePersonReferences()
 

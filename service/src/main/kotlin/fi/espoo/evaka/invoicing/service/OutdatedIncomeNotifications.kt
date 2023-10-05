@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -130,11 +129,10 @@ class OutdatedIncomeNotifications(
                             .trimIndent()
                     )
                     .bind("guardianId", msg.guardianId)
-                    .map { row ->
-                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                    .exactlyOneOrNull {
+                        column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
-                    .firstOrNull()
             }
                 ?: return
 
