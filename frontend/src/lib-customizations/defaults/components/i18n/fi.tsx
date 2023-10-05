@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Sulje',
     confirm: 'Vahvista',
     no: 'Ei',
+    noResults: 'Ei hakutuloksia',
+    open: 'Avaa',
     remove: 'Poista',
+    saving: 'Tallennetaan',
+    saved: 'Tallennettu',
+    search: 'Hae',
     yes: 'Kyllä'
   },
   datePicker: {
@@ -45,6 +50,27 @@ const components: Translations = {
       COMPLETED: 'Valmis'
     }
   },
+  fileUpload: {
+    loading: 'Ladataan...',
+    loaded: 'Ladattu',
+    error: {
+      EXTENSION_MISSING: 'Tiedostopääte puuttuu',
+      EXTENSION_INVALID: 'Virheellinen tiedostopääte',
+      INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
+      FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+      SERVER_ERROR: 'Lataus ei onnistunut'
+    },
+    input: {
+      title: 'Lisää liite',
+      text: [
+        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+        'Tiedoston maksimikoko: 10MB.',
+        'Sallitut tiedostomuodot:',
+        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+      ]
+    },
+    deleteFile: 'Poista tiedosto'
+  },
   loginErrorModal: {
     header: 'Kirjautuminen epäonnistui',
     message:
@@ -52,7 +78,45 @@ const components: Translations = {
     returnMessage: 'Palaa takaisin'
   },
   messages: {
-    staffAnnotation: 'Henkilökunta'
+    staffAnnotation: 'Henkilökunta',
+    message: 'Viesti',
+    recipients: 'Vastaanottajat',
+    send: 'Lähetä',
+    sending: 'Lähetetään',
+    types: {
+      MESSAGE: 'Viesti',
+      BULLETIN: 'Tiedote'
+    },
+    thread: {
+      type: 'Tyyppi',
+      urgent: 'Kiireellinen'
+    }
+  },
+  messageEditor: {
+    newMessage: 'Uusi viesti',
+    to: {
+      label: 'Vastaanottaja',
+      placeholder: 'Valitse ryhmä',
+      noOptions: 'Ei ryhmiä'
+    },
+    type: {
+      label: 'Viestin tyyppi',
+      message: 'Viesti',
+      bulletin: 'Tiedote (ei voi vastata)'
+    },
+    urgent: {
+      heading: 'Merkitse kiireelliseksi',
+      info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+      label: 'Kiireellinen'
+    },
+    sender: 'Lähettäjä',
+    recipientsPlaceholder: 'Valitse...',
+    title: 'Otsikko',
+    deleteDraft: 'Hylkää luonnos'
+  },
+  messageReplyEditor: {
+    messagePlaceholder: undefined,
+    discard: 'Hylkää'
   },
   notifications: {
     close: 'Sulje'
@@ -61,6 +125,11 @@ const components: Translations = {
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
+  },
+  treeDropdown: {
+    expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
+    collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
+    expandDropdown: 'Avaa'
   },
   validationErrors: {
     required: 'Pakollinen tieto',

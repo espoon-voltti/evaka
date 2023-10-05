@@ -235,7 +235,6 @@ function FeeAlterationAttachments({
         onUpload={handleUpload}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
-        i18n={i18n.fileUpload}
       />
     </>
   )

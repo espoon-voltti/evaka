@@ -7,7 +7,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
@@ -32,8 +31,9 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
+import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -44,7 +44,6 @@ import { faBoxArchive } from 'lib-icons'
 import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 
-import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
 import { archiveThread } from './api'
 import { View } from './types-view'
@@ -212,18 +211,6 @@ export function SingleThreadView({
   }, [setReplyContent, setReplyEditorVisible, threadId])
 
   const canReply = type === 'MESSAGE'
-  const editorLabels = useMemo(
-    () => ({
-      add: i18n.common.add,
-      message: i18n.messages.messageEditor.message,
-      recipients: i18n.messages.messageEditor.receivers,
-      send: i18n.messages.messageEditor.send,
-      sending: i18n.messages.messageEditor.sending,
-      discard: i18n.messages.messageEditor.discard
-    }),
-    [i18n]
-  )
-
   const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
 
   return (
@@ -271,7 +258,6 @@ export function SingleThreadView({
                 recipients={recipients}
                 onToggleRecipient={onToggleRecipient}
                 replyContent={replyContent}
-                i18n={editorLabels}
                 sendEnabled={sendEnabled}
               />
             </MessageContainer>

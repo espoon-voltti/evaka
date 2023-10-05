@@ -24,16 +24,16 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
   receiversAsSelectorNode,
   SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
-import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { modalZIndex } from 'lib-components/layout/z-helpers'
-import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+} from 'lib-components/messages/SelectorNode'
+import { SaveDraftParams } from 'lib-components/messages/types'
+import { Draft, useDraft } from 'lib-components/messages/useDraft'
+import FileUpload from 'lib-components/molecules/FileUpload'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -44,9 +44,10 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
-import Combobox from '../../atoms/dropdowns/Combobox'
-import Checkbox from '../../atoms/form/Checkbox'
-import { InfoBox } from '../../molecules/MessageBoxes'
+import Combobox from '../atoms/dropdowns/Combobox'
+import Checkbox from '../atoms/form/Checkbox'
+import { useTranslations } from '../i18n'
+import { InfoBox } from '../molecules/MessageBoxes'
 
 type Message = Omit<
   UpdatableDraftContent,
@@ -89,52 +90,12 @@ const areRequiredFieldsFilled = (
   recipients: { key: UUID }[]
 ): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
 
-export interface MessageEditorI18n {
-  newMessage: string
-  to: {
-    label: string
-    placeholder: string
-    noOptions: string
-  }
-  type: {
-    label: string
-    message: string
-    bulletin: string
-  }
-  urgent: {
-    heading: string
-    info: string
-    label: string
-  }
-  sender: string
-  receivers: string
-  title: string
-  message: string
-  deleteDraft: string
-  send: string
-  sending: string
-  saving: string
-  saved: string
-  search: string
-  noResults: string
-  addAttachmentInfo: string
-  close: string
-  open: string
-  treeDropdown: {
-    expandDropdown: string
-    expand: (opt: string) => string
-    collapse: (opt: string) => string
-    placeholder: string
-  }
-}
-
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
-  i18n: MessageEditorI18n & FileUploadI18n
   initDraftRaw: (accountId: string) => Promise<Result<string>>
   mobileVersion?: boolean
   accounts: AuthorizedMessageAccount[]
@@ -158,7 +119,6 @@ export default React.memo(function MessageEditor({
   deleteAttachment,
   draftContent,
   getAttachmentUrl,
-  i18n,
   initDraftRaw,
   mobileVersion = false,
   accounts,
@@ -170,6 +130,8 @@ export default React.memo(function MessageEditor({
   sending,
   defaultTitle = ''
 }: Props) {
+  const i18n = useTranslations()
+
   const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
     receiversAsSelectorNode(defaultSender.value, availableReceivers)
   )
@@ -251,9 +213,9 @@ export default React.memo(function MessageEditor({
   useEffect(
     function updateTextualSaveStatusOnDraftStateChange() {
       if (draftState === 'saving') {
-        setSaveStatus(`${i18n.saving}...`)
+        setSaveStatus(`${i18n.common.saving}...`)
       } else if (draftState === 'clean' && draftWasModified) {
-        setSaveStatus(i18n.saved)
+        setSaveStatus(i18n.common.saved)
       } else {
         return
       }
@@ -265,7 +227,8 @@ export default React.memo(function MessageEditor({
   )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
-  const title = debouncedSaveStatus || message.title || i18n.newMessage
+  const title =
+    debouncedSaveStatus || message.title || i18n.messageEditor.newMessage
 
   const sendHandler = useCallback(() => {
     const {
@@ -345,28 +308,18 @@ export default React.memo(function MessageEditor({
   const urgent = (
     <Checkbox
       data-qa="checkbox-urgent"
-      label={i18n.urgent.label}
+      label={i18n.messageEditor.urgent.label}
       checked={message.urgent}
       onChange={(urgent) => updateMessage({ urgent })}
     />
   )
 
   function desktopEditor() {
-    const i18nWithReplacedTitle = {
-      ...i18n,
-      upload: {
-        ...i18n.upload,
-        input: {
-          ...i18n.upload.input,
-          title: i18n.addAttachmentInfo
-        }
-      }
-    }
     const messageType =
       senderAccountType === 'MUNICIPAL' ? (
         <FixedSpaceRow>
           <Radio
-            label={i18n.type.bulletin}
+            label={i18n.messageEditor.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
             data-qa="radio-message-type-bulletin"
@@ -375,13 +328,13 @@ export default React.memo(function MessageEditor({
       ) : (
         <FixedSpaceRow>
           <Radio
-            label={i18n.type.message}
+            label={i18n.messageEditor.type.message}
             checked={message.type === 'MESSAGE'}
             onChange={() => updateMessage({ type: 'MESSAGE' })}
             data-qa="radio-message-type-message"
           />
           <Radio
-            label={i18n.type.bulletin}
+            label={i18n.messageEditor.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
             data-qa="radio-message-type-bulletin"
@@ -409,7 +362,7 @@ export default React.memo(function MessageEditor({
                   white
                   size="s"
                   data-qa="collapse-view-btn"
-                  aria-label={i18n.open}
+                  aria-label={i18n.common.open}
                 />
               ) : (
                 <IconButton
@@ -418,7 +371,7 @@ export default React.memo(function MessageEditor({
                   white
                   size="s"
                   data-qa="expand-view-btn"
-                  aria-label={i18n.close}
+                  aria-label={i18n.common.close}
                 />
               )}
               <IconButton
@@ -427,7 +380,7 @@ export default React.memo(function MessageEditor({
                 white
                 size="m"
                 data-qa="close-message-editor-btn"
-                aria-label={i18n.close}
+                aria-label={i18n.common.close}
               />
             </HeaderButtonContainer>
           </TopBar>
@@ -435,7 +388,7 @@ export default React.memo(function MessageEditor({
             <ExpandableLayout expandedView={expandedView}>
               <Dropdowns expandedView={expandedView}>
                 <HorizontalField>
-                  <Bold>{i18n.sender}</Bold>
+                  <Bold>{i18n.messageEditor.sender}</Bold>
                   <Combobox
                     items={senderOptions}
                     onChange={setSender}
@@ -447,12 +400,11 @@ export default React.memo(function MessageEditor({
                 </HorizontalField>
                 <Gap size="s" />
                 <HorizontalField>
-                  <Bold>{i18n.receivers}</Bold>
+                  <Bold>{i18n.messages.recipients}</Bold>
                   <TreeDropdown
                     tree={receiverTree}
                     onChange={updateReceivers}
-                    labels={i18n.treeDropdown}
-                    placeholder={i18n.treeDropdown.placeholder}
+                    placeholder={i18n.messageEditor.recipientsPlaceholder}
                     data-qa="select-receiver"
                   />
                 </HorizontalField>
@@ -460,18 +412,21 @@ export default React.memo(function MessageEditor({
               {expandedView && !simpleMode && (
                 <ExpandedRightPane>
                   <HorizontalField long={true}>
-                    <Bold>{i18n.type.label}</Bold>
+                    <Bold>{i18n.messageEditor.type.label}</Bold>
                     {messageType}
                   </HorizontalField>
                   <Gap size="s" />
                   <HorizontalField long={true}>
-                    <Bold>{i18n.urgent.heading}</Bold>
+                    <Bold>{i18n.messageEditor.urgent.heading}</Bold>
                     {urgent}
                   </HorizontalField>
                   {message.urgent && (
                     <>
                       <Gap size="s" />
-                      <InfoBox message={i18n.urgent.info} noMargin={true} />
+                      <InfoBox
+                        message={i18n.messageEditor.urgent.info}
+                        noMargin={true}
+                      />
                     </>
                   )}
                 </ExpandedRightPane>
@@ -479,7 +434,7 @@ export default React.memo(function MessageEditor({
             </ExpandableLayout>
             <Gap size="s" />
             <HorizontalField>
-              <Bold>{i18n.title}</Bold>
+              <Bold>{i18n.messageEditor.title}</Bold>
               <InputField
                 value={message.title ?? ''}
                 onChange={(title) => updateMessage({ title })}
@@ -491,12 +446,12 @@ export default React.memo(function MessageEditor({
                 <Gap size="s" />
                 <FixedSpaceRow justifyContent="space-between">
                   <div>
-                    <Bold>{i18n.type.label}</Bold>
+                    <Bold>{i18n.messageEditor.type.label}</Bold>
                     <Gap size="xs" />
                     {messageType}
                   </div>
                   <div>
-                    <Bold>{i18n.urgent.heading}</Bold>
+                    <Bold>{i18n.messageEditor.urgent.heading}</Bold>
                     <Gap size="xs" />
                     {urgent}
                   </div>
@@ -504,13 +459,16 @@ export default React.memo(function MessageEditor({
                 {message.urgent && (
                   <>
                     <Gap size="s" />
-                    <InfoBox message={i18n.urgent.info} noMargin={true} />
+                    <InfoBox
+                      message={i18n.messageEditor.urgent.info}
+                      noMargin={true}
+                    />
                   </>
                 )}
               </>
             )}
             <Gap size="m" />
-            <Bold>{i18n.message}</Bold>
+            <Bold>{i18n.messages.message}</Bold>
             <Gap size="xs" />
             <StyledTextArea
               value={message.content}
@@ -523,7 +481,6 @@ export default React.memo(function MessageEditor({
                 disabled={!draftId}
                 data-qa="upload-message-attachment"
                 files={message.attachments}
-                i18n={i18nWithReplacedTitle}
                 getDownloadUrl={getAttachmentUrl}
                 onUpload={handleAttachmentUpload}
                 onDelete={handleAttachmentDelete}
@@ -535,7 +492,7 @@ export default React.memo(function MessageEditor({
             {draftId ? (
               <InlineButton
                 onClick={() => onDiscard(message.sender.value, draftId)}
-                text={i18n.deleteDraft}
+                text={i18n.messageEditor.deleteDraft}
                 icon={faTrash}
                 data-qa="discard-draft-btn"
               />
@@ -543,7 +500,7 @@ export default React.memo(function MessageEditor({
               <Gap horizontal />
             )}
             <Button
-              text={sending ? i18n.sending : i18n.send}
+              text={sending ? i18n.messages.sending : i18n.messages.send}
               primary
               disabled={!sendEnabled}
               onClick={sendHandler}
@@ -563,43 +520,42 @@ export default React.memo(function MessageEditor({
           icon={faTimes}
           onClick={onCloseHandler}
           data-qa="close-message-editor-btn"
-          aria-label={i18n.close}
+          aria-label={i18n.common.close}
         />
       </TopBarMobile>
       <ScrollableFormArea>
-        <Bold>{i18n.sender}</Bold>
+        <Bold>{i18n.messageEditor.sender}</Bold>
         <Gap size="xs" />
         {message.sender.label}
         <div>
           <Gap size="s" />
-          <Bold>{i18n.receivers}</Bold>
+          <Bold>{i18n.messages.recipients}</Bold>
           <Gap size="xs" />
         </div>
         <TreeDropdown
           tree={receiverTree}
           onChange={updateReceivers}
           data-qa="attendees"
-          labels={i18n.treeDropdown}
-          placeholder={i18n.treeDropdown.placeholder}
+          placeholder={i18n.messageEditor.recipientsPlaceholder}
         />
         <Gap size="s" />
-        <Bold>{i18n.urgent.heading}</Bold>
+        <Bold>{i18n.messageEditor.urgent.heading}</Bold>
         {urgent}
         {message.urgent && (
           <>
             <Gap size="s" />
-            <InfoBox message={i18n.urgent.info} noMargin={true} />
+            <InfoBox message={i18n.messageEditor.urgent.info} noMargin={true} />
           </>
         )}
         <Gap size="s" />
-        <Bold>{i18n.title}</Bold>
+        <Bold>{i18n.messageEditor.title}</Bold>
         <InputField
           value={message.title ?? ''}
           onChange={(title) => updateMessage({ title })}
           data-qa="input-title"
         />
         <Gap size="m" />
-        <Bold>{i18n.message}</Bold>
+        <Bold>{i18n.messages.message}</Bold>
         <Gap size="xs" />
         <MessageAreaMobile
           value={message.content}
@@ -612,7 +568,7 @@ export default React.memo(function MessageEditor({
         {draftId ? (
           <InlineButton
             onClick={() => onDiscard(message.sender.value, draftId)}
-            text={i18n.deleteDraft}
+            text={i18n.messageEditor.deleteDraft}
             icon={faTrash}
             data-qa="discard-draft-btn"
           />
@@ -620,7 +576,7 @@ export default React.memo(function MessageEditor({
           <Gap horizontal />
         )}
         <Button
-          text={sending ? i18n.sending : i18n.send}
+          text={sending ? i18n.messages.sending : i18n.messages.send}
           primary
           disabled={!sendEnabled}
           onClick={sendHandler}

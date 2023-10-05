@@ -265,15 +265,35 @@ describe('Child message thread', () => {
     await nav.selectGroup(daycareGroupId)
 
     await messagesPage.openFirstThread()
-    await waitUntilEqual(() => threadView.countMessages(), 1)
+    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
     const replyContent = 'Testivastauksen sisältö'
-    await threadView.replyThread(replyContent)
-    await waitUntilEqual(() => threadView.countMessages(), 2)
+    await threadView.replyButton.click()
+    await threadView.replyContent.fill(replyContent)
+    await threadView.sendReplyButton.click()
+    await waitUntilEqual(() => threadView.singleMessageContents.count(), 2)
     await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
     await waitUntilEqual(
       () => threadView.getMessageSender(1),
       `${unit.name} - ${daycareGroup.data.name}`
     )
+  })
+
+  test('Employee discards a reply', async () => {
+    await initCitizenPage(mockedDateAt10)
+    await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPage()
+
+    await nav.selectGroup(daycareGroupId)
+
+    await messagesPage.openFirstThread()
+    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
+    await threadView.replyButton.click()
+    await threadView.replyContent.fill('foo bar baz')
+    await threadView.discardReplyButton.click()
+    await threadView.replyButton.click()
+    await waitUntilEqual(() => threadView.replyContent.inputValue, '')
   })
 
   test('Message button goes to unread messages if user has no pin session', async () => {
@@ -300,7 +320,7 @@ describe('Child message thread', () => {
     await waitUntilTrue(() => messagesPage.messagesExist())
     await messagesPage.openFirstThread()
 
-    await waitUntilEqual(() => threadView.countMessages(), 1)
+    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
     await waitUntilEqual(
       () => threadView.getMessageContent(0),
       'Testiviestin sisältö'

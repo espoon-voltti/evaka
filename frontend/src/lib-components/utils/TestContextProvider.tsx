@@ -21,7 +21,12 @@ export const testTranslations: Translations = {
     close: '',
     confirm: '',
     no: '',
+    noResults: '',
+    open: '',
     remove: '',
+    saved: '',
+    saving: '',
+    search: '',
     yes: ''
   },
   datePicker: {
@@ -49,12 +54,68 @@ export const testTranslations: Translations = {
       COMPLETED: ''
     }
   },
+  fileUpload: {
+    deleteFile: '',
+    input: {
+      title: '',
+      text: []
+    },
+    loading: '',
+    loaded: '',
+    error: {
+      FILE_TOO_LARGE: '',
+      EXTENSION_INVALID: '',
+      EXTENSION_MISSING: '',
+      INVALID_CONTENT_TYPE: '',
+      SERVER_ERROR: ''
+    }
+  },
   loginErrorModal: {
     header: '',
     message: '',
     returnMessage: ''
   },
-  messages: { staffAnnotation: '' },
+  messages: {
+    staffAnnotation: '',
+    recipients: '',
+    message: '',
+    send: '',
+    sending: '',
+    types: {
+      MESSAGE: '',
+      BULLETIN: ''
+    },
+    thread: {
+      type: '',
+      urgent: ''
+    }
+  },
+  messageEditor: {
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipientsPlaceholder: '',
+    title: '',
+    deleteDraft: ''
+  },
+  messageReplyEditor: {
+    discard: '',
+    messagePlaceholder: undefined
+  },
   notifications: {
     close: ''
   },
@@ -62,6 +123,11 @@ export const testTranslations: Translations = {
   reloadNotification: {
     title: '',
     buttonText: ''
+  },
+  treeDropdown: {
+    expand: () => '',
+    collapse: () => '',
+    expandDropdown: ''
   },
   validationErrors: {
     required: '',

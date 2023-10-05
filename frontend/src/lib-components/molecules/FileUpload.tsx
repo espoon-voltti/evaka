@@ -27,6 +27,7 @@ import {
 } from 'lib-icons'
 
 import InlineButton from '../atoms/buttons/InlineButton'
+import { useTranslations } from '../i18n'
 
 const fileUploadErrorKeys = {
   FILE_TOO_LARGE: undefined,
@@ -62,19 +63,6 @@ const isErrorCode = (code: string | undefined): code is FileUploadError =>
 const getErrorCode = (res: Failure<string>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
-export interface FileUploadI18n {
-  upload: {
-    deleteFile: string
-    input: {
-      title: string
-      text: string[]
-    }
-    loading: string
-    loaded: string
-    error: Record<FileUploadError, string>
-  }
-}
-
 interface FileUploadProps {
   files: Attachment[]
   onUpload: (
@@ -83,7 +71,6 @@ interface FileUploadProps {
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
   getDownloadUrl: (id: UUID, fileName: string) => string
-  i18n: FileUploadI18n
   disabled?: boolean
   slim?: boolean
   'data-qa'?: string
@@ -287,7 +274,6 @@ export const fileIcon = (file: Attachment): IconDefinition => {
 const inProgress = (file: FileObject): boolean => !file.uploaded
 
 export default React.memo(function FileUpload({
-  i18n,
   files,
   onUpload,
   onDelete,
@@ -298,6 +284,8 @@ export default React.memo(function FileUpload({
   'data-qa': dataQa,
   accept = defaultAllowedContentTypes
 }: FileUploadProps) {
+  const i18n = useTranslations().fileUpload
+
   const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -325,8 +313,7 @@ export default React.memo(function FileUpload({
     event.preventDefault()
   }
 
-  const errorMessage = ({ error }: FileObject) =>
-    error && i18n.upload.error[error]
+  const errorMessage = ({ error }: FileObject) => error && i18n.error[error]
 
   const deleteFile = async (file: FileObject) => {
     setUploadedFiles((old) =>
@@ -447,7 +434,7 @@ export default React.memo(function FileUpload({
               className="file-input-button"
               disabled={disabled}
               icon={faPlus}
-              text={i18n.upload.input.title}
+              text={i18n.input.title}
               onClick={() => inputRef?.current?.click()}
             />
             {fileInput}
@@ -462,7 +449,7 @@ export default React.memo(function FileUpload({
           <InlineButton
             disabled={disabled}
             icon={faPaperclip}
-            text={i18n.upload.input.title}
+            text={i18n.input.title}
             onClick={() => inputRef?.current?.click()}
           />
           {fileInput}
@@ -477,11 +464,9 @@ export default React.memo(function FileUpload({
         >
           <span role="button" tabIndex={0}>
             {fileInput}
-            <H4>{i18n.upload.input.title}</H4>
+            <H4>{i18n.input.title}</H4>
             <p>
-              <InformationText>
-                {i18n.upload.input.text.join('\n')}
-              </InformationText>
+              <InformationText>{i18n.input.text.join('\n')}</InformationText>
             </p>
           </span>
         </FileInputLabel>
@@ -513,7 +498,7 @@ export default React.memo(function FileUpload({
                         icon={faTimes}
                         disabled={file.deleteInProgress}
                         onClick={() => deleteFile(file)}
-                        aria-label={`${i18n.upload.deleteFile} ${file.name}`}
+                        aria-label={`${i18n.deleteFile} ${file.name}`}
                         data-qa={`file-delete-button-${file.name}`}
                       />
                     )}
@@ -530,9 +515,7 @@ export default React.memo(function FileUpload({
                       {!file.error && (
                         <ProgressBarDetails>
                           <span>
-                            {inProgress(file)
-                              ? i18n.upload.loading
-                              : i18n.upload.loaded}
+                            {inProgress(file) ? i18n.loading : i18n.loaded}
                           </span>
                           <span>{file.progress} %</span>
                         </ProgressBarDetails>

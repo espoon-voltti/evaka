@@ -18,7 +18,12 @@ export interface Translations {
     close: string
     confirm: string
     no: string
+    noResults: string
+    open: string
     remove: string
+    saving: string
+    saved: string
+    search: string
     yes: string
   }
   datePicker: {
@@ -42,12 +47,68 @@ export interface Translations {
     noSelection: string
     documentStates: Record<DocumentStatus, string>
   }
+  fileUpload: {
+    deleteFile: string
+    input: {
+      title: string
+      text: string[]
+    }
+    loading: string
+    loaded: string
+    error: {
+      FILE_TOO_LARGE: string
+      EXTENSION_INVALID: string
+      EXTENSION_MISSING: string
+      INVALID_CONTENT_TYPE: string
+      SERVER_ERROR: string
+    }
+  }
   loginErrorModal: {
     header: string
     message: string
     returnMessage: string
   }
-  messages: { staffAnnotation: string }
+  messages: {
+    staffAnnotation: string
+    message: string
+    recipients: string
+    send: string
+    sending: string
+    types: {
+      MESSAGE: string
+      BULLETIN: string
+    }
+    thread: {
+      type: string
+      urgent: string
+    }
+  }
+  messageEditor: {
+    newMessage: string
+    to: {
+      label: string
+      placeholder: string
+      noOptions: string
+    }
+    type: {
+      label: string
+      message: string
+      bulletin: string
+    }
+    urgent: {
+      heading: string
+      info: string
+      label: string
+    }
+    sender: string
+    recipientsPlaceholder: string
+    title: string
+    deleteDraft: string
+  }
+  messageReplyEditor: {
+    messagePlaceholder: string | undefined
+    discard: string
+  }
   notifications: {
     close: string
   }
@@ -55,6 +116,11 @@ export interface Translations {
   reloadNotification: {
     title: string
     buttonText: string
+  }
+  treeDropdown: {
+    expand: (opt: string) => string
+    collapse: (opt: string) => string
+    expandDropdown: string
   }
   validationErrors: {
     required: string

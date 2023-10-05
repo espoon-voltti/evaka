@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -13,7 +12,7 @@ import {
   Header,
   TitleAndDate,
   Truncated
-} from 'lib-components/molecules/ThreadListItem'
+} from 'lib-components/messages/ThreadListItem'
 
 export function MessagePreview({
   thread,
@@ -27,7 +26,7 @@ export function MessagePreview({
   const lastMessage = thread.messages[thread.messages.length - 1]
   const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
   return (
-    <MessagePreviewContainer
+    <Container
       isRead={!hasUnreadMessages}
       active={false}
       data-qa="message-preview"
@@ -49,12 +48,6 @@ export function MessagePreview({
             .replace(new RegExp('\\n', 'g'), ' ')}
         </Truncated>
       </FixedSpaceColumn>
-    </MessagePreviewContainer>
+    </Container>
   )
 }
-
-const MessagePreviewContainer = styled(Container)`
-  border-left-width: 0;
-  border-right-width: 0;
-  border-top-width: 0;
-`

@@ -46,7 +46,7 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
 
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   color: ${(p) => p.theme.colors.grayscale.g100};
-  padding: ${defaultMargins.s} ${defaultMargins.m};
+  padding: ${defaultMargins.s};
   cursor: pointer;
   border-top: 1px solid ${(p) => p.theme.colors.grayscale.g15};
   position: relative;

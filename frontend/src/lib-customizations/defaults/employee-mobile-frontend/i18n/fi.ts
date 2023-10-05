@@ -53,6 +53,7 @@ export const fi = {
     staff: 'Henkilökunta',
     messages: 'Viestit',
     back: 'Takaisin',
+    return: 'Palaa',
     close: 'Sulje',
     open: 'Avaa',
     hours: 'Tuntia',
@@ -90,13 +91,7 @@ export const fi = {
     validity: 'Voimassaolo',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     lastName: 'Sukunimi',
-    firstName: 'Etunimi',
-    treeDropdown: {
-      expandDropdown: 'Avaa',
-      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      placeholder: 'Valitse...'
-    }
+    firstName: 'Etunimi'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
@@ -341,6 +336,9 @@ export const fi = {
     title: 'Saapuneet viestit',
     inputPlaceholder: 'Kirjoita...',
     newMessage: 'Uusi viesti',
+    thread: {
+      reply: 'Vastaa viestiin'
+    },
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {
@@ -360,12 +358,13 @@ export const fi = {
       },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
+      recipientsPlaceholder: 'Valitse...',
       title: 'Otsikko',
       message: 'Viesti',
+      discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään',
-      addAttachmentInfo: 'Lisää liite PDF-muodossa'
+      sending: 'Lähetetään'
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
     unreadMessages: 'Uudet viestit',

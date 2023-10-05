@@ -12,19 +12,18 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import {
   Container,
   DeleteThreadButton,
   Header,
   TitleAndDate,
   Truncated
-} from 'lib-components/molecules/ThreadListItem'
+} from 'lib-components/messages/ThreadListItem'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
-
-import { MessageCharacteristics } from './MessageCharacteristics'
 
 interface Props {
   thread: MessageThread
@@ -82,11 +81,7 @@ export default React.memo(function ThreadListItem({
               data-qa="delete-thread-btn"
               onClick={handleDelete}
             />
-            <MessageCharacteristics
-              type={thread.type}
-              urgent={thread.urgent}
-              labels={i18n.messages.types}
-            />
+            <MessageCharacteristics type={thread.type} urgent={thread.urgent} />
           </FixedSpaceRow>
         </Header>
         <ScreenReaderOnly>

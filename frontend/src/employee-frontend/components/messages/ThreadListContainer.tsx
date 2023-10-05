@@ -12,8 +12,8 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
-import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
+import EmptyMessageFolder from 'lib-components/messages/EmptyMessageFolder'
 import { H1, H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 

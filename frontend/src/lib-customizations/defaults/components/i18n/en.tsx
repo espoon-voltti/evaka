@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Close',
     confirm: 'Confirm',
     no: 'No',
+    noResults: 'No results',
+    open: 'Open',
     remove: 'Remove',
+    saving: 'Saving',
+    saved: 'Saved',
+    search: 'Search',
     yes: 'Yes'
   },
   datePicker: {
@@ -46,6 +51,27 @@ const components: Translations = {
       COMPLETED: 'Completed'
     }
   },
+  fileUpload: {
+    loading: 'Loading',
+    loaded: 'Loaded',
+    error: {
+      EXTENSION_MISSING: 'Missing file extension',
+      EXTENSION_INVALID: 'Invalid file extension',
+      INVALID_CONTENT_TYPE: 'Invalid content type',
+      FILE_TOO_LARGE: 'File is too big (max. 10MB)',
+      SERVER_ERROR: 'Upload failed'
+    },
+    input: {
+      title: 'Add an attachment',
+      text: [
+        'Press here or drag and drop a new file',
+        'Max file size: 10MB.',
+        'Allowed formats:',
+        'PDF, JPEG/JPG, PNG and DOC/DOCX'
+      ]
+    },
+    deleteFile: 'Delete file'
+  },
   loginErrorModal: {
     header: 'Login failed',
     message:
@@ -53,7 +79,47 @@ const components: Translations = {
     returnMessage: 'Go back'
   },
   messages: {
-    staffAnnotation: 'Staff'
+    staffAnnotation: 'Staff',
+    recipients: 'Recipients',
+    message: 'Message',
+    send: 'Send',
+    sending: 'Sending',
+    types: {
+      MESSAGE: 'Message',
+      BULLETIN: 'Bulletin'
+    },
+    thread: {
+      type: 'Type',
+      urgent: 'Urgent'
+    }
+  },
+  messageEditor: {
+    // Currently only used for Finnish frontends
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipientsPlaceholder: '',
+    title: '',
+    deleteDraft: ''
+  },
+  messageReplyEditor: {
+    // Currently only used for Finnish frontends
+    discard: '',
+    messagePlaceholder: undefined
   },
   notifications: {
     close: 'Close'
@@ -62,6 +128,12 @@ const components: Translations = {
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'
+  },
+  treeDropdown: {
+    // Currently only used for Finnish frontends
+    expand: () => '',
+    collapse: () => '',
+    expandDropdown: ''
   },
   validationErrors: {
     required: 'Value missing',

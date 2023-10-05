@@ -287,7 +287,6 @@ export default React.memo(function ApplicationEditView({
                     onUpload={onUploadAttachment('URGENCY')}
                     onDelete={onDeleteAttachment}
                     getDownloadUrl={getAttachmentUrl}
-                    i18n={i18n.fileUpload}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
                     data-qa="file-upload-urgent"
                   />
@@ -584,7 +583,6 @@ export default React.memo(function ApplicationEditView({
                     onUpload={onUploadAttachment('EXTENDED_CARE')}
                     onDelete={onDeleteAttachment}
                     getDownloadUrl={getAttachmentUrl}
-                    i18n={i18n.fileUpload}
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'
                     )}

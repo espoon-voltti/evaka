@@ -47,7 +47,7 @@ export interface MessagesState {
   receivedMessages: Result<MessageThread[]>
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => void
+  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -59,7 +59,7 @@ const defaultState: MessagesState = {
   receivedMessages: Loading.of(),
   selectedThread: undefined,
   selectThread: () => undefined,
-  sendReply: () => undefined,
+  sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -86,6 +86,8 @@ export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const { unitInfoResponse } = useContext(UnitContext)
     const { user } = useContext(UserContext)
+    const pinLoginActive = user.map((u) => u?.pinLoginActive).getOrElse(false)
+
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
     const { groupId } = useNonNullableParams<{
@@ -94,9 +96,7 @@ export const MessageContextProvider = React.memo(
     }>()
 
     const accounts = useQueryResult(messagingAccountsQuery(unitId ?? ''), {
-      enabled:
-        unitId !== undefined &&
-        user.map((u) => u?.pinLoginActive).getOrElse(false)
+      enabled: unitId !== undefined && pinLoginActive
     })
 
     const groupAccounts: AuthorizedMessageAccount[] = useMemo(
@@ -123,9 +123,7 @@ export const MessageContextProvider = React.memo(
     const { data, transformPages, error, isFetching, isFetchingNextPage } =
       useInfiniteQuery(
         receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
-        {
-          enabled: selectedAccount !== undefined
-        }
+        { enabled: selectedAccount !== undefined && pinLoginActive }
       )
 
     const isFetchingFirstPage = isFetching && !isFetchingNextPage
@@ -192,6 +190,7 @@ export const MessageContextProvider = React.memo(
         if (result.isSuccess) {
           setReplyContent(result.value.threadId, '')
         }
+        return result
       },
       [sendReply, setReplyContent]
     )

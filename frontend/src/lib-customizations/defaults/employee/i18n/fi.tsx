@@ -206,12 +206,6 @@ export const fi = {
     copy: 'Kopioi',
     startDate: 'Aloituspäivä',
     endDate: 'Lopetuspäivä',
-    treeDropdown: {
-      expandDropdown: 'Avaa',
-      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
-      placeholder: 'Valitse...'
-    },
     retroactiveConfirmation: {
       title:
         'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
@@ -2298,6 +2292,7 @@ export const fi = {
           add: 'Lisää tapahtuma',
           period: 'Ajankohta',
           attendees: 'Tapahtuman osallistujat',
+          attendeesPlaceholder: 'Valitse...',
           eventTitle: 'Tapahtuman otsikko',
           eventTitlePlaceholder: 'Max. 30 merkkiä',
           description: 'Tapahtuman kuvaus',
@@ -3961,27 +3956,6 @@ export const fi = {
     }
   },
   fileUpload: {
-    upload: {
-      loading: 'Ladataan...',
-      loaded: 'Ladattu',
-      error: {
-        EXTENSION_MISSING: 'Tiedostopääte puuttuu',
-        EXTENSION_INVALID: 'Virheellinen tiedostopääte',
-        INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
-        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
-        SERVER_ERROR: 'Lataus ei onnistunut'
-      },
-      input: {
-        title: 'Lisää liite',
-        text: [
-          'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-          'Tiedoston maksimikoko: 10MB.',
-          'Sallitut tiedostomuodot:',
-          'PDF, JPEG/JPG, PNG ja DOC/DOCX'
-        ]
-      },
-      deleteFile: 'Poista tiedosto'
-    },
     download: {
       modalHeader: 'Tiedoston käsittely on kesken',
       modalMessage:
@@ -4037,33 +4011,6 @@ export const fi = {
       childDob: 'Syntymäaika',
       receivers: 'Vastaanottajat',
       confirmText: 'Lähetä viesti valituille'
-    },
-    messageEditor: {
-      newMessage: 'Uusi viesti',
-      to: {
-        label: 'Vastaanottaja',
-        placeholder: 'Valitse ryhmä',
-        noOptions: 'Ei ryhmiä'
-      },
-      type: {
-        label: 'Viestin tyyppi',
-        message: 'Viesti',
-        bulletin: 'Tiedote (ei voi vastata)'
-      },
-      urgent: {
-        heading: 'Merkitse kiireelliseksi',
-        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-        label: 'Kiireellinen'
-      },
-      sender: 'Lähettäjä',
-      receivers: 'Vastaanottajat',
-      title: 'Otsikko',
-      message: 'Viesti',
-      discard: 'Hylkää',
-      deleteDraft: 'Hylkää luonnos',
-      send: 'Lähetä',
-      sending: 'Lähetetään',
-      addAttachmentInfo: 'Lisää liite PDF-muodossa'
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',

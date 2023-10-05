@@ -7,11 +7,10 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import {
   Message,
@@ -32,10 +31,11 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
+import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
+import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
-import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -45,12 +45,7 @@ import { faTrash } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments'
 import { Translations, useTranslation } from '../localization'
 
-import { MessageCharacteristics } from './MessageCharacteristics'
-import {
-  ConfirmDeleteThread,
-  MessageContainer,
-  ReplyEditorContainer
-} from './MessageComponents'
+import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
 import { MessageContext } from './state'
 
@@ -110,6 +105,29 @@ const ActionRow = styled(FixedSpaceRow)`
 
 const ReplyToThreadButton = styled(InlineButton)`
   align-self: flex-start;
+`
+
+const messageContainerStyles = css`
+  background-color: ${colors.grayscale.g0};
+  padding: ${defaultMargins.s};
+
+  @media (min-width: ${desktopMin}) {
+    padding: ${defaultMargins.L};
+  }
+
+  margin: ${defaultMargins.xxs} ${defaultMargins.xxs} ${defaultMargins.s}
+    ${defaultMargins.xxs};
+`
+
+export const MessageContainer = styled.li`
+  ${messageContainerStyles}
+  h2 {
+    margin: 0;
+  }
+`
+
+export const ReplyEditorContainer = styled.div`
+  ${messageContainerStyles}
 `
 
 const formatMessageAccountName = (
@@ -236,19 +254,6 @@ export default React.memo(function ThreadView({
     [messages, recipients, replyContent, sendReply]
   )
 
-  const editorLabels = useMemo(
-    () => ({
-      add: i18n.common.add,
-      message: i18n.messages.types.MESSAGE,
-      messagePlaceholder: i18n.messages.messagePlaceholder,
-      recipients: i18n.messages.recipients,
-      send: i18n.messages.send,
-      sending: `${i18n.messages.sending}...`,
-      discard: i18n.messages.messageEditor.discard
-    }),
-    [i18n]
-  )
-
   const sendEnabled =
     !!replyContent &&
     recipients.some((r) => r.selected && isPrimaryRecipient(r))
@@ -257,11 +262,7 @@ export default React.memo(function ThreadView({
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
-          <MessageCharacteristics
-            type={type}
-            urgent={urgent}
-            labels={i18n.messages.types}
-          />
+          <MessageCharacteristics type={type} urgent={urgent} />
           {children.length > 0 ? (
             <>
               <ScreenReaderOnly>
@@ -304,7 +305,6 @@ export default React.memo(function ThreadView({
             recipients={recipients}
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
-            i18n={editorLabels}
             sendEnabled={sendEnabled}
           />
         </ReplyEditorContainer>

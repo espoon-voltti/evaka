@@ -630,8 +630,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         tree={form.attendees}
         onChange={(tree) => updateForm('attendees', tree)}
         data-qa="attendees"
-        labels={i18n.common.treeDropdown}
-        placeholder={i18n.common.treeDropdown.placeholder}
+        placeholder={i18n.unit.calendar.events.create.attendeesPlaceholder}
       />
 
       <Gap size="s" />

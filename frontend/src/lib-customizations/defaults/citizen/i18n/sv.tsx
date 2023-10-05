@@ -9,12 +9,22 @@ import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/sv'
+
+const componentTranslations: ComponentTranslations = {
+  ...components,
+  messageReplyEditor: {
+    ...components.messageReplyEditor,
+    messagePlaceholder:
+      'Meddelandeinnehåll... Obs! Ange inte känslig information här.'
+  }
+}
 
 const yes = 'Ja'
 const no = 'Nej'
@@ -405,8 +415,6 @@ const sv: Translations = {
     send: 'Skicka',
     sender: 'Avsändare',
     sending: 'Skickas',
-    messagePlaceholder:
-      'Meddelandeinnehåll... Obs! Ange inte känslig information här.',
     types: {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'
@@ -420,8 +428,6 @@ const sv: Translations = {
       message: 'Meddelande'
     },
     thread: {
-      type: 'Meddelandetyp',
-      urgent: 'Akut',
       children: 'Angår barn',
       title: 'Ämne',
       reply: 'Svar',
@@ -1827,27 +1833,6 @@ const sv: Translations = {
     newApplicationLink: 'Ny ansökan',
     namelessChild: 'Namnlöst barn'
   },
-  fileUpload: {
-    loading: 'Uppladdas...',
-    loaded: 'Uppladdad',
-    error: {
-      EXTENSION_MISSING: 'Filtillägget saknas',
-      EXTENSION_INVALID: 'Ogiltigt filtillägg',
-      INVALID_CONTENT_TYPE: 'Ogiltig filtyp',
-      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
-      SERVER_ERROR: 'Uppladdningen misslyckades'
-    },
-    input: {
-      title: 'Lägg till bilaga',
-      text: [
-        'Tryck här eller dra en bilaga åt gången till lådan.',
-        'Maximal storlek för filen: 10 MB.',
-        'Tillåtna format:',
-        'PDF, JPEG/JPG, PNG och DOC/DOCX'
-      ]
-    },
-    deleteFile: 'Radera fil'
-  },
   fileDownload: {
     download: 'Ladda ner'
   },
@@ -2640,7 +2625,7 @@ const sv: Translations = {
     mainContent: 'Hoppa till innehållet',
     applyingSubNav: 'Hoppa till ansökningsnavigationen'
   },
-  components
+  components: componentTranslations
 }
 
 export default sv

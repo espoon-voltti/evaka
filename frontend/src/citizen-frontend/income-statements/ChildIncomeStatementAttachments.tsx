@@ -14,7 +14,6 @@ import {
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../attachments'
-import { useTranslation } from '../localization'
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -27,8 +26,6 @@ export default React.memo(function Attachments({
   onUploaded: (attachment: Attachment) => void
   onDeleted: (attachmentId: UUID) => void
 }) {
-  const t = useTranslation()
-
   const handleUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>
       (
@@ -63,7 +60,6 @@ export default React.memo(function Attachments({
         onUpload={handleUpload}
         onDelete={handleDelete}
         getDownloadUrl={getAttachmentUrl}
-        i18n={{ upload: t.fileUpload }}
       />
     </FixedSpaceColumn>
   )

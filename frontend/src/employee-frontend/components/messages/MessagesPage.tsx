@@ -18,8 +18,8 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import Container from 'lib-components/layout/Container'
+import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 
 import {
@@ -227,11 +227,6 @@ export default React.memo(function MessagesPage({
               deleteAttachment={deleteAttachment}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
-              i18n={{
-                ...i18n.messages.messageEditor,
-                ...i18n.fileUpload,
-                ...i18n.common
-              }}
               initDraftRaw={initDraft}
               accounts={accounts.value}
               onClose={onHide}

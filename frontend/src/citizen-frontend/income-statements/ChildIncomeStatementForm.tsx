@@ -88,7 +88,7 @@ const ChildIncome = React.memo(function ChildIncome({
       <Gap size="s" />
       {formData.childIncome && formData.attachments.length === 0 && (
         <>
-          <LabelError text={t.fileUpload.input.title} />
+          <LabelError text={t.components.fileUpload.input.title} />
           <Gap size="L" />
         </>
       )}

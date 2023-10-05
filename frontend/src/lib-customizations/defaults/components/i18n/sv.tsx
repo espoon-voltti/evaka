@@ -16,7 +16,12 @@ const components: Translations = {
     close: 'Stäng',
     confirm: 'Bekräfta',
     no: 'Nej',
+    noResults: 'Inga sökresultat',
+    open: 'Öppna',
     remove: 'Ta bort',
+    saving: 'Sparar',
+    saved: 'Sparad',
+    search: 'Sök',
     yes: 'Ja'
   },
   datePicker: {
@@ -46,6 +51,27 @@ const components: Translations = {
       COMPLETED: 'Färdig'
     }
   },
+  fileUpload: {
+    loading: 'Uppladdas...',
+    loaded: 'Uppladdad',
+    error: {
+      EXTENSION_MISSING: 'Filtillägget saknas',
+      EXTENSION_INVALID: 'Ogiltigt filtillägg',
+      INVALID_CONTENT_TYPE: 'Ogiltig filtyp',
+      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      SERVER_ERROR: 'Uppladdningen misslyckades'
+    },
+    input: {
+      title: 'Lägg till bilaga',
+      text: [
+        'Tryck här eller dra en bilaga åt gången till lådan.',
+        'Maximal storlek för filen: 10 MB.',
+        'Tillåtna format:',
+        'PDF, JPEG/JPG, PNG och DOC/DOCX'
+      ]
+    },
+    deleteFile: 'Radera fil'
+  },
   loginErrorModal: {
     header: 'Inloggningen misslyckades',
     message:
@@ -53,7 +79,47 @@ const components: Translations = {
     returnMessage: 'Gå tillbaka till inloggningen'
   },
   messages: {
-    staffAnnotation: 'Personal'
+    staffAnnotation: 'Personal',
+    message: 'Meddelande',
+    recipients: 'Mottagare',
+    send: 'Skicka',
+    sending: 'Skickar',
+    types: {
+      MESSAGE: 'Meddelande',
+      BULLETIN: 'Anslag'
+    },
+    thread: {
+      type: 'Meddelandetyp',
+      urgent: 'Akut'
+    }
+  },
+  messageEditor: {
+    // Currently only used for Finnish frontends
+    newMessage: '',
+    to: {
+      label: '',
+      placeholder: '',
+      noOptions: ''
+    },
+    type: {
+      label: '',
+      message: '',
+      bulletin: ''
+    },
+    urgent: {
+      heading: '',
+      info: '',
+      label: ''
+    },
+    sender: '',
+    recipientsPlaceholder: '',
+    title: '',
+    deleteDraft: ''
+  },
+  messageReplyEditor: {
+    // Currently only used for Finnish frontends
+    discard: '',
+    messagePlaceholder: undefined
   },
   notifications: {
     close: 'Stäng'
@@ -62,6 +128,12 @@ const components: Translations = {
   reloadNotification: {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'
+  },
+  treeDropdown: {
+    // Currently only used for Finnish frontends
+    expand: () => '',
+    collapse: () => '',
+    expandDropdown: ''
   },
   validationErrors: {
     required: 'Värde saknas',

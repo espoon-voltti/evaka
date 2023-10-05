@@ -12,8 +12,8 @@ import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import { ContentArea } from 'lib-components/layout/Container'
+import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
 
@@ -105,11 +105,6 @@ export default function MessageEditorPage() {
         deleteAttachment={deleteAttachment}
         draftContent={undefined}
         getAttachmentUrl={getAttachmentUrl}
-        i18n={{
-          ...i18n.messages.messageEditor,
-          ...i18n.fileUpload,
-          ...i18n.common
-        }}
         initDraftRaw={initDraft}
         mobileVersion={true}
         accounts={accounts}

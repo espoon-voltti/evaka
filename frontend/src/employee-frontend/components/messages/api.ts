@@ -22,7 +22,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { SaveDraftParams } from 'lib-components/employee/messages/types'
+import { SaveDraftParams } from 'lib-components/messages/types'
 
 import { client } from '../../api/client'
 

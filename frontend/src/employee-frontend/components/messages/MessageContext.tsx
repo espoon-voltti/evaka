@@ -36,7 +36,7 @@ import {
   isMunicipalMessageAccount,
   isPersonalMessageAccount,
   isServiceWorkerMessageAccount
-} from 'lib-components/employee/messages/types'
+} from 'lib-components/messages/types'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { faCheck } from 'lib-icons'
 

@@ -9,11 +9,21 @@ import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import components from '../../components/i18n/fi'
+
+const componentTranslations: ComponentTranslations = {
+  ...components,
+  messageReplyEditor: {
+    ...components.messageReplyEditor,
+    messagePlaceholder:
+      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.'
+  }
+}
 
 const yes = 'Kyllä'
 const no = 'Ei'
@@ -406,8 +416,6 @@ export default {
     send: 'Lähetä',
     sender: 'Lähettäjä',
     sending: 'Lähetetään',
-    messagePlaceholder:
-      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
@@ -421,8 +429,6 @@ export default {
       message: 'Viesti'
     },
     thread: {
-      type: 'Tyyppi',
-      urgent: 'Kiireellinen',
       children: 'Koskee lapsia',
       title: 'Otsikko',
       reply: 'Vastaa viestiin',
@@ -1824,27 +1830,6 @@ export default {
     newApplicationLink: 'Uusi hakemus',
     namelessChild: 'Nimetön lapsi'
   },
-  fileUpload: {
-    loading: 'Ladataan...',
-    loaded: 'Ladattu',
-    error: {
-      EXTENSION_MISSING: 'Tiedostopääte puuttuu',
-      EXTENSION_INVALID: 'Virheellinen tiedostopääte',
-      INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
-      FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
-      SERVER_ERROR: 'Lataus ei onnistunut'
-    },
-    input: {
-      title: 'Lisää liite',
-      text: [
-        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-        'Tiedoston maksimikoko: 10MB.',
-        'Sallitut tiedostomuodot:',
-        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
-      ]
-    },
-    deleteFile: 'Poista tiedosto'
-  },
   fileDownload: {
     download: 'Lataa'
   },
@@ -2625,5 +2610,5 @@ export default {
     mainContent: 'Siirry pääsisältöön',
     applyingSubNav: 'Siirry hakemusnavigaatioon'
   },
-  components
+  components: componentTranslations
 }

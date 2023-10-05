@@ -9,8 +9,8 @@ import styled from 'styled-components'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
+import EmptyMessageFolder from 'lib-components/messages/EmptyMessageFolder'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -23,7 +23,7 @@ import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import { MessagePreview } from './MessagePreview'
-import { ThreadView } from './ThreadView'
+import ThreadView from './ThreadView'
 import { MessageContext } from './state'
 
 export default function MessagesPage() {
@@ -51,7 +51,7 @@ export default function MessagesPage() {
 
   return selectedThread && selectedAccount ? (
     <ContentArea
-      opaque
+      opaque={false}
       fullHeight
       paddingHorizontal="zero"
       paddingVertical="zero"
@@ -60,7 +60,7 @@ export default function MessagesPage() {
       <ThreadView
         thread={selectedThread}
         onBack={onBack}
-        senderAccountId={selectedAccount.account.id}
+        accountId={selectedAccount.account.id}
       />
     </ContentArea>
   ) : !selectedThread && selectedAccount ? (
@@ -148,7 +148,6 @@ export default function MessagesPage() {
 
 export const HeaderContainer = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
-  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 const NoAccounts = styled.div`

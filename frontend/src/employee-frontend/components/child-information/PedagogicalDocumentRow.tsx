@@ -140,7 +140,6 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             disabled={submitting}
             data-qa="upload-pedagogical-document-attachment-new"
             files={attachments}
-            i18n={i18n.fileUpload}
             getDownloadUrl={getAttachmentUrl}
             onUpload={handleAttachmentUpload}
             onDelete={handleAttachmentDelete}

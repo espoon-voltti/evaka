@@ -329,7 +329,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 onUpload={uploadExtendedCareAttachment}
                 onDelete={deleteExtendedCareAttachment}
                 getDownloadUrl={getAttachmentUrl}
-                i18n={{ upload: t.fileUpload }}
               />
             </>
           )}
