@@ -507,5 +507,4 @@ WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .groupBy { it.childId }
+        .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.groupBy { it.childId } }

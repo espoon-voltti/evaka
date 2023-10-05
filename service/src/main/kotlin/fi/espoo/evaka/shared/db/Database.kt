@@ -373,6 +373,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         // legacy functions
 
+        @Deprecated("Use either toList or useIterable and call map on it instead")
         fun <R> map(f: (T) -> R): List<R> = useIterable { it.map(f) }
 
         @Deprecated("Use either toList or useIterable and map it instead")

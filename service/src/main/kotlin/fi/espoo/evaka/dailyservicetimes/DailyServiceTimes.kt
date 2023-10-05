@@ -195,8 +195,7 @@ ORDER BY lower(validity_period) DESC
         )
         .bind("childId", childId)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .toList()
+        .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
 }
 
 fun Database.Read.getDailyServiceTimesForChildren(
@@ -224,8 +223,9 @@ WHERE child_id = ANY(:childIds)
         )
         .bind("childIds", childIds)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .groupBy({ it.childId }, { it.times })
+        .useIterable { rows ->
+            rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
+        }
 
 data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: DateRange)
 

@@ -211,9 +211,12 @@ fun Database.Read.getUnitReservations(
         .bind("unitId", unitId)
         .bind("date", date)
         .mapTo<ReservationRow>()
-        .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
-        .groupBy({ it.first }, { it.second })
-        .mapValues { (_, value) -> value.sorted() }
+        .useIterable { rows ->
+            rows
+                .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { (_, value) -> value.sorted() }
+        }
 
 fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
