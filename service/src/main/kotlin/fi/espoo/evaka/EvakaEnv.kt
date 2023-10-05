@@ -40,6 +40,12 @@ data class EvakaEnv(
     val feeDecisionGeneratorV1Enabled: Boolean,
     val feeDecisionGeneratorV2Enabled: Boolean
 ) {
+    init {
+        if (feeDecisionGeneratorV1Enabled && feeDecisionGeneratorV2Enabled) {
+            error("Both v1 and v2 fee decision generators must not be enabled at the same time")
+        }
+    }
+
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
             return EvakaEnv(

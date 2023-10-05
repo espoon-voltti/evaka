@@ -58,41 +58,31 @@ fun generateAndInsertFeeDecisionsV2(
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveFrom: LocalDate? = null, // ignores other min dates
-    useV2Tables: Boolean
+    retroactiveFrom: LocalDate? = null // ignores other min dates
 ) {
-    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId, v2 = useV2Tables)
+    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
 
     val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusMonths(15))
     val activePeriod = DateRange(minDate, null)
     val newDrafts =
-        generateFeeDecisionsDrafts(
-                tx,
-                jsonMapper,
-                incomeTypesProvider,
-                headOfFamilyId,
-                minDate,
-                useV2Tables
-            )
+        generateFeeDecisionsDrafts(tx, jsonMapper, incomeTypesProvider, headOfFamilyId, minDate)
             .filter { draft -> draft.validDuring.overlaps(activePeriod) }
 
     val existingDraftDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
             headOfFamilyId,
             period = null,
-            status = listOf(FeeDecisionStatus.DRAFT),
-            v2 = useV2Tables
+            status = listOf(FeeDecisionStatus.DRAFT)
         )
 
     val ignoredDrafts =
         tx.findFeeDecisionsForHeadOfFamily(
             headOfFamilyId,
             period = null,
-            status = listOf(FeeDecisionStatus.IGNORED),
-            v2 = useV2Tables
+            status = listOf(FeeDecisionStatus.IGNORED)
         )
 
-    tx.deleteFeeDecisions(existingDraftDecisions.map { it.id }, v2 = useV2Tables)
+    tx.deleteFeeDecisions(existingDraftDecisions.map { it.id })
 
     // insert while preserving created dates
     newDrafts
@@ -112,7 +102,7 @@ fun generateAndInsertFeeDecisionsV2(
                 newDraft
             }
         }
-        .let { tx.insertFeeDecisions(it, v2 = useV2Tables) }
+        .let { tx.insertFeeDecisions(it) }
 }
 
 fun generateFeeDecisionsDrafts(
@@ -120,8 +110,7 @@ fun generateFeeDecisionsDrafts(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
-    minDate: LocalDate,
-    useV2Tables: Boolean
+    minDate: LocalDate
 ): List<FeeDecision> {
     val existingActiveDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
@@ -132,8 +121,7 @@ fun generateFeeDecisionsDrafts(
                     FeeDecisionStatus.SENT,
                     FeeDecisionStatus.WAITING_FOR_SENDING,
                     FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
-                ),
-            v2 = useV2Tables
+                )
         )
     val feeBases =
         getFeeBases(

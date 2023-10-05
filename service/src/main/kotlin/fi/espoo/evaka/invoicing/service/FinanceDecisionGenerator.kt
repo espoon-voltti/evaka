@@ -49,12 +49,11 @@ class FinanceDecisionGenerator(
     private val featureConfig: FeatureConfig
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
-    final val v1 = env.feeDecisionGeneratorV1Enabled
-    final val v2 = env.feeDecisionGeneratorV2Enabled
-    final val useV2Tables = v1 && v2
+    final val v1FeeDecisions = env.feeDecisionGeneratorV1Enabled
+    final val v2FeeDecisions = env.feeDecisionGeneratorV2Enabled
 
     fun scheduleBatchGeneration(tx: Database.Transaction, clock: EvakaClock) {
-        if (!v2) return
+        if (!v2FeeDecisions) return
 
         val inserted =
             tx.createUpdate(
@@ -98,7 +97,7 @@ FROM ids;
         headOfFamily: PersonId,
         from: LocalDate
     ) {
-        if (v1) {
+        if (v1FeeDecisions) {
             val families =
                 tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
                     it.headOfFamily == headOfFamily
@@ -113,7 +112,7 @@ FROM ids;
             )
         }
 
-        if (v2) {
+        if (v2FeeDecisions) {
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
                 clock = clock,
@@ -121,8 +120,7 @@ FROM ids;
                 incomeTypesProvider = incomeTypesProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = headOfFamily,
-                retroactiveFrom = from,
-                useV2Tables = useV2Tables
+                retroactiveFrom = from
             )
         }
     }
@@ -165,7 +163,7 @@ FROM ids;
         val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
 
-        if (v2) {
+        if (v2FeeDecisions) {
             val adults =
                 if (skipPropagation) setOf(personId)
                 else getAllPossiblyAffectedAdultsByAdult(tx, personId)
@@ -176,8 +174,7 @@ FROM ids;
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
-                    headOfFamilyId = adult,
-                    useV2Tables = useV2Tables
+                    headOfFamilyId = adult
                 )
             }
         }
@@ -193,7 +190,7 @@ FROM ids;
         val families = tx.findFamiliesByChild(childId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
 
-        if (v2) {
+        if (v2FeeDecisions) {
             getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
@@ -201,8 +198,7 @@ FROM ids;
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
-                    headOfFamilyId = adultId,
-                    useV2Tables = useV2Tables
+                    headOfFamilyId = adultId
                 )
             }
         }
@@ -214,7 +210,7 @@ FROM ids;
         from: LocalDate,
         families: List<FridgeFamily>
     ) {
-        if (v1) {
+        if (v1FeeDecisions) {
             families
                 .groupBy { it.headOfFamily }
                 .forEach { (headOfFamily, families) ->
