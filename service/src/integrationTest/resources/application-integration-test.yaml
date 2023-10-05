@@ -31,8 +31,8 @@ evaka:
     min_date: "2015-01-01"
     days_in_advance: 1
     generator:
-      v1_enabled: true
-      v2_enabled: false
+      v1_enabled: false
+      v2_enabled: true
   voucher_value_decision:
     days_in_advance: 1
   oph:

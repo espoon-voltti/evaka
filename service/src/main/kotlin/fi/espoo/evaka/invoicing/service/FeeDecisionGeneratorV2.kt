@@ -62,11 +62,23 @@ fun generateAndInsertFeeDecisionsV2(
 ) {
     tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
 
-    val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusMonths(15))
-    val activePeriod = DateRange(minDate, null)
+    val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
+    val hardMinDate = retroactiveFrom ?: financeMinDate
+
     val newDrafts =
-        generateFeeDecisionsDrafts(tx, jsonMapper, incomeTypesProvider, headOfFamilyId, minDate)
-            .filter { draft -> draft.validDuring.overlaps(activePeriod) }
+        generateFeeDecisionsDrafts(
+                tx = tx,
+                jsonMapper = jsonMapper,
+                incomeTypesProvider = incomeTypesProvider,
+                targetAdultId = headOfFamilyId,
+                minDate = maxOf(rollingMinDate, hardMinDate)
+            )
+            .filter { draft -> draft.validDuring.overlaps(DateRange(rollingMinDate, null)) }
+            .mapNotNull { draft ->
+                draft.validDuring.intersection(DateRange(hardMinDate, null))?.let {
+                    draft.copy(validDuring = it)
+                }
+            }
 
     val existingDraftDecisions =
         tx.findFeeDecisionsForHeadOfFamily(
