@@ -654,5 +654,6 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
             )
         }
         .mapTo<FeeDecisionParents>()
-        .flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }
-        .toSet()
+        .useIterable { rows ->
+            rows.flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }.toSet()
+        }

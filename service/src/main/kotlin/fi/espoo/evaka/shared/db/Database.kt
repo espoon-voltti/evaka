@@ -413,6 +413,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated("Use either toList or useIterable and call forEach on it instead")
         inline fun forEach(crossinline action: (T) -> Unit) = useIterable { it.forEach(action) }
 
+        @Deprecated("Use either toList or useIterable and call flatMap it instead")
         fun <R> flatMap(transform: (T) -> Iterable<R>): List<R> = useIterable {
             it.flatMap(transform)
         }

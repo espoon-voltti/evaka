@@ -670,6 +670,7 @@ WHERE NOT p.deleted AND (
         .bind("unitIds", unitIds)
         .bind("period", period)
         .mapTo<PlacementPlan>()
+        .toList()
         .flatMap { placementPlan ->
             // If the placement plan has preschool daycare dates set it means that the placement
             // plan could in reality
