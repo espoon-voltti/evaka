@@ -243,14 +243,38 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `sendApplication - daycare has due date after 4 months if not urgent`() {
+    fun `sendApplication - non-urgent application's due date equals preferred start if it's more than 4 months away`() {
+        val preferredStartDate = LocalDate.of(2020, 8, 1)
         db.transaction { tx ->
             // given
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 urgent = false,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = preferredStartDate
+            )
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+        }
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(preferredStartDate, application.dueDate)
+        }
+    }
+
+    @Test
+    fun `sendApplication - non-urgent application's due date is at least 4 months from now`() {
+        val preferredStartDate = today.plusMonths(3)
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.DAYCARE,
+                urgent = false,
+                applicationId = applicationId,
+                preferredStartDate = preferredStartDate
             )
         }
         db.transaction { tx ->

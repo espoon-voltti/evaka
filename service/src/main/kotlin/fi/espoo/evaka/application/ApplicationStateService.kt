@@ -236,6 +236,7 @@ class ApplicationStateService(
                 ?: calculateDueDate(
                     application.type,
                     sentDate,
+                    application.form.preferences.preferredStartDate,
                     application.form.preferences.urgent,
                     applicationFlags.isTransferApplication,
                     application.attachments
@@ -973,6 +974,7 @@ class ApplicationStateService(
             calculateDueDate(
                 original.type,
                 sentDate,
+                original.form.preferences.preferredStartDate,
                 urgent,
                 original.transferApplication,
                 original.attachments
@@ -1094,6 +1096,7 @@ class ApplicationStateService(
     private fun calculateDueDate(
         applicationType: ApplicationType,
         sentDate: LocalDate,
+        preferredStartDate: LocalDate?,
         isUrgent: Boolean,
         isTransferApplication: Boolean,
         attachments: List<ApplicationAttachment>
@@ -1112,7 +1115,8 @@ class ApplicationStateService(
                     attachments.minByOrNull { it.receivedAt }?.receivedAt?.toLocalDate()
                 listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
-                sentDate.plusMonths(4)
+                val defaultDueDate = sentDate.plusMonths(4)
+                preferredStartDate?.let { maxOf(defaultDueDate, it) } ?: defaultDueDate
             }
         }
     }
