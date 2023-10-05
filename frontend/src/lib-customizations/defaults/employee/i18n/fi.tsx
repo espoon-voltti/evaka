@@ -3603,6 +3603,12 @@ export const fi = {
       title: 'Lasten tuen tarpeet ja tukitoimet',
       description:
         'Raportti listaa lasten määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden ja tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
+      type: 'Toimintamuoto',
+      types: {
+        DAYCARE: 'Varhaiskasvatus',
+        PRESCHOOL: 'Esiopetus'
+      },
+      level: 'Tuen taso ja muut toimet',
       basisMissing: 'Peruste puuttuu',
       actionMissing: 'Tukitoimi puuttuu'
     },
