@@ -58,11 +58,13 @@ enum class MessageThreadType {
     REDACTED_MESSAGE_THREAD,
     MESSAGE_THREAD
 }
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class CitizenMessageThread(val type: MessageThreadType) {
     abstract val id: MessageThreadId
     abstract val urgent: Boolean
     abstract val children: List<MessageChild>
+
     @JsonTypeName("REDACTED_MESSAGE_THREAD")
     data class Redacted(
         override val id: MessageThreadId,
@@ -71,17 +73,19 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         val sender: MessageAccount?,
         val lastMessageSentAt: HelsinkiDateTime?,
         val hasUnreadMessages: Boolean
-    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD) // TODO according to Petri this parameter and the whole enum MessageThreadType should not be needed
+    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD)
+
     @JsonTypeName("MESSAGE_THREAD")
     data class Regular(
-            override val id: MessageThreadId,
-            override val urgent: Boolean,
-            override val children: List<MessageChild>,
-            val messageType: MessageType,
-            val title: String,
-            val sensitive: Boolean,
-            val isCopy: Boolean,
-            val messages: List<Message>) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD)
+        override val id: MessageThreadId,
+        override val urgent: Boolean,
+        override val children: List<MessageChild>,
+        val messageType: MessageType,
+        val title: String,
+        val sensitive: Boolean,
+        val isCopy: Boolean,
+        val messages: List<Message>
+    ) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD)
 }
 
 data class SentMessage(

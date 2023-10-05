@@ -95,7 +95,12 @@ export default React.memo(function ThreadListItem({
               data-qa="delete-thread-btn"
               onClick={handleDelete}
             />
-            {isRegularThread(thread) && (<MessageCharacteristics type={thread.messageType} urgent={thread.urgent} />)}
+            {isRegularThread(thread) && (
+              <MessageCharacteristics
+                type={thread.messageType}
+                urgent={thread.urgent}
+              />
+            )}
           </FixedSpaceRow>
         </Header>
         <ScreenReaderOnly>

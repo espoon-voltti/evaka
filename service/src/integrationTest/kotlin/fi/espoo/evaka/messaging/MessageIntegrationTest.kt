@@ -274,15 +274,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // then recipients see the same data
         val person2Threads = getRegularMessageThreads(person2)
         assertEquals(getRegularMessageThreads(person1), person2Threads)
-        assertEquals(getEmployeeMessageThreads(employee1Account, employee1).map { messageThread -> CitizenMessageThread.Regular(
-                messageThread.id,
-                messageThread.urgent,
-                messageThread.children,
-                messageThread.type,
-                messageThread.title,
-                messageThread.sensitive,
-                messageThread.isCopy,
-                messageThread.messages) }, person2Threads)
+        assertEquals(
+            getEmployeeMessageThreads(employee1Account, employee1).map { messageThread ->
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+            },
+            person2Threads
+        )
 
         // then thread has both messages in correct order
         assertEquals(1, person2Threads.size)
@@ -484,15 +490,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             employeeThreads.map { it.toSenderContentPairs() }.flatten()
         )
-        assertEquals(employeeThreads.map { messageThread -> CitizenMessageThread.Regular(
-                messageThread.id,
-                messageThread.urgent,
-                messageThread.children,
-                messageThread.type,
-                messageThread.title,
-                messageThread.sensitive,
-                messageThread.isCopy,
-                messageThread.messages) }, getRegularMessageThreads(person1))
+        assertEquals(
+            employeeThreads.map { messageThread ->
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+            },
+            getRegularMessageThreads(person1)
+        )
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             getRegularMessageThreads(person2).map { it.toSenderContentPairs() }.flatten()
@@ -1042,6 +1054,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
     }
+
     @Test
     fun `sensitive messages cannot be sent to != child recipients`() {
         assertThrows<BadRequest> {
@@ -1056,6 +1069,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
     }
+
     @Test
     fun `sensitive messages cannot from != personal accounts`() {
         assertThrows<BadRequest> {
@@ -1268,9 +1282,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 }
 
 fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
-        this.messages.map { Pair(it.sender.id, it.content) }
+    this.messages.map { Pair(it.sender.id, it.content) }
+
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
-        this.messages.map { Pair(it.sender.id, it.content) }
+    this.messages.map { Pair(it.sender.id, it.content) }
 
 fun SentMessage.toContentRecipientsPair(): Pair<String, Set<MessageAccountId>> =
     Pair(this.content, this.recipients.map { it.id }.toSet())

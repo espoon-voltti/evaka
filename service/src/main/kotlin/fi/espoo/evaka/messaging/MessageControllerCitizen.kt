@@ -89,14 +89,18 @@ class MessageControllerCitizen(
         Audit.MessagingArchiveMessageWrite.log(targetId = threadId)
     }
 
-    fun redactMessageTread(user: AuthenticatedUser.Citizen, messageThread: MessageThread): CitizenMessageThread.Redacted {
+    fun redactMessageTread(
+        user: AuthenticatedUser.Citizen,
+        messageThread: MessageThread
+    ): CitizenMessageThread.Redacted {
         return CitizenMessageThread.Redacted(
             messageThread.id,
             messageThread.urgent,
             messageThread.children,
             messageThread.messages.firstOrNull()?.sender,
             messageThread.messages.lastOrNull()?.sentAt,
-                messageThread.messages.findLast { message -> message.sender.id != user.id }?.readAt != null
+            messageThread.messages.findLast { message -> message.sender.id != user.id }?.readAt !=
+                null
         )
     }
 
@@ -108,14 +112,15 @@ class MessageControllerCitizen(
             return redactMessageTread(user, messageThread)
 
         return CitizenMessageThread.Regular(
-                messageThread.id,
-                messageThread.urgent,
-                messageThread.children,
-                messageThread.type,
-                messageThread.title,
-                messageThread.sensitive,
-                messageThread.isCopy,
-                messageThread.messages)
+            messageThread.id,
+            messageThread.urgent,
+            messageThread.children,
+            messageThread.type,
+            messageThread.title,
+            messageThread.sensitive,
+            messageThread.isCopy,
+            messageThread.messages
+        )
     }
 
     @GetMapping("/received")
@@ -137,9 +142,7 @@ class MessageControllerCitizen(
                             featureConfig.serviceWorkerMessageAccountName
                         )
                     }
-                    .map { messageThread ->
-                        redactOrWrapMessageThread(user, messageThread)
-                    }
+                    .map { messageThread -> redactOrWrapMessageThread(user, messageThread) }
             }
             .also { Audit.MessagingReceivedMessagesRead.log(meta = mapOf("total" to it.total)) }
     }
