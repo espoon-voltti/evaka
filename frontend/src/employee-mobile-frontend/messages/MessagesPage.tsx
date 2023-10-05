@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -40,13 +40,23 @@ export default function MessagesPage() {
     if (group) navigate(`/units/${unitId}/groups/${group.id}/messages`)
   }
 
-  const {
-    groupAccounts,
-    receivedMessages,
-    selectedThread,
-    selectThread,
-    selectedAccount
-  } = useContext(MessageContext)
+  const { groupAccounts, receivedMessages, selectedAccount, markThreadAsRead } =
+    useContext(MessageContext)
+
+  const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
+  const selectThread = useCallback(
+    (threadId: UUID | undefined) => {
+      setSelectedThreadId(threadId)
+      if (threadId) {
+        markThreadAsRead(threadId)
+      }
+    },
+    [markThreadAsRead]
+  )
+
+  const selectedThread = receivedMessages
+    .map((threads) => threads.find((t) => t.id === selectedThreadId))
+    .getOrElse(undefined)
 
   const { i18n } = useTranslation()
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
@@ -104,7 +114,7 @@ export default function MessagesPage() {
                     )
                 )}
                 onClick={() => {
-                  selectThread(thread)
+                  selectThread(thread.id)
                 }}
                 key={thread.id}
               />

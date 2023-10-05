@@ -46,8 +46,7 @@ export interface MessagesState {
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
-  selectedThread: MessageThread | undefined
-  selectThread: (thread: MessageThread | undefined) => void
+  markThreadAsRead: (threadId: UUID) => void
   sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
@@ -58,8 +57,7 @@ const defaultState: MessagesState = {
   selectedAccount: undefined,
   groupAccounts: [],
   receivedMessages: Loading.of(),
-  selectedThread: undefined,
-  selectThread: () => undefined,
+  markThreadAsRead: () => undefined,
   sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
   setReplyContent: () => undefined
@@ -154,21 +152,16 @@ export const MessageContextProvider = React.memo(
       [data, error, isFetchingFirstPage]
     )
 
-    const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
-
-    const selectedThread = threads
-      .map((threads) => threads.find((t) => t.id === selectedThreadId))
-      .getOrElse(undefined)
-
     const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
 
-    const selectThread = useCallback(
-      (thread: MessageThread | undefined) => {
-        setSelectedThreadId(thread?.id)
-
-        if (!thread) return
+    const markThreadAsRead = useCallback(
+      (threadId: UUID) => {
         if (!selectedAccount) throw new Error('Should never happen')
         const { id: accountId } = selectedAccount.account
+
+        if (!threads.isSuccess) return
+        const thread = threads.value.find((t) => t.id === threadId)
+        if (!thread) return
 
         const hasUnreadMessages = thread.messages.some(
           (m) => !m.readAt && m.sender.id !== accountId
@@ -183,7 +176,7 @@ export const MessageContextProvider = React.memo(
         }
       },
 
-      [markThreadRead, selectedAccount, transformPages]
+      [markThreadRead, selectedAccount, threads, transformPages]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -214,8 +207,7 @@ export const MessageContextProvider = React.memo(
         selectedAccount,
         groupAccounts,
         receivedMessages: threads,
-        selectThread,
-        selectedThread,
+        markThreadAsRead,
         getReplyContent,
         sendReply: sendReplyAndClear,
         setReplyContent
@@ -225,8 +217,7 @@ export const MessageContextProvider = React.memo(
         groupAccounts,
         selectedAccount,
         threads,
-        selectedThread,
-        selectThread,
+        markThreadAsRead,
         getReplyContent,
         sendReplyAndClear,
         setReplyContent
