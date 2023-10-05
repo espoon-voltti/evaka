@@ -117,6 +117,7 @@ ORDER BY ca.name, d.name ASC;
                 .bind("providerTypes", providerTypes)
                 .bind("placementTypes", placementTypes)
                 .mapTo<PlacementCountReportRow>()
+                .toList()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()
         val collectedAreaResults = mutableListOf<PlacementCountAreaResult>()

@@ -126,7 +126,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 WHERE head_of_child = :id OR child_id = :id
                 """
                     .trimIndent()
-            tx.createQuery(parentsSQL).bind("id", master).mapTo<PersonId>().forEach { parentId ->
+            tx.createQuery(parentsSQL).bind("id", master).mapTo<PersonId>().toList().forEach { parentId ->
                 sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
             }
         }
