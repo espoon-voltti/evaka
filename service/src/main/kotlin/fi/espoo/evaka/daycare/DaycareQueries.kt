@@ -484,7 +484,9 @@ fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
     FROM daycare
     """)
         .mapTo<UnitOperationDays>()
-        .fold(mutableMapOf()) { acc, row ->
-            acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
-            acc
+        .useIterable {
+            it.fold(mutableMapOf()) { acc, row ->
+                acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
+                acc
+            }
         }

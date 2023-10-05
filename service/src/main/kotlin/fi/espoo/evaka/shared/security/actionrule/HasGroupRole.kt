@@ -101,13 +101,15 @@ SELECT EXISTS (
                             )
                         }
                         .mapTo<IdRoleFeatures>()
-                        .fold(
-                            targets.associateTo(linkedMapOf()) {
-                                (it to mutableSetOf<RoleAndFeatures>())
+                        .useIterable { rows ->
+                            rows.fold(
+                                targets.associateTo(linkedMapOf()) {
+                                    (it to mutableSetOf<RoleAndFeatures>())
+                                }
+                            ) { acc, (target, result) ->
+                                acc[target]?.plusAssign(result)
+                                acc
                             }
-                        ) { acc, (target, result) ->
-                            acc[target]?.plusAssign(result)
-                            acc
                         }
                         .mapValues { (_, queryResult) -> Deferred(queryResult) }
                 else -> emptyMap()

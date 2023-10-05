@@ -443,6 +443,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             crossinline valueTransform: (T) -> V
         ): Map<K, List<V>> = useIterable { it.groupBy(keySelector, valueTransform) }
 
+        @Deprecated("Use either toList or useIterable and call fold on it instead")
         inline fun <R> fold(initial: R, crossinline operation: (acc: R, T) -> R): R = useIterable {
             it.fold(initial, operation)
         }
