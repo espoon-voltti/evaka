@@ -37,8 +37,6 @@ import { MessageContext } from './state'
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
   const { childId } = useNonNullableParams<{
-    unitId: UUID
-    groupId: UUID
     childId: UUID
   }>()
 

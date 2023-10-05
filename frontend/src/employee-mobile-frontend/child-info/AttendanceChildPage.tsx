@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { useMutation, useQueryResult } from 'lib-common/query'
+import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -31,9 +31,11 @@ import {
   returnToComingMutation
 } from '../child-attendance/queries'
 import { childAttendanceStatus, useChild } from '../child-attendance/utils'
+import { groupNotesQuery } from '../child-notes/queries'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { BackButton, TallContentArea } from '../pairing/components'
 
@@ -51,14 +53,23 @@ export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId, groupId } = useNonNullableParams<{
+  const { unitId, childId } = useNonNullableParams<{
     unitId: UUID
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'all'
     childId: UUID
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
+  const { selectedGroupId, groupRoute } = useSelectedGroup()
+  const { data: groupNotes } = useQuery(
+    groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
+    {
+      enabled: selectedGroupId.type !== 'all'
+    }
+  )
+  const groupHasNotes =
+    selectedGroupId.type === 'all'
+      ? false
+      : !!(groupNotes && groupNotes.length > 1)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 
@@ -186,8 +197,8 @@ export default React.memo(function AttendanceChildPage() {
                     </ChildBackground>
 
                     <ChildButtons
-                      unitId={unitId}
-                      groupId={groupId}
+                      groupHasNotes={groupHasNotes}
+                      groupRoute={groupRoute}
                       child={child}
                     />
                   </Zindex>
@@ -220,23 +231,20 @@ export default React.memo(function AttendanceChildPage() {
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
-                        unitId={unitId}
                         child={child}
-                        groupIdOrAll={groupId}
+                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (
                       <AttendanceChildPresent
                         child={child}
-                        unitId={unitId}
-                        groupIdOrAll={groupId}
+                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'DEPARTED' && (
                       <AttendanceChildDeparted
                         child={child}
-                        unitId={unitId}
-                        groupIdOrAll={groupId}
+                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'ABSENT' &&
@@ -251,7 +259,7 @@ export default React.memo(function AttendanceChildPage() {
                 <BottomButtonWrapper>
                   <LinkButtonWithIcon
                     data-qa="mark-absent-beforehand"
-                    to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
+                    to={`${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`}
                   >
                     <RoundIcon
                       size="L"

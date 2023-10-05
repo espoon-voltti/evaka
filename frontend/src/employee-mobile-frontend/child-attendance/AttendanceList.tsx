@@ -5,22 +5,21 @@
 import React, { useCallback, useMemo } from 'react'
 
 import {
-  AttendanceStatus,
-  AttendanceChild
+  AttendanceChild,
+  AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
 
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 
 import ChildList, { ListItem } from './ChildList'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 interface Props {
   unitId: UUID
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  groupId: UUID | 'all'
   activeStatus: AttendanceStatus
   unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
@@ -28,19 +27,19 @@ interface Props {
 
 export default React.memo(function AttendanceList({
   unitId,
-  groupId,
   activeStatus,
   unitChildren,
   attendanceStatuses
 }: Props) {
   const { i18n } = useTranslation()
+  const { groupRoute, selectedGroupId } = useSelectedGroup()
 
   const groupChildren = useMemo(
     () =>
-      groupId === 'all'
+      selectedGroupId.type === 'all'
         ? unitChildren
-        : unitChildren.filter((c) => c.groupId === groupId),
-    [groupId, unitChildren]
+        : unitChildren.filter((c) => c.groupId === selectedGroupId.id),
+    [selectedGroupId, unitChildren]
   )
 
   const childrenWithStatus = useCallback(
@@ -70,7 +69,7 @@ export default React.memo(function AttendanceList({
   )
 
   const tabs = useMemo(() => {
-    const url = `/units/${unitId}/groups/${groupId}/child-attendance/list`
+    const url = `${groupRoute}/child-attendance/list`
 
     const getLabel = (title: string, count: number) => (
       <>
@@ -104,8 +103,7 @@ export default React.memo(function AttendanceList({
       }
     ]
   }, [
-    unitId,
-    groupId,
+    groupRoute,
     i18n,
     totalComing,
     totalAttendances,

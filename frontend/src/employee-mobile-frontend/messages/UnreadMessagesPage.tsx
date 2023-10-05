@@ -20,6 +20,7 @@ import { UserContext } from '../auth/state'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import {
   PushNotifications,
   ServiceWorkerContext
@@ -30,10 +31,10 @@ import { WideLinkButton } from '../pairing/components'
 import { HeaderContainer } from './MessagesPage'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
-  const { unitId, groupId } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: UUID
-    groupId: UUID
   }>()
+  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const { unitInfoResponse, unreadCounts } = useContext(UnitContext)
   const { user } = useContext(UserContext)
@@ -76,7 +77,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
           <WideLinkButton
             $primary
             data-qa="pin-login-button"
-            to={`/units/${unitId}/groups/${groupId}/messages`}
+            to={`${groupRoute}/messages`}
           >
             {i18n.messages.openPinLock}
           </WideLinkButton>

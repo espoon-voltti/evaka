@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
-  AttendanceStatus,
-  AttendanceChild
+  AttendanceChild,
+  AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
@@ -24,6 +24,7 @@ import { farStickyNote, farUser, farUsers } from 'lib-icons'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import { ListItem } from './ChildList'
@@ -109,11 +110,10 @@ export default React.memo(function ChildListItem({
 }: ChildListItemProps) {
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const { unitId, groupId } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: UUID
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'all'
   }>()
+  const { selectedGroupId } = useSelectedGroup()
 
   const { data: groupNotes } = useQuery(groupNotesQuery(child.groupId ?? ''), {
     enabled: child.groupId != null
@@ -132,7 +132,8 @@ export default React.memo(function ChildListItem({
     <ChildReservationInfo child={child} />
   )
 
-  const maybeGroupName = type && groupId === 'all' ? groupName : undefined
+  const maybeGroupName =
+    type && selectedGroupId.type === 'all' ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
   const childAge = today.differenceInYears(child.dateOfBirth)
 

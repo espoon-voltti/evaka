@@ -113,7 +113,7 @@ function UnitRouter() {
   const params = useNonNullableParams<{ unitId: string }>()
 
   return (
-    <UnitContextProvider unitId={params.unitId ?? 'all'}>
+    <UnitContextProvider unitId={params.unitId}>
       <Routes>
         <Route path="/groups/:groupId/*" element={<GroupRouter />} />
         <Route index element={<Navigate replace to="groups/all" />} />

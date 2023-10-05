@@ -28,9 +28,9 @@ import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
-import { Actions, CustomTitle } from '../common/components'
-import { TimeWrapper } from '../common/components'
+import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
@@ -42,13 +42,13 @@ export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, groupId, employeeId } = useNonNullableParams<{
+  const { unitId, employeeId } = useNonNullableParams<{
     unitId: string
-    groupId: string
     employeeId: string
   }>()
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  const { groupRoute } = useSelectedGroup()
   useEffect(() => {
     reloadUnitInfo()
   }, [reloadUnitInfo])
@@ -172,18 +172,13 @@ export default React.memo(function StaffMarkDepartedPage() {
             { staffMember, attendanceId, latestCurrentDayArrival }
           ]) => {
             if (staffMember === undefined) {
-              return (
-                <Navigate
-                  replace
-                  to={`/units/${unitId}/groups/${groupId}/staff-attendance`}
-                />
-              )
+              return <Navigate replace to={`${groupRoute}/staff-attendance`} />
             }
             if (attendanceId === undefined) {
               return (
                 <Navigate
                   replace
-                  to={`/units/${unitId}/groups/${groupId}/staff-attendance/${employeeId}`}
+                  to={`${groupRoute}/staff-attendance/${employeeId}`}
                 />
               )
             }

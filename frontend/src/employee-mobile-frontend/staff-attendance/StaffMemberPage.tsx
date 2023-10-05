@@ -18,6 +18,7 @@ import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
@@ -27,11 +28,11 @@ import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage() {
-  const { unitId, groupId, employeeId } = useNonNullableParams<{
+  const { unitId, employeeId } = useNonNullableParams<{
     unitId: string
-    groupId: string
     employeeId: string
   }>()
+  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -121,7 +122,7 @@ export default React.memo(function StaffMemberPage() {
                       data-qa="mark-departed-btn"
                       onClick={() =>
                         navigate(
-                          `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                          `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-departed`
                         )
                       }
                     >
@@ -140,7 +141,7 @@ export default React.memo(function StaffMemberPage() {
                         disabled={!isOperationalDate}
                         onClick={() =>
                           navigate(
-                            `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`
+                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-arrived`
                           )
                         }
                       >

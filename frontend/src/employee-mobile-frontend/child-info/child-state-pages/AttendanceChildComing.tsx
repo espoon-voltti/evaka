@@ -12,16 +12,13 @@ import { useTranslation } from '../../common/i18n'
 import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
-  unitId: string
   child: AttendanceChild
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  groupIdOrAll: string | 'all'
+  groupRoute: string
 }
 
 export default React.memo(function AttendanceChildComing({
-  unitId,
   child,
-  groupIdOrAll
+  groupRoute
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -31,14 +28,14 @@ export default React.memo(function AttendanceChildComing({
         <WideLinkButton
           $primary
           data-qa="mark-present-link"
-          to={`/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-present`}
+          to={`${groupRoute}/child-attendance/${child.id}/mark-present`}
         >
           {i18n.attendances.actions.markPresent}
         </WideLinkButton>
 
         <WideLinkButton
           data-qa="mark-absent-link"
-          to={`/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-absent`}
+          to={`${groupRoute}/child-attendance/${child.id}/mark-absent`}
         >
           {i18n.attendances.actions.markAbsent}
         </WideLinkButton>

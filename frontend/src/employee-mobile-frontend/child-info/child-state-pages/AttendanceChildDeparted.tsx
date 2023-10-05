@@ -16,15 +16,12 @@ import { useTranslation } from '../../common/i18n'
 
 interface Props {
   child: AttendanceChild
-  unitId: string
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  groupIdOrAll: string | 'all'
+  groupRoute: string
 }
 
 export default React.memo(function AttendanceChildDeparted({
   child,
-  unitId,
-  groupIdOrAll
+  groupRoute
 }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -34,9 +31,7 @@ export default React.memo(function AttendanceChildDeparted({
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
       onClick={() =>
-        navigate(
-          `/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-present`
-        )
+        navigate(`${groupRoute}/child-attendance/${child.id}/mark-present`)
       }
       data-qa="return-to-present-btn"
     />

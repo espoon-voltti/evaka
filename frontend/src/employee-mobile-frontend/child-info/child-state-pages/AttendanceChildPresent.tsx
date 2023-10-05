@@ -12,15 +12,12 @@ import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
   child: AttendanceChild
-  unitId: string
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  groupIdOrAll: string | 'all'
+  groupRoute: string
 }
 
 export default React.memo(function AttendanceChildPresent({
   child,
-  unitId,
-  groupIdOrAll
+  groupRoute
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -29,7 +26,7 @@ export default React.memo(function AttendanceChildPresent({
       <WideLinkButton
         $primary
         data-qa="mark-departed-link"
-        to={`/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-departed`}
+        to={`${groupRoute}/child-attendance/${child.id}/mark-departed`}
       >
         {i18n.attendances.actions.markDeparted}
       </WideLinkButton>

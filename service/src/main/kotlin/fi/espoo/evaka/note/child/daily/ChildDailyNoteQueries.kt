@@ -6,70 +6,56 @@ package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
-    return createQuery(
-            """
-        SELECT 
-            id, child_id, modified_at,
-            note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
-        FROM child_daily_note 
-        WHERE child_id = :childId
-        """
-                .trimIndent()
-        )
-        .bind("childId", childId)
+private fun Database.Read.getChildDailyNotes(
+    predicate: Predicate<DatabaseTable.ChildDailyNote> = Predicate.alwaysTrue()
+) =
+    createQuery<DatabaseTable.ChildDailyNote> {
+            sql(
+                """
+SELECT 
+    id, child_id, modified_at,
+    note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
+FROM child_daily_note cdn
+WHERE ${predicate(predicate.forTable("cdn"))}
+"""
+            )
+        }
         .mapTo<ChildDailyNote>()
-        .firstOrNull()
-}
 
-fun Database.Read.getChildDailyNotesInGroup(
+fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
+    getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).firstOrNull()
+
+fun Database.Read.getChildDailyNotesForChildren(
+    children: Collection<ChildId>,
+): List<ChildDailyNote> =
+    getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).list()
+
+fun Database.Read.getChildDailyNotesForGroup(
     groupId: GroupId,
     today: LocalDate
-): List<ChildDailyNote> {
-    return getChildDailyNotesInGroups(listOf(groupId), today)
-}
-
-fun Database.Read.getChildDailyNotesInUnit(
-    unitId: DaycareId,
-    today: LocalDate
-): List<ChildDailyNote> {
-    return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
-        .bind("unitId", unitId)
-        .mapTo<GroupId>()
-        .list()
-        .let { groupIds -> getChildDailyNotesInGroups(groupIds, today) }
-}
-
-private fun Database.Read.getChildDailyNotesInGroups(
-    groupIds: List<GroupId>,
-    today: LocalDate
-): List<ChildDailyNote> {
-    return createQuery(
-            """
-        SELECT 
-            id, child_id, modified_at,
-            note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
-        FROM child_daily_note 
-        WHERE child_id IN (
-            SELECT child_id
-            FROM realized_placement_all(:today)
-            WHERE group_id = ANY(:groupIds)
+): List<ChildDailyNote> =
+    getChildDailyNotes(
+            Predicate {
+                where(
+                    """
+$it.child_id IN (
+    SELECT child_id
+    FROM realized_placement_all(${bind(today)})
+    WHERE group_id = ${bind(groupId)}
+)
+"""
+                )
+            }
         )
-        """
-                .trimIndent()
-        )
-        .bind("groupIds", groupIds)
-        .bind("today", today)
-        .mapTo<ChildDailyNote>()
         .list()
-}
 
 fun Database.Transaction.createChildDailyNote(
     childId: ChildId,

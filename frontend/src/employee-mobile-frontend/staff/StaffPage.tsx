@@ -16,6 +16,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import StaffAttendanceEditor from './StaffAttendanceEditor'
@@ -28,22 +29,21 @@ import { staffAttendanceForGroupOrUnit } from './utils'
 
 export default React.memo(function StaffPage() {
   const navigate = useNavigate()
-  const { unitId, groupId: groupIdOrAll } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: UUID
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    groupId: UUID | 'all'
   }>()
+  const { selectedGroupId } = useSelectedGroup()
 
   const { unitInfoResponse } = useContext(UnitContext)
 
   const selectedGroup = useMemo(
     () =>
-      groupIdOrAll === 'all'
+      selectedGroupId.type === 'all'
         ? undefined
         : unitInfoResponse
-            .map((res) => res.groups.find((g) => g.id === groupIdOrAll))
+            .map((res) => res.groups.find((g) => g.id === selectedGroupId.id))
             .getOrElse(undefined),
-    [groupIdOrAll, unitInfoResponse]
+    [selectedGroupId, unitInfoResponse]
   )
 
   const [staffResponse, reloadStaff] = useApiState(

@@ -18,6 +18,7 @@ import { faPlus } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import StaffListItem from './StaffListItem'
@@ -38,10 +39,10 @@ interface Props {
 
 export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   const navigate = useNavigate()
-  const { unitId, groupId } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: string
-    groupId: string
   }>()
+  const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
 
@@ -57,9 +58,8 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   )
 
   const navigateToExternalMemberArrival = useCallback(
-    () =>
-      navigate(`/units/${unitId}/groups/${groupId}/staff-attendance/external`),
-    [groupId, navigate, unitId]
+    () => navigate(`${groupRoute}/staff-attendance/external`),
+    [groupRoute, navigate]
   )
 
   const presentStaffCounts = useMemo(
@@ -67,25 +67,28 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
       staffAttendanceResponse.map(
         (res) =>
           res.staff.filter((s) =>
-            groupId === 'all' ? s.present : s.present === groupId
+            selectedGroupId.type === 'all'
+              ? s.present
+              : s.present === selectedGroupId.id
           ).length +
           res.extraAttendances.filter(
-            (s) => groupId === 'all' || s.groupId === groupId
+            (s) =>
+              selectedGroupId.type === 'all' || s.groupId === selectedGroupId.id
           ).length
       ),
-    [groupId, staffAttendanceResponse]
+    [selectedGroupId, staffAttendanceResponse]
   )
 
   const tabs = useMemo(
     () => [
       {
         id: 'absent',
-        link: `/units/${unitId}/groups/${groupId}/staff-attendance/absent`,
+        link: `${groupRoute}/staff-attendance/absent`,
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: `/units/${unitId}/groups/${groupId}/staff-attendance/present`,
+        link: `${groupRoute}/staff-attendance/present`,
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -94,39 +97,44 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
         )
       }
     ],
-    [groupId, i18n, presentStaffCounts, unitId]
+    [groupRoute, i18n, presentStaffCounts]
   )
 
   const filteredStaff = useMemo(
     () =>
       staffAttendanceResponse.map((res) =>
         tab === 'present'
-          ? groupId === 'all'
+          ? selectedGroupId.type === 'all'
             ? [
                 ...res.staff.filter((s) => s.present !== null),
                 ...res.extraAttendances
               ]
             : [
-                ...res.staff.filter((s) => s.present === groupId),
-                ...res.extraAttendances.filter((s) => s.groupId === groupId)
+                ...res.staff.filter((s) => s.present === selectedGroupId.id),
+                ...res.extraAttendances.filter(
+                  (s) => s.groupId === selectedGroupId.id
+                )
               ]
           : res.staff.filter(
               (s) =>
                 s.present === null &&
-                (groupId === 'all' || s.groupIds.includes(groupId))
+                (selectedGroupId.type === 'all' ||
+                  s.groupIds.includes(selectedGroupId.id))
             )
       ),
-    [groupId, tab, staffAttendanceResponse]
+    [selectedGroupId, tab, staffAttendanceResponse]
   )
 
   const selectedGroup = useMemo(
     () =>
       unitInfoResponse
         .map(({ groups }) =>
-          groupId === 'all' ? undefined : groups.find((g) => g.id === groupId)
+          selectedGroupId.type === 'all'
+            ? undefined
+            : groups.find((g) => g.id === selectedGroupId.id)
         )
         .getOrElse(undefined),
-    [groupId, unitInfoResponse]
+    [selectedGroupId, unitInfoResponse]
   )
 
   return (

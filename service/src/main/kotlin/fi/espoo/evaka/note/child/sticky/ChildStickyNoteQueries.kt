@@ -6,70 +6,52 @@ package fi.espoo.evaka.note.child.sticky
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
-import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
-fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> =
-    createQuery(
-            """
-    SELECT id, child_id, note, modified_at, expires
-    FROM child_sticky_note
-    WHERE child_id = :childId
-    ORDER BY created DESC
-    """
-                .trimIndent()
-        )
-        .bind("childId", childId)
+private fun Database.Read.getChildStickyNotes(
+    predicate: Predicate<DatabaseTable.ChildStickyNote> = Predicate.alwaysTrue()
+) =
+    createQuery<DatabaseTable.ChildStickyNote> {
+            sql(
+                """
+SELECT id, child_id, note, modified_at, expires
+FROM child_sticky_note csn
+WHERE ${predicate(predicate.forTable("csn"))}
+"""
+            )
+        }
         .mapTo<ChildStickyNote>()
-        .list()
+
+fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> =
+    getChildStickyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).list()
+
+fun Database.Read.getChildStickyNotesForChildren(
+    children: Collection<ChildId>
+): List<ChildStickyNote> =
+    getChildStickyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).list()
 
 fun Database.Read.getChildStickyNotesForGroup(
     groupId: GroupId,
     today: LocalDate
-): List<ChildStickyNote> {
-    return getChildStickyNotesForGroups(listOf(groupId), today)
-}
-
-fun Database.Read.getChildStickyNotesForUnit(
-    unitId: DaycareId,
-    today: LocalDate
-): List<ChildStickyNote> {
-    return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
-        .bind("unitId", unitId)
-        .mapTo<GroupId>()
-        .list()
-        .let { groupIds -> getChildStickyNotesForGroups(groupIds, today) }
-}
-
-private fun Database.Read.getChildStickyNotesForGroups(
-    groupIds: List<GroupId>,
-    today: LocalDate
 ): List<ChildStickyNote> =
-    createQuery(
-            """
-    SELECT id, child_id, note, modified_at, expires
-    FROM child_sticky_note csn
-    WHERE child_id IN (
-        SELECT pl.child_id
-        FROM daycare_group_placement gpl
-        JOIN placement pl ON pl.id = gpl.daycare_placement_id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
-        WHERE gpl.daycare_group_id = ANY(:groupIds) AND daterange(gpl.start_date, gpl.end_date, '[]') @> :today
-        
-        UNION 
-        
-        SELECT bc.child_id
-        FROM backup_care bc
-        WHERE bc.group_id = ANY(:groupIds) AND daterange(bc.start_date, bc.end_date, '[]') @> :today
-    )
-    """
-                .trimIndent()
+    getChildStickyNotes(
+            Predicate {
+                where(
+                    """
+$it.child_id IN (
+    SELECT child_id
+    FROM realized_placement_all(${bind(today)})
+    WHERE group_id = ${bind(groupId)}
+)
+"""
+                )
+            }
         )
-        .bind("groupIds", groupIds)
-        .bind("today", today)
-        .mapTo<ChildStickyNote>()
         .list()
 
 fun Database.Transaction.createChildStickyNote(

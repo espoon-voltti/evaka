@@ -29,6 +29,7 @@ import { faArrowLeft } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { Actions, BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
 
@@ -43,18 +44,24 @@ interface FormState {
 
 export default function MarkExternalStaffMemberArrivalPage() {
   const navigate = useNavigate()
-  const { unitId, groupId } = useNonNullableParams<{
+  const { unitId } = useNonNullableParams<{
     unitId: string
-    groupId: string
   }>()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
+  const { selectedGroupId } = useSelectedGroup()
 
   const [form, setForm] = useState<FormState>(() => ({
     arrived: HelsinkiDateTime.now().toLocalTime().format(),
-    group: unitInfoResponse
-      .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
-      .getOrElse(null),
+    group:
+      selectedGroupId.type !== 'all'
+        ? unitInfoResponse
+            .map(
+              ({ groups }) =>
+                groups.find(({ id }) => id === selectedGroupId.id) ?? null
+            )
+            .getOrElse(null)
+        : null,
     name: '',
     hasStaffOccupancyEffect: true
   }))

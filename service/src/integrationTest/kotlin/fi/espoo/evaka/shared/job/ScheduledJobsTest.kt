@@ -16,7 +16,7 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
-import fi.espoo.evaka.note.child.daily.getChildDailyNote
+import fi.espoo.evaka.note.child.daily.getChildDailyNoteForChild
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
 import fi.espoo.evaka.note.child.sticky.createChildStickyNote
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChild
@@ -388,9 +388,9 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
         db.read {
-            val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
+            val note1AfterCleanup = it.getChildDailyNoteForChild(testChild_1.id)
             assertNull(note1AfterCleanup)
-            val note2AfterCleanup = it.getChildDailyNote(testChild_2.id)
+            val note2AfterCleanup = it.getChildDailyNoteForChild(testChild_2.id)
             assertNotNull(note2AfterCleanup)
             assertEquals(validNoteId, note2AfterCleanup.id)
         }
@@ -462,9 +462,9 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
         db.read {
-            val note1AfterCleanup = it.getChildDailyNote(testChild_1.id)
+            val note1AfterCleanup = it.getChildDailyNoteForChild(testChild_1.id)
             assertNull(note1AfterCleanup)
-            val note2AfterCleanup = it.getChildDailyNote(testChild_2.id)
+            val note2AfterCleanup = it.getChildDailyNoteForChild(testChild_2.id)
             assertNotNull(note2AfterCleanup)
             assertEquals(validNoteId, note2AfterCleanup.id)
         }

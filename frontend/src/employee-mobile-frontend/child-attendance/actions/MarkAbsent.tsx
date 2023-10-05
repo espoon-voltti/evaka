@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
+import { combine, Success } from 'lib-common/api'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -37,9 +37,8 @@ export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId, groupId } = useNonNullableParams<{
+  const { childId, unitId } = useNonNullableParams<{
     unitId: string
-    groupId: string
     childId: string
   }>()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -52,7 +51,11 @@ export default React.memo(function MarkAbsent() {
     createFullDayAbsenceMutation
   )
 
-  const groupNotes = useQueryResult(groupNotesQuery(groupId))
+  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
+  const rawGroupNotes = useQueryResult(groupNotesQuery(groupId ?? ''), {
+    enabled: !!groupId
+  })
+  const groupNotes = groupId ? rawGroupNotes : Success.of([])
 
   return (
     <TallContentArea
