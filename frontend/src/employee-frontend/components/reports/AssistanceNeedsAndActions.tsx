@@ -54,12 +54,12 @@ const preschoolColumns = [
   ...otherAssistanceMeasureTypes
 ]
 
-interface DisplayFilters {
+interface RowFilters {
   careArea: string
   unit: string
 }
 
-const emptyDisplayFilters: DisplayFilters = {
+const emptyRowFilters: RowFilters = {
   careArea: '',
   unit: ''
 }
@@ -90,24 +90,22 @@ export default React.memo(function AssistanceNeedsAndActions() {
       date: LocalDate.todayInSystemTz()
     })
 
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
-    !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    ) && !(displayFilters.unit && row.unitName !== displayFilters.unit)
+  const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
+  const rowFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
+    !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
+    !(rowFilters.unit && row.unitName !== rowFilters.unit)
   const [columnFilters, setColumnFilters] =
     useState<ColumnFilters>(emptyColumnFilters)
 
   useEffect(() => {
     setReport(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
+    setRowFilters(emptyRowFilters)
     void getAssistanceNeedsAndActionsReport(filters).then(setReport)
   }, [filters])
 
   const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
-    () => report.map((rs) => rs.rows.filter(displayFilter)).getOrElse([]),
-    [report, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+    () => report.map((rs) => rs.rows.filter(rowFilter)).getOrElse([]),
+    [report, rowFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const selectedDaycareColumns = useMemo(
@@ -191,17 +189,17 @@ export default React.memo(function AssistanceNeedsAndActions() {
               ]}
               onChange={(option) =>
                 option
-                  ? setDisplayFilters({
-                      ...displayFilters,
+                  ? setRowFilters({
+                      ...rowFilters,
                       careArea: option.value
                     })
                   : undefined
               }
               selectedItem={
-                displayFilters.careArea !== ''
+                rowFilters.careArea !== ''
                   ? {
-                      label: displayFilters.careArea,
-                      value: displayFilters.careArea
+                      label: rowFilters.careArea,
+                      value: rowFilters.careArea
                     }
                   : {
                       label: i18n.common.all,
@@ -231,17 +229,17 @@ export default React.memo(function AssistanceNeedsAndActions() {
               ]}
               onChange={(option) =>
                 option
-                  ? setDisplayFilters({
-                      ...displayFilters,
+                  ? setRowFilters({
+                      ...rowFilters,
                       unit: option.value
                     })
                   : undefined
               }
               selectedItem={
-                displayFilters.unit !== ''
+                rowFilters.unit !== ''
                   ? {
-                      label: displayFilters.unit,
-                      value: displayFilters.unit
+                      label: rowFilters.unit,
+                      value: rowFilters.unit
                     }
                   : {
                       label: i18n.common.all,
