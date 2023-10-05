@@ -56,7 +56,7 @@ WHERE EXISTS(
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapRow<CitizenChildConsent?>()) }
+        .toList { column<ChildId>("child_id") to row<CitizenChildConsent?>() }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }
 
@@ -147,8 +147,8 @@ WHERE EXISTS(
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .map { row ->
-            Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type"))
+        .toList {
+            column<ChildId>("child_id") to column<ChildConsentType?>("type")
         }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }

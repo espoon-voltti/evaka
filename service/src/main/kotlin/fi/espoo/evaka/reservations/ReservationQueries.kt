@@ -252,7 +252,7 @@ fun Database.Read.getReservationDatesForChildrenInRange(
         )
         .bind("range", range)
         .bind("childIds", childIds)
-        .mapTo<ChildReservationDateRow>()
+        .toList<ChildReservationDateRow>()
         .groupBy({ it.childId }, { it.date })
         .mapValues { (_, value) -> value.toSet() }
 }
@@ -441,7 +441,7 @@ WHERE
     return createQuery(sql)
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationPlacementRow>()
+        .toList<ReservationPlacementRow>()
         .groupBy { it.placementId }
         .map { (_, rows) ->
             ReservationPlacement(
@@ -492,7 +492,7 @@ WHERE
         )
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationBackupPlacement>()
+        .toList<ReservationBackupPlacement>()
         .groupBy { it.childId }
 }
 

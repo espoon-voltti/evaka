@@ -445,10 +445,12 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             crossinline valueTransform: (T) -> V
         ): M = useIterable { it.associateByTo(destination, keySelector, valueTransform) }
 
+        @Deprecated("Use either toList or useIterable and call groupBy on it instead")
         inline fun <K> groupBy(crossinline f: (T) -> K): Map<K, List<T>> = useIterable {
             it.groupBy(f)
         }
 
+        @Deprecated("Use either toList or useIterable and call groupBy on it instead")
         inline fun <K, V> groupBy(
             crossinline keySelector: (T) -> K,
             crossinline valueTransform: (T) -> V

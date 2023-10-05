@@ -538,9 +538,7 @@ WHERE employee_id = ANY(:employeeIds) AND (tstzrange(start_time, end_time) && ts
         .bind("employeeIds", employeeIds)
         .bind("startTime", HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT))
         .bind("endTime", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT))
-        .map { row ->
-            Pair(row.mapColumn<EmployeeId>("employee_id"), row.mapRow<PlannedStaffAttendance>())
-        }
+        .toList { column<EmployeeId>("employee_id") to row<PlannedStaffAttendance>() }
         .groupBy({ it.first }, { it.second })
 
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? =

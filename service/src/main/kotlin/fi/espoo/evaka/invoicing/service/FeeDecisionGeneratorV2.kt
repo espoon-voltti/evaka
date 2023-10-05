@@ -592,7 +592,7 @@ private fun getPlacementDetails(
     """
             )
             .bind("ids", childIds.toTypedArray())
-            .mapTo<Placement>()
+            .toList<Placement>()
             .groupBy { it.childId }
 
     val serviceNeeds =
@@ -605,7 +605,7 @@ private fun getPlacementDetails(
     """
             )
             .bind("ids", childIds.toTypedArray())
-            .mapTo<ServiceNeed>()
+            .toList<ServiceNeed>()
             .groupBy { it.childId }
 
     val dateRanges =

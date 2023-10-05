@@ -604,7 +604,7 @@ ORDER BY m.sent_at
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<Message>()
+        .toList<Message>()
         .groupBy { it.threadId }
 }
 
@@ -861,7 +861,7 @@ ORDER BY type, name  -- groups first
     return this.createQuery(sql)
         .bind("accountId", accountId)
         .bind("today", today)
-        .mapTo<MessageAccountWithChildId>()
+        .toList<MessageAccountWithChildId>()
         .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }

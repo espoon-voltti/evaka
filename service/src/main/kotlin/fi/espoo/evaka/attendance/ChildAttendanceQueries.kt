@@ -263,7 +263,7 @@ WHERE
         .bind("unitId", unitId)
         .bind("today", now.toLocalDate())
         .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
-        .mapTo<UnitChildAttendancesRow>()
+        .toList<UnitChildAttendancesRow>()
         .groupBy { it.childId }
         .mapValues {
             it.value

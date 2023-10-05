@@ -17,7 +17,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -26,7 +26,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.result.RowView
 
 const val familyUnitPlacementCoefficient = "1.75"
 const val workingDayHours = 7.75
@@ -110,17 +109,8 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) { row ->
-            Caretakers(
-                UnitKey(
-                    areaId = row.mapColumn("area_id"),
-                    areaName = row.mapColumn("area_name"),
-                    unitId = row.mapColumn("unit_id"),
-                    unitName = row.mapColumn("unit_name")
-                ),
-                date = row.mapColumn("date"),
-                caretakerCount = row.mapColumn("caretaker_count")
-            )
+        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) {
+            Caretakers(row<UnitKey>(), column("date"), column("caretaker_count"))
         }
 
     val placements =
@@ -149,19 +139,8 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) { row ->
-            Caretakers(
-                UnitGroupKey(
-                    areaId = row.mapColumn("area_id"),
-                    areaName = row.mapColumn("area_name"),
-                    unitId = row.mapColumn("unit_id"),
-                    unitName = row.mapColumn("unit_name"),
-                    groupId = row.mapColumn("group_id"),
-                    groupName = row.mapColumn("group_name")
-                ),
-                date = row.mapColumn("date"),
-                caretakerCount = row.mapColumn("caretaker_count")
-            )
+        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) {
+            Caretakers(row<UnitGroupKey>(), column("date"), column("caretaker_count"))
         }
 
     val placements =
@@ -237,7 +216,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     unitId: DaycareId?,
-    noinline mapper: (RowView) -> Caretakers<K>
+    noinline mapper: Row.() -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
     val caretakersSum =
         if (type == OccupancyType.REALIZED) {
@@ -322,7 +301,7 @@ GROUP BY $groupBy, t
                     .trimIndent()
             )
         }
-        .map { row -> mapper(row) }
+        .toList(mapper)
         .groupBy { it.key }
 }
 
@@ -403,7 +382,7 @@ WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = A
     return this.createQuery(query)
         .bind("childIds", childIds)
         .bind("period", period)
-        .mapTo<QueryResult>()
+        .toList<QueryResult>()
         .groupBy { it.childId }
         .mapValues { entry -> entry.value.map { FiniteDateRange(it.startDate, it.endDate) } }
 }
@@ -493,7 +472,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 """
             )
             .bind("placementIds", placements.map { it.placementId })
-            .mapTo<ServiceNeed>()
+            .toList<ServiceNeed>()
             .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
@@ -518,7 +497,7 @@ WHERE sn.placement_id = ANY(:placementIds)
                     "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
                 )
             }
-            .mapTo<AssistanceFactor>()
+            .toList<AssistanceFactor>()
             .groupBy { it.childId }
 
     val absences =
@@ -528,7 +507,7 @@ WHERE sn.placement_id = ANY(:placementIds)
                 )
                 .bind("childIds", childIds)
                 .bind("range", range)
-                .mapTo<Absence>()
+                .toList<Absence>()
                 .groupBy { it.childId }
         } else {
             mapOf()

@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
@@ -270,7 +269,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
 
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
             .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
-            .mapTo<InvoiceCorrection>()
+            .toList<InvoiceCorrection>()
             .groupBy { it.headOfFamilyId }
             .mapValues { (_, corrections) ->
                 // Remove the already invoiced parts from corrections
@@ -400,7 +399,7 @@ AND p.type = ANY(:invoicedTypes::placement_type[])
         )
         .bind("period", spanningPeriod)
         .bind("invoicedTypes", placementTypes)
-        .map { rv -> rv.mapColumn<DateRange>("date_range") to rv.mapRow<PlacementStub>() }
+        .toList { column<DateRange>("date_range") to row<PlacementStub>() }
         .groupBy { it.second.child.id }
 }
 

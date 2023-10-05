@@ -274,7 +274,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
 
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo<SummaryResultRow>()
+        .toList<SummaryResultRow>()
         .groupBy { it.id }
         .map { (documentId, documents) ->
             VasuDocumentSummary(

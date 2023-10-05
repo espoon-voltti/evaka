@@ -208,7 +208,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         """
             .trimIndent()
 
-    val rows = createQuery(sql).bind("guardianId", guardianId).mapTo<ApplicationDecisionRow>()
+    val rows = createQuery(sql).bind("guardianId", guardianId).toList<ApplicationDecisionRow>()
 
     return rows
         .groupBy { it.applicationId }
