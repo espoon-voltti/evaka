@@ -14,6 +14,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val validFrom: LocalDate
     val validTo: LocalDate?
     val headOfFamilyId: PersonId
+    val validDuring: DateRange
 
     fun withRandomId(): Decision
 

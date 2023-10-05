@@ -29,7 +29,7 @@ data class FeeDecision(
     override val id: FeeDecisionId,
     @Json val children: List<FeeDecisionChild>,
     override val headOfFamilyId: PersonId,
-    val validDuring: DateRange,
+    override val validDuring: DateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,

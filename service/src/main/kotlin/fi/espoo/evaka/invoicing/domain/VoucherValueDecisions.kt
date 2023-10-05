@@ -54,6 +54,9 @@ data class VoucherValueDecision(
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
+    override val validDuring: DateRange
+        get() = DateRange(validFrom, validTo)
+
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
 
     override fun withValidity(period: DateRange) =
