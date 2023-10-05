@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
@@ -16,10 +16,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
-import BottomNavBar from '../common/BottomNavbar'
+import BottomNavbar from '../common/BottomNavbar'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
+import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import { MessagePreview } from './MessagePreview'
@@ -33,6 +34,7 @@ export default function MessagesPage() {
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
+  const { groupRoute } = useSelectedGroup()
 
   function changeGroup(group: GroupInfo | undefined) {
     if (group) navigate(`/units/${unitId}/groups/${group.id}/messages`)
@@ -49,7 +51,7 @@ export default function MessagesPage() {
   const { i18n } = useTranslation()
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
 
-  return selectedThread && selectedAccount ? (
+  return selectedAccount && selectedThread ? (
     <ContentArea
       opaque={false}
       fullHeight
@@ -63,7 +65,7 @@ export default function MessagesPage() {
         accountId={selectedAccount.account.id}
       />
     </ContentArea>
-  ) : !selectedThread && selectedAccount ? (
+  ) : selectedAccount && !selectedThread ? (
     <PageWithNavigation
       selected="messages"
       selectedGroup={
@@ -134,13 +136,9 @@ export default function MessagesPage() {
             {i18n.messages.noAccountAccess}
           </NoAccounts>
         ) : (
-          <EmptyMessageFolder
-            loading={false}
-            iconColor={colors.grayscale.g35}
-            text={i18n.messages.emptyInbox}
-          />
+          <Navigate to={`${groupRoute}/messages/unread`} replace={true} />
         )}
-        <BottomNavBar selected="messages" />
+        <BottomNavbar selected="messages" />
       </ContentArea>
     ))
   )
