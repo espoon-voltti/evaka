@@ -60,6 +60,7 @@ enum class BiUnitDaycareType {
 
 data class BiGroup(
     val id: UUID,
+    val unit: UUID,
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,

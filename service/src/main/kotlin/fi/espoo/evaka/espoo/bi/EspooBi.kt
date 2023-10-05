@@ -35,10 +35,14 @@ FROM daycare
         }
 
     val getGroups =
-        csvQuery<BiGroup> { sql("""
-SELECT id, name, start_date, end_date
+        csvQuery<BiGroup> {
+            sql(
+                """
+SELECT id, daycare_id AS unit, name, start_date, end_date
 FROM daycare_group
-""") }
+"""
+            )
+        }
 
     val getChildren =
         csvQuery<BiChild> {
