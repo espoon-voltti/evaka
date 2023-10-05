@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -80,12 +81,8 @@ fun generateAndInsertFinanceDecisionsV2(
     includeFeeDecisions: Boolean = true,
     includeVoucherValueDecisions: Boolean = true
 ) {
-    if (includeFeeDecisions) {
-        tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
-    }
-    if (includeVoucherValueDecisions) {
-        tx.lockValueDecisionsForHeadOfFamily(headOfFamilyId)
-    }
+    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
+    tx.lockValueDecisionsForHeadOfFamily(headOfFamilyId)
 
     val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
     val hardMinDate = retroactiveFrom ?: financeMinDate
@@ -99,23 +96,30 @@ fun generateAndInsertFinanceDecisionsV2(
             minDate = maxOf(rollingMinDate, hardMinDate)
         )
 
-    if (includeFeeDecisions) {
-        val existingFeeDecisions =
-            tx.findFeeDecisionsForHeadOfFamily(
-                headOfFamilyId = headOfFamilyId,
-                period = null,
-                status = null
-            )
+    val existingFeeDecisions =
+        tx.findFeeDecisionsForHeadOfFamily(
+            headOfFamilyId = headOfFamilyId,
+            period = null,
+            status = null
+        )
 
+    val existingVoucherValueDecisions =
+        tx.findValueDecisionsForHeadOfFamily(
+            headOfFamilyId = headOfFamilyId,
+            period = null,
+            statuses = null
+        )
+
+    if (includeFeeDecisions) {
         generateAndInsertDecisionsOfType(
             feeBases = feeBases,
             rangeOverlapFilter = DateRange(rollingMinDate, null),
             hardRangeLimit = DateRange(hardMinDate, null),
-            existingActiveDecisions =
+            activeDecisionsOfType =
                 existingFeeDecisions.filter { FeeDecisionStatus.effective.contains(it.status) },
-            existingDraftDecisions =
+            draftDecisionsOfType =
                 existingFeeDecisions.filter { it.status == FeeDecisionStatus.DRAFT },
-            ignoredDrafts = existingFeeDecisions.filter { it.status == FeeDecisionStatus.IGNORED },
+            ignoredDraftsOfType = existingFeeDecisions.filter { it.status == FeeDecisionStatus.IGNORED },
             feeBasisToDecisions = { feeBasis -> listOf(feeBasis.toFeeDecision()) },
             withDifferences = { decision, differences -> decision.copy(difference = differences) },
             getDifferences = FeeDecisionDifference::getDifference,
@@ -125,26 +129,19 @@ fun generateAndInsertFinanceDecisionsV2(
     }
 
     if (includeVoucherValueDecisions) {
-        val existingVoucherValueDecisions =
-            tx.findValueDecisionsForHeadOfFamily(
-                headOfFamilyId = headOfFamilyId,
-                period = null,
-                statuses = null
-            )
-
         generateAndInsertDecisionsOfType(
             feeBases = feeBases,
             rangeOverlapFilter = DateRange(rollingMinDate, null),
             hardRangeLimit = DateRange(hardMinDate, null),
-            existingActiveDecisions =
+            activeDecisionsOfType =
                 existingVoucherValueDecisions.filter {
                     VoucherValueDecisionStatus.effective.contains(it.status)
                 },
-            existingDraftDecisions =
+            draftDecisionsOfType =
                 existingVoucherValueDecisions.filter {
                     it.status == VoucherValueDecisionStatus.DRAFT
                 },
-            ignoredDrafts = emptyList(), // not yet supported
+            ignoredDraftsOfType = emptyList(), // not yet supported
             feeBasisToDecisions = { feeBasis -> feeBasis.toVoucherValueDecisions() },
             withDifferences = { decision, differences -> decision.copy(difference = differences) },
             getDifferences = VoucherValueDecisionDifference::getDifference,
@@ -158,9 +155,9 @@ private fun <Decision : FinanceDecision<Decision>, Difference> generateAndInsert
     feeBases: List<FeeBasis>,
     rangeOverlapFilter: DateRange,
     hardRangeLimit: DateRange,
-    existingActiveDecisions: List<Decision>,
-    existingDraftDecisions: List<Decision>,
-    ignoredDrafts: List<Decision>,
+    activeDecisionsOfType: List<Decision>,
+    draftDecisionsOfType: List<Decision>,
+    ignoredDraftsOfType: List<Decision>,
     feeBasisToDecisions: (feeBasis: FeeBasis) -> List<Decision>,
     withDifferences: (decision: Decision, differences: Set<Difference>) -> Decision,
     getDifferences: (d1: Decision, d2: Decision) -> Set<Difference>,
@@ -168,7 +165,11 @@ private fun <Decision : FinanceDecision<Decision>, Difference> generateAndInsert
     createDecisions: (decisions: List<Decision>) -> Unit
 ) {
     val newDrafts =
-        generateDecisionDrafts(feeBases, existingActiveDecisions, feeBasisToDecisions)
+        generateDecisionDrafts(
+            feeBases = feeBases,
+            activeDecisionsOfType = activeDecisionsOfType,
+            feeBasisToDecisions = feeBasisToDecisions
+        )
             .filter { draft -> draft.validDuring.overlaps(rangeOverlapFilter) }
             .mapNotNull { draft ->
                 draft.validDuring.intersection(hardRangeLimit)?.let { limitedRange ->
@@ -180,25 +181,25 @@ private fun <Decision : FinanceDecision<Decision>, Difference> generateAndInsert
                     val differences =
                         draft.getDifferencesWithPrevious(
                             newDrafts = newDraftsWithoutDifferences,
-                            existingActiveDecisions = existingActiveDecisions,
+                            existingActiveDecisions = activeDecisionsOfType,
                             getDifferences
                         )
                     withDifferences(draft, differences)
                 }
             }
 
-    deleteDecisions(existingDraftDecisions)
+    deleteDecisions(draftDecisionsOfType)
 
     // insert while preserving created dates
-    newDrafts
+    val draftsToInsert = newDrafts
         .filter { newDraft ->
-            !ignoredDrafts.any {
+            !ignoredDraftsOfType.any {
                 it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
             }
         }
         .map { newDraft ->
             val duplicateOldDraft =
-                existingDraftDecisions.find { oldDraft ->
+                draftDecisionsOfType.find { oldDraft ->
                     newDraft.contentEquals(oldDraft) && newDraft.validDuring == oldDraft.validDuring
                 }
             if (duplicateOldDraft != null) {
@@ -207,17 +208,18 @@ private fun <Decision : FinanceDecision<Decision>, Difference> generateAndInsert
                 newDraft
             }
         }
-        .let(createDecisions)
+
+    createDecisions(draftsToInsert)
 }
 
 fun <T : FinanceDecision<T>> generateDecisionDrafts(
     feeBases: List<FeeBasis>,
-    existingActiveDecisions: List<T>,
+    activeDecisionsOfType: List<T>,
     feeBasisToDecisions: (feeBasis: FeeBasis) -> List<T>
 ): List<T> {
     val datesOfChange =
         getDatesOfChange(*feeBases.toTypedArray()) +
-            existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+            activeDecisionsOfType.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     val newDrafts =
         buildDateRanges(datesOfChange).flatMap { range ->
@@ -235,20 +237,20 @@ fun <T : FinanceDecision<T>> generateDecisionDrafts(
             .filterNot { draft ->
                 existsActiveDuplicateThatWillRemainEffective(
                     draft,
-                    existingActiveDecisions,
+                    activeDecisionsOfType,
                     newDrafts
                 )
             }
             .filterNot { draft ->
                 // drop empty drafts unless there exists an active decision that overlaps
                 draft.isEmpty() &&
-                    existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
+                    activeDecisionsOfType.none { it.validDuring.overlaps(draft.validDuring) }
             }
             .let(::mergeAdjacentIdenticalDrafts)
             .filterNot { draft ->
                 existsActiveDuplicateThatWillRemainEffective(
                     draft,
-                    existingActiveDecisions,
+                    activeDecisionsOfType,
                     newDrafts
                 )
             }
@@ -300,6 +302,13 @@ private fun getFeeBases(
     val allServiceNeedOptionFees =
         tx.getServiceNeedOptionFees().map { ServiceNeedOptionFeeRange(it.validity, it) }
 
+    val datesOf3YoChange =
+        familyRelations
+            .flatMap { family ->
+                family.children.map { firstOfMonthAfterThirdBirthday(it.dateOfBirth) }
+            }
+            .toSet()
+
     val datesOfChange =
         getDatesOfChange(
             *familyRelations.toTypedArray(),
@@ -308,7 +317,7 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray()
-        )
+        ) + datesOf3YoChange
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -349,12 +358,10 @@ private fun getFeeBases(
                     .mapNotNull { child ->
                         placementDetailsByChild[child.id]
                             ?.find { it.range.contains(range) }
-                            ?.takeIf { it.placementType.providesSiblingDiscount() }
+                            ?.takeIf { !it.excluded }
                             ?.let { placement -> child to placement }
                     }
-                    .mapIndexedNotNull childMapping@{ siblingIndex, (child, placement) ->
-                        if (!placement.displayOnFinanceDecision()) return@childMapping null
-
+                    .mapIndexed childMapping@{ siblingIndex, (child, placement) ->
                         val serviceNeedOptionFee =
                             allServiceNeedOptionFees
                                 .find {
@@ -420,15 +427,17 @@ data class FeeBasis(
             familySize = familySize,
             feeThresholds = feeThresholds.getFeeDecisionThresholds(familySize),
             children =
-                children.mapNotNull { childFeeBasis ->
-                    childFeeBasis.toFeeDecisionChild(
-                        feeThresholds = feeThresholds,
-                        familySize = familySize,
-                        parentIncomes =
-                            if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
-                            else listOf(headOfFamilyIncome)
-                    )
-                },
+                children
+                    .filter { it.placement.decisionType() == FinanceDecisionType.FEE_DECISION }
+                    .map { childFeeBasis ->
+                        childFeeBasis.toFeeDecisionChild(
+                            feeThresholds = feeThresholds,
+                            familySize = familySize,
+                            parentIncomes =
+                                if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
+                                else listOf(headOfFamilyIncome)
+                        )
+                    },
             difference = emptySet()
         )
     }
@@ -438,89 +447,92 @@ data class FeeBasis(
             if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
             else listOf(headOfFamilyIncome)
 
-        return children.mapNotNull { child ->
-            val placement = child.placement
-            if (!placement.displayOnVoucherValueDecision()) return@mapNotNull null
+        return children
+            .filter { it.placement.decisionType() == FinanceDecisionType.VOUCHER_VALUE_DECISION }
+            .map { child ->
+                val placement = child.placement
 
-            val voucherValue =
-                placement.serviceNeedOptionVoucherValue?.let {
-                    getVoucherValues(range, child.child.dateOfBirth, it)
-                }
-                    ?: error(
-                        "Cannot generate voucher value decision: Missing voucher value for service need option ${placement.serviceNeedOption.id} during $range"
+                val voucherValue =
+                    placement.serviceNeedOptionVoucherValue?.let {
+                        getVoucherValues(range, child.child.dateOfBirth, it)
+                    }
+                        ?: error(
+                            "Cannot generate voucher value decision: Missing voucher value for service need option ${placement.serviceNeedOption.id} during $range"
+                        )
+
+                val siblingDiscount =
+                    child.serviceNeedOptionFee?.siblingDiscount(
+                        siblingOrdinal = child.siblingIndex + 1
+                    )
+                        ?: feeThresholds.siblingDiscount(siblingOrdinal = child.siblingIndex + 1)
+
+                val baseFee =
+                    child.serviceNeedOptionFee?.baseFee
+                        ?: calculateBaseFee(
+                            feeThresholds,
+                            familySize,
+                            parentIncomes + listOfNotNull(child.income)
+                        )
+
+                val feeBeforeAlterations =
+                    calculateFeeBeforeFeeAlterations(
+                        baseFee,
+                        placement.serviceNeedOption.feeCoefficient,
+                        siblingDiscount,
+                        feeThresholds.minFee
                     )
 
-            val siblingDiscount =
-                child.serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = child.siblingIndex + 1)
-                    ?: feeThresholds.siblingDiscount(siblingOrdinal = child.siblingIndex + 1)
+                val feeAlterationsWithEffects =
+                    toFeeAlterationsWithEffects(feeBeforeAlterations, child.feeAlterations)
 
-            val baseFee =
-                child.serviceNeedOptionFee?.baseFee
-                    ?: calculateBaseFee(
-                        feeThresholds,
-                        familySize,
-                        parentIncomes + listOfNotNull(child.income)
-                    )
+                val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
-            val feeBeforeAlterations =
-                calculateFeeBeforeFeeAlterations(
-                    baseFee,
-                    placement.serviceNeedOption.feeCoefficient,
-                    siblingDiscount,
-                    feeThresholds.minFee
+                val assistanceNeedCoefficient = BigDecimal.ONE // TODO
+
+                VoucherValueDecision(
+                    id = VoucherValueDecisionId(UUID.randomUUID()),
+                    validFrom = range.start,
+                    validTo = range.end,
+                    headOfFamilyId = headOfFamilyId,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    decisionType = VoucherValueDecisionType.NORMAL,
+                    partnerId = partnerId,
+                    headOfFamilyIncome = headOfFamilyIncome,
+                    partnerIncome = partnerIncome,
+                    childIncome = child.income,
+                    familySize = familySize,
+                    feeThresholds = feeThresholds.getFeeDecisionThresholds(familySize),
+                    child = ChildWithDateOfBirth(child.child.id, child.child.dateOfBirth),
+                    placement =
+                        VoucherValueDecisionPlacement(
+                            unitId = placement.unitId,
+                            type = placement.placementType
+                        ),
+                    serviceNeed =
+                        VoucherValueDecisionServiceNeed(
+                            feeCoefficient = placement.serviceNeedOption.feeCoefficient,
+                            voucherValueCoefficient = voucherValue.coefficient,
+                            feeDescriptionFi = placement.serviceNeedOption.feeDescriptionFi,
+                            feeDescriptionSv = placement.serviceNeedOption.feeDescriptionSv,
+                            voucherValueDescriptionFi =
+                                placement.serviceNeedOption.voucherValueDescriptionFi,
+                            voucherValueDescriptionSv =
+                                placement.serviceNeedOption.voucherValueDescriptionSv,
+                            missing = !placement.hasServiceNeed
+                        ),
+                    baseCoPayment = baseFee,
+                    siblingDiscount = feeThresholds.siblingDiscount(child.siblingIndex + 1).percent,
+                    coPayment = feeBeforeAlterations,
+                    feeAlterations = feeAlterationsWithEffects,
+                    finalCoPayment = finalFee,
+                    baseValue = voucherValue.baseValue,
+                    assistanceNeedCoefficient = assistanceNeedCoefficient,
+                    voucherValue =
+                        roundToEuros(BigDecimal(voucherValue.value) * assistanceNeedCoefficient)
+                            .toInt(),
+                    difference = emptySet()
                 )
-
-            val feeAlterationsWithEffects =
-                toFeeAlterationsWithEffects(feeBeforeAlterations, child.feeAlterations)
-
-            val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
-
-            val assistanceNeedCoefficient = BigDecimal.ONE // TODO
-
-            VoucherValueDecision(
-                id = VoucherValueDecisionId(UUID.randomUUID()),
-                validFrom = range.start,
-                validTo = range.end,
-                headOfFamilyId = headOfFamilyId,
-                status = VoucherValueDecisionStatus.DRAFT,
-                decisionType = VoucherValueDecisionType.NORMAL,
-                partnerId = partnerId,
-                headOfFamilyIncome = headOfFamilyIncome,
-                partnerIncome = partnerIncome,
-                childIncome = child.income,
-                familySize = familySize,
-                feeThresholds = feeThresholds.getFeeDecisionThresholds(familySize),
-                child = ChildWithDateOfBirth(child.child.id, child.child.dateOfBirth),
-                placement =
-                    VoucherValueDecisionPlacement(
-                        unitId = placement.unitId,
-                        type = placement.placementType
-                    ),
-                serviceNeed =
-                    VoucherValueDecisionServiceNeed(
-                        feeCoefficient = placement.serviceNeedOption.feeCoefficient,
-                        voucherValueCoefficient = voucherValue.coefficient,
-                        feeDescriptionFi = placement.serviceNeedOption.feeDescriptionFi,
-                        feeDescriptionSv = placement.serviceNeedOption.feeDescriptionSv,
-                        voucherValueDescriptionFi =
-                            placement.serviceNeedOption.voucherValueDescriptionFi,
-                        voucherValueDescriptionSv =
-                            placement.serviceNeedOption.voucherValueDescriptionSv,
-                        missing = !placement.hasServiceNeed
-                    ),
-                baseCoPayment = baseFee,
-                siblingDiscount = feeThresholds.siblingDiscount(child.siblingIndex + 1).percent,
-                coPayment = feeBeforeAlterations,
-                feeAlterations = feeAlterationsWithEffects,
-                finalCoPayment = finalFee,
-                baseValue = voucherValue.baseValue,
-                assistanceNeedCoefficient = assistanceNeedCoefficient,
-                voucherValue =
-                    roundToEuros(BigDecimal(voucherValue.value) * assistanceNeedCoefficient)
-                        .toInt(),
-                difference = emptySet()
-            )
-        }
+            }
     }
 }
 
@@ -536,9 +548,7 @@ data class ChildFeeBasis(
         feeThresholds: FeeThresholds,
         familySize: Int,
         parentIncomes: List<DecisionIncome?>
-    ): FeeDecisionChild? {
-        if (!placement.displayOnFeeDecision()) return null
-
+    ): FeeDecisionChild {
         val siblingDiscount =
             serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = siblingIndex + 1)
                 ?: feeThresholds.siblingDiscount(siblingOrdinal = siblingIndex + 1)
@@ -691,6 +701,10 @@ private fun Database.Read.getChildRelations(
         .groupBy { it.headOfChild }
 }
 
+// these will not provide sibling discount or be visible on any finance decision
+private val excludedPlacementTypes =
+    setOf(PlacementType.CLUB, PlacementType.SCHOOL_SHIFT_CARE) + PlacementType.temporary
+
 data class PlacementDetails(
     val childId: PersonId,
     override val finiteRange: FiniteDateRange,
@@ -702,21 +716,20 @@ data class PlacementDetails(
     val serviceNeedOption: ServiceNeedOption,
     val serviceNeedOptionVoucherValue: ServiceNeedOptionVoucherValue?
 ) : WithFiniteRange {
-    fun displayOnFeeDecision(): Boolean {
-        return displayOnFinanceDecision() &&
+    val excluded: Boolean
+        get() = excludedPlacementTypes.contains(placementType)
+
+    fun decisionType(): FinanceDecisionType? =
+        when {
+            excluded -> null
+            providerType == ProviderType.PRIVATE_SERVICE_VOUCHER ->
+                FinanceDecisionType.VOUCHER_VALUE_DECISION
             invoicedUnit &&
-            providerType != ProviderType.PRIVATE_SERVICE_VOUCHER
-    }
-
-    fun displayOnVoucherValueDecision(): Boolean {
-        return displayOnFinanceDecision() && providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
-    }
-
-    fun displayOnFinanceDecision(): Boolean {
-        return placementType.isInvoiced() &&
-            !PlacementType.temporary.contains(placementType) &&
-            serviceNeedOption.feeCoefficient != BigDecimal.ZERO
-    }
+                placementType.isInvoiced() &&
+                serviceNeedOption.feeCoefficient > BigDecimal.ZERO ->
+                FinanceDecisionType.FEE_DECISION
+            else -> null
+        }
 }
 
 private data class Placement(

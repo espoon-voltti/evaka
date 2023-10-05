@@ -79,7 +79,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private val now = HelsinkiDateTime.of(LocalDate.of(2023, 1, 1), LocalTime.of(9, 0))
+    private val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(9, 0))
     private val startDate = now.toLocalDate().minusMonths(1)
     private val endDate = now.toLocalDate().plusMonths(6)
 
@@ -304,7 +304,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(endDate, decisions.first().validTo)
         }
 
-        val newStartDate = now.toLocalDate().minusDays(1)
+        val newStartDate = startDate.plusDays(7)
         createPlacement(newStartDate, endDate, testDaycare.id)
         sendAllValueDecisions()
 
