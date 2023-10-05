@@ -213,6 +213,13 @@ export interface MessageThread {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageThreadType
+*/
+export type MessageThreadType =
+  | 'REDACTED_MESSAGE_THREAD'
+  | 'MESSAGE_THREAD'
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageType
 */
 export type MessageType =
