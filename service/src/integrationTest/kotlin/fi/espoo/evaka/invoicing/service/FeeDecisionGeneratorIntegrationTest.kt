@@ -2986,7 +2986,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `fee decisions are not generated before the global fee decision min date`() {
+    fun `fee decisions are generated starting earliest on the global fee decision min date`() {
         val period = DateRange(LocalDate.of(2014, 6, 1), LocalDate.of(2015, 6, 1))
         val clock =
             MockEvakaClock(
