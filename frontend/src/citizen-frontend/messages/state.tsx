@@ -33,8 +33,6 @@ import {
   replyToThreadMutation
 } from './queries'
 
-import Regular = CitizenMessageThread.Regular
-
 export interface MessagePageState {
   accountId: Result<UUID>
   threads: Result<CitizenMessageThread[]>
@@ -73,21 +71,18 @@ const markMessagesReadByThreadId = (
   threads: CitizenMessageThread[],
   threadId: UUID
 ): CitizenMessageThread[] =>
-  threads
-    .filter((t) => isRegularThread(t))
-    .map((t) => t as Regular)
-    .map(
-      (t): Regular =>
-        t.id === threadId
-          ? {
-              ...t,
-              messages: t.messages.map((m) => ({
-                ...m,
-                readAt: m.readAt ?? HelsinkiDateTime.now()
-              }))
-            }
-          : t
-    )
+  threads.filter(isRegularThread).map(
+    (t): CitizenMessageThread.Regular =>
+      t.id === threadId
+        ? {
+            ...t,
+            messages: t.messages.map((m) => ({
+              ...m,
+              readAt: m.readAt ?? HelsinkiDateTime.now()
+            }))
+          }
+        : t
+  )
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
