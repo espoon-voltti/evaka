@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
@@ -271,12 +272,9 @@ private fun getFeeBases(
                     .mapNotNull { child ->
                         placementDetailsByChild[child.id]
                             ?.find { it.range.contains(range) }
-                            ?.takeIf { it.affectsSiblingDiscount() }
                             ?.let { placement -> child to placement }
                     }
-                    .mapIndexedNotNull childMapping@{ siblingIndex, (child, placement) ->
-                        if (!placement.displayOnFeeDecision()) return@childMapping null
-
+                    .mapIndexed childMapping@{ siblingIndex, (child, placement) ->
                         val serviceNeedOptionFee =
                             allServiceNeedOptionFees
                                 .find {
@@ -369,7 +367,9 @@ data class ChildFeeBasis(
         familySize: Int,
         parentIncomes: List<DecisionIncome?>
     ): FeeDecisionChild? {
-        if (!placement.displayOnFeeDecision()) return null
+        if (placement.financeDecisionType != FinanceDecisionType.FEE_DECISION) {
+            return null
+        }
 
         val siblingDiscount =
             serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = siblingIndex + 1)

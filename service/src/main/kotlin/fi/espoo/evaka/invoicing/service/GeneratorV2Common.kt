@@ -1,10 +1,11 @@
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
-import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -13,6 +14,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -101,33 +103,21 @@ data class PlacementDetails(
     override val finiteRange: FiniteDateRange,
     val placementType: PlacementType,
     val unitId: DaycareId,
+    val providerType: ProviderType,
     val invoicedUnit: Boolean,
     val hasServiceNeed: Boolean,
     val serviceNeedOption: ServiceNeedOption,
-    val serviceNeedVoucherValue: ServiceNeedOptionVoucherValue?
+    val serviceNeedVoucherValues: ServiceNeedOptionVoucherValueRange?
 ) : WithFiniteRange {
-    fun displayOnFeeDecision(): Boolean {
-        if (!affectsSiblingDiscount()) return false
-
-        if (!invoicedUnit) return false
-
-        if (serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) == 0) return false
-
-        return true
-    }
-
-    fun affectsSiblingDiscount(): Boolean {
-        val excludedTypes =
-            listOf(
-                PlacementType.CLUB,
-                PlacementType.TEMPORARY_DAYCARE,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                PlacementType.SCHOOL_SHIFT_CARE
-            )
-        if (excludedTypes.contains(placementType)) return false
-
-        return true
-    }
+    val financeDecisionType: FinanceDecisionType?
+        get() =
+            when {
+                providerType == ProviderType.PRIVATE_SERVICE_VOUCHER ->
+                    FinanceDecisionType.VOUCHER_VALUE_DECISION
+                invoicedUnit && serviceNeedOption.feeCoefficient > BigDecimal.ZERO ->
+                    FinanceDecisionType.FEE_DECISION
+                else -> null
+            }
 }
 
 data class PlacementRange(
@@ -135,6 +125,7 @@ data class PlacementRange(
     override val finiteRange: FiniteDateRange,
     val type: PlacementType,
     val unitId: DaycareId,
+    val unitProviderType: ProviderType,
     val invoicedUnit: Boolean
 ) : WithFiniteRange
 
@@ -144,6 +135,10 @@ data class ServiceNeedRange(
     val optionId: ServiceNeedOptionId
 ) : WithFiniteRange
 
+// these types will not provide sibling discount and will not be shown on any decision
+private val ignoredPlacementTypes =
+    setOf(PlacementType.CLUB, PlacementType.SCHOOL_SHIFT_CARE) + PlacementType.temporary
+
 fun getPlacementDetails(
     tx: Database.Read,
     childIds: Set<PersonId>
@@ -151,22 +146,26 @@ fun getPlacementDetails(
     if (childIds.isEmpty()) return emptyMap()
 
     val serviceNeedOptions = tx.getServiceNeedOptions()
+    val serviceNeedOptionVoucherValues =
+        tx.getServiceNeedOptionVoucherValues().groupBy { it.serviceNeedOptionId }
 
     val placements =
-        tx.createQuery(
-                """
-        SELECT 
-            child_id, 
-            daterange(pl.start_date, pl.end_date, '[]') as finite_range, 
-            pl.type,
-            pl.unit_id,
-            invoiced_by_municipality as invoiced_unit
-        FROM placement pl
-        JOIN daycare d ON pl.unit_id = d.id
-        WHERE child_id = ANY(:ids)
-    """
-            )
-            .bind("ids", childIds.toTypedArray())
+        tx.createQuery<Any> {
+                sql(
+                    """
+                SELECT 
+                    child_id, 
+                    daterange(pl.start_date, pl.end_date, '[]') as finite_range, 
+                    pl.type,
+                    pl.unit_id,
+                    d.provider_type as unit_provider_type,
+                    invoiced_by_municipality as invoiced_unit
+                FROM placement pl
+                JOIN daycare d ON pl.unit_id = d.id
+                WHERE child_id = ANY(${bind(childIds)}) AND NOT pl.type = ANY(${bind(ignoredPlacementTypes)})
+            """
+                )
+            }
             .mapTo<PlacementRange>()
             .groupBy { it.childId }
 
@@ -186,7 +185,8 @@ fun getPlacementDetails(
     val dateRanges =
         buildFiniteDateRanges(
             *placements.flatMap { it.value }.toTypedArray(),
-            *serviceNeeds.flatMap { it.value }.toTypedArray()
+            *serviceNeeds.flatMap { it.value }.toTypedArray(),
+            *serviceNeedOptionVoucherValues.flatMap { it.value }.toTypedArray()
         )
 
     return childIds.associateWith { childId ->
@@ -205,18 +205,59 @@ fun getPlacementDetails(
                     }
                         ?: throw Error("Missing default service need option for ${placement.type}")
                 }
+
+            val serviceNeedVoucherValues =
+                serviceNeedOptionVoucherValues[serviceNeedOption.id]?.firstOrNull {
+                    it.range.contains(range)
+                }
+
             PlacementDetails(
                 childId = childId,
                 finiteRange = range,
                 placementType = placement.type,
                 unitId = placement.unitId,
+                providerType = placement.unitProviderType,
                 invoicedUnit = placement.invoicedUnit,
                 hasServiceNeed = serviceNeed != null,
                 serviceNeedOption = serviceNeedOption,
-                null // TODO
+                serviceNeedVoucherValues = serviceNeedVoucherValues
             )
         }
     }
+}
+
+data class ServiceNeedOptionVoucherValueRange(
+    val id: ServiceNeedOptionVoucherValueId,
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    override val range: DateRange,
+    val baseValue: Int,
+    val coefficient: BigDecimal,
+    val value: Int,
+    val baseValueUnder3y: Int,
+    val coefficientUnder3y: BigDecimal,
+    val valueUnder3y: Int
+) : WithRange
+
+private fun Database.Read.getServiceNeedOptionVoucherValues():
+    List<ServiceNeedOptionVoucherValueRange> {
+    return createQuery(
+            """
+SELECT
+    id,
+    service_need_option_id,
+    validity as range,
+    base_value,
+    coefficient,
+    value,
+    base_value_under_3y,
+    coefficient_under_3y,
+    value_under_3y
+FROM service_need_option_voucher_value
+        """
+                .trimIndent()
+        )
+        .mapTo<ServiceNeedOptionVoucherValueRange>()
+        .toList()
 }
 
 data class IncomeRange(override val range: DateRange, val income: DecisionIncome) : WithRange
