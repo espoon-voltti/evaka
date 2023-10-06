@@ -4,6 +4,7 @@
 
 package evaka.codegen.apitypes
 
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
@@ -73,6 +74,16 @@ private fun getImports(classes: List<AnalyzedClass>): List<String> {
         .distinct()
 }
 
+private val jsonMapper = defaultJsonMapperBuilder().build()
+
+private fun typeSerializerFor(clazz: KClass<*>): TypeSerializer? =
+    jsonMapper.serializerProviderInstance.findTypeSerializer(
+        jsonMapper.typeFactory.constructType(clazz.java)
+    )
+
+private fun TypeSerializer.discriminantValue(clazz: KClass<*>): String =
+    typeIdResolver.idFromValueAndType(null, clazz.java)
+
 private fun analyzeClasses(): Map<String, List<AnalyzedClass>> {
     val knownClasses = tsMapping.keys.toMutableSet()
     val analyzedClasses = mutableListOf<AnalyzedClass>()
@@ -127,13 +138,9 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                 properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
             )
         clazz.isSealed -> {
-            val jsonMapper = defaultJsonMapperBuilder().build()
-            val jacksonType = jsonMapper.typeFactory.constructType(clazz.java)
             val serializer =
-                jsonMapper.serializerProviderInstance.findTypeSerializer(jacksonType)
-                    ?:
-                    // A sealed class without a specific serializer
-                    return null
+                typeSerializerFor(clazz)
+                    ?: return null // A sealed class without a specific serializer
             AnalyzedClass.SealedClass(
                 name = clazz.qualifiedName ?: error("no class name"),
                 nestedClasses =
@@ -143,10 +150,11 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                     } else {
                         // Discriminated union
                         clazz.sealedSubclasses.map { subClass ->
-                            val typeId =
-                                serializer.typeIdResolver.idFromValueAndType(null, subClass.java)
                             analyzeDiscriminatedUnionMember(
-                                AnalyzedProperty(serializer.propertyName, TsStringLiteral(typeId)),
+                                AnalyzedProperty(
+                                    serializer.propertyName,
+                                    TsStringLiteral(serializer.discriminantValue(subClass))
+                                ),
                                 subClass
                             )
                         }
