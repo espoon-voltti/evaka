@@ -258,6 +258,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                   <Button
                     text={i18n.common.edit}
                     onClick={() => setEditMode(true)}
+                    data-qa="edit-button"
                   />
                 )}
               {editMode && (
