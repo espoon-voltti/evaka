@@ -271,8 +271,6 @@ private fun generateNewValueDecisions(
                 if (voucherValue == null || voucherValue.value == 0 || placement == null) {
                     return@let period to
                         VoucherValueDecision.empty(
-                            status = VoucherValueDecisionStatus.DRAFT,
-                            decisionType = VoucherValueDecisionType.NORMAL,
                             headOfFamilyId = family.headOfFamily,
                             partnerId = family.partner,
                             headOfFamilyIncome = income,
@@ -282,10 +280,7 @@ private fun generateNewValueDecisions(
                             feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
                             validFrom = period.start,
                             validTo = period.end,
-                            child = ChildWithDateOfBirth(voucherChild.id, voucherChild.dateOfBirth),
-                            baseCoPayment = baseCoPayment,
-                            siblingDiscount = price.siblingDiscount(1).percent,
-                            baseValue = 0
+                            child = ChildWithDateOfBirth(voucherChild.id, voucherChild.dateOfBirth)
                         )
                 }
 
