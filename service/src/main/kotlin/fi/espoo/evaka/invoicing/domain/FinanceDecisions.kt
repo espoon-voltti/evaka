@@ -73,3 +73,8 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
 
     return nonAnnulledConflicts + originalConflictsAnnulled
 }
+
+enum class FinanceDecisionType {
+    FEE_DECISION,
+    VOUCHER_VALUE_DECISION
+}

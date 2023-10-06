@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -217,10 +218,11 @@ private fun createChildFeeBasis(
                 finiteRange = FiniteDateRange(date(1), date(31)),
                 placementType = placementType,
                 unitId = DaycareId(UUID.randomUUID()),
+                providerType = ProviderType.MUNICIPAL,
                 invoicedUnit = invoicedUnit,
                 hasServiceNeed = true,
                 serviceNeedOption = snDaycareFullDay35,
-                serviceNeedVoucherValue = null
+                serviceNeedVoucherValues = null
             ),
         serviceNeedOptionFee = null,
         feeAlterations = emptyList(),

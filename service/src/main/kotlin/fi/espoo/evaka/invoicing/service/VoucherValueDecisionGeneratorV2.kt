@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
@@ -262,10 +263,7 @@ private fun getVoucherBases(
                         .thenBy { it.id }
                 )
                 .filter { child ->
-                    placementDetailsByChild[child.id]
-                        ?.find { it.range.contains(range) }
-                        ?.affectsSiblingDiscount()
-                        ?: false
+                    placementDetailsByChild[child.id]?.any { it.range.contains(range) } ?: false
                 }
                 .indexOfFirst { it.id == targetChildId }
 
@@ -305,7 +303,10 @@ data class VoucherBasis(
     val feeThresholds: FeeThresholds
 ) : WithRange {
     fun toVoucherValueDecision(): VoucherValueDecision {
-        if (placement == null) {
+        if (
+            placement == null ||
+                placement.financeDecisionType != FinanceDecisionType.VOUCHER_VALUE_DECISION
+        ) {
             return VoucherValueDecision.empty(
                 validFrom = range.start,
                 validTo = range.end,
@@ -321,7 +322,7 @@ data class VoucherBasis(
         }
 
         val voucherValues =
-            placement.serviceNeedVoucherValue?.let {
+            placement.serviceNeedVoucherValues?.let {
                 if (useUnder3YoCoefficient) {
                     VoucherValue(
                         baseValue = it.baseValueUnder3y,
