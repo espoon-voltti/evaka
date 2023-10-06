@@ -163,8 +163,7 @@ fun getServiceVoucherReport(
                             "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
                         )
                     }
-                    .mapTo<DaycareId>()
-                    .toSet()
+                    .toSet<DaycareId>()
         }
     val snapshotTime = tx.getSnapshotDate(year, month)
     val rows =

@@ -62,8 +62,7 @@ fun Database.Read.getUnreadMessagesCounts(
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
         .bind("now", now)
-        .mapTo<UnreadCountByAccount>()
-        .toSet()
+        .toSet<UnreadCountByAccount>()
 }
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
@@ -87,10 +86,7 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
     """
             .trimIndent()
 
-    return this.createQuery(sql)
-        .bind("daycareId", daycareId)
-        .mapTo<UnreadCountByAccountAndGroup>()
-        .toSet()
+    return this.createQuery(sql).bind("daycareId", daycareId).toSet<UnreadCountByAccountAndGroup>()
 }
 
 fun Database.Transaction.markThreadRead(
@@ -1380,8 +1376,7 @@ AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g
 """
             )
         }
-        .mapTo<MessageAccountId>()
-        .toSet()
+        .toSet<MessageAccountId>()
 }
 
 fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =

@@ -107,8 +107,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             setOf(accounts.person1.id, accounts.person2.id),
             db.read {
                 it.createQuery("SELECT recipient_id FROM message_recipients")
-                    .mapTo<MessageAccountId>()
-                    .toSet()
+                    .toSet<MessageAccountId>()
             }
         )
         assertEquals(

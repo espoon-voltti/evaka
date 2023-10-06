@@ -103,8 +103,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val reservations =
             db.read { tx ->
                 tx.createQuery("""SELECT id FROM attendance_reservation""")
-                    .mapTo<AttendanceReservationId>()
-                    .toSet()
+                    .toSet<AttendanceReservationId>()
             }
 
         assertEquals(setOf(keepId), reservations)

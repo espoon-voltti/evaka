@@ -623,8 +623,7 @@ private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
         """
             )
         }
-        .mapTo<PersonId>()
-        .toSet()
+        .toSet<PersonId>()
 
 private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
     createQuery<Any> {
@@ -637,8 +636,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
         """
             )
         }
-        .mapTo<PersonId>()
-        .toSet()
+        .toSet<PersonId>()
 
 private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
 

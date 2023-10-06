@@ -37,8 +37,7 @@ WHERE (${predicate(idFilter.forTable("message_account"))})
                     .trimIndent()
             )
         }
-        .mapTo<MessageAccountId>()
-        .toSet()
+        .toSet<MessageAccountId>()
 }
 
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
@@ -80,8 +79,7 @@ AND (
         .bind("accountIds", accountIds)
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<AuthorizedMessageAccount>()
-        .toSet()
+        .toSet<AuthorizedMessageAccount>()
 }
 
 fun Database.Read.getAccountNames(

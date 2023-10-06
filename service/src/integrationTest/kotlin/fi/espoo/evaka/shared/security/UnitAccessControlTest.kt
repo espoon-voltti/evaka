@@ -161,8 +161,7 @@ class UnitAccessControlTest : AccessControlTest() {
                                 .trimIndent()
                         )
                     }
-                    .mapTo<DaycareId>()
-                    .toSet()
+                    .toSet<DaycareId>()
             }
 
         rules.add(action, HasGlobalRole(UserRole.SERVICE_WORKER))

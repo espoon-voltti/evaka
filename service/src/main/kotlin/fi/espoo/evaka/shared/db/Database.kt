@@ -831,7 +831,8 @@ private class ResultIterator<T>(private val inner: org.jdbi.v3.core.result.Resul
     override fun hasNext(): Boolean =
         if (closed) error("The iterator has already been closed") else inner.hasNext()
 
-    override fun next(): T = if (closed) error("The iterator has already been closed") else inner.next()
+    override fun next(): T =
+        if (closed) error("The iterator has already been closed") else inner.next()
 
     override fun close() {
         closed = true

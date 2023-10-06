@@ -59,5 +59,4 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
     createQuery("SELECT date FROM holiday WHERE between_start_and_end(:range, date)")
         .bind("range", range)
-        .mapTo<LocalDate>()
-        .toSet()
+        .toSet<LocalDate>()

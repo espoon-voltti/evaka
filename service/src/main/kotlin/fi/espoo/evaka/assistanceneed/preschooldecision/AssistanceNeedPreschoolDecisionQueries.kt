@@ -413,8 +413,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
             )
             .bind("today", today)
             .bind("userId", userId)
-            .mapTo<ChildId>()
-            .toSet()
+            .toSet<ChildId>()
 
     return childIds
         .flatMap { childId -> getAssistanceNeedPreschoolDecisionsByChildId(childId) }

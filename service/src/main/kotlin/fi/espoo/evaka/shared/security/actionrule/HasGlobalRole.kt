@@ -72,8 +72,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                                     .trimIndent()
                             )
                         }
-                        .mapTo<Id<DatabaseTable>>()
-                        .toSet()
+                        .toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets
                                 .filter { matched.contains(it) }

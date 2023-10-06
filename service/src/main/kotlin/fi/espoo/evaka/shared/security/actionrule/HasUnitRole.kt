@@ -208,8 +208,7 @@ WHERE employee_id = ${bind(ctx.user.id)}
                                                 .trimIndent()
                                         )
                                     }
-                                    .mapTo<RoleAndFeatures>()
-                                    .toSet()
+                                    .toSet<RoleAndFeatures>()
                             )
                         else -> null
                     }
