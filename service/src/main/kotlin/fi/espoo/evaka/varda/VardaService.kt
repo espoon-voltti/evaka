@@ -201,7 +201,13 @@ fun deleteChildDataFromVardaAndDbByVardaId(
     vardaChildId: Long
 ) {
     logger.info("VardaService: deleting all child data from varda (child id: $vardaChildId)")
-    vardaClient.deleteChildAllData(vardaChildId)
+    try {
+        vardaClient.deleteChildAllData(vardaChildId)
+    } catch (e: Exception) {
+        // MI015 = unknown child so delete can be considered being a success
+        if (e.message?.contains("MI015") != true) throw e
+    }
+
     db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
 
     logger.info("VardaService: deleting from varda_service_need for child $vardaChildId")
