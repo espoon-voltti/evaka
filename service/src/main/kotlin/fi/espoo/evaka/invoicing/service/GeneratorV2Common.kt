@@ -4,6 +4,8 @@ import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
+import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
+import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
@@ -16,6 +18,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.periodsCanMerge
 import java.math.BigDecimal
+import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 fun <T : FinanceDecision<T>> existsActiveDuplicateThatWillRemainEffective(
     draft: T,
@@ -100,6 +104,7 @@ data class PlacementDetails(
     val invoicedUnit: Boolean,
     val hasServiceNeed: Boolean,
     val serviceNeedOption: ServiceNeedOption,
+    val serviceNeedVoucherValue: ServiceNeedOptionVoucherValue?
 ) : WithFiniteRange {
     fun displayOnFeeDecision(): Boolean {
         if (!affectsSiblingDiscount()) return false
@@ -207,7 +212,8 @@ fun getPlacementDetails(
                 unitId = placement.unitId,
                 invoicedUnit = placement.invoicedUnit,
                 hasServiceNeed = serviceNeed != null,
-                serviceNeedOption = serviceNeedOption
+                serviceNeedOption = serviceNeedOption,
+                null // TODO
             )
         }
     }
@@ -225,3 +231,59 @@ data class ServiceNeedOptionFeeRange(
 
 data class FeeAlterationRange(override val range: DateRange, val feeAlteration: FeeAlteration) :
     WithRange
+
+data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
+    HasDateOfBirth
+
+data class ChildRelation(
+    val headOfChild: PersonId,
+    override val finiteRange: FiniteDateRange,
+    @Nested("child") val child: Child
+) : WithFiniteRange
+
+fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, List<ChildRelation>> {
+    if (parentIds.isEmpty()) return emptyMap()
+
+    return createQuery(
+            """
+            SELECT 
+                fc.head_of_child, 
+                daterange(fc.start_date, fc.end_date, '[]') as finite_range,
+                p.id as child_id,
+                p.date_of_birth as child_date_of_birth,
+                p.social_security_number as child_ssn
+            FROM fridge_child fc
+            JOIN person p on fc.child_id = p.id
+            WHERE head_of_child = ANY(:ids) AND NOT conflict
+        """
+        )
+        .bind("ids", parentIds.toTypedArray())
+        .mapTo<ChildRelation>()
+        .mapNotNull {
+            val under18 =
+                FiniteDateRange(
+                    it.child.dateOfBirth,
+                    it.child.dateOfBirth.plusYears(18).minusDays(1)
+                )
+            it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
+        }
+        .groupBy { it.headOfChild }
+}
+
+data class PartnerRelation(val partnerId: PersonId, override val range: DateRange) : WithRange
+
+fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
+    return createQuery(
+            """
+            SELECT 
+                fp2.person_id as partnerId,
+                daterange(fp2.start_date, fp2.end_date, '[]') as range
+            FROM fridge_partner fp1
+            JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
+            WHERE fp1.person_id = :id AND NOT fp1.conflict AND NOT fp2.conflict
+        """
+        )
+        .bind("id", id)
+        .mapTo<PartnerRelation>()
+        .list()
+}

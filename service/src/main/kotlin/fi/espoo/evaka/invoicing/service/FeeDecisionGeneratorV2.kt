@@ -28,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
-import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -40,7 +39,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.*
-import org.jdbi.v3.core.mapper.Nested
 
 private const val mergeFamilies = true
 
@@ -151,8 +149,8 @@ fun generateFeeDecisionsDrafts(
                 )
             }
             .filterNot { draft ->
-                // drop drafts without children unless there exists an active decision that overlaps
-                draft.children.isEmpty() &&
+                // drop empty drafts unless there exists an active decision that overlaps
+                draft.isEmpty() &&
                     existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
             }
             .let(::mergeAdjacentIdenticalDrafts)
@@ -464,62 +462,4 @@ private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List
             }
         FamilyRelations(finiteRange = range, partner = partner, children = children)
     }
-}
-
-private data class PartnerRelation(val partnerId: PersonId, override val range: DateRange) :
-    WithRange
-
-private fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
-    return createQuery(
-            """
-            SELECT 
-                fp2.person_id as partnerId,
-                daterange(fp2.start_date, fp2.end_date, '[]') as range
-            FROM fridge_partner fp1
-            JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
-            WHERE fp1.person_id = :id AND NOT fp1.conflict AND NOT fp2.conflict
-        """
-        )
-        .bind("id", id)
-        .toList<PartnerRelation>()
-}
-
-data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
-    HasDateOfBirth
-
-private data class ChildRelation(
-    val headOfChild: PersonId,
-    override val finiteRange: FiniteDateRange,
-    @Nested("child") val child: Child
-) : WithFiniteRange
-
-private fun Database.Read.getChildRelations(
-    parentIds: Set<PersonId>
-): Map<PersonId, List<ChildRelation>> {
-    if (parentIds.isEmpty()) return emptyMap()
-
-    return createQuery(
-            """
-            SELECT 
-                fc.head_of_child, 
-                daterange(fc.start_date, fc.end_date, '[]') as finite_range,
-                p.id as child_id,
-                p.date_of_birth as child_date_of_birth,
-                p.social_security_number as child_ssn
-            FROM fridge_child fc
-            JOIN person p on fc.child_id = p.id
-            WHERE head_of_child = ANY(:ids) AND NOT conflict
-        """
-        )
-        .bind("ids", parentIds.toTypedArray())
-        .mapTo<ChildRelation>()
-        .mapNotNull {
-            val under18 =
-                FiniteDateRange(
-                    it.child.dateOfBirth,
-                    it.child.dateOfBirth.plusYears(18).minusDays(1)
-                )
-            it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
-        }
-        .groupBy { it.headOfChild }
 }
