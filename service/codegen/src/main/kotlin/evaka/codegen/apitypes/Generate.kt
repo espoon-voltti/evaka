@@ -4,12 +4,11 @@
 
 package evaka.codegen.apitypes
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.annotation.JsonTypeName
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.div
@@ -128,42 +127,32 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                 properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
             )
         clazz.isSealed -> {
-            clazz.annotations
-                .find { it.annotationClass == JsonTypeInfo::class }
-                ?.let { it as JsonTypeInfo }
-                ?.let { jsonTypeInfo ->
-                    when (jsonTypeInfo.use) {
-                        JsonTypeInfo.Id.NAME -> {
-                            // Discriminated union
-                            AnalyzedClass.SealedClass(
-                                name = clazz.qualifiedName ?: error("no class name"),
-                                nestedClasses =
-                                    clazz.nestedClasses
-                                        .filterNot { it.isCompanion }
-                                        .map {
-                                            analyzeDiscriminatedUnionMember(
-                                                jsonTypeInfo.property,
-                                                it
-                                            )
-                                        },
-                                ownProperties =
-                                    clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+            val jsonMapper = defaultJsonMapperBuilder().build()
+            val jacksonType = jsonMapper.typeFactory.constructType(clazz.java)
+            val serializer =
+                jsonMapper.serializerProviderInstance.findTypeSerializer(jacksonType)
+                    ?:
+                    // A sealed class without a specific serializer
+                    return null
+            AnalyzedClass.SealedClass(
+                name = clazz.qualifiedName ?: error("no class name"),
+                nestedClasses =
+                    if (serializer.propertyName == null) {
+                        // Just union
+                        clazz.sealedSubclasses.mapNotNull { analyzeClass(it) }
+                    } else {
+                        // Discriminated union
+                        clazz.sealedSubclasses.map { subClass ->
+                            val typeId =
+                                serializer.typeIdResolver.idFromValueAndType(null, subClass.java)
+                            analyzeDiscriminatedUnionMember(
+                                AnalyzedProperty(serializer.propertyName, TsStringLiteral(typeId)),
+                                subClass
                             )
                         }
-                        JsonTypeInfo.Id.DEDUCTION ->
-                            // Just union
-                            AnalyzedClass.SealedClass(
-                                name = clazz.qualifiedName ?: error("no class name"),
-                                nestedClasses =
-                                    clazz.nestedClasses
-                                        .filterNot { it.isCompanion }
-                                        .mapNotNull { analyzeClass(it) },
-                                ownProperties =
-                                    clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
-                            )
-                        else -> null
-                    }
-                }
+                    },
+                ownProperties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+            )
         }
         else -> error("unhandled case: $clazz")
     }
@@ -177,14 +166,10 @@ private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedPropert
     return AnalyzedProperty(prop.name, analyzeType(type))
 }
 
-private fun analyzeDiscriminatedUnionMember(discriminant: String, clazz: KClass<*>): AnalyzedClass {
-    val discriminantValue =
-        clazz.annotations
-            .find { it.annotationClass == JsonTypeName::class }
-            ?.let { annotation -> (annotation as JsonTypeName).value }
-            ?: error("Nested class ${clazz.qualifiedName} is missing JsonTypeName annotation")
-
-    val discriminantProperty = AnalyzedProperty(discriminant, TsStringLiteral(discriminantValue))
+private fun analyzeDiscriminatedUnionMember(
+    discriminantProperty: AnalyzedProperty,
+    clazz: KClass<*>
+): AnalyzedClass {
     return when {
         clazz.isData ->
             AnalyzedClass.DataClass(
