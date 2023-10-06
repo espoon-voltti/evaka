@@ -35,6 +35,8 @@ evaka:
       v2_enabled: true
   voucher_value_decision:
     days_in_advance: 1
+    generator:
+      v2_enabled: false
   oph:
     organizer_oid: "1.2.246.562.10.888888888888"
     municipality_code: "049"

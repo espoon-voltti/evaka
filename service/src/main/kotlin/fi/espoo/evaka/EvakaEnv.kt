@@ -38,7 +38,8 @@ data class EvakaEnv(
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val feeDecisionGeneratorV1Enabled: Boolean,
-    val feeDecisionGeneratorV2Enabled: Boolean
+    val feeDecisionGeneratorV2Enabled: Boolean,
+    val voucherValueDecisionGeneratorV2Enabled: Boolean
 ) {
     init {
         if (feeDecisionGeneratorV1Enabled && feeDecisionGeneratorV2Enabled) {
@@ -95,7 +96,9 @@ data class EvakaEnv(
                 feeDecisionGeneratorV1Enabled =
                     env.lookup("evaka.fee_decision.generator.v1_enabled") ?: true,
                 feeDecisionGeneratorV2Enabled =
-                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false
+                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false,
+                voucherValueDecisionGeneratorV2Enabled =
+                    env.lookup("evaka.voucher_value_decision.generator.v2_enabled") ?: false
             )
         }
     }
