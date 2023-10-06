@@ -90,7 +90,7 @@ const features: Features = {
     financeDecisionHandlerSelect: false,
     childDiscussion: false,
     feeDecisionPreschoolClubFilter: false,
-    placementGuarantee: false,
+    placementGuarantee: true,
     assistanceNeedDecisionsLanguageSelect: true,
     staffAttendanceTypes: false,
     personDuplicate: false,
