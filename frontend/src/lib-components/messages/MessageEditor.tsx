@@ -112,7 +112,6 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
-  simpleMode?: boolean
 }
 
 export default React.memo(function MessageEditor({
