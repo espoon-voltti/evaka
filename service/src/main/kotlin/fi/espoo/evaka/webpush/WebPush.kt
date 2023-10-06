@@ -5,9 +5,11 @@
 package fi.espoo.evaka.webpush
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.WebPushEnv
+import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -25,10 +27,6 @@ data class WebPushNotification(
     val payloads: List<WebPushPayload>
 )
 
-enum class WebPushPayloadType {
-    NotificationV1,
-}
-
 enum class Urgency {
     VeryLow,
     Low,
@@ -36,10 +34,10 @@ enum class Urgency {
     High,
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class WebPushPayload(val type: WebPushPayloadType) {
-    data class NotificationV1(val title: String) :
-        WebPushPayload(WebPushPayloadType.NotificationV1)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeIdResolver(SealedSubclassSimpleName::class)
+sealed interface WebPushPayload {
+    data class NotificationV1(val title: String) : WebPushPayload
 }
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
