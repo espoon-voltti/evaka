@@ -219,7 +219,8 @@ private fun createChildFeeBasis(
                 unitId = DaycareId(UUID.randomUUID()),
                 invoicedUnit = invoicedUnit,
                 hasServiceNeed = true,
-                serviceNeedOption = snDaycareFullDay35
+                serviceNeedOption = snDaycareFullDay35,
+                serviceNeedVoucherValue = null
             ),
         serviceNeedOptionFee = null,
         feeAlterations = emptyList(),
