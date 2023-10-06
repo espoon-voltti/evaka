@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
+import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -216,6 +217,8 @@ private fun getVoucherBases(
     val allServiceNeedOptionFees =
         tx.getServiceNeedOptionFees().map { ServiceNeedOptionFeeRange(it.validity, it) }
 
+    val startOf3YoCoefficient = firstOfMonthAfterThirdBirthday(child.dateOfBirth)
+
     val datesOfChange =
         getDatesOfChange(
             *familyRelations.toTypedArray(),
@@ -224,7 +227,9 @@ private fun getVoucherBases(
             *feeAlterationRanges.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray()
-        ) + existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+        ) +
+            startOf3YoCoefficient +
+            existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -276,7 +281,7 @@ private fun getVoucherBases(
             child = child,
             placement = placement,
             assistanceNeedCoefficient = BigDecimal.ONE, // TODO
-            useUnder3YoCoefficient = false, // TODO
+            useUnder3YoCoefficient = range.end?.isBefore(startOf3YoCoefficient) ?: false,
             childIncome = childIncome,
             feeAlterations = feeAlterations,
             siblingIndex = siblingIndex,
