@@ -105,12 +105,12 @@ class CitizenUserController(
         open val details: CitizenUserDetails,
         val authLevel: CitizenAuthLevel
     ) {
-        internal class Strong(
+        internal data class Strong(
             override val details: CitizenUserDetails,
             val socialSecurityNumber: String
         ) : UserDetailsResponse(details, CitizenAuthLevel.STRONG)
 
-        internal class Weak(override val details: CitizenUserDetails) :
+        internal data class Weak(override val details: CitizenUserDetails) :
             UserDetailsResponse(details, CitizenAuthLevel.WEAK)
     }
 }
