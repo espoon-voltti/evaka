@@ -141,6 +141,8 @@ FROM ids;
                     clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    valueDecisionCapacityFactorEnabled =
+                        featureConfig.valueDecisionCapacityFactorEnabled,
                     financeMinDate = feeDecisionMinDate,
                     childId = childId,
                     retroactiveOverride = from
@@ -201,6 +203,8 @@ FROM ids;
                     clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    valueDecisionCapacityFactorEnabled =
+                        featureConfig.valueDecisionCapacityFactorEnabled,
                     financeMinDate = feeDecisionMinDate,
                     childId = childId
                 )
@@ -237,6 +241,8 @@ FROM ids;
                 clock = clock,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
+                valueDecisionCapacityFactorEnabled =
+                    featureConfig.valueDecisionCapacityFactorEnabled,
                 financeMinDate = feeDecisionMinDate,
                 childId = childId
             )

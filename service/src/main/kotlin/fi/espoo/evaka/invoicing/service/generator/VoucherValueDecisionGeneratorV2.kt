@@ -5,6 +5,8 @@
 package fi.espoo.evaka.invoicing.service.generator
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.assistanceneed.getCapacityFactorsByChild
+import fi.espoo.evaka.assistanceneed.vouchercoefficient.getAssistanceNeedVoucherCoefficientsForChild
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
@@ -26,7 +28,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
+import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.service.AssistanceNeedCoefficient
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -47,6 +51,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
+    valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
     retroactiveOverride: LocalDate? = null // allows extending beyond normal min dates
 ) {
@@ -61,6 +66,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = childId,
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
@@ -77,6 +83,7 @@ fun generateVoucherValueDecisionsDrafts(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    valueDecisionCapacityFactorEnabled: Boolean,
     targetChildId: ChildId,
     activeDecisions: List<VoucherValueDecision>,
     existingDrafts: List<VoucherValueDecision>,
@@ -89,6 +96,7 @@ fun generateVoucherValueDecisionsDrafts(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = targetChildId,
             activeDecisions = activeDecisions,
             minDate = minOf(softMinDate, hardMinDate)
@@ -120,6 +128,7 @@ private fun getVoucherBases(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    valueDecisionCapacityFactorEnabled: Boolean,
     targetChildId: ChildId,
     activeDecisions: List<VoucherValueDecision>,
     minDate: LocalDate
@@ -165,6 +174,18 @@ private fun getVoucherBases(
 
     val startOf3YoCoefficient = firstOfMonthAfterThirdBirthday(child.dateOfBirth)
 
+    val assistanceNeedCoefficients =
+        (if (valueDecisionCapacityFactorEnabled) {
+                tx.getCapacityFactorsByChild(child.id).map {
+                    AssistanceNeedCoefficient(it.dateRange, it.capacityFactor)
+                }
+            } else {
+                tx.getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
+                    AssistanceNeedCoefficient(it.validityPeriod.asDateRange(), it.coefficient)
+                }
+            })
+            .map { AssistanceNeedRange(it.validityPeriod, it.coefficient) }
+
     val datesOfChange =
         getDatesOfChange(
             *familyRelations.toTypedArray(),
@@ -172,7 +193,8 @@ private fun getVoucherBases(
             *placementDetailsByChild.flatMap { it.value }.toTypedArray(),
             *feeAlterationRanges.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
-            *allServiceNeedOptionFees.toTypedArray()
+            *allServiceNeedOptionFees.toTypedArray(),
+            *assistanceNeedCoefficients.toTypedArray()
         ) +
             startOf3YoCoefficient +
             activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
@@ -206,6 +228,10 @@ private fun getVoucherBases(
         val feeAlterations =
             feeAlterationRanges.filter { it.range.contains(range) }.map { it.feeAlteration }
 
+        val assistanceNeedCoefficient =
+            assistanceNeedCoefficients.firstOrNull { it.range.contains(range) }?.coefficient
+                ?: BigDecimal.ONE
+
         val siblingIndex =
             family.childrenInFamily
                 .sortedWith(
@@ -226,7 +252,7 @@ private fun getVoucherBases(
             partnerIncome = partnerIncome,
             child = child,
             placement = placement,
-            assistanceNeedCoefficient = BigDecimal.ONE, // TODO
+            assistanceNeedCoefficient = assistanceNeedCoefficient,
             useUnder3YoCoefficient = range.end?.isBefore(startOf3YoCoefficient) ?: false,
             childIncome = childIncome,
             feeAlterations = feeAlterations,
@@ -352,7 +378,8 @@ data class VoucherBasis(
             finalCoPayment = finalFee,
             baseValue = voucherValues.baseValue,
             assistanceNeedCoefficient = assistanceNeedCoefficient,
-            voucherValue = voucherValues.value,
+            voucherValue =
+                roundToEuros(BigDecimal(voucherValues.value) * assistanceNeedCoefficient).toInt(),
             difference = emptySet()
         )
     }
@@ -463,3 +490,6 @@ private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
         .mapTo<ChildWithDateOfBirth>()
         .one()
 }
+
+private data class AssistanceNeedRange(override val range: DateRange, val coefficient: BigDecimal) :
+    WithRange
