@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.invoicing.service
+package fi.espoo.evaka.invoicing.service.generator
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
@@ -10,7 +10,6 @@ import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
-import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
@@ -28,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
 import fi.espoo.evaka.shared.ChildId
@@ -41,8 +41,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 
-private const val mergeFamilies = true
-
 fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
     clock: EvakaClock,
@@ -50,58 +48,29 @@ fun generateAndInsertVoucherValueDecisionsV2(
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     childId: ChildId,
-    retroactiveFrom: LocalDate? = null // ignores other min dates
+    retroactiveOverride: LocalDate? = null // allows extending beyond normal min dates
 ) {
-    tx.lockValueDecisionsForChild(childId)
+    val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
-    val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
-    val hardMinDate = retroactiveFrom ?: financeMinDate
+    val activeDecisions =
+        existingDecisions.filter { VoucherValueDecisionStatus.effective.contains(it.status) }
+    val existingDrafts = existingDecisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }
 
     val newDrafts =
         generateVoucherValueDecisionsDrafts(
-                tx = tx,
-                jsonMapper = jsonMapper,
-                incomeTypesProvider = incomeTypesProvider,
-                targetChildId = childId,
-                minDate = maxOf(rollingMinDate, hardMinDate)
-            )
-            .filter { draft -> draft.validDuring.overlaps(DateRange(rollingMinDate, null)) }
-            .mapNotNull { draft ->
-                draft.validDuring.intersection(DateRange(hardMinDate, null))?.let {
-                    draft.withValidity(it)
-                }
-            }
-
-    val existingDraftDecisions =
-        tx.findValueDecisionsForChild(
-            childId,
-            period = null,
-            statuses = listOf(VoucherValueDecisionStatus.DRAFT)
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetChildId = childId,
+            activeDecisions = activeDecisions,
+            existingDrafts = existingDrafts,
+            ignoredDrafts = emptyList(), // status not yet supported
+            softMinDate = getSoftMinDate(clock, retroactiveOverride),
+            hardMinDate = getHardMinDate(financeMinDate, retroactiveOverride)
         )
 
-    val ignoredDrafts = emptyList<VoucherValueDecision>() // not yet supported
-
-    tx.deleteValueDecisions(existingDraftDecisions.map { it.id })
-
-    // insert while preserving created dates
-    newDrafts
-        .filter { newDraft ->
-            !ignoredDrafts.any {
-                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
-            }
-        }
-        .map { newDraft ->
-            val duplicateOldDraft =
-                existingDraftDecisions.find { oldDraft ->
-                    newDraft.contentEquals(oldDraft) && newDraft.validDuring == oldDraft.validDuring
-                }
-            if (duplicateOldDraft != null) {
-                newDraft.copy(created = duplicateOldDraft.created)
-            } else {
-                newDraft
-            }
-        }
-        .let { tx.upsertValueDecisions(it) }
+    tx.deleteValueDecisions(existingDrafts.map { it.id })
+    tx.upsertValueDecisions(newDrafts)
 }
 
 fun generateVoucherValueDecisionsDrafts(
@@ -109,65 +78,42 @@ fun generateVoucherValueDecisionsDrafts(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetChildId: ChildId,
-    minDate: LocalDate
+    activeDecisions: List<VoucherValueDecision>,
+    existingDrafts: List<VoucherValueDecision>,
+    ignoredDrafts: List<VoucherValueDecision>,
+    softMinDate: LocalDate,
+    hardMinDate: LocalDate
 ): List<VoucherValueDecision> {
-    val existingActiveDecisions =
-        tx.findValueDecisionsForChild(
-            targetChildId,
-            period = null,
-            statuses = VoucherValueDecisionStatus.effective.toList()
-        )
     val voucherBases =
         getVoucherBases(
-            tx,
-            jsonMapper,
-            incomeTypesProvider,
-            targetChildId,
-            existingActiveDecisions,
-            minDate
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetChildId = targetChildId,
+            activeDecisions = activeDecisions,
+            minDate = minOf(softMinDate, hardMinDate)
         )
+
     val newDrafts = voucherBases.map { it.toVoucherValueDecision() }
 
-    // todo: stuff below could be shared
-
-    if (newDrafts.isEmpty()) return emptyList()
-
-    val filteredAndMergedDrafts =
-        newDrafts
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-            .filterNot { draft ->
-                // drop empty drafts unless there exists an active decision that overlaps
-                draft.isEmpty() &&
-                    existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
-            }
-            .let(::mergeAdjacentIdenticalDrafts)
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-
-    val newDraftsWithDifferences =
-        filteredAndMergedDrafts.map {
+    return filterAndMergeDrafts(
+            newDrafts = newDrafts,
+            activeDecisions = activeDecisions,
+            ignoredDrafts = ignoredDrafts,
+            softMinDate = softMinDate,
+            hardMinDate = hardMinDate
+        )
+        .map { it.withCreatedDateFromExisting(existingDrafts) }
+        .map {
             it.copy(
                 difference =
                     it.getDifferencesToPrevious(
                         newDrafts = newDrafts,
-                        existingActiveDecisions = existingActiveDecisions,
+                        existingActiveDecisions = activeDecisions,
                         getDifferences = VoucherValueDecisionDifference::getDifference
                     )
             )
         }
-
-    return newDraftsWithDifferences
 }
 
 private fun getVoucherBases(
@@ -175,7 +121,7 @@ private fun getVoucherBases(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetChildId: ChildId,
-    existingActiveDecisions: List<VoucherValueDecision>,
+    activeDecisions: List<VoucherValueDecision>,
     minDate: LocalDate
 ): List<VoucherBasis> {
     val child = tx.getChild(targetChildId)
@@ -205,7 +151,7 @@ private fun getVoucherBases(
                 }
             )
 
-    val placementDetailsByChild = getPlacementDetails(tx, allChildIds)
+    val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
 
     val feeAlterationRanges =
         tx.getFeeAlterationsFrom(personIds = listOf(targetChildId), from = minDate).map {
@@ -229,7 +175,7 @@ private fun getVoucherBases(
             *allServiceNeedOptionFees.toTypedArray()
         ) +
             startOf3YoCoefficient +
-            existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+            activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -350,7 +296,6 @@ data class VoucherBasis(
             if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
             else listOf(headOfFamilyIncome)
 
-        // todo: check from Jarkko if ServiceNeedOptionFee should be used with voucher values
         val baseFee =
             calculateBaseFee(feeThresholds, familySize, parentIncomes + listOfNotNull(childIncome))
 

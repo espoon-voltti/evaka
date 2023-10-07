@@ -51,7 +51,7 @@ data class VoucherValueDecision(
     val approvedById: EmployeeId? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
     override val validDuring: DateRange
@@ -61,6 +61,8 @@ data class VoucherValueDecision(
 
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
+
+    override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
     override fun contentEquals(decision: VoucherValueDecision): Boolean =
         VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()

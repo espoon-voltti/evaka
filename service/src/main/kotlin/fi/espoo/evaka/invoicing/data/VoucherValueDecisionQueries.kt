@@ -223,8 +223,9 @@ WHERE id = ANY(:ids)
 
 fun Database.Read.findValueDecisionsForChild(
     childId: ChildId,
-    period: DateRange?,
-    statuses: List<VoucherValueDecisionStatus>?
+    period: DateRange? = null,
+    statuses: List<VoucherValueDecisionStatus>? = null,
+    lockForUpdate: Boolean = false
 ): List<VoucherValueDecision> {
     // language=sql
     val sql =
@@ -272,6 +273,7 @@ FROM voucher_value_decision
 WHERE child_id = :childId
 AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
 AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))
+${if (lockForUpdate) "FOR UPDATE" else ""}
 """
 
     return createQuery(sql)

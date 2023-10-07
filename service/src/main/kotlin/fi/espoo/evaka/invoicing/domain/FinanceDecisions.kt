@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
@@ -15,10 +16,13 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val validTo: LocalDate?
     val headOfFamilyId: PersonId
     val validDuring: DateRange
+    val created: HelsinkiDateTime
 
     fun withRandomId(): Decision
 
     fun withValidity(period: DateRange): Decision
+
+    fun withCreated(created: HelsinkiDateTime): Decision
 
     fun contentEquals(decision: Decision): Boolean
 

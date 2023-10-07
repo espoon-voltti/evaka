@@ -13,6 +13,8 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
+import fi.espoo.evaka.invoicing.service.generator.generateAndInsertFeeDecisionsV2
+import fi.espoo.evaka.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
@@ -121,7 +123,7 @@ FROM ids;
                 incomeTypesProvider = incomeTypesProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = headOfFamily,
-                retroactiveFrom = from
+                retroactiveOverride = from
             )
         }
     }
@@ -141,7 +143,7 @@ FROM ids;
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
                     childId = childId,
-                    retroactiveFrom = from
+                    retroactiveOverride = from
                 )
             }
         } else {
