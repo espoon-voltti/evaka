@@ -34,7 +34,10 @@ import fi.espoo.evaka.shared.utils.splitSearchText
 import java.time.LocalDate
 import java.util.UUID
 
-fun feeDecisionQuery(predicate: Predicate<Any> = Predicate.alwaysTrue()) =
+fun feeDecisionQuery(
+    predicate: Predicate<Any> = Predicate.alwaysTrue(),
+    lockForUpdate: Boolean = false
+) =
     QuerySql.of<Any> {
         sql(
             """
@@ -87,6 +90,7 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM fee_decision as decision
 WHERE ${predicate(predicate.forTable("decision"))}
+${if (lockForUpdate) "FOR UPDATE" else ""}
 """
         )
     }
@@ -636,8 +640,9 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
     headOfFamilyId: PersonId,
-    period: DateRange?,
-    status: List<FeeDecisionStatus>?
+    period: DateRange? = null,
+    status: List<FeeDecisionStatus>? = null,
+    lockForUpdate: Boolean = false
 ): List<FeeDecision> {
     val headPredicate = Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
     val validPredicate =
@@ -652,7 +657,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
-    return createQuery(feeDecisionQuery(predicate)).toList<FeeDecision>()
+    return createQuery(feeDecisionQuery(predicate, lockForUpdate)).toList<FeeDecision>()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(

@@ -44,7 +44,7 @@ data class FeeDecision(
     val approvedAt: HelsinkiDateTime? = null,
     val decisionHandlerId: EmployeeId? = null,
     val sentAt: HelsinkiDateTime? = null,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now()
+    override val created: HelsinkiDateTime = HelsinkiDateTime.now()
 ) : FinanceDecision<FeeDecision> {
     val totalFee
         get() = children.fold(0) { sum, child -> sum + child.finalFee }
@@ -55,6 +55,8 @@ data class FeeDecision(
     override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
 
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
+
+    override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
     override fun contentEquals(decision: FeeDecision): Boolean =
         FeeDecisionDifference.getDifference(this, decision).isEmpty()

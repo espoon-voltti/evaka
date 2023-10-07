@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.invoicing.service
+package fi.espoo.evaka.invoicing.service.generator
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
@@ -11,7 +11,6 @@ import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.insertFeeDecisions
-import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -29,6 +28,7 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -41,8 +41,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.*
 
-private const val mergeFamilies = true
-
 fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
     clock: EvakaClock,
@@ -50,63 +48,31 @@ fun generateAndInsertFeeDecisionsV2(
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveFrom: LocalDate? = null // ignores other min dates
+    retroactiveOverride: LocalDate? = null // allows extending beyond normal min dates
 ) {
-    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
+    val existingDecisions =
+        tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
 
-    val rollingMinDate = retroactiveFrom ?: clock.today().minusMonths(15)
-    val hardMinDate = retroactiveFrom ?: financeMinDate
+    val activeDecisions =
+        existingDecisions.filter { FeeDecisionStatus.effective.contains(it.status) }
+    val existingDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.DRAFT }
+    val ignoredDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.IGNORED }
 
     val newDrafts =
         generateFeeDecisionsDrafts(
-                tx = tx,
-                jsonMapper = jsonMapper,
-                incomeTypesProvider = incomeTypesProvider,
-                targetAdultId = headOfFamilyId,
-                minDate = maxOf(rollingMinDate, hardMinDate)
-            )
-            .filter { draft -> draft.validDuring.overlaps(DateRange(rollingMinDate, null)) }
-            .mapNotNull { draft ->
-                draft.validDuring.intersection(DateRange(hardMinDate, null))?.let {
-                    draft.copy(validDuring = it)
-                }
-            }
-
-    val existingDraftDecisions =
-        tx.findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId,
-            period = null,
-            status = listOf(FeeDecisionStatus.DRAFT)
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetAdultId = headOfFamilyId,
+            activeDecisions = activeDecisions,
+            existingDrafts = existingDrafts,
+            ignoredDrafts = ignoredDrafts,
+            softMinDate = getSoftMinDate(clock, retroactiveOverride),
+            hardMinDate = getHardMinDate(financeMinDate, retroactiveOverride)
         )
 
-    val ignoredDrafts =
-        tx.findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId,
-            period = null,
-            status = listOf(FeeDecisionStatus.IGNORED)
-        )
-
-    tx.deleteFeeDecisions(existingDraftDecisions.map { it.id })
-
-    // insert while preserving created dates
-    newDrafts
-        .filter { newDraft ->
-            !ignoredDrafts.any {
-                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
-            }
-        }
-        .map { newDraft ->
-            val duplicateOldDraft =
-                existingDraftDecisions.find { oldDraft ->
-                    newDraft.contentEquals(oldDraft) && newDraft.validDuring == oldDraft.validDuring
-                }
-            if (duplicateOldDraft != null) {
-                newDraft.copy(created = duplicateOldDraft.created)
-            } else {
-                newDraft
-            }
-        }
-        .let { tx.insertFeeDecisions(it) }
+    tx.deleteFeeDecisions(existingDrafts.map { it.id })
+    tx.insertFeeDecisions(newDrafts)
 }
 
 fun generateFeeDecisionsDrafts(
@@ -114,68 +80,42 @@ fun generateFeeDecisionsDrafts(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
-    minDate: LocalDate
+    activeDecisions: List<FeeDecision>,
+    existingDrafts: List<FeeDecision>,
+    ignoredDrafts: List<FeeDecision>,
+    softMinDate: LocalDate,
+    hardMinDate: LocalDate
 ): List<FeeDecision> {
-    val existingActiveDecisions =
-        tx.findFeeDecisionsForHeadOfFamily(
-            targetAdultId,
-            period = null,
-            status =
-                listOf(
-                    FeeDecisionStatus.SENT,
-                    FeeDecisionStatus.WAITING_FOR_SENDING,
-                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
-                )
-        )
     val feeBases =
         getFeeBases(
-            tx,
-            jsonMapper,
-            incomeTypesProvider,
-            targetAdultId,
-            existingActiveDecisions,
-            minDate
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetAdultId = targetAdultId,
+            activeDecisions = activeDecisions,
+            minDate = minOf(softMinDate, hardMinDate)
         )
+
     val newDrafts = feeBases.map { it.toFeeDecision() }
 
-    if (newDrafts.isEmpty()) return emptyList()
-
-    val filteredAndMergedDrafts =
-        newDrafts
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-            .filterNot { draft ->
-                // drop empty drafts unless there exists an active decision that overlaps
-                draft.isEmpty() &&
-                    existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
-            }
-            .let(::mergeAdjacentIdenticalDrafts)
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-
-    val newDraftsWithDifferences =
-        filteredAndMergedDrafts.map {
+    return filterAndMergeDrafts(
+            newDrafts = newDrafts,
+            activeDecisions = activeDecisions,
+            ignoredDrafts = ignoredDrafts,
+            softMinDate = softMinDate,
+            hardMinDate = hardMinDate
+        )
+        .map { it.withCreatedDateFromExisting(existingDrafts) }
+        .map {
             it.copy(
                 difference =
                     it.getDifferencesToPrevious(
                         newDrafts = newDrafts,
-                        existingActiveDecisions = existingActiveDecisions,
+                        existingActiveDecisions = activeDecisions,
                         getDifferences = FeeDecisionDifference::getDifference
                     )
             )
         }
-
-    return newDraftsWithDifferences
 }
 
 private fun getFeeBases(
@@ -183,7 +123,7 @@ private fun getFeeBases(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
-    existingActiveDecisions: List<FeeDecision>,
+    activeDecisions: List<FeeDecision>,
     minDate: LocalDate
 ): List<FeeBasis> {
     val familyRelations =
@@ -204,8 +144,7 @@ private fun getFeeBases(
                 }
             )
 
-    val placementDetailsByChild = getPlacementDetails(tx, allChildIds)
-
+    val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
     val feeAlterationsByChild =
         tx.getFeeAlterationsFrom(personIds = allChildIds.toList(), from = minDate)
             .groupBy(
@@ -217,7 +156,6 @@ private fun getFeeBases(
                     )
                 }
             )
-
     val allFeeThresholds =
         tx.getFeeThresholds().map { FeeThresholdsRange(it.thresholds.validDuring, it.thresholds) }
     val allServiceNeedOptionFees =
@@ -231,7 +169,7 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray()
-        ) + existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+        ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
