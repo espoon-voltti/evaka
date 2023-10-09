@@ -694,6 +694,22 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument() =
+        rule<VasuDocumentId> { user, now ->
+            sql(
+                """
+SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM curriculum_document
+JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
+JOIN person ON person.id = curriculum_document.child_id
+JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)} AND curriculum_template.type = 'PRESCHOOL'
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementUnitOfChildOfDailyServiceTime() =
         rule<DailyServiceTimesId> { user, now ->
             sql(

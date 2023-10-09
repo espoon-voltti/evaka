@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -41,6 +41,7 @@ const StatusContainer = styled.div`
 
 export default React.memo(function VasuEditPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
+  const [searchParams] = useSearchParams()
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -49,6 +50,8 @@ export default React.memo(function VasuEditPage() {
   const showSpinner = status.state === 'saving'
 
   const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
+
+  const childIdFromUrl = searchParams.get('childId')
 
   return (
     <>
@@ -103,7 +106,15 @@ export default React.memo(function VasuEditPage() {
               <Button
                 text={i18n.vasu.checkInPreview}
                 disabled={status.state != 'clean'}
-                onClick={() => navigate(`/vasu/${vasu.id}`)}
+                onClick={() =>
+                  navigate({
+                    pathname: `/vasu/${vasu.id}`,
+                    search:
+                      childIdFromUrl !== null
+                        ? `?childId=${childIdFromUrl}`
+                        : undefined
+                  })
+                }
                 data-qa="vasu-preview-btn"
                 primary
               />

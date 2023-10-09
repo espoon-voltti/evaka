@@ -286,11 +286,17 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
         <Table>
           <Tbody>
             {vasus.map(({ data: vasu, permittedActions }) => (
-              <Tr key={vasu.id}>
+              <Tr key={vasu.id} data-qa="curriculum-document-row">
                 <Td>
                   <InlineButton
-                    onClick={() => navigate(`/vasu/${vasu.id}`)}
+                    onClick={() =>
+                      navigate({
+                        pathname: `/vasu/${vasu.id}`,
+                        search: `?childId=${childId}`
+                      })
+                    }
                     text={vasu.name}
+                    data-qa={`curriculum-document-${vasu.id}`}
                   />
                 </Td>
                 <Td>{getDates(vasu)}</Td>
@@ -319,7 +325,12 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                     ) : null
                   ) : (
                     <InlineButton
-                      onClick={() => navigate(`/vasu/${vasu.id}/edit`)}
+                      onClick={() =>
+                        navigate({
+                          pathname: `/vasu/${vasu.id}/edit`,
+                          search: `?childId=${childId}`
+                        })
+                      }
                       text={i18n.common.edit}
                       disabled={!permittedActions.includes('UPDATE')}
                     />

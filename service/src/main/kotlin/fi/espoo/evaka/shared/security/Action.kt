@@ -2170,7 +2170,13 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfDuplicateChildOfPreschoolCurriculumDocument(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN),
