@@ -6,7 +6,7 @@
 
 export type Form<Output, Error extends string, State, Shape> = {
   validate: (state: State) => ValidationResult<Output, Error>
-  shape: Shape
+  shape: () => Shape
 }
 
 export type AnyForm = Form<any, string, any, any>

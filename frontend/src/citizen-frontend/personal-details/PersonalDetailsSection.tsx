@@ -288,7 +288,7 @@ const personForm = object({
       if (state.noEmail) {
         return ValidationSuccess.of('')
       }
-      return form.shape.email.validate(state.email)
+      return form.shape().email.validate(state.email)
     }
   )
 })

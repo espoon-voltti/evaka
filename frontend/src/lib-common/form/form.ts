@@ -18,7 +18,7 @@ import {
 export function value<T>(): Form<T, never, T, unknown> {
   return {
     validate: memoizeLast((state: T) => ValidationSuccess.of(state)),
-    shape: undefined
+    shape: () => undefined
   }
 }
 
@@ -65,7 +65,7 @@ export function object<Fields extends AnyObjectFields>(
         return ValidationSuccess.of(valid)
       }
     ),
-    shape: fields
+    shape: () => fields
   }
 }
 
@@ -97,7 +97,23 @@ export function array<Elem extends AnyForm>(
         return ValidationSuccess.of(valid)
       }
     ),
-    shape: elem
+    shape: () => elem
+  }
+}
+
+export function recursive<Output, Error extends string, State, Shape>(
+  fn: () => Form<Output, Error, State, Shape>
+): Form<Output, Error, State, Shape> {
+  let form: Form<Output, Error, State, Shape> | undefined = undefined
+
+  const get = () => {
+    if (!form) form = fn()
+    return form
+  }
+
+  return {
+    validate: memoizeLast((state: State) => get().validate(state)),
+    shape: () => get().shape()
   }
 }
 
@@ -151,7 +167,7 @@ export function union<Fields extends AnyObjectFields>(
         })
       }
     }),
-    shape: fields
+    shape: () => fields
   }
 }
 
@@ -264,7 +280,7 @@ export function oneOf<Output>(): OneOf<Output, never> {
         state.options.find((o) => o.domValue === state.domValue)?.value
       )
     ),
-    shape: undefined
+    shape: () => undefined
   }
 }
 

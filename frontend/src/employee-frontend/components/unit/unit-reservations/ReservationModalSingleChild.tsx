@@ -75,10 +75,13 @@ const weekDay = chained(
   }),
   (form, state) =>
     state.enabled
-      ? form.shape.times.validate(state.times).map((times) => ({
-          index: state.index,
-          times
-        }))
+      ? form
+          .shape()
+          .times.validate(state.times)
+          .map((times) => ({
+            index: state.index,
+            times
+          }))
       : ValidationSuccess.of(undefined)
 )
 
@@ -194,9 +197,15 @@ function resetTimes(
   repetition: Repetition,
   selectedRange: FiniteDateRange
 ): {
-  dailyTimes: StateOf<(typeof reservationForm)['shape']['dailyTimes']>
-  weeklyTimes: StateOf<(typeof reservationForm)['shape']['weeklyTimes']>
-  irregularTimes: StateOf<(typeof reservationForm)['shape']['irregularTimes']>
+  dailyTimes: StateOf<
+    ReturnType<(typeof reservationForm)['shape']>['dailyTimes']
+  >
+  weeklyTimes: StateOf<
+    ReturnType<(typeof reservationForm)['shape']>['weeklyTimes']
+  >
+  irregularTimes: StateOf<
+    ReturnType<(typeof reservationForm)['shape']>['irregularTimes']
+  >
 } {
   switch (repetition) {
     case 'DAILY':
@@ -245,13 +254,14 @@ export default React.memo(function ReservationModalSingleChild({
     i18n.validationErrors,
     {
       onUpdate: (prevState, nextState, form) => {
+        const shape = form.shape()
         const prev = combine(
-          form.shape.repetition.validate(prevState.repetition),
-          form.shape.dateRange.validate(prevState.dateRange)
+          shape.repetition.validate(prevState.repetition),
+          shape.dateRange.validate(prevState.dateRange)
         )
         const next = combine(
-          form.shape.repetition.validate(nextState.repetition),
-          form.shape.dateRange.validate(nextState.dateRange)
+          shape.repetition.validate(nextState.repetition),
+          shape.dateRange.validate(nextState.dateRange)
         )
         if (!next.isValid) return nextState
         const [repetition, selectedRange] = next.value
