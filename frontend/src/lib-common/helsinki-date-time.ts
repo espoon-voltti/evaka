@@ -143,15 +143,6 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
   subSeconds(seconds: number): HelsinkiDateTime {
     return this.addSeconds(-1 * seconds)
   }
-  compareTo(other: HelsinkiDateTime): number {
-    if (this.isBefore(other)) {
-      return -1
-    }
-    if (this.isAfter(other)) {
-      return 1
-    }
-    return 0
-  }
 
   static fromLocal(date: LocalDate, time: LocalTime): HelsinkiDateTime {
     return HelsinkiDateTime.of(

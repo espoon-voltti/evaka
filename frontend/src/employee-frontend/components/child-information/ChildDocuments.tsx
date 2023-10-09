@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faFile, faQuestion } from 'Icons'
+import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -96,34 +97,36 @@ const ChildDocuments = React.memo(function ChildDocuments({
           </Tr>
         </Thead>
         <Tbody>
-          {documents
-            .sort((a, b) => b.data.modifiedAt.compareTo(a.data.modifiedAt))
-            .map(({ data: document, permittedActions }) => (
-              <Tr key={document.id} data-qa="child-document-row">
-                <WiderTd data-qa={`child-document-${document.id}`}>
-                  <InlineButton
-                    aria-label={i18n.childInformation.childDocuments.table.open}
-                    text={document.templateName}
-                    icon={faFile}
-                    disabled={!permittedActions.includes('READ')}
-                    onClick={() =>
-                      navigate({
-                        pathname: `/child-documents/${document.id}`,
-                        search: `?childId=${childId}`
-                      })
-                    }
-                    data-qa="open-document"
-                  />
-                </WiderTd>
-                <Td>{document.modifiedAt.format()}</Td>
-                <Td data-qa="document-published-at">
-                  {document.publishedAt?.format() ?? '-'}
-                </Td>
-                <Td data-qa="document-status">
-                  <ChildDocumentStateChip status={document.status} />
-                </Td>
-              </Tr>
-            ))}
+          {orderBy(
+            documents,
+            (document) => document.data.modifiedAt,
+            'desc'
+          ).map(({ data: document, permittedActions }) => (
+            <Tr key={document.id} data-qa="child-document-row">
+              <WiderTd data-qa={`child-document-${document.id}`}>
+                <InlineButton
+                  aria-label={i18n.childInformation.childDocuments.table.open}
+                  text={document.templateName}
+                  icon={faFile}
+                  disabled={!permittedActions.includes('READ')}
+                  onClick={() =>
+                    navigate({
+                      pathname: `/child-documents/${document.id}`,
+                      search: `?childId=${childId}`
+                    })
+                  }
+                  data-qa="open-document"
+                />
+              </WiderTd>
+              <Td>{document.modifiedAt.format()}</Td>
+              <Td data-qa="document-published-at">
+                {document.publishedAt?.format() ?? '-'}
+              </Td>
+              <Td data-qa="document-status">
+                <ChildDocumentStateChip status={document.status} />
+              </Td>
+            </Tr>
+          ))}
         </Tbody>
       </Table>
     </div>
