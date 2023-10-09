@@ -230,7 +230,7 @@ ${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDele
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceAction() =
+    fun inPlacementUnitOfChildOfAssistanceAction(hideClosed: Boolean) =
         rule<AssistanceActionId> { user, now ->
             sql(
                 """
@@ -239,12 +239,28 @@ FROM assistance_action aa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = aa.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = aa.child_id
+                AND aa.end_date >= p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hideClosed) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceFactor() =
+    fun inPlacementUnitOfChildOfAssistanceFactor(childIsInPreschool: Boolean = false) =
         rule<AssistanceFactorId> { user, now ->
             sql(
                 """
@@ -253,6 +269,14 @@ FROM assistance_factor af
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+${if (childIsInPreschool)
+                    "AND EXISTS " +
+                            "(SELECT TRUE " +
+                            "FROM PLACEMENT p" +
+                            " WHERE p.child_id = af.child_id " +
+                            "       AND af.end_date >= p.start_date" +
+                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
+                else ""}
             """
                     .trimIndent()
             )
@@ -300,7 +324,7 @@ WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
             )
         }
 
-    fun inPlacementUnitOfChildOfDaycareAssistance() =
+    fun inPlacementUnitOfChildOfDaycareAssistance(childIsInPreschool: Boolean = false) =
         rule<DaycareAssistanceId> { user, now ->
             sql(
                 """
@@ -309,12 +333,20 @@ FROM daycare_assistance da
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+${if (childIsInPreschool)
+                    "AND EXISTS " +
+                            "(SELECT TRUE " +
+                            "FROM PLACEMENT p" +
+                            " WHERE p.child_id = da.child_id " +
+                            "       AND da.valid_during @> p.start_date" +
+                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
+                else ""}
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfOtherAssistanceMeasure() =
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(childIsInPreschool: Boolean = false) =
         rule<OtherAssistanceMeasureId> { user, now ->
             sql(
                 """
@@ -323,6 +355,14 @@ FROM other_assistance_measure oam
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+${if (childIsInPreschool)
+                    "AND EXISTS " +
+                            "(SELECT TRUE " +
+                            "FROM PLACEMENT p" +
+                            " WHERE p.child_id = oam.child_id " +
+                            "       AND oam.valid_during @> p.start_date" +
+                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
+                else ""}
             """
                     .trimIndent()
             )

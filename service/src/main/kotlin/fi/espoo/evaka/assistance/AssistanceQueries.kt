@@ -4,17 +4,15 @@
 
 package fi.espoo.evaka.assistance
 
-import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.DaycareAssistanceId
-import fi.espoo.evaka.shared.OtherAssistanceMeasureId
-import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.assistanceaction.AssistanceAction
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 
 private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
     QuerySql.of<DatabaseTable.AssistanceFactor> {
@@ -256,3 +254,45 @@ fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasure
             sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
         }
         .execute()
+
+/*
+fun Database.Read.getAssistanceNeedDecisionsByChildId(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceNeedDecisionId>
+): List<AssistanceNeedDecisionBasics> =
+    createQuery<Any> {
+            sql(
+                """
+        SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
+            selected_unit selected_unit_id, unit.name selected_unit_name
+        FROM assistance_need_decision ad
+        LEFT JOIN daycare unit ON unit.id = selected_unit
+        WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
+    """
+                    .trimIndent()
+            )
+        }
+        .mapTo<AssistanceNeedDecisionBasics>()
+        .list()
+ */
+
+fun Database.Read.getAssistanceActionsByChildId(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceActionId>
+): List<AssistanceAction> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
+FROM assistance_action aa
+LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
+LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
+WHERE aa.child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
+GROUP BY aa.id, child_id, start_date, end_date, other_action
+ORDER BY start_date DESC     
+            """
+                    .trimIndent()
+            )
+        }
+        .mapTo<AssistanceAction>()
+        .toList()

@@ -121,11 +121,12 @@ export type ApplicationNote =
 
 export type AssistanceAction =
   | 'DELETE'
-  | 'READ_PRE_PRESCHOOL_ASSISTANCE_ACTION'
+  | 'READ_ASSISTANCE_ACTION'
   | 'UPDATE'
 
 export type AssistanceFactor =
   | 'DELETE'
+  | 'READ'
   | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
@@ -251,6 +252,7 @@ export type DailyServiceTime =
 
 export type DaycareAssistance =
   | 'DELETE'
+  | 'READ'
   | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
@@ -308,6 +310,7 @@ export type MobileDevice =
 
 export type OtherAssistanceMeasure =
   | 'DELETE'
+  | 'READ'
   | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 

@@ -633,16 +633,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceAction()
+                .inPlacementUnitOfChildOfAssistanceAction(false)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceAction()
+                .inPlacementUnitOfChildOfAssistanceAction(false)
         ),
-        READ_PRE_PRESCHOOL_ASSISTANCE_ACTION(
+        READ_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -660,6 +661,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceFactor()
+        ),
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false)
         ),
         READ_PRE_PRESCHOOL(
             HasGlobalRole(ADMIN),
@@ -930,6 +935,7 @@ sealed interface Action {
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
+                    STAFF,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY
                 )
                 .inPlacementUnitOfChild()
@@ -1303,9 +1309,13 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfDaycareAssistance()
         ),
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false)
+        ),
         READ_PRE_PRESCHOOL(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1588,9 +1598,15 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure()
         ),
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure(false)
+        ),
         READ_PRE_PRESCHOOL(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfOtherAssistanceMeasure()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
