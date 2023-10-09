@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
@@ -25,7 +24,7 @@ fun Database.Transaction.insertVasuDocument(
         createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
             .bind("id", childId)
             .mapTo<VasuChild>(qualifiers = emptyArray())
-            .one()
+            .exactlyOne()
 
     val guardiansAndFosterParents =
         createQuery(
@@ -47,7 +46,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("id", childId)
             .bind("today", now.toLocalDate())
             .mapTo<VasuGuardian>(qualifiers = emptyArray())
-            .list()
+            .toList()
 
     val basics =
         VasuBasics(
@@ -75,7 +74,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("basics", basics)
             .bind("templateId", template.id)
             .mapTo<VasuDocumentId>()
-            .one()
+            .exactlyOne()
 
     createUpdate(
             """
@@ -123,7 +122,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
@@ -173,7 +172,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
         } else {
@@ -274,7 +273,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
 
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo<SummaryResultRow>()
+        .toList<SummaryResultRow>()
         .groupBy { it.id }
         .map { (documentId, documents) ->
             VasuDocumentSummary(
@@ -331,14 +330,13 @@ fun Database.Transaction.insertVasuDocumentEvent(
         .bind("createdBy", createdBy)
         .bind("eventType", eventType)
         .mapTo<VasuDocumentEvent>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
-        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
-        .firstOrNull()
+        .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?.let { basics ->
             createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
@@ -373,14 +371,13 @@ private fun Database.Read.getVasuPlacements(
         .bind("today", today)
         .bind("id", id)
         .mapTo<VasuPlacement>(qualifiers = emptyArray())
-        .list()
+        .toList()
 }
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
-        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
-        .firstOrNull()
+        .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?: throw NotFound("Vasu document $id not found")
 
 fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
@@ -406,7 +403,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
                 )
                 .bind("id", guardianId)
                 .mapTo<VasuGuardian>(qualifiers = emptyArray())
-                .first()
+                .exactlyOne()
         }
 
     createUpdate(

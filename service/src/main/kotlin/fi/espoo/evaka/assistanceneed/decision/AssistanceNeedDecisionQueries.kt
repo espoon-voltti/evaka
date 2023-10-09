@@ -119,7 +119,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
             .bind("selectedUnit", data.selectedUnit?.id)
             .mapTo<AssistanceNeedDecisionId>()
-            .first()
+            .exactlyOne()
 
     // language=sql
     val guardianSql =
@@ -188,7 +188,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
         GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecision>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecision>()
         ?: throw NotFound("Assistance need decision $id not found")
 }
 
@@ -311,7 +311,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
             )
         }
         .mapTo<AssistanceNeedDecisionBasics>()
-        .list()
+        .toList()
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
     // language=sql
@@ -322,7 +322,7 @@ fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecision
         RETURNING id;
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecisionId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 }
 
 fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDecisionId) {
@@ -363,7 +363,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<AssistanceNeedDecisionCitizenListItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisionId): String? {
@@ -375,7 +375,7 @@ fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisio
         WHERE ad.id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.updateAssistanceNeedDocumentKey(
@@ -435,7 +435,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.decideAssistanceNeedDecision(
@@ -505,7 +505,7 @@ fun Database.Read.hasLaterAssistanceNeedDecisions(
         .bind("childId", childId)
         .bind("startDate", startDate)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.annulAssistanceNeedDecision(

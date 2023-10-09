@@ -28,7 +28,7 @@ fun Database.Read.getPedagogicalDocumentAttachments(
         )
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .mapTo<Attachment>()
-        .list()
+        .toList()
 }
 
 data class PedagogicalDocumentCitizen(
@@ -73,7 +73,7 @@ fun Database.Read.getChildPedagogicalDocuments(
         .bind("childId", childId)
         .bind("userId", userId)
         .mapTo<PedagogicalDocumentCitizen>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getPedagogicalDocumentChild(
@@ -84,5 +84,5 @@ fun Database.Read.getPedagogicalDocumentChild(
         )
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .mapTo<ChildId>()
-        .one()
+        .exactlyOne()
 }

@@ -71,7 +71,7 @@ SELECT EXISTS (
             .bind("today", clock.today())
             .bind("userId", userId)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()
     }
 
     private fun Database.Read.citizenHasChildWithActivePlacement(
@@ -97,7 +97,7 @@ SELECT EXISTS (
             .bind("today", clock.today())
             .bind("userId", userId)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()
     }
 
     private fun Database.Read.citizenHasAccessToReservations(
@@ -126,7 +126,7 @@ SELECT EXISTS (
             .bind("userId", userId)
             .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()
     }
 
     private fun Database.Read.citizenHasAccessToChildDocumentation(
@@ -153,6 +153,6 @@ SELECT EXISTS (
             .bind("today", clock.today())
             .bind("userId", userId)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()
     }
 }

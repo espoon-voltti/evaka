@@ -24,7 +24,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
         )
         .bind("groupIds", groupIds)
         .mapTo<GroupNote>()
-        .list()
+        .toList()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate(
@@ -39,7 +39,7 @@ RETURNING id
         .bind("groupId", groupId)
         .executeAndReturnGeneratedKeys()
         .mapTo<GroupNoteId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateGroupNote(
@@ -63,7 +63,7 @@ RETURNING *
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<GroupNote>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {

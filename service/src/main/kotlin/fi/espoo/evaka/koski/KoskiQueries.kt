@@ -54,7 +54,7 @@ AND ${predicate(daycarePredicate.forTable("kvsr"))}
             )
         }
         .mapTo<KoskiStudyRightKey>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.beginKoskiUpload(
@@ -96,7 +96,7 @@ RETURNING id, void_date IS NOT NULL AS voided
         .map { row ->
             Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided"))
         }
-        .single()
+        .exactlyOne()
         .let { (id, voided) ->
             if (voided) {
                 createQuery(
@@ -122,8 +122,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                     )
                     .bind("id", id)
                     .bind("today", today)
-                    .mapTo<KoskiVoidedDataRaw>()
-                    .singleOrNull()
+                    .exactlyOneOrNull<KoskiVoidedDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid)
             } else {
                 createQuery(
@@ -156,8 +155,7 @@ RETURNING id, void_date IS NOT NULL AS voided
                     )
                     .bind("id", id)
                     .bind("today", today)
-                    .mapTo<KoskiActiveDataRaw>()
-                    .singleOrNull()
+                    .exactlyOneOrNull<KoskiActiveDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
             }
         }
@@ -185,7 +183,7 @@ USING (child_id, unit_id, type)
         .bindKotlin(key)
         .bind("payload", payload)
         .mapTo<Boolean>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
     createUpdate(

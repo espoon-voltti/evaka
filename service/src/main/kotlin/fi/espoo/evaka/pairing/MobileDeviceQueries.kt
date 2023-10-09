@@ -30,23 +30,21 @@ GROUP BY md.id, md.name, md.employee_id
 """
         )
         .bind("id", id)
-        .mapTo<MobileDeviceDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<MobileDeviceDetails>()
         ?: throw NotFound("Device $id not found")
 }
 
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
     createQuery("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token")
         .bind("token", token)
-        .mapTo<MobileDeviceIdentity>()
-        .singleOrNull()
+        .exactlyOneOrNull<MobileDeviceIdentity>()
         ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
     return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<MobileDevice>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {

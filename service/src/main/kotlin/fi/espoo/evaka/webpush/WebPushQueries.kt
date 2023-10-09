@@ -61,8 +61,7 @@ RETURNING origin, public_key, jwt, expires_at
 """
                 )
             }
-            .mapTo<VapidJwt?>()
-            .singleOrNull()
+            .exactlyOneOrNull<VapidJwt?>()
     return savedNewToken
     // We didn't save anything -> there must be a valid token in the db
     ?: createQuery<Any> {
@@ -75,5 +74,5 @@ WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKe
                 )
             }
             .mapTo<VapidJwt>()
-            .single()
+            .exactlyOne()
 }

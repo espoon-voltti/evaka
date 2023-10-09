@@ -608,7 +608,7 @@ fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecisi
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .mapTo<FeeDecision>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getDetailedFeeDecisionsByIds(
@@ -617,13 +617,12 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .mapTo<FeeDecisionDetailed>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
-        .mapTo<FeeDecisionDetailed>()
-        .firstOrNull()
+        .exactlyOneOrNull<FeeDecisionDetailed>()
         ?.let { it ->
             it.copy(
                 partnerIsCodebtor =
@@ -655,7 +654,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
-    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().list()
+    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().toList()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(
@@ -785,7 +784,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? 
         WHERE id = :id
     """
 
-    return createQuery(sql).bind("id", decisionId).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("id", decisionId).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
@@ -854,4 +853,4 @@ FROM partner_children, partner_fridge_children
             .bind("childIds", childIds)
             .bind("dateRange", dateRange)
             .mapTo<Boolean>()
-            .first()
+            .exactlyOne()

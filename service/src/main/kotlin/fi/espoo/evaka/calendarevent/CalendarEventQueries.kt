@@ -58,7 +58,7 @@ GROUP BY ce.id, cea.unit_id
         .bind("unitId", unitId)
         .bind("range", range)
         .mapTo<CalendarEvent>()
-        .list()
+        .toList()
 
 fun Database.Transaction.createCalendarEvent(event: CalendarEventForm): CalendarEventId {
     val eventId =
@@ -73,7 +73,7 @@ RETURNING id
             .bindKotlin(event)
             .executeAndReturnGeneratedKeys()
             .mapTo<CalendarEventId>()
-            .first()
+            .exactlyOne()
 
     if (event.tree != null) {
         event.tree.forEach { (groupId, childIds) ->
@@ -213,7 +213,7 @@ WHERE cp.period && ce.period
         .bind("guardianId", guardianId)
         .bind("range", range)
         .mapTo<CitizenCalendarEventRow>()
-        .list()
+        .toList()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
     this.createQuery(
@@ -224,7 +224,7 @@ SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = :unitId
         )
         .bind("unitId", unitId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 
 data class ParentWithEvents(
     val parentId: PersonId,
@@ -325,5 +325,5 @@ GROUP BY mp.parent_id, p.language
                 events = row.mapJsonColumn<List<CalendarEventNotificationData>>("events")
             )
         }
-        .list()
+        .toList()
 }

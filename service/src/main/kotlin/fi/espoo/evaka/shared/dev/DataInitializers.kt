@@ -106,7 +106,7 @@ fun Database.Transaction.resetDatabase() {
 }
 
 fun Database.Transaction.ensureDevData() {
-    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
+    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().exactlyOne() == 0) {
         listOf(
                 "dev-data.sql",
                 "service-need-options.sql",
@@ -125,12 +125,7 @@ fun Database.Transaction.ensureDevData() {
  * * SQL must return "id" column of type UUID
  */
 private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID =
-    createUpdate(sql)
-        .bindKotlin(row)
-        .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
-        .asSequence()
-        .single()
+    createUpdate(sql).bindKotlin(row).executeAndReturnGeneratedKeys().mapTo<UUID>().exactlyOne()
 
 fun Database.Transaction.insertTestCareArea(area: DevCareArea): AreaId =
     insertTestDataRow(
@@ -932,7 +927,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
             .bind("selectedUnit", data.selectedUnit?.id)
             .mapTo<AssistanceNeedDecisionId>()
-            .first()
+            .exactlyOne()
 
     // language=sql
     val guardianSql =
@@ -1119,7 +1114,7 @@ RETURNING id
         .bind("endDate", backupCare.period.end)
         .executeAndReturnGeneratedKeys()
         .mapTo<BackupCareId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
     // language=sql
@@ -1320,7 +1315,7 @@ fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
     createQuery("SELECT id FROM employee WHERE external_id = :id")
         .bind("id", externalId)
         .mapTo<EmployeeId>()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) =
     createUpdate(

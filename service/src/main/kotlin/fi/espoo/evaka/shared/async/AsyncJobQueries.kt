@@ -31,7 +31,7 @@ RETURNING id
         .bindJson("payload", jobParams.payload)
         .executeAndReturnGeneratedKeys()
         .mapTo<UUID>()
-        .one()
+        .exactlyOne()
 
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
@@ -74,8 +74,7 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
                 remainingAttempts = row.mapColumn("remainingAttempts")
             )
         }
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
 
 fun <T : AsyncJobPayload> Database.Transaction.startJob(
     job: ClaimedJobRef<T>,
@@ -106,8 +105,7 @@ RETURNING payload
                 QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)
             )
         }
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
 
 fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
     createUpdate(

@@ -10,7 +10,7 @@ fun Database.Read.getSettings(): Map<SettingType, String> {
     // language=SQL
     val sql = "SELECT key, value FROM setting"
 
-    return createQuery(sql).mapTo<Setting>().associateBy({ it.key }, { it.value })
+    return createQuery(sql).toMap { columnPair("key", "value") }
 }
 
 fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {

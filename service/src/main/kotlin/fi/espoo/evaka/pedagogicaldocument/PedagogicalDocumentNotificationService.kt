@@ -63,7 +63,7 @@ class PedagogicalDocumentNotificationService(
                     language = getLanguage(row.mapColumn("language"))
                 )
             }
-            .list()
+            .toList()
     }
 
     private fun Database.Transaction.updateDocumentEmailJobCreatedAt(
@@ -99,7 +99,7 @@ SELECT EXISTS(
             )
             .bind("id", id)
             .mapTo<Boolean>()
-            .one()
+            .exactlyOne()
     }
 
     fun maybeScheduleEmailNotification(tx: Database.Transaction, id: PedagogicalDocumentId) {

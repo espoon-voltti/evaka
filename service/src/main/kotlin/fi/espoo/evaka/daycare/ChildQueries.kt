@@ -13,7 +13,7 @@ fun Database.Read.getChild(id: ChildId): Child? {
     val sql =
         "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
 
-    return createQuery(sql).bind("id", id).mapTo<Child>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<Child>()
 }
 
 fun Database.Transaction.createChild(child: Child): Child {
@@ -30,7 +30,7 @@ fun Database.Transaction.createChild(child: Child): Child {
         .bind("languageAtHome", child.additionalInformation.languageAtHome)
         .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
         .mapTo<Child>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.upsertChild(child: Child) {

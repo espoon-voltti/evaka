@@ -121,7 +121,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>() }
+        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().toList() }
             .sortedBy { it.validFrom }
     }
 

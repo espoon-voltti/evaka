@@ -32,7 +32,7 @@ fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
         .bind("childId", childId)
         .bind("language", language)
         .mapTo<AssistanceNeedPreschoolDecisionId>()
-        .first()
+        .exactlyOne()
         .also { decisionId ->
             createUpdate(
                     """
@@ -138,7 +138,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
         GROUP BY ad.id, child.id, d.id, preparer1.id, preparer2.id, decision_maker.id;
         """
 
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedPreschoolDecision>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedPreschoolDecision>()
         ?: throw NotFound("Assistance need preschool decision $id not found")
 }
 
@@ -260,7 +260,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         createQuery(sql)
             .bind("childId", childId)
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .list()
+            .toList()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -286,7 +286,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
                 )
             }
             .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .list()
+            .toList()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -326,7 +326,7 @@ fun Database.Transaction.deleteAssistanceNeedPreschoolDecision(
         RETURNING id;
         """
 
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecisionId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 }
 
 fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsOpened(
@@ -414,7 +414,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
             .bind("today", today)
             .bind("userId", userId)
             .mapTo<ChildId>()
-            .set()
+            .toSet()
 
     return childIds
         .flatMap { childId -> getAssistanceNeedPreschoolDecisionsByChildId(childId) }
@@ -481,7 +481,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
         .bind("today", today)
         .bind("userId", userId)
         .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(
@@ -495,5 +495,5 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(
         WHERE ad.id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }

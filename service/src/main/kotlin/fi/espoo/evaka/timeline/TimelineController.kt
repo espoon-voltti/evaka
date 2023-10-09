@@ -184,7 +184,7 @@ ORDER BY valid_from
             )
         }
         .mapTo<TimelineValueDecision>()
-        .list()
+        .toList()
 
 data class TimelineIncome(
     val id: IncomeId,
@@ -204,7 +204,7 @@ ORDER BY valid_from
             )
         }
         .mapTo<TimelineIncome>()
-        .list()
+        .toList()
 
 data class TimelinePartner(
     val id: PartnershipId,
@@ -311,7 +311,7 @@ ORDER BY pl.start_date
             )
         }
         .mapTo<TimelinePlacement>()
-        .list()
+        .toList()
 
 data class TimelineServiceNeed(
     val id: ServiceNeedId,
@@ -336,7 +336,7 @@ ORDER BY pl.start_date
             )
         }
         .mapTo<TimelineServiceNeed>()
-        .list()
+        .toList()
 
 data class TimelineFeeAlteration(
     val id: FeeAlterationId,
@@ -359,4 +359,4 @@ ORDER BY valid_from
             )
         }
         .mapTo<TimelineFeeAlteration>()
-        .list()
+        .toList()

@@ -53,7 +53,7 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
         .bind("today", today)
         .bind("userId", id)
         .mapTo<Child>()
-        .list()
+        .toList()
 
 fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
     createQuery(

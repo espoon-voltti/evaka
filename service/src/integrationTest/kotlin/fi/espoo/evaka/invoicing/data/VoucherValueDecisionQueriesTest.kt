@@ -150,7 +150,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 )
                 val ids =
                     tx.createQuery("SELECT id FROM voucher_value_decision")
-                        .mapTo<VoucherValueDecisionId>()
+                        .toList<VoucherValueDecisionId>()
                 ids.map { id -> tx.getVoucherValueDecision(id)!! }
             }
         assertThat(decisions)

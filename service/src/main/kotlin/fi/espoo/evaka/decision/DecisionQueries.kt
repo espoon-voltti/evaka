@@ -92,7 +92,7 @@ private fun decisionFromResultSet(row: RowView): Decision =
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(decision = Predicate { where("$it.id = ${bind(decisionId)}") })
         .map(::decisionFromResultSet)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
@@ -100,7 +100,7 @@ fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
                 Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
         )
         .map(::decisionFromResultSet)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
@@ -208,7 +208,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         """
             .trimIndent()
 
-    val rows = createQuery(sql).bind("guardianId", guardianId).mapTo<ApplicationDecisionRow>()
+    val rows = createQuery(sql).bind("guardianId", guardianId).toList<ApplicationDecisionRow>()
 
     return rows
         .groupBy { it.applicationId }
@@ -234,7 +234,7 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().list()
+    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().toList()
 }
 
 fun Database.Transaction.finalizeDecisions(
@@ -255,7 +255,7 @@ fun Database.Transaction.finalizeDecisions(
         .bind("applicationId", applicationId)
         .bind("today", today)
         .mapTo<DecisionId>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.markApplicationDecisionsSent(
@@ -319,8 +319,7 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         )
         .bind("id", decisionId)
         .mapTo<Boolean>()
-        .first()
-        ?: false
+        .exactlyOne()
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
@@ -336,7 +335,7 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
         )
         .bind("id", decisionId)
         .mapTo<DocumentLang>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.markDecisionAccepted(

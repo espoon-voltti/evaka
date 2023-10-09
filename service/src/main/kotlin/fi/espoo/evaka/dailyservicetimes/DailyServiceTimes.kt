@@ -195,8 +195,7 @@ ORDER BY lower(validity_period) DESC
         )
         .bind("childId", childId)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .toList()
+        .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
 }
 
 fun Database.Read.getDailyServiceTimesForChildren(
@@ -224,8 +223,9 @@ WHERE child_id = ANY(:childIds)
         )
         .bind("childIds", childIds)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .groupBy({ it.childId }, { it.times })
+        .useIterable { rows ->
+            rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
+        }
 
 data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: DateRange)
 
@@ -241,8 +241,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<DailyServiceTimesValidity>()
-        .firstOrNull()
+        .exactlyOneOrNull<DailyServiceTimesValidity>()
 }
 
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
@@ -390,7 +389,7 @@ fun Database.Transaction.createChildDailyServiceTimes(
         .bindKotlin(times.asUpdateRow())
         .bind("childId", childId)
         .mapTo<DailyServiceTimesId>()
-        .first()
+        .exactlyOne()
 }
 
 data class DailyServiceTimesValidityWithId(
@@ -415,7 +414,7 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
         .bind("childId", childId)
         .bind("range", range)
         .mapTo<DailyServiceTimesValidityWithId>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(

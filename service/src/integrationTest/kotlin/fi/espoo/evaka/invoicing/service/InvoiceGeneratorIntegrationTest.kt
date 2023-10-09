@@ -6567,7 +6567,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     .trimIndent()
             )
             .map(toInvoice)
-            .list()
+            .toList()
             .let(::flatten)
             .shuffled() // randomize order to expose assumptions
     }

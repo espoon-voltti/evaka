@@ -20,7 +20,7 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest)
         .bindKotlin(template)
         .bind("content", DocumentTemplateContent(sections = emptyList()))
         .mapTo<DocumentTemplate>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.duplicateTemplate(
@@ -38,7 +38,7 @@ fun Database.Transaction.duplicateTemplate(
         .bind("id", id)
         .bindKotlin(template)
         .mapTo<DocumentTemplate>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
@@ -50,14 +50,13 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
                 .trimIndent()
         )
         .mapTo<DocumentTemplateSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
     return createQuery("SELECT * FROM document_template WHERE id = :id")
         .bind("id", id)
-        .mapTo<DocumentTemplate>()
-        .firstOrNull()
+        .exactlyOneOrNull<DocumentTemplate>()
 }
 
 fun Database.Transaction.updateDraftTemplateContent(

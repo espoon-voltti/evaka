@@ -139,4 +139,4 @@ ORDER BY name
         .bind("type", type)
         .bind("from", from)
         .mapTo<UnitStub>()
-        .list()
+        .toList()

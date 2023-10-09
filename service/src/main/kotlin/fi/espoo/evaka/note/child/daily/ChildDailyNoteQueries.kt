@@ -31,12 +31,12 @@ WHERE ${predicate(predicate.forTable("cdn"))}
         .mapTo<ChildDailyNote>()
 
 fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
-    getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).firstOrNull()
+    getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
 
 fun Database.Read.getChildDailyNotesForChildren(
     children: Collection<ChildId>,
 ): List<ChildDailyNote> =
-    getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).list()
+    getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildDailyNotesForGroup(
     groupId: GroupId,
@@ -55,7 +55,7 @@ $it.child_id IN (
                 )
             }
         )
-        .list()
+        .toList()
 
 fun Database.Transaction.createChildDailyNote(
     childId: ChildId,
@@ -73,7 +73,7 @@ RETURNING id
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDailyNoteId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateChildDailyNote(
@@ -101,7 +101,7 @@ RETURNING *
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDailyNote>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {

@@ -83,12 +83,12 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> :today
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
-        val familyMembersNow =
-            tx.createQuery(sql).bind("today", clock.today()).bind("id", adultId).map { row ->
-                toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider)
-            }
-
-        val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
+        val (adults, children) =
+            tx.createQuery(sql)
+                .bind("today", clock.today())
+                .bind("id", adultId)
+                .map { row -> toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider) }
+                .useIterable { rows -> rows.partition { it.headOfChild == null } }
 
         if (adults.isEmpty()) {
             throw NotFound("No adult found")

@@ -18,4 +18,4 @@ WHERE child_id = ${bind(childId)}
             )
         }
         .mapTo<AssistanceNeedCapacityFactor>()
-        .list()
+        .toList()

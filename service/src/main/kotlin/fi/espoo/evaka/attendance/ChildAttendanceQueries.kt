@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.json.Json
 
 fun Database.Transaction.insertAttendance(
     childId: ChildId,
@@ -46,7 +45,7 @@ fun Database.Transaction.insertAttendance(
         .bind("endTime", endTime?.withSecond(0)?.withNano(0))
         .executeAndReturnGeneratedKeys()
         .mapTo<AttendanceId>()
-        .single()
+        .exactlyOne()
 }
 
 fun Database.Read.getChildAttendance(
@@ -71,8 +70,7 @@ fun Database.Read.getChildAttendance(
         .bind("unitId", unitId)
         .bind("date", now.toLocalDate())
         .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
-        .mapTo<ChildAttendance>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildAttendance>()
 }
 
 data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
@@ -86,8 +84,7 @@ fun Database.Read.getChildOngoingAttendance(
         )
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .mapTo<OngoingAttendance>()
-        .firstOrNull()
+        .exactlyOneOrNull<OngoingAttendance>()
 
 data class ChildBasics(
     val id: ChildId,
@@ -229,12 +226,9 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, now: HelsinkiDateTime):
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("date", now.toLocalDate())
-        .mapTo<ChildBasicsRow>()
-        .map { it.toChildBasics() }
-        .list()
+    return createQuery(sql).bind("unitId", unitId).bind("date", now.toLocalDate()).toList {
+        row<ChildBasicsRow>().toChildBasics()
+    }
 }
 
 private data class UnitChildAttendancesRow(
@@ -267,7 +261,7 @@ WHERE
         .bind("unitId", unitId)
         .bind("today", now.toLocalDate())
         .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
-        .mapTo<UnitChildAttendancesRow>()
+        .toList<UnitChildAttendancesRow>()
         .groupBy { it.childId }
         .mapValues {
             it.value
@@ -296,11 +290,6 @@ WHERE
         .filter { it.value.isNotEmpty() }
 }
 
-private data class UnitChildAbsencesRow(
-    val childId: ChildId,
-    @Json val absences: List<ChildAbsence>
-)
-
 fun Database.Read.getUnitChildAbsences(
     unitId: DaycareId,
     date: LocalDate,
@@ -322,12 +311,8 @@ GROUP BY a.child_id
         )
         .bind("unitId", unitId)
         .bind("date", date)
-        .mapTo<UnitChildAbsencesRow>()
-        .associateBy { it.childId }
-        .mapValues { it.value.absences }
+        .toMap { column<ChildId>("child_id") to jsonColumn<List<ChildAbsence>>("absences") }
 }
-
-private data class ChildPlacementTypeRow(val childId: ChildId, val placementType: PlacementType)
 
 fun Database.Read.getChildPlacementTypes(
     childIds: Set<ChildId>,
@@ -342,9 +327,7 @@ WHERE p.child_id = ANY(:childIds) AND :today BETWEEN p.start_date AND p.end_date
         )
         .bind("childIds", childIds)
         .bind("today", today)
-        .mapTo<ChildPlacementTypeRow>()
-        .associateBy { it.childId }
-        .mapValues { it.value.placementType }
+        .toMap { columnPair("child_id", "placement_type") }
 }
 
 fun Database.Read.getChildAttendanceStartDatesByRange(
@@ -363,7 +346,7 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
         .bind("period", period)
         .bind("childId", childId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {

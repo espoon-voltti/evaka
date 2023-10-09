@@ -16,8 +16,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -242,7 +240,7 @@ fun Database.Read.getGroupName(groupId: GroupId): String? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<String>().firstOrNull()
+    return createQuery(sql).bind("groupId", groupId).exactlyOneOrNull<String>()
 }
 
 fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
@@ -255,7 +253,7 @@ fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<DaycareId>().first()
+    return createQuery(sql).bind("groupId", groupId).mapTo<DaycareId>().exactlyOne()
 }
 
 // language=sql
@@ -337,10 +335,10 @@ fun Database.Read.getAbsencesInGroupByRange(
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("dateRange", range)
-        .map { row ->
-            val childId: ChildId = row.mapColumn("child_id")
-            val date: LocalDate = row.mapColumn("date")
-            val absence: AbsenceWithModifierInfo = row.mapRow()
+        .toList {
+            val childId: ChildId = column("child_id")
+            val date: LocalDate = column("date")
+            val absence: AbsenceWithModifierInfo = row()
             Pair(childId, date) to absence
         }
         .groupBy({ it.first }, { it.second })
@@ -356,7 +354,7 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().list()
+    return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().toList()
 }
 
 data class ChildAbsenceDateRow(val childId: ChildId, val date: LocalDate)
@@ -375,7 +373,7 @@ fun Database.Read.getAbsenceDatesForChildrenInRange(
         )
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ChildAbsenceDateRow>()
+        .toList<ChildAbsenceDateRow>()
         .groupBy({ it.childId }, { it.date })
         .mapValues { (_, dates) -> dates.toSet() }
 }
@@ -398,9 +396,7 @@ AND daterange(bc.start_date, bc.end_date, '[]') && :period
         )
         .bind("groupId", groupId)
         .bind("period", period)
-        .map { row ->
-            row.mapColumn<ChildId>("child_id") to row.mapColumn<FiniteDateRange>("period")
-        }
+        .toList { column<ChildId>("child_id") to column<FiniteDateRange>("period") }
         .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
@@ -431,17 +427,14 @@ AND EXISTS (
         )
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
-        .map { row ->
-            val childId: ChildId = row.mapColumn("child_id")
-            val date: LocalDate = row.mapColumn("date")
+        .toList {
+            val childId: ChildId = column("child_id")
+            val date: LocalDate = column("date")
             val reservation =
                 ChildReservation(
-                    Reservation.fromLocalTimes(
-                        row.mapColumn("start_time"),
-                        row.mapColumn("end_time")
-                    ),
-                    row.mapColumn("created_by_evaka_user_type"),
-                    row.mapColumn("created_date")
+                    Reservation.fromLocalTimes(column("start_time"), column("end_time")),
+                    column("created_by_evaka_user_type"),
+                    column("created_date")
                 )
             Pair(childId, date) to reservation
         }
@@ -507,5 +500,4 @@ WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
         .mapTo<DailyServiceTimeRow>()
-        .map { toDailyServiceTimes(it) }
-        .groupBy { it.childId }
+        .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.groupBy { it.childId } }

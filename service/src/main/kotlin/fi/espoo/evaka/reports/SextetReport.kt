@@ -114,7 +114,7 @@ ORDER BY d.name
         .bind("to", to)
         .bind("placementType", placementType)
         .mapTo<SextetReportRow>()
-        .list()
+        .toList()
 }
 
 data class SextetReportRow(

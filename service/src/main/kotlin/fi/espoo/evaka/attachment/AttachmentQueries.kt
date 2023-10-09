@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.lang.IllegalArgumentException
 
@@ -81,13 +80,12 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
         """
         )
         .bind("id", id)
-        .map { row ->
-            val applicationId = row.mapColumn<ApplicationId?>("application_id")
-            val incomeStatementId = row.mapColumn<IncomeStatementId?>("income_statement_id")
-            val messageDraftId = row.mapColumn<MessageDraftId?>("message_draft_id")
-            val messageContentId = row.mapColumn<MessageContentId?>("message_content_id")
-            val pedagogicalDocumentId =
-                row.mapColumn<PedagogicalDocumentId?>("pedagogical_document_id")
+        .exactlyOneOrNull {
+            val applicationId = column<ApplicationId?>("application_id")
+            val incomeStatementId = column<IncomeStatementId?>("income_statement_id")
+            val messageDraftId = column<MessageDraftId?>("message_draft_id")
+            val messageContentId = column<MessageContentId?>("message_content_id")
+            val pedagogicalDocumentId = column<PedagogicalDocumentId?>("pedagogical_document_id")
             val attachedTo =
                 if (applicationId != null) {
                     AttachmentParent.Application(applicationId)
@@ -104,13 +102,12 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
                 }
 
             Attachment(
-                id = row.mapColumn("id"),
-                name = row.mapColumn("name"),
-                contentType = row.mapColumn("content_type"),
+                id = column("id"),
+                name = column("name"),
+                contentType = column("content_type"),
                 attachedTo = attachedTo
             )
         }
-        .firstOrNull()
 
 fun Database.Transaction.deleteAttachment(id: AttachmentId) {
     this.createUpdate("DELETE FROM attachment WHERE id = :id").bind("id", id).execute()
@@ -216,7 +213,7 @@ fun Database.Read.userUnparentedAttachmentCount(userId: EvakaUserId): Int {
         )
         .bind("userId", userId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.userApplicationAttachmentCount(
@@ -229,7 +226,7 @@ fun Database.Read.userApplicationAttachmentCount(
         .bind("applicationId", applicationId)
         .bind("userId", userId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.userIncomeStatementAttachmentCount(
@@ -242,7 +239,7 @@ fun Database.Read.userIncomeStatementAttachmentCount(
         .bind("incomeStatementId", incomeStatementId)
         .bind("userId", userId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUserId): Int {
@@ -252,7 +249,7 @@ fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUse
         .bind("incomeId", incomeId)
         .bind("userId", userId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.userPedagogicalDocumentCount(
@@ -265,7 +262,7 @@ fun Database.Read.userPedagogicalDocumentCount(
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .bind("userId", userId)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.associateFeeAlterationAttachments(

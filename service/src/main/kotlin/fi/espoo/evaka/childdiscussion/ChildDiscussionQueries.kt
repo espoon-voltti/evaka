@@ -17,7 +17,7 @@ fun Database.Read.getChildDiscussionById(id: ChildDiscussionId): ChildDiscussion
         WHERE id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<ChildDiscussionData>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ChildDiscussionData>()
 }
 
 fun Database.Read.getChildDiscussions(childId: ChildId): List<ChildDiscussionData> {
@@ -29,7 +29,7 @@ fun Database.Read.getChildDiscussions(childId: ChildId): List<ChildDiscussionDat
         ORDER BY created DESC
         """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<ChildDiscussionData>().list()
+    return createQuery(sql).bind("childId", childId).mapTo<ChildDiscussionData>().toList()
 }
 
 fun Database.Transaction.createChildDiscussion(
@@ -49,7 +49,7 @@ fun Database.Transaction.createChildDiscussion(
         .bindKotlin(dto)
         .executeAndReturnGeneratedKeys()
         .mapTo<ChildDiscussionId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateChildDiscussion(id: ChildDiscussionId, dto: ChildDiscussionBody) {

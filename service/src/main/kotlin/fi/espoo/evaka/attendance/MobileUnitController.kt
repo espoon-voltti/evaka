@@ -114,7 +114,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             .trimIndent()
 
     val unit =
-        createQuery(unitSql).bind("unitId", unitId).mapTo<UnitBasics>().list().firstOrNull()
+        createQuery(unitSql).bind("unitId", unitId).mapTo<UnitBasics>().toList().firstOrNull()
             ?: throw NotFound("Unit $unitId not found")
 
     val holidays = getHolidays(date.toFiniteDateRange())
@@ -211,7 +211,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             .bind("unitId", unitId)
             .bind("date", date)
             .mapTo<TempGroupInfo>()
-            .list()
+            .toList()
 
     val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }
     val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }
@@ -249,7 +249,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             )
             .bind("id", unitId)
             .mapTo<Staff>()
-            .list()
+            .toList()
 
     return UnitInfo(
         id = unit.id,

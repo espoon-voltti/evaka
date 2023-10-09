@@ -9,8 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -30,7 +28,7 @@ WHERE child_id = :childId
         )
         .bind("childId", childId)
         .mapTo<ChildConsent>()
-        .list()
+        .toList()
 
 fun Database.Read.getCitizenChildConsentsForGuardian(
     guardianId: PersonId,
@@ -56,7 +54,7 @@ WHERE EXISTS(
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapRow<CitizenChildConsent?>()) }
+        .toList { column<ChildId>("child_id") to row<CitizenChildConsent?>() }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }
 
@@ -120,8 +118,7 @@ RETURNING id
         .bind("type", type)
         .bind("given", given)
         .bind("givenBy", givenBy)
-        .mapTo<ChildConsentId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<ChildConsentId>() != null
 
 fun Database.Read.getCitizenConsentedChildConsentTypes(
     guardianId: PersonId,
@@ -147,8 +144,6 @@ WHERE EXISTS(
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .map { row ->
-            Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type"))
-        }
+        .toList { column<ChildId>("child_id") to column<ChildConsentType?>("type") }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }

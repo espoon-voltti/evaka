@@ -177,7 +177,7 @@ fun validateServiceNeed(
         .bind("placementId", placementId)
         .bind("optionId", optionId)
         .mapTo<Int>()
-        .list()
+        .toList()
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
 
     // language=sql
@@ -193,7 +193,7 @@ fun validateServiceNeed(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<Int>()
-        .list()
+        .toList()
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }
 

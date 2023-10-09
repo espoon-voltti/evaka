@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
-import kotlin.jvm.optionals.getOrNull
 import org.jdbi.v3.json.Json
 
 data class NewEmployee(
@@ -72,8 +71,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
         .bindKotlin("employee", employee)
         .executeAndReturnGeneratedKeys()
         .mapTo<Employee>()
-        .asSequence()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
@@ -102,7 +100,7 @@ RETURNING id, preferred_first_name, first_name, last_name, email, external_id, c
         .bind("now", clock.now())
         .executeAndReturnGeneratedKeys()
         .mapTo<Employee>()
-        .first()
+        .exactlyOne()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
     createQuery(
@@ -119,7 +117,7 @@ WHERE id = :id
         )
         .bind("id", id)
         .mapTo<EmployeeRoles>()
-        .first()
+        .exactlyOne()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
     createQuery(
@@ -131,14 +129,13 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<String>()
-        .firstOrNull()
+        .exactlyOneOrNull<String>()
 
 private fun Database.Read.searchEmployees(
     id: EmployeeId? = null,
     externalId: ExternalId? = null,
     temporaryInUnitId: DaycareId? = null
-) =
+): Database.Result<Employee> =
     createQuery(
             // language=SQL
             """
@@ -153,7 +150,6 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.exte
         .bind("externalId", externalId)
         .bind("temporaryInUnitId", temporaryInUnitId)
         .mapTo<Employee>()
-        .asSequence()
 
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) =
     createQuery(
@@ -168,7 +164,6 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
         )
         .bind("id", id)
         .mapTo<Employee>()
-        .asSequence()
 
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
 
@@ -178,10 +173,11 @@ fun Database.Read.getTemporaryEmployees(unitId: DaycareId): List<Employee> =
 fun Database.Read.getFinanceDecisionHandlers(): List<Employee> =
     searchFinanceDecisionHandlers().toList()
 
-fun Database.Read.getEmployee(id: EmployeeId): Employee? = searchEmployees(id = id).firstOrNull()
+fun Database.Read.getEmployee(id: EmployeeId): Employee? =
+    searchEmployees(id = id).exactlyOneOrNull()
 
 fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? =
-    searchEmployees(externalId = externalId).firstOrNull()
+    searchEmployees(externalId = externalId).exactlyOneOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) =
     createQuery(
@@ -210,7 +206,7 @@ WHERE id = :id
         .execute()
 
 fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? =
-    createEmployeeUserQuery("WHERE id = :id").bind("id", id).mapTo<EmployeeUser>().singleOrNull()
+    createEmployeeUserQuery("WHERE id = :id").bind("id", id).exactlyOneOrNull<EmployeeUser>()
 
 fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles? {
     // language=SQL
@@ -235,7 +231,7 @@ WHERE id = :id
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<EmployeeWithDaycareRoles>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
@@ -354,8 +350,7 @@ fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
     createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
         .bind("userId", userId)
         .mapTo<PinCode>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
     createQuery(
@@ -373,7 +368,7 @@ SELECT EXISTS (
         .bind("employeeId", employeeId)
         .bind("pin", pin)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) =
     createUpdate(
@@ -407,15 +402,13 @@ RETURNING locked
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {

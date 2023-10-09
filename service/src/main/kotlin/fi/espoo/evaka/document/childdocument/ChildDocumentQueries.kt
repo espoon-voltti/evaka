@@ -27,7 +27,7 @@ fun Database.Transaction.insertChildDocument(
         .bind("content", DocumentContent(answers = emptyList()))
         .bind("now", now)
         .mapTo<ChildDocumentId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
@@ -41,7 +41,7 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
         )
         .bind("childId", childId)
         .mapTo<ChildDocumentSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
@@ -73,8 +73,7 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
         """
         )
         .bind("id", id)
-        .mapTo<ChildDocumentDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
 fun Database.Transaction.updateChildDocumentContent(
@@ -104,8 +103,7 @@ fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boole
     """
         )
         .bind("id", id)
-        .mapTo<Boolean>()
-        .firstOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: throw NotFound("Document $id not found")
 }
 

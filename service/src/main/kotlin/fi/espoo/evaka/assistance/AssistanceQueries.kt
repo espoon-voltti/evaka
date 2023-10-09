@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import kotlin.jvm.optionals.getOrNull
 
 private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
     QuerySql.of<DatabaseTable.AssistanceFactor> {
@@ -31,13 +30,12 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
         .mapTo<AssistanceFactor>()
-        .list()
+        .toList()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
         .mapTo<AssistanceFactor>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
@@ -56,7 +54,7 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<AssistanceFactorId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.updateAssistanceFactor(
     user: AuthenticatedUser,
@@ -90,8 +88,7 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<AssistanceFactor>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {
@@ -104,7 +101,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<DaycareAssistance>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
@@ -123,7 +120,7 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareAssistanceId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.updateDaycareAssistance(
     user: AuthenticatedUser,
@@ -163,7 +160,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<PreschoolAssistance>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
@@ -182,7 +179,7 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<PreschoolAssistanceId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.updatePreschoolAssistance(
     user: AuthenticatedUser,
@@ -222,7 +219,7 @@ WHERE child_id = ${bind(child)}
             )
         }
         .mapTo<OtherAssistanceMeasure>()
-        .list()
+        .toList()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
@@ -241,7 +238,7 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .mapTo<OtherAssistanceMeasureId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.updateOtherAssistanceMeasure(
     user: AuthenticatedUser,

@@ -176,8 +176,7 @@ fun Database.Transaction.insertValidReservations(
                     bind("start", it.range.start).bind("end", it.range.end)
                 }
             }
-            .mapTo<AttendanceReservationId>()
-            .singleOrNull()
+            .exactlyOneOrNull<AttendanceReservationId>()
     }
 }
 
@@ -211,9 +210,12 @@ fun Database.Read.getUnitReservations(
         .bind("unitId", unitId)
         .bind("date", date)
         .mapTo<ReservationRow>()
-        .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
-        .groupBy({ it.first }, { it.second })
-        .mapValues { (_, value) -> value.sorted() }
+        .useIterable { rows ->
+            rows
+                .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { (_, value) -> value.sorted() }
+        }
 
 fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
@@ -231,7 +233,7 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
         .bind("range", range)
         .bind("childId", childId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 }
 
 data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
@@ -250,7 +252,7 @@ fun Database.Read.getReservationDatesForChildrenInRange(
         )
         .bind("range", range)
         .bind("childIds", childIds)
-        .mapTo<ChildReservationDateRow>()
+        .toList<ChildReservationDateRow>()
         .groupBy({ it.childId }, { it.date })
         .mapValues { (_, value) -> value.toSet() }
 }
@@ -390,7 +392,7 @@ ORDER BY p.date_of_birth, p.duplicate_of
         .bind("guardianId", guardianId)
         .bind("today", today)
         .mapTo<ReservationChild>()
-        .list()
+        .toList()
 }
 
 data class ReservationPlacement(
@@ -439,7 +441,7 @@ WHERE
     return createQuery(sql)
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationPlacementRow>()
+        .toList<ReservationPlacementRow>()
         .groupBy { it.placementId }
         .map { (_, rows) ->
             ReservationPlacement(
@@ -490,14 +492,9 @@ WHERE
         )
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ReservationBackupPlacement>()
+        .toList<ReservationBackupPlacement>()
         .groupBy { it.childId }
 }
-
-private data class ChildContractDays(
-    val childId: ChildId,
-    val contractDays: DateSet,
-)
 
 fun Database.Read.getReservationContractDayRanges(
     childIds: Set<PersonId>,
@@ -522,6 +519,5 @@ fun Database.Read.getReservationContractDayRanges(
         )
         .bind("childIds", childIds)
         .bind("range", range)
-        .mapTo<ChildContractDays>()
-        .associate { it.childId to it.contractDays }
+        .toMap { columnPair("child_id", "contract_days") }
 }

@@ -504,21 +504,17 @@ LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = 
 WHERE decision.id = :id
 """
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<VoucherValueDecisionDetailed>()
-        .singleOrNull()
-        ?.let {
-            it.copy(
-                partnerIsCodebtor =
-                    partnerIsCodebtor(
-                        it.headOfFamily.id,
-                        it.partner?.id,
-                        listOf(it.child.id),
-                        DateRange(it.validFrom, it.validTo)
-                    )
-            )
-        }
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VoucherValueDecisionDetailed>()?.let {
+        it.copy(
+            partnerIsCodebtor =
+                partnerIsCodebtor(
+                    it.headOfFamily.id,
+                    it.partner?.id,
+                    listOf(it.child.id),
+                    DateRange(it.validFrom, it.validTo)
+                )
+        )
+    }
 }
 
 fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
@@ -605,7 +601,7 @@ fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId)
     // language=sql
     val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
 
-    return createQuery(sql).bind("id", id).mapTo<String>().singleOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.updateVoucherValueDecisionDocumentKey(

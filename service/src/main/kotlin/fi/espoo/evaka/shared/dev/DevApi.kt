@@ -675,7 +675,7 @@ RETURNING id
                     .bindKotlin(employee)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<EmployeeId>()
-                    .single()
+                    .exactlyOne()
             }
         }
 
@@ -826,8 +826,7 @@ RETURNING id
                 val uuid =
                     tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                         .bind("ssn", person.socialSecurityNumber)
-                        .mapTo<PersonId>()
-                        .firstOrNull()
+                        .exactlyOneOrNull<PersonId>()
 
                 uuid?.let {
                     // Refresh Pis data by forcing refresh from VTJ
@@ -1771,7 +1770,7 @@ AND state != 'idle'
                 .trimIndent()
         )
         .mapTo<ActiveConnection>()
-        .list()
+        .toList()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
@@ -1798,9 +1797,9 @@ fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: Extern
         createQuery("SELECT id FROM employee WHERE external_id = :externalId")
             .bind("externalId", externalId)
             .mapTo<EmployeeId>()
-            .findOne()
-    if (employeeId.isPresent) {
-        deleteAndCascadeEmployee(employeeId.get())
+            .exactlyOneOrNull()
+    if (employeeId != null) {
+        deleteAndCascadeEmployee(employeeId)
     }
 }
 

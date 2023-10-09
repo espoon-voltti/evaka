@@ -31,7 +31,7 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).map(toParentship("child", "head")).firstOrNull()
+    return createQuery(sql).bind("id", id).map(toParentship("child", "head")).exactlyOneOrNull()
 }
 
 fun Database.Read.getParentships(
@@ -102,7 +102,7 @@ fun Database.Transaction.createParentship(
         .bind("endDate", endDate)
         .bind("conflict", conflict)
         .map(toParentship("child", "head"))
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateParentshipDuration(
@@ -130,7 +130,7 @@ fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 
-    return createQuery(sql).bind("id", id).mapTo<ParentshipId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ParentshipId>() != null
 }
 
 fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
@@ -145,7 +145,7 @@ SELECT EXISTS(
         .bind("personId", personId)
         .bind("date", date)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 internal val aliasedPersonColumns: (String) -> String = { table ->

@@ -27,7 +27,7 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
         .bindKotlin(data)
         .bind("childId", childId)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(
@@ -41,7 +41,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientById(
         WHERE id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedVoucherCoefficient>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
         ?: throw NotFound("Assistance need voucher coefficient $id not found")
 }
 
@@ -59,7 +59,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
     return createQuery(sql)
         .bind("childId", childId)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
@@ -80,8 +80,7 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     return createQuery(sql)
         .bindKotlin(data)
         .bind("id", id)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .firstOrNull()
+        .exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
         ?: throw NotFound("Assistance need voucher coefficient $id not found")
 }
 
@@ -95,7 +94,7 @@ fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
         RETURNING id, child_id, coefficient, validity_period
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedVoucherCoefficient>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
 }
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
@@ -115,5 +114,5 @@ fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
         .bind("childId", childId)
         .bind("range", range)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .list()
+        .toList()
 }

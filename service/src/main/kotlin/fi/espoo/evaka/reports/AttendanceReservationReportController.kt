@@ -265,7 +265,7 @@ WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
             )
         }
         .mapTo<AssistanceNeedRow>()
-        .list()
+        .toList()
 
 private data class ReservationRow(
     val date: LocalDate,
@@ -293,7 +293,7 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL;
         .bind("start", start)
         .bind("end", end)
         .bind("children", children.toTypedArray())
-        .mapTo<ReservationRow>()
+        .toList<ReservationRow>()
         .groupBy(
             keySelector = { it.childId },
             valueTransform = {
@@ -324,7 +324,7 @@ WHERE ab.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ab.date;
         .bind("start", start)
         .bind("end", end)
         .bind("children", children.toTypedArray())
-        .mapTo<AbsenceRow>()
+        .toList<AbsenceRow>()
         .groupBy(keySelector = { it.childId }, valueTransform = { it.date })
 }
 

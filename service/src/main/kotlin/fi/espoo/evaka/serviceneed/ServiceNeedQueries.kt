@@ -106,7 +106,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<ServiceNeed>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeed>()
         ?: throw NotFound("Service need $id not found")
 }
 
@@ -121,7 +121,7 @@ fun Database.Read.getServiceNeedChildRange(id: ServiceNeedId): ServiceNeedChildR
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<ServiceNeedChildRange>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeedChildRange>()
         ?: throw NotFound("Service need $id not found")
 }
 
@@ -151,7 +151,7 @@ fun Database.Transaction.insertServiceNeed(
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
         .mapTo<ServiceNeedId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateServiceNeed(
@@ -212,7 +212,7 @@ fun Database.Read.getOverlappingServiceNeeds(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .mapTo<ServiceNeed>()
-        .list()
+        .toList()
         .filter { it.id != excluding }
 }
 
@@ -247,7 +247,7 @@ ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_f
                 .trimIndent()
         )
         .mapTo<ServiceNeedOption>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
@@ -280,8 +280,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<ServiceNeedOption>()
-        .firstOrNull()
+        .exactlyOneOrNull<ServiceNeedOption>()
 }
 
 fun Database.Read.getServiceNeedOptionPublicInfos(
@@ -301,7 +300,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
     return createQuery(sql)
         .bind("placementTypes", placementTypes)
         .mapTo<ServiceNeedOptionPublicInfo>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getGroupedActualServiceNeedInfosByRangeAndUnit(

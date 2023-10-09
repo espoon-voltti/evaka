@@ -9,7 +9,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.Instant
@@ -40,7 +39,7 @@ fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
         )
         .bind("evaka_child_id", evakaChildId)
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,
@@ -224,7 +223,7 @@ WHERE update_failed = true
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
         .mapTo<ChangedChildServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
@@ -245,7 +244,7 @@ WHERE evaka_child_id = :evakaChildId
         )
         .bind("evakaChildId", evakaChildId)
         .mapTo<VardaServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
     eVakaServiceNeedId: ServiceNeedId
@@ -267,8 +266,7 @@ WHERE evaka_service_need_id = :eVakaServiceNeedId
 """
         )
         .bind("eVakaServiceNeedId", eVakaServiceNeedId)
-        .mapTo<VardaServiceNeed>()
-        .firstOrNull()
+        .exactlyOneOrNull<VardaServiceNeed>()
 
 fun Database.Read.getServiceNeedFeeData(
     serviceNeedId: ServiceNeedId,
@@ -338,7 +336,7 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
         .bind("feeDecisionStatus", feeDecisionStatus)
         .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
         .mapTo<FeeDataByServiceNeed>()
-        .list()
+        .toList()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
     // The default application date is set to be 15 days before the start because it's the minimum
@@ -389,8 +387,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
     return createQuery(sql)
         .bind("id", id)
         .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
-        .mapTo<EvakaServiceNeedInfoForVarda>()
-        .firstOrNull()
+        .exactlyOneOrNull<EvakaServiceNeedInfoForVarda>()
         ?: throw NotFound("Service need $id not found")
 }
 
@@ -423,7 +420,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
         )
         .bind("serviceNeedId", serviceNeedId)
         .mapTo<Boolean>()
-        .list()
+        .toList()
         .isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
@@ -458,7 +455,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
 fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
         .mapTo<ChildId>()
-        .list()
+        .toList()
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
     createUpdate(
@@ -481,8 +478,7 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
         """
                 .trimIndent()
         )
-        .mapTo<VardaChildIdPair>()
-        .associate { it.vardaChildId to it.evakaChildId }
+        .toMap { columnPair("varda_child_id", "evaka_child_id") }
 
 fun Database.Transaction.getVardaChildrenToReset(
     limit: Int,
@@ -535,7 +531,7 @@ fun Database.Transaction.getVardaChildrenToReset(
         )
         .bind("limit", limit)
         .mapTo<ChildId>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.calculateDeletedChildServiceNeeds(
@@ -569,8 +565,4 @@ GROUP BY evaka_child_id
         )
         .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .map { row ->
-            row.mapColumn<ChildId>("child_id") to
-                row.mapColumn<List<ServiceNeedId>>("service_need_ids")
-        }
-        .toMap()
+        .toMap { columnPair("child_id", "service_need_ids") }

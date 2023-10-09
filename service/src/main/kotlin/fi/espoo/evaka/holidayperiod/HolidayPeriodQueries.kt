@@ -17,18 +17,17 @@ fun Database.Read.getHolidayPeriodsInRange(
         )
         .bind("range", range)
         .mapTo<HolidayPeriod>()
-        .list()
+        .toList()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
         .mapTo<HolidayPeriod>()
-        .list()
+        .toList()
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE id = :id")
         .bind("id", id)
-        .mapTo<HolidayPeriod>()
-        .firstOrNull()
+        .exactlyOneOrNull<HolidayPeriod>()
 
 fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
@@ -45,7 +44,7 @@ RETURNING *
         .bind("period", period)
         .bind("reservationDeadline", reservationDeadline)
         .mapTo<HolidayPeriod>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,

@@ -10,8 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -77,7 +75,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         .bind("rangeEnd", now.atEndOfDay())
         .bind("now", now)
         .mapTo<StaffMember>()
-        .list()
+        .toList()
 
 fun Database.Read.getExternalStaffAttendance(
     id: StaffAttendanceExternalId,
@@ -92,8 +90,7 @@ fun Database.Read.getExternalStaffAttendance(
         )
         .bind("id", id)
         .bind("now", now)
-        .mapTo<ExternalStaffMember>()
-        .firstOrNull()
+        .exactlyOneOrNull<ExternalStaffMember>()
 
 fun Database.Read.getExternalStaffAttendances(
     unitId: DaycareId,
@@ -111,7 +108,7 @@ fun Database.Read.getExternalStaffAttendances(
         .bind("unitId", unitId)
         .bind("now", now)
         .mapTo<ExternalStaffMember>()
-        .list()
+        .toList()
 
 fun Database.Transaction.markStaffArrival(
     employeeId: EmployeeId,
@@ -134,7 +131,7 @@ fun Database.Transaction.markStaffArrival(
         .bind("occupancyCoefficient", occupancyCoefficient)
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffAttendanceId>()
-        .one()
+        .exactlyOne()
 
 data class StaffAttendance(
     val id: StaffAttendanceId?,
@@ -172,7 +169,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("type", type)
             .executeAndReturnGeneratedKeys()
             .mapTo<StaffAttendanceId>()
-            .single()
+            .exactlyOne()
     } else {
         createUpdate(
                 """
@@ -240,7 +237,7 @@ fun Database.Transaction.markExternalStaffArrival(
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffAttendanceExternalId>()
-        .one()
+        .exactlyOne()
 
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,
@@ -283,7 +280,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("occupancyCoefficient", occupancyCoefficient)
             .executeAndReturnGeneratedKeys()
             .mapTo<StaffAttendanceExternalId>()
-            .single()
+            .exactlyOne()
     } else {
         return createUpdate(
                 """
@@ -356,7 +353,7 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<RawAttendance>()
-        .list()
+        .toList()
 
 fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
@@ -413,7 +410,7 @@ WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_T
         .bind("start", start)
         .bind("end", end)
         .mapTo<RawAttendanceEmployee>()
-        .list()
+        .toList()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
@@ -432,9 +429,7 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<ExternalAttendance>()
-        .list()
-
-private data class EmployeeGroups(val employeeId: EmployeeId, val groupIds: List<GroupId>)
+        .toList()
 
 fun Database.Read.getGroupsForEmployees(
     unitId: DaycareId,
@@ -453,8 +448,7 @@ fun Database.Read.getGroupsForEmployees(
         )
         .bind("unitId", unitId)
         .bind("employeeIds", employeeIds)
-        .mapTo<EmployeeGroups>()
-        .associateBy({ it.employeeId }, { it.groupIds })
+        .toMap { columnPair("employee_id", "group_ids") }
 
 fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
     createUpdate(
@@ -510,7 +504,7 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
 }
 
 fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> =
-    createQuery("SELECT * FROM staff_attendance_realtime").mapTo<StaffMemberAttendance>().list()
+    createQuery("SELECT * FROM staff_attendance_realtime").mapTo<StaffMemberAttendance>().toList()
 
 fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
@@ -541,9 +535,7 @@ WHERE employee_id = ANY(:employeeIds) AND (tstzrange(start_time, end_time) && ts
         .bind("employeeIds", employeeIds)
         .bind("startTime", HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT))
         .bind("endTime", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT))
-        .map { row ->
-            Pair(row.mapColumn<EmployeeId>("employee_id"), row.mapRow<PlannedStaffAttendance>())
-        }
+        .toList { column<EmployeeId>("employee_id") to row<PlannedStaffAttendance>() }
         .groupBy({ it.first }, { it.second })
 
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? =
@@ -555,8 +547,7 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
         )
         .bind("employeeId", employeeId)
         .mapTo<StaffAttendance>()
-        .findOne()
-        .orElseGet { null }
+        .exactlyOneOrNull()
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
@@ -575,8 +566,7 @@ ORDER BY departed DESC LIMIT 1
         .bind("startOfToday", now.atStartOfDay())
         .bind("startOfTomorrow", now.plusDays(1).atStartOfDay())
         .mapTo<StaffAttendance>()
-        .findOne()
-        .orElseGet { null }
+        .exactlyOneOrNull()
 
 fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     unitId: DaycareId,

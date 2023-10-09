@@ -94,8 +94,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<FeeAlteration>()
-        .firstOrNull()
+        .exactlyOneOrNull<FeeAlteration>()
 }
 
 fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {

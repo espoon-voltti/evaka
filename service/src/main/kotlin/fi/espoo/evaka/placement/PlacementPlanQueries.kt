@@ -70,7 +70,7 @@ RETURNING id"""
         .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
         .executeAndReturnGeneratedKeys()
         .mapTo<PlacementPlanId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
@@ -93,8 +93,7 @@ WHERE application_id = :applicationId AND deleted = false
         )
         .bind("applicationId", applicationId)
         .mapTo<QueryResult>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
         ?.let {
             PlacementPlan(
                 id = it.id,
@@ -126,8 +125,8 @@ WHERE application_id = :applicationId AND deleted = false
         )
         .bind("applicationId", applicationId)
         .mapTo<String>()
-        .findOne()
-        .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
+        .exactlyOneOrNull()
+        ?: throw NotFound("Placement plan for application $applicationId not found")
 }
 
 fun Database.Read.getPlacementPlans(
@@ -191,7 +190,7 @@ WHERE
         .bind("to", to)
         .bind("statuses", statuses)
         .mapTo<QueryResult>()
-        .list()
+        .toList()
         .map {
             PlacementPlanDetails(
                 id = it.id,
@@ -254,7 +253,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
         )
         .bind("id", childId)
         .mapTo<PlacementDraftChild>()
-        .list()
+        .toList()
         .singleOrNull()
 }
 
@@ -294,4 +293,4 @@ AND pp.unit_confirmation_status != :unitConfirmationStatus::confirmation_status
         )
         .bind("unitConfirmationStatus", PlacementPlanConfirmationStatus.REJECTED)
         .mapTo<Int>()
-        .first()
+        .exactlyOne()

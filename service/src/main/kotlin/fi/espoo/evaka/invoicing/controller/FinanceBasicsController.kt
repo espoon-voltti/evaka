@@ -280,7 +280,7 @@ RETURNING id
         .bind("id", UUID.randomUUID())
         .executeAndReturnGeneratedKeys()
         .mapTo<FeeThresholdsId>()
-        .single()
+        .exactlyOne()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")

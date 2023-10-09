@@ -113,22 +113,28 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
         assertEquals(
             content,
-            db.read { it.createQuery("SELECT content FROM message_content").mapTo<String>().one() }
+            db.read {
+                it.createQuery("SELECT content FROM message_content").mapTo<String>().exactlyOne()
+            }
         )
         assertEquals(
             title,
-            db.read { it.createQuery("SELECT title FROM message_thread").mapTo<String>().one() }
+            db.read {
+                it.createQuery("SELECT title FROM message_thread").mapTo<String>().exactlyOne()
+            }
         )
         assertEquals(
             "Employee Firstname",
-            db.read { it.createQuery("SELECT sender_name FROM message").mapTo<String>().one() }
+            db.read {
+                it.createQuery("SELECT sender_name FROM message").mapTo<String>().exactlyOne()
+            }
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
             db.read {
                     it.createQuery("SELECT recipient_names FROM message")
                         .mapTo<Array<String>>()
-                        .one()
+                        .exactlyOne()
                 }
                 .toSet()
         )
@@ -350,7 +356,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
                         .bind("threadId", threadId)
                         .mapTo<MessageId>()
-                        .one()
+                        .exactlyOne()
                 it.getThreadByMessageId(messageId)
             }
         assertEquals(

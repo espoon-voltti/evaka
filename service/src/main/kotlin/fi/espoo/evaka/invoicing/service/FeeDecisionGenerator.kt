@@ -441,11 +441,7 @@ SELECT
 FROM service_need_option WHERE default_option
 """
                 )
-                .map { row ->
-                    row.mapColumn<PlacementType>("valid_placement_type") to
-                        row.mapRow<ServiceNeedValue>()
-                }
-                .toMap()
+                .toMap { column<PlacementType>("valid_placement_type") to row<ServiceNeedValue>() }
 
         val placementsWithServiceNeedOptions = run {
             placements.flatMap { placement ->

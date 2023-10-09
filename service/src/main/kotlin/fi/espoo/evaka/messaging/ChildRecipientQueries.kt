@@ -55,5 +55,5 @@ fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
     """
             .trimIndent()
 
-    return this.createQuery(sql).bind("childId", childId).mapTo<Recipient>().list()
+    return this.createQuery(sql).bind("childId", childId).mapTo<Recipient>().toList()
 }

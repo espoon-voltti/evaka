@@ -32,7 +32,7 @@ fun Database.Transaction.insertVasuTemplate(
         .bind("language", language)
         .bind("content", content)
         .mapTo<VasuTemplateId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
@@ -45,7 +45,7 @@ fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuTemplate>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplate>()
 }
 
 fun Database.Read.getVasuTemplates(
@@ -67,7 +67,7 @@ fun Database.Read.getVasuTemplates(
         )
         .apply { if (validOnly) bind("today", clock.today()) }
         .mapTo<VasuTemplateSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {
@@ -100,7 +100,7 @@ FOR UPDATE
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).mapTo<VasuTemplateSummary>().firstOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplateSummary>()
 }
 
 fun Database.Transaction.updateVasuTemplate(id: VasuTemplateId, params: VasuTemplateUpdate) {

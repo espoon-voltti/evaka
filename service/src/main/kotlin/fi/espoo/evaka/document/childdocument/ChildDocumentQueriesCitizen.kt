@@ -29,7 +29,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
         .bind("personId", user.id)
         .bind("childId", childId)
         .mapTo<ChildDocumentCitizenSummary>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
@@ -60,8 +60,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
         """
         )
         .bind("id", id)
-        .mapTo<ChildDocumentCitizenDetails>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildDocumentCitizenDetails>()
 }
 
 fun Database.Transaction.markChildDocumentAsRead(

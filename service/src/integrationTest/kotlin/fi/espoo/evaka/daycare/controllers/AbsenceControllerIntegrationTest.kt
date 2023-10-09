@@ -400,7 +400,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 """
                 )
                 .mapTo<Reservation>()
-                .list()
+                .toList()
         }
     }
 }

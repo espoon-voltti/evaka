@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import fi.espoo.evaka.shared.db.Database
 import java.math.BigDecimal
-import kotlin.jvm.optionals.getOrNull
 
 fun Database.Read.getOccupancyCoefficientForEmployeeInUnit(
     employeeId: EmployeeId,
@@ -27,8 +26,7 @@ WHERE daycare_id = :unitId AND employee_id = :employeeId
         .bind("unitId", unitId)
         .bind("employeeId", employeeId)
         .mapTo<BigDecimal>()
-        .findOne()
-        .getOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,
@@ -45,8 +43,7 @@ WHERE soc.employee_id = :employeeId
         )
         .bind("employeeId", employeeId)
         .bind("groupId", groupId)
-        .mapTo<BigDecimal>()
-        .firstOrNull()
+        .exactlyOneOrNull<BigDecimal>()
 
 fun Database.Read.getOccupancyCoefficientsByUnit(
     unitId: DaycareId
@@ -62,7 +59,7 @@ WHERE soc.daycare_id = :unitId
         )
         .bind("unitId", unitId)
         .mapTo<StaffOccupancyCoefficient>()
-        .list()
+        .toList()
 
 fun Database.Transaction.upsertOccupancyCoefficient(
     params: OccupancyCoefficientUpsert
@@ -79,4 +76,4 @@ RETURNING id
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
         .mapTo<StaffOccupancyCoefficientId>()
-        .single()
+        .exactlyOne()

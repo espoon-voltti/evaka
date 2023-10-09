@@ -59,8 +59,7 @@ data class CitizenUser(val id: PersonId)
 fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? =
     createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
         .bind("ssn", ssn)
-        .mapTo<CitizenUser>()
-        .firstOrNull()
+        .exactlyOneOrNull<CitizenUser>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(
@@ -74,15 +73,15 @@ WHERE id = :id
         )
         .bind("id", id)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
         .mapTo<Boolean>()
-        .findOne()
-        .orElse(false)
+        .exactlyOneOrNull()
+        ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
     createQuery(
@@ -97,7 +96,7 @@ FOR UPDATE
         )
         .bind("ssn", ssn)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery(
@@ -111,14 +110,14 @@ WHERE social_security_number = :ssn
         )
         .bind("ssn", ssn)
         .map(toPersonDTO)
-        .firstOrNull()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
     createQuery("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = :id")
         .bind("id", id)
         .map(toPersonDTO)
-        .list()
+        .toList()
 
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
@@ -195,7 +194,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         """
             .trimIndent()
 
-    return createQuery(sql).bindKotlin(person).mapTo<PersonId>().first()
+    return createQuery(sql).bindKotlin(person).mapTo<PersonId>().exactlyOne()
 }
 
 fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
@@ -214,7 +213,7 @@ fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
         .bind("dateOfBirth", evakaClock.today())
         .bind("email", "")
         .map(toPersonDTO)
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
@@ -258,7 +257,7 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .map(toPersonDTO)
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
@@ -325,8 +324,7 @@ RETURNING id
         .bind("id", id)
         .executeAndReturnGeneratedKeys()
         .mapTo<PersonId>()
-        .findOne()
-        .orElse(null)
+        .exactlyOneOrNull()
 
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL
@@ -355,7 +353,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .bind("ssn", person.identity)
         .map(toPersonDTO)
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updatePersonBasicContactInfo(
@@ -378,8 +376,7 @@ fun Database.Transaction.updatePersonBasicContactInfo(
         .bind("id", id)
         .bind("email", email)
         .bind("phone", phone)
-        .mapTo<PersonId>()
-        .firstOrNull() != null
+        .exactlyOneOrNull<PersonId>() != null
 }
 
 // Update those person fields which do not come from VTJ
@@ -402,7 +399,7 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
@@ -430,7 +427,7 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
@@ -508,7 +505,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
         order by source.relname, attr.attname
     """
             .trimIndent()
-    return createQuery(sql).mapTo<PersonReference>().list()
+    return createQuery(sql).mapTo<PersonReference>().toList()
 }
 
 fun Database.Read.getGuardianDependants(personId: PersonId) =

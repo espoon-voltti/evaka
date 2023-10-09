@@ -138,7 +138,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val absences =
             db.read {
-                it.createQuery("SELECT date FROM absence ORDER BY date").mapTo<LocalDate>().list()
+                it.createQuery("SELECT date FROM absence ORDER BY date").mapTo<LocalDate>().toList()
             }
         assertEquals(
             listOf(holidayPeriodStart.minusDays(1), holidayPeriodStart.plusDays(1)),
@@ -149,7 +149,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             db.read {
                 it.createQuery("SELECT date FROM attendance_reservation ORDER BY date")
                     .mapTo<LocalDate>()
-                    .list()
+                    .toList()
             }
         assertEquals(listOf(holidayPeriodEnd, holidayPeriodEnd.plusDays(1)), reservations)
     }

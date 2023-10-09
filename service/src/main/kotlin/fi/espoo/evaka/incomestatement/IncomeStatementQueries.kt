@@ -245,7 +245,7 @@ fun Database.Read.readIncomeStatementForPerson(
         .bind("personId", personId)
         .bind("id", incomeStatementId)
         .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
-        .firstOrNull()
+        .exactlyOneOrNull()
 
 private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
     this.bind("startDate", body.startDate)
@@ -403,7 +403,7 @@ RETURNING id
         .bind("personId", personId)
         .also { it.bindIncomeStatementBody(body) }
         .mapTo<IncomeStatementId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updateIncomeStatement(
@@ -567,7 +567,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             .bind("sentEndDate", sentEndDate)
             .bind("placementValidDate", placementValidDate)
             .mapTo<Int>()
-            .one()
+            .exactlyOne()
     val sortColumn =
         when (sortBy) {
             IncomeStatementSortParam.CREATED -> "i.created ${sortDirection.name}, i.start_date"
@@ -591,7 +591,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .mapTo<IncomeStatementAwaitingHandler>()
-            .list()
+            .toList()
 
     return if (rows.isEmpty()) {
         Paged(listOf(), 0, 1)
@@ -604,19 +604,19 @@ fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalD
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
         .bind("personId", personId)
         .mapTo<LocalDate>()
-        .list()
+        .toList()
 
 fun Database.Read.incomeStatementExistsForStartDate(
     personId: PersonId,
     startDate: LocalDate
 ): Boolean =
     createQuery(
-            "SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate"
+            "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
         )
         .bind("personId", personId)
         .bind("startDate", startDate)
-        .mapTo<Int>()
-        .any()
+        .mapTo<Boolean>()
+        .exactlyOne()
 
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 
@@ -641,4 +641,4 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .mapTo<ChildBasicInfo>()
-        .list()
+        .toList()

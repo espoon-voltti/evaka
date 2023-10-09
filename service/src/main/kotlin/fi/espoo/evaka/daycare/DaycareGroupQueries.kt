@@ -52,8 +52,7 @@ RETURNING id, daycare_id, name, start_date, end_date, true AS deletable
         .bind("startDate", startDate)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareGroup>()
-        .asSequence()
-        .first()
+        .exactlyOne()
 
 fun Database.Transaction.updateGroup(
     groupId: GroupId,
@@ -75,9 +74,7 @@ fun Database.Transaction.updateGroup(
 
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
     createDaycareGroupQuery(groupId = groupId, daycareId = null, period = null)
-        .mapTo<DaycareGroup>()
-        .asSequence()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareGroup>()
 
 fun Database.Read.getDaycareGroups(
     daycareId: DaycareId,
@@ -90,7 +87,6 @@ fun Database.Read.getDaycareGroups(
             period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate)
         )
         .mapTo<DaycareGroup>()
-        .asSequence()
         .toList()
 
 fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) =

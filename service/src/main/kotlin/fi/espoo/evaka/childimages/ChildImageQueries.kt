@@ -15,12 +15,11 @@ fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
     """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<ChildImageId>().one()
+    return createQuery(sql).bind("childId", childId).mapTo<ChildImageId>().exactlyOne()
 }
 
 fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {
     return createQuery("DELETE FROM child_images WHERE child_id = :childId RETURNING id")
         .bind("childId", childId)
-        .mapTo<ChildImageId>()
-        .firstOrNull()
+        .exactlyOneOrNull<ChildImageId>()
 }

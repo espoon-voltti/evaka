@@ -131,7 +131,7 @@ fun Database.Transaction.archiveThread(
                 .bind("accountId", accountId)
                 .executeAndReturnGeneratedKeys()
                 .mapTo<MessageThreadFolderId>()
-                .single()
+                .exactlyOne()
     }
 
     return this.createUpdate(
@@ -188,7 +188,7 @@ fun Database.Transaction.insertMessage(
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<MessageId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.insertMessageContent(
@@ -202,7 +202,7 @@ fun Database.Transaction.insertMessageContent(
         .bind("content", content)
         .bind("authorId", sender)
         .mapTo<MessageContentId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.insertRecipients(
@@ -313,8 +313,7 @@ RETURNING id
 
 fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
     createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
-        .mapTo<MessageAccountId>()
-        .singleOrNull()
+        .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
@@ -390,7 +389,7 @@ fun Database.Transaction.insertThread(
         .bind("urgent", urgent)
         .bind("isCopy", isCopy)
         .mapTo<MessageThreadId>()
-        .one()
+        .exactlyOne()
 }
 
 fun Database.Transaction.reAssociateMessageAttachments(
@@ -605,7 +604,7 @@ ORDER BY m.sent_at
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<Message>()
+        .toList<Message>()
         .groupBy { it.threadId }
 }
 
@@ -744,7 +743,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
         .bind("senderId", senderId)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<Message>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getCitizenReceivers(
@@ -862,7 +861,7 @@ ORDER BY type, name  -- groups first
     return this.createQuery(sql)
         .bind("accountId", accountId)
         .bind("today", today)
-        .mapTo<MessageAccountWithChildId>()
+        .toList<MessageAccountWithChildId>()
         .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }
@@ -968,8 +967,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             .trimIndent()
     return this.createQuery(sql)
         .bind("messageId", messageId)
-        .mapTo<ThreadWithParticipants>()
-        .firstOrNull()
+        .exactlyOneOrNull<ThreadWithParticipants>()
 }
 
 fun Database.Read.getMessageThread(
@@ -1007,7 +1005,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             .bind("accountId", accountId)
             .bind("threadId", threadId)
             .mapTo<ReceivedThread>()
-            .one()
+            .exactlyOne()
 
     val messagesByThread =
         getThreadMessages(
@@ -1052,12 +1050,12 @@ FROM message_thread t
 WHERE t.application_id = :applicationId
   AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
 GROUP BY t.id
+LIMIT 1
         """
             )
             .bind("accountId", accountId)
             .bind("applicationId", applicationId)
-            .mapTo<ReceivedThread>()
-            .firstOrNull()
+            .exactlyOneOrNull<ReceivedThread>()
 
     if (thread != null) {
         val messagesByThread =
@@ -1391,8 +1389,7 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
             "SELECT id FROM message_thread_folder WHERE owner_id = :accountId AND name = 'ARCHIVE'"
         )
         .bind("accountId", accountId)
-        .mapTo<MessageThreadFolderId>()
-        .firstOrNull()
+        .exactlyOneOrNull<MessageThreadFolderId>()
 
 data class MessageToUndo(
     val created: HelsinkiDateTime,
@@ -1418,8 +1415,8 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
             .bind("accountId", accountId)
             .bind("messageId", messageId)
             .mapTo<MessageToUndo>()
-            .findOne()
-            .orElseThrow { throw BadRequest("No message found with messageId $messageId") }
+            .exactlyOneOrNull()
+            ?: throw BadRequest("No message found with messageId $messageId")
 
     if (messageToUndo.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
         throw BadRequest(
@@ -1479,8 +1476,8 @@ WHERE c.id = :contentId
             )
             .bind("contentId", contentId)
             .mapTo<UpdatableDraftContent>()
-            .findOne()
-            .orElseThrow { error("Multiple draft contents found") }
+            .exactlyOneOrNull()
+            ?: error("Multiple draft contents found")
 
     this.deleteApplicationNotesLinkedToMessages(messagesToUndo.map { it.contentId }.toSet())
     this.deleteMessages(messagesToUndo)
@@ -1550,7 +1547,7 @@ SELECT EXISTS (
             )
         }
         .mapTo<Boolean>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
@@ -1565,4 +1562,4 @@ WHERE id = ${bind(id)}
             )
         }
         .mapTo<MessageThreadStub>()
-        .single()
+        .exactlyOne()

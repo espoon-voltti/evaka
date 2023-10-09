@@ -72,7 +72,7 @@ GROUP BY application.guardian_id
                         )
                         .bind("today", clock.today())
                         .mapTo<GuardianDecisions>()
-                        .list()
+                        .toList()
 
                 val createdJobCount =
                     pendingGuardianDecisions.fold(0) { count, pendingDecision ->

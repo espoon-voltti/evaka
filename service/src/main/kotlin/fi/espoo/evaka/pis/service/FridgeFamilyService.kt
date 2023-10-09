@@ -138,8 +138,7 @@ class FridgeFamilyService(
         return tx.createQuery(sql)
             .bind("today", clock.today())
             .bind("personId", personId)
-            .mapTo<PersonId>()
-            .firstOrNull()
+            .exactlyOneOrNull<PersonId>()
     }
 
     private fun getCurrentFridgeChildren(
@@ -158,7 +157,7 @@ class FridgeFamilyService(
             .bind("today", clock.today())
             .bind("personId", personId)
             .mapTo<ChildId>()
-            .list()
+            .toList()
             .toHashSet()
     }
 

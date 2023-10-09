@@ -160,8 +160,14 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().map {
-                    it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
+                tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().useIterable { rows ->
+                    rows
+                        .map { row ->
+                            row.copy(
+                                children = row.children.sortedByDescending { it.child.dateOfBirth }
+                            )
+                        }
+                        .toList()
                 }
             }
             .shuffled() // randomize order to expose assumptions

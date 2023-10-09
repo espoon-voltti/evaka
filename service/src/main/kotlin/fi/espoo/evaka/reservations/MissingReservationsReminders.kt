@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QuerySql
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.stereotype.Service
@@ -80,15 +79,15 @@ FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
 AND email IS NOT NULL
+LIMIT 1
         """
                                 .trimIndent()
                         )
                     }
-                    .map { row ->
-                        row.mapColumn<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                    .exactlyOneOrNull {
+                        column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
-                    .firstOrNull()
             }
                 ?: return
 

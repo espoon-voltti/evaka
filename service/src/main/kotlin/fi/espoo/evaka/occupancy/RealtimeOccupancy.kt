@@ -154,7 +154,7 @@ fun Database.Read.getChildOccupancyAttendances(
         .bind("unitId", unitId)
         .bind("timeRange", timeRange)
         .mapTo<ChildOccupancyAttendance>()
-        .list()
+        .toList()
 
 val presentStaffAttendanceTypes =
     "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
@@ -183,4 +183,4 @@ fun Database.Read.getStaffOccupancyAttendances(
         .bind("unitId", unitId)
         .bind("timeRange", timeRange)
         .mapTo<StaffOccupancyAttendance>()
-        .list()
+        .toList()

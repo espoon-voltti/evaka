@@ -94,7 +94,7 @@ fun Database.Transaction.insertApplication(
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
         .mapTo<ApplicationId>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Read.duplicateApplicationExists(
@@ -120,7 +120,7 @@ fun Database.Read.duplicateApplicationExists(
         .bind("guardianId", guardianId)
         .bind("type", type)
         .mapTo<Int>()
-        .list()
+        .toList()
         .isNotEmpty()
 }
 
@@ -160,7 +160,7 @@ fun Database.Read.activePlacementExists(
         .bind("types", placementTypes)
         .bind("today", today)
         .mapTo<Int>()
-        .list()
+        .toList()
         .isNotEmpty()
 }
 
@@ -559,10 +559,9 @@ fun Database.Read.fetchApplicationSummaries(
             summary.preferredUnits.map { unit -> unit.id }
         }
     val unitMap =
-        createQuery(unitSql)
-            .bind("unitIds", unitIds)
-            .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
-            .toMap()
+        createQuery(unitSql).bind("unitIds", unitIds).toMap {
+            columnPair<DaycareId, String>("id", "name")
+        }
 
     return applicationSummaries.copy(
         data =
@@ -703,7 +702,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
         .bind("citizenId", citizenId)
         .bind("today", today)
         .mapTo<CitizenChildren>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.fetchApplicationDetails(
@@ -763,48 +762,45 @@ fun Database.Read.fetchApplicationDetails(
             .trimIndent()
 
     val application =
-        createQuery(sql)
-            .bind("id", applicationId)
-            .map { row ->
-                val childRestricted = row.mapColumn("child_restricted") ?: false
-                val guardianRestricted = row.mapColumn("guardian_restricted") ?: false
-                val deserializedForm =
-                    if (row.mapJsonColumn<FormWithType>("document").type == "CLUB") {
-                        row.mapJsonColumn<ClubFormV0>("document")
-                    } else {
-                        row.mapJsonColumn<DaycareFormV0>("document")
-                    }
+        createQuery(sql).bind("id", applicationId).exactlyOneOrNull {
+            val childRestricted = column("child_restricted") ?: false
+            val guardianRestricted = column("guardian_restricted") ?: false
+            val deserializedForm =
+                if (jsonColumn<FormWithType>("document").type == "CLUB") {
+                    jsonColumn<ClubFormV0>("document")
+                } else {
+                    jsonColumn<DaycareFormV0>("document")
+                }
 
-                ApplicationDetails(
-                    id = row.mapColumn("id"),
-                    type = row.mapColumn("type"),
-                    form =
-                        deserializedForm.let {
-                            ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
-                        },
-                    status = row.mapColumn("status"),
-                    origin = row.mapColumn("origin"),
-                    childId = row.mapColumn("child_id"),
-                    guardianId = row.mapColumn("guardian_id"),
-                    otherGuardianId = row.mapColumn("other_guardian_id"),
-                    otherGuardianLivesInSameAddress = null,
-                    childRestricted = childRestricted,
-                    guardianRestricted = guardianRestricted,
-                    guardianDateOfDeath = row.mapColumn("guardian_date_of_death"),
-                    transferApplication = row.mapColumn("transferapplication"),
-                    additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
-                    createdDate = row.mapColumn("created"),
-                    modifiedDate = row.mapColumn("updated"),
-                    sentDate = row.mapColumn("sentdate"),
-                    dueDate = row.mapColumn("duedate"),
-                    dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
-                    checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                    hideFromGuardian = row.mapColumn("hidefromguardian"),
-                    allowOtherGuardianAccess = row.mapColumn("allow_other_guardian_access"),
-                    attachments = row.mapJsonColumn("attachments")
-                )
-            }
-            .firstOrNull()
+            ApplicationDetails(
+                id = column("id"),
+                type = column("type"),
+                form =
+                    deserializedForm.let {
+                        ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
+                    },
+                status = column("status"),
+                origin = column("origin"),
+                childId = column("child_id"),
+                guardianId = column("guardian_id"),
+                otherGuardianId = column("other_guardian_id"),
+                otherGuardianLivesInSameAddress = null,
+                childRestricted = childRestricted,
+                guardianRestricted = guardianRestricted,
+                guardianDateOfDeath = column("guardian_date_of_death"),
+                transferApplication = column("transferapplication"),
+                additionalDaycareApplication = column("additionaldaycareapplication"),
+                createdDate = column("created"),
+                modifiedDate = column("updated"),
+                sentDate = column("sentdate"),
+                dueDate = column("duedate"),
+                dueDateSetManuallyAt = column("duedate_set_manually_at"),
+                checkedByAdmin = column("checkedbyadmin"),
+                hideFromGuardian = column("hidefromguardian"),
+                allowOtherGuardianAccess = column("allow_other_guardian_access"),
+                attachments = jsonColumn("attachments")
+            )
+        }
 
     if (application != null) {
         // language=sql
@@ -817,10 +813,9 @@ fun Database.Read.fetchApplicationDetails(
                 .trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap =
-            createQuery(unitSql)
-                .bind("unitIds", unitIds)
-                .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
-                .toMap()
+            createQuery(unitSql).bind("unitIds", unitIds).toMap {
+                columnPair<DaycareId, String>("id", "name")
+            }
 
         return application.copy(
             form =
@@ -908,7 +903,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                 status = row.mapColumn("status")
             )
         }
-        .list()
+        .toList()
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true) data class FormWithType(val type: String)
@@ -952,7 +947,7 @@ SELECT type FROM application WHERE id = :id
         )
         .bind("id", id)
         .mapTo<ApplicationType>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateForm(
     id: ApplicationId,
@@ -1281,7 +1276,7 @@ RETURNING id
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
         .mapTo<ApplicationId>()
-        .list()
+        .toList()
 
 fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int {
     // language=SQL
@@ -1300,7 +1295,7 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().one()
+    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().exactlyOne()
 }
 
 fun Database.Read.personHasSentApplicationWithId(
@@ -1321,5 +1316,5 @@ fun Database.Read.personHasSentApplicationWithId(
         .bind("citizenId", citizenId)
         .bind("applicationId", applicationId)
         .mapTo<Boolean>()
-        .one()
+        .exactlyOne()
 }

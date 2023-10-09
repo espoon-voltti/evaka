@@ -31,8 +31,7 @@ FROM holiday_period_questionnaire q
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE active @> :date")
         .bind("date", date)
-        .mapTo<FixedPeriodQuestionnaire>()
-        .firstOrNull()
+        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getChildrenWithContinuousPlacement(
     today: LocalDate,
@@ -73,7 +72,7 @@ UNION
 SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 """
 
-    return createQuery(sql).bind("today", today).bind("userId", userId).mapTo<ChildId>().list()
+    return createQuery(sql).bind("today", today).bind("userId", userId).mapTo<ChildId>().toList()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(
@@ -81,11 +80,10 @@ fun Database.Read.getFixedPeriodQuestionnaire(
 ): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE q.id = :id")
         .bind("id", id)
-        .mapTo<FixedPeriodQuestionnaire>()
-        .firstOrNull()
+        .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().list()
+    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().toList()
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
@@ -123,7 +121,7 @@ RETURNING id
         .bindKotlin(data)
         .bind("type", QuestionnaireType.FIXED_PERIOD)
         .mapTo<HolidayQuestionnaireId>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
@@ -202,4 +200,4 @@ WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
         .bind("questionnaireId", id)
         .bind("childIds", childIds)
         .mapTo<HolidayQuestionnaireAnswer>()
-        .list()
+        .toList()

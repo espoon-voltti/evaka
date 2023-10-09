@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
@@ -84,18 +83,17 @@ AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
 """
                 )
             }
-            .map { row ->
+            .exactlyOneOrNull {
                 GroupNotification(
-                    groupName = row.mapColumn("group_name"),
+                    groupName = column("group_name"),
                     WebPushEndpoint(
-                        uri = row.mapColumn("endpoint"),
+                        uri = column("endpoint"),
                         ecdhPublicKey =
-                            WebPushCrypto.decodePublicKey(row.mapColumn<ByteArray>("ecdh_key")),
-                        authSecret = row.mapColumn("auth_secret")
+                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                        authSecret = column("auth_secret")
                     )
                 )
             }
-            .singleOrNull()
 
     fun send(
         dbc: Database.Connection,

@@ -480,7 +480,7 @@ WHERE id = :unitId
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
-        val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).list() }
+        val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).toList() }
         rows.forEach { row ->
             assertEquals(serviceWorker.evakaUserId, row.createdBy)
             assertEquals(DecisionStatus.PENDING, row.status)

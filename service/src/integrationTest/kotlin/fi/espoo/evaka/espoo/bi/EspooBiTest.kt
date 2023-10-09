@@ -437,7 +437,11 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
         val lines =
-            db.read { tx -> query(tx).map { it.trim() }.filter { it.isNotEmpty() }.toList() }
+            db.read { tx ->
+                query(tx) { records ->
+                    records.map { it.trim() }.filter { it.isNotEmpty() }.toList()
+                }
+            }
 
         assertTrue(lines.first().looksLikeHeaderRow())
         assertTrue(lines.drop(1).single().contains(id.toString()))

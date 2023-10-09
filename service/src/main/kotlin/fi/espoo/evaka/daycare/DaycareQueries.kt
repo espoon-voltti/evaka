@@ -165,8 +165,7 @@ WHERE id = ANY(:ids)
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery(daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }))
-        .mapTo<Daycare>()
-        .firstOrNull()
+        .exactlyOneOrNull<Daycare>()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
     createQuery(
@@ -178,8 +177,7 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
         )
         .bind("id", id)
         .mapTo<Boolean>()
-        .asSequence()
-        .single()
+        .exactlyOne()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery(
@@ -191,9 +189,7 @@ WHERE id = :daycareId
 """
         )
         .bind("daycareId", daycareId)
-        .mapTo<UnitStub>()
-        .asSequence()
-        .firstOrNull()
+        .exactlyOneOrNull<UnitStub>()
 
 fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
     createUpdate(
@@ -207,7 +203,7 @@ SELECT :name, :areaId
         .bind("areaId", areaId)
         .executeAndReturnGeneratedKeys()
         .mapTo<DaycareId>()
-        .one()
+        .exactlyOne()
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
     createUpdate(
@@ -384,8 +380,7 @@ fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
                 .trimIndent()
         )
         .bind("unitId", unitId)
-        .mapTo<DaycareManager>()
-        .firstOrNull()
+        .exactlyOneOrNull<DaycareManager>()
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
     createQuery(
@@ -397,7 +392,7 @@ WHERE daycare_id = :daycareId
         )
         .bind("daycareId", daycareId)
         .mapTo<DaycareGroupSummary>()
-        .list()
+        .toList()
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
     createQuery(
@@ -409,7 +404,7 @@ fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
                 .trimIndent()
         )
         .mapTo<UnitFeatures>()
-        .list()
+        .toList()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
@@ -459,8 +454,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<UnitFeatures>()
-        .firstOrNull()
+        .exactlyOneOrNull<UnitFeatures>()
 
 fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
     createQuery<Any> {
@@ -476,7 +470,7 @@ SELECT EXISTS(
             )
         }
         .mapTo<Boolean>()
-        .single()
+        .exactlyOne()
 
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 
@@ -486,7 +480,9 @@ fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
     FROM daycare
     """)
         .mapTo<UnitOperationDays>()
-        .fold(mutableMapOf()) { acc, row ->
-            acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
-            acc
+        .useIterable {
+            it.fold(mutableMapOf()) { acc, row ->
+                acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
+                acc
+            }
         }

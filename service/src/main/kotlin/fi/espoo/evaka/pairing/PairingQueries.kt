@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import java.security.SecureRandom
@@ -37,7 +36,7 @@ fun Database.Transaction.initPairing(
         .bind("expires", clock.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
         .mapTo<Pairing>()
-        .first()
+        .exactlyOne()
 }
 
 fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: String): Pairing {
@@ -55,8 +54,7 @@ fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: Strin
         .bind("response", generatePairingKey())
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<Pairing>()
-        .firstOrNull()
+        .exactlyOneOrNull<Pairing>()
         ?: throw NotFound("Valid pairing not found")
 }
 
@@ -96,8 +94,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
         .bind("name", defaultDeviceName)
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<Pairing>()
-        .firstOrNull()
+        .exactlyOneOrNull<Pairing>()
         ?: throw NotFound("Valid pairing not found")
 }
 
@@ -127,19 +124,14 @@ RETURNING id, long_term_token
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .bind("longTermToken", UUID.randomUUID())
-        .mapTo<MobileDeviceIdentity>()
-        .firstOrNull()
+        .exactlyOneOrNull<MobileDeviceIdentity>()
         ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, EmployeeId?> {
     return createQuery("SELECT unit_id, employee_id FROM pairing WHERE id = :id")
         .bind("id", id)
-        .map { rowView ->
-            rowView.mapColumn<DaycareId?>("unit_id") to
-                rowView.mapColumn<EmployeeId?>("employee_id")
-        }
-        .firstOrNull()
+        .exactlyOneOrNull { columnPair("unit_id", "employee_id") }
         ?: throw NotFound("Pairing not found")
 }
 
@@ -157,7 +149,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<PairingStatus>()
-        .list()
+        .toList()
         .firstOrNull()
         ?: throw NotFound("Valid pairing not found")
 }

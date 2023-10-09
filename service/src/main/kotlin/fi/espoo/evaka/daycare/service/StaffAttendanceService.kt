@@ -110,25 +110,27 @@ fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<GroupInfo>().firstOrNull()
+    return createQuery(sql).bind("groupId", groupId).exactlyOneOrNull<GroupInfo>()
 }
 
 fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean {
     // language=SQL
     val sql =
         """
-        SELECT 1
-        FROM daycare_group
-        WHERE id = :id
-        AND daterange(start_date, end_date, '[]') @> :date
+        SELECT EXISTS (
+            SELECT 1
+            FROM daycare_group
+            WHERE id = :id
+            AND daterange(start_date, end_date, '[]') @> :date
+        )
         """
             .trimIndent()
 
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
-        .mapTo<Int>()
-        .any()
+        .mapTo<Boolean>()
+        .exactlyOne()
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
@@ -178,7 +180,7 @@ fun Database.Read.getStaffAttendanceByRange(
         .bind("groupId", groupId)
         .bind("range", range)
         .mapTo<GroupStaffAttendance>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getUnitStaffAttendanceForDate(
@@ -201,7 +203,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
             .bind("unitId", unitId)
             .bind("date", date)
             .mapTo<GroupStaffAttendance>()
-            .list()
+            .toList()
 
     val count = groupAttendances.sumOf { it.count }
     val countOther = groupAttendances.sumOf { it.countOther }

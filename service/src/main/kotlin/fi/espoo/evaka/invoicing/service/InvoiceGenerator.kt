@@ -29,8 +29,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
@@ -264,17 +262,14 @@ GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
                 )
-                .map { rv ->
-                    Pair<InvoiceCorrectionId, List<InvoicedTotal>>(
-                        rv.mapColumn("id"),
-                        rv.mapJsonColumn("invoiced_corrections")
-                    )
+                .toMap {
+                    column<InvoiceCorrectionId>("id") to
+                        jsonColumn<List<InvoicedTotal>>("invoiced_corrections")
                 }
-                .toMap()
 
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
             .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
-            .mapTo<InvoiceCorrection>()
+            .toList<InvoiceCorrection>()
             .groupBy { it.headOfFamilyId }
             .mapValues { (_, corrections) ->
                 // Remove the already invoiced parts from corrections
@@ -340,7 +335,7 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
             )
         )
         .mapTo<FeeDecision>()
-        .list()
+        .toList()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
@@ -352,7 +347,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
         .bind("period_end", period.end)
         .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING))
         .mapTo<PersonId>()
-        .list()
+        .toList()
 }
 
 data class AbsenceStub(
@@ -404,7 +399,7 @@ AND p.type = ANY(:invoicedTypes::placement_type[])
         )
         .bind("period", spanningPeriod)
         .bind("invoicedTypes", placementTypes)
-        .map { rv -> rv.mapColumn<DateRange>("date_range") to rv.mapRow<PlacementStub>() }
+        .toList { column<DateRange>("date_range") to row<PlacementStub>() }
         .groupBy { it.second.child.id }
 }
 
@@ -510,7 +505,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
                 )
             )
         }
-        .list()
+        .toList()
 }
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
@@ -519,9 +514,7 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
         SELECT daycare.id AS unit_id, area.id AS area_id
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
-    return createQuery(sql)
-        .map { row -> row.mapColumn<DaycareId>("unit_id") to row.mapColumn<AreaId>("area_id") }
-        .toMap()
+    return createQuery(sql).toMap { columnPair("unit_id", "area_id") }
 }
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
@@ -568,7 +561,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().list()
+    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().toList()
 }
 
 private fun placementOn(year: Int, month: Int): String {

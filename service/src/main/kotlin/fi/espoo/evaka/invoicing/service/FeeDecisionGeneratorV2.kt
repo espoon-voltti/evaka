@@ -476,7 +476,7 @@ private fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelatio
         )
         .bind("id", id)
         .mapTo<PartnerRelation>()
-        .list()
+        .toList()
 }
 
 data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
@@ -508,15 +508,18 @@ private fun Database.Read.getChildRelations(
         )
         .bind("ids", parentIds.toTypedArray())
         .mapTo<ChildRelation>()
-        .mapNotNull {
-            val under18 =
-                FiniteDateRange(
-                    it.child.dateOfBirth,
-                    it.child.dateOfBirth.plusYears(18).minusDays(1)
-                )
-            it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
+        .useIterable { rows ->
+            rows
+                .mapNotNull {
+                    val under18 =
+                        FiniteDateRange(
+                            it.child.dateOfBirth,
+                            it.child.dateOfBirth.plusYears(18).minusDays(1)
+                        )
+                    it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
+                }
+                .groupBy { it.headOfChild }
         }
-        .groupBy { it.headOfChild }
 }
 
 data class PlacementDetails(
@@ -589,7 +592,7 @@ private fun getPlacementDetails(
     """
             )
             .bind("ids", childIds.toTypedArray())
-            .mapTo<Placement>()
+            .toList<Placement>()
             .groupBy { it.childId }
 
     val serviceNeeds =
@@ -602,7 +605,7 @@ private fun getPlacementDetails(
     """
             )
             .bind("ids", childIds.toTypedArray())
-            .mapTo<ServiceNeed>()
+            .toList<ServiceNeed>()
             .groupBy { it.childId }
 
     val dateRanges =

@@ -624,7 +624,7 @@ private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
             )
         }
         .mapTo<PersonId>()
-        .set()
+        .toSet()
 
 private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
     createQuery<Any> {
@@ -638,7 +638,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
             )
         }
         .mapTo<PersonId>()
-        .set()
+        .toSet()
 
 private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
 
@@ -654,5 +654,6 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
             )
         }
         .mapTo<FeeDecisionParents>()
-        .flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }
-        .toSet()
+        .useIterable { rows ->
+            rows.flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }.toSet()
+        }
