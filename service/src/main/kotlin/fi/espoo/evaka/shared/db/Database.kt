@@ -336,8 +336,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
 
         override fun <T> map(mapper: Row.() -> T): Result<T> =
@@ -590,8 +596,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
 
         override fun <T> map(mapper: Row.() -> T): Result<T> =
@@ -601,8 +613,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     interface ResultBearing {
         fun <T> mapTo(type: QualifiedType<T>): Result<T>
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         fun <T> map(mapper: ColumnMapper<T>): Result<T>
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         fun <T> map(mapper: RowViewMapper<T>): Result<T>
 
         fun <T> map(mapper: Row.() -> T): Result<T>

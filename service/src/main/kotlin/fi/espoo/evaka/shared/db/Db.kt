@@ -145,6 +145,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
  *
  * This function works with Kotlin better than row.getColumn().
  */
+@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
 inline fun <reified T> RowView.mapColumn(
     name: String,
     vararg annotations: KClass<out Annotation>
@@ -158,11 +159,14 @@ inline fun <reified T> RowView.mapColumn(
 }
 
 /** Maps a row json column to a value. */
-inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T = mapColumn(name, Json::class)
+@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
+inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T =
+    @Suppress("DEPRECATION") mapColumn(name, Json::class)
 
 /**
  * Maps a row to a value.
  *
  * This function works with Kotlin better than row.getRow().
  */
+@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
 inline fun <reified T> RowView.mapRow(): T = getRow(typeOf<T>().asJdbiJavaType()) as T
