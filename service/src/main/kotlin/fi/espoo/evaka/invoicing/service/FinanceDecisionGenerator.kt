@@ -707,6 +707,7 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
             )
         }
         .mapTo<FeeDecisionParents>()
+        .toList()
         .flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }
         .toSet()
 

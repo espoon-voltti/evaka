@@ -488,7 +488,7 @@ private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
             )
         }
         .mapTo<ChildWithDateOfBirth>()
-        .one()
+        .exactlyOne()
 }
 
 private data class AssistanceNeedRange(override val range: DateRange, val coefficient: BigDecimal) :
