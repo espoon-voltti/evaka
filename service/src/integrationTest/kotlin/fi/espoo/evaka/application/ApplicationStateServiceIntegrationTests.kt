@@ -39,6 +39,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevParentship
@@ -243,38 +244,52 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `sendApplication - non-urgent application's due date equals preferred start if it's more than 4 months away`() {
+    fun `relative due date TRUE - non-urgent application's due date is calculated as equaling preferred start if it's more than 4 months away`() {
         val preferredStartDate = LocalDate.of(2020, 8, 1)
-        db.transaction { tx ->
-            // given
-            tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
-                urgent = false,
-                applicationId = applicationId,
-                preferredStartDate = preferredStartDate
+        val sentDate = LocalDate.of(2020, 2, 1)
+        val dueDate =
+            service.calculateDueDate(
+                applicationType = ApplicationType.DAYCARE,
+                sentDate = sentDate,
+                preferredStartDate = preferredStartDate,
+                isUrgent = false,
+                isTransferApplication = false,
+                attachments = emptyList(),
+                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = true)
             )
-        }
-        db.transaction { tx ->
-            // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
-        }
-        db.read {
-            // then
-            val application = it.fetchApplicationDetails(applicationId)!!
-            assertEquals(preferredStartDate, application.dueDate)
-        }
+
+        assertEquals(preferredStartDate, dueDate)
     }
 
     @Test
-    fun `sendApplication - non-urgent application's due date is at least 4 months from now`() {
-        val preferredStartDate = today.plusMonths(3)
+    fun `relative due date FALSE - non-urgent application's due date is calculated as 4 months after sent date`() {
+        val preferredStartDate = LocalDate.of(2020, 8, 1)
+        val sentDate = LocalDate.of(2020, 2, 1)
+        val defaultDueDate = sentDate.plusMonths(4)
+
+        val dueDate =
+            service.calculateDueDate(
+                applicationType = ApplicationType.DAYCARE,
+                sentDate = sentDate,
+                preferredStartDate = preferredStartDate,
+                isUrgent = false,
+                isTransferApplication = false,
+                attachments = emptyList(),
+                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = false)
+            )
+
+        assertEquals(defaultDueDate, dueDate)
+    }
+
+    @Test
+    fun `sendApplication - daycare has due date after 4 months if not urgent`() {
         db.transaction { tx ->
             // given
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 urgent = false,
                 applicationId = applicationId,
-                preferredStartDate = preferredStartDate
+                preferredStartDate = LocalDate.of(2020, 8, 1)
             )
         }
         db.transaction { tx ->

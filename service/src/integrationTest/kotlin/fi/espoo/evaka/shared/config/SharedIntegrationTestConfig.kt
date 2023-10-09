@@ -211,5 +211,6 @@ val testFeatureConfig =
         municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
         serviceWorkerMessageAccountName =
             "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
-        applyPlacementUnitFromDecision = false
+        applyPlacementUnitFromDecision = false,
+        preferredStartRelativeApplicationDueDate = false,
     )

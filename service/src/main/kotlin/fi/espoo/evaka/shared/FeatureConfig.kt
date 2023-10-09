@@ -138,5 +138,12 @@ data class FeatureConfig(
      * true = placement unit is resolved from decision when it's accepted, false = placement unit is
      * resolved from placement plan
      */
-    val applyPlacementUnitFromDecision: Boolean
+    val applyPlacementUnitFromDecision: Boolean,
+
+    /**
+     * Whether automatic application due date is calculated in relation to the preferred start date
+     * true = non-urgent early education application due date is max(sentDate + 4 months, preferred
+     * start date) false = non-urgent early education application due date is sentDate + 4 months
+     */
+    val preferredStartRelativeApplicationDueDate: Boolean,
 )
