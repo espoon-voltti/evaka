@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -55,7 +56,7 @@ data class VoucherValueDecision(
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
     override val validDuring: DateRange
-        get() = DateRange(validFrom, validTo)
+        @JsonIgnore get() = DateRange(validFrom, validTo)
 
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
 
