@@ -11,7 +11,9 @@ import {
   getReceivedMessages,
   getUnreadCountsByUnit,
   markThreadRead,
-  replyToThread
+  sendMessage,
+  replyToThread,
+  getReceivers
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
@@ -23,6 +25,7 @@ const queryKeys = createQueryKeys('messages', {
     employeeId: string | undefined
   }) => ['accounts', unitId, employeeId],
   receivedMessages: (accountId: string) => ['receivedMessages', accountId],
+  recipients: () => ['recipients'],
   unreadCounts: () => ['unreadCounts']
 })
 
@@ -45,9 +48,19 @@ export const receivedMessagesQuery = infiniteQuery({
   }
 })
 
+// The results are dependent on the PIN-logged user
+export const recipientsQuery = query({
+  api: getReceivers,
+  queryKey: queryKeys.recipients
+})
+
 export const unreadCountsQuery = query({
   api: getUnreadCountsByUnit,
   queryKey: queryKeys.unreadCounts
+})
+
+export const sendMessageMutation = mutation({
+  api: sendMessage
 })
 
 export const replyToThreadMutation = mutation({

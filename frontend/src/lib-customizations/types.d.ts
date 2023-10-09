@@ -239,6 +239,11 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable sending messages to groups or multiple children in employee mobile
+   */
+  employeeMobileGroupMessages?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

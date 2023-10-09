@@ -9,9 +9,9 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
@@ -26,12 +26,11 @@ import {
   deleteAttachment,
   deleteDraft,
   getAttachmentUrl,
-  getReceivers,
   initDraft,
-  postMessage,
   saveDraft,
   saveMessageAttachment
 } from './api'
+import { recipientsQuery, sendMessageMutation } from './queries'
 import { MessageContext } from './state'
 
 export default function MessageEditorPage() {
@@ -42,7 +41,9 @@ export default function MessageEditorPage() {
 
   const navigate = useNavigate()
   const { accounts, selectedAccount } = useContext(MessageContext)
-  const [messageReceivers] = useApiState(getReceivers, [])
+  const messageReceivers = useQueryResult(recipientsQuery)
+
+  const { mutateAsync: sendMessage } = useMutationResult(sendMessageMutation)
   const [sending, setSending] = useState(false)
 
   const receivers = useMemo(() => {
@@ -66,9 +67,9 @@ export default function MessageEditorPage() {
   }, [childId, messageReceivers])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: PostMessageBody) => {
+    (accountId: UUID, body: PostMessageBody) => {
       setSending(true)
-      void postMessage(accountId, messageBody).then((res) => {
+      void sendMessage({ accountId, body }).then((res) => {
         if (res.isSuccess) {
           navigate(-1)
         } else {
@@ -78,7 +79,7 @@ export default function MessageEditorPage() {
         setSending(false)
       })
     },
-    [navigate]
+    [navigate, sendMessage]
   )
 
   const onDiscard = useCallback(

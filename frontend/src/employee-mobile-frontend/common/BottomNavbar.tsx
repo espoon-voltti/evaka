@@ -38,7 +38,7 @@ import { UnitContext } from './unit'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
-const bottomNavBarHeight = 60
+export const bottomNavBarHeight = 60
 
 const Root = styled.div`
   position: fixed;
