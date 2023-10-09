@@ -180,10 +180,11 @@ FROM ids;
         from: LocalDate, // only used for v1
         skipPropagation: Boolean = false
     ) {
+        val adults =
+            if (skipPropagation || (!v2FeeDecisions && !v2Vouchers)) setOf(personId)
+            else getAllPossiblyAffectedAdultsByAdult(tx, personId)
+
         if (v2FeeDecisions) {
-            val adults =
-                if (skipPropagation) setOf(personId)
-                else getAllPossiblyAffectedAdultsByAdult(tx, personId)
             adults.forEach { adult ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
@@ -197,7 +198,8 @@ FROM ids;
         }
 
         if (v2Vouchers) {
-            tx.getChildrenOfHeadOfFamily(personId).forEach { childId ->
+            val children = adults.flatMap { tx.getChildrenOfHeadOfFamily(it) }.toSet()
+            children.forEach { childId ->
                 generateAndInsertVoucherValueDecisionsV2(
                     tx = tx,
                     clock = clock,
