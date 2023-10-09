@@ -79,7 +79,10 @@ export const deserializeApplicationSummary = (
   ...json,
   dateOfBirth: LocalDate.parseNullableIso(json.dateOfBirth),
   dueDate: LocalDate.parseNullableIso(json.dueDate),
-  startDate: LocalDate.parseNullableIso(json.startDate)
+  startDate: LocalDate.parseNullableIso(json.startDate),
+  placementPlanStartDate: LocalDate.parseNullableIso(
+    json.placementPlanStartDate
+  )
 })
 
 export async function getApplications(

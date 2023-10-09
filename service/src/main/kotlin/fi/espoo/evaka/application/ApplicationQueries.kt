@@ -411,6 +411,7 @@ fun Database.Read.fetchApplicationSummaries(
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
+            pp.start_date AS placement_plan_start_date,
             (CASE WHEN pp.unit_id IS NOT NULL THEN d.name END) AS placement_plan_unit_name,
             cpu.id AS current_placement_unit_id,
             cpu.name AS current_placement_unit_name,
@@ -538,7 +539,8 @@ fun Database.Read.fetchApplicationSummaries(
                                         row.mapColumn("unit_reject_other_reason")
                                 )
                             },
-                    placementProposalUnitName = row.mapColumn("placement_plan_unit_name"),
+                    placementPlanStartDate = row.mapColumn("placement_plan_start_date"),
+                    placementPlanUnitName = row.mapColumn("placement_plan_unit_name"),
                     currentPlacementUnit =
                         row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, row.mapColumn("current_placement_unit_name"))

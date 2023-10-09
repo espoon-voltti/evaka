@@ -217,8 +217,9 @@ export interface ApplicationSummary {
   id: UUID
   lastName: string
   origin: ApplicationOrigin
+  placementPlanStartDate: LocalDate | null
+  placementPlanUnitName: string | null
   placementProposalStatus: PlacementProposalStatus | null
-  placementProposalUnitName: string | null
   placementType: PlacementType
   preferredUnits: PreferredUnit[]
   serviceNeed: ServiceNeedOption | null

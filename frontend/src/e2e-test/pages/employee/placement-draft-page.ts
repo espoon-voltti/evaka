@@ -4,13 +4,17 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Combobox, Page } from '../../utils/page'
+import { Combobox, DatePickerDeprecated, Page } from '../../utils/page'
 
 export class PlacementDraftPage {
   constructor(private page: Page) {}
 
   #restrictedDetailsWarning = this.page.find(
     '[data-qa="restricted-details-warning"]'
+  )
+
+  readonly startDate = new DatePickerDeprecated(
+    this.page.findByDataQa('start-date')
   )
 
   #unitCard = (unitId: UUID) =>
