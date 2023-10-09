@@ -2,21 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import {
-  AssistanceNeedsAndActionsReport,
-  AssistanceNeedsAndActionsReportRow
-} from 'lib-common/generated/api-types/reports'
+import { AssistanceNeedsAndActionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -82,13 +79,14 @@ const Wrapper = styled.div`
 
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [report, setReport] = useState<Result<AssistanceNeedsAndActionsReport>>(
-    Loading.of()
-  )
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
     })
+  const [report] = useApiState(
+    () => getAssistanceNeedsAndActionsReport(filters),
+    [filters]
+  )
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
   const rowFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
@@ -96,12 +94,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
     !(rowFilters.unit && row.unitName !== rowFilters.unit)
   const [columnFilters, setColumnFilters] =
     useState<ColumnFilters>(emptyColumnFilters)
-
-  useEffect(() => {
-    setReport(Loading.of())
-    setRowFilters(emptyRowFilters)
-    void getAssistanceNeedsAndActionsReport(filters).then(setReport)
-  }, [filters])
 
   const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
     () => report.map((rs) => rs.rows.filter(rowFilter)).getOrElse([]),
@@ -166,7 +158,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
           <DatePickerDeprecated
             date={filters.date}
-            onChange={(date) => setFilters({ date })}
+            onChange={(date) => {
+              setFilters({ date })
+              setRowFilters(emptyRowFilters)
+            }}
           />
         </FilterRow>
 
