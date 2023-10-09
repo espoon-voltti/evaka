@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFile, faQuestion, faTrash } from 'Icons'
+import { faFile, faQuestion } from 'Icons'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { oneOf, required } from 'lib-common/form/form'
@@ -18,7 +19,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import { Table, Thead, Th, Tbody, Tr, Td } from 'lib-components/layout/Table'
@@ -37,6 +38,10 @@ import {
   createChildDocumentMutation,
   deleteChildDocumentMutation
 } from './queries'
+
+const WiderTd = styled(Td)`
+  width: 50%;
+`
 
 const ChildDocuments = React.memo(function ChildDocuments({
   childId,
@@ -87,38 +92,28 @@ const ChildDocuments = React.memo(function ChildDocuments({
             <Th>{i18n.childInformation.childDocuments.table.document}</Th>
             <Th>{i18n.childInformation.childDocuments.table.modified}</Th>
             <Th>{i18n.childInformation.childDocuments.table.published}</Th>
-            <Th>{i18n.childInformation.childDocuments.table.document}</Th>
             <Th>{i18n.childInformation.childDocuments.table.status}</Th>
-            <Th />
           </Tr>
         </Thead>
         <Tbody>
           {documents.map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
-              <Td>
-                <IconButton
-                  icon={faFile}
+              <WiderTd>
+                <InlineButton
                   aria-label={i18n.childInformation.childDocuments.table.open}
+                  text={document.templateName}
+                  icon={faFile}
+                  disabled={!permittedActions.includes('READ')}
                   onClick={() => navigate(`/child-documents/${document.id}`)}
                   data-qa="open-document"
                 />
-              </Td>
+              </WiderTd>
               <Td>{document.modifiedAt.format()}</Td>
               <Td data-qa="document-published-at">
                 {document.publishedAt?.format() ?? '-'}
               </Td>
-              <Td>{document.templateName}</Td>
               <Td data-qa="document-status">
                 <ChildDocumentStateChip status={document.status} />
-              </Td>
-              <Td>
-                {permittedActions.includes('DELETE') && (
-                  <IconButton
-                    icon={faTrash}
-                    aria-label={i18n.common.remove}
-                    onClick={() => setConfirmingDelete(document)}
-                  />
-                )}
               </Td>
             </Tr>
           ))}

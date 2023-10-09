@@ -10,6 +10,7 @@ export class ChildDocumentPage {
   readonly status = this.page.findByDataQa('document-state-chip')
   readonly savingIndicator = this.page.findByDataQa('saving-spinner')
   readonly previewButton = this.page.findByDataQa('preview-button')
+  readonly editButton = this.page.findByDataQa('edit-button')
   readonly returnButton = this.page.findByDataQa('return-button')
 
   getTextQuestion(sectionName: string, questionName: string) {

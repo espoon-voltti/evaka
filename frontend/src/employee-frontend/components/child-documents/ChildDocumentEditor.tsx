@@ -77,7 +77,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
       getDocumentFormInitialState(document.template.content, document.content),
     i18n.validationErrors
   )
-  const [preview, setPreview] = useState(document.publishedAt !== null)
+  const [editMode, setEditMode] = useState(false)
   const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
   const { mutateAsync: updateChildDocumentContent, isLoading: submitting } =
@@ -120,14 +120,14 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 
   useEffect(() => {
     if (
-      !preview &&
+      editMode &&
       debouncedValidContent !== null &&
       !isEqual(lastSavedContent, debouncedValidContent) &&
       !submitting
     ) {
       void save(debouncedValidContent)
     }
-  }, [preview, debouncedValidContent, lastSavedContent, save, submitting])
+  }, [editMode, debouncedValidContent, lastSavedContent, save, submitting])
 
   const goBack = () => navigate(`/child-information/${document.child.id}`)
 
@@ -176,7 +176,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <Gap size="XXL" />
-          <DocumentView bind={bind} readOnly={preview} />
+          <DocumentView bind={bind} readOnly={!editMode} />
         </ContentArea>
       </Container>
 
@@ -184,21 +184,18 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
         <Container>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <FixedSpaceRow alignItems="center">
-              {preview || !permittedActions.includes('UPDATE') ? (
-                <Button
-                  text={i18n.common.goBack}
-                  onClick={goBack}
-                  data-qa="return-button"
-                />
-              ) : (
-                <Button
-                  text={i18n.common.goBack}
-                  onClick={() => save(bind.value()).then(goBack)}
-                  data-qa="return-button"
-                />
-              )}
+              <Button
+                text={i18n.common.goBack}
+                onClick={goBack}
+                // disable while debounce is pending to avoid leaving before saving
+                disabled={
+                  bind.isValid() &&
+                  !isEqual(bind.value(), debouncedValidContent)
+                }
+                data-qa="return-button"
+              />
 
-              {preview &&
+              {!editMode &&
                 permittedActions.includes('DELETE') &&
                 document.status === 'DRAFT' && (
                   <ConfirmedMutation
@@ -217,7 +214,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     }
                   />
                 )}
-              {preview &&
+              {!editMode &&
                 permittedActions.includes('PREV_STATUS') &&
                 prevStatus != null && (
                   <ConfirmedMutation
@@ -237,7 +234,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     }
                   />
                 )}
-              {!preview && (
+              {editMode && (
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
                     {i18n.common.saved}{' '}
@@ -255,24 +252,25 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
             </FixedSpaceRow>
 
             <FixedSpaceRow>
-              {preview &&
+              {!editMode &&
                 permittedActions.includes('UPDATE') &&
                 document.status !== 'COMPLETED' && (
                   <Button
                     text={i18n.common.edit}
-                    onClick={() => setPreview(false)}
+                    onClick={() => setEditMode(true)}
+                    data-qa="edit-button"
                   />
                 )}
-              {!preview && (
+              {editMode && (
                 <Button
                   text={i18n.childInformation.childDocuments.editor.preview}
                   primary
-                  onClick={() => setPreview(true)}
+                  onClick={() => setEditMode(false)}
                   disabled={!saved}
                   data-qa="preview-button"
                 />
               )}
-              {preview &&
+              {!editMode &&
                 permittedActions.includes('PUBLISH') &&
                 document.status !== 'COMPLETED' && (
                   <ConfirmedMutation
@@ -295,7 +293,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     data-qa="publish-button"
                   />
                 )}
-              {preview &&
+              {!editMode &&
                 permittedActions.includes('NEXT_STATUS') &&
                 nextStatus != null && (
                   <ConfirmedMutation
@@ -323,7 +321,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                 )}
             </FixedSpaceRow>
           </FixedSpaceRow>
-          {preview && (
+          {!editMode && (
             <>
               <Gap size="s" />
               <FixedSpaceRow alignItems="center" justifyContent="flex-end">

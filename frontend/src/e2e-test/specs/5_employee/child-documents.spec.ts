@@ -107,6 +107,7 @@ describe('Employee - Child documents', () => {
 
     // Fill an answer and return
     let childDocument = new ChildDocumentPage(page)
+    await childDocument.editButton.click()
     await childDocument.status.assertTextEquals('Luonnos')
     const answer = 'Jonkin sortin vastaus'
     let question = childDocument.getTextQuestion(sectionName, questionName)
@@ -127,6 +128,7 @@ describe('Employee - Child documents', () => {
     const documentUrl = page.url
 
     // Assert answer was saved
+    await childDocument.editButton.click()
     question = childDocument.getTextQuestion(sectionName, questionName)
     await question.assertValueEquals(answer)
 
@@ -192,7 +194,6 @@ describe('Employee - Child documents', () => {
     // go to next status
     const childDocument = new ChildDocumentPage(page)
     await childDocument.status.assertTextEquals('Luonnos')
-    await childDocument.previewButton.click()
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Valmis')
   })
