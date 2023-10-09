@@ -2,20 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import {
-  AssistanceNeedsAndActionsReport,
-  AssistanceNeedsAndActionsReportRow
-} from 'lib-common/generated/api-types/reports'
+  DaycareAssistanceLevel,
+  OtherAssistanceMeasureType,
+  PreschoolAssistanceLevel
+} from 'lib-common/generated/api-types/assistance'
+import { AssistanceNeedsAndActionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -36,14 +39,38 @@ import { distinct, reducePropertySum } from '../../utils'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
-interface DisplayFilters {
+const types = ['DAYCARE', 'PRESCHOOL'] as const
+type Type = (typeof types)[number]
+
+const daycareColumns = [
+  ...daycareAssistanceLevels,
+  ...otherAssistanceMeasureTypes
+]
+const preschoolColumns = [
+  ...preschoolAssistanceLevels,
+  ...otherAssistanceMeasureTypes
+]
+
+interface RowFilters {
   careArea: string
   unit: string
 }
 
-const emptyDisplayFilters: DisplayFilters = {
+const emptyRowFilters: RowFilters = {
   careArea: '',
   unit: ''
+}
+
+interface ColumnFilters {
+  type: Type
+  daycareColumns: (DaycareAssistanceLevel | OtherAssistanceMeasureType)[]
+  preschoolColumns: (PreschoolAssistanceLevel | OtherAssistanceMeasureType)[]
+}
+
+const emptyColumnFilters: ColumnFilters = {
+  type: 'DAYCARE',
+  daycareColumns: [],
+  preschoolColumns: []
 }
 
 const Wrapper = styled.div`
@@ -52,31 +79,75 @@ const Wrapper = styled.div`
 
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [report, setReport] = useState<Result<AssistanceNeedsAndActionsReport>>(
-    Loading.of()
-  )
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
     })
+  const [report] = useApiState(
+    () => getAssistanceNeedsAndActionsReport(filters),
+    [filters]
+  )
 
-  const [displayFilters, setDisplayFilters] =
-    useState<DisplayFilters>(emptyDisplayFilters)
-  const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
-    !(
-      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
-    ) && !(displayFilters.unit && row.unitName !== displayFilters.unit)
-
-  useEffect(() => {
-    setReport(Loading.of())
-    setDisplayFilters(emptyDisplayFilters)
-    void getAssistanceNeedsAndActionsReport(filters).then(setReport)
-  }, [filters])
+  const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
+  const rowFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
+    !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
+    !(rowFilters.unit && row.unitName !== rowFilters.unit)
+  const [columnFilters, setColumnFilters] =
+    useState<ColumnFilters>(emptyColumnFilters)
 
   const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
-    () => report.map((rs) => rs.rows.filter(displayFilter)).getOrElse([]),
-    [report, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+    () => report.map((rs) => rs.rows.filter(rowFilter)).getOrElse([]),
+    [report, rowFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
+
+  const selectedDaycareColumns = useMemo(
+    () =>
+      columnFilters.type === 'DAYCARE'
+        ? columnFilters.daycareColumns.length === 0
+          ? daycareAssistanceLevels
+          : daycareAssistanceLevels.filter((level) =>
+              columnFilters.daycareColumns.includes(level)
+            )
+        : [],
+    [columnFilters.daycareColumns, columnFilters.type]
+  )
+  const selectedPreschoolColumns = useMemo(
+    () =>
+      columnFilters.type === 'PRESCHOOL'
+        ? columnFilters.preschoolColumns.length === 0
+          ? preschoolAssistanceLevels
+          : preschoolAssistanceLevels.filter((level) =>
+              columnFilters.preschoolColumns.includes(level)
+            )
+        : [],
+    [columnFilters.preschoolColumns, columnFilters.type]
+  )
+  const selectedOtherColumns = useMemo(
+    () =>
+      otherAssistanceMeasureTypes.filter(
+        (type) =>
+          (columnFilters.type === 'DAYCARE' &&
+            (columnFilters.daycareColumns.length === 0 ||
+              columnFilters.daycareColumns.includes(type))) ||
+          (columnFilters.type === 'PRESCHOOL' &&
+            (columnFilters.preschoolColumns.length === 0 ||
+              columnFilters.preschoolColumns.includes(type)))
+      ),
+    [
+      columnFilters.daycareColumns,
+      columnFilters.preschoolColumns,
+      columnFilters.type
+    ]
+  )
+
+  const daycareColumnTexts = {
+    ...i18n.childInformation.assistance.types.daycareAssistanceLevel,
+    ...i18n.childInformation.assistance.types.otherAssistanceMeasureType
+  }
+  const preschoolColumnTexts = {
+    ...i18n.childInformation.assistance.types.preschoolAssistanceLevel,
+    ...i18n.childInformation.assistance.types.otherAssistanceMeasureType
+  }
 
   return (
     <Container>
@@ -87,7 +158,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
           <DatePickerDeprecated
             date={filters.date}
-            onChange={(date) => setFilters({ date })}
+            onChange={(date) => {
+              setFilters({ date })
+              setRowFilters(emptyRowFilters)
+            }}
           />
         </FilterRow>
 
@@ -110,17 +184,17 @@ export default React.memo(function AssistanceNeedsAndActions() {
               ]}
               onChange={(option) =>
                 option
-                  ? setDisplayFilters({
-                      ...displayFilters,
+                  ? setRowFilters({
+                      ...rowFilters,
                       careArea: option.value
                     })
                   : undefined
               }
               selectedItem={
-                displayFilters.careArea !== ''
+                rowFilters.careArea !== ''
                   ? {
-                      label: displayFilters.careArea,
-                      value: displayFilters.careArea
+                      label: rowFilters.careArea,
+                      value: rowFilters.careArea
                     }
                   : {
                       label: i18n.common.all,
@@ -150,17 +224,17 @@ export default React.memo(function AssistanceNeedsAndActions() {
               ]}
               onChange={(option) =>
                 option
-                  ? setDisplayFilters({
-                      ...displayFilters,
+                  ? setRowFilters({
+                      ...rowFilters,
                       unit: option.value
                     })
                   : undefined
               }
               selectedItem={
-                displayFilters.unit !== ''
+                rowFilters.unit !== ''
                   ? {
-                      label: displayFilters.unit,
-                      value: displayFilters.unit
+                      label: rowFilters.unit,
+                      value: rowFilters.unit
                     }
                   : {
                       label: i18n.common.all,
@@ -172,6 +246,79 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </Wrapper>
         </FilterRow>
 
+        <FilterRow>
+          <FilterLabel>
+            {i18n.reports.assistanceNeedsAndActions.type}
+          </FilterLabel>
+          <Wrapper>
+            <Combobox
+              items={types}
+              onChange={(option) =>
+                option
+                  ? setColumnFilters({
+                      ...columnFilters,
+                      type: option
+                    })
+                  : undefined
+              }
+              selectedItem={columnFilters.type}
+              getItemLabel={(item) =>
+                i18n.reports.assistanceNeedsAndActions.types[item]
+              }
+            />
+          </Wrapper>
+        </FilterRow>
+
+        {columnFilters.type === 'DAYCARE' && (
+          <FilterRow>
+            <FilterLabel>
+              {i18n.reports.assistanceNeedsAndActions.level}
+            </FilterLabel>
+            <Wrapper>
+              <MultiSelect
+                options={daycareColumns}
+                onChange={(selectedItems) =>
+                  setColumnFilters({
+                    ...columnFilters,
+                    daycareColumns: selectedItems.map(
+                      (selectedItem) => selectedItem
+                    )
+                  })
+                }
+                value={columnFilters.daycareColumns}
+                getOptionId={(level) => level}
+                getOptionLabel={(level) => daycareColumnTexts[level]}
+                placeholder={i18n.common.all}
+              />
+            </Wrapper>
+          </FilterRow>
+        )}
+
+        {columnFilters.type === 'PRESCHOOL' && (
+          <FilterRow>
+            <FilterLabel>
+              {i18n.reports.assistanceNeedsAndActions.level}
+            </FilterLabel>
+            <Wrapper>
+              <MultiSelect
+                options={preschoolColumns}
+                onChange={(selectedItems) =>
+                  setColumnFilters({
+                    ...columnFilters,
+                    preschoolColumns: selectedItems.map(
+                      (selectedItem) => selectedItem
+                    )
+                  })
+                }
+                value={columnFilters.preschoolColumns}
+                getOptionId={(level) => level}
+                getOptionLabel={(level) => preschoolColumnTexts[level]}
+                placeholder={i18n.common.all}
+              />
+            </Wrapper>
+          </FilterRow>
+        )}
+
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {report.isSuccess && (
@@ -182,15 +329,15 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 ({
                   ...row,
                   ...Object.fromEntries([
-                    ...daycareAssistanceLevels.map((level) => [
+                    ...selectedDaycareColumns.map((level) => [
                       `DAYCARE-ASSISTANCE-${level}`,
                       row.daycareAssistanceCounts[level] ?? 0
                     ]),
-                    ...preschoolAssistanceLevels.map((level) => [
+                    ...selectedPreschoolColumns.map((level) => [
                       `PRESCHOOL-ASSISTANCE-${level}`,
                       row.preschoolAssistanceCounts[level] ?? 0
                     ]),
-                    ...otherAssistanceMeasureTypes.map((type) => [
+                    ...selectedOtherColumns.map((type) => [
                       `OTHER-ASSISTANCE-MEASURE-${type}`,
                       row.otherAssistanceMeasureCounts[type] ?? 0
                     ]),
@@ -214,19 +361,19 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   label: i18n.reports.common.groupName,
                   key: 'groupName'
                 },
-                ...daycareAssistanceLevels.map((level) => ({
+                ...selectedDaycareColumns.map((level) => ({
                   label:
                     i18n.childInformation.assistance.types
                       .daycareAssistanceLevel[level],
                   key: `DAYCARE-ASSISTANCE-${level}`
                 })),
-                ...preschoolAssistanceLevels.map((level) => ({
+                ...selectedPreschoolColumns.map((level) => ({
                   label:
                     i18n.childInformation.assistance.types
                       .preschoolAssistanceLevel[level],
                   key: `PRESCHOOL-ASSISTANCE-${level}`
                 })),
-                ...otherAssistanceMeasureTypes.map((type) => ({
+                ...selectedOtherColumns.map((type) => ({
                   label:
                     i18n.childInformation.assistance.types
                       .otherAssistanceMeasureType[type],
@@ -259,7 +406,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.common.unitName}</Th>
                   <Th>{i18n.reports.common.groupName}</Th>
-                  {daycareAssistanceLevels.map((level) => (
+                  {selectedDaycareColumns.map((level) => (
                     <Th key={level}>
                       {
                         i18n.childInformation.assistance.types
@@ -267,7 +414,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       }
                     </Th>
                   ))}
-                  {preschoolAssistanceLevels.map((level) => (
+                  {selectedPreschoolColumns.map((level) => (
                     <Th key={level}>
                       {
                         i18n.childInformation.assistance.types
@@ -275,7 +422,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       }
                     </Th>
                   ))}
-                  {otherAssistanceMeasureTypes.map((type) => (
+                  {selectedOtherColumns.map((type) => (
                     <Th key={type}>
                       {
                         i18n.childInformation.assistance.types
@@ -307,17 +454,17 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
                     <Td>{row.groupName}</Td>
-                    {daycareAssistanceLevels.map((level) => (
+                    {selectedDaycareColumns.map((level) => (
                       <Td key={level}>
                         {row.daycareAssistanceCounts[level] ?? 0}
                       </Td>
                     ))}
-                    {preschoolAssistanceLevels.map((level) => (
+                    {selectedPreschoolColumns.map((level) => (
                       <Td key={level}>
                         {row.preschoolAssistanceCounts[level] ?? 0}
                       </Td>
                     ))}
-                    {otherAssistanceMeasureTypes.map((type) => (
+                    {selectedOtherColumns.map((type) => (
                       <Td key={type}>
                         {row.otherAssistanceMeasureCounts[type] ?? 0}
                       </Td>
@@ -339,7 +486,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   <Td className="bold">{i18n.reports.common.total}</Td>
                   <Td />
                   <Td />
-                  {daycareAssistanceLevels.map((level) => (
+                  {selectedDaycareColumns.map((level) => (
                     <Td key={level}>
                       {reducePropertySum(
                         filteredRows,
@@ -347,7 +494,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       )}
                     </Td>
                   ))}
-                  {preschoolAssistanceLevels.map((level) => (
+                  {selectedPreschoolColumns.map((level) => (
                     <Td key={level}>
                       {reducePropertySum(
                         filteredRows,
@@ -355,7 +502,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       )}
                     </Td>
                   ))}
-                  {otherAssistanceMeasureTypes.map((type) => (
+                  {selectedOtherColumns.map((type) => (
                     <Td key={type}>
                       {reducePropertySum(
                         filteredRows,
