@@ -13,14 +13,6 @@ export class ChildDocumentPage {
   readonly editButton = this.page.findByDataQa('edit-button')
   readonly returnButton = this.page.findByDataQa('return-button')
 
-  async assertDocumentVisible() {
-    await this.status.waitUntilVisible()
-  }
-
-  async assertDocumentNotVisible() {
-    await this.status.waitUntilHidden()
-  }
-
   getTextQuestion(sectionName: string, questionName: string) {
     const section = this.page.find('[data-qa="document-section"]', {
       hasText: sectionName

@@ -90,7 +90,7 @@ describe('child document with person duplicate', () => {
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.assertDocumentNotVisible()
+    await childDocumentPage.status.waitUntilHidden()
   })
 
   it('unit supervisor doesn`t see pedagogical report document from duplicate', async () => {
@@ -108,7 +108,7 @@ describe('child document with person duplicate', () => {
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.assertDocumentNotVisible()
+    await childDocumentPage.status.waitUntilHidden()
   })
 
   it('unit supervisor sees hojks document from duplicate', async () => {
@@ -129,7 +129,7 @@ describe('child document with person duplicate', () => {
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
     const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.assertDocumentVisible()
+    await childDocumentPage.status.waitUntilVisible()
   })
 
   it('unit supervisor sees hojks documents from duplicate', async () => {
@@ -238,7 +238,7 @@ describe('child document with person duplicate', () => {
     const childDocumentPage = await childDocumentsSection.openChildDocument(
       hojksDocument.data.id
     )
-    await childDocumentPage.assertDocumentVisible()
+    await childDocumentPage.status.waitUntilVisible()
     await childDocumentPage.returnButton.click()
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.assertName(
