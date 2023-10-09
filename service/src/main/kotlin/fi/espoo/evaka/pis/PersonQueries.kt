@@ -71,15 +71,13 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 }
 
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
-        .mapTo<Boolean>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
@@ -94,8 +92,7 @@ FOR UPDATE
                 .trimIndent()
         )
         .bind("ssn", ssn)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery(
@@ -108,8 +105,7 @@ WHERE social_security_number = :ssn
                 .trimIndent()
         )
         .bind("ssn", ssn)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 }
 
 fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
@@ -320,8 +316,7 @@ RETURNING id
         )
         .bind("id", id)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PersonId>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<PersonId>()
 
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL

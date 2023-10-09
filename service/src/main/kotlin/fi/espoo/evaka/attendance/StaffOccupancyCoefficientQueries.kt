@@ -25,8 +25,7 @@ WHERE daycare_id = :unitId AND employee_id = :employeeId
         )
         .bind("unitId", unitId)
         .bind("employeeId", employeeId)
-        .mapTo<BigDecimal>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<BigDecimal>()
 
 fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,

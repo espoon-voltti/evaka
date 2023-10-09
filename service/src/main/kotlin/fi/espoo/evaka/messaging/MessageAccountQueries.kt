@@ -177,8 +177,7 @@ fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountTyp
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
     createQuery("SELECT account_id FROM message_draft WHERE id = :id")
         .bind("id", id)
-        .mapTo<MessageAccountId>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
     createQuery(
@@ -201,5 +200,4 @@ WHERE content.id = :id
 
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
     createQuery("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")
-        .mapTo<MessageAccountId>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<MessageAccountId>()

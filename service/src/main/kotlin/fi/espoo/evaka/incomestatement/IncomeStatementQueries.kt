@@ -14,12 +14,9 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
-import org.jdbi.v3.core.result.RowView
 
 enum class IncomeStatementType {
     HIGHEST_FEE,
@@ -136,8 +133,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                             if (selfEmployedEstimatedMonthlyIncome != null) {
                                 EstimatedIncome(
                                     selfEmployedEstimatedMonthlyIncome,
-                                    incomeStartDate =
-                                        column("self_employed_income_start_date"),
+                                    incomeStartDate = column("self_employed_income_start_date"),
                                     incomeEndDate = column("self_employed_income_end_date")
                                 )
                             } else {
@@ -148,8 +144,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                     null
                 }
 
-            val limitedCompanyIncomeSource =
-                column<IncomeSource?>("limited_company_income_source")
+            val limitedCompanyIncomeSource = column<IncomeSource?>("limited_company_income_source")
             val limitedCompany =
                 if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource)
                 else null
@@ -245,8 +240,7 @@ fun Database.Read.readIncomeStatementForPerson(
     createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
-        .map { mapIncomeStatement(includeEmployeeContent) }
-        .exactlyOneOrNull()
+        .exactlyOneOrNull { mapIncomeStatement(includeEmployeeContent) }
 
 private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
     this.bind("startDate", body.startDate)

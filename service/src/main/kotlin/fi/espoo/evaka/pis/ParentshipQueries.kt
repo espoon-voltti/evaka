@@ -30,7 +30,7 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).map(toParentship("child", "head")).exactlyOneOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull(toParentship("child", "head"))
 }
 
 fun Database.Read.getParentships(

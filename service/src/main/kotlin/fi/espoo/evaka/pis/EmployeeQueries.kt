@@ -349,8 +349,7 @@ ON CONFLICT (user_id) DO UPDATE SET
 fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
     createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
         .bind("userId", userId)
-        .mapTo<PinCode>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<PinCode>()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
     createQuery(

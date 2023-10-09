@@ -539,8 +539,7 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
 """
         )
         .bind("employeeId", employeeId)
-        .mapTo<StaffAttendance>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<StaffAttendance>()
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
@@ -558,8 +557,7 @@ ORDER BY departed DESC LIMIT 1
         .bind("employeeId", employeeId)
         .bind("startOfToday", now.atStartOfDay())
         .bind("startOfTomorrow", now.plusDays(1).atStartOfDay())
-        .mapTo<StaffAttendance>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<StaffAttendance>()
 
 fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     unitId: DaycareId,

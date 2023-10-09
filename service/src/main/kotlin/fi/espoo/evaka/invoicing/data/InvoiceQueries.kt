@@ -352,7 +352,7 @@ ORDER BY status DESC, due_date, invoice.id, row.idx
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
-    return createQuery("SELECT max(number) FROM invoice").mapTo<Long?>().exactlyOneOrNull() ?: 0
+    return createQuery("SELECT max(number) FROM invoice").exactlyOneOrNull<Long?>() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {

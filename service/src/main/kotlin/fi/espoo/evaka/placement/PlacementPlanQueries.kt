@@ -92,8 +92,7 @@ WHERE application_id = :applicationId AND deleted = false
     """
         )
         .bind("applicationId", applicationId)
-        .mapTo<QueryResult>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<QueryResult>()
         ?.let {
             PlacementPlan(
                 id = it.id,
@@ -124,8 +123,7 @@ WHERE application_id = :applicationId AND deleted = false
     """
         )
         .bind("applicationId", applicationId)
-        .mapTo<String>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<String>()
         ?: throw NotFound("Placement plan for application $applicationId not found")
 }
 

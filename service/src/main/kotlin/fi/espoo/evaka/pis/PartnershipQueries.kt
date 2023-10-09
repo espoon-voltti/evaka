@@ -33,7 +33,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).map(toPartnership("p1", "p2")).exactlyOneOrNull()
+    return createQuery(sql).bind("id", id).exactlyOneOrNull(toPartnership("p1", "p2"))
 }
 
 fun Database.Read.getPartnershipsForPerson(

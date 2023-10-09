@@ -33,8 +33,7 @@ fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
-        .mapTo<AssistanceFactor>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
@@ -86,8 +85,7 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<AssistanceFactor>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {
