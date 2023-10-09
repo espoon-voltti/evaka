@@ -4,6 +4,7 @@
 
 package evaka.codegen.apitypes
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import evaka.codegen.fileHeader
 import fi.espoo.evaka.ConstList
@@ -135,7 +136,7 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
         clazz.isData ->
             AnalyzedClass.DataClass(
                 name = clazz.qualifiedName ?: error("no class name"),
-                properties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+                properties = clazz.declaredMemberProperties.mapNotNull { analyzeMemberProperty(it) }
             )
         clazz.isSealed -> {
             val serializer =
@@ -159,19 +160,30 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
                             )
                         }
                     },
-                ownProperties = clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+                ownProperties =
+                    clazz.declaredMemberProperties.mapNotNull { analyzeMemberProperty(it) }
             )
         }
         else -> error("unhandled case: $clazz")
     }
 }
 
-private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedProperty {
+private fun analyzeMemberProperty(prop: KProperty1<out Any, *>): AnalyzedProperty? {
+    if (isIgnored(prop)) return null
+
     val forcedType =
         prop.findAnnotation() ?: prop.javaField?.getAnnotation(ForceCodeGenType::class.java)
     val type =
         forcedType?.type?.createType(nullable = prop.returnType.isMarkedNullable) ?: prop.returnType
     return AnalyzedProperty(prop.name, analyzeType(type))
+}
+
+private fun isIgnored(prop: KProperty1<out Any, *>): Boolean {
+    val jsonIgnore =
+        prop.findAnnotation<JsonIgnore>()
+            ?: prop.javaField?.getAnnotation(JsonIgnore::class.java)
+                ?: prop.getter.findAnnotation<JsonIgnore>()
+    return jsonIgnore != null
 }
 
 private fun analyzeDiscriminatedUnionMember(
@@ -184,7 +196,7 @@ private fun analyzeDiscriminatedUnionMember(
                 name = clazz.qualifiedName ?: error("no class name"),
                 properties =
                     listOf(discriminantProperty) +
-                        clazz.declaredMemberProperties.map { analyzeMemberProperty(it) }
+                        clazz.declaredMemberProperties.mapNotNull { analyzeMemberProperty(it) }
             )
         clazz.objectInstance != null ->
             AnalyzedClass.DataClass(
