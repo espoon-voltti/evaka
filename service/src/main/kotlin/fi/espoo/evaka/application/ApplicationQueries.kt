@@ -91,8 +91,7 @@ fun Database.Transaction.insertApplication(
         .bind("hideFromGuardian", hideFromGuardian)
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
-        .mapTo<ApplicationId>()
-        .exactlyOne()
+        .exactlyOne<ApplicationId>()
 }
 
 fun Database.Read.duplicateApplicationExists(
@@ -932,8 +931,7 @@ SELECT type FROM application WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<ApplicationType>()
-        .exactlyOne()
+        .exactlyOne<ApplicationType>()
 
 fun Database.Transaction.updateForm(
     id: ApplicationId,
@@ -1276,7 +1274,7 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().exactlyOne()
+    return createQuery(sql).bind("guardianId", citizenId).exactlyOne<Int>()
 }
 
 fun Database.Read.personHasSentApplicationWithId(
@@ -1296,6 +1294,5 @@ fun Database.Read.personHasSentApplicationWithId(
     return createQuery(sql)
         .bind("citizenId", citizenId)
         .bind("applicationId", applicationId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }

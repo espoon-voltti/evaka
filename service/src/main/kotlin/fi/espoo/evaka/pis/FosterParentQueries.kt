@@ -64,8 +64,7 @@ fun Database.Transaction.createFosterParentRelationship(
         )
         .bindKotlin(data)
         .executeAndReturnGeneratedKeys()
-        .mapTo<FosterParentId>()
-        .exactlyOne()
+        .exactlyOne<FosterParentId>()
 
 fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,

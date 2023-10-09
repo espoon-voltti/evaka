@@ -44,8 +44,7 @@ fun Database.Transaction.insertAttendance(
         .bind("startTime", startTime.withSecond(0).withNano(0))
         .bind("endTime", endTime?.withSecond(0)?.withNano(0))
         .executeAndReturnGeneratedKeys()
-        .mapTo<AttendanceId>()
-        .exactlyOne()
+        .exactlyOne<AttendanceId>()
 }
 
 fun Database.Read.getChildAttendance(

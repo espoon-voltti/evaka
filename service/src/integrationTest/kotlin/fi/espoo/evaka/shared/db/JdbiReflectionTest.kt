@@ -18,12 +18,7 @@ class JdbiReflectionTest : PureJdbiTest(resetDbBeforeEach = false) {
     private inline fun <reified T> mapOneValue(
         @Language("sql") query: String,
         vararg annotations: KClass<out Annotation>
-    ) =
-        db.read { tx ->
-            tx.createQuery(query)
-                .map { row -> row.mapColumn<T>("result", *annotations) }
-                .exactlyOne()
-        }
+    ) = db.read { tx -> tx.createQuery(query).exactlyOne { column<T>("result", *annotations) } }
 
     @Test
     fun `mapColumn works with primitive arrays`() {

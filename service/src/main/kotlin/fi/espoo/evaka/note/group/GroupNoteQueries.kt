@@ -37,8 +37,7 @@ RETURNING id
         .bindKotlin(note)
         .bind("groupId", groupId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<GroupNoteId>()
-        .exactlyOne()
+        .exactlyOne<GroupNoteId>()
 }
 
 fun Database.Transaction.updateGroupNote(
@@ -61,8 +60,7 @@ RETURNING *
         .bind("now", clock.now())
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
-        .mapTo<GroupNote>()
-        .exactlyOne()
+        .exactlyOne<GroupNote>()
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {

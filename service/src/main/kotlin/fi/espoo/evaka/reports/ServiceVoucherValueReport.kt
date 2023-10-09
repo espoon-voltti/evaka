@@ -115,8 +115,7 @@ fun freezeVoucherValueReportRows(
             .bind("month", month)
             .bind("takenAt", takenAt)
             .executeAndReturnGeneratedKeys()
-            .mapTo<UUID>()
-            .exactlyOne()
+            .exactlyOne<UUID>()
 
     // language=sql
     val sql =

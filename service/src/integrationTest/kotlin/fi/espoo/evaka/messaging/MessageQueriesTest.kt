@@ -112,28 +112,21 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
         assertEquals(
             content,
-            db.read {
-                it.createQuery("SELECT content FROM message_content").mapTo<String>().exactlyOne()
-            }
+            db.read { it.createQuery("SELECT content FROM message_content").exactlyOne<String>() }
         )
         assertEquals(
             title,
-            db.read {
-                it.createQuery("SELECT title FROM message_thread").mapTo<String>().exactlyOne()
-            }
+            db.read { it.createQuery("SELECT title FROM message_thread").exactlyOne<String>() }
         )
         assertEquals(
             "Employee Firstname",
-            db.read {
-                it.createQuery("SELECT sender_name FROM message").mapTo<String>().exactlyOne()
-            }
+            db.read { it.createQuery("SELECT sender_name FROM message").exactlyOne<String>() }
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
             db.read {
                     it.createQuery("SELECT recipient_names FROM message")
-                        .mapTo<Array<String>>()
-                        .exactlyOne()
+                        .exactlyOne<Array<String>>()
                 }
                 .toSet()
         )
@@ -354,8 +347,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 val messageId =
                     it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
                         .bind("threadId", threadId)
-                        .mapTo<MessageId>()
-                        .exactlyOne()
+                        .exactlyOne<MessageId>()
                 it.getThreadByMessageId(messageId)
             }
         assertEquals(

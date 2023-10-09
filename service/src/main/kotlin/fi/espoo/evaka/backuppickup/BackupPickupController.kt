@@ -127,8 +127,7 @@ fun Database.Transaction.createBackupPickup(
         .bind("childId", childId)
         .bind("name", data.name)
         .bind("phone", data.phone)
-        .mapTo<BackupPickupId>()
-        .exactlyOne()
+        .exactlyOne<BackupPickupId>()
 }
 
 fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> {

@@ -187,7 +187,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         """
             .trimIndent()
 
-    return createQuery(sql).bindKotlin(person).mapTo<PersonId>().exactlyOne()
+    return createQuery(sql).bindKotlin(person).exactlyOne<PersonId>()
 }
 
 fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
@@ -205,8 +205,7 @@ fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
         .bind("lastName", "Sukunimi")
         .bind("dateOfBirth", evakaClock.today())
         .bind("email", "")
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
@@ -249,8 +248,7 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
 
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
@@ -344,8 +342,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .bind("ssn", person.identity)
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.updatePersonBasicContactInfo(

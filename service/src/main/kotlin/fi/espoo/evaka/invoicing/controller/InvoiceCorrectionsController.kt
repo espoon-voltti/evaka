@@ -125,8 +125,7 @@ RETURNING id
                         )
                         .bindKotlin(body)
                         .executeAndReturnGeneratedKeys()
-                        .mapTo<InvoiceCorrectionId>()
-                        .exactlyOne()
+                        .exactlyOne<InvoiceCorrectionId>()
                 }
             }
         Audit.InvoiceCorrectionsCreate.log(

@@ -151,5 +151,5 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
         ) decisions
         """
             .trimIndent()
-    return createQuery(sql).bind("employeeId", userId).mapTo<Int>().exactlyOne()
+    return createQuery(sql).bind("employeeId", userId).exactlyOne<Int>()
 }

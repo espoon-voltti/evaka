@@ -21,7 +21,7 @@ fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
 """
-    return this.createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().exactlyOne()
+    return this.createQuery(sql).bind("personId", personId).exactlyOne<MessageAccountId>()
 }
 
 fun Database.Read.getEmployeeMessageAccountIds(
@@ -110,10 +110,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(
         RETURNING id
     """
             .trimIndent()
-    return createQuery(sql)
-        .bind("daycareGroupId", daycareGroupId)
-        .mapTo<MessageAccountId>()
-        .exactlyOne()
+    return createQuery(sql).bind("daycareGroupId", daycareGroupId).exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
@@ -134,7 +131,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
         RETURNING id
     """
             .trimIndent()
-    return createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().exactlyOne()
+    return createQuery(sql).bind("personId", personId).exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.upsertEmployeeMessageAccount(
@@ -152,8 +149,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(
     return createQuery(sql)
         .bind("employeeId", employeeId)
         .bind("accountType", accountType)
-        .mapTo<MessageAccountId>()
-        .exactlyOne()
+        .exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
@@ -170,8 +166,7 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId
 fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {
     return this.createQuery("SELECT type FROM message_account WHERE id = :accountId")
         .bind("accountId", accountId)
-        .mapTo<AccountType>()
-        .exactlyOne()
+        .exactlyOne<AccountType>()
 }
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =

@@ -125,8 +125,7 @@ fun Database.Transaction.archiveThread(
                 )
                 .bind("accountId", accountId)
                 .executeAndReturnGeneratedKeys()
-                .mapTo<MessageThreadFolderId>()
-                .exactlyOne()
+                .exactlyOne<MessageThreadFolderId>()
     }
 
     return this.createUpdate(
@@ -182,8 +181,7 @@ fun Database.Transaction.insertMessage(
         .bind("recipientNames", recipientNames)
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<MessageId>()
-        .exactlyOne()
+        .exactlyOne<MessageId>()
 }
 
 fun Database.Transaction.insertMessageContent(
@@ -196,8 +194,7 @@ fun Database.Transaction.insertMessageContent(
     return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender)
-        .mapTo<MessageContentId>()
-        .exactlyOne()
+        .exactlyOne<MessageContentId>()
 }
 
 fun Database.Transaction.insertRecipients(
@@ -381,8 +378,7 @@ fun Database.Transaction.insertThread(
         .bind("title", title)
         .bind("urgent", urgent)
         .bind("isCopy", isCopy)
-        .mapTo<MessageThreadId>()
-        .exactlyOne()
+        .exactlyOne<MessageThreadId>()
 }
 
 fun Database.Transaction.reAssociateMessageAttachments(
@@ -735,8 +731,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
         .bind("messageId", messageId)
         .bind("senderId", senderId)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<Message>()
-        .exactlyOne()
+        .exactlyOne<Message>()
 }
 
 fun Database.Read.getCitizenReceivers(
@@ -997,8 +992,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             )
             .bind("accountId", accountId)
             .bind("threadId", threadId)
-            .mapTo<ReceivedThread>()
-            .exactlyOne()
+            .exactlyOne<ReceivedThread>()
 
     val messagesByThread =
         getThreadMessages(
@@ -1530,8 +1524,7 @@ SELECT EXISTS (
 """
             )
         }
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
@@ -1545,5 +1538,4 @@ WHERE id = ${bind(id)}
                     .trimIndent()
             )
         }
-        .mapTo<MessageThreadStub>()
-        .exactlyOne()
+        .exactlyOne<MessageThreadStub>()

@@ -31,8 +31,7 @@ fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
         )
         .bind("childId", childId)
         .bind("language", language)
-        .mapTo<AssistanceNeedPreschoolDecisionId>()
-        .exactlyOne()
+        .exactlyOne<AssistanceNeedPreschoolDecisionId>()
         .also { decisionId ->
             createUpdate(
                     """

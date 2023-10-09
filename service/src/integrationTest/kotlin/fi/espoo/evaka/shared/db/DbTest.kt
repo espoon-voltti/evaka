@@ -18,9 +18,7 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     fun `mapJsonColumn can map a jsonb array to a kotlin array`() {
         val result =
-            db.read { tx ->
-                tx.fooJsonQuery().map { row -> row.mapJsonColumn<Array<Foo>>("json") }.exactlyOne()
-            }
+            db.read { tx -> tx.fooJsonQuery().exactlyOne { jsonColumn<Array<Foo>>("json") } }
         assertContentEquals(arrayOf(Foo("foo")), result)
         assertEquals(listOf(Foo("foo")), result.toList())
     }
@@ -28,18 +26,13 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     fun `mapJsonColumn can map a jsonb array to a kotlin list`() {
         val result =
-            db.read { tx ->
-                tx.fooJsonQuery().map { row -> row.mapJsonColumn<List<Foo>>("json") }.exactlyOne()
-            }
+            db.read { tx -> tx.fooJsonQuery().exactlyOne { jsonColumn<List<Foo>>("json") } }
         assertEquals(listOf(Foo("foo")), result)
     }
 
     @Test
     fun `mapJsonColumn can map a jsonb array to a kotlin set`() {
-        val result =
-            db.read { tx ->
-                tx.fooJsonQuery().map { row -> row.mapJsonColumn<Set<Foo>>("json") }.exactlyOne()
-            }
+        val result = db.read { tx -> tx.fooJsonQuery().exactlyOne { jsonColumn<Set<Foo>>("json") } }
         assertEquals(setOf(Foo("foo")), result)
     }
 }

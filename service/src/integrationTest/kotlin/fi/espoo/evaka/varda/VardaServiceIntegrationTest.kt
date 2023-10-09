@@ -93,8 +93,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 it.createQuery(
                         "SELECT count(*) FROM varda_reset_child WHERE reset_timestamp IS NULL"
                     )
-                    .mapTo<Int>()
-                    .exactlyOne()
+                    .exactlyOne<Int>()
             }
 
         assertEquals(0, countChildrenToBeReset())

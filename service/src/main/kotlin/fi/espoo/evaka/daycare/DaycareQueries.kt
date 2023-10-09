@@ -175,8 +175,7 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery(
@@ -201,8 +200,7 @@ SELECT :name, :areaId
         .bind("name", name)
         .bind("areaId", areaId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<DaycareId>()
-        .exactlyOne()
+        .exactlyOne<DaycareId>()
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
     createUpdate(
@@ -462,8 +460,7 @@ SELECT EXISTS(
 """
             )
         }
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 

@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
@@ -448,10 +447,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             val (citizenId, name) =
                 it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
-                    .map { r ->
-                        r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
-                    }
-                    .exactlyOne()
+                    .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
 
             assertEquals(duplicate.id, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
@@ -465,10 +461,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             val (citizenId, name) =
                 it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
-                    .map { r ->
-                        r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
-                    }
-                    .exactlyOne()
+                    .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
 
             assertEquals(null, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)

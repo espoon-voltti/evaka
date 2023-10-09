@@ -65,8 +65,7 @@ fun insertCaretakers(
             .bind("end", endDate)
             .bind("amount", amount)
             .executeAndReturnGeneratedKeys()
-            .mapTo<DaycareCaretakerId>()
-            .exactlyOne()
+            .exactlyOne<DaycareCaretakerId>()
     } catch (e: Exception) {
         throw mapPSQLException(e)
     }

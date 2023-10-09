@@ -99,8 +99,7 @@ fun Database.Transaction.createParentship(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .bind("conflict", conflict)
-        .map(toParentship("child", "head"))
-        .exactlyOne()
+        .exactlyOne(toParentship("child", "head"))
 }
 
 fun Database.Transaction.updateParentshipDuration(
@@ -142,8 +141,7 @@ SELECT EXISTS(
         )
         .bind("personId", personId)
         .bind("date", date)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 internal val aliasedPersonColumns: (String) -> String = { table ->

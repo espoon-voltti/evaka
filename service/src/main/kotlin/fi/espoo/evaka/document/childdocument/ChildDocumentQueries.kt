@@ -26,8 +26,7 @@ fun Database.Transaction.insertChildDocument(
         .bindKotlin(document)
         .bind("content", DocumentContent(answers = emptyList()))
         .bind("now", now)
-        .mapTo<ChildDocumentId>()
-        .exactlyOne()
+        .exactlyOne<ChildDocumentId>()
 }
 
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {

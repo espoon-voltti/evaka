@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.mapColumn
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(
@@ -92,10 +91,7 @@ RETURNING id, void_date IS NOT NULL AS voided
         .bindKotlin(key)
         .bind("inputDataVersion", KOSKI_DATA_VERSION)
         .bind("today", today)
-        .map { row ->
-            Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided"))
-        }
-        .exactlyOne()
+        .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
         .let { (id, voided) ->
             if (voided) {
                 createQuery(
@@ -181,8 +177,7 @@ USING (child_id, unit_id, type)
         )
         .bindKotlin(key)
         .bind("payload", payload)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
     createUpdate(

@@ -55,16 +55,12 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `replacing image`() {
         uploadImage(testChild_1.id, imageName1, imageData1)
         val oldImage =
-            db.read {
-                it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().exactlyOne()
-            }
+            db.read { it.createQuery("SELECT * FROM child_images").exactlyOne<ChildImage>() }
 
         uploadImage(testChild_1.id, imageName2, imageData2)
 
         val newImage =
-            db.read {
-                it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().exactlyOne()
-            }
+            db.read { it.createQuery("SELECT * FROM child_images").exactlyOne<ChildImage>() }
         assertNotEquals(oldImage.id, newImage.id)
 
         val receivedData = downloadImage(newImage.id)

@@ -69,8 +69,7 @@ RETURNING id"""
         .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
         .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PlacementPlanId>()
-        .exactlyOne()
+        .exactlyOne<PlacementPlanId>()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
@@ -285,5 +284,4 @@ AND pp.unit_confirmation_status != :unitConfirmationStatus::confirmation_status
             )
         )
         .bind("unitConfirmationStatus", PlacementPlanConfirmationStatus.REJECTED)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()

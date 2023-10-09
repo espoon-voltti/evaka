@@ -26,8 +26,7 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     return createQuery(sql)
         .bindKotlin(data)
         .bind("childId", childId)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .exactlyOne()
+        .exactlyOne<AssistanceNeedVoucherCoefficient>()
 }
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(

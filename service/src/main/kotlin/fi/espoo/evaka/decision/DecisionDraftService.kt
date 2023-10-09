@@ -126,7 +126,7 @@ fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
             """
             .trimIndent()
 
-    return tx.createQuery(sql).bind("id", unitId).mapTo<DecisionUnit>().exactlyOne()
+    return tx.createQuery(sql).bind("id", unitId).exactlyOne<DecisionUnit>()
 }
 
 private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {

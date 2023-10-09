@@ -23,8 +23,7 @@ fun Database.Transaction.insertVasuDocument(
     val child =
         createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
             .bind("id", childId)
-            .mapTo<VasuChild>(qualifiers = emptyArray())
-            .exactlyOne()
+            .exactlyOne<VasuChild>(qualifiers = emptyArray())
 
     val guardiansAndFosterParents =
         createQuery(
@@ -72,8 +71,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("childId", childId)
             .bind("basics", basics)
             .bind("templateId", template.id)
-            .mapTo<VasuDocumentId>()
-            .exactlyOne()
+            .exactlyOne<VasuDocumentId>()
 
     createUpdate(
             """
@@ -328,8 +326,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
         .bind("documentId", documentId)
         .bind("createdBy", createdBy)
         .bind("eventType", eventType)
-        .mapTo<VasuDocumentEvent>()
-        .exactlyOne()
+        .exactlyOne<VasuDocumentEvent>()
 }
 
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
@@ -400,8 +397,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
                         .trimIndent()
                 )
                 .bind("id", guardianId)
-                .mapTo<VasuGuardian>(qualifiers = emptyArray())
-                .exactlyOne()
+                .exactlyOne<VasuGuardian>(qualifiers = emptyArray())
         }
 
     createUpdate(

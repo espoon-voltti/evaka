@@ -69,8 +69,7 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,

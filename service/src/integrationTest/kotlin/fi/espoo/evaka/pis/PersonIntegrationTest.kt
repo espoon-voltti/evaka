@@ -164,8 +164,6 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         """
                 .trimIndent()
-        return db.read {
-            it.createQuery(sql).bind("personId", personId).mapTo<Boolean>().exactlyOne()
-        }
+        return db.read { it.createQuery(sql).bind("personId", personId).exactlyOne<Boolean>() }
     }
 }

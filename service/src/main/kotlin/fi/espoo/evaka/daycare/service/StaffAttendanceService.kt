@@ -129,8 +129,7 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {

@@ -397,8 +397,7 @@ RETURNING id
         )
         .bind("personId", personId)
         .also { it.bindIncomeStatementBody(body) }
-        .mapTo<IncomeStatementId>()
-        .exactlyOne()
+        .exactlyOne<IncomeStatementId>()
 }
 
 fun Database.Transaction.updateIncomeStatement(
@@ -561,8 +560,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             .bind("sentStartDate", sentStartDate)
             .bind("sentEndDate", sentEndDate)
             .bind("placementValidDate", placementValidDate)
-            .mapTo<Int>()
-            .exactlyOne()
+            .exactlyOne<Int>()
     val sortColumn =
         when (sortBy) {
             IncomeStatementSortParam.CREATED -> "i.created ${sortDirection.name}, i.start_date"
@@ -608,8 +606,7 @@ fun Database.Read.incomeStatementExistsForStartDate(
         )
         .bind("personId", personId)
         .bind("startDate", startDate)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
 

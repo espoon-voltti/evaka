@@ -850,5 +850,4 @@ FROM partner_children, partner_fridge_children
             .bind("partnerId", partnerId)
             .bind("childIds", childIds)
             .bind("dateRange", dateRange)
-            .mapTo<Boolean>()
-            .exactlyOne()
+            .exactlyOne<Boolean>()

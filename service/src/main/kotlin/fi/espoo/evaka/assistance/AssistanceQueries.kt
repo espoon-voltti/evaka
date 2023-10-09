@@ -51,8 +51,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<AssistanceFactorId>()
-        .exactlyOne()
+        .exactlyOne<AssistanceFactorId>()
 
 fun Database.Transaction.updateAssistanceFactor(
     user: AuthenticatedUser,
@@ -115,8 +114,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<DaycareAssistanceId>()
-        .exactlyOne()
+        .exactlyOne<DaycareAssistanceId>()
 
 fun Database.Transaction.updateDaycareAssistance(
     user: AuthenticatedUser,
@@ -173,8 +171,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<PreschoolAssistanceId>()
-        .exactlyOne()
+        .exactlyOne<PreschoolAssistanceId>()
 
 fun Database.Transaction.updatePreschoolAssistance(
     user: AuthenticatedUser,
@@ -231,8 +228,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<OtherAssistanceMeasureId>()
-        .exactlyOne()
+        .exactlyOne<OtherAssistanceMeasureId>()
 
 fun Database.Transaction.updateOtherAssistanceMeasure(
     user: AuthenticatedUser,

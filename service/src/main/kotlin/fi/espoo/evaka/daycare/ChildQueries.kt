@@ -29,8 +29,7 @@ fun Database.Transaction.createChild(child: Child): Child {
         .bind("medication", child.additionalInformation.medication)
         .bind("languageAtHome", child.additionalInformation.languageAtHome)
         .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
-        .mapTo<Child>()
-        .exactlyOne()
+        .exactlyOne<Child>()
 }
 
 fun Database.Transaction.upsertChild(child: Child) {

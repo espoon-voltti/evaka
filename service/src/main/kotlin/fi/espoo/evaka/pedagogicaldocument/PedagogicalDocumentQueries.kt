@@ -81,6 +81,5 @@ fun Database.Read.getPedagogicalDocumentChild(
             "SELECT child_id FROM pedagogical_document WHERE id = :pedagogicalDocumentId"
         )
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
-        .mapTo<ChildId>()
-        .exactlyOne()
+        .exactlyOne<ChildId>()
 }

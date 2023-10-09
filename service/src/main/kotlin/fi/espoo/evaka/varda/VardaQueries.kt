@@ -38,8 +38,7 @@ fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
                 .trimIndent()
         )
         .bind("evaka_child_id", evakaChildId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,

@@ -35,18 +35,14 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val runAt =
             db.read {
-                it.createQuery("SELECT run_at FROM async_job")
-                    .mapTo<HelsinkiDateTime>()
-                    .exactlyOne()
+                it.createQuery("SELECT run_at FROM async_job").exactlyOne<HelsinkiDateTime>()
             }
 
         val ref = db.transaction { it.claimJob(HelsinkiDateTime.now(), listOf(jobType))!! }
         assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) =
             db.read {
-                it.createQuery("SELECT run_at, retry_count FROM async_job")
-                    .mapTo<Retry>()
-                    .exactlyOne()
+                it.createQuery("SELECT run_at, retry_count FROM async_job").exactlyOne<Retry>()
             }
         assertTrue(retryRunAt > runAt)
         assertEquals(1233, retryCount)
@@ -60,9 +56,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val completedAt =
             db.read {
-                it.createQuery("SELECT completed_at FROM async_job")
-                    .mapTo<HelsinkiDateTime>()
-                    .exactlyOne()
+                it.createQuery("SELECT completed_at FROM async_job").exactlyOne<HelsinkiDateTime>()
             }
         assertTrue(completedAt > runAt)
     }

@@ -149,8 +149,7 @@ fun Database.Transaction.insertServiceNeed(
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
-        .mapTo<ServiceNeedId>()
-        .exactlyOne()
+        .exactlyOne<ServiceNeedId>()
 }
 
 fun Database.Transaction.updateServiceNeed(

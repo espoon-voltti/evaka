@@ -128,8 +128,7 @@ fun Database.Transaction.markStaffArrival(
         .bind("arrived", arrivalTime)
         .bind("occupancyCoefficient", occupancyCoefficient)
         .executeAndReturnGeneratedKeys()
-        .mapTo<StaffAttendanceId>()
-        .exactlyOne()
+        .exactlyOne<StaffAttendanceId>()
 
 data class StaffAttendance(
     val id: StaffAttendanceId?,
@@ -166,8 +165,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("occupancyCoefficient", occupancyCoefficient)
             .bind("type", type)
             .executeAndReturnGeneratedKeys()
-            .mapTo<StaffAttendanceId>()
-            .exactlyOne()
+            .exactlyOne<StaffAttendanceId>()
     } else {
         createUpdate(
                 """
@@ -234,8 +232,7 @@ fun Database.Transaction.markExternalStaffArrival(
         )
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
-        .mapTo<StaffAttendanceExternalId>()
-        .exactlyOne()
+        .exactlyOne<StaffAttendanceExternalId>()
 
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,
@@ -277,8 +274,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("departed", departureTime)
             .bind("occupancyCoefficient", occupancyCoefficient)
             .executeAndReturnGeneratedKeys()
-            .mapTo<StaffAttendanceExternalId>()
-            .exactlyOne()
+            .exactlyOne<StaffAttendanceExternalId>()
     } else {
         return createUpdate(
                 """

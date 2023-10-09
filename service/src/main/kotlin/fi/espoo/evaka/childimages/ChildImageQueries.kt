@@ -15,7 +15,7 @@ fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
     """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<ChildImageId>().exactlyOne()
+    return createQuery(sql).bind("childId", childId).exactlyOne<ChildImageId>()
 }
 
 fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {

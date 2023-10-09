@@ -73,5 +73,4 @@ RETURNING id
         )
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
-        .mapTo<StaffOccupancyCoefficientId>()
-        .exactlyOne()
+        .exactlyOne<StaffOccupancyCoefficientId>()

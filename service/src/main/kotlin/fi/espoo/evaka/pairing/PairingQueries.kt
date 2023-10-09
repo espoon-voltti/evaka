@@ -35,8 +35,7 @@ fun Database.Transaction.initPairing(
         .bind("employeeId", employeeId)
         .bind("expires", clock.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
-        .mapTo<Pairing>()
-        .exactlyOne()
+        .exactlyOne<Pairing>()
 }
 
 fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: String): Pairing {

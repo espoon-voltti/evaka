@@ -70,8 +70,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
         )
         .bindKotlin("employee", employee)
         .executeAndReturnGeneratedKeys()
-        .mapTo<Employee>()
-        .exactlyOne()
+        .exactlyOne<Employee>()
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
@@ -99,8 +98,7 @@ RETURNING id, preferred_first_name, first_name, last_name, email, external_id, c
         .bindKotlin("employee", employee)
         .bind("now", clock.now())
         .executeAndReturnGeneratedKeys()
-        .mapTo<Employee>()
-        .exactlyOne()
+        .exactlyOne<Employee>()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
     createQuery(
@@ -116,8 +114,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<EmployeeRoles>()
-        .exactlyOne()
+        .exactlyOne<EmployeeRoles>()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
     createQuery(
@@ -366,8 +363,7 @@ SELECT EXISTS (
         )
         .bind("employeeId", employeeId)
         .bind("pin", pin)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) =
     createUpdate(

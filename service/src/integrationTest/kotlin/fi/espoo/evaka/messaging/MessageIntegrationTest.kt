@@ -419,19 +419,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 1,
-                it.createQuery("SELECT COUNT(id) FROM message_content").mapTo<Int>().exactlyOne()
+                it.createQuery("SELECT COUNT(id) FROM message_content").exactlyOne<Int>()
             )
             assertEquals(
                 3,
-                it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().exactlyOne()
+                it.createQuery("SELECT COUNT(id) FROM message_thread").exactlyOne<Int>()
             )
-            assertEquals(
-                3,
-                it.createQuery("SELECT COUNT(id) FROM message").mapTo<Int>().exactlyOne()
-            )
+            assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message").exactlyOne<Int>())
             assertEquals(
                 5,
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().exactlyOne()
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
             )
         }
 
@@ -667,8 +664,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 it.createQuery(
                         "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
                     )
-                    .mapTo<Int>()
-                    .exactlyOne()
+                    .exactlyOne<Int>()
             }
         )
 
@@ -911,8 +907,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val messageThreadId =
                 tx.createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
                     .bind("contentId", messageContentId)
-                    .mapTo<MessageThreadId>()
-                    .exactlyOne()
+                    .exactlyOne<MessageThreadId>()
             assertEquals(messageThreadId, note.messageThreadId)
         }
     }

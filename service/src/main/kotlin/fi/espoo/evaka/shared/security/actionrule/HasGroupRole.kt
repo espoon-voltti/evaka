@@ -65,8 +65,7 @@ SELECT EXISTS (
                                 .trimIndent()
                         )
                     }
-                    .mapTo<Boolean>()
-                    .exactlyOne()
+                    .exactlyOne<Boolean>()
             else -> false
         }
 

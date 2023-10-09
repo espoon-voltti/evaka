@@ -146,8 +146,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun countActiveStudyRights() =
             db.read {
                 it.createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
-                    .mapTo<Long>()
-                    .exactlyOne()
+                    .exactlyOne<Long>()
             }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))

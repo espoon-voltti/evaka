@@ -148,8 +148,7 @@ SELECT EXISTS (
                                             .trimIndent()
                                     )
                                 }
-                                .mapTo<Boolean>()
-                                .exactlyOne()
+                                .exactlyOne<Boolean>()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }
@@ -296,8 +295,7 @@ SELECT EXISTS (
                                             .trimIndent()
                                     )
                                 }
-                                .mapTo<Boolean>()
-                                .exactlyOne()
+                                .exactlyOne<Boolean>()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }

@@ -105,9 +105,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(r.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
             }
         }
-        db.read { r ->
-            assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
-        }
+        db.read { r -> assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -138,9 +136,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
             }
         }
-        db.read {
-            assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
-        }
+        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -171,9 +167,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertTrue(it.getPlacementRowsByChild(testChild_1.id).toList().isEmpty())
             }
         }
-        db.read {
-            assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted)
-        }
+        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -222,9 +216,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         it[1].period()
                     )
                 }
-                assertTrue(
-                    r.getPlacementPlanRowByApplication(ids.applicationId).exactlyOne().deleted
-                )
+                assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).deleted)
             }
         } else {
             rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
@@ -373,7 +365,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            r.getDecisionRowById(decisionId).exactlyOne().also {
+            r.getDecisionRowById(decisionId).also {
                 assertEquals(DecisionStatus.ACCEPTED, it.status)
                 assertNotNull(it.resolved)
                 assertEquals(requestedStartDate, it.requestedStartDate)
@@ -399,7 +391,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            r.getDecisionRowById(decisionId).exactlyOne().also {
+            r.getDecisionRowById(decisionId).also {
                 assertEquals(DecisionStatus.REJECTED, it.status)
                 assertNotNull(it.resolved)
                 assertNull(it.requestedStartDate)

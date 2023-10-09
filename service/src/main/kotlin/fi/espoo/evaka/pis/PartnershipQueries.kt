@@ -131,8 +131,7 @@ fun Database.Transaction.createPartnership(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .bind("conflict", conflict)
-        .map(toPartnership("p1", "p2"))
-        .exactlyOne()
+        .exactlyOne(toPartnership("p1", "p2"))
 }
 
 fun Database.Transaction.updatePartnershipDuration(

@@ -96,8 +96,7 @@ SELECT EXISTS(
                     .trimIndent()
             )
             .bind("id", id)
-            .mapTo<Boolean>()
-            .exactlyOne()
+            .exactlyOne<Boolean>()
     }
 
     fun maybeScheduleEmailNotification(tx: Database.Transaction, id: PedagogicalDocumentId) {

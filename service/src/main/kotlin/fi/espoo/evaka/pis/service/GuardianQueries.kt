@@ -34,8 +34,7 @@ SELECT EXISTS (
         )
         .bind("guardianId", guardianId)
         .bind("childId", childId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
     return createQuery("SELECT guardian_id FROM guardian_blocklist WHERE child_id = :childId")

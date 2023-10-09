@@ -344,7 +344,6 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                     .trimIndent()
             )
             .bind("unitId", unitId)
-            .mapTo<Boolean>()
-            .exactlyOne()
+            .exactlyOne<Boolean>()
     }
 }
