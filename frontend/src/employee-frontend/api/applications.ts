@@ -80,8 +80,8 @@ export const deserializeApplicationSummary = (
   dateOfBirth: LocalDate.parseNullableIso(json.dateOfBirth),
   dueDate: LocalDate.parseNullableIso(json.dueDate),
   startDate: LocalDate.parseNullableIso(json.startDate),
-  placementProposalStartDate: LocalDate.parseNullableIso(
-    json.placementProposalStartDate
+  placementPlanStartDate: LocalDate.parseNullableIso(
+    json.placementPlanStartDate
   )
 })
 

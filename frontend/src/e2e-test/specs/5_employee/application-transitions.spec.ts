@@ -256,8 +256,8 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    const proposalStartDate = preferredStartDate.addDays(1)
-    await placementDraftPage.startDate.fill(proposalStartDate)
+    const planStartDate = preferredStartDate.addDays(1)
+    await placementDraftPage.startDate.fill(planStartDate)
 
     await placementDraftPage.assertOccupancies(fixtures.daycareFixture.id, {
       max3Months: '14,3 %',
@@ -279,7 +279,7 @@ describe('Application transitions', () => {
 
     await applicationWorkbench.waitUntilLoaded()
     await applicationWorkbench.openDecisionQueue()
-    await applicationWorkbench.assertApplicationStartDate(0, proposalStartDate)
+    await applicationWorkbench.assertApplicationStartDate(0, planStartDate)
   })
 
   test('Placement dialog shows warning if guardian has restricted details', async () => {

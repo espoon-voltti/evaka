@@ -330,7 +330,7 @@ const ApplicationsList = React.memo(function Applications({
         <Bold>{application.dueDate?.format()}</Bold>
       </Td>
       <Td data-qa="start-date">
-        {application.placementProposalStartDate?.format() ??
+        {application.placementPlanStartDate?.format() ??
           application.startDate?.format() ??
           '-'}
       </Td>
@@ -419,7 +419,7 @@ const ApplicationsList = React.memo(function Applications({
               </div>
             }
           >
-            {application.placementProposalUnitName ||
+            {application.placementPlanUnitName ||
               application.preferredUnits[0]?.name}
           </Tooltip>
         </span>

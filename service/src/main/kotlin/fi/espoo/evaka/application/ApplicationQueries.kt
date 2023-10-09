@@ -539,8 +539,8 @@ fun Database.Read.fetchApplicationSummaries(
                                         row.mapColumn("unit_reject_other_reason")
                                 )
                             },
-                    placementProposalStartDate = row.mapColumn("placement_plan_start_date"),
-                    placementProposalUnitName = row.mapColumn("placement_plan_unit_name"),
+                    placementPlanStartDate = row.mapColumn("placement_plan_start_date"),
+                    placementPlanUnitName = row.mapColumn("placement_plan_unit_name"),
                     currentPlacementUnit =
                         row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
