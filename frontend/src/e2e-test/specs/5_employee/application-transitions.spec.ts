@@ -257,7 +257,7 @@ describe('Application transitions', () => {
     await placementDraftPage.waitUntilLoaded()
 
     const proposalStartDate = preferredStartDate.addDays(1)
-    await placementDraftPage.setStartDate(proposalStartDate)
+    await placementDraftPage.startDate.fill(proposalStartDate)
 
     await placementDraftPage.assertOccupancies(fixtures.daycareFixture.id, {
       max3Months: '14,3 %',
