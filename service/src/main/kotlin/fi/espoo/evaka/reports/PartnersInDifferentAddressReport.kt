@@ -92,8 +92,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(
                     .trimIndent()
             )
         }
-        .mapTo<PartnersInDifferentAddressReportRow>()
-        .toList()
+        .toList<PartnersInDifferentAddressReportRow>()
 
 data class PartnersInDifferentAddressReportRow(
     val careAreaName: String,

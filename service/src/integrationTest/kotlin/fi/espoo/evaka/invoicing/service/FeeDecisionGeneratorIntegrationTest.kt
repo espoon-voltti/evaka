@@ -3986,7 +3986,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().toList() }
+        return db.read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
             .shuffled() // randomize order to expose assumptions
     }
 
@@ -3994,7 +3994,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val headPredicate =
             Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
         return db.read { tx ->
-                tx.createQuery(feeDecisionQuery(headPredicate)).mapTo<FeeDecision>().toList()
+                tx.createQuery(feeDecisionQuery(headPredicate)).toList<FeeDecision>()
             }
             .shuffled() // randomize order to expose assumptions
     }

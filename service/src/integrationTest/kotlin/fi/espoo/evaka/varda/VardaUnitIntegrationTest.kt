@@ -173,7 +173,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 }
 
 fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> =
-    db.read { it.createQuery("SELECT * FROM varda_unit").mapTo<VardaUnitRow>().toList() }
+    db.read { it.createQuery("SELECT * FROM varda_unit").toList<VardaUnitRow>() }
 
 data class VardaUnitRow(
     val evakaDaycareId: DaycareId,

@@ -99,8 +99,7 @@ private fun Database.Read.getApplicationsRows(
                     .trimIndent()
             )
         }
-        .mapTo<ApplicationsReportRow>()
-        .toList()
+        .toList<ApplicationsReportRow>()
 
 data class ApplicationsReportRow(
     val careAreaName: String,

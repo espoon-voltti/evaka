@@ -86,8 +86,7 @@ private fun Database.Read.getServiceNeedRows(
             )
         }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
-        .mapTo<ServiceNeedReportRow>()
-        .toList()
+        .toList<ServiceNeedReportRow>()
 
 data class ServiceNeedReportRow(
     val careAreaName: String,

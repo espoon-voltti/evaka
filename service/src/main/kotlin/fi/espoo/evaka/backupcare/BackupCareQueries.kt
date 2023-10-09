@@ -34,8 +34,7 @@ WHERE child_id = :childId
 """
         )
         .bind("childId", childId)
-        .mapTo<ChildBackupCare>()
-        .toList()
+        .toList<ChildBackupCare>()
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
@@ -84,8 +83,7 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
         )
         .bind("daycareId", daycareId)
         .bind("period", period)
-        .mapTo<UnitBackupCare>()
-        .toList()
+        .toList<UnitBackupCare>()
 
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
@@ -104,8 +102,7 @@ fun Database.Read.getBackupCareChildrenInGroup(
         .bind("daycareId", daycareId)
         .bind("groupId", groupId)
         .bind("period", period)
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()
 
 data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 

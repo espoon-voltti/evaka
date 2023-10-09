@@ -609,8 +609,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             .trimIndent()
                     )
                     .bind("employeeId", employee.id)
-                    .mapTo<Boolean>()
-                    .toList()
+                    .toList<Boolean>()
             }
             .let { accounts ->
                 if (accounts.size == 1) {

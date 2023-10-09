@@ -189,8 +189,7 @@ WHERE
         .bind("from", from)
         .bind("to", to)
         .bind("statuses", statuses)
-        .mapTo<QueryResult>()
-        .toList()
+        .toList<QueryResult>()
         .map {
             PlacementPlanDetails(
                 id = it.id,
@@ -252,9 +251,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
         """
         )
         .bind("id", childId)
-        .mapTo<PlacementDraftChild>()
-        .toList()
-        .singleOrNull()
+        .exactlyOneOrNull<PlacementDraftChild>()
 }
 
 fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
@@ -267,9 +264,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
         """
         )
         .bind("id", guardianId)
-        .mapTo<Boolean>()
-        .toList()
-        .singleOrNull()
+        .exactlyOneOrNull<Boolean>()
 }
 
 fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int =

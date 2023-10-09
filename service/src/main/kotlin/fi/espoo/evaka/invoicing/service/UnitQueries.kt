@@ -8,7 +8,5 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getUnitsThatAreInvoiced(): List<DaycareId> {
-    return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
-        .mapTo<DaycareId>()
-        .toList()
+    return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality").toList<DaycareId>()
 }

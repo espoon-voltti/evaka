@@ -83,8 +83,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(1, countBefore)
@@ -95,8 +94,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(0, countAfter)
@@ -145,8 +143,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultIdDuplicate)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(1, countBefore)
@@ -157,8 +154,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultId)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(1, countAfter)
@@ -206,8 +202,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childIdDuplicate)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(1, countBefore)
@@ -218,8 +213,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.read {
                 it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childId)
-                    .mapTo<Int>()
-                    .toList()
+                    .toList<Int>()
                     .size
             }
         assertEquals(1, countAfter)

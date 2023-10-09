@@ -12,8 +12,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
@@ -57,8 +55,7 @@ GROUP BY ce.id, cea.unit_id
         )
         .bind("unitId", unitId)
         .bind("range", range)
-        .mapTo<CalendarEvent>()
-        .toList()
+        .toList<CalendarEvent>()
 
 fun Database.Transaction.createCalendarEvent(event: CalendarEventForm): CalendarEventId {
     val eventId =
@@ -212,8 +209,7 @@ WHERE cp.period && ce.period
         )
         .bind("guardianId", guardianId)
         .bind("range", range)
-        .mapTo<CitizenCalendarEventRow>()
-        .toList()
+        .toList<CitizenCalendarEventRow>()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
     this.createQuery(
@@ -318,12 +314,11 @@ GROUP BY mp.parent_id, p.language
 """
             )
         }
-        .map { row ->
+        .toList {
             ParentWithEvents(
-                parentId = row.mapColumn("parent_id"),
-                language = Language.tryValueOf(row.mapColumn<String?>("language")) ?: Language.fi,
-                events = row.mapJsonColumn<List<CalendarEventNotificationData>>("events")
+                parentId = column("parent_id"),
+                language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
+                events = jsonColumn<List<CalendarEventNotificationData>>("events")
             )
         }
-        .toList()
 }

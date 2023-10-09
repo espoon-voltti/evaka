@@ -117,8 +117,7 @@ JOIN care_area ON care_area.id = daycare.care_area_id
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceNeedDecisionsReportRow>()
-        .toList()
+        .toList<AssistanceNeedDecisionsReportRow>()
 
 data class AssistanceNeedDecisionsReportRow(
     val id: UUID,

@@ -62,8 +62,7 @@ ORDER BY vsn.updated DESC
     """
                 .trimIndent()
         )
-        .mapTo<VardaErrorReportRow>()
-        .toList()
+        .toList<VardaErrorReportRow>()
 
 data class VardaErrorReportRow(
     val serviceNeedId: ServiceNeedId,

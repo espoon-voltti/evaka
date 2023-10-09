@@ -104,8 +104,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         db.transaction {
             val rows =
                 it.createQuery("SELECT * FROM varda_organizer_child")
-                    .mapTo<VardaChildOrganizerRow>()
-                    .toList()
+                    .toList<VardaChildOrganizerRow>()
 
             assertEquals(1, rows.size)
             assertEquals(childId, rows.first().evakaPersonId)

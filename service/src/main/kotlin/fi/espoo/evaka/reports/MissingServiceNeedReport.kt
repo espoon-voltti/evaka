@@ -112,8 +112,7 @@ private fun Database.Read.getMissingServiceNeedRows(
                     .trimIndent()
             )
         }
-        .mapTo<MissingServiceNeedReportRow>()
-        .toList()
+        .toList<MissingServiceNeedReportRow>()
 
 data class MissingServiceNeedReportRow(
     val careAreaName: String,

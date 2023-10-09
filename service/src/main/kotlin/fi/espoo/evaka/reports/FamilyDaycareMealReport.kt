@@ -120,8 +120,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                             .trimIndent()
                     )
                 }
-                .mapTo<FamilyDaycareMealReportRow>()
-                .toList()
+                .toList<FamilyDaycareMealReportRow>()
 
         val childrenByDaycare = mutableMapOf<String, MutableList<FamilyDaycareMealChildResult>>()
         val daycaresByArea = mutableMapOf<String, MutableList<FamilyDaycareMealDaycareResult>>()

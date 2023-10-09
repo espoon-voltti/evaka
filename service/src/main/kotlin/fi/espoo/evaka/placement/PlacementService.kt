@@ -481,8 +481,7 @@ fun Database.Read.getUnitChildrenCapacities(
         )
         .bind("unitId", unitId)
         .bind("date", date)
-        .mapTo<UnitChildrenCapacityFactors>()
-        .toList()
+        .toList<UnitChildrenCapacityFactors>()
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
@@ -613,8 +612,7 @@ JOIN LATERAL (
             )
             .bind("unitId", unitId)
             .bind("evakaLaunch", evakaLaunch)
-            .mapTo<MissingGroupPlacement>()
-            .toList()
+            .toList<MissingGroupPlacement>()
 
     val missingBackupCareGroups =
         tx.createQuery(
@@ -646,8 +644,7 @@ WHERE bc.unit_id = :unitId AND bc.group_id IS NULL
             )
             .bind("unitId", unitId)
             .bind("evakaLaunch", evakaLaunch)
-            .mapTo<MissingGroupPlacement>()
-            .toList()
+            .toList<MissingGroupPlacement>()
 
     return missingGroupPlacements + missingBackupCareGroups
 }

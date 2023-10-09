@@ -114,7 +114,7 @@ fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
             ORDER BY name
             """
             .trimIndent()
-    return tx.createQuery(sql).mapTo<DecisionUnit>().toList()
+    return tx.createQuery(sql).toList<DecisionUnit>()
 }
 
 fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {

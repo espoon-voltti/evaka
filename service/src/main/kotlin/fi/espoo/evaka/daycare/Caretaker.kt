@@ -26,7 +26,7 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
         """
             .trimIndent()
 
-    return tx.createQuery(sql).bind("groupId", groupId).mapTo<CaretakerAmount>().toList()
+    return tx.createQuery(sql).bind("groupId", groupId).toList<CaretakerAmount>()
 }
 
 fun insertCaretakers(

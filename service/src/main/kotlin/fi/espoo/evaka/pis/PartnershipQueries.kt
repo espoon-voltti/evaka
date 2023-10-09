@@ -9,11 +9,10 @@ import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import java.util.UUID
-import org.jdbi.v3.core.result.RowView
 
 fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
     // language=SQL
@@ -63,8 +62,7 @@ fun Database.Read.getPartnershipsForPerson(
     return createQuery(sql)
         .bind("personId", personId)
         .bind("includeConflicts", includeConflicts)
-        .map(toPartnership("p1", "p2"))
-        .toList()
+        .toList(toPartnership("p1", "p2"))
 }
 
 fun Database.Read.getPartnersForPerson(
@@ -92,8 +90,7 @@ fun Database.Read.getPartnersForPerson(
         .bind("from", period?.start)
         .bind("to", period?.end)
         .bind("includeConflicts", includeConflicts)
-        .map(toPartner("p"))
-        .toList()
+        .toList(toPartner("p"))
 }
 
 fun Database.Transaction.createPartnership(
@@ -176,28 +173,27 @@ fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     } != null
 }
 
-private val toPartnership: (String, String) -> (RowView) -> Partnership =
+private val toPartnership: (String, String) -> Row.() -> Partnership =
     { partner1Alias, partner2Alias ->
-        { row ->
+        {
             Partnership(
-                id = row.mapColumn("partnership_id"),
-                partners =
-                    setOf(toPersonJSON(partner1Alias, row), toPersonJSON(partner2Alias, row)),
-                startDate = row.mapColumn("start_date"),
-                endDate = row.mapColumn("end_date"),
-                conflict = row.mapColumn("conflict")
+                id = column("partnership_id"),
+                partners = setOf(toPersonJSON(partner1Alias), toPersonJSON(partner2Alias)),
+                startDate = column("start_date"),
+                endDate = column("end_date"),
+                conflict = column("conflict")
             )
         }
     }
 
-private val toPartner: (String) -> (RowView) -> Partner = { tableAlias ->
-    { row ->
+private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
+    {
         Partner(
-            partnershipId = row.mapColumn("partnership_id"),
-            person = toPersonJSON(tableAlias, row),
-            startDate = row.mapColumn("start_date"),
-            endDate = row.mapColumn("end_date"),
-            conflict = row.mapColumn("conflict")
+            partnershipId = column("partnership_id"),
+            person = toPersonJSON(tableAlias),
+            startDate = column("start_date"),
+            endDate = column("end_date"),
+            conflict = column("conflict")
         )
     }
 }

@@ -84,6 +84,5 @@ private fun Database.Read.getStartingPlacementsRows(
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
-        .mapTo<StartingPlacementsRow>()
-        .toList()
+        .toList<StartingPlacementsRow>()
 }

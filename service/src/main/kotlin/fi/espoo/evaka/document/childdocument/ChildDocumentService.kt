@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -51,8 +50,7 @@ class ChildDocumentService(
                             .trimIndent()
                     )
                 }
-                .mapTo<ChildDocumentId>()
-                .toList()
+                .toList<ChildDocumentId>()
 
         if (documentIds.isNotEmpty()) {
             documentIds
@@ -115,15 +113,14 @@ WHERE person.email IS NOT NULL AND person.email != ''
 """
                 )
             }
-            .map { row ->
+            .toList {
                 AsyncJob.SendChildDocumentNotificationEmail(
                     documentId = documentId,
-                    childId = row.mapColumn("child_id"),
-                    recipientId = row.mapColumn("recipient_id"),
-                    language = getLanguage(row.mapColumn("language"))
+                    childId = column("child_id"),
+                    recipientId = column("recipient_id"),
+                    language = getLanguage(column("language"))
                 )
             }
-            .toList()
     }
 
     fun sendChildDocumentNotificationEmail(

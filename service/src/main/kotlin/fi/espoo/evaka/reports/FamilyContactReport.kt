@@ -108,8 +108,7 @@ private fun Database.Read.getFamilyContacts(
     return createQuery(sql)
         .bind("today", today)
         .bind("unitId", unitId)
-        .mapTo<FamilyContactReportRow>()
-        .toList()
+        .toList<FamilyContactReportRow>()
 }
 
 data class FamilyContactReportRow(

@@ -428,8 +428,7 @@ LEFT JOIN evaka_user eu ON eu.id = a.modified_by
 ORDER BY a.date, a.category
 """
                 )
-                .mapTo<Absence>()
-                .toList()
+                .toList<Absence>()
         }
     }
 }

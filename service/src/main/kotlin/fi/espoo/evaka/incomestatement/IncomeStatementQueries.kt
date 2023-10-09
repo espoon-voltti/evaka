@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -85,18 +86,18 @@ ${if (single) "AND ist.id = :id" else "ORDER BY start_date DESC LIMIT :limit OFF
         """
 }
 
-private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): IncomeStatement {
-    val id = row.mapColumn<IncomeStatementId>("id")
-    val personId = row.mapColumn<PersonId>("person_id")
-    val firstName = row.mapColumn<String>("first_name")
-    val lastName = row.mapColumn<String>("last_name")
-    val startDate = row.mapColumn<LocalDate>("start_date")
-    val endDate = row.mapColumn<LocalDate?>("end_date")
-    val created = row.mapColumn<HelsinkiDateTime>("created")
-    val updated = row.mapColumn<HelsinkiDateTime>("updated")
-    val handled = row.mapColumn<Boolean>("handled")
-    val handlerNote = if (includeEmployeeContent) row.mapColumn("handler_note") else ""
-    return when (row.mapColumn<IncomeStatementType>("type")) {
+private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeStatement {
+    val id = column<IncomeStatementId>("id")
+    val personId = column<PersonId>("person_id")
+    val firstName = column<String>("first_name")
+    val lastName = column<String>("last_name")
+    val startDate = column<LocalDate>("start_date")
+    val endDate = column<LocalDate?>("end_date")
+    val created = column<HelsinkiDateTime>("created")
+    val updated = column<HelsinkiDateTime>("updated")
+    val handled = column<Boolean>("handled")
+    val handlerNote = if (includeEmployeeContent) column("handler_note") else ""
+    return when (column<IncomeStatementType>("type")) {
         IncomeStatementType.HIGHEST_FEE ->
             IncomeStatement.HighestFee(
                 id = id,
@@ -111,22 +112,22 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 handlerNote = handlerNote
             )
         IncomeStatementType.INCOME -> {
-            val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
+            val grossIncomeSource = column<IncomeSource?>("gross_income_source")
             val gross =
                 if (grossIncomeSource != null) {
                     Gross(
                         incomeSource = grossIncomeSource,
-                        estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
-                        otherIncome = row.mapColumn("gross_other_income"),
-                        otherIncomeInfo = row.mapColumn("gross_other_income_info")
+                        estimatedMonthlyIncome = column("gross_estimated_monthly_income"),
+                        otherIncome = column("gross_other_income"),
+                        otherIncomeInfo = column("gross_other_income_info")
                     )
                 } else {
                     null
                 }
 
-            val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
+            val selfEmployedAttachments = column<Boolean?>("self_employed_attachments")
             val selfEmployedEstimatedMonthlyIncome =
-                row.mapColumn<Int?>("self_employed_estimated_monthly_income")
+                column<Int?>("self_employed_estimated_monthly_income")
             val selfEmployed =
                 if (selfEmployedAttachments != null) {
                     SelfEmployed(
@@ -136,8 +137,8 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                                 EstimatedIncome(
                                     selfEmployedEstimatedMonthlyIncome,
                                     incomeStartDate =
-                                        row.mapColumn("self_employed_income_start_date"),
-                                    incomeEndDate = row.mapColumn("self_employed_income_end_date")
+                                        column("self_employed_income_start_date"),
+                                    incomeEndDate = column("self_employed_income_end_date")
                                 )
                             } else {
                                 null
@@ -148,19 +149,19 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 }
 
             val limitedCompanyIncomeSource =
-                row.mapColumn<IncomeSource?>("limited_company_income_source")
+                column<IncomeSource?>("limited_company_income_source")
             val limitedCompany =
                 if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource)
                 else null
 
-            val accountantName = row.mapColumn<String>("accountant_name")
+            val accountantName = column<String>("accountant_name")
             val accountant =
                 if (accountantName != "") {
                     Accountant(
                         name = accountantName,
-                        address = row.mapColumn("accountant_address"),
-                        phone = row.mapColumn("accountant_phone"),
-                        email = row.mapColumn("accountant_email")
+                        address = column("accountant_address"),
+                        phone = column("accountant_phone"),
+                        email = column("accountant_email")
                     )
                 } else {
                     null
@@ -168,19 +169,19 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
 
             // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has
             // been filled
-            val fullTime = row.mapColumn<Boolean?>("entrepreneur_full_time")
+            val fullTime = column<Boolean?>("entrepreneur_full_time")
             val entrepreneur =
                 if (fullTime != null) {
                     Entrepreneur(
                         fullTime = fullTime,
-                        startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
-                        spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
-                        startupGrant = row.mapColumn("startup_grant"),
-                        checkupConsent = row.mapColumn("checkup_consent"),
+                        startOfEntrepreneurship = column("start_of_entrepreneurship"),
+                        spouseWorksInCompany = column("spouse_works_in_company"),
+                        startupGrant = column("startup_grant"),
+                        checkupConsent = column("checkup_consent"),
                         selfEmployed = selfEmployed,
                         limitedCompany = limitedCompany,
-                        partnership = row.mapColumn("partnership"),
-                        lightEntrepreneur = row.mapColumn("light_entrepreneur"),
+                        partnership = column("partnership"),
+                        lightEntrepreneur = column("light_entrepreneur"),
                         accountant = accountant
                     )
                 } else {
@@ -196,14 +197,14 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 endDate = endDate,
                 gross = gross,
                 entrepreneur = entrepreneur,
-                student = row.mapColumn("student"),
-                alimonyPayer = row.mapColumn("alimony_payer"),
-                otherInfo = row.mapColumn("other_info"),
+                student = column("student"),
+                alimonyPayer = column("alimony_payer"),
+                otherInfo = column("other_info"),
                 created = created,
                 updated = updated,
                 handled = handled,
                 handlerNote = handlerNote,
-                attachments = row.mapJsonColumn("attachments")
+                attachments = jsonColumn("attachments")
             )
         }
         IncomeStatementType.CHILD_INCOME ->
@@ -218,8 +219,8 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 updated = updated,
                 handled = handled,
                 handlerNote = handlerNote,
-                otherInfo = row.mapColumn("other_info"),
-                attachments = row.mapJsonColumn("attachments")
+                otherInfo = column("other_info"),
+                attachments = jsonColumn("attachments")
             )
     }
 }
@@ -234,7 +235,7 @@ fun Database.Read.readIncomeStatementsForPerson(
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
         .bind("limit", pageSize)
-        .mapToPaged(pageSize) { row -> mapIncomeStatement(row, includeEmployeeContent) }
+        .mapToPaged(pageSize) { mapIncomeStatement(includeEmployeeContent) }
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: PersonId,
@@ -244,7 +245,7 @@ fun Database.Read.readIncomeStatementForPerson(
     createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
-        .map { row -> mapIncomeStatement(row, includeEmployeeContent) }
+        .map { mapIncomeStatement(includeEmployeeContent) }
         .exactlyOneOrNull()
 
 private fun Database.SqlStatement<*>.bindIncomeStatementBody(body: IncomeStatementBody) {
@@ -590,8 +591,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("placementValidDate", placementValidDate)
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
-            .mapTo<IncomeStatementAwaitingHandler>()
-            .toList()
+            .toList<IncomeStatementAwaitingHandler>()
 
     return if (rows.isEmpty()) {
         Paged(listOf(), 0, 1)
@@ -603,8 +603,7 @@ LIMIT :pageSize OFFSET :offset
 fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalDate> =
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
         .bind("personId", personId)
-        .mapTo<LocalDate>()
-        .toList()
+        .toList<LocalDate>()
 
 fun Database.Read.incomeStatementExistsForStartDate(
     personId: PersonId,
@@ -640,5 +639,4 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
         .bind("today", today)
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
-        .mapTo<ChildBasicInfo>()
-        .toList()
+        .toList<ChildBasicInfo>()

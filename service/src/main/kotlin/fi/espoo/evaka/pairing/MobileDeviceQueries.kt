@@ -43,15 +43,13 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
     return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
         .bind("unitId", unitId)
-        .mapTo<MobileDevice>()
-        .toList()
+        .toList<MobileDevice>()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {
     return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId")
         .bind("employeeId", employeeId)
-        .mapTo<MobileDevice>()
-        .toList()
+        .toList<MobileDevice>()
 }
 
 fun Database.Transaction.updateDeviceTracking(

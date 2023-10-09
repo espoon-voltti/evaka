@@ -44,8 +44,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `image round trip`() {
         uploadImage(testChild_1.id, imageName1, imageData1)
 
-        val images =
-            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().toList() }
+        val images = db.read { it.createQuery("SELECT * FROM child_images").toList<ChildImage>() }
         assertEquals(1, images.size)
 
         val receivedData = downloadImage(images.first().id)
@@ -78,7 +77,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
         deleteImage(testChild_1.id)
 
         val newImages =
-            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().toList() }
+            db.read { it.createQuery("SELECT * FROM child_images").toList<ChildImage>() }
 
         assertEquals(0, newImages.size)
     }

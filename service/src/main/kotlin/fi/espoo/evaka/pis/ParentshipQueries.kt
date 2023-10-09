@@ -10,11 +10,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
-import org.jdbi.v3.core.result.RowView
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
     // language=SQL
@@ -66,8 +65,7 @@ fun Database.Read.getParentships(
         .bind("from", period?.start)
         .bind("to", period?.end)
         .bind("includeConflicts", includeConflicts)
-        .map(toParentship("child", "head"))
-        .toList()
+        .toList(toParentship("child", "head"))
 }
 
 fun Database.Transaction.createParentship(
@@ -176,42 +174,42 @@ private val personColumns =
         "force_manual_fee_decisions"
     )
 
-private val toParentship: (String, String) -> (RowView) -> Parentship = { childAlias, headAlias ->
-    { row ->
+private val toParentship: (String, String) -> Row.() -> Parentship = { childAlias, headAlias ->
+    {
         Parentship(
-            id = ParentshipId(row.mapColumn("id")),
-            childId = ChildId(row.mapColumn("child_id")),
-            child = toPersonJSON(childAlias, row),
-            headOfChildId = PersonId(row.mapColumn("head_of_child")),
-            headOfChild = toPersonJSON(headAlias, row),
-            startDate = row.mapColumn("start_date"),
-            endDate = row.mapColumn("end_date"),
-            conflict = row.mapColumn("conflict")
+            id = ParentshipId(column("id")),
+            childId = ChildId(column("child_id")),
+            child = toPersonJSON(childAlias),
+            headOfChildId = PersonId(column("head_of_child")),
+            headOfChild = toPersonJSON(headAlias),
+            startDate = column("start_date"),
+            endDate = column("end_date"),
+            conflict = column("conflict")
         )
     }
 }
 
-internal val toPersonJSON: (String, RowView) -> PersonJSON = { table, row ->
+internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
     PersonJSON(
-        id = PersonId(row.mapColumn("${table}_id")),
-        socialSecurityNumber = row.mapColumn("${table}_social_security_number"),
-        ssnAddingDisabled = row.mapColumn("${table}_ssn_adding_disabled"),
-        firstName = row.mapColumn("${table}_first_name"),
-        lastName = row.mapColumn("${table}_last_name"),
-        email = row.mapColumn("${table}_email"),
-        phone = row.mapColumn("${table}_phone"),
-        language = row.mapColumn("${table}_language"),
-        dateOfBirth = row.mapColumn("${table}_date_of_birth"),
-        dateOfDeath = row.mapColumn("${table}_date_of_death"),
-        streetAddress = row.mapColumn("${table}_street_address"),
-        postOffice = row.mapColumn("${table}_post_office"),
-        postalCode = row.mapColumn("${table}_postal_code"),
-        residenceCode = row.mapColumn("${table}_residence_code"),
-        restrictedDetailsEnabled = row.mapColumn("${table}_restricted_details_enabled"),
-        invoiceRecipientName = row.mapColumn("${table}_invoice_recipient_name"),
-        invoicingStreetAddress = row.mapColumn("${table}_invoicing_street_address"),
-        invoicingPostalCode = row.mapColumn("${table}_postal_code"),
-        invoicingPostOffice = row.mapColumn("${table}_post_office"),
-        forceManualFeeDecisions = row.mapColumn("${table}_force_manual_fee_decisions")
+        id = PersonId(column("${table}_id")),
+        socialSecurityNumber = column("${table}_social_security_number"),
+        ssnAddingDisabled = column("${table}_ssn_adding_disabled"),
+        firstName = column("${table}_first_name"),
+        lastName = column("${table}_last_name"),
+        email = column("${table}_email"),
+        phone = column("${table}_phone"),
+        language = column("${table}_language"),
+        dateOfBirth = column("${table}_date_of_birth"),
+        dateOfDeath = column("${table}_date_of_death"),
+        streetAddress = column("${table}_street_address"),
+        postOffice = column("${table}_post_office"),
+        postalCode = column("${table}_postal_code"),
+        residenceCode = column("${table}_residence_code"),
+        restrictedDetailsEnabled = column("${table}_restricted_details_enabled"),
+        invoiceRecipientName = column("${table}_invoice_recipient_name"),
+        invoicingStreetAddress = column("${table}_invoicing_street_address"),
+        invoicingPostalCode = column("${table}_postal_code"),
+        invoicingPostOffice = column("${table}_post_office"),
+        forceManualFeeDecisions = column("${table}_force_manual_fee_decisions")
     )
 }

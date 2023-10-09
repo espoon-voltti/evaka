@@ -28,8 +28,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
         )
         .bind("personId", user.id)
         .bind("childId", childId)
-        .mapTo<ChildDocumentCitizenSummary>()
-        .toList()
+        .toList<ChildDocumentCitizenSummary>()
 }
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {

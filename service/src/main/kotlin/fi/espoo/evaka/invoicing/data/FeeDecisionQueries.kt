@@ -607,8 +607,7 @@ fun Database.Read.searchFeeDecisions(
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
-        .mapTo<FeeDecision>()
-        .toList()
+        .toList<FeeDecision>()
 }
 
 fun Database.Read.getDetailedFeeDecisionsByIds(
@@ -616,8 +615,7 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
 ): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
-        .mapTo<FeeDecisionDetailed>()
-        .toList()
+        .toList<FeeDecisionDetailed>()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
@@ -654,7 +652,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
-    return createQuery(feeDecisionQuery(predicate)).mapTo<FeeDecision>().toList()
+    return createQuery(feeDecisionQuery(predicate)).toList<FeeDecision>()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(

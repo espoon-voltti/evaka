@@ -27,7 +27,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
+    return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
 fun Database.Read.getApplicationSpecialEducationTeacherNotes(
@@ -47,7 +47,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
+    return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
 fun Database.Transaction.createApplicationNote(

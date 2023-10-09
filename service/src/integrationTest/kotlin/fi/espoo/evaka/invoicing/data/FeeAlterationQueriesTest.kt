@@ -49,8 +49,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertFeeAlteration(clock, testFeeAlteration)
 
-            val result =
-                tx.createQuery("SELECT * FROM fee_alteration").mapTo<FeeAlteration>().toList()
+            val result = tx.createQuery("SELECT * FROM fee_alteration").toList<FeeAlteration>()
 
             assertEquals(1, result.size)
         }
@@ -61,8 +60,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertFeeAlteration(clock, testFeeAlteration)
 
-            val result =
-                tx.createQuery("SELECT * FROM fee_alteration").mapTo<FeeAlteration>().toList()
+            val result = tx.createQuery("SELECT * FROM fee_alteration").toList<FeeAlteration>()
 
             with(result[0]) { assertNotNull(updatedAt) }
         }

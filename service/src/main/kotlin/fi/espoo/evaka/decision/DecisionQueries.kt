@@ -15,14 +15,13 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
-import org.jdbi.v3.core.result.RowView
 
 private fun Database.Read.createDecisionQuery(
     decision: Predicate<DatabaseTable.Decision> = Predicate.alwaysTrue(),
@@ -53,54 +52,51 @@ private fun Database.Read.createDecisionQuery(
         )
     }
 
-private fun decisionFromResultSet(row: RowView): Decision =
+private fun Row.decisionFromResultSet(): Decision =
     Decision(
-        id = row.mapColumn("id"),
-        createdBy = row.mapColumn("created_by"),
-        type = row.mapColumn("type"),
-        startDate = row.mapColumn("start_date"),
-        endDate = row.mapColumn("end_date"),
-        documentKey = row.mapColumn("document_key"),
-        otherGuardianDocumentKey = row.mapColumn("other_guardian_document_key"),
-        decisionNumber = row.mapColumn("number"),
-        sentDate = row.mapColumn("sent_date"),
-        status = row.mapColumn("status"),
-        requestedStartDate = row.mapColumn("requested_start_date"),
-        resolved = row.mapColumn<HelsinkiDateTime?>("resolved")?.toLocalDate(),
-        resolvedByName = row.mapColumn<String?>("resolved_by_name"),
+        id = column("id"),
+        createdBy = column("created_by"),
+        type = column("type"),
+        startDate = column("start_date"),
+        endDate = column("end_date"),
+        documentKey = column("document_key"),
+        otherGuardianDocumentKey = column("other_guardian_document_key"),
+        decisionNumber = column("number"),
+        sentDate = column("sent_date"),
+        status = column("status"),
+        requestedStartDate = column("requested_start_date"),
+        resolved = column<HelsinkiDateTime?>("resolved")?.toLocalDate(),
+        resolvedByName = column<String?>("resolved_by_name"),
         unit =
             DecisionUnit(
-                id = row.mapColumn("unit_id"),
-                name = row.mapColumn("name"),
-                daycareDecisionName = row.mapColumn("decision_daycare_name"),
-                preschoolDecisionName = row.mapColumn("decision_preschool_name"),
-                manager = row.mapColumn("manager"),
-                streetAddress = row.mapColumn("street_address"),
-                postalCode = row.mapColumn("postal_code"),
-                postOffice = row.mapColumn("post_office"),
-                phone = row.mapColumn("phone"),
-                decisionHandler = row.mapColumn("decision_handler"),
-                decisionHandlerAddress = row.mapColumn("decision_handler_address"),
-                providerType = row.mapColumn("provider_type")
+                id = column("unit_id"),
+                name = column("name"),
+                daycareDecisionName = column("decision_daycare_name"),
+                preschoolDecisionName = column("decision_preschool_name"),
+                manager = column("manager"),
+                streetAddress = column("street_address"),
+                postalCode = column("postal_code"),
+                postOffice = column("post_office"),
+                phone = column("phone"),
+                decisionHandler = column("decision_handler"),
+                decisionHandlerAddress = column("decision_handler_address"),
+                providerType = column("provider_type")
             ),
-        applicationId = row.mapColumn("application_id"),
-        childId = row.mapColumn("child_id"),
-        childName =
-            "${row.mapColumn<String>("child_last_name")} ${row.mapColumn<String>("child_first_name")}"
+        applicationId = column("application_id"),
+        childId = column("child_id"),
+        childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}"
     )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(decision = Predicate { where("$it.id = ${bind(decisionId)}") })
-        .map(::decisionFromResultSet)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(Row::decisionFromResultSet)
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
             decision =
                 Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
         )
-        .map(::decisionFromResultSet)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
@@ -113,8 +109,7 @@ fun Database.Read.getDecisionsByChild(
                 },
             application = Predicate { where("$it.child_id = ${bind(childId)}") }
         )
-        .map(::decisionFromResultSet)
-        .toList()
+        .toList(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByApplication(
     applicationId: ApplicationId,
@@ -128,8 +123,7 @@ fun Database.Read.getDecisionsByApplication(
                     )
                 }
         )
-        .map(::decisionFromResultSet)
-        .toList()
+        .toList(Row::decisionFromResultSet)
 
 fun Database.Read.getSentDecisionsByApplication(
     applicationId: ApplicationId,
@@ -148,8 +142,7 @@ fun Database.Read.getSentDecisionsByApplication(
                     )
                 }
         )
-        .map(::decisionFromResultSet)
-        .toList()
+        .toList(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByGuardian(
     guardianId: PersonId,
@@ -167,8 +160,7 @@ fun Database.Read.getDecisionsByGuardian(
                     )
                 }
         )
-        .map(::decisionFromResultSet)
-        .toList()
+        .toList(Row::decisionFromResultSet)
 
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
@@ -234,7 +226,7 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().toList()
+    return createQuery(sql).bind("applicationId", applicationId).toList<DecisionDraft>()
 }
 
 fun Database.Transaction.finalizeDecisions(
@@ -254,8 +246,7 @@ fun Database.Transaction.finalizeDecisions(
         )
         .bind("applicationId", applicationId)
         .bind("today", today)
-        .mapTo<DecisionId>()
-        .toList()
+        .toList<DecisionId>()
 }
 
 fun Database.Transaction.markApplicationDecisionsSent(

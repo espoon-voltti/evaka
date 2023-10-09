@@ -53,8 +53,7 @@ WHERE fp.parent_id = :parentId OR fp.child_id = :childId
         )
         .bind("parentId", parentId)
         .bind("childId", childId)
-        .mapTo<FosterParentRelationship>()
-        .toList()
+        .toList<FosterParentRelationship>()
 }
 
 fun Database.Transaction.createFosterParentRelationship(

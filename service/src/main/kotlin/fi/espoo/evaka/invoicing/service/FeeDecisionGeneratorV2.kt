@@ -475,8 +475,7 @@ private fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelatio
         """
         )
         .bind("id", id)
-        .mapTo<PartnerRelation>()
-        .toList()
+        .toList<PartnerRelation>()
 }
 
 data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :

@@ -556,7 +556,6 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun getReservationDates(): List<LocalDate> =
         db.read {
             it.createQuery("SELECT date FROM attendance_reservation ORDER BY date")
-                .mapTo<LocalDate>()
-                .toList()
+                .toList<LocalDate>()
         }
 }

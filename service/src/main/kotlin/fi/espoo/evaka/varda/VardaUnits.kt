@@ -105,8 +105,7 @@ fun getNewOrStaleUnits(
         .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
         .bind("sourceSystem", sourceSystem)
         .bind("providerTypes", unitTypesToUpload)
-        .mapTo<VardaUnit>()
-        .toList()
+        .toList<VardaUnit>()
 }
 
 fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: VardaUnit) {

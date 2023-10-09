@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
@@ -56,14 +55,13 @@ class PedagogicalDocumentNotificationService(
         return tx.createQuery(sql)
             .bind("id", id)
             .bind("date", HelsinkiDateTime.now().toLocalDate())
-            .map { row ->
+            .toList {
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
-                    recipientId = row.mapColumn("recipient_id"),
-                    language = getLanguage(row.mapColumn("language"))
+                    recipientId = column("recipient_id"),
+                    language = getLanguage(column("language"))
                 )
             }
-            .toList()
     }
 
     private fun Database.Transaction.updateDocumentEmailJobCreatedAt(

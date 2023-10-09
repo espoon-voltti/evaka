@@ -219,8 +219,7 @@ WHERE id = ANY(:ids)
                 .trimIndent()
         )
         .bind("ids", ids)
-        .mapTo<VoucherValueDecision>()
-        .toList()
+        .toList<VoucherValueDecision>()
 }
 
 fun Database.Read.findValueDecisionsForChild(
@@ -280,8 +279,7 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
         .bind("childId", childId)
         .bind("period", period)
         .bind("statuses", statuses)
-        .mapTo<VoucherValueDecision>()
-        .toList()
+        .toList<VoucherValueDecision>()
 }
 
 fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>) {
@@ -552,8 +550,7 @@ WHERE decision.head_of_family_id = :headOfFamilyId
 """
         )
         .bind("headOfFamilyId", headOfFamilyId)
-        .mapTo<VoucherValueDecisionSummary>()
-        .toList()
+        .toList<VoucherValueDecisionSummary>()
 }
 
 fun Database.Transaction.approveValueDecisionDraftsForSending(

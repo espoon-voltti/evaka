@@ -156,9 +156,7 @@ class FridgeFamilyService(
         return tx.createQuery(sql)
             .bind("today", clock.today())
             .bind("personId", personId)
-            .mapTo<ChildId>()
-            .toList()
-            .toHashSet()
+            .toSet<ChildId>()
     }
 
     private fun livesInSameAddress(

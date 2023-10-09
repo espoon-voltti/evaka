@@ -91,8 +91,7 @@ private fun Database.Read.getFamilyConflicts(
                     .trimIndent()
             )
         }
-        .mapTo<FamilyConflictReportRow>()
-        .toList()
+        .toList<FamilyConflictReportRow>()
 
 data class FamilyConflictReportRow(
     val careAreaName: String,

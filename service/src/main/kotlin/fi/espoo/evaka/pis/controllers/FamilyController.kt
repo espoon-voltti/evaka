@@ -354,11 +354,7 @@ ORDER BY priority ASC, role_order ASC
     """
 
     return addDefaultPriorities(
-        createQuery(sql)
-            .bind("today", clock.today())
-            .bind("id", childId)
-            .mapTo<FamilyContact>()
-            .toList()
+        createQuery(sql).bind("today", clock.today()).bind("id", childId).toList<FamilyContact>()
     )
 }
 

@@ -93,8 +93,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
                     .trimIndent()
             )
         }
-        .mapTo<ChildrenInDifferentAddressReportRow>()
-        .toList()
+        .toList<ChildrenInDifferentAddressReportRow>()
 
 data class ChildrenInDifferentAddressReportRow(
     val careAreaName: String,

@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -482,12 +481,9 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val result =
             db.read {
-                it.createQuery("SELECT id, applied_completely FROM invoice_correction")
-                    .map { rv ->
-                        rv.mapColumn<InvoiceCorrectionId>("id") to
-                            rv.mapColumn<Boolean>("applied_completely")
-                    }
-                    .toList()
+                it.createQuery("SELECT id, applied_completely FROM invoice_correction").toList {
+                    column<InvoiceCorrectionId>("id") to column<Boolean>("applied_completely")
+                }
             }
         assertEquals(1, result.size)
         assertEquals(correctionId, result.first().first)
@@ -513,12 +509,9 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val result =
             db.read {
-                it.createQuery("SELECT id, applied_completely FROM invoice_correction")
-                    .map { rv ->
-                        rv.mapColumn<InvoiceCorrectionId>("id") to
-                            rv.mapColumn<Boolean>("applied_completely")
-                    }
-                    .toList()
+                it.createQuery("SELECT id, applied_completely FROM invoice_correction").toList {
+                    column<InvoiceCorrectionId>("id") to column<Boolean>("applied_completely")
+                }
             }
         assertEquals(1, result.size)
         assertEquals(correctionId, result.first().first)

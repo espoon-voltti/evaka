@@ -56,8 +56,7 @@ AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
 """
                 )
             }
-            .mapTo<AsyncJob.SendMessagePushNotification>()
-            .toList()
+            .toList<AsyncJob.SendMessagePushNotification>()
 
     data class GroupNotification(val groupName: String, val endpoint: WebPushEndpoint)
 

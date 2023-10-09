@@ -148,8 +148,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
         .bind("id", id)
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<PairingStatus>()
-        .toList()
+        .toList<PairingStatus>()
         .firstOrNull()
         ?: throw NotFound("Valid pairing not found")
 }

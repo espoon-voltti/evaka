@@ -399,8 +399,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 ORDER BY child_id, date
                 """
                 )
-                .mapTo<Reservation>()
-                .toList()
+                .toList<Reservation>()
         }
     }
 }

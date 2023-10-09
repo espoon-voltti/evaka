@@ -59,8 +59,7 @@ HAVING bool_and(d::date <@ ANY (
         .bind("userId", userId)
         .bind("periodStart", period.start)
         .bind("periodEnd", period.end)
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()
 }
 
 fun Database.Read.getUserChildIds(today: LocalDate, userId: PersonId): List<ChildId> {
@@ -72,7 +71,7 @@ UNION
 SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 """
 
-    return createQuery(sql).bind("today", today).bind("userId", userId).mapTo<ChildId>().toList()
+    return createQuery(sql).bind("today", today).bind("userId", userId).toList<ChildId>()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(
@@ -83,7 +82,7 @@ fun Database.Read.getFixedPeriodQuestionnaire(
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().toList()
+    this.createQuery("$questionnaireSelect").toList<FixedPeriodQuestionnaire>()
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
@@ -199,5 +198,4 @@ WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
         )
         .bind("questionnaireId", id)
         .bind("childIds", childIds)
-        .mapTo<HolidayQuestionnaireAnswer>()
-        .toList()
+        .toList<HolidayQuestionnaireAnswer>()

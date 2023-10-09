@@ -97,7 +97,7 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
         ORDER BY start_date DESC
         """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<AssistanceAction>().toList()
+    return createQuery(sql).bind("childId", childId).toList<AssistanceAction>()
 }
 
 fun Database.Transaction.updateAssistanceAction(
@@ -183,5 +183,5 @@ fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> {
     // language=sql
     val sql =
         "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
-    return createQuery(sql).mapTo<AssistanceActionOption>().toList()
+    return createQuery(sql).toList<AssistanceActionOption>()
 }

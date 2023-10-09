@@ -413,8 +413,7 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)
-        .mapTo<DailyServiceTimesValidityWithId>()
-        .toList()
+        .toList<DailyServiceTimesValidityWithId>()
 }
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(

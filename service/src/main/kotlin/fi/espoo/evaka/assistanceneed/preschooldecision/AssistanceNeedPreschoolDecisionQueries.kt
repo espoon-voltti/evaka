@@ -257,10 +257,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         """
 
     val decisions =
-        createQuery(sql)
-            .bind("childId", childId)
-            .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .toList()
+        createQuery(sql).bind("childId", childId).toList<AssistanceNeedPreschoolDecisionBasics>()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -285,8 +282,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
                         .trimIndent()
                 )
             }
-            .mapTo<AssistanceNeedPreschoolDecisionBasics>()
-            .toList()
+            .toList<AssistanceNeedPreschoolDecisionBasics>()
 
     return fillInValidToForDecisionResults(decisions)
 }
@@ -479,8 +475,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
-        .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .toList()
+        .toList<UnreadAssistanceNeedDecisionItem>()
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(

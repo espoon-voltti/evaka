@@ -76,8 +76,7 @@ WHERE placement.place_guarantee = TRUE
                     .trimIndent()
             )
         }
-        .mapTo<PlacementGuaranteeReportRow>()
-        .toList()
+        .toList<PlacementGuaranteeReportRow>()
 
 data class PlacementGuaranteeReportRow(
     val childId: ChildId,

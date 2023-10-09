@@ -1608,8 +1608,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 it.createQuery(
                         "SELECT update_failed FROM varda_service_need WHERE update_failed = true"
                     )
-                    .mapTo<Boolean>()
-                    .toList()
+                    .toList<Boolean>()
             }
         assertEquals(n, failures.size)
     }
@@ -1620,8 +1619,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     "SELECT errors[0] FROM varda_service_need WHERE evaka_service_need_id = :snId AND array_length(errors, 1) > 0"
                 )
                 .bind("snId", snId)
-                .mapTo<String>()
-                .toList()
+                .toList<String>()
         }
     }
 

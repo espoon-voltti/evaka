@@ -212,8 +212,7 @@ FROM fee_thresholds
         """
                 .trimIndent()
         )
-        .mapTo<FeeThresholdsWithId>()
-        .toList()
+        .toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
     createUpdate(

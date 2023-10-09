@@ -372,8 +372,7 @@ private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
     return createQuery(
             "SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality"
         )
-        .mapTo<DaycareId>()
-        .toList()
+        .toList<DaycareId>()
 }
 
 private fun Database.Read.getVoucherValues(from: LocalDate): List<ServiceNeedOptionVoucherValue> {
@@ -395,6 +394,5 @@ WHERE validity && daterange(:from, null, '[]')
                 .trimIndent()
         )
         .bind("from", from)
-        .mapTo<ServiceNeedOptionVoucherValue>()
-        .toList()
+        .toList<ServiceNeedOptionVoucherValue>()
 }

@@ -24,8 +24,7 @@ fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: Local
         )
         .bind("personId", personId)
         .bind("the_date", theDate)
-        .mapTo<Int>()
-        .toList()
+        .toList<Int>()
         .isNotEmpty()
 }
 
@@ -89,8 +88,7 @@ ${if (guardianId != null) " AND person_id = :guardianId" else ""}
             this.bind("notificationType", checkForExistingRecentIncomeNotificationType)
         }
         .applyIf(guardianId != null) { this.bind("guardianId", guardianId) }
-        .mapTo<GuardianIncomeExpirationDate>()
-        .toList()
+        .toList<GuardianIncomeExpirationDate>()
 }
 
 data class IncomeNotification(
@@ -123,5 +121,4 @@ fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotif
             """SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = :receiverId"""
         )
         .bind("receiverId", receiverId)
-        .mapTo<IncomeNotification>()
-        .toList()
+        .toList<IncomeNotification>()

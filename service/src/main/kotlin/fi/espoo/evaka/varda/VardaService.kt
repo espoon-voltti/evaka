@@ -230,8 +230,7 @@ private fun getVardaChildIdsByEvakaChildId(
                     .trimIndent()
             )
             .bind("evakaChildId", evakaChildId)
-            .mapTo<Long>()
-            .toList()
+            .toList<Long>()
     }
 }
 
@@ -466,8 +465,7 @@ private fun getChildVardaGuardians(
                     .trimIndent()
             )
             .bind("id", childId)
-            .mapTo<VardaGuardianWithId>()
-            .toList()
+            .toList<VardaGuardianWithId>()
     }
 }
 

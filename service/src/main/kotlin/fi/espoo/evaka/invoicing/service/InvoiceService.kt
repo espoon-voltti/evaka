@@ -124,8 +124,7 @@ class InvoiceService(
             """
                         .trimIndent()
                 )
-                .mapTo<InvoiceDaycare>()
-                .toList()
+                .toList<InvoiceDaycare>()
         return InvoiceCodes(productProvider.products, units)
     }
 }
@@ -150,8 +149,7 @@ fun Database.Transaction.markManuallySent(
             .bind("sent_at", now)
             .bind("sent_by", user.evakaUserId)
             .bind("ids", invoiceIds)
-            .mapTo<InvoiceId>()
-            .toList()
+            .toList<InvoiceId>()
 
     if (updatedIds.toSet() != invoiceIds.toSet())
         throw BadRequest("Some invoices have incorrect status")

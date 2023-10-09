@@ -45,8 +45,7 @@ fun Database.Transaction.insertVasuDocument(
             )
             .bind("id", childId)
             .bind("today", now.toLocalDate())
-            .mapTo<VasuGuardian>(qualifiers = emptyArray())
-            .toList()
+            .toList<VasuGuardian>(qualifiers = emptyArray())
 
     val basics =
         VasuBasics(
@@ -370,8 +369,7 @@ private fun Database.Read.getVasuPlacements(
         )
         .bind("today", today)
         .bind("id", id)
-        .mapTo<VasuPlacement>(qualifiers = emptyArray())
-        .toList()
+        .toList<VasuPlacement>(qualifiers = emptyArray())
 }
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
@@ -477,5 +475,4 @@ WHERE cardinality(events) = 0 OR events[cardinality(events)] <> 'MOVED_TO_CLOSED
 """
             )
         }
-        .mapTo<VasuDocumentId>()
-        .toList()
+        .toList<VasuDocumentId>()

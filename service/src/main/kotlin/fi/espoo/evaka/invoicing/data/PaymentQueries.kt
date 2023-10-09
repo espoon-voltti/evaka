@@ -49,8 +49,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
         """
         )
         .bind("ids", ids)
-        .mapTo<Payment>()
-        .toList()
+        .toList<Payment>()
 }
 
 fun Database.Read.readPayments(): List<Payment> {
@@ -64,8 +63,7 @@ fun Database.Read.readPayments(): List<Payment> {
             ORDER BY period DESC, unit_name
         """
         )
-        .mapTo<Payment>()
-        .toList()
+        .toList<Payment>()
 }
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> {

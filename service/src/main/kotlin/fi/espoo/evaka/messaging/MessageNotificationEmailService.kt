@@ -64,8 +64,7 @@ class MessageNotificationEmailService(
                     .trimIndent()
             )
             .bind("messageIds", messageIds)
-            .mapTo<AsyncJob.SendMessageNotificationEmail>()
-            .toList()
+            .toList<AsyncJob.SendMessageNotificationEmail>()
     }
 
     fun scheduleSendingMessageNotifications(

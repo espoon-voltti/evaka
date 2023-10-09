@@ -68,8 +68,7 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
 """
                             )
                             .bind("personId", personId)
-                            .mapTo<InvoiceCorrection>()
-                            .toList()
+                            .toList<InvoiceCorrection>()
                     val permittedActions =
                         accessControl.getPermittedActions<
                             InvoiceCorrectionId, Action.InvoiceCorrection

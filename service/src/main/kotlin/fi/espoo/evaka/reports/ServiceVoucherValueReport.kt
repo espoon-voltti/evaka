@@ -455,8 +455,7 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
         .bind("reportDate", LocalDate.of(year, month, 1))
         .bind("areaId", areaId)
         .bind("unitIds", unitIds)
-        .mapTo<ServiceVoucherValueRow>()
-        .toList()
+        .toList<ServiceVoucherValueRow>()
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
@@ -541,6 +540,5 @@ private fun Database.Read.getSnapshotVoucherValues(
         .bind("month", month)
         .bind("areaId", areaId)
         .bind("unitIds", unitIds)
-        .mapTo<ServiceVoucherValueRow>()
-        .toList()
+        .toList<ServiceVoucherValueRow>()
 }

@@ -453,8 +453,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             )
                     )
                 )
-                val ids =
-                    tx.createQuery("SELECT id FROM fee_decision").mapTo<FeeDecisionId>().toList()
+                val ids = tx.createQuery("SELECT id FROM fee_decision").toList<FeeDecisionId>()
                 tx.getDetailedFeeDecisionsByIds(ids)
             }
         assertThat(decisions)

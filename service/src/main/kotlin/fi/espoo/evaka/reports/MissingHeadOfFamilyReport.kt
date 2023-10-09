@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -117,15 +116,14 @@ ORDER BY last_name, first_name
         """
             )
         }
-        .map { row ->
+        .toList {
             MissingHeadOfFamilyReportRow(
-                childId = row.mapColumn("child_id"),
-                firstName = row.mapColumn("first_name"),
-                lastName = row.mapColumn("last_name"),
-                rangesWithoutHead = row.mapColumn<DateSet>("without_head").ranges().toList(),
+                childId = column("child_id"),
+                firstName = column("first_name"),
+                lastName = column("last_name"),
+                rangesWithoutHead = column<DateSet>("without_head").ranges().toList(),
             )
         }
-        .toList()
 
 data class MissingHeadOfFamilyReportRow(
     val childId: ChildId,

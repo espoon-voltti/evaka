@@ -160,8 +160,7 @@ ORDER BY p.id, t
         .bind("start_date", from)
         .bind("end_date", to)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
-        .mapTo<RawReportRow>()
-        .toList()
+        .toList<RawReportRow>()
 }
 
 data class RawReportRow(

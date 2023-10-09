@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -304,8 +303,7 @@ RETURNING id
         .bind("sentAt", sentAt)
         .bind("contentId", contentId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<MessageId>()
-        .toList()
+        .toList<MessageId>()
 
 fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
     createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
@@ -364,10 +362,9 @@ RETURNING id, thread_id
             .bind("serviceWorkerAccountName", serviceWorkerAccountName)
             .add()
     }
-    return batch
-        .executeAndReturn()
-        .map { rv -> rv.mapColumn<MessageThreadId>("thread_id") to rv.mapColumn<MessageId>("id") }
-        .toList()
+    return batch.executeAndReturn().toList {
+        column<MessageThreadId>("thread_id") to column<MessageId>("id")
+    }
 }
 
 fun Database.Transaction.insertThread(
@@ -1154,8 +1151,7 @@ fun Database.Read.getReceiversForNewMessage(
             )
             .bind("accountIds", accountIds)
             .bind("date", today)
-            .mapTo<UnitMessageReceiversResult>()
-            .toList()
+            .toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val units = receivers.groupBy { it.unitId to it.unitName }
@@ -1192,8 +1188,7 @@ fun Database.Read.getReceiversForNewMessage(
             )
             .bind("accountIds", accountIds)
             .bind("date", today)
-            .mapTo<MunicipalMessageReceiversResult>()
-            .toList()
+            .toList<MunicipalMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val areas = receivers.groupBy { it.areaId to it.areaName }
@@ -1333,10 +1328,7 @@ WHERE p.id = ANY(:citizenRecipients)
             "citizenRecipients",
             groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
         )
-        .map { rv ->
-            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId?>("child_id")
-        }
-        .toList()
+        .toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
 }
 
 fun Database.Transaction.markEmailNotificationAsSent(
@@ -1440,8 +1432,7 @@ WHERE sender_id = :accountId AND content_id = :contentId
             )
             .bind("accountId", accountId)
             .bind("contentId", contentId)
-            .mapTo<MessageToUndo>()
-            .toList()
+            .toList<MessageToUndo>()
 
     if (messagesToUndo.isEmpty()) {
         throw BadRequest("No messages found with contentId $contentId")

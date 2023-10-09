@@ -43,6 +43,5 @@ WHERE valid_during && daterange(:from, null)
                 .trimIndent()
         )
         .bind("from", from)
-        .mapTo<FeeThresholds>()
-        .toList()
+        .toList<FeeThresholds>()
 }

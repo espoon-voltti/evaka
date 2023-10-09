@@ -29,7 +29,7 @@ fun Database.Read.getChildDiscussions(childId: ChildId): List<ChildDiscussionDat
         ORDER BY created DESC
         """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<ChildDiscussionData>().toList()
+    return createQuery(sql).bind("childId", childId).toList<ChildDiscussionData>()
 }
 
 fun Database.Transaction.createChildDiscussion(

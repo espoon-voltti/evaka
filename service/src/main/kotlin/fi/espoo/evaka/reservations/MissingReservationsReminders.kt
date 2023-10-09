@@ -57,8 +57,7 @@ WHERE p.email IS NOT NULL
                             .trimIndent()
                     )
                 }
-                .mapTo<PersonId>()
-                .toList()
+                .toList<PersonId>()
 
         asyncJobRunner.plan(
             tx,

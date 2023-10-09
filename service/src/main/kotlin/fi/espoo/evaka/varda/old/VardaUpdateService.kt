@@ -514,8 +514,7 @@ private fun getChildVardaGuardians(
                     .trimIndent()
             )
             .bind("id", childId)
-            .mapTo<VardaGuardianWithId>()
-            .toList()
+            .toList<VardaGuardianWithId>()
     }
 }
 

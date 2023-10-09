@@ -110,7 +110,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
             """
                 .trimIndent()
 
-        return createQuery(sql).mapTo<ManualDuplicationReportRow>().toList()
+        return createQuery(sql).toList<ManualDuplicationReportRow>()
     }
 
     data class ManualDuplicationReportRow(

@@ -74,8 +74,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         .bind("rangeStart", now.atStartOfDay())
         .bind("rangeEnd", now.atEndOfDay())
         .bind("now", now)
-        .mapTo<StaffMember>()
-        .toList()
+        .toList<StaffMember>()
 
 fun Database.Read.getExternalStaffAttendance(
     id: StaffAttendanceExternalId,
@@ -107,8 +106,7 @@ fun Database.Read.getExternalStaffAttendances(
         )
         .bind("unitId", unitId)
         .bind("now", now)
-        .mapTo<ExternalStaffMember>()
-        .toList()
+        .toList<ExternalStaffMember>()
 
 fun Database.Transaction.markStaffArrival(
     employeeId: EmployeeId,
@@ -352,8 +350,7 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .bind("unitId", unitId)
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
-        .mapTo<RawAttendance>()
-        .toList()
+        .toList<RawAttendance>()
 
 fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
@@ -380,8 +377,7 @@ WHERE sa.employee_id = ANY(:employeeIds) AND sa.group_id IS NULL AND tstzrange(s
         .bind("employeeIds", employeeIds)
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
-        .mapTo<RawAttendance>()
-        .toList()
+        .toList<RawAttendance>()
 
 data class RawAttendanceEmployee(
     val id: EmployeeId,
@@ -409,8 +405,7 @@ WHERE dacl.daycare_id = :unitId AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_T
         .bind("unitId", unitId)
         .bind("start", start)
         .bind("end", end)
-        .mapTo<RawAttendanceEmployee>()
-        .toList()
+        .toList<RawAttendanceEmployee>()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
@@ -428,8 +423,7 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
         .bind("unitId", unitId)
         .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
-        .mapTo<ExternalAttendance>()
-        .toList()
+        .toList<ExternalAttendance>()
 
 fun Database.Read.getGroupsForEmployees(
     unitId: DaycareId,
@@ -504,7 +498,7 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
 }
 
 fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> =
-    createQuery("SELECT * FROM staff_attendance_realtime").mapTo<StaffMemberAttendance>().toList()
+    createQuery("SELECT * FROM staff_attendance_realtime").toList<StaffMemberAttendance>()
 
 fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
@@ -519,8 +513,7 @@ WHERE employee_id = :employeeId AND tstzrange(start_time, end_time) && tstzrange
         .bind("employeeId", employeeId)
         .bind("start", now.minusHours(8))
         .bind("end", now.plusHours(8))
-        .mapTo<PlannedStaffAttendance>()
-        .toList()
+        .toList<PlannedStaffAttendance>()
 
 fun Database.Read.getPlannedStaffAttendanceForDays(
     employeeIds: Collection<EmployeeId>,

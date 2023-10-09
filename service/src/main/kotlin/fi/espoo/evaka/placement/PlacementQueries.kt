@@ -46,8 +46,7 @@ fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> 
                 .trimIndent()
         )
         .bind("childId", childId)
-        .mapTo<PlacementSummary>()
-        .toList()
+        .toList<PlacementSummary>()
 }
 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
@@ -60,8 +59,7 @@ WHERE p.child_id = :childId
                 .trimIndent()
         )
         .bind("childId", childId)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
 }
 
 fun Database.Read.getPlacementsForChildDuring(
@@ -81,8 +79,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
         .bind("childId", childId)
         .bind("start", start)
         .bind("end", end)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
 }
 
 fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
@@ -125,8 +122,7 @@ AND daterange(start_date, end_date, '[]') && :period
         )
         .bind("childId", childId)
         .bind("period", period)
-        .mapTo<ChildPlacementType>()
-        .toList()
+        .toList<ChildPlacementType>()
 }
 
 fun Database.Transaction.insertPlacement(
@@ -151,8 +147,7 @@ fun Database.Transaction.insertPlacement(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .bind("placeGuarantee", placeGuarantee)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
         .first()
 }
 
@@ -431,8 +426,7 @@ fun Database.Read.getDaycarePlacements(
         .bind("to", endDate)
         .bind("daycareId", daycareId)
         .bind("childId", childId)
-        .mapTo<DaycarePlacementDetails>()
-        .toList()
+        .toList<DaycarePlacementDetails>()
 }
 
 fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
@@ -507,8 +501,7 @@ SELECT
         .bind("daycareId", daycareId)
         .bind("terminationRequestedMinDate", terminationRequestedMinDate)
         .bind("terminationRequestedMaxDate", terminationRequestedMaxDate)
-        .mapTo<TerminatedPlacement>()
-        .toList()
+        .toList<TerminatedPlacement>()
 
 data class TerminatedPlacement(
     val id: PlacementId,
@@ -565,8 +558,7 @@ WHERE
         )
         .bind("childId", childId)
         .bind("today", today)
-        .mapTo<ChildPlacement>()
-        .toList()
+        .toList<ChildPlacement>()
 
 fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
@@ -680,8 +672,7 @@ fun Database.Read.getGroupPlacementsAtDaycare(
     return createQuery(sql)
         .bind("daycareId", daycareId)
         .bind("placementRange", placementRange)
-        .mapTo<DaycareGroupPlacement>()
-        .toList()
+        .toList<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
@@ -702,7 +693,7 @@ fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPl
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<DaycareGroupPlacement>().toList()
+    return createQuery(sql).bind("childId", childId).toList<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getGroupPlacementChildren(
@@ -719,7 +710,7 @@ fun Database.Read.getGroupPlacementChildren(
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).bind("range", range).mapTo<ChildId>().toList()
+    return createQuery(sql).bind("groupId", groupId).bind("range", range).toList<ChildId>()
 }
 
 fun Database.Transaction.createGroupPlacement(

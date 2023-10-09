@@ -433,8 +433,7 @@ RETURNING id
 """
         )
         .bind("now", now)
-        .mapTo<EmployeeId>()
-        .toList()
+        .toList<EmployeeId>()
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
@@ -447,8 +446,7 @@ WHERE id = ANY(:ids)
                 .trimIndent()
         )
         .bind("ids", employeeIds)
-        .mapTo<EmployeeIdWithName>()
-        .toList()
+        .toList<EmployeeIdWithName>()
         .map { it.id to it.name }
         .toMap()
 
@@ -476,8 +474,7 @@ ORDER BY last_name, first_name
         """
             )
             .bind("globalRoles", globalRoles)
-            .mapTo<Employee>()
-            .toList()
+            .toList<Employee>()
     } else {
         createQuery(
                 """
@@ -494,7 +491,6 @@ ORDER BY last_name, first_name
             .bind("globalRoles", globalRoles)
             .bind("unitScopedRoles", unitScopedRoles)
             .bind("unitId", unitId)
-            .mapTo<Employee>()
-            .toList()
+            .toList<Employee>()
     }
 }

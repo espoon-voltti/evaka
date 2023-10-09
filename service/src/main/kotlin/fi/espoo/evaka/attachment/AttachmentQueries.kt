@@ -131,8 +131,7 @@ fun Database.Transaction.deleteAttachmentsByApplicationAndType(
         .bind("applicationId", applicationId)
         .bind("type", type)
         .bind("userId", userId)
-        .mapTo<AttachmentId>()
-        .toList()
+        .toList<AttachmentId>()
 }
 
 fun Database.Transaction.associateAttachments(

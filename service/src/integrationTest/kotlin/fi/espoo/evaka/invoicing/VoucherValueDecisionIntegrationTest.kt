@@ -660,8 +660,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
         return db.read {
                 it.createQuery("SELECT * FROM voucher_value_decision")
-                    .mapTo<VoucherValueDecision>()
-                    .toList()
+                    .toList<VoucherValueDecision>()
             }
             .shuffled() // randomize order to expose assumptions
     }
