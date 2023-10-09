@@ -42,44 +42,6 @@ jobs:
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v1
 
-  proxy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Docker building
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-
-      - name: Build proxy image
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
-        with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
-          name: evaka/proxy
-          path: ./proxy
-          push: ${{ inputs.push || 'true' }}
-          tcpdump: "true"
-          tcpdump_password: "${{ secrets.TCPDUMP_PASSWORD }}"
-          build-args: |
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: Docker cleanup
-        if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
-
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-
   keycloak:
     runs-on: ubuntu-latest
     steps:
@@ -554,7 +516,6 @@ jobs:
     needs:
       - service
       - api-gateway
-      - proxy
       - keycloak
       - frontend
     runs-on: ubuntu-latest
@@ -707,6 +668,14 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-duration-seconds: 1200
 
+      - name: Login to GitHub Container Registry
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Docker metadata # Used to get the tag from DOCKER_METADATA_OUTPUT_VERSION
         id: metadata
         env:
@@ -726,8 +695,19 @@ jobs:
             exit 1
           fi
 
-          for repository in evaka/proxy evaka/keycloak evaka/frontend evaka/service evaka/api-gateway; do
-            MANIFEST=$(aws ecr batch-get-image --repository-name "$repository" --image-ids imageTag="cache-$DOCKER_METADATA_OUTPUT_VERSION" --output json | jq --raw-output --join-output '.images[0].imageManifest')
+          for repository in evaka/keycloak evaka/frontend evaka/frontend-common evaka/frontend-common-builder evaka/service evaka/service-builder evaka/api-gateway; do
+            ghcr_image_base="ghcr.io/espoon-voltti/${repository}"
+            ghcr_image="${ghcr_image_base}:${{ github.event.pull_request.head.sha || github.sha }}"
+            ghcr_target="${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
+            echo "Tagging GHCR with '${ghcr_target}'"
+            docker pull "$ghcr_image"
+            docker tag "$ghcr_image" "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
+            docker push "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
+          done
+
+          for repository in evaka/keycloak evaka/frontend evaka/service evaka/api-gateway; do
+            # ECR retag
+            MANIFEST=$(aws ecr batch-get-image --repository-name "$repository" --image-ids imageTag="${{ github.event.pull_request.head.sha || github.sha }}" --output json | jq --raw-output --join-output '.images[0].imageManifest')
             aws ecr put-image --repository-name "$repository" --image-tag "${DOCKER_METADATA_OUTPUT_VERSION}" --image-manifest "$MANIFEST"
           done
 
