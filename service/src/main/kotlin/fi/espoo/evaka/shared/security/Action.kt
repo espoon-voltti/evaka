@@ -655,20 +655,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceFactor()
+                .inPlacementUnitOfChildOfAssistanceFactor(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceFactor()
+                .inPlacementUnitOfChildOfAssistanceFactor(true)
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false)
-        ),
-        READ_PRE_PRESCHOOL(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

@@ -260,7 +260,7 @@ ${if (hideClosed) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceFactor(childIsInPreschool: Boolean = false) =
+    fun inPlacementUnitOfChildOfAssistanceFactor(hideClosed: Boolean) =
         rule<AssistanceFactorId> { user, now ->
             sql(
                 """
@@ -269,14 +269,22 @@ FROM assistance_factor af
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-${if (childIsInPreschool)
-                    "AND EXISTS " +
-                            "(SELECT TRUE " +
-                            "FROM PLACEMENT p" +
-                            " WHERE p.child_id = af.child_id " +
-                            "       AND af.end_date >= p.start_date" +
-                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
-                else ""}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = af.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = af.child_id
+                AND af.valid_during @> p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hideClosed) "AND upper(af.valid_during) >= ${bind(now.toLocalDate())}" else ""}    
             """
                     .trimIndent()
             )

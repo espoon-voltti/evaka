@@ -127,7 +127,6 @@ export type AssistanceAction =
 export type AssistanceFactor =
   | 'DELETE'
   | 'READ'
-  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type AssistanceNeedDecision =

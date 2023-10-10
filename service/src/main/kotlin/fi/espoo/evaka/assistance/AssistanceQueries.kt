@@ -29,6 +29,23 @@ fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
         .toList<AssistanceFactor>()
 
+fun Database.Read.getAssistanceFactorsByChildId(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceFactorId>
+): List<AssistanceFactor> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+FROM assistance_factor
+WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_factor"))}
+"""
+                    .trimIndent()
+            )
+        }
+        .mapTo<AssistanceFactor>()
+        .toList()
+
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
         .exactlyOneOrNull<AssistanceFactor>()
