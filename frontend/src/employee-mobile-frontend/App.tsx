@@ -41,8 +41,8 @@ import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
 import { ServiceWorkerContextProvider } from './common/service-worker'
 import { UnitContextProvider } from './common/unit'
-import MessageEditorPage from './messages/MessageEditorPage'
 import MessagesPage from './messages/MessagesPage'
+import NewChildMessagePage from './messages/NewChildMessagePage'
 import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
 import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
@@ -171,7 +171,7 @@ function ChildAttendanceRouter() {
         path=":childId/new-message"
         element={
           <RequireAuth strength="PIN">
-            <MessageEditorPage />
+            <NewChildMessagePage />
           </RequireAuth>
         }
       />
