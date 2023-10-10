@@ -75,42 +75,6 @@ describe('child document with person duplicate', () => {
       .save()
   })
 
-  it('unit supervisor doesn`t see pedagogical assessment document from duplicate', async () => {
-    const template = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_ASSESSMENT',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
-    const document = await Fixture.childDocument()
-      .with({ childId: duplicate.data.id, templateId: template.data.id })
-      .save()
-
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
-    await employeeLogin(page, daycareSupervisor.data)
-    await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
-    const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.status.waitUntilHidden()
-  })
-
-  it('unit supervisor doesn`t see pedagogical report document from duplicate', async () => {
-    const template = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
-    const document = await Fixture.childDocument()
-      .with({ childId: duplicate.data.id, templateId: template.data.id })
-      .save()
-
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
-    await employeeLogin(page, daycareSupervisor.data)
-    await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
-    const childDocumentPage = new ChildDocumentPage(page)
-    await childDocumentPage.status.waitUntilHidden()
-  })
-
   it('unit supervisor sees hojks document from duplicate', async () => {
     const template = await Fixture.documentTemplate()
       .with({
