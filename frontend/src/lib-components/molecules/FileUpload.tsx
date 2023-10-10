@@ -248,7 +248,7 @@ const attachmentToFile = (attachment: Attachment): FileObject => ({
   deleteInProgress: false
 })
 
-export type FileType = 'document' | 'image' | 'audio' | 'video'
+export type FileType = 'document' | 'image' | 'audio' | 'video' | 'csv'
 
 const contentTypes: Record<FileType, string[]> = {
   document: [
@@ -259,7 +259,8 @@ const contentTypes: Record<FileType, string[]> = {
   ],
   image: ['image/jpeg', 'image/png'],
   audio: ['audio/*'],
-  video: ['video/*']
+  video: ['video/*'],
+  csv: ['text/csv']
 }
 
 const defaultAllowedFileTypes: FileType[] = ['image', 'document']

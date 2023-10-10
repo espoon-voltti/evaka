@@ -76,6 +76,8 @@ const components: Translations = {
                 return 'ljud'
               case 'video':
                 return 'video'
+              case 'csv':
+                return 'CSV filer'
             }
           })
           .join(', ')
