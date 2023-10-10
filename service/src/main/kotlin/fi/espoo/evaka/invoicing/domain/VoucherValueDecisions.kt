@@ -157,8 +157,14 @@ enum class VoucherValueDecisionDifference(
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
     INCOME({ d1, d2 ->
-        setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
-            setOf(d2.headOfFamilyIncome, d2.partnerIncome) && d1.childIncome == d2.childIncome
+        setOf(
+            d1.headOfFamilyIncome?.effectiveComparable(),
+            d1.partnerIncome?.effectiveComparable()
+        ) ==
+            setOf(
+                d2.headOfFamilyIncome?.effectiveComparable(),
+                d2.partnerIncome?.effectiveComparable()
+            ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),

@@ -238,7 +238,7 @@ private fun createChildFeeBasis(
     )
 }
 
-val snDaycareFullDay35 =
+private val snDaycareFullDay35 =
     ServiceNeedOption(
         id = ServiceNeedOptionId(UUID.randomUUID()),
         nameFi = "Kokopäiväinen, vähintään 35h",
@@ -262,7 +262,7 @@ val snDaycareFullDay35 =
         active = true
     )
 
-val feeThresholds =
+private val feeThresholds =
     FeeThresholds(
         validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
         minIncomeThreshold2 = 210200,
