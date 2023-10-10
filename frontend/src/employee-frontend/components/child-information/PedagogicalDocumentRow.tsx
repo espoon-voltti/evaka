@@ -143,16 +143,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
             getDownloadUrl={getAttachmentUrl}
             onUpload={handleAttachmentUpload}
             onDelete={handleAttachmentDelete}
-            accept={[
-              'image/jpeg',
-              'image/png',
-              'application/pdf',
-              'application/msword',
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              'application/vnd.oasis.opendocument.text',
-              'video/*',
-              'audio/*'
-            ]}
+            allowedFileTypes={['image', 'document', 'audio', 'video']}
           />
         </AttachmentsContainer>
       </NameTd>

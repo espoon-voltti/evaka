@@ -58,7 +58,7 @@ export const testTranslations: Translations = {
     deleteFile: '',
     input: {
       title: '',
-      text: []
+      text: () => ''
     },
     loading: '',
     loaded: '',

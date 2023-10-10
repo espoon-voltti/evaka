@@ -6,6 +6,8 @@ import React, { useContext, useMemo } from 'react'
 
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 
+import { FileType } from './molecules/FileUpload'
+
 export interface Translations {
   asyncButton: {
     inProgress: string
@@ -51,7 +53,7 @@ export interface Translations {
     deleteFile: string
     input: {
       title: string
-      text: string[]
+      text: (fileTypes: FileType[]) => string
     }
     loading: string
     loaded: string

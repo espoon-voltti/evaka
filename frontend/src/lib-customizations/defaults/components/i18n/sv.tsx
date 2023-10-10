@@ -63,12 +63,22 @@ const components: Translations = {
     },
     input: {
       title: 'Lägg till bilaga',
-      text: [
-        'Tryck här eller dra en bilaga åt gången till lådan.',
-        'Maximal storlek för filen: 10 MB.',
-        'Tillåtna format:',
-        'PDF, JPEG/JPG, PNG och DOC/DOCX'
-      ]
+      text: (fileTypes) =>
+        'Tryck här eller dra en bilaga åt gången till lådan. Maximal storlek för filen: 10 MB. Tillåtna format: ' +
+        fileTypes
+          .map((type) => {
+            switch (type) {
+              case 'image':
+                return 'bilder (JPEG, JPG, PNG)'
+              case 'document':
+                return 'dokument (PDF, DOC, DOCX, ODT)'
+              case 'audio':
+                return 'ljud'
+              case 'video':
+                return 'video'
+            }
+          })
+          .join(', ')
     },
     deleteFile: 'Radera fil'
   },

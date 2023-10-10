@@ -63,12 +63,22 @@ const components: Translations = {
     },
     input: {
       title: 'Add an attachment',
-      text: [
-        'Press here or drag and drop a new file',
-        'Max file size: 10MB.',
-        'Allowed formats:',
-        'PDF, JPEG/JPG, PNG and DOC/DOCX'
-      ]
+      text: (fileTypes) =>
+        'Press here or drag and drop a new file. Max file size: 10MB. Allowed formats: ' +
+        fileTypes
+          .map((type) => {
+            switch (type) {
+              case 'image':
+                return 'images (JPEG, JPG, PNG)'
+              case 'document':
+                return 'documents (PDF, DOC, DOCX, ODT)'
+              case 'audio':
+                return 'audio'
+              case 'video':
+                return 'video'
+            }
+          })
+          .join(', ')
     },
     deleteFile: 'Delete file'
   },
