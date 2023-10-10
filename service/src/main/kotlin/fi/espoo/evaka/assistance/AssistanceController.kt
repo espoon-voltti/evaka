@@ -10,8 +10,6 @@ import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
 import fi.espoo.evaka.assistanceaction.AssistanceActionResponse
 import fi.espoo.evaka.assistanceaction.AssistanceActionService
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.ChildId
@@ -89,7 +87,7 @@ class AssistanceController(
                         tx,
                         user,
                         clock,
-                        Action.AssistanceAction.READ_ASSISTANCE_ACTION
+                        Action.AssistanceAction.READ
                     )
                 val assistanceActions =
                     tx.getAssistanceActionsByChildId(child, assistanceActionFilter).let { rows ->
@@ -143,25 +141,29 @@ class AssistanceController(
                         rows.map { PreschoolAssistanceResponse(it, actions[it.id] ?: emptySet()) }
                     }
 
-                val otherAssistanceMeasureFilter = accessControl.requireAuthorizationFilter(tx, user, clock,
-                    Action.OtherAssistanceMeasure.READ)
+                val otherAssistanceMeasureFilter =
+                    accessControl.requireAuthorizationFilter(
+                        tx,
+                        user,
+                        clock,
+                        Action.OtherAssistanceMeasure.READ
+                    )
 
-                val otherAssistanceMeasures = tx.getOtherAssistanceMeasuresByChildId(child, otherAssistanceMeasureFilter)
-                            .let { rows ->
-                                val actions:
-                                    Map<
-                                        OtherAssistanceMeasureId, Set<Action.OtherAssistanceMeasure>
-                                    > =
-                                    accessControl.getPermittedActions(
-                                        tx,
-                                        user,
-                                        clock,
-                                        rows.map { it.id }
-                                    )
-                                rows.map {
-                                    OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
-                                }
+                val otherAssistanceMeasures =
+                    tx.getOtherAssistanceMeasuresByChildId(child, otherAssistanceMeasureFilter)
+                        .let { rows ->
+                            val actions:
+                                Map<OtherAssistanceMeasureId, Set<Action.OtherAssistanceMeasure>> =
+                                accessControl.getPermittedActions(
+                                    tx,
+                                    user,
+                                    clock,
+                                    rows.map { it.id }
+                                )
+                            rows.map {
+                                OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
                             }
+                        }
                 AssistanceResponse(
                     assistanceFactors = assistanceFactors,
                     daycareAssistances = daycareAssistances,

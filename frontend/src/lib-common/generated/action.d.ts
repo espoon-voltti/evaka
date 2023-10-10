@@ -121,7 +121,7 @@ export type ApplicationNote =
 
 export type AssistanceAction =
   | 'DELETE'
-  | 'READ_ASSISTANCE_ACTION'
+  | 'READ'
   | 'UPDATE'
 
 export type AssistanceFactor =
@@ -309,7 +309,6 @@ export type MobileDevice =
 export type OtherAssistanceMeasure =
   | 'DELETE'
   | 'READ'
-  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type Pairing = 'POST_RESPONSE'

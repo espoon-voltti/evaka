@@ -6,8 +6,9 @@ package fi.espoo.evaka.assistanceaction
 
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
-import fi.espoo.evaka.*
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.AssistanceController
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
@@ -20,6 +21,12 @@ import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -316,7 +323,6 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         whenDeleteAssistanceActionThenExpectError(AssistanceActionId(UUID.randomUUID()), 404)
     }
 
-    // TODO
     @Test
     fun `if child is in preschool, show VEO only assistance info that overlaps with earliest preschool placements`() {
         val seoEmployee =

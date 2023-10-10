@@ -251,14 +251,14 @@ fun Database.Read.getOtherAssistanceMeasuresByChildId(
     filter: AccessControlFilter<OtherAssistanceMeasureId>
 ): List<OtherAssistanceMeasure> =
     createQuery<DatabaseTable.OtherAssistanceMeasure> {
-        sql(
-            """
+            sql(
+                """
 SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
 FROM other_assistance_measure
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("other_assistance_measure"))}
 """
-        )
-    }
+            )
+        }
         .mapTo<OtherAssistanceMeasure>()
         .toList()
 
