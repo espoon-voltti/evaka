@@ -16,7 +16,12 @@ version: '3.5'
 
 services:
   db:
-    build: ./db
+    image: ghcr.io/espoon-voltti/evaka/test-db:${TEST_DB_TAG:-master}
+    build:
+      context: ./db/
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/test-db:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/test-db:cache-master
     ports:
     - "5432:5432"
     volumes:
@@ -40,7 +45,7 @@ services:
       timeout: 5s
       retries: 5
 
-  s3.mock.evaka:
+  s3-mock:
     image: adobe/s3mock
     ports:
     - "9876:9090"
@@ -56,9 +61,12 @@ services:
       retries: 5
 
   keycloak:
-    image: "${EVAKA_KEYCLOAK_IMAGE:-evaka/keycloak}"
+    image: ghcr.io/espoon-voltti/evaka/keycloak:${TAG:-master}
     build:
-      context: ../keycloak
+      context: ../keycloak/
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/keycloak:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/keycloak:cache-master
     ports:
       - "8080:8080"
     environment:

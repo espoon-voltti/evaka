@@ -1,0 +1,82 @@
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Build E2E resources
+on:
+  push:
+    tags:
+      - '*'
+    paths:
+      - "compose/e2e/**"
+      - "compose/db/**"
+      - ".github/workflows/e2e.yml"
+  schedule:
+    - cron: '0 1 * * *' # every night at 01:00 UTC+0
+
+env:
+  AWS_REGION: eu-west-1
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+# NOTE: Even this is triggered on path change on branch, the generated images will not be used in same build.yml e2e-job.
+#       If this is triggered on path change on master, the generated images will be used only in build.yml e2e-job, if this finishes first.
+#       We do no want to wait this in build.yml, so re-run build.yml in these cases.
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Docker building
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS: "false"
+
+      - name: Build playwright image
+        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        with:
+          public_registry_prefix: ""
+          registry: "ghcr.io/espoon-voltti"
+          name: evaka/e2e-playwright
+          path: ./compose/e2e/
+          dockerfile: ./compose/e2e/playwright.Dockerfile
+          pull: "true"
+          metadata_tags: |
+            type=ref,event=branch,enabled=${{ github.ref == 'refs/heads/master' && 'true' || 'false' }}
+
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Docker building
+        id: setup
+        uses: espoon-voltti/voltti-actions/docker-setup@master
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS: "false"
+
+      - name: Build db image
+        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        with:
+          public_registry_prefix: ""
+          registry: "ghcr.io/espoon-voltti"
+          name: evaka/test-db
+          path: ./compose/db/
+          dockerfile: ./compose/db/Dockerfile
+          pull: "true"
+          metadata_tags: |
+            type=ref,event=branch,enabled=${{ github.ref == 'refs/heads/master' && 'true' || 'false' }}

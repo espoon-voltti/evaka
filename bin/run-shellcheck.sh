@@ -14,6 +14,6 @@ if [ "${DEBUG:-false}" = "true" ]; then
   set -x
 fi
 
-cd "$( dirname "${BASH_SOURCE[0]}")"
+cd "$( dirname "${BASH_SOURCE[0]}")/.."
 
 git ls-files "*.sh" "*.bash" | xargs docker run --rm -v "$(pwd):/mnt" koalaman/shellcheck:stable --external-sources

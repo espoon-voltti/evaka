@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,15 @@ version: "3.5"
 
 services:
   playwright:
-    image: ghcr.io/espoon-voltti/evaka/e2e-playwright:${PLAYWRIGHT_TAG:-playwright}
+    image: ghcr.io/espoon-voltti/evaka/e2e-playwright:${PLAYWRIGHT_TAG:-master}
     build:
-      context: ./e2e
+      context: ./e2e/
       dockerfile: ./playwright.Dockerfile
+      args:
+        FRONTEND_TAG: ${TAG:-master}
+      cache_from:
+        - ghcr.io/espoon-voltti/evaka/e2e-playwright:cache-${CACHE_TAG:-master}
+        - ghcr.io/espoon-voltti/evaka/e2e-playwright:cache-master
     volumes:
       - ..:/repo
     ipc: host

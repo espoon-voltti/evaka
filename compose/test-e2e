@@ -4,11 +4,11 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
-    ./build.sh
-fi
-
 export UID="${UID:-$(id -u)}"
 export GID="${GID:-$(id -g)}"
+
+if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
+    docker-compose -f docker-compose.yml -f docker-compose.e2e.yml build --parallel # not building playwright
+fi
 
 docker-compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-tests.yml $@
