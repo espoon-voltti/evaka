@@ -280,7 +280,7 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = af.child_id
-                AND af.valid_during @> p.start_date
+                AND UPPER(af.valid_during) >= p.start_date
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
@@ -352,7 +352,7 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = da.child_id
-                AND da.valid_during @> p.start_date
+                AND UPPER(da.valid_during) >= p.start_date
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
@@ -362,7 +362,7 @@ ${if (hideClosed) "AND upper(da.valid_during) >= ${bind(now.toLocalDate())}" els
             )
         }
 
-    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(childIsInPreschool: Boolean = false) =
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(hideClosed: Boolean) =
         rule<OtherAssistanceMeasureId> { user, now ->
             sql(
                 """
@@ -371,14 +371,22 @@ FROM other_assistance_measure oam
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-${if (childIsInPreschool)
-                    "AND EXISTS " +
-                            "(SELECT TRUE " +
-                            "FROM PLACEMENT p" +
-                            " WHERE p.child_id = oam.child_id " +
-                            "       AND oam.valid_during @> p.start_date" +
-                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
-                else ""}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = oam.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = oam.child_id
+                AND UPPER(oam.valid_during) >= p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hideClosed) "AND upper(oam.valid_during) >= ${bind(now.toLocalDate())}" else ""}  
             """
                     .trimIndent()
             )
@@ -404,7 +412,7 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = pa.child_id
-                AND pa.valid_during @> p.start_date
+                AND UPPER(pa.valid_during) >= p.start_date
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END

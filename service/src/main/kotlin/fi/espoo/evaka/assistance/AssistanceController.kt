@@ -84,15 +84,6 @@ class AssistanceController(
                     Action.Child.READ_ASSISTANCE,
                     child
                 )
-                val childIsInPreschool =
-                    tx.getPlacementsForChild(child)
-                        .filter {
-                            (it.type == PlacementType.PRESCHOOL ||
-                                it.type == PlacementType.PRESCHOOL_DAYCARE ||
-                                it.type == PlacementType.PRESCHOOL_CLUB) &&
-                                it.startDate <= clock.today()
-                        }
-                        .isNotEmpty()
                 val assistanceActionFilter =
                     accessControl.requireAuthorizationFilter(
                         tx,
@@ -152,37 +143,10 @@ class AssistanceController(
                         rows.map { PreschoolAssistanceResponse(it, actions[it.id] ?: emptySet()) }
                     }
 
-                val otherAssistanceMeasures =
-                    if (
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Child.READ_OTHER_ASSISTANCE_MEASURES,
-                            child
-                        )
-                    )
-                        tx.getOtherAssistanceMeasures(child)
-                            .let { rows ->
-                                val decisions =
-                                    if (childIsInPreschool)
-                                        accessControl.checkPermissionFor(
-                                            tx,
-                                            user,
-                                            clock,
-                                            Action.OtherAssistanceMeasure.READ,
-                                            rows.map { it.id }
-                                        )
-                                    else
-                                        accessControl.checkPermissionFor(
-                                            tx,
-                                            user,
-                                            clock,
-                                            Action.OtherAssistanceMeasure.READ_PRE_PRESCHOOL,
-                                            rows.map { it.id }
-                                        )
-                                rows.filter { decisions[it.id]?.isPermitted() ?: true }
-                            }
+                val otherAssistanceMeasureFilter = accessControl.requireAuthorizationFilter(tx, user, clock,
+                    Action.OtherAssistanceMeasure.READ)
+
+                val otherAssistanceMeasures = tx.getOtherAssistanceMeasuresByChildId(child, otherAssistanceMeasureFilter)
                             .let { rows ->
                                 val actions:
                                     Map<
@@ -198,8 +162,6 @@ class AssistanceController(
                                     OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
                                 }
                             }
-                    else emptyList()
-
                 AssistanceResponse(
                     assistanceFactors = assistanceFactors,
                     daycareAssistances = daycareAssistances,
