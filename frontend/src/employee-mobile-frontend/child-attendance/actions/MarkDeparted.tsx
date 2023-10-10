@@ -10,7 +10,12 @@ import { formatTime, isValidTime } from 'lib-common/date'
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
+import {
+  queryOrDefault,
+  useMutationResult,
+  useQuery,
+  useQueryResult
+} from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -85,10 +90,9 @@ export default React.memo(function MarkDeparted() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId, groupId } = useNonNullableParams<{
+  const { childId, unitId } = useNonNullableParams<{
     unitId: string
     childId: string
-    groupId: string
   }>()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
@@ -101,7 +105,10 @@ export default React.memo(function MarkDeparted() {
     AbsenceTypeWithNoAbsence | undefined
   >(undefined)
 
-  const groupNotes = useQueryResult(groupNotesQuery(groupId))
+  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
+  const groupNotes = useQueryResult(
+    queryOrDefault(groupNotesQuery, [])(groupId)
+  )
 
   const absentFrom = useMemo(
     () =>
