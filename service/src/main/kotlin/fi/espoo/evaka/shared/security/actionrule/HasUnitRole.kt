@@ -332,7 +332,7 @@ WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
             )
         }
 
-    fun inPlacementUnitOfChildOfDaycareAssistance(childIsInPreschool: Boolean = false) =
+    fun inPlacementUnitOfChildOfDaycareAssistance(hideClosed: Boolean) =
         rule<DaycareAssistanceId> { user, now ->
             sql(
                 """
@@ -341,14 +341,22 @@ FROM daycare_assistance da
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-${if (childIsInPreschool)
-                    "AND EXISTS " +
-                            "(SELECT TRUE " +
-                            "FROM PLACEMENT p" +
-                            " WHERE p.child_id = da.child_id " +
-                            "       AND da.valid_during @> p.start_date" +
-                            "       AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))"
-                else ""}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = da.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = da.child_id
+                AND da.valid_during @> p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hideClosed) "AND upper(da.valid_during) >= ${bind(now.toLocalDate())}" else ""}    
             """
                     .trimIndent()
             )
@@ -376,7 +384,7 @@ ${if (childIsInPreschool)
             )
         }
 
-    fun inPlacementUnitOfChildOfPreschoolAssistance() =
+    fun inPlacementUnitOfChildOfPreschoolAssistance(hideClosed: Boolean) =
         rule<PreschoolAssistanceId> { user, now ->
             sql(
                 """
@@ -385,6 +393,22 @@ FROM preschool_assistance pa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = pa.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = pa.child_id
+                AND pa.valid_during @> p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hideClosed) "AND upper(pa.valid_during) >= ${bind(now.toLocalDate())}" else ""}  
             """
                     .trimIndent()
             )

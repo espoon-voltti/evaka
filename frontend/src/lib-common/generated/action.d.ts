@@ -252,7 +252,6 @@ export type DailyServiceTime =
 export type DaycareAssistance =
   | 'DELETE'
   | 'READ'
-  | 'READ_PRE_PRESCHOOL'
   | 'UPDATE'
 
 export type Decision =
@@ -379,6 +378,7 @@ export type Placement =
 
 export type PreschoolAssistance =
   | 'DELETE'
+  | 'READ'
   | 'UPDATE'
 
 export type ServiceNeed =

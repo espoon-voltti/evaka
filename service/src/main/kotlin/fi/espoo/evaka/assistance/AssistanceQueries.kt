@@ -101,13 +101,16 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         .executeAndReturnGeneratedKeys()
         .exactlyOneOrNull<AssistanceFactor>()
 
-fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
+fun Database.Read.getDaycareAssistanceByChildId(
+    child: ChildId,
+    filter: AccessControlFilter<DaycareAssistanceId>
+): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {
             sql(
                 """
 SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
 FROM daycare_assistance
-WHERE child_id = ${bind(child)}
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("daycare_assistance"))}
 """
             )
         }
@@ -169,6 +172,22 @@ WHERE child_id = ${bind(child)}
             )
         }
         .toList<PreschoolAssistance>()
+
+fun Database.Read.getPreschoolAssistanceByChildId(
+    child: ChildId,
+    filter: AccessControlFilter<PreschoolAssistanceId>
+): List<PreschoolAssistance> =
+    createQuery<DatabaseTable.PreschoolAssistance> {
+            sql(
+                """
+SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+FROM preschool_assistance
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("preschool_assistance"))}
+"""
+            )
+        }
+        .mapTo<PreschoolAssistance>()
+        .toList()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,

@@ -1299,20 +1299,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfDaycareAssistance()
+                .inPlacementUnitOfChildOfDaycareAssistance(false)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfDaycareAssistance()
+                .inPlacementUnitOfChildOfDaycareAssistance(false)
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false)
-        ),
-        READ_PRE_PRESCHOOL(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(true)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1819,12 +1816,18 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfPreschoolAssistance()
+                .inPlacementUnitOfChildOfPreschoolAssistance(false)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfPreschoolAssistance()
+                .inPlacementUnitOfChildOfPreschoolAssistance(false)
+        ),
+        READ(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance(false),
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
