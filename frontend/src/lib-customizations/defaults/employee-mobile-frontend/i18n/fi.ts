@@ -116,6 +116,7 @@ export const fi = {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
       PRESCHOOL: 'Esiopetus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
       DAYCARE_5YO_FREE: '5-vuotiaiden varhaiskasvatus',
       DAYCARE: 'Varhaiskasvatus',
       CLUB: 'Kerho'

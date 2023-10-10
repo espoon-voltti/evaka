@@ -65,7 +65,9 @@ export function formatCategory(
     case 'PRESCHOOL_CLUB':
       switch (category) {
         case 'BILLABLE':
-          return i18n.absences.careTypes.PRESCHOOL_DAYCARE
+          return placementType === 'PRESCHOOL_CLUB'
+            ? i18n.absences.careTypes.PRESCHOOL_CLUB
+            : i18n.absences.careTypes.PRESCHOOL_DAYCARE
         case 'NONBILLABLE':
           return i18n.absences.careTypes.PRESCHOOL
       }
