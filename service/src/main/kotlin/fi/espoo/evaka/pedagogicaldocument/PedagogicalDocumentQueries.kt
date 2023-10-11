@@ -72,6 +72,7 @@ fun Database.Read.getChildPedagogicalDocuments(
         .bind("childId", childId)
         .bind("userId", userId)
         .toList<PedagogicalDocumentCitizen>()
+        .map { if (it.attachments.isEmpty()) it.copy(isRead = true) else it }
 }
 
 fun Database.Read.getPedagogicalDocumentChild(
