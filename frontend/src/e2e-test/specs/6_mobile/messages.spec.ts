@@ -243,6 +243,32 @@ describe('Message editor in child page', () => {
   })
 })
 
+describe('Sending a new message', () => {
+  test('Employee sends a message to a group', async () => {
+    await staffStartsNewMessage()
+
+    await messageEditor.senderName.assertTextEquals(
+      `${daycareFixture.name} - ${daycareGroup.name}`
+    )
+
+    // The user has access to all groups, but only the one whose messages are viewed should be available in the
+    // message editor
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    await messageEditor.recipients.option(daycareGroup2.id).waitUntilHidden()
+    await messageEditor.recipients.option(daycareGroup3.id).waitUntilHidden()
+
+    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
+    await messageEditor.fillMessage(message)
+    await messageEditor.send.click()
+    await messageEditor.waitUntilHidden()
+    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
+
+    // Check that citizen received the message
+    await citizenSeesMessage(message)
+  })
+})
+
 describe('Child message thread', () => {
   test('Employee sees unread counts and pin login button', async () => {
     await initCitizenPage(mockedDateAt10)
@@ -415,6 +441,17 @@ async function citizenSendsMessageToGroup2() {
   await citizenMessagesPage.sendNewMessage(title, content, childIds, receivers)
 }
 
+async function citizenSeesMessage(message: {
+  title: string
+  content: string
+  urgent?: boolean
+}) {
+  await initCitizenPage(mockedDateAt12)
+  await citizenPage.goto(config.enduserMessagesUrl)
+  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  await citizenMessagesPage.assertThreadContent(message)
+}
+
 async function userSeesNewMessagesIndicator() {
   await page.goto(config.mobileUrl)
   await listPage.unreadMessagesIndicator.waitUntilVisible()
@@ -457,4 +494,12 @@ async function employeeLoginsToMessagesPage() {
 async function employeeLoginsToMessagesPageThroughGroup() {
   await nav.messages.click()
   await employeeNavigatesToMessagesSelectingGroup()
+}
+
+async function staffStartsNewMessage() {
+  await page.goto(config.mobileUrl)
+  await nav.messages.click()
+  await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
+  await pinLoginPage.login(staffName, pin)
+  await messagesPage.newMessage.click()
 }

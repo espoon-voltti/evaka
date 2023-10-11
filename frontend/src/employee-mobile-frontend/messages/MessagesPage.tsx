@@ -138,6 +138,7 @@ export default function MessagesPage() {
                       <HoverButton
                         primary
                         onClick={() => setUiState({ type: 'newMessage' })}
+                        data-qa="new-message-btn"
                       >
                         <FontAwesomeIcon icon={faPlus} />
                         {i18n.messages.newMessage}

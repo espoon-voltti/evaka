@@ -11,6 +11,7 @@ export default class MobileMessagesPage {
   messagesContainer = this.page.findByDataQa('messages-page-content-area')
   noAccountInfo = this.page.findByDataQa('info-no-account-access')
   threads = this.page.findAllByDataQa('message-preview')
+  newMessage = this.page.findByDataQa('new-message-btn')
 
   async getThreadTitle(index: number) {
     const titles = this.page.findAllByDataQa('message-preview-title')

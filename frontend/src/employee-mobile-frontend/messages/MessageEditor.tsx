@@ -103,7 +103,9 @@ export default React.memo(function MessageEditor({
       <ContentArea opaque>
         <Bold>{i18n.messages.messageEditor.sender}</Bold>
         <Gap size="xs" />
-        <P noMargin>{account.name}</P>
+        <P noMargin data-qa="sender-name">
+          {account.name}
+        </P>
         <Gap size="s" />
 
         <div>

@@ -2,13 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, Element, Page, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  Element,
+  Page,
+  TextInput,
+  TreeDropdown
+} from '../../utils/page'
 
 export default class MobileMessageEditor extends Element {
   constructor(public page: Page) {
     super(page.findByDataQa('message-editor'))
   }
 
+  senderName = this.findByDataQa('sender-name')
+  recipients = new TreeDropdown(this.findByDataQa('recipients'))
   title = new TextInput(this.findByDataQa('input-title'))
   content = new TextInput(this.findByDataQa('input-content'))
   urgent = new Checkbox(this.findByDataQa('checkbox-urgent'))
