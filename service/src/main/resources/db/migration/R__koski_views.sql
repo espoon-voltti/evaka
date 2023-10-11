@@ -6,7 +6,9 @@ CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool
-) AS $$
+)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         child_id, unit_id, type,
         daterange(min(start_date), max(end_date), '[]') AS full_range,
@@ -24,8 +26,8 @@ TABLE (
         WINDOW child AS (PARTITION BY child_id)
     ) p
     WHERE NOT EXISTS (SELECT FROM person duplicate WHERE duplicate.duplicate_of = p.child_id)
-    GROUP BY child_id, unit_id, type
-$$ LANGUAGE SQL STABLE;
+    GROUP BY child_id, unit_id, type;
+END;
 
 CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
@@ -34,7 +36,9 @@ TABLE (
     full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
     special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
     transport_benefit datemultirange
-) AS $$
+)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         p.child_id,
         p.unit_id,
@@ -83,14 +87,16 @@ TABLE (
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL STABLE;
+END;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
     void_date date
-) AS $$
+)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         ksr.child_id,
         ksr.unit_id,
@@ -111,4 +117,4 @@ TABLE (
     AND d.upload_to_koski IS TRUE
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
     AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL STABLE;
+END;
