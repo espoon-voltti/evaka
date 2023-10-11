@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -122,7 +121,7 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<MessageThread> {
+    ): PagedMessageThreads {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
@@ -151,13 +150,13 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
-    ): Paged<MessageThread> {
+    ): PagedMessageThreads {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
                     val archiveFolderId = it.getArchiveFolderId(accountId)
                     if (archiveFolderId == null) {
-                        Paged(emptyList(), 0, 0)
+                        PagedMessageThreads(emptyList(), 0, 0)
                     } else {
                         it.getReceivedThreads(
                             accountId,
@@ -186,7 +185,7 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<MessageCopy> {
+    ): PagedMessageCopies {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
@@ -207,7 +206,7 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<SentMessage> {
+    ): PagedSentMessages {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }

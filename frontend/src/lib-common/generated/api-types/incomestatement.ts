@@ -261,6 +261,24 @@ export const otherIncomes = [
 export type OtherIncome = typeof otherIncomes[number]
 
 /**
+* Generated from fi.espoo.evaka.incomestatement.PagedIncomeStatements
+*/
+export interface PagedIncomeStatements {
+  data: IncomeStatement[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.incomestatement.PagedIncomeStatementsAwaitingHandler
+*/
+export interface PagedIncomeStatementsAwaitingHandler {
+  data: IncomeStatementAwaitingHandler[]
+  pages: number
+  total: number
+}
+
+/**
 * Generated from fi.espoo.evaka.incomestatement.SearchIncomeStatementsRequest
 */
 export interface SearchIncomeStatementsRequest {

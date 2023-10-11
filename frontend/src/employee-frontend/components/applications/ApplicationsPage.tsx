@@ -5,10 +5,10 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   ApplicationSortColumn,
-  ApplicationSummary
+  PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -47,7 +47,7 @@ export default React.memo(function ApplicationsPage() {
   } = useContext(ApplicationUIContext)
 
   const onApplicationsResponse = useCallback(
-    (result: Result<Paged<ApplicationSummary>>) => {
+    (result: Result<PagedApplicationSummaries>) => {
       setApplicationsResult(result)
 
       // ensure current page is within range

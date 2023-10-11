@@ -14,7 +14,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
-import { Failure, Loading, Paged, Result } from 'lib-common/api'
+import { Failure, Loading, Result } from 'lib-common/api'
 import {
   DraftContent,
   Message,
@@ -23,7 +23,10 @@ import {
   SentMessage,
   ThreadReply,
   UnreadCountByAccount,
-  MessageCopy
+  MessageCopy,
+  PagedMessageThreads,
+  PagedSentMessages,
+  PagedMessageCopies
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
@@ -339,7 +342,7 @@ export const MessageContextProvider = React.memo(
     >(Loading.of())
 
     const setReceivedMessagesResult = useCallback(
-      (result: Result<Paged<MessageThread>>) => {
+      (result: Result<PagedMessageThreads>) => {
         setReceivedMessages(result.map((r) => r.data))
         if (result.isSuccess) {
           setPages(result.value.pages)
@@ -356,7 +359,7 @@ export const MessageContextProvider = React.memo(
     const loadMessageDrafts = useRestApi(getMessageDrafts, setMessageDrafts)
 
     const setSentMessagesResult = useCallback(
-      (result: Result<Paged<SentMessage>>) => {
+      (result: Result<PagedSentMessages>) => {
         setSentMessages(result.map((r) => r.data))
         if (result.isSuccess) {
           setPages(result.value.pages)
@@ -371,7 +374,7 @@ export const MessageContextProvider = React.memo(
     )
 
     const setMessageCopiesResult = useCallback(
-      (result: Result<Paged<MessageCopy>>) => {
+      (result: Result<PagedMessageCopies>) => {
         setMessageCopies(result.map((r) => r.data))
         if (result.isSuccess) {
           setPages(result.value.pages)
@@ -386,7 +389,7 @@ export const MessageContextProvider = React.memo(
     )
 
     const setArchivedMessagesResult = useCallback(
-      (result: Result<Paged<MessageThread>>) => {
+      (result: Result<PagedMessageThreads>) => {
         setArchivedMessages(result.map((r) => r.data))
         if (result.isSuccess) {
           setPages(result.value.pages)

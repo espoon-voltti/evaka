@@ -11,7 +11,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -279,7 +278,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         searchTerms: String? = null,
         transferApplications: TransferApplicationFilter? = null,
         voucherApplications: VoucherApplicationFilter? = null
-    ): Paged<ApplicationSummary> =
+    ): PagedApplicationSummaries =
         applicationControllerV2.getApplicationSummaries(
             dbInstance(),
             serviceWorker,

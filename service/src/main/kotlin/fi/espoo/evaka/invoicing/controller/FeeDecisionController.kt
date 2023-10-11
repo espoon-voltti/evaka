@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
@@ -13,7 +14,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
-import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -86,7 +85,7 @@ class FeeDecisionController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest
-    ): Paged<FeeDecisionSummary> {
+    ): PagedFeeDecisionSummaries {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {

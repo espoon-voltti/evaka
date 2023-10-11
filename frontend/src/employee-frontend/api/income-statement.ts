@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeIncomeStatement,
   deserializeIncomeStatementAwaitingHandler
@@ -10,8 +10,9 @@ import {
 import {
   ChildBasicInfo,
   IncomeStatement,
-  IncomeStatementAwaitingHandler,
   IncomeStatementSortParam,
+  PagedIncomeStatements,
+  PagedIncomeStatementsAwaitingHandler,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
@@ -26,9 +27,9 @@ export async function getIncomeStatements(
   personId: UUID,
   page: number,
   pageSize = 10
-): Promise<Result<Paged<IncomeStatement>>> {
+): Promise<Result<PagedIncomeStatements>> {
   return client
-    .get<JsonOf<Paged<IncomeStatement>>>(
+    .get<JsonOf<PagedIncomeStatements>>(
       `/income-statements/person/${personId}`,
       {
         params: { page, pageSize }
@@ -48,14 +49,14 @@ export async function getIncomeStatementsAwaitingHandler(
   sortBy: IncomeStatementSortParam,
   sortDirection: SortDirection,
   searchFilters: IncomeStatementSearchFilters
-): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
+): Promise<Result<PagedIncomeStatementsAwaitingHandler>> {
   const { sentStartDate, sentEndDate } = searchFilters
   if (sentStartDate && sentEndDate && sentStartDate.isAfter(sentEndDate)) {
     return Success.of({ data: [], pages: 0, total: 0 })
   }
 
   return client
-    .post<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
+    .post<JsonOf<PagedIncomeStatementsAwaitingHandler>>(
       '/income-statements/awaiting-handler',
       {
         areas: searchFilters.area.length > 0 ? searchFilters.area : undefined,

@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
 import fi.espoo.evaka.invoicing.controller.SearchFeeDecisionRequest
 import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -24,7 +25,6 @@ import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -2011,7 +2011,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
     }
 
-    private fun searchDecisions(body: SearchFeeDecisionRequest): Paged<FeeDecisionSummary> {
+    private fun searchDecisions(body: SearchFeeDecisionRequest): PagedFeeDecisionSummaries {
         return feeDecisionController.search(dbInstance(), user, RealEvakaClock(), body)
     }
 

@@ -227,6 +227,42 @@ export type MessageType =
   | 'BULLETIN'
 
 /**
+* Generated from fi.espoo.evaka.messaging.PagedCitizenMessageThreads
+*/
+export interface PagedCitizenMessageThreads {
+  data: CitizenMessageThread[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedMessageCopies
+*/
+export interface PagedMessageCopies {
+  data: MessageCopy[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedMessageThreads
+*/
+export interface PagedMessageThreads {
+  data: MessageThread[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedSentMessages
+*/
+export interface PagedSentMessages {
+  data: SentMessage[]
+  pages: number
+  total: number
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.PostMessageBody
 */
 export interface PostMessageBody {

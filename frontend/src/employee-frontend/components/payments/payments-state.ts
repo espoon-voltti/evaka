@@ -12,8 +12,9 @@ import {
   useState
 } from 'react'
 
-import { Loading, Paged, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
+  PagedPayments,
   Payment,
   PaymentSortParam,
   SortDirection
@@ -126,7 +127,7 @@ export function usePaymentsState() {
   const actions = useActions(setState)
 
   const setPaymentsResult = useCallback(
-    (result: Result<Paged<Payment>>) => {
+    (result: Result<PagedPayments>) => {
       setState((previousState) => ({
         ...previousState,
         payments: result.map((r) => r.data),

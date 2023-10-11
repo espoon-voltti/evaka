@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
@@ -376,6 +375,12 @@ fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)").bind("ids", ids).execute()
 }
 
+data class PagedFeeDecisionSummaries(
+    val data: List<FeeDecisionSummary>,
+    val total: Int,
+    val pages: Int
+)
+
 fun Database.Read.searchFeeDecisions(
     clock: EvakaClock,
     postOffice: String,
@@ -393,7 +398,7 @@ fun Database.Read.searchFeeDecisions(
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<FeeDecisionDifference>
-): Paged<FeeDecisionSummary> {
+): PagedFeeDecisionSummaries {
     val sortColumn =
         when (sortBy) {
             FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -601,7 +606,7 @@ fun Database.Read.searchFeeDecisions(
         .addBindings(params)
         .addBindings(freeTextParams)
         .addBindings(numberParams)
-        .mapToPaged(pageSize)
+        .mapToPaged(::PagedFeeDecisionSummaries, pageSize)
 }
 
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {

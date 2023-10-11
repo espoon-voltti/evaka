@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
@@ -198,6 +197,12 @@ fun Database.Read.getInvoiceIdsByDates(
         .toList<InvoiceId>()
 }
 
+data class PagedInvoiceSummaries(
+    val data: List<InvoiceSummary>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.paginatedSearch(
     page: Int = 1,
     pageSize: Int = 200,
@@ -210,7 +215,7 @@ fun Database.Read.paginatedSearch(
     searchTerms: String = "",
     periodStart: LocalDate? = null,
     periodEnd: LocalDate? = null
-): Paged<InvoiceSummary> {
+): PagedInvoiceSummaries {
     val sortColumn =
         when (sortBy) {
             InvoiceSortParam.HEAD_OF_FAMILY -> Pair("max(head.last_name)", "head.last_name")
@@ -321,7 +326,7 @@ fun Database.Read.paginatedSearch(
     return createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
-        .mapToPaged(pageSize, Row::toInvoiceSummary)
+        .mapToPaged(::PagedInvoiceSummaries, pageSize, Row::toInvoiceSummary)
         .let { it.copy(data = flattenSummary(it.data)) }
 }
 

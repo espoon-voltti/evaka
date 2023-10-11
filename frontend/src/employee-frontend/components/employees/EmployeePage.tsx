@@ -5,7 +5,9 @@
 import React, { useEffect, useState } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import { GlobalRole, globalRoles } from 'lib-common/api-types/employee-auth'
+import { globalRoles } from 'lib-common/api-types/employee-auth'
+import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
+import { UserRole } from 'lib-common/generated/api-types/shared'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -20,16 +22,17 @@ import { Gap } from 'lib-components/white-space'
 
 import { getEmployeeDetails, updateEmployee } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser } from '../../types/employee'
 
 interface FormData {
-  globalRoles: GlobalRole[]
+  globalRoles: UserRole[]
 }
 
 export default React.memo(function EmployeePage() {
   const { i18n } = useTranslation()
   const { id } = useNonNullableParams<{ id: string }>()
-  const [employee, setEmployee] = useState<Result<EmployeeUser>>(Loading.of())
+  const [employee, setEmployee] = useState<Result<EmployeeWithDaycareRoles>>(
+    Loading.of()
+  )
   const [form, setForm] = useState<FormData | null>(null)
 
   const loadEmployee = useRestApi(getEmployeeDetails, setEmployee)

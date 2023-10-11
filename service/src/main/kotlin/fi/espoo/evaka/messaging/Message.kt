@@ -73,7 +73,21 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         val sender: MessageAccount?,
         val lastMessageSentAt: HelsinkiDateTime?,
         val hasUnreadMessages: Boolean
-    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD)
+    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD) {
+        companion object {
+            fun fromMessageThread(userId: PersonId, messageThread: MessageThread) =
+                CitizenMessageThread.Redacted(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.messages.firstOrNull()?.sender,
+                    messageThread.messages.lastOrNull()?.sentAt,
+                    messageThread.messages
+                        .findLast { message -> message.sender.id != userId }
+                        ?.readAt != null
+                )
+        }
+    }
 
     @JsonTypeName("MESSAGE_THREAD")
     data class Regular(

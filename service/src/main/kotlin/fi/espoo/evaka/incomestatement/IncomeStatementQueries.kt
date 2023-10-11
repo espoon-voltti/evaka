@@ -10,12 +10,12 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.pagedForPageSize
 import java.time.LocalDate
 
 enum class IncomeStatementType {
@@ -220,17 +220,25 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
     }
 }
 
+data class PagedIncomeStatements(
+    val data: List<IncomeStatement>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.readIncomeStatementsForPerson(
     personId: PersonId,
     includeEmployeeContent: Boolean,
     page: Int,
     pageSize: Int
-): Paged<IncomeStatement> =
+): PagedIncomeStatements =
     createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
         .bind("limit", pageSize)
-        .mapToPaged(pageSize) { mapIncomeStatement(includeEmployeeContent) }
+        .mapToPaged(::PagedIncomeStatements, pageSize) {
+            mapIncomeStatement(includeEmployeeContent)
+        }
 
 fun Database.Read.readIncomeStatementForPerson(
     personId: PersonId,
@@ -540,6 +548,12 @@ AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
 AND (:placementValidDate IS NULL OR (p.start_date IS NOT NULL AND p.end_date IS NOT NULL AND daterange(p.start_date, p.end_date, '[]') @> :placementValidDate))
 """
 
+data class PagedIncomeStatementsAwaitingHandler(
+    val data: List<IncomeStatementAwaitingHandler>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     today: LocalDate,
     areas: List<String>,
@@ -551,7 +565,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     pageSize: Int,
     sortBy: IncomeStatementSortParam,
     sortDirection: SortDirection
-): Paged<IncomeStatementAwaitingHandler> {
+): PagedIncomeStatementsAwaitingHandler {
     val count =
         createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
             .bind("today", today)
@@ -586,9 +600,9 @@ LIMIT :pageSize OFFSET :offset
             .toList<IncomeStatementAwaitingHandler>()
 
     return if (rows.isEmpty()) {
-        Paged(listOf(), 0, 1)
+        PagedIncomeStatementsAwaitingHandler(listOf(), 0, 1)
     } else {
-        Paged.forPageSize(rows, count, pageSize)
+        rows.pagedForPageSize(::PagedIncomeStatementsAwaitingHandler, count, pageSize)
     }
 }
 

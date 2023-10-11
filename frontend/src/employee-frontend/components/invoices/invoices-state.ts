@@ -12,10 +12,11 @@ import {
   useState
 } from 'react'
 
-import { Paged, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   InvoiceSortParam,
   InvoiceSummaryResponse,
+  PagedInvoiceSummaryResponses,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -121,7 +122,7 @@ export function useInvoicesState() {
   const actions = useActions(setState)
 
   const setInvoicesResult = useCallback(
-    (result: Result<Paged<InvoiceSummaryResponse>>) => {
+    (result: Result<PagedInvoiceSummaryResponses>) => {
       setState((previousState) => ({
         ...previousState,
         invoices: {

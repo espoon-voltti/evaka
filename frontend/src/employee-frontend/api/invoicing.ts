@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
+import { Failure, Response, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Absence } from 'lib-common/generated/api-types/daycare'
@@ -13,7 +13,6 @@ import {
   FeeDecisionDifference,
   FeeDecisionSortParam,
   FeeDecisionStatus,
-  FeeDecisionSummary,
   Invoice,
   InvoiceCodes,
   InvoiceCorrectionWithPermittedActions,
@@ -22,9 +21,11 @@ import {
   InvoiceDistinctiveParams,
   InvoiceSortParam,
   InvoiceStatus,
-  InvoiceSummaryResponse,
   NewInvoiceCorrection,
-  Payment,
+  PagedFeeDecisionSummaries,
+  PagedInvoiceSummaryResponses,
+  PagedPayments,
+  PagedVoucherValueDecisionSummaries,
   PersonBasic,
   PersonDetailed,
   SearchPaymentsRequest,
@@ -271,9 +272,9 @@ export async function getFeeDecisions(
   sortBy: FeeDecisionSortParam,
   sortDirection: SortDirection,
   params: FeeDecisionSearchParams
-): Promise<Result<Paged<FeeDecisionSummary>>> {
+): Promise<Result<PagedFeeDecisionSummaries>> {
   return client
-    .post<JsonOf<Paged<FeeDecisionSummary>>>('/fee-decisions/search', {
+    .post<JsonOf<PagedFeeDecisionSummaries>>('/fee-decisions/search', {
       page: page - 1,
       pageSize,
       sortBy,
@@ -337,9 +338,9 @@ export async function getVoucherValueDecisions(
   sortBy: VoucherValueDecisionSortParam,
   sortDirection: SortDirection,
   params: VoucherValueDecisionSearchParams
-): Promise<Result<Paged<VoucherValueDecisionSummary>>> {
+): Promise<Result<PagedVoucherValueDecisionSummaries>> {
   return client
-    .post<JsonOf<Paged<VoucherValueDecisionSummary>>>(
+    .post<JsonOf<PagedVoucherValueDecisionSummaries>>(
       '/value-decisions/search',
       {
         page: page - 1,
@@ -455,9 +456,9 @@ export async function getInvoices(
   sortBy: InvoiceSortParam,
   sortDirection: SortDirection,
   params: InvoiceSearchParams
-): Promise<Result<Paged<InvoiceSummaryResponse>>> {
+): Promise<Result<PagedInvoiceSummaryResponses>> {
   return client
-    .post<JsonOf<Paged<InvoiceSummaryResponse>>>('/invoices/search', {
+    .post<JsonOf<PagedInvoiceSummaryResponses>>('/invoices/search', {
       page,
       pageSize,
       sortBy,
@@ -680,9 +681,9 @@ export async function createPaymentDrafts(): Promise<Result<void>> {
 
 export async function getPayments(
   params: SearchPaymentsRequest
-): Promise<Result<Paged<Payment>>> {
+): Promise<Result<PagedPayments>> {
   return client
-    .post<JsonOf<Paged<Payment>>>('/payments/search', {
+    .post<JsonOf<PagedPayments>>('/payments/search', {
       ...params,
       paymentDateStart: params.paymentDateStart
         ? params.paymentDateStart.formatIso()

@@ -632,6 +632,42 @@ export interface NoteUpdateBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
+*/
+export interface PagedFeeDecisionSummaries {
+  data: FeeDecisionSummary[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.PagedInvoiceSummaryResponses
+*/
+export interface PagedInvoiceSummaryResponses {
+  data: InvoiceSummaryResponse[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.data.PagedPayments
+*/
+export interface PagedPayments {
+  data: Payment[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
+*/
+export interface PagedVoucherValueDecisionSummaries {
+  data: VoucherValueDecisionSummary[]
+  pages: number
+  total: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.Payment
 */
 export interface Payment {

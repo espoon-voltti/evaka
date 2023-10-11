@@ -8,7 +8,6 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
@@ -264,12 +263,18 @@ WHERE id = :id
     if (updated != 1) throw NotFound("employee $id not found")
 }
 
+data class PagedEmployeesWithDaycareRoles(
+    val data: List<EmployeeWithDaycareRoles>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun getEmployeesPaged(
     tx: Database.Read,
     page: Int,
     pageSize: Int,
     searchTerm: String = ""
-): Paged<EmployeeWithDaycareRoles> {
+): PagedEmployeesWithDaycareRoles {
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQueryForColumns(
             listOf("employee"),
@@ -309,7 +314,10 @@ ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
     """
             .trimIndent()
-    return tx.createQuery(sql).addBindings(params).addBindings(freeTextParams).mapToPaged(pageSize)
+    return tx.createQuery(sql)
+        .addBindings(params)
+        .addBindings(freeTextParams)
+        .mapToPaged(::PagedEmployeesWithDaycareRoles, pageSize)
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) =

@@ -5,7 +5,6 @@
 package evaka.codegen.apitypes
 
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.controllers.Wrapper
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -33,8 +32,7 @@ fun getApiClasses(packageName: String): Set<KClass<*>> {
             // Include inner type, but ignore the wrapper itself since we don't support type
             // parameters
             // in codegen
-            Wrapper::class,
-            Paged::class ->
+            Wrapper::class ->
                 this.arguments.asSequence().flatMap { it.type?.collectTypes() ?: emptySequence() }
             // The inner type of Id<*> is irrelevant, because all Ids become UUID/string in frontend
             Id::class -> emptySequence()

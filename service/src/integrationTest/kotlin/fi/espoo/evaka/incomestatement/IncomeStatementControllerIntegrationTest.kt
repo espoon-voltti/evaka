@@ -15,7 +15,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -249,7 +248,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler - no income statements`() {
-        assertEquals(Paged(listOf(), 0, 1), getIncomeStatementsAwaitingHandler())
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(listOf(), 0, 1),
+            getIncomeStatementsAwaitingHandler()
+        )
     }
 
     @Test
@@ -339,7 +341,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement7 = createChildTestIncomeStatement(testChild_1.id)
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
@@ -461,7 +463,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -529,7 +531,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -602,7 +604,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
@@ -627,7 +629,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -716,7 +718,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         }
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
@@ -758,7 +760,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         )
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -781,7 +783,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
 
         assertEquals(
-            Paged(
+            PagedIncomeStatementsAwaitingHandler(
                 listOf(
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
@@ -888,7 +890,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 primaryCareArea = "Test Area"
             )
         assertEquals(
-            Paged(listOf(expected1, expected2), 2, 1),
+            PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
@@ -897,7 +899,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             )
         )
         assertEquals(
-            Paged(listOf(expected2, expected1), 2, 1),
+            PagedIncomeStatementsAwaitingHandler(listOf(expected2, expected1), 2, 1),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
@@ -917,7 +919,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
-    private fun getIncomeStatements(personId: PersonId): Paged<IncomeStatement> {
+    private fun getIncomeStatements(personId: PersonId): PagedIncomeStatements {
         return incomeStatementController.getIncomeStatements(
             dbInstance(),
             employee,
@@ -939,7 +941,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
         clock: EvakaClock = RealEvakaClock()
-    ): Paged<IncomeStatementAwaitingHandler> {
+    ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
             employee,

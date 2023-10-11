@@ -9,7 +9,6 @@ import fi.espoo.evaka.invoicing.controller.PaymentSortParam
 import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentDraft
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -66,7 +65,13 @@ fun Database.Read.readPayments(): List<Payment> {
         .toList<Payment>()
 }
 
-fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> {
+data class PagedPayments(
+    val data: List<Payment>,
+    val total: Int,
+    val pages: Int,
+)
+
+fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
     val orderBy =
         when (params.sortBy) {
             PaymentSortParam.UNIT -> "lower(p.unit_name)"
@@ -115,7 +120,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
         .bind("paymentDateEnd", params.paymentDateEnd)
         .bind("page", params.page)
         .bind("pageSize", params.pageSize)
-        .mapToPaged(params.pageSize)
+        .mapToPaged(::PagedPayments, params.pageSize)
 }
 
 fun Database.Read.getMaxPaymentNumber(): Long {
