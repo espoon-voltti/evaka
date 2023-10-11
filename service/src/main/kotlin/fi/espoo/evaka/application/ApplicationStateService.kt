@@ -236,6 +236,7 @@ class ApplicationStateService(
                 ?: calculateDueDate(
                     application.type,
                     sentDate,
+                    application.form.preferences.preferredStartDate,
                     application.form.preferences.urgent,
                     applicationFlags.isTransferApplication,
                     application.attachments
@@ -941,7 +942,13 @@ class ApplicationStateService(
         )
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
-            null -> calculateAndUpdateDueDate(today, original, updatedForm.preferences.urgent)
+            null ->
+                calculateAndUpdateDueDate(
+                    today,
+                    original,
+                    updatedForm.preferences.preferredStartDate,
+                    updatedForm.preferences.urgent
+                )
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
         }
     }
@@ -962,6 +969,7 @@ class ApplicationStateService(
     private fun Database.Transaction.calculateAndUpdateDueDate(
         today: LocalDate,
         original: ApplicationDetails,
+        updatedPreferredStartDate: LocalDate?,
         urgent: Boolean
     ) {
         if (original.sentDate == null || original.dueDateSetManuallyAt != null) return
@@ -973,6 +981,7 @@ class ApplicationStateService(
             calculateDueDate(
                 original.type,
                 sentDate,
+                updatedPreferredStartDate ?: original.form.preferences.preferredStartDate,
                 urgent,
                 original.transferApplication,
                 original.attachments
@@ -994,7 +1003,43 @@ class ApplicationStateService(
         val application =
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
-        tx.calculateAndUpdateDueDate(today, application, application.form.preferences.urgent)
+        tx.calculateAndUpdateDueDate(
+            today,
+            application,
+            application.form.preferences.preferredStartDate,
+            application.form.preferences.urgent
+        )
+    }
+
+    fun calculateDueDate(
+        applicationType: ApplicationType,
+        sentDate: LocalDate,
+        preferredStartDate: LocalDate?,
+        isUrgent: Boolean,
+        isTransferApplication: Boolean,
+        attachments: List<ApplicationAttachment>,
+        config: FeatureConfig = featureConfig
+    ): LocalDate? {
+        return if (isTransferApplication) {
+            null
+        } else if (applicationType == ApplicationType.PRESCHOOL) {
+            sentDate // todo: is this correct? seems weird
+        } else {
+            if (isUrgent) {
+                // due date should not be set at all if attachments are missing
+                if (attachments.isEmpty()) return null
+                // due date is two weeks from application.sentDate or the first attachment,
+                // whichever is later
+                val minAttachmentDate =
+                    attachments.minByOrNull { it.receivedAt }?.receivedAt?.toLocalDate()
+                listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
+            } else {
+                val defaultDueDate = sentDate.plusMonths(4)
+                if (config.preferredStartRelativeApplicationDueDate && preferredStartDate != null)
+                    maxOf(defaultDueDate, preferredStartDate)
+                else defaultDueDate
+            }
+        }
     }
 
     // HELPERS
@@ -1087,32 +1132,6 @@ class ApplicationStateService(
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private fun calculateDueDate(
-        applicationType: ApplicationType,
-        sentDate: LocalDate,
-        isUrgent: Boolean,
-        isTransferApplication: Boolean,
-        attachments: List<ApplicationAttachment>
-    ): LocalDate? {
-        return if (isTransferApplication) {
-            null
-        } else if (applicationType == ApplicationType.PRESCHOOL) {
-            sentDate // todo: is this correct? seems weird
-        } else {
-            if (isUrgent) {
-                // due date should not be set at all if attachments are missing
-                if (attachments.isEmpty()) return null
-                // due date is two weeks from application.sentDate or the first attachment,
-                // whichever is later
-                val minAttachmentDate =
-                    attachments.minByOrNull { it.receivedAt }?.receivedAt?.toLocalDate()
-                listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
-            } else {
-                sentDate.plusMonths(4)
             }
         }
     }
