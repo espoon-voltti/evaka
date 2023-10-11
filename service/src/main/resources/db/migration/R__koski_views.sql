@@ -17,13 +17,7 @@ TABLE (
         SELECT
             child_id, unit_id, start_date, end_date,
             end_date = max(end_date) OVER child AS last_of_child,
-            (CASE placement.type
-                WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
-                WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
-                WHEN 'PRESCHOOL_CLUB' THEN 'PRESCHOOL'
-                WHEN 'PREPARATORY' THEN 'PREPARATORY'
-                WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
-            END)::koski_study_right_type AS type
+            placement.type::koski_study_right_type AS type
         FROM placement
         WHERE start_date <= today
         AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
