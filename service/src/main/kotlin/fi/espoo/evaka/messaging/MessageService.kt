@@ -33,7 +33,6 @@ class MessageService(
 ) {
     init {
         asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
-        asyncJobRunner.registerHandler(::handleUpdateMessageThreadRecipients)
     }
 
     companion object {
@@ -62,34 +61,6 @@ class MessageService(
                 messagePushNotifications.getAsyncJobs(tx, messages),
                 runAt = clock.now()
             )
-        }
-    }
-
-    // TODO: Remove after the change has been deployed to all environments
-    fun handleUpdateMessageThreadRecipients(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.UpdateMessageThreadRecipients
-    ) {
-        db.transaction { tx ->
-            val contentId =
-                tx.createQuery(
-                        """
-                    SELECT DISTINCT content_id 
-                    FROM message m
-                    WHERE m.thread_id = :threadId 
-                    AND EXISTS(
-                        SELECT 1 FROM message_recipients mr
-                        WHERE mr.message_id = m.id 
-                        AND mr.recipient_id = ANY(:recipientIds)
-                    )
-"""
-                    )
-                    .bind("threadId", msg.threadId)
-                    .bind("recipientIds", msg.recipientIds)
-                    .mapTo<MessageContentId>()
-                    .exactlyOne()
-            tx.upsertReceiverThreadParticipants(contentId, msg.sentAt)
         }
     }
 
