@@ -573,7 +573,7 @@ jobs:
         run: |
           cd ./frontend-build/
           for filename in index.html service-worker.js service-worker.js.map; do
-            find . -name "$filename" -type f -delete
+            find . -name "$filename" -not -path "./maintenance-page/*" -type f -delete
           done
 
           aws s3 sync --exact-timestamps . s3://evaka-static-common/
