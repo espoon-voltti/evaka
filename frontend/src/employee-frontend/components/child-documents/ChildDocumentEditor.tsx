@@ -8,7 +8,7 @@ import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useForm } from 'lib-common/form/hooks'
@@ -18,6 +18,7 @@ import {
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -35,7 +36,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H1, H2 } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -64,9 +65,11 @@ const ActionBar = styled.div`
 `
 
 const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
-  documentAndPermissions
+  documentAndPermissions,
+  childIdFromUrl
 }: {
   documentAndPermissions: ChildDocumentWithPermittedActions
+  childIdFromUrl: UUID | null
 }) {
   const { data: document, permittedActions } = documentAndPermissions
   const { i18n } = useTranslation()
@@ -129,7 +132,8 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
     }
   }, [editMode, debouncedValidContent, lastSavedContent, save, submitting])
 
-  const goBack = () => navigate(`/child-information/${document.child.id}`)
+  const goBack = () =>
+    navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
 
   const nextStatus = useMemo(
     () => getNextDocumentStatus(document.template.type, document.status),
@@ -366,9 +370,13 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 
 export default React.memo(function ChildDocumentEditor() {
   const { documentId } = useNonNullableParams()
+  const [searchParams] = useSearchParams()
   const documentResult = useQueryResult(childDocumentQuery(documentId))
 
   return renderResult(documentResult, (documentAndPermissions) => (
-    <ChildDocumentEditorView documentAndPermissions={documentAndPermissions} />
+    <ChildDocumentEditorView
+      documentAndPermissions={documentAndPermissions}
+      childIdFromUrl={searchParams.get('childId')}
+    />
   ))
 })

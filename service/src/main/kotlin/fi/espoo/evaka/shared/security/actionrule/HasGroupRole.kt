@@ -188,6 +188,22 @@ ${if (publishable) "AND status <> 'COMPLETED'" else ""}
             )
         }
 
+    fun inPlacementGroupOfDuplicateChildOfHojksChildDocument() =
+        rule<ChildDocumentId> { user, now ->
+            sql(
+                """
+SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM child_document
+JOIN document_template ON document_template.id = child_document.template_id
+JOIN person ON person.id = child_document.child_id
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementGroupOfChildOfVasuDocument() =
         rule<VasuDocumentId> { user, now ->
             sql(

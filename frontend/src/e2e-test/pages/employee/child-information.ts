@@ -28,6 +28,7 @@ import {
 } from '../../utils/page'
 
 import CreateApplicationModal from './applications/create-application-modal'
+import { ChildDocumentPage } from './documents/child-document'
 import { IncomeSection } from './guardian-information'
 import { VasuPage } from './vasu/vasu'
 
@@ -409,6 +410,29 @@ export class ChildDocumentsSection extends Section {
     this.page.findByDataQa('template-select')
   )
   readonly modalOk = this.page.findByDataQa('modal-okBtn')
+
+  async assertChildDocuments(expectedRows: { id: UUID }[]) {
+    const rows = this.page
+      .findByDataQa('table-of-child-documents')
+      .findAllByDataQa('child-document-row')
+    await rows.assertCount(expectedRows.length)
+    await Promise.all(
+      expectedRows.map(async (expected, index) => {
+        const row = rows.nth(index)
+        await row
+          .findByDataQa(`child-document-${expected.id}`)
+          .waitUntilVisible()
+      })
+    )
+  }
+
+  async openChildDocument(id: UUID) {
+    await this.page
+      .findByDataQa(`child-document-${id}`)
+      .findByDataQa('open-document')
+      .click()
+    return new ChildDocumentPage(this.page)
+  }
 
   readonly childDocumentsCount = () =>
     this.page

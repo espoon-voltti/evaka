@@ -13,13 +13,17 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -30,9 +34,11 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -48,11 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: ChildDocumentController
 
+    lateinit var areaId: AreaId
     lateinit var employeeUser: AuthenticatedUser
+    lateinit var unitSupervisorUser: AuthenticatedUser
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
     final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdPedagogicalReport = DocumentTemplateId(UUID.randomUUID())
     final val templateIdHojks = DocumentTemplateId(UUID.randomUUID())
 
     final val templateContent =
@@ -105,6 +114,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             content = templateContent
         )
 
+    val devTemplatePedagogicalReport =
+        DevDocumentTemplate(
+            id = templateIdPedagogicalReport,
+            type = DocumentType.PEDAGOGICAL_REPORT,
+            name = "Pedagoginen selvitys 2023",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent
+        )
+
     val devTemplateHojks =
         DevDocumentTemplate(
             id = templateIdHojks,
@@ -121,8 +139,24 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 tx.insertTestEmployee(DevEmployee()).let {
                     AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
                 }
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
+            areaId = tx.insertTestCareArea(testArea)
+            val unitId =
+                tx.insertTestDaycare(
+                    testDaycare.copy(
+                        language = Language.sv,
+                        enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                    )
+                )
+            val unitSupervisorId = tx.insertTestEmployee(DevEmployee())
+            unitSupervisorUser =
+                unitSupervisorId.let {
+                    AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
+                }
+            tx.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = unitSupervisorId,
+                role = UserRole.UNIT_SUPERVISOR
+            )
             tx.insertTestPerson(testChild_1)
             tx.insertTestChild(DevChild(testChild_1.id))
             tx.insertTestPlacement(
@@ -132,6 +166,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 endDate = clock.today().plusDays(5)
             )
             tx.insertTestDocumentTemplate(devTemplatePed)
+            tx.insertTestDocumentTemplate(devTemplatePedagogicalReport)
             tx.insertTestDocumentTemplate(devTemplateHojks)
         }
     }
@@ -470,6 +505,91 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         prevState(documentId, DocumentStatus.DRAFT)
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
         assertNotNull(getDocument(documentId).publishedAt)
+    }
+
+    @Test
+    fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(childId))
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
+                childId
+            }
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(duplicateId, templateIdPed)
+            )
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor doesn't see pedagogical report document from duplicate`() {
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(childId))
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
+                childId
+            }
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(duplicateId, templateIdPedagogicalReport)
+            )
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor sees hojks document from duplicate`() {
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insertTestDaycare(
+                        DevDaycare(
+                            areaId = areaId,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                        )
+                    )
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(childId))
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
+                childId
+            }
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(duplicateId, templateIdHojks)
+            )
+        assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
     }
 
     private fun getDocument(id: ChildDocumentId) =

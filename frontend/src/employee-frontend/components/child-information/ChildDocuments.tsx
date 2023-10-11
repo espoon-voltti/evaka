@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faFile, faQuestion } from 'Icons'
+import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -96,15 +97,24 @@ const ChildDocuments = React.memo(function ChildDocuments({
           </Tr>
         </Thead>
         <Tbody>
-          {documents.map(({ data: document, permittedActions }) => (
+          {orderBy(
+            documents,
+            (document) => document.data.modifiedAt,
+            'desc'
+          ).map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
-              <WiderTd>
+              <WiderTd data-qa={`child-document-${document.id}`}>
                 <InlineButton
                   aria-label={i18n.childInformation.childDocuments.table.open}
                   text={document.templateName}
                   icon={faFile}
                   disabled={!permittedActions.includes('READ')}
-                  onClick={() => navigate(`/child-documents/${document.id}`)}
+                  onClick={() =>
+                    navigate({
+                      pathname: `/child-documents/${document.id}`,
+                      search: `?childId=${childId}`
+                    })
+                  }
                   data-qa="open-document"
                 />
               </WiderTd>
