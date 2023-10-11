@@ -388,16 +388,20 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 )
                 .size
         )
-        assertEquals(2, getUnreadCount(guardian).values.sum())
+        // only docs with attachments are counted in unread
+        assertEquals(1, getUnreadCount(guardian).values.sum())
     }
 
     @Test
     fun `marking document read works`() {
         val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
+        val attachmentId = uploadAttachment(id1)
 
         http
             .put("/pedagogical-document/$id1")
-            .jsonBody("""{"id": "$id1", "childId": "${testChild_1.id}", "description": "123123"}""")
+            .jsonBody(
+                """{"id": "$id1", "childId": "${testChild_1.id}", "description": "123123", "attachmentId": "$attachmentId"}"""
+            )
             .asUser(employee)
             .responseString()
 
