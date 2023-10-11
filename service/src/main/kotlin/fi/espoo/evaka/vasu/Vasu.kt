@@ -8,9 +8,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.daycare.createChild
-import fi.espoo.evaka.daycare.getChild
-import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -554,41 +551,8 @@ fun updateVasuDocumentState(
         tx.freezeVasuPlacements(now.toLocalDate(), id)
     }
 
-    val addedEvents =
-        events.map {
-            tx.insertVasuDocumentEvent(documentId = id, eventType = it, createdBy = createdBy)
-        }
-
-    if (events.contains(VasuDocumentEventType.MOVED_TO_CLOSED)) {
-        val duplicates = tx.listPersonByDuplicateOf(document.basics.child.id)
-        if (duplicates.isNotEmpty()) {
-            val child = tx.getChild(document.basics.child.id)!!
-            val template = tx.getVasuTemplate(document.templateId)!!
-            val allEvents = document.events + addedEvents
-            duplicates.forEach { duplicate ->
-                val duplicateChild =
-                    tx.getChild(duplicate.id) ?: tx.createChild(child.copy(id = duplicate.id))
-                val duplicateDocumentId =
-                    tx.insertVasuDocument(
-                        now = now,
-                        childId = duplicateChild.id,
-                        template = template
-                    )
-                tx.updateVasuDocumentMaster(
-                    now = now,
-                    id = duplicateDocumentId,
-                    content = document.content,
-                    childLanguage = document.basics.childLanguage
-                )
-                allEvents.forEach { event ->
-                    tx.insertVasuDocumentEvent(
-                        documentId = duplicateDocumentId,
-                        eventType = event.eventType,
-                        createdBy = event.createdBy
-                    )
-                }
-            }
-        }
+    events.forEach {
+        tx.insertVasuDocumentEvent(documentId = id, eventType = it, createdBy = createdBy)
     }
 
     // An email notification needs to be sent if the document was published
