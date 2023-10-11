@@ -79,20 +79,6 @@ describe('curriculum document with person duplicate', () => {
       .save()
   })
 
-  it('unit supervisor doesn`t see daycare document from duplicate', async () => {
-    const templateId = await insertVasuTemplateFixture({
-      type: 'DAYCARE',
-      valid: new FiniteDateRange(mockedDate, mockedDate)
-    })
-    const documentId = await insertVasuDocument(duplicate.data.id, templateId)
-
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
-    await employeeLogin(page, daycareSupervisor.data)
-    await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
-    const vasuPage = new VasuPage(page)
-    await vasuPage.assertDocumentNotVisible()
-  })
-
   it('unit supervisor sees preschool document from duplicate', async () => {
     const templateId = await insertVasuTemplateFixture({
       type: 'PRESCHOOL',

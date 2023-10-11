@@ -16,17 +16,30 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.job.ScheduledJob
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -476,6 +489,96 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(VasuDocumentState.DRAFT, doc.documentState)
             assertEquals(emptyList(), doc.events)
         }
+    }
+
+    @Test
+    fun `unit supervisor doesn't see daycare document from duplicate`() {
+        val unitSupervisor =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insertTestDaycare(
+                        DevDaycare(
+                            areaId = testArea.id,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                        )
+                    )
+                val employeeId = tx.insertTestEmployee(DevEmployee())
+                tx.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.UNIT_SUPERVISOR
+                )
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        unitId = unitId,
+                        childId = testChild_1.id,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
+                )
+                AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
+            }
+        val duplicateId =
+            db.transaction { tx ->
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(id = childId))
+                childId
+            }
+        val documentId =
+            vasuController.createDocument(
+                dbInstance(),
+                adminUser,
+                clock,
+                duplicateId,
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+            )
+        assertThrows<Forbidden> {
+            vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor sees preschool document from duplicate`() {
+        val unitSupervisor =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insertTestDaycare(
+                        DevDaycare(
+                            areaId = testArea.id,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                        )
+                    )
+                val employeeId = tx.insertTestEmployee(DevEmployee())
+                tx.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.UNIT_SUPERVISOR
+                )
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        unitId = unitId,
+                        childId = testChild_1.id,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
+                )
+                AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
+            }
+        val duplicateId =
+            db.transaction { tx ->
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(id = childId))
+                childId
+            }
+        val documentId =
+            vasuController.createDocument(
+                dbInstance(),
+                adminUser,
+                clock,
+                duplicateId,
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+            )
+        assertNotNull(vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId))
     }
 
     private fun documentPublishingAndStateTransitions(type: CurriculumType) {
