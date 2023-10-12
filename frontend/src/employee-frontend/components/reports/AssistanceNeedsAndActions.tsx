@@ -15,7 +15,6 @@ import { AssistanceNeedsAndActionsReportRow } from 'lib-common/generated/api-typ
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -94,20 +93,10 @@ export default React.memo(function AssistanceNeedsAndActions() {
     })
   const areasResult = useQueryResult(areaQuery)
   const unitsResult = useQueryResult(unitsQuery)
-  const [report] = useApiState(
-    () => getAssistanceNeedsAndActionsReport(filters),
-    [filters]
-  )
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
   const [columnFilters, setColumnFilters] =
     useState<ColumnFilters>(emptyColumnFilters)
-
-  const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
-    () =>
-      report.map((rs) => rs.rows.filter(rowFilter(rowFilters))).getOrElse([]),
-    [report, rowFilters]
-  )
 
   const selectedDaycareColumns = useMemo(
     () =>
@@ -322,222 +311,253 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </FilterRow>
         )}
 
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {report.isSuccess && (
-          <>
-            <ReportDownload<Record<string, unknown>>
-              data={filteredRows.map((row) =>
-                /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
-                ({
-                  ...row,
-                  ...Object.fromEntries([
-                    ...selectedDaycareColumns.map((level) => [
-                      `DAYCARE-ASSISTANCE-${level}`,
-                      row.daycareAssistanceCounts[level] ?? 0
-                    ]),
-                    ...selectedPreschoolColumns.map((level) => [
-                      `PRESCHOOL-ASSISTANCE-${level}`,
-                      row.preschoolAssistanceCounts[level] ?? 0
-                    ]),
-                    ...selectedOtherColumns.map((type) => [
-                      `OTHER-ASSISTANCE-MEASURE-${type}`,
-                      row.otherAssistanceMeasureCounts[type] ?? 0
-                    ]),
-                    ...report.value.actions.map(({ value }) => [
-                      `ACTION-${value}`,
-                      row.actionCounts[value] ?? 0
-                    ])
-                  ])
-                })
-              )}
-              headers={[
-                {
-                  label: i18n.reports.common.careAreaName,
-                  key: 'careAreaName'
-                },
-                {
-                  label: i18n.reports.common.unitName,
-                  key: 'unitName'
-                },
-                {
-                  label: i18n.reports.common.groupName,
-                  key: 'groupName'
-                },
-                ...selectedDaycareColumns.map((level) => ({
-                  label:
-                    i18n.childInformation.assistance.types
-                      .daycareAssistanceLevel[level],
-                  key: `DAYCARE-ASSISTANCE-${level}`
-                })),
-                ...selectedPreschoolColumns.map((level) => ({
-                  label:
-                    i18n.childInformation.assistance.types
-                      .preschoolAssistanceLevel[level],
-                  key: `PRESCHOOL-ASSISTANCE-${level}`
-                })),
-                ...selectedOtherColumns.map((type) => ({
-                  label:
-                    i18n.childInformation.assistance.types
-                      .otherAssistanceMeasureType[type],
-                  key: `OTHER-ASSISTANCE-MEASURE-${type}`
-                })),
-                ...report.value.actions.map((action) => ({
-                  label: action.nameFi,
-                  key: `ACTION-${action.value}`
-                })),
-                ...(featureFlags.assistanceActionOther
-                  ? [
-                      {
-                        label:
-                          i18n.childInformation.assistanceAction.fields
-                            .actionTypes.OTHER,
-                        key: 'otherActionCount'
-                      }
-                    ]
-                  : []),
-                {
-                  label: i18n.reports.assistanceNeedsAndActions.actionMissing,
-                  key: 'noActionCount'
-                }
-              ]}
-              filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
-            />
-            <TableScrollable>
-              <Thead>
-                <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
-                  <Th>{i18n.reports.common.groupName}</Th>
-                  {selectedDaycareColumns.map((level) => (
-                    <Th key={level}>
-                      {
-                        i18n.childInformation.assistance.types
-                          .daycareAssistanceLevel[level]
-                      }
-                    </Th>
-                  ))}
-                  {selectedPreschoolColumns.map((level) => (
-                    <Th key={level}>
-                      {
-                        i18n.childInformation.assistance.types
-                          .preschoolAssistanceLevel[level]
-                      }
-                    </Th>
-                  ))}
-                  {selectedOtherColumns.map((type) => (
-                    <Th key={type}>
-                      {
-                        i18n.childInformation.assistance.types
-                          .otherAssistanceMeasureType[type]
-                      }
-                    </Th>
-                  ))}
-                  {report.value.actions.map((action) => (
-                    <Th key={action.value}>{action.nameFi}</Th>
-                  ))}
-                  {featureFlags.assistanceActionOther && (
-                    <Th>
-                      {
-                        i18n.childInformation.assistanceAction.fields
-                          .actionTypes.OTHER
-                      }
-                    </Th>
-                  )}
-                  <Th>
-                    {i18n.reports.assistanceNeedsAndActions.actionMissing}
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredRows.map((row: AssistanceNeedsAndActionsReportRow) => (
-                  <Tr key={`${row.unitId}:${row.groupId}`}>
-                    <Td>{row.careAreaName}</Td>
-                    <Td>
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Td>
-                    <Td>{row.groupName}</Td>
-                    {selectedDaycareColumns.map((level) => (
-                      <Td key={level}>
-                        {row.daycareAssistanceCounts[level] ?? 0}
-                      </Td>
-                    ))}
-                    {selectedPreschoolColumns.map((level) => (
-                      <Td key={level}>
-                        {row.preschoolAssistanceCounts[level] ?? 0}
-                      </Td>
-                    ))}
-                    {selectedOtherColumns.map((type) => (
-                      <Td key={type}>
-                        {row.otherAssistanceMeasureCounts[type] ?? 0}
-                      </Td>
-                    ))}
-                    {report.value.actions.map((action) => (
-                      <Td key={action.value}>
-                        {row.actionCounts[action.value] ?? 0}
-                      </Td>
-                    ))}
-                    {featureFlags.assistanceActionOther && (
-                      <Td>{row.otherActionCount}</Td>
-                    )}
-                    <Td>{row.noActionCount}</Td>
-                  </Tr>
-                ))}
-              </Tbody>
-              <TableFooter>
-                <Tr>
-                  <Td className="bold">{i18n.reports.common.total}</Td>
-                  <Td />
-                  <Td />
-                  {selectedDaycareColumns.map((level) => (
-                    <Td key={level}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.daycareAssistanceCounts[level] ?? 0
-                      )}
-                    </Td>
-                  ))}
-                  {selectedPreschoolColumns.map((level) => (
-                    <Td key={level}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.preschoolAssistanceCounts[level] ?? 0
-                      )}
-                    </Td>
-                  ))}
-                  {selectedOtherColumns.map((type) => (
-                    <Td key={type}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.otherAssistanceMeasureCounts[type] ?? 0
-                      )}
-                    </Td>
-                  ))}
-                  {report.value.actions.map((action) => (
-                    <Td key={action.value}>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.actionCounts[action.value] ?? 0
-                      )}
-                    </Td>
-                  ))}
-                  {featureFlags.assistanceActionOther && (
-                    <Td>
-                      {reducePropertySum(
-                        filteredRows,
-                        (r) => r.otherActionCount
-                      )}
-                    </Td>
-                  )}
-                  <Td>
-                    {reducePropertySum(filteredRows, (r) => r.noActionCount)}
-                  </Td>
-                </Tr>
-              </TableFooter>
-            </TableScrollable>
-          </>
-        )}
+        <ReportByGroup
+          filters={filters}
+          rowFilters={rowFilters}
+          selectedDaycareColumns={selectedDaycareColumns}
+          selectedPreschoolColumns={selectedPreschoolColumns}
+          selectedOtherColumns={selectedOtherColumns}
+        />
       </ContentArea>
     </Container>
   )
 })
+
+const ReportByGroup = ({
+  filters,
+  rowFilters,
+  selectedDaycareColumns,
+  selectedPreschoolColumns,
+  selectedOtherColumns
+}: {
+  filters: AssistanceNeedsAndActionsReportFilters
+  rowFilters: RowFilters
+  selectedDaycareColumns: DaycareAssistanceLevel[]
+  selectedPreschoolColumns: PreschoolAssistanceLevel[]
+  selectedOtherColumns: OtherAssistanceMeasureType[]
+}) => {
+  const { i18n } = useTranslation()
+  const [result] = useApiState(
+    () => getAssistanceNeedsAndActionsReport(filters),
+    [filters]
+  )
+
+  const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
+    () =>
+      result.map((rs) => rs.rows.filter(rowFilter(rowFilters))).getOrElse([]),
+    [result, rowFilters]
+  )
+  return (
+    <>
+      {renderResult(result, (report) => (
+        <>
+          <ReportDownload<Record<string, unknown>>
+            data={filteredRows.map((row) =>
+              /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
+              ({
+                ...row,
+                ...Object.fromEntries([
+                  ...selectedDaycareColumns.map((level) => [
+                    `DAYCARE-ASSISTANCE-${level}`,
+                    row.daycareAssistanceCounts[level] ?? 0
+                  ]),
+                  ...selectedPreschoolColumns.map((level) => [
+                    `PRESCHOOL-ASSISTANCE-${level}`,
+                    row.preschoolAssistanceCounts[level] ?? 0
+                  ]),
+                  ...selectedOtherColumns.map((type) => [
+                    `OTHER-ASSISTANCE-MEASURE-${type}`,
+                    row.otherAssistanceMeasureCounts[type] ?? 0
+                  ]),
+                  ...report.actions.map(({ value }) => [
+                    `ACTION-${value}`,
+                    row.actionCounts[value] ?? 0
+                  ])
+                ])
+              })
+            )}
+            headers={[
+              {
+                label: i18n.reports.common.careAreaName,
+                key: 'careAreaName'
+              },
+              {
+                label: i18n.reports.common.unitName,
+                key: 'unitName'
+              },
+              {
+                label: i18n.reports.common.groupName,
+                key: 'groupName'
+              },
+              ...selectedDaycareColumns.map((level) => ({
+                label:
+                  i18n.childInformation.assistance.types.daycareAssistanceLevel[
+                    level
+                  ],
+                key: `DAYCARE-ASSISTANCE-${level}`
+              })),
+              ...selectedPreschoolColumns.map((level) => ({
+                label:
+                  i18n.childInformation.assistance.types
+                    .preschoolAssistanceLevel[level],
+                key: `PRESCHOOL-ASSISTANCE-${level}`
+              })),
+              ...selectedOtherColumns.map((type) => ({
+                label:
+                  i18n.childInformation.assistance.types
+                    .otherAssistanceMeasureType[type],
+                key: `OTHER-ASSISTANCE-MEASURE-${type}`
+              })),
+              ...report.actions.map((action) => ({
+                label: action.nameFi,
+                key: `ACTION-${action.value}`
+              })),
+              ...(featureFlags.assistanceActionOther
+                ? [
+                    {
+                      label:
+                        i18n.childInformation.assistanceAction.fields
+                          .actionTypes.OTHER,
+                      key: 'otherActionCount'
+                    }
+                  ]
+                : []),
+              {
+                label: i18n.reports.assistanceNeedsAndActions.actionMissing,
+                key: 'noActionCount'
+              }
+            ]}
+            filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
+          />
+          <TableScrollable>
+            <Thead>
+              <Tr>
+                <Th>{i18n.reports.common.careAreaName}</Th>
+                <Th>{i18n.reports.common.unitName}</Th>
+                <Th>{i18n.reports.common.groupName}</Th>
+                {selectedDaycareColumns.map((level) => (
+                  <Th key={level}>
+                    {
+                      i18n.childInformation.assistance.types
+                        .daycareAssistanceLevel[level]
+                    }
+                  </Th>
+                ))}
+                {selectedPreschoolColumns.map((level) => (
+                  <Th key={level}>
+                    {
+                      i18n.childInformation.assistance.types
+                        .preschoolAssistanceLevel[level]
+                    }
+                  </Th>
+                ))}
+                {selectedOtherColumns.map((type) => (
+                  <Th key={type}>
+                    {
+                      i18n.childInformation.assistance.types
+                        .otherAssistanceMeasureType[type]
+                    }
+                  </Th>
+                ))}
+                {report.actions.map((action) => (
+                  <Th key={action.value}>{action.nameFi}</Th>
+                ))}
+                {featureFlags.assistanceActionOther && (
+                  <Th>
+                    {
+                      i18n.childInformation.assistanceAction.fields.actionTypes
+                        .OTHER
+                    }
+                  </Th>
+                )}
+                <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {filteredRows.map((row: AssistanceNeedsAndActionsReportRow) => (
+                <Tr key={`${row.unitId}:${row.groupId}`}>
+                  <Td>{row.careAreaName}</Td>
+                  <Td>
+                    <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
+                  </Td>
+                  <Td>{row.groupName}</Td>
+                  {selectedDaycareColumns.map((level) => (
+                    <Td key={level}>
+                      {row.daycareAssistanceCounts[level] ?? 0}
+                    </Td>
+                  ))}
+                  {selectedPreschoolColumns.map((level) => (
+                    <Td key={level}>
+                      {row.preschoolAssistanceCounts[level] ?? 0}
+                    </Td>
+                  ))}
+                  {selectedOtherColumns.map((type) => (
+                    <Td key={type}>
+                      {row.otherAssistanceMeasureCounts[type] ?? 0}
+                    </Td>
+                  ))}
+                  {report.actions.map((action) => (
+                    <Td key={action.value}>
+                      {row.actionCounts[action.value] ?? 0}
+                    </Td>
+                  ))}
+                  {featureFlags.assistanceActionOther && (
+                    <Td>{row.otherActionCount}</Td>
+                  )}
+                  <Td>{row.noActionCount}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+            <TableFooter>
+              <Tr>
+                <Td className="bold">{i18n.reports.common.total}</Td>
+                <Td />
+                <Td />
+                {selectedDaycareColumns.map((level) => (
+                  <Td key={level}>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.daycareAssistanceCounts[level] ?? 0
+                    )}
+                  </Td>
+                ))}
+                {selectedPreschoolColumns.map((level) => (
+                  <Td key={level}>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.preschoolAssistanceCounts[level] ?? 0
+                    )}
+                  </Td>
+                ))}
+                {selectedOtherColumns.map((type) => (
+                  <Td key={type}>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.otherAssistanceMeasureCounts[type] ?? 0
+                    )}
+                  </Td>
+                ))}
+                {report.actions.map((action) => (
+                  <Td key={action.value}>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.actionCounts[action.value] ?? 0
+                    )}
+                  </Td>
+                ))}
+                {featureFlags.assistanceActionOther && (
+                  <Td>
+                    {reducePropertySum(filteredRows, (r) => r.otherActionCount)}
+                  </Td>
+                )}
+                <Td>
+                  {reducePropertySum(filteredRows, (r) => r.noActionCount)}
+                </Td>
+              </Tr>
+            </TableFooter>
+          </TableScrollable>
+        </>
+      ))}
+    </>
+  )
+}
