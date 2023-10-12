@@ -44,6 +44,7 @@ enum class Audit(
     AssistanceNeedDecisionsReportUnreadCount,
     AssistanceNeedPreschoolDecisionsListCitizen,
     AssistanceNeedsReportRead,
+    AssistanceNeedsReportByChildRead,
     AttachmentsDelete,
     AttachmentsRead,
     AttachmentsUploadForApplication,

@@ -2003,7 +2003,7 @@ data class DevChildAttendance(
 data class DevAssistanceAction(
     val id: AssistanceActionId = AssistanceActionId(UUID.randomUUID()),
     val childId: ChildId,
-    val updatedBy: EvakaUserId,
+    val updatedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),

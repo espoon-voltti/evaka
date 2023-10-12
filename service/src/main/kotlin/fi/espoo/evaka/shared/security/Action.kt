@@ -2024,6 +2024,15 @@ sealed interface Action {
                 )
                 .inUnit()
         ),
+        READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit()
+        ),
         READ_ATTENDANCE_RESERVATION_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inUnit()

@@ -62,6 +62,14 @@ export interface AssistanceNeedsAndActionsReport {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportByChild
+*/
+export interface AssistanceNeedsAndActionsReportByChild {
+  actions: AssistanceActionOption[]
+  rows: AssistanceNeedsAndActionsReportRowByChild[]
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
@@ -72,6 +80,25 @@ export interface AssistanceNeedsAndActionsReportRow {
   groupName: string
   noActionCount: number
   otherActionCount: number
+  otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
+  preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
+*/
+export interface AssistanceNeedsAndActionsReportRowByChild {
+  actions: string[]
+  careAreaName: string
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
+  groupId: UUID
+  groupName: string
+  otherAction: string
   otherAssistanceMeasureCounts: Record<OtherAssistanceMeasureType, number>
   preschoolAssistanceCounts: Record<PreschoolAssistanceLevel, number>
   unitId: UUID
