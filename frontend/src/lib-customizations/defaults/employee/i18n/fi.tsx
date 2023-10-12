@@ -2688,37 +2688,35 @@ export const fi = {
         WAITING_FOR_MANUAL_SENDING:
           'Osalla päämiehistä on päätöksiä, jotka odottavat manuaalista lähetystä'
       }
-    },
-    ignoreDraftModal: {
-      title: 'Haluatko varmasti ohittaa luonnoksen?',
-      content: (
-        <div>
-          <H3>Luonnoksen saa ohittaa vain jos seuraavat asiat pätevät:</H3>
-          <ul>
-            <li>Luonnos koskee menneisyyttä, ja</li>
-            <li>
-              Luonnos on väärin koska menneisyydessä olevat asiakastiedot ovat
-              väärin, ja
-            </li>
-            <li>
-              Samalle ajalle oleva alkuperäinen lähetetty maksupäätös on oikein
-            </li>
-          </ul>
-          <p>
-            Mikäli luonnos on väärin koska tiedot ovat väärin (esim.
-            perhesuhteita on takautuvasti poistettu virheellisesti), on tärkeää
-            ensisijaisesti pyrkiä korjaamaan tiedot ennalleen, koska ne
-            vaikuttavat myös muihin järjestelmiin.
-          </p>
-          <p>
-            Mikäli luonnos on väärin tai tarpeeton vaikka tiedot ovat oikein,
-            älä ohita luonnosta, vaan ole yhteydessä kehittäjätiimiin, jotta
-            vika voidaan tutkia ja korjata.
-          </p>
-        </div>
-      ),
-      confirm: 'Ymmärrän ja vahvistan tämän'
     }
+  },
+  ignoreDraftModal: {
+    title: 'Haluatko varmasti ohittaa luonnoksen?',
+    content: (
+      <div>
+        <H3>Luonnoksen saa ohittaa vain jos seuraavat asiat pätevät:</H3>
+        <ul>
+          <li>Luonnos koskee menneisyyttä, ja</li>
+          <li>
+            Luonnos on väärin, koska menneisyydessä olevat asiakastiedot ovat
+            väärin, ja
+          </li>
+          <li>Samalle ajalle oleva alkuperäinen lähetetty päätös on oikein</li>
+        </ul>
+        <p>
+          Mikäli luonnos on väärin koska tiedot ovat väärin (esim. perhesuhteita
+          on takautuvasti poistettu virheellisesti), on tärkeää ensisijaisesti
+          pyrkiä korjaamaan tiedot ennalleen, koska ne vaikuttavat myös muihin
+          järjestelmiin.
+        </p>
+        <p>
+          Mikäli luonnos on väärin tai tarpeeton, vaikka tiedot ovat oikein, älä
+          ohita luonnosta, vaan ole yhteydessä kehittäjätiimiin, jotta vika
+          voidaan tutkia ja korjata.
+        </p>
+      </div>
+    ),
+    confirm: 'Ymmärrän ja vahvistan tämän'
   },
   valueDecisions: {
     table: {
@@ -2770,6 +2768,9 @@ export const fi = {
         count === 1 ? `${count} päätös valittu` : `${count} päätöstä valittu`,
       createDecision: (count: number) =>
         count === 1 ? 'Luo päätös' : 'Luo päätökset',
+      ignoreDraft: 'Ohita luonnos',
+      unignoreDrafts: (count: number) =>
+        count === 1 ? 'Kumoa ohitus' : 'Kumoa ohitukset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset',
@@ -2971,6 +2972,7 @@ export const fi = {
   valueDecision: {
     title: {
       DRAFT: 'Arvopäätösluonnos',
+      IGNORED: 'Ohitettu arvopäätösluonnos',
       WAITING_FOR_SENDING: 'Arvopäätös (lähdössä)',
       WAITING_FOR_MANUAL_SENDING: 'Arvopäätös (lähetetään manuaalisesti)',
       SENT: 'Arvopäätös',
@@ -2989,6 +2991,7 @@ export const fi = {
       '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',
     status: {
       DRAFT: 'Luonnos',
+      IGNORED: 'Ohitettu luonnos',
       WAITING_FOR_SENDING: 'Lähdössä',
       WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
       SENT: 'Lähetetty',

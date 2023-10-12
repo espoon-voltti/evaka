@@ -135,6 +135,7 @@ enum class VoucherValueDecisionType {
 
 enum class VoucherValueDecisionStatus {
     DRAFT,
+    IGNORED,
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,

@@ -696,6 +696,20 @@ fun Database.Transaction.annulVoucherValueDecisions(
         .execute()
 }
 
+fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
+    createUpdate(
+            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'"
+        )
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.removeVoucherValueDecisionIgnore(id: VoucherValueDecisionId) {
+    createUpdate("DELETE FROM voucher_value_decision WHERE id = :id AND status = 'IGNORED'")
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE child_id = :childId FOR UPDATE")
         .bind("childId", childId)

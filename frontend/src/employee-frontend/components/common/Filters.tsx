@@ -557,7 +557,10 @@ export const ValueDecisionStatusFilter = React.memo(
       'WAITING_FOR_SENDING',
       'WAITING_FOR_MANUAL_SENDING',
       'SENT',
-      'ANNULLED'
+      'ANNULLED',
+      ...(featureFlags.voucherValueDecisionIgnoredStatus
+        ? ['IGNORED' as const]
+        : [])
     ]
 
     return (

@@ -6,10 +6,13 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
+import fi.espoo.evaka.invoicing.data.removeVoucherValueDecisionIgnore
+import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionToIgnored
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
@@ -22,6 +25,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -31,6 +35,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
+import java.time.LocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 
@@ -130,6 +135,47 @@ class VoucherValueDecisionService(
         tx.markVoucherValueDecisionsSent(listOf(decision.id), clock.now())
 
         return true
+    }
+
+    fun ignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<VoucherValueDecisionId>,
+        today: LocalDate
+    ) {
+        tx.getValueDecisionsByIds(ids)
+            .map { decision ->
+                if (decision.status != VoucherValueDecisionStatus.DRAFT) {
+                    throw BadRequest(
+                        "Error with decision ${decision.id}: Only drafts can be ignored"
+                    )
+                }
+                if (decision.validFrom > today) {
+                    throw BadRequest(
+                        "Error with decision ${decision.id}: Must not ignore future drafts, data should be fixed instead"
+                    )
+                }
+                decision
+            }
+            .forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
+    }
+
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<VoucherValueDecisionId>,
+        today: LocalDate
+    ): Set<PersonId> {
+        return tx.getValueDecisionsByIds(ids)
+            .map { decision ->
+                if (decision.status != VoucherValueDecisionStatus.IGNORED) {
+                    throw BadRequest("Error with decision ${decision.id}: not ignored")
+                }
+                decision
+            }
+            .map {
+                tx.removeVoucherValueDecisionIgnore(it.id)
+                it.headOfFamilyId
+            }
+            .toSet()
     }
 
     private fun getDecision(

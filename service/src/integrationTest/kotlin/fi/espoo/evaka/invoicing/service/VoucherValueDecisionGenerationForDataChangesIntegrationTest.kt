@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.placement.cancelPlacement
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.shared.EvakaUserId
@@ -20,13 +21,14 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
@@ -269,9 +271,48 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
     }
 
     @Test
+    fun `end date moves later then draft is ignored`() {
+        if (!evakaEnv.voucherValueDecisionGeneratorV2Enabled) {
+            return // only implemented for v2
+        }
+
+        db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(25)) }
+        generate()
+        assertDrafts(listOf(dateRange(21, 25) to false))
+
+        ignoreDrafts()
+        assertDrafts(emptyList())
+
+        // regenerating does not bring back ignored drafts
+        generate()
+        assertDrafts(emptyList())
+
+        // non identical drafts are not ignored
+        val secondParentshipId =
+            db.transaction { tx ->
+                tx.insertTestParentship(
+                    testAdult_1.id,
+                    testChild_2.id,
+                    startDate = originalRange.start.minusYears(1),
+                    endDate = originalRange.end!!.plusYears(1)
+                )
+            }
+        generate()
+        assertDrafts(listOf(dateRange(10, 25) to false))
+
+        // going back to ignored state keeps the draft ignored
+        db.transaction { tx -> tx.deleteParentship(secondParentshipId) }
+        generate()
+        assertDrafts(emptyList())
+
+        unignoreIgnoredDrafts()
+        assertDrafts(listOf(dateRange(21, 25) to false))
+    }
+
+    @Test
     fun `Incomplete income is equal to non-existing and does not cause new draft`() {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = testAdult_1.id,
                     validFrom = originalRange.start,
@@ -349,6 +390,22 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
             .filter { it.status == VoucherValueDecisionStatus.DRAFT }
             .map { it.id }
             .let { ids -> decisionController.sendDrafts(dbInstance(), admin, now, ids, null) }
+        asyncJobRunner.runPendingJobsSync(now)
+    }
+
+    private fun ignoreDrafts() {
+        getAllVoucherValueDecisions()
+            .filter { it.status == VoucherValueDecisionStatus.DRAFT }
+            .map { it.id }
+            .let { ids -> decisionController.ignoreDrafts(dbInstance(), admin, now, ids) }
+        asyncJobRunner.runPendingJobsSync(now)
+    }
+
+    private fun unignoreIgnoredDrafts() {
+        getAllVoucherValueDecisions()
+            .filter { it.status == VoucherValueDecisionStatus.IGNORED }
+            .map { it.id }
+            .let { ids -> decisionController.unignoreDrafts(dbInstance(), admin, now, ids) }
         asyncJobRunner.runPendingJobsSync(now)
     }
 }

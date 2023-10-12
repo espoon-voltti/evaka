@@ -162,7 +162,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
           setSortDirection={setSortDirection}
           showCheckboxes={
             searchFilters.statuses.length === 1 &&
-            searchFilters.statuses[0] === 'DRAFT'
+            ['DRAFT', 'IGNORED'].includes(searchFilters.statuses[0])
           }
           checked={checkedState.checked}
           toggleChecked={checkedState.toggleChecked}

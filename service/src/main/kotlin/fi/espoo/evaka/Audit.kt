@@ -453,12 +453,14 @@ enum class Audit(
     VasuTemplateUpdate,
     VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionHeadOfFamilyRead,
+    VoucherValueDecisionIgnore,
     VoucherValueDecisionMarkSent,
     VoucherValueDecisionPdfRead,
     VoucherValueDecisionRead,
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
-    VoucherValueDecisionSetType;
+    VoucherValueDecisionSetType,
+    VoucherValueDecisionUnignore;
 
     private val eventCode = name
 
