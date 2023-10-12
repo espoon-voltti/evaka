@@ -192,7 +192,7 @@ SELECT
     service_need_voucher_value_description_fi AS service_need_voucher_value_description,
     final_co_payment
 FROM voucher_value_decision
-WHERE status != 'DRAFT'
+WHERE status NOT IN ('DRAFT', 'IGNORED')
 """
             )
         }

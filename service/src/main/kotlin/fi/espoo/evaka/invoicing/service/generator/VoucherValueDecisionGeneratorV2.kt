@@ -60,6 +60,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     val activeDecisions =
         existingDecisions.filter { VoucherValueDecisionStatus.effective.contains(it.status) }
     val existingDrafts = existingDecisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }
+    val ignoredDrafts = existingDecisions.filter { it.status == VoucherValueDecisionStatus.IGNORED }
 
     val newDrafts =
         generateVoucherValueDecisionsDrafts(
@@ -70,7 +71,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
             targetChildId = childId,
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
-            ignoredDrafts = emptyList(), // status not yet supported
+            ignoredDrafts = ignoredDrafts,
             softMinDate = getSoftMinDate(clock, retroactiveOverride),
             hardMinDate = getHardMinDate(financeMinDate, retroactiveOverride)
         )

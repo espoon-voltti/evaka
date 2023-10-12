@@ -676,9 +676,9 @@ private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) =
         UNION ALL 
         SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
         UNION ALL 
-        SELECT partner_id FROM voucher_value_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT') AND partner_id IS NOT NULL 
+        SELECT partner_id FROM voucher_value_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
         UNION ALL 
-        SELECT head_of_family_id FROM voucher_value_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT')
+        SELECT head_of_family_id FROM voucher_value_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
@@ -697,7 +697,7 @@ private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) =
         
         SELECT vvd.child_id 
         FROM voucher_value_decision vvd
-        WHERE (vvd.head_of_family_id = ${bind(personId)} OR vvd.partner_id = ${bind(personId)}) AND vvd.status NOT IN ('DRAFT')
+        WHERE (vvd.head_of_family_id = ${bind(personId)} OR vvd.partner_id = ${bind(personId)}) AND vvd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
@@ -718,7 +718,7 @@ private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) =
         
         SELECT vvd.head_of_family_id, vvd.partner_id
         FROM voucher_value_decision vvd 
-        WHERE vvd.child_id = ${bind(personId)} AND vvd.status NOT IN ('DRAFT')
+        WHERE vvd.child_id = ${bind(personId)} AND vvd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }

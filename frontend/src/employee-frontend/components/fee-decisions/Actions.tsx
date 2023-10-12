@@ -6,13 +6,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
-import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
@@ -23,6 +19,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
+import { IgnoreDraftModal } from '../finance-decisions/IgnoreDraftModal'
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
@@ -123,7 +120,7 @@ const Actions = React.memo(function Actions({
         </StickyActionBar>
         {showIgnoreModal && (
           <IgnoreDraftModal
-            id={checkedIds[0]}
+            onConfirm={() => ignoreFeeDecisionDrafts(checkedIds)}
             onCancel={() => setShowIgnoreModal(false)}
             onSuccess={() => {
               setShowIgnoreModal(false)
@@ -138,40 +135,6 @@ const Actions = React.memo(function Actions({
   }
 
   return null
-})
-
-const IgnoreDraftModal = React.memo(function IgnoreDraftModal({
-  id,
-  onCancel,
-  onSuccess
-}: {
-  id: UUID
-  onCancel: () => void
-  onSuccess: () => void
-}) {
-  const { i18n } = useTranslation()
-  const [confirm, setConfirm] = useState(false)
-
-  return (
-    <AsyncFormModal
-      title={i18n.feeDecisions.ignoreDraftModal.title}
-      resolveAction={() => ignoreFeeDecisionDrafts([id])}
-      resolveLabel={i18n.common.confirm}
-      onSuccess={onSuccess}
-      rejectAction={onCancel}
-      rejectLabel={i18n.common.cancel}
-      resolveDisabled={!confirm}
-    >
-      {i18n.feeDecisions.ignoreDraftModal.content}
-      <Gap />
-      <Checkbox
-        label={i18n.feeDecisions.ignoreDraftModal.confirm}
-        checked={confirm}
-        onChange={setConfirm}
-        data-qa="confirm-checkbox"
-      />
-    </AsyncFormModal>
-  )
 })
 
 export default Actions
