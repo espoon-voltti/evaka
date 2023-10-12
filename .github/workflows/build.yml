@@ -50,7 +50,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -61,7 +61,7 @@ jobs:
       - name: Build keycloak image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/keycloak
@@ -73,7 +73,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -86,7 +86,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -95,7 +95,7 @@ jobs:
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: build
         with:
           registry: ghcr.io/espoon-voltti
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: builder
         with:
           registry: ghcr.io/espoon-voltti
@@ -127,7 +127,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -166,7 +166,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -176,7 +176,7 @@ jobs:
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -194,7 +194,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -237,7 +237,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
   api-gateway:
     runs-on: ubuntu-latest
@@ -247,7 +247,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -257,7 +257,7 @@ jobs:
 
       - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: test
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -272,7 +272,7 @@ jobs:
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -301,7 +301,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -311,7 +311,7 @@ jobs:
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -325,7 +325,7 @@ jobs:
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: builder
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -341,7 +341,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -359,7 +359,7 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/build-context
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -369,7 +369,7 @@ jobs:
 
       - name: Build and run Evaka Service tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/build-context
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -392,7 +392,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/build-context
 
   owasp:
     needs:
@@ -674,7 +674,7 @@ jobs:
       - deploy
     steps:
       - name: Report failure
-        uses: espoon-voltti/voltti-actions/notify@master
+        uses: espoon-voltti/voltti-actions/notify@feat/build-context
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#evaka-alerts"
