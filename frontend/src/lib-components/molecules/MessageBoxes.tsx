@@ -103,7 +103,7 @@ export const MessageBox = React.memo(function MessageBox({
 
 interface InfoBoxProps {
   title?: string
-  message?: string
+  message?: string | React.ReactNode
   icon?: IconProp
   wide?: boolean
   thin?: boolean

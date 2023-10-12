@@ -244,6 +244,12 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable sending messages to groups or multiple children in employee mobile
    */
   employeeMobileGroupMessages?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable sending messages with sensitive flag. Sensitive messages
+   * require strong authentication from citizens in order to display the message content
+   */
+  sensitiveMessaging?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

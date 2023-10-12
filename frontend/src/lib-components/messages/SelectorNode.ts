@@ -56,7 +56,7 @@ const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
       : []
 })
 
-type SelectedNode = {
+export type SelectedNode = {
   key: UUID
   text: string
   messageRecipient: MessageRecipient

@@ -24,12 +24,16 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
   receiversAsSelectorNode,
-  SelectorNode
+  SelectorNode,
+  SelectedNode
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
 import { Draft, useDraft } from 'lib-components/messages/useDraft'
@@ -47,6 +51,7 @@ import {
 import Combobox from '../atoms/dropdowns/Combobox'
 import Checkbox from '../atoms/form/Checkbox'
 import { useTranslations } from '../i18n'
+import { ExpandingInfoBox, InlineInfoButton } from '../molecules/ExpandingInfo'
 import { InfoBox } from '../molecules/MessageBoxes'
 
 type Message = Omit<
@@ -92,6 +97,23 @@ const areRequiredFieldsFilled = (
   recipients: { key: UUID }[]
 ): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
 
+const shouldSensitiveCheckboxBeEnabled = (
+  selectedReceivers: SelectedNode[],
+  messageType: string,
+  senderAccountType: string | undefined
+) => {
+  const recipientValid =
+    selectedReceivers.length == 1 &&
+    selectedReceivers[0].messageRecipient.type === 'CHILD'
+  if (!recipientValid) {
+    return false
+  }
+  if (messageType === 'BULLETIN') {
+    return false
+  }
+  return senderAccountType === 'PERSONAL'
+}
+
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
@@ -111,6 +133,7 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
+  sensitiveMessagingEnabled?: boolean
 }
 
 export default React.memo(function MessageEditor({
@@ -127,7 +150,8 @@ export default React.memo(function MessageEditor({
   saveDraftRaw,
   saveMessageAttachment,
   sending,
-  defaultTitle = ''
+  defaultTitle = '',
+  sensitiveMessagingEnabled
 }: Props) {
   const i18n = useTranslations()
 
@@ -173,10 +197,35 @@ export default React.memo(function MessageEditor({
     [senderAccountType]
   )
 
+  const selectedReceivers = useMemo(
+    () => (receiverTree ? getSelected(receiverTree) : []),
+    [receiverTree]
+  )
+
+  const sensitiveCheckboxEnabled = shouldSensitiveCheckboxBeEnabled(
+    selectedReceivers,
+    message.type,
+    senderAccountType
+  )
+
   const setSender = useCallback(
     (sender: SelectOption | null) => {
-      if (!sender) return
-      updateMessage({ sender })
+      const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
+        selectedReceivers,
+        message.type,
+        sender ? sender.value : undefined
+      )
+      if (!sender) {
+        if (shouldResetSensitivity) {
+          updateMessage({ sensitive: false })
+        }
+        return
+      }
+      if (shouldResetSensitivity) {
+        updateMessage({ sender, sensitive: false })
+      } else {
+        updateMessage({ sender })
+      }
 
       const accountReceivers = receiversAsSelectorNode(
         sender.value,
@@ -186,21 +235,29 @@ export default React.memo(function MessageEditor({
         setReceiverTree(accountReceivers)
       }
     },
-    [availableReceivers, updateMessage]
+    [availableReceivers, message.type, selectedReceivers, updateMessage]
   )
-  const selectedReceivers = useMemo(
-    () => (receiverTree ? getSelected(receiverTree) : []),
-    [receiverTree]
+  const updateReceivers = useCallback(
+    (receivers: SelectorNode[]) => {
+      setReceiverTree(receivers)
+      const selected = getSelected(receivers)
+      setMessage((old) => ({
+        ...old,
+        recipientIds: selected.map((s) => s.key),
+        recipientNames: selected.map((s) => s.text)
+      }))
+
+      const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
+        selected,
+        message.type,
+        senderAccountType
+      )
+      if (shouldResetSensitivity) {
+        updateMessage({ sensitive: false })
+      }
+    },
+    [message.type, senderAccountType, updateMessage]
   )
-  const updateReceivers = useCallback((receivers: SelectorNode[]) => {
-    setReceiverTree(receivers)
-    const selected = getSelected(receivers)
-    setMessage((old) => ({
-      ...old,
-      recipientIds: selected.map((s) => s.key),
-      recipientNames: selected.map((s) => s.text)
-    }))
-  }, [])
 
   const [expandedView, setExpandedView] = useState(false)
   const toggleExpandedView = useCallback(
@@ -307,24 +364,49 @@ export default React.memo(function MessageEditor({
   const urgent = (
     <Checkbox
       data-qa="checkbox-urgent"
-      label={i18n.messageEditor.urgent.label}
+      label={i18n.messageEditor.flags.urgent.label}
       checked={message.urgent}
       onChange={(urgent) => updateMessage({ urgent })}
     />
   )
 
+  const [sensitiveInfoOpen, setSensitiveInfoOpen] = useState(false)
+  const onSensitiveInfoClick = useCallback(
+    () => setSensitiveInfoOpen((prev) => !prev),
+    []
+  )
+
+  const sensitiveCheckbox = (
+    <FixedSpaceRow spacing="xs" alignItems="center">
+      <Checkbox
+        data-qa="checkbox-senstitive"
+        label={i18n.messageEditor.flags.sensitive.label}
+        checked={message.sensitive}
+        disabled={!sensitiveCheckboxEnabled}
+        onChange={(sensitive) => updateMessage({ sensitive })}
+      />
+      {!sensitiveCheckboxEnabled && (
+        <InlineInfoButton
+          onClick={onSensitiveInfoClick}
+          aria-label={i18n.common.openExpandingInfo}
+          margin="zero"
+          data-qa="sensitive-flag-info-button"
+          open={sensitiveInfoOpen}
+        />
+      )}
+    </FixedSpaceRow>
+  )
+
   const messageType =
     senderAccountType === 'MUNICIPAL' ? (
-      <FixedSpaceRow>
-        <Radio
-          label={i18n.messageEditor.type.bulletin}
-          checked={message.type === 'BULLETIN'}
-          onChange={() => updateMessage({ type: 'BULLETIN' })}
-          data-qa="radio-message-type-bulletin"
-        />
-      </FixedSpaceRow>
+      <Radio
+        label={i18n.messageEditor.type.bulletin}
+        checked={message.type === 'BULLETIN'}
+        onChange={() => updateMessage({ type: 'BULLETIN' })}
+        data-qa="radio-message-type-bulletin"
+      />
     ) : (
-      <FixedSpaceRow>
+      <>
         <Radio
           label={i18n.messageEditor.type.message}
           checked={message.type === 'MESSAGE'}
@@ -334,11 +416,27 @@ export default React.memo(function MessageEditor({
         <Radio
           label={i18n.messageEditor.type.bulletin}
           checked={message.type === 'BULLETIN'}
-          onChange={() => updateMessage({ type: 'BULLETIN' })}
+          onChange={() => updateMessage({ type: 'BULLETIN', sensitive: false })}
           data-qa="radio-message-type-bulletin"
         />
-      </FixedSpaceRow>
+      </>
     )
+  const flagsInfo = (message.urgent || message.sensitive) && (
+    <>
+      <Gap size="s" />
+      <InfoBox
+        message={
+          <UlNoMargin>
+            {message.urgent && <li>{i18n.messageEditor.flags.urgent.info}</li>}
+            {message.sensitive && (
+              <li>{i18n.messageEditor.flags.sensitive.info}</li>
+            )}
+          </UlNoMargin>
+        }
+        noMargin={true}
+      />
+    </>
+  )
 
   return (
     <FullScreenContainer
@@ -415,18 +513,21 @@ export default React.memo(function MessageEditor({
                 </HorizontalField>
                 <Gap size="s" />
                 <HorizontalField long={true}>
-                  <Bold>{i18n.messageEditor.urgent.heading}</Bold>
+                  <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
+                  {sensitiveMessagingEnabled && sensitiveCheckbox}
                 </HorizontalField>
-                {message.urgent && (
-                  <>
-                    <Gap size="s" />
-                    <InfoBox
-                      message={i18n.messageEditor.urgent.info}
-                      noMargin={true}
+                {sensitiveInfoOpen && (
+                  <FixedSpaceRow fullWidth>
+                    <ExpandingInfoBox
+                      width="auto"
+                      info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                      close={onSensitiveInfoClick}
+                      closeLabel={i18n.common.close}
                     />
-                  </>
+                  </FixedSpaceRow>
                 )}
+                {flagsInfo}
               </ExpandedRightPane>
             )}
           </ExpandableLayout>
@@ -442,27 +543,28 @@ export default React.memo(function MessageEditor({
           {!expandedView && !simpleMode && (
             <>
               <Gap size="s" />
-              <FixedSpaceRow justifyContent="space-between">
-                <div>
+              <FixedSpaceRow>
+                <HalfWidthColumn>
                   <Bold>{i18n.messageEditor.type.label}</Bold>
-                  <Gap size="xs" />
                   {messageType}
-                </div>
-                <div>
-                  <Bold>{i18n.messageEditor.urgent.heading}</Bold>
-                  <Gap size="xs" />
+                </HalfWidthColumn>
+                <HalfWidthColumn>
+                  <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
-                </div>
+                  {sensitiveMessagingEnabled && sensitiveCheckbox}
+                </HalfWidthColumn>
               </FixedSpaceRow>
-              {message.urgent && (
-                <>
-                  <Gap size="s" />
-                  <InfoBox
-                    message={i18n.messageEditor.urgent.info}
-                    noMargin={true}
+              {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
+                <FixedSpaceRow fullWidth zeroMarginLastChild={false}>
+                  <ExpandingInfoBox
+                    width="auto"
+                    info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                    close={onSensitiveInfoClick}
+                    closeLabel={i18n.common.close}
                   />
-                </>
+                </FixedSpaceRow>
               )}
+              {flagsInfo}
             </>
           )}
           <Gap size="m" />
@@ -622,4 +724,12 @@ const ExpandedRightPane = styled.div`
   margin-left: ${defaultMargins.XL};
   width: 33%;
   flex: 1 1 auto;
+`
+
+const HalfWidthColumn = styled(FixedSpaceColumn)`
+  width: 50%;
+`
+const UlNoMargin = styled.ul`
+  margin-block: 0;
+  padding-inline-start: 16px;
 `

@@ -15,6 +15,7 @@ interface FixedSpaceRowProps {
   fullWidth?: boolean
   maxWidth?: string
   flexWrap?: Property.FlexWrap
+  zeroMarginLastChild?: boolean
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
@@ -31,9 +32,13 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
           ? defaultMargins[p.spacing]
           : p.spacing
         : defaultMargins.s};
-    &:last-child {
-      margin-right: 0;
-    }
+    ${(p) =>
+      p.zeroMarginLastChild &&
+      `
+      &:last-child {
+        margin-right: 0;
+      }
+    `}
     ${(p) => (p.maxWidth ? `max-width: ${p.maxWidth};` : '')};
   }
 
@@ -49,7 +54,9 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     }
   }
 `
-
+FixedSpaceRow.defaultProps = {
+  zeroMarginLastChild: true
+}
 interface FixedSpaceColumnProps {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   spacing?: SpacingSize | string

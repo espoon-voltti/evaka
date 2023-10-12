@@ -27,6 +27,7 @@ export interface Translations {
     saved: string
     search: string
     yes: string
+    openExpandingInfo: string
   }
   datePicker: {
     placeholder: string
@@ -97,10 +98,17 @@ export interface Translations {
       message: string
       bulletin: string
     }
-    urgent: {
+    flags: {
       heading: string
-      info: string
-      label: string
+      urgent: {
+        info: string
+        label: string
+      }
+      sensitive: {
+        info: string
+        label: string
+        whyDisabled: string
+      }
     }
     sender: string
     recipientsPlaceholder: string

@@ -22,7 +22,8 @@ const components: Translations = {
     saving: 'Tallennetaan',
     saved: 'Tallennettu',
     search: 'Hae',
-    yes: 'Kyllä'
+    yes: 'Kyllä',
+    openExpandingInfo: 'Avaa lisätietokenttä'
   },
   datePicker: {
     placeholder: 'pp.kk.vvvv',
@@ -116,10 +117,18 @@ const components: Translations = {
       message: 'Viesti',
       bulletin: 'Tiedote (ei voi vastata)'
     },
-    urgent: {
-      heading: 'Merkitse kiireelliseksi',
-      info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-      label: 'Kiireellinen'
+    flags: {
+      heading: 'Viestin lisämekinnät',
+      urgent: {
+        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+        label: 'Kiireellinen'
+      },
+      sensitive: {
+        info: 'Arkaluontoisen viestin avaaminen vaatii kuntalaiselta vahvan tunnistautumisen.',
+        label: 'Arkaluontoinen',
+        whyDisabled:
+          'Arkaluontoisen viestin voi lähettää vain normaalina viestinä yksittäisen lapsen huoltajille henkilökohtaisesta lähettäjätilistä.'
+      }
     },
     sender: 'Lähettäjä',
     recipientsPlaceholder: 'Valitse...',

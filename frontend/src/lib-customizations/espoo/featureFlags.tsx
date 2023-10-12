@@ -42,7 +42,8 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: true,
-    employeeMobileGroupMessages: true
+    employeeMobileGroupMessages: true,
+    sensitiveMessaging: false
   },
   staging: {
     citizenShiftCareAbsence: true,
