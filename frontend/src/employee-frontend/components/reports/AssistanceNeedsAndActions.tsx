@@ -13,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/assistance'
 import { AssistanceNeedsAndActionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -35,7 +36,9 @@ import {
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
-import { distinct, reducePropertySum } from '../../utils'
+import { reducePropertySum } from '../../utils'
+import { renderResult } from '../async-rendering'
+import { areaQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 
@@ -83,6 +86,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
     })
+  const areasResult = useQueryResult(areaQuery)
+  const unitsResult = useQueryResult(unitsQuery)
   const [report] = useApiState(
     () => getAssistanceNeedsAndActionsReport(filters),
     [filters]
@@ -168,81 +173,75 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
-            <Combobox
-              items={[
-                { value: '', label: i18n.common.all },
-                ...report
-                  .map((rs) =>
-                    distinct(rs.rows.map((row) => row.careAreaName)).map(
-                      (s) => ({
-                        value: s,
-                        label: s
+            {renderResult(areasResult, (areas) => (
+              <Combobox
+                items={[
+                  { value: '', label: i18n.common.all },
+                  ...areas.map((area) => ({
+                    value: area.name,
+                    label: area.name
+                  }))
+                ]}
+                onChange={(option) =>
+                  option
+                    ? setRowFilters({
+                        ...rowFilters,
+                        careArea: option.value
                       })
-                    )
-                  )
-                  .getOrElse([])
-              ]}
-              onChange={(option) =>
-                option
-                  ? setRowFilters({
-                      ...rowFilters,
-                      careArea: option.value
-                    })
-                  : undefined
-              }
-              selectedItem={
-                rowFilters.careArea !== ''
-                  ? {
-                      label: rowFilters.careArea,
-                      value: rowFilters.careArea
-                    }
-                  : {
-                      label: i18n.common.all,
-                      value: ''
-                    }
-              }
-              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
-              getItemLabel={(item) => item.label}
-            />
+                    : undefined
+                }
+                selectedItem={
+                  rowFilters.careArea !== ''
+                    ? {
+                        label: rowFilters.careArea,
+                        value: rowFilters.careArea
+                      }
+                    : {
+                        label: i18n.common.all,
+                        value: ''
+                      }
+                }
+                placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+                getItemLabel={(item) => item.label}
+              />
+            ))}
           </Wrapper>
         </FilterRow>
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
           <Wrapper>
-            <Combobox
-              items={[
-                { value: '', label: i18n.common.all },
-                ...report
-                  .map((rs) =>
-                    distinct(rs.rows.map((row) => row.unitName)).map((s) => ({
-                      value: s,
-                      label: s
-                    }))
-                  )
-                  .getOrElse([])
-              ]}
-              onChange={(option) =>
-                option
-                  ? setRowFilters({
-                      ...rowFilters,
-                      unit: option.value
-                    })
-                  : undefined
-              }
-              selectedItem={
-                rowFilters.unit !== ''
-                  ? {
-                      label: rowFilters.unit,
-                      value: rowFilters.unit
-                    }
-                  : {
-                      label: i18n.common.all,
-                      value: ''
-                    }
-              }
-              getItemLabel={(item) => item.label}
-            />
+            {renderResult(unitsResult, (units) => (
+              <Combobox
+                items={[
+                  { value: '', label: i18n.common.all },
+                  ...units.map((unit) => ({
+                    value: unit.name,
+                    label: unit.name
+                  }))
+                ]}
+                onChange={(option) =>
+                  option
+                    ? setRowFilters({
+                        ...rowFilters,
+                        unit: option.value
+                      })
+                    : undefined
+                }
+                selectedItem={
+                  rowFilters.unit !== ''
+                    ? {
+                        label: rowFilters.unit,
+                        value: rowFilters.unit
+                      }
+                    : {
+                        label: i18n.common.all,
+                        value: ''
+                      }
+                }
+                getItemLabel={(item) => item.label}
+              />
+            ))}
           </Wrapper>
         </FilterRow>
 
