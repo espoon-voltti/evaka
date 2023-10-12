@@ -104,23 +104,14 @@ class MessageControllerCitizen(
         )
     }
 
-    fun redactOrWrapMessageThread(
+    fun wrapAsCitizenMessageThread(
         user: AuthenticatedUser.Citizen,
         messageThread: MessageThread
     ): CitizenMessageThread {
         if (user.authLevel != CitizenAuthLevel.STRONG && messageThread.sensitive)
             return redactMessageTread(user, messageThread)
 
-        return CitizenMessageThread.Regular(
-            messageThread.id,
-            messageThread.urgent,
-            messageThread.children,
-            messageThread.type,
-            messageThread.title,
-            messageThread.sensitive,
-            messageThread.isCopy,
-            messageThread.messages
-        )
+        return CitizenMessageThread.Regular.fromMessageThread(messageThread)
     }
 
     @GetMapping("/received")
@@ -142,7 +133,7 @@ class MessageControllerCitizen(
                             featureConfig.serviceWorkerMessageAccountName
                         )
                     }
-                    .map { messageThread -> redactOrWrapMessageThread(user, messageThread) }
+                    .map { messageThread -> wrapAsCitizenMessageThread(user, messageThread) }
             }
             .also { Audit.MessagingReceivedMessagesRead.log(meta = mapOf("total" to it.total)) }
     }

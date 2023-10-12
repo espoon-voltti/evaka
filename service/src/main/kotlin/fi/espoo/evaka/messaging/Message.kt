@@ -85,7 +85,21 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         val sensitive: Boolean,
         val isCopy: Boolean,
         val messages: List<Message>
-    ) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD)
+    ) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD) {
+        companion object {
+            fun fromMessageThread(messageThread: MessageThread) =
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+        }
+    }
 }
 
 data class SentMessage(

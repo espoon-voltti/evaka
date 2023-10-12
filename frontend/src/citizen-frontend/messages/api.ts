@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 
 import { Paged } from 'lib-common/api'
 import {
-  deserializeCitizenMessageThread,
+  deserializeMessage,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
 import {
@@ -16,10 +16,26 @@ import {
   ReplyToMessageBody,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
+
+export const deserializeCitizenMessageThread = (
+  json: JsonOf<CitizenMessageThread>
+): CitizenMessageThread =>
+  json.type === 'MESSAGE_THREAD'
+    ? {
+        ...json,
+        messages: json.messages.map(deserializeMessage)
+      }
+    : {
+        ...json,
+        lastMessageSentAt: json.lastMessageSentAt
+          ? HelsinkiDateTime.parseIso(json.lastMessageSentAt)
+          : null
+      }
 
 export async function getReceivedMessages(
   page: number,
