@@ -3610,6 +3610,7 @@ export const fi = {
       },
       level: 'Tuen taso ja muut toimet',
       basisMissing: 'Peruste puuttuu',
+      action: 'Tukitoimi',
       actionMissing: 'Tukitoimi puuttuu'
     },
     occupancies: {
