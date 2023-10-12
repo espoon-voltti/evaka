@@ -80,6 +80,12 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
+const rowFilter =
+  (rowFilters: RowFilters) =>
+  (row: AssistanceNeedsAndActionsReportRow): boolean =>
+    !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
+    !(rowFilters.unit && row.unitName !== rowFilters.unit)
+
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
   const [filters, setFilters] =
@@ -94,15 +100,13 @@ export default React.memo(function AssistanceNeedsAndActions() {
   )
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
-  const rowFilter = (row: AssistanceNeedsAndActionsReportRow): boolean =>
-    !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
-    !(rowFilters.unit && row.unitName !== rowFilters.unit)
   const [columnFilters, setColumnFilters] =
     useState<ColumnFilters>(emptyColumnFilters)
 
   const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
-    () => report.map((rs) => rs.rows.filter(rowFilter)).getOrElse([]),
-    [report, rowFilters] // eslint-disable-line react-hooks/exhaustive-deps
+    () =>
+      report.map((rs) => rs.rows.filter(rowFilter(rowFilters))).getOrElse([]),
+    [report, rowFilters]
   )
 
   const selectedDaycareColumns = useMemo(
