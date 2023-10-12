@@ -13,7 +13,7 @@ import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { H4, InformationText } from 'lib-components/typography'
+import { H4, InformationText, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faExclamationTriangle,
@@ -75,10 +75,12 @@ interface FileUploadProps {
   slim?: boolean
   'data-qa'?: string
   slimSingleFile?: boolean
-  accept?: string[]
+  allowedFileTypes?: FileType[]
 }
 
-const FileUploadContainer = styled.div<{ slim: boolean }>`
+const FileUploadContainer = styled.div<{
+  slim: boolean
+}>`
   display: flex;
   flex-direction: ${(p) => (p.slim ? 'column' : 'row')};
   flex-wrap: wrap;
@@ -246,14 +248,22 @@ const attachmentToFile = (attachment: Attachment): FileObject => ({
   deleteInProgress: false
 })
 
-const defaultAllowedContentTypes = [
-  'image/jpeg',
-  'image/png',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.oasis.opendocument.text'
-]
+export type FileType = 'document' | 'image' | 'audio' | 'video' | 'csv'
+
+const contentTypes: Record<FileType, string[]> = {
+  document: [
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.oasis.opendocument.text',
+    'application/pdf'
+  ],
+  image: ['image/jpeg', 'image/png'],
+  audio: ['audio/*'],
+  video: ['video/*'],
+  csv: ['text/csv']
+}
+
+const defaultAllowedFileTypes: FileType[] = ['image', 'document']
 
 export const fileIcon = (file: Attachment): IconDefinition => {
   switch (file.contentType) {
@@ -282,7 +292,7 @@ export default React.memo(function FileUpload({
   slim = false,
   disabled = false,
   'data-qa': dataQa,
-  accept = defaultAllowedContentTypes
+  allowedFileTypes = defaultAllowedFileTypes
 }: FileUploadProps) {
   const i18n = useTranslations().fileUpload
 
@@ -411,7 +421,7 @@ export default React.memo(function FileUpload({
     <input
       disabled={disabled}
       type="file"
-      accept={accept?.join(',')}
+      accept={allowedFileTypes.flatMap((t) => contentTypes[t]).join(',')}
       onChange={onChange}
       data-qa="btn-upload-file"
       ref={inputRef}
@@ -465,9 +475,11 @@ export default React.memo(function FileUpload({
           <span role="button" tabIndex={0}>
             {fileInput}
             <H4>{i18n.input.title}</H4>
-            <p>
-              <InformationText>{i18n.input.text.join('\n')}</InformationText>
-            </p>
+            <P>
+              <InformationText>
+                {i18n.input.text(allowedFileTypes)}
+              </InformationText>
+            </P>
           </span>
         </FileInputLabel>
       )}

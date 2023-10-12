@@ -62,12 +62,24 @@ const components: Translations = {
     },
     input: {
       title: 'Lisää liite',
-      text: [
-        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-        'Tiedoston maksimikoko: 10MB.',
-        'Sallitut tiedostomuodot:',
-        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
-      ]
+      text: (fileTypes) =>
+        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan. Tiedoston maksimikoko: 10MB. Sallitut tiedostomuodot: ' +
+        fileTypes
+          .map((type) => {
+            switch (type) {
+              case 'image':
+                return 'kuvat (JPEG, JPG, PNG)'
+              case 'document':
+                return 'dokumentit (PDF, DOC, DOCX, ODT)'
+              case 'audio':
+                return 'äänitiedostot'
+              case 'video':
+                return 'videotiedostot'
+              case 'csv':
+                return 'CSV-tiedostot'
+            }
+          })
+          .join(', ')
     },
     deleteFile: 'Poista tiedosto'
   },
