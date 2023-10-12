@@ -107,6 +107,8 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
+          build-contexts:
+            customizations=frontend/src/lib-customizations/espoo
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -124,6 +126,8 @@ jobs:
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
+          build-contexts:
+            customizations=frontend/src/lib-customizations/espoo
 
       - name: Docker cleanup
         if: always()
