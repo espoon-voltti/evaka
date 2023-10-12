@@ -708,7 +708,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `absences have no effect on pre-2020 preparatory study rights`() {
-        insertPlacement(period = preschoolTerm2019, type = PlacementType.PRESCHOOL)
+        insertPlacement(period = preschoolTerm2019, type = PlacementType.PREPARATORY)
 
         val today = preschoolTerm2019.end.plusDays(1)
         koskiTester.triggerUploads(today)
