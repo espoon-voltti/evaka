@@ -645,11 +645,11 @@ internal fun getAllPossiblyAffectedAdultsByAdult(
 ): Set<PersonId> {
     val children =
         tx.getParentships(headOfChildId = adultId, childId = null).map { it.childId }.toSet() +
-            tx.getChildrenFromFeeDecisions(adultId)
+            tx.getChildrenFromFinanceDecisions(adultId)
 
     val partners =
         tx.getPartnersForPerson(adultId, false).map { it.person.id } +
-            tx.getPartnersFromFeeDecisions(adultId) +
+            tx.getPartnersFromFinanceDecisions(adultId) +
             children.flatMap { child ->
                 tx.getParentships(headOfChildId = null, childId = child).map { it.headOfChildId }
             }
@@ -664,23 +664,27 @@ internal fun getAllPossiblyAffectedAdultsByChild(
     val heads = tx.getParentships(headOfChildId = null, childId = childId).map { it.headOfChildId }
     val partners =
         heads.flatMap { head -> tx.getPartnersForPerson(head, false) }.map { it.person.id }
-    val feeDecisionParents = tx.getParentsFromFeeDecisions(childId)
+    val feeDecisionParents = tx.getParentsFromFinanceDecisions(childId)
     return (heads + partners + feeDecisionParents).toSet()
 }
 
-private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
         SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
         UNION ALL 
         SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
+        UNION ALL 
+        SELECT partner_id FROM voucher_value_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT') AND partner_id IS NOT NULL 
+        UNION ALL 
+        SELECT head_of_family_id FROM voucher_value_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT')
         """
             )
         }
         .toSet<PersonId>()
 
-private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
@@ -688,6 +692,12 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
         WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status NOT IN ('DRAFT', 'IGNORED')
+        
+        UNION ALL 
+        
+        SELECT vvd.child_id 
+        FROM voucher_value_decision vvd
+        WHERE (vvd.head_of_family_id = ${bind(personId)} OR vvd.partner_id = ${bind(personId)}) AND vvd.status NOT IN ('DRAFT')
         """
             )
         }
@@ -695,7 +705,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
 
 private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
 
-private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
@@ -703,6 +713,12 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
         WHERE fdc.child_id = ${bind(personId)} AND fd.status NOT IN ('DRAFT', 'IGNORED')
+        
+        UNION ALL 
+        
+        SELECT vvd.head_of_family_id, vvd.partner_id
+        FROM voucher_value_decision vvd 
+        WHERE vvd.child_id = ${bind(personId)} AND vvd.status NOT IN ('DRAFT')
         """
             )
         }
