@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -246,7 +247,9 @@ class AssistanceNeedsAndActionsReportControllerTest :
         )
 
         val childReport =
-            controller.getAssistanceNeedReportByChild(dbInstance(), admin, clock, date)
+            db.transaction { tx ->
+                controller.getAssistanceNeedReportByChild(tx, date, AccessControlFilter.PermitAll)
+            }
         assertEquals(
             listOf(
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(

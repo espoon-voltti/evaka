@@ -95,11 +95,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
                         )
-                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    AssistanceNeedsAndActionsReportByChild(
-                        actions = it.getAssistanceActionOptions(),
-                        rows = it.getReportRowsByChild(date, filter)
-                    )
+                    getAssistanceNeedReportByChild(it, date, filter)
                 }
             }
             .also {
@@ -107,6 +103,18 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                     meta = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
+    }
+
+    fun getAssistanceNeedReportByChild(
+        tx: Database.Read,
+        date: LocalDate,
+        filter: AccessControlFilter<DaycareId>
+    ): AssistanceNeedsAndActionsReportByChild {
+        tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+        return AssistanceNeedsAndActionsReportByChild(
+            actions = tx.getAssistanceActionOptions(),
+            rows = tx.getReportRowsByChild(date, filter)
+        )
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
