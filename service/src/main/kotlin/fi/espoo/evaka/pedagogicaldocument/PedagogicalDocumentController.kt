@@ -168,8 +168,7 @@ private fun Database.Transaction.createDocument(
         .bind("description", body.description)
         .bind("created_by", user.evakaUserId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PedagogicalDocument>()
-        .exactlyOne()
+        .exactlyOne<PedagogicalDocument>()
 }
 
 private fun Database.Transaction.updateDocument(
@@ -191,8 +190,7 @@ private fun Database.Transaction.updateDocument(
         .bind("description", body.description)
         .bind("updated_by", user.evakaUserId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PedagogicalDocument>()
-        .exactlyOne()
+        .exactlyOne<PedagogicalDocument>()
 }
 
 private fun Database.Read.findPedagogicalDocumentsByChild(
@@ -212,8 +210,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 .trimIndent()
         )
         .bind("child_id", childId)
-        .mapTo<PedagogicalDocument>()
-        .toList()
+        .toList<PedagogicalDocument>()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 

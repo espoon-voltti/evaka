@@ -412,8 +412,7 @@ WHERE
         )
         .bind("unitId", unitId)
         .bind("dateRange", dateRange)
-        .mapTo<EffectiveGroupPlacementPeriod>()
-        .toList()
+        .toList<EffectiveGroupPlacementPeriod>()
 }
 
 private data class ChildData(

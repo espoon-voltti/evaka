@@ -78,10 +78,7 @@ private fun getVardaOrganizerChildRows(
     """
             .trimIndent()
 
-    return tx.createQuery(sql)
-        .bind("evakaPersonId", evakaPersonId)
-        .mapTo<VardaChildOrganizerRow>()
-        .toList()
+    return tx.createQuery(sql).bind("evakaPersonId", evakaPersonId).toList<VardaChildOrganizerRow>()
 }
 
 private fun createVardaPersonAndChild(
@@ -253,8 +250,7 @@ private fun getVardaPersonPayload(
         )
         .bind("evakaPersonId", evakaChildId)
         .bind("organizerOid", organizerOid)
-        .mapTo<VardaPerson>()
-        .toList()
+        .toList<VardaPerson>()
         .first()
 
 fun insertVardaOrganizerChild(

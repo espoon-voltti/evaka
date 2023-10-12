@@ -44,8 +44,7 @@ fun Database.Transaction.insertAssistanceAction(
             .bind("endDate", data.endDate)
             .bind("updatedBy", user.evakaUserId)
             .bind("otherAction", data.otherAction)
-            .mapTo<AssistanceActionId>()
-            .exactlyOne()
+            .exactlyOne<AssistanceActionId>()
 
     insertAssistanceActionOptionRefs(id, data.actions)
 
@@ -81,7 +80,7 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
         GROUP BY aa.id, child_id, start_date, end_date, other_action
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().exactlyOne()
+    return createQuery(sql).bind("id", id).exactlyOne<AssistanceAction>()
 }
 
 fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {
@@ -97,7 +96,7 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
         ORDER BY start_date DESC
         """
             .trimIndent()
-    return createQuery(sql).bind("childId", childId).mapTo<AssistanceAction>().toList()
+    return createQuery(sql).bind("childId", childId).toList<AssistanceAction>()
 }
 
 fun Database.Transaction.updateAssistanceAction(
@@ -183,5 +182,5 @@ fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> {
     // language=sql
     val sql =
         "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
-    return createQuery(sql).mapTo<AssistanceActionOption>().toList()
+    return createQuery(sql).toList<AssistanceActionOption>()
 }

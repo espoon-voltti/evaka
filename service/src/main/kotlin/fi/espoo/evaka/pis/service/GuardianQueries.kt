@@ -34,14 +34,12 @@ SELECT EXISTS (
         )
         .bind("guardianId", guardianId)
         .bind("childId", childId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
     return createQuery("SELECT guardian_id FROM guardian_blocklist WHERE child_id = :childId")
         .bind("childId", childId)
-        .mapTo<PersonId>()
-        .toList()
+        .toList<PersonId>()
 }
 
 fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
@@ -88,7 +86,7 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<PersonId>().toList()
+    return createQuery(sql).bind("childId", childId).toList<PersonId>()
 }
 
 fun Database.Read.getChildGuardiansAndFosterParents(
@@ -104,8 +102,7 @@ fun Database.Read.getChildGuardiansAndFosterParents(
         )
         .bind("childId", childId)
         .bind("today", today)
-        .mapTo<PersonId>()
-        .toList()
+        .toList<PersonId>()
 }
 
 fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
@@ -118,7 +115,7 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", guardianId).mapTo<ChildId>().toList()
+    return createQuery(sql).bind("guardianId", guardianId).toList<ChildId>()
 }
 
 fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {

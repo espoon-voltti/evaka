@@ -70,8 +70,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
         )
         .bindKotlin("employee", employee)
         .executeAndReturnGeneratedKeys()
-        .mapTo<Employee>()
-        .exactlyOne()
+        .exactlyOne<Employee>()
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
@@ -99,8 +98,7 @@ RETURNING id, preferred_first_name, first_name, last_name, email, external_id, c
         .bindKotlin("employee", employee)
         .bind("now", clock.now())
         .executeAndReturnGeneratedKeys()
-        .mapTo<Employee>()
-        .exactlyOne()
+        .exactlyOne<Employee>()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
     createQuery(
@@ -116,8 +114,7 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<EmployeeRoles>()
-        .exactlyOne()
+        .exactlyOne<EmployeeRoles>()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
     createQuery(
@@ -349,8 +346,7 @@ ON CONFLICT (user_id) DO UPDATE SET
 fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
     createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
         .bind("userId", userId)
-        .mapTo<PinCode>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<PinCode>()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
     createQuery(
@@ -367,8 +363,7 @@ SELECT EXISTS (
         )
         .bind("employeeId", employeeId)
         .bind("pin", pin)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) =
     createUpdate(
@@ -433,8 +428,7 @@ RETURNING id
 """
         )
         .bind("now", now)
-        .mapTo<EmployeeId>()
-        .toList()
+        .toList<EmployeeId>()
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
@@ -447,8 +441,7 @@ WHERE id = ANY(:ids)
                 .trimIndent()
         )
         .bind("ids", employeeIds)
-        .mapTo<EmployeeIdWithName>()
-        .toList()
+        .toList<EmployeeIdWithName>()
         .map { it.id to it.name }
         .toMap()
 
@@ -476,8 +469,7 @@ ORDER BY last_name, first_name
         """
             )
             .bind("globalRoles", globalRoles)
-            .mapTo<Employee>()
-            .toList()
+            .toList<Employee>()
     } else {
         createQuery(
                 """
@@ -494,7 +486,6 @@ ORDER BY last_name, first_name
             .bind("globalRoles", globalRoles)
             .bind("unitScopedRoles", unitScopedRoles)
             .bind("unitId", unitId)
-            .mapTo<Employee>()
-            .toList()
+            .toList<Employee>()
     }
 }

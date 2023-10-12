@@ -82,8 +82,7 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
             )
             .bind("start", range.start)
             .bind("end", range.end)
-            .mapTo<DecisionsReportQueryRow>()
-            .toList()
+            .toList<DecisionsReportQueryRow>()
 
     return queryResult
         .groupBy { it.unitId }

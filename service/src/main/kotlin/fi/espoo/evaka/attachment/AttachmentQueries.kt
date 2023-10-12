@@ -131,8 +131,7 @@ fun Database.Transaction.deleteAttachmentsByApplicationAndType(
         .bind("applicationId", applicationId)
         .bind("type", type)
         .bind("userId", userId)
-        .mapTo<AttachmentId>()
-        .toList()
+        .toList<AttachmentId>()
 }
 
 fun Database.Transaction.associateAttachments(
@@ -212,8 +211,7 @@ fun Database.Read.userUnparentedAttachmentCount(userId: EvakaUserId): Int {
         """
         )
         .bind("userId", userId)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()
 }
 
 fun Database.Read.userApplicationAttachmentCount(
@@ -225,8 +223,7 @@ fun Database.Read.userApplicationAttachmentCount(
         )
         .bind("applicationId", applicationId)
         .bind("userId", userId)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()
 }
 
 fun Database.Read.userIncomeStatementAttachmentCount(
@@ -238,8 +235,7 @@ fun Database.Read.userIncomeStatementAttachmentCount(
         )
         .bind("incomeStatementId", incomeStatementId)
         .bind("userId", userId)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()
 }
 
 fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUserId): Int {
@@ -248,8 +244,7 @@ fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUse
         )
         .bind("incomeId", incomeId)
         .bind("userId", userId)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()
 }
 
 fun Database.Read.userPedagogicalDocumentCount(
@@ -261,8 +256,7 @@ fun Database.Read.userPedagogicalDocumentCount(
         )
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .bind("userId", userId)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()
 }
 
 fun Database.Transaction.associateFeeAlterationAttachments(

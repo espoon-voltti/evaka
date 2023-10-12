@@ -38,8 +38,7 @@ fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
                 .trimIndent()
         )
         .bind("evaka_child_id", evakaChildId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,
@@ -222,8 +221,7 @@ WHERE update_failed = true
         .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
-        .mapTo<ChangedChildServiceNeed>()
-        .toList()
+        .toList<ChangedChildServiceNeed>()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
@@ -243,8 +241,7 @@ WHERE evaka_child_id = :evakaChildId
 """
         )
         .bind("evakaChildId", evakaChildId)
-        .mapTo<VardaServiceNeed>()
-        .toList()
+        .toList<VardaServiceNeed>()
 
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
     eVakaServiceNeedId: ServiceNeedId
@@ -335,8 +332,7 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
         .bind("serviceNeedId", serviceNeedId)
         .bind("feeDecisionStatus", feeDecisionStatus)
         .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
-        .mapTo<FeeDataByServiceNeed>()
-        .toList()
+        .toList<FeeDataByServiceNeed>()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
     // The default application date is set to be 15 days before the start because it's the minimum
@@ -419,8 +415,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
                 .trimIndent()
         )
         .bind("serviceNeedId", serviceNeedId)
-        .mapTo<Boolean>()
-        .toList()
+        .toList<Boolean>()
         .isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
@@ -448,14 +443,12 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         .bind("today", clock.today())
         .bind("childId", childId)
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .mapTo<ServiceNeedId>()
-        .toList()
+        .toList<ServiceNeedId>()
 }
 
 fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
     createUpdate(
@@ -530,8 +523,7 @@ fun Database.Transaction.getVardaChildrenToReset(
             "SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit"
         )
         .bind("limit", limit)
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()
 }
 
 fun Database.Read.calculateDeletedChildServiceNeeds(

@@ -19,8 +19,7 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest)
         )
         .bindKotlin(template)
         .bind("content", DocumentTemplateContent(sections = emptyList()))
-        .mapTo<DocumentTemplate>()
-        .exactlyOne()
+        .exactlyOne<DocumentTemplate>()
 }
 
 fun Database.Transaction.duplicateTemplate(
@@ -37,8 +36,7 @@ fun Database.Transaction.duplicateTemplate(
         )
         .bind("id", id)
         .bindKotlin(template)
-        .mapTo<DocumentTemplate>()
-        .exactlyOne()
+        .exactlyOne<DocumentTemplate>()
 }
 
 fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
@@ -49,8 +47,7 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
     """
                 .trimIndent()
         )
-        .mapTo<DocumentTemplateSummary>()
-        .toList()
+        .toList<DocumentTemplateSummary>()
 }
 
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {

@@ -19,7 +19,6 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
-import org.jdbi.v3.core.result.ResultIterable
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.json.Json
 
@@ -337,8 +336,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
 
         override fun <T> map(mapper: Row.() -> T): Result<T> =
@@ -346,27 +351,61 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     }
 
     @JvmInline
-    value class Result<T> internal constructor(private val inner: ResultIterable<T>) {
-        fun <R> useIterable(f: (Iterable<T>) -> R): R = inner.iterator().use { f(Iterable { it }) }
+    value class Result<T> private constructor(private val rows: ResultSequence<T>) {
+        internal constructor(
+            inner: org.jdbi.v3.core.result.ResultIterable<T>
+        ) : this(ResultSequence(inner))
 
-        fun toList(): List<T> = useIterable { it.toList() }
+        /**
+         * Processes the query result rows in a callback.
+         *
+         * This function makes it possible to process the rows using normal Kotlin collection
+         * functions (e.g. fold, groupBy, associateBy, etc...) without first collecting everything
+         * into a temporary list and then throwing the list away.
+         *
+         * There are two rules, enforced with checks that throw errors if violated:
+         * - the sequence may only be iterated once
+         * - the sequence and its iterator may not be used after the callback has finished
+         */
+        fun <R> useSequence(f: (Sequence<T>) -> R): R = rows.use { f(it) }
 
-        fun toSet(): Set<T> = useIterable { it.toSet() }
+        /**
+         * Processes the query result rows in a callback taking an Iterable.
+         *
+         * This function makes it possible to process the rows using normal Kotlin collection
+         * functions (e.g. fold, groupBy, associateBy, etc...) without first collecting everything
+         * into a temporary list and then throwing the list away.
+         *
+         * Consider using `useSequence` instead if you intend to avoid temporary throw-away
+         * collections, because most `Iterable` functions return concrete intermediate collections,
+         * while most `Sequence` functions return lazy sequences.
+         *
+         * There are two rules, enforced with checks that throw errors if violated:
+         * - the iterable may only be iterated once
+         * - the iterable and its iterator may not be used after the callback has finished
+         */
+        fun <R> useIterable(f: (Iterable<T>) -> R): R = rows.use { f(it.asIterable()) }
+
+        fun toList(): List<T> = rows.use { it.toList() }
+
+        fun toSet(): Set<T> = rows.use { it.toSet() }
 
         fun exactlyOne(): T =
-            inner.iterator().use {
-                if (!it.hasNext()) error("Expected exactly one result, got none")
-                val result = it.next()
-                if (it.hasNext()) error("Expected exactly one result, got more than one")
+            rows.use {
+                val iterator = it.iterator()
+                if (!iterator.hasNext()) error("Expected exactly one result, got none")
+                val result = iterator.next()
+                if (iterator.hasNext()) error("Expected exactly one result, got more than one")
                 result
             }
 
         fun exactlyOneOrNull(): T? =
-            inner.iterator().use {
-                if (!it.hasNext()) null
+            rows.use {
+                val iterator = it.iterator()
+                if (!iterator.hasNext()) null
                 else {
-                    val result = it.next()
-                    if (it.hasNext()) error("Expected 0-1 results, got more than one")
+                    val result = iterator.next()
+                    if (iterator.hasNext()) error("Expected 0-1 results, got more than one")
                     result
                 }
             }
@@ -382,14 +421,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated(
             "Use exactlyOne/exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
         )
-        fun first() = inner.first()
+        fun first() = rows.first()
 
         @Deprecated(
             "Use exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
         )
-        fun firstOrNull(): T? = useIterable { it.firstOrNull() }
+        fun firstOrNull(): T? = rows.use { it.firstOrNull() }
 
-        @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = inner.asSequence()
+        @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = rows.asSequence()
 
         @Deprecated("Use toList instead", ReplaceWith("toList()")) fun list(): List<T> = toList()
 
@@ -404,12 +443,17 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated(
             "Use exactlyOneOrNull if you expect 0-1 results. If you really want to map >1 counts to null, use useIterable instead"
         )
-        fun singleOrNull(): T? = useIterable { it.singleOrNull() }
+        fun singleOrNull(): T? = rows.use { it.singleOrNull() }
 
-        @Deprecated("Use exactlyOneOrNull instead") fun findOne(): Optional<T> = inner.findOne()
+        @Deprecated("Use exactlyOneOrNull instead")
+        fun findOne(): Optional<T & Any> =
+            rows.use {
+                val iterator = it.iterator()
+                if (!iterator.hasNext()) Optional.empty() else Optional.ofNullable(iterator.next())
+            }
 
         @Deprecated("Use SELECT EXISTS + exactlyOne instead")
-        fun any(): Boolean = useIterable { it.any() }
+        fun any(): Boolean = rows.use { it.any() }
 
         @Deprecated("Use either toList or useIterable and call all on it instead")
         inline fun all(crossinline predicate: (T) -> Boolean): Boolean = useIterable {
@@ -552,8 +596,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
 
         override fun <T> map(mapper: Row.() -> T): Result<T> =
@@ -563,8 +613,14 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     interface ResultBearing {
         fun <T> mapTo(type: QualifiedType<T>): Result<T>
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         fun <T> map(mapper: ColumnMapper<T>): Result<T>
 
+        @Deprecated(
+            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
+        )
         fun <T> map(mapper: RowViewMapper<T>): Result<T>
 
         fun <T> map(mapper: Row.() -> T): Result<T>
@@ -761,4 +817,43 @@ value class Row(private val row: RowView) {
     inline fun <reified T> row(): T = row(typeOf<T>()) as T
 
     fun row(type: KType): Any? = row.getRow(type.asJdbiJavaType())
+}
+
+/**
+ * A custom wrapper for JDBI ResultIterable that allows getting the iterator exactly once.
+ *
+ * The original JDBI implementation allows getting multiple iterators which all use the underlying
+ * JDBC ResultSet, leading to unexpected behaviour.
+ */
+private class ResultSequence<T>(iterable: org.jdbi.v3.core.result.ResultIterable<T>) :
+    Sequence<T>, AutoCloseable {
+    private var iterator: ResultIterator<T>? = ResultIterator(iterable.iterator())
+
+    override fun iterator(): Iterator<T> =
+        iterator.also { iterator = null } ?: error("The iterator has already been taken")
+
+    override fun close() {
+        iterator?.close()
+    }
+}
+
+/**
+ * A custom wrapper for JDBI ResultIterator that throws an error if used after it has been closed.
+ *
+ * The original JDBI implementation just silently stops returning results if closed.
+ */
+private class ResultIterator<T>(private val inner: org.jdbi.v3.core.result.ResultIterator<T>) :
+    Iterator<T>, AutoCloseable {
+    private var closed = false
+
+    override fun hasNext(): Boolean =
+        if (closed) error("The iterator has already been closed") else inner.hasNext()
+
+    override fun next(): T =
+        if (closed) error("The iterator has already been closed") else inner.next()
+
+    override fun close() {
+        closed = true
+        inner.close()
+    }
 }

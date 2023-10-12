@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
@@ -6566,8 +6567,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             """
                     .trimIndent()
             )
-            .map(toInvoice)
-            .toList()
+            .toList(Row::toInvoice)
             .let(::flatten)
             .shuffled() // randomize order to expose assumptions
     }

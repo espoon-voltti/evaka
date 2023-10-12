@@ -129,8 +129,7 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
@@ -179,8 +178,7 @@ fun Database.Read.getStaffAttendanceByRange(
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
-        .mapTo<GroupStaffAttendance>()
-        .toList()
+        .toList<GroupStaffAttendance>()
 }
 
 fun Database.Read.getUnitStaffAttendanceForDate(
@@ -199,11 +197,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
             .trimIndent()
 
     val groupAttendances =
-        createQuery(sql)
-            .bind("unitId", unitId)
-            .bind("date", date)
-            .mapTo<GroupStaffAttendance>()
-            .toList()
+        createQuery(sql).bind("unitId", unitId).bind("date", date).toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }
     val countOther = groupAttendances.sumOf { it.countOther }

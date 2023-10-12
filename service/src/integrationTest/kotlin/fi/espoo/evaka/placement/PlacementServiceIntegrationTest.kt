@@ -899,8 +899,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
                     )
                     .bind("id", groupId)
-                    .mapTo<LocalDate>()
-                    .toList()
+                    .toList<LocalDate>()
             }
         assertEquals(1, groupPlacementEndDates.size)
         assertEquals(LocalDate.of(year, month, 15), groupPlacementEndDates.first())
@@ -909,8 +908,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             db.read {
                 it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
                     .bind("id", oldPlacement.id)
-                    .mapTo<LocalDate>()
-                    .toList()
+                    .toList<LocalDate>()
             }
         assertEquals(1, serviceNeedEndDates.size)
         assertEquals(LocalDate.of(year, month, 15), serviceNeedEndDates.first())
@@ -971,8 +969,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
                     )
                     .bind("id", groupId)
-                    .mapTo<QueryResult>()
-                    .toList()
+                    .toList<QueryResult>()
             }
 
         assertEquals(1, groupPlacements.size)
@@ -985,8 +982,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         "SELECT start_date, end_date FROM service_need WHERE placement_id = :id"
                     )
                     .bind("id", oldPlacement.id)
-                    .mapTo<QueryResult>()
-                    .toList()
+                    .toList<QueryResult>()
             }
 
         assertEquals(1, serviceNeeds.size)

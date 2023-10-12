@@ -25,7 +25,7 @@ internal data class KoskiStudyRightRaw(
 )
 
 internal fun Database.Read.getStoredResults() =
-    createQuery("select * from koski_study_right").mapTo<KoskiStudyRightRaw>().toList()
+    createQuery("select * from koski_study_right").toList<KoskiStudyRightRaw>()
 
 internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =
     createUpdate<Any> {

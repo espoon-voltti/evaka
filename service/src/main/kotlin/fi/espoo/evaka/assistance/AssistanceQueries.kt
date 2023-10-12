@@ -29,13 +29,11 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
-        .mapTo<AssistanceFactor>()
-        .toList()
+        .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
-        .mapTo<AssistanceFactor>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
@@ -53,8 +51,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<AssistanceFactorId>()
-        .exactlyOne()
+        .exactlyOne<AssistanceFactorId>()
 
 fun Database.Transaction.updateAssistanceFactor(
     user: AuthenticatedUser,
@@ -87,8 +84,7 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<AssistanceFactor>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {
@@ -100,8 +96,7 @@ WHERE child_id = ${bind(child)}
 """
             )
         }
-        .mapTo<DaycareAssistance>()
-        .toList()
+        .toList<DaycareAssistance>()
 
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
@@ -119,8 +114,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<DaycareAssistanceId>()
-        .exactlyOne()
+        .exactlyOne<DaycareAssistanceId>()
 
 fun Database.Transaction.updateDaycareAssistance(
     user: AuthenticatedUser,
@@ -159,8 +153,7 @@ WHERE child_id = ${bind(child)}
 """
             )
         }
-        .mapTo<PreschoolAssistance>()
-        .toList()
+        .toList<PreschoolAssistance>()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
@@ -178,8 +171,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<PreschoolAssistanceId>()
-        .exactlyOne()
+        .exactlyOne<PreschoolAssistanceId>()
 
 fun Database.Transaction.updatePreschoolAssistance(
     user: AuthenticatedUser,
@@ -218,8 +210,7 @@ WHERE child_id = ${bind(child)}
 """
             )
         }
-        .mapTo<OtherAssistanceMeasure>()
-        .toList()
+        .toList<OtherAssistanceMeasure>()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
@@ -237,8 +228,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .mapTo<OtherAssistanceMeasureId>()
-        .exactlyOne()
+        .exactlyOne<OtherAssistanceMeasureId>()
 
 fun Database.Transaction.updateOtherAssistanceMeasure(
     user: AuthenticatedUser,

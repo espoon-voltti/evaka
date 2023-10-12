@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 import mu.KotlinLogging
@@ -30,8 +29,7 @@ RETURNING id
         .bind("runAt", jobParams.runAt)
         .bindJson("payload", jobParams.payload)
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
-        .exactlyOne()
+        .exactlyOne<UUID>()
 
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
@@ -63,18 +61,17 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
             )
         }
         .executeAndReturnGeneratedKeys()
-        .map { row ->
+        .exactlyOneOrNull {
             ClaimedJobRef(
-                jobId = row.mapColumn("jobId"),
+                jobId = column("jobId"),
                 jobType =
-                    row.mapColumn<String>("jobType").let { jobType ->
+                    column<String>("jobType").let { jobType ->
                         jobTypes.find { it.name == jobType }
                     }!!,
-                txId = row.mapColumn("txId"),
-                remainingAttempts = row.mapColumn("remainingAttempts")
+                txId = column("txId"),
+                remainingAttempts = column("remainingAttempts")
             )
         }
-        .exactlyOneOrNull()
 
 fun <T : AsyncJobPayload> Database.Transaction.startJob(
     job: ClaimedJobRef<T>,
@@ -99,13 +96,12 @@ RETURNING payload
         .bindKotlin(job)
         .bind("now", now)
         .executeAndReturnGeneratedKeys()
-        .map { row ->
-            row.getColumn(
+        .exactlyOneOrNull {
+            column(
                 "payload",
                 QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)
             )
         }
-        .exactlyOneOrNull()
 
 fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
     createUpdate(

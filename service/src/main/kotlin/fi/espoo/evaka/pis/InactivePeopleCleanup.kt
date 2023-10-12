@@ -126,8 +126,7 @@ RETURNING id
             )
             .bind("twoMonthsAgo", queryDate.minusMonths(2))
             .executeAndReturnGeneratedKeys()
-            .mapTo<PersonId>()
-            .toSet()
+            .toSet<PersonId>()
 
     logger.info(mapOf("deletedPeople" to deletedPeople)) {
         "Inactive people clean up complete, deleted people count: ${deletedPeople.size}"

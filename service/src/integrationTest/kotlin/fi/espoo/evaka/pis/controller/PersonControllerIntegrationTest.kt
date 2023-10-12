@@ -95,8 +95,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             db.transaction { tx ->
                 tx.createQuery("SELECT duplicate_of FROM person WHERE id = :id")
                     .bind("id", duplicateId)
-                    .mapTo<PersonId>()
-                    .exactlyOne()
+                    .exactlyOne<PersonId>()
             }
         assertThat(duplicateOf).isEqualTo(person.id)
     }

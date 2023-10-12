@@ -26,8 +26,7 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     return createQuery(sql)
         .bindKotlin(data)
         .bind("childId", childId)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .exactlyOne()
+        .exactlyOne<AssistanceNeedVoucherCoefficient>()
 }
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(
@@ -56,10 +55,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
         WHERE child_id = :childId
         """
             .trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .toList()
+    return createQuery(sql).bind("childId", childId).toList<AssistanceNeedVoucherCoefficient>()
 }
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
@@ -113,6 +109,5 @@ fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .toList()
+        .toList<AssistanceNeedVoucherCoefficient>()
 }

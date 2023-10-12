@@ -127,15 +127,13 @@ fun Database.Transaction.createBackupPickup(
         .bind("childId", childId)
         .bind("name", data.name)
         .bind("phone", data.phone)
-        .mapTo<BackupPickupId>()
-        .exactlyOne()
+        .exactlyOne<BackupPickupId>()
 }
 
 fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> {
     return createQuery("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = :id")
         .bind("id", childId)
-        .mapTo<ChildBackupPickup>()
-        .toList()
+        .toList<ChildBackupPickup>()
 }
 
 fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) {

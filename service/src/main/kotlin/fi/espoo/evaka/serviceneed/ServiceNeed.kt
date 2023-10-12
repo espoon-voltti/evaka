@@ -176,8 +176,7 @@ fun validateServiceNeed(
     db.createQuery(sql)
         .bind("placementId", placementId)
         .bind("optionId", optionId)
-        .mapTo<Int>()
-        .toList()
+        .toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
 
     // language=sql
@@ -192,8 +191,7 @@ fun validateServiceNeed(
         .bind("placementId", placementId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<Int>()
-        .toList()
+        .toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }
 

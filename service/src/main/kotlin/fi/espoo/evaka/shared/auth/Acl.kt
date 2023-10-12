@@ -67,6 +67,5 @@ private fun Database.Read.selectAuthorizedDaycares(
         )
         .bind("userId", user.rawId())
         .bind("roles", roles)
-        .mapTo<DaycareId>()
-        .toSet()
+        .toSet<DaycareId>()
 }

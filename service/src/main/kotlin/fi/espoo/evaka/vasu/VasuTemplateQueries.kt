@@ -31,8 +31,7 @@ fun Database.Transaction.insertVasuTemplate(
         .bind("type", type)
         .bind("language", language)
         .bind("content", content)
-        .mapTo<VasuTemplateId>()
-        .exactlyOne()
+        .exactlyOne<VasuTemplateId>()
 }
 
 fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
@@ -66,8 +65,7 @@ fun Database.Read.getVasuTemplates(
     """
         )
         .apply { if (validOnly) bind("today", clock.today()) }
-        .mapTo<VasuTemplateSummary>()
-        .toList()
+        .toList<VasuTemplateSummary>()
 }
 
 fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {

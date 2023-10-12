@@ -58,9 +58,7 @@ class LocationController {
     fun getAreas(db: Database, user: AuthenticatedUser): List<AreaJSON> {
         return db.connect { dbc ->
             dbc.read {
-                it.createQuery("SELECT id, name, short_name FROM care_area")
-                    .mapTo<AreaJSON>()
-                    .toList()
+                it.createQuery("SELECT id, name, short_name FROM care_area").toList<AreaJSON>()
             }
         }
     }
@@ -138,5 +136,4 @@ ORDER BY name
         .bind("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
         .bind("type", type)
         .bind("from", from)
-        .mapTo<UnitStub>()
-        .toList()
+        .toList<UnitStub>()

@@ -69,7 +69,7 @@ fun Database.Transaction.insertAbsences(
             .add()
     }
 
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
@@ -96,7 +96,7 @@ fun Database.Transaction.clearOldReservations(
         batch.bind("childId", childId).bind("date", date).add()
     }
 
-    return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
+    return batch.executeAndReturn().toList<AttendanceReservationId>()
 }
 
 fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
@@ -138,7 +138,7 @@ fun Database.Transaction.deleteReservationsFromHolidayPeriodDates(
     """
         )
     deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
-    return batch.executeAndReturn().mapTo<AttendanceReservationId>().toList()
+    return batch.executeAndReturn().toList<AttendanceReservationId>()
 }
 
 data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
@@ -232,8 +232,7 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
         )
         .bind("range", range)
         .bind("childId", childId)
-        .mapTo<LocalDate>()
-        .toList()
+        .toList<LocalDate>()
 }
 
 data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
@@ -345,8 +344,7 @@ GROUP BY date
         .bind("userId", userId)
         .bind("start", range.start)
         .bind("end", range.end)
-        .mapTo<DailyReservationData>()
-        .toList()
+        .toList<DailyReservationData>()
 }
 
 data class ReservationChild(
@@ -391,8 +389,7 @@ ORDER BY p.date_of_birth, p.duplicate_of
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .mapTo<ReservationChild>()
-        .toList()
+        .toList<ReservationChild>()
 }
 
 data class ReservationPlacement(

@@ -44,8 +44,7 @@ fun Database.Transaction.insertAttendance(
         .bind("startTime", startTime.withSecond(0).withNano(0))
         .bind("endTime", endTime?.withSecond(0)?.withNano(0))
         .executeAndReturnGeneratedKeys()
-        .mapTo<AttendanceId>()
-        .exactlyOne()
+        .exactlyOne<AttendanceId>()
 }
 
 fun Database.Read.getChildAttendance(
@@ -345,8 +344,7 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
         )
         .bind("period", period)
         .bind("childId", childId)
-        .mapTo<LocalDate>()
-        .toList()
+        .toList<LocalDate>()
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {
@@ -388,8 +386,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
         .bind("childId", childId)
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
-        .mapTo<AbsenceId>()
-        .toList()
+        .toList<AbsenceId>()
 }
 
 fun Database.Transaction.deleteAttendancesByDate(
@@ -402,8 +399,7 @@ fun Database.Transaction.deleteAttendancesByDate(
         .bind("childId", childId)
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
-        .mapTo<AttendanceId>()
-        .toList()
+        .toList<AttendanceId>()
 
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(
     childId: ChildId,
@@ -422,6 +418,5 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
         .bind("childId", childId)
         .bind("dateRange", dateRange)
         .executeAndReturnGeneratedKeys()
-        .mapTo<AbsenceId>()
-        .toList()
+        .toList<AbsenceId>()
 }

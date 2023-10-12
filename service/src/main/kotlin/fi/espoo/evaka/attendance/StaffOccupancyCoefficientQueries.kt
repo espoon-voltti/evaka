@@ -25,8 +25,7 @@ WHERE daycare_id = :unitId AND employee_id = :employeeId
         )
         .bind("unitId", unitId)
         .bind("employeeId", employeeId)
-        .mapTo<BigDecimal>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<BigDecimal>()
 
 fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,
@@ -58,8 +57,7 @@ WHERE soc.daycare_id = :unitId
                 .trimIndent()
         )
         .bind("unitId", unitId)
-        .mapTo<StaffOccupancyCoefficient>()
-        .toList()
+        .toList<StaffOccupancyCoefficient>()
 
 fun Database.Transaction.upsertOccupancyCoefficient(
     params: OccupancyCoefficientUpsert
@@ -75,5 +73,4 @@ RETURNING id
         )
         .bindKotlin(params)
         .executeAndReturnGeneratedKeys()
-        .mapTo<StaffOccupancyCoefficientId>()
-        .exactlyOne()
+        .exactlyOne<StaffOccupancyCoefficientId>()

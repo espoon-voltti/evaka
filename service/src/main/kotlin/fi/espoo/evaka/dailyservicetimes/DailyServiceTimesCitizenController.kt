@@ -91,8 +91,7 @@ SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notificat
                 .trimIndent()
         )
         .bind("userId", userId)
-        .mapTo<DailyServiceTimeNotification>()
-        .toList()
+        .toList<DailyServiceTimeNotification>()
 
 fun Database.Transaction.deleteDailyServiceTimesNotifications(
     notificationIds: List<DailyServiceTimeNotificationId>

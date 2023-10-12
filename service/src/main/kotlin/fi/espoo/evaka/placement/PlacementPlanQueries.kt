@@ -69,8 +69,7 @@ RETURNING id"""
         .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
         .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PlacementPlanId>()
-        .exactlyOne()
+        .exactlyOne<PlacementPlanId>()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
@@ -92,8 +91,7 @@ WHERE application_id = :applicationId AND deleted = false
     """
         )
         .bind("applicationId", applicationId)
-        .mapTo<QueryResult>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<QueryResult>()
         ?.let {
             PlacementPlan(
                 id = it.id,
@@ -124,8 +122,7 @@ WHERE application_id = :applicationId AND deleted = false
     """
         )
         .bind("applicationId", applicationId)
-        .mapTo<String>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<String>()
         ?: throw NotFound("Placement plan for application $applicationId not found")
 }
 
@@ -189,8 +186,7 @@ WHERE
         .bind("from", from)
         .bind("to", to)
         .bind("statuses", statuses)
-        .mapTo<QueryResult>()
-        .toList()
+        .toList<QueryResult>()
         .map {
             PlacementPlanDetails(
                 id = it.id,
@@ -252,9 +248,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
         """
         )
         .bind("id", childId)
-        .mapTo<PlacementDraftChild>()
-        .toList()
-        .singleOrNull()
+        .exactlyOneOrNull<PlacementDraftChild>()
 }
 
 fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
@@ -267,9 +261,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
         """
         )
         .bind("id", guardianId)
-        .mapTo<Boolean>()
-        .toList()
-        .singleOrNull()
+        .exactlyOneOrNull<Boolean>()
 }
 
 fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int =
@@ -292,5 +284,4 @@ AND pp.unit_confirmation_status != :unitConfirmationStatus::confirmation_status
             )
         )
         .bind("unitConfirmationStatus", PlacementPlanConfirmationStatus.REJECTED)
-        .mapTo<Int>()
-        .exactlyOne()
+        .exactlyOne<Int>()

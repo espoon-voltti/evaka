@@ -133,8 +133,7 @@ END
             )
         }
         .bind("today", today)
-        .mapTo<FuturePreschoolersReportRow>()
-        .toList()
+        .toList<FuturePreschoolersReportRow>()
 
 fun Database.Read.getPreschoolGroupsRows(
     today: LocalDate,
@@ -163,8 +162,7 @@ CASE WHEN :municipal THEN d.provider_type = 'MUNICIPAL' ELSE d.provider_type != 
         }
         .bind("today", today)
         .bind("municipal", municipal)
-        .mapTo<PreschoolGroupsReportRow>()
-        .toList()
+        .toList<PreschoolGroupsReportRow>()
 
 data class FuturePreschoolersReportRow(
     val id: ChildId,

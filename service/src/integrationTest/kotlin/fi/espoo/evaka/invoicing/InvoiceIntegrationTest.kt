@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -592,13 +591,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         .trimIndent()
                 )
                 .bind("invoiceId", invoiceId)
-                .map { row ->
+                .exactlyOne {
                     Pair(
-                        row.mapColumn<String>("saved_cost_center"),
-                        row.mapColumn<String>("saved_sub_cost_center")
+                        column<String>("saved_cost_center"),
+                        column<String>("saved_sub_cost_center")
                     )
                 }
-                .exactlyOne()
 
         val draft = testInvoices[0]
         db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }

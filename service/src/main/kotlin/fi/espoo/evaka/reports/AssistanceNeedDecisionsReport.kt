@@ -117,8 +117,7 @@ JOIN care_area ON care_area.id = daycare.care_area_id
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceNeedDecisionsReportRow>()
-        .toList()
+        .toList<AssistanceNeedDecisionsReportRow>()
 
 data class AssistanceNeedDecisionsReportRow(
     val id: UUID,
@@ -152,5 +151,5 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
         ) decisions
         """
             .trimIndent()
-    return createQuery(sql).bind("employeeId", userId).mapTo<Int>().exactlyOne()
+    return createQuery(sql).bind("employeeId", userId).exactlyOne<Int>()
 }

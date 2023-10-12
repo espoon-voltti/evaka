@@ -73,5 +73,4 @@ SELECT DISTINCT(social_security_number) FROM person
     """
                 .trimIndent()
         )
-        .mapTo<String>()
-        .toList()
+        .toList<String>()

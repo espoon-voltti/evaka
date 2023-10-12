@@ -140,7 +140,7 @@ WHERE ${predicate(predicate.forTable("daycare"))}
     }
 
 fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> =
-    createQuery(daycaresQuery(filter.toPredicate())).mapTo<Daycare>().toList()
+    createQuery(daycaresQuery(filter.toPredicate())).toList<Daycare>()
 
 data class UnitApplyPeriods(
     val id: DaycareId,
@@ -160,8 +160,7 @@ WHERE id = ANY(:ids)
                 .trimIndent()
         )
         .bind("ids", ids)
-        .mapTo<UnitApplyPeriods>()
-        .toList()
+        .toList<UnitApplyPeriods>()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery(daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }))
@@ -176,8 +175,7 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery(
@@ -202,8 +200,7 @@ SELECT :name, :areaId
         .bind("name", name)
         .bind("areaId", areaId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<DaycareId>()
-        .exactlyOne()
+        .exactlyOne<DaycareId>()
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
     createUpdate(
@@ -321,8 +318,7 @@ ORDER BY name ASC
         .bind("daycare", type == ApplicationUnitType.DAYCARE)
         .bind("preschool", type == ApplicationUnitType.PRESCHOOL)
         .bind("preparatory", type == ApplicationUnitType.PREPARATORY)
-        .mapTo<PublicUnit>()
-        .toList()
+        .toList<PublicUnit>()
 }
 
 fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<PublicUnit> {
@@ -363,10 +359,7 @@ ORDER BY name ASC
     """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("today", HelsinkiDateTime.now().toLocalDate())
-        .mapTo<PublicUnit>()
-        .toList()
+    return createQuery(sql).bind("today", HelsinkiDateTime.now().toLocalDate()).toList<PublicUnit>()
 }
 
 fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
@@ -391,8 +384,7 @@ WHERE daycare_id = :daycareId
     """
         )
         .bind("daycareId", daycareId)
-        .mapTo<DaycareGroupSummary>()
-        .toList()
+        .toList<DaycareGroupSummary>()
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
     createQuery(
@@ -403,8 +395,7 @@ fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
     """
                 .trimIndent()
         )
-        .mapTo<UnitFeatures>()
-        .toList()
+        .toList<UnitFeatures>()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
@@ -469,8 +460,7 @@ SELECT EXISTS(
 """
             )
         }
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 

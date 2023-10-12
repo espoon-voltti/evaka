@@ -625,8 +625,7 @@ class ApplicationStateService(
             """
                 .trimIndent()
 
-        val validIds =
-            tx.createQuery(acceptSQL).bind("unitId", unitId).mapTo<ApplicationId>().toList()
+        val validIds = tx.createQuery(acceptSQL).bind("unitId", unitId).toList<ApplicationId>()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
         Audit.PlacementProposalAccept.log(targetId = unitId, objectId = validIds)
@@ -915,8 +914,7 @@ class ApplicationStateService(
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
         return createQuery("SELECT 1 FROM preschool_term WHERE application_period @> :date")
             .bind("date", sentDate)
-            .mapTo<Boolean>()
-            .toList()
+            .toList<Boolean>()
             .firstOrNull()
             ?: false
     }

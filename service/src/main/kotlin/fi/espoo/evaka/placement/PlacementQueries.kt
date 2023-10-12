@@ -46,8 +46,7 @@ fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> 
                 .trimIndent()
         )
         .bind("childId", childId)
-        .mapTo<PlacementSummary>()
-        .toList()
+        .toList<PlacementSummary>()
 }
 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
@@ -60,8 +59,7 @@ WHERE p.child_id = :childId
                 .trimIndent()
         )
         .bind("childId", childId)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
 }
 
 fun Database.Read.getPlacementsForChildDuring(
@@ -81,8 +79,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
         .bind("childId", childId)
         .bind("start", start)
         .bind("end", end)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
 }
 
 fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
@@ -125,8 +122,7 @@ AND daterange(start_date, end_date, '[]') && :period
         )
         .bind("childId", childId)
         .bind("period", period)
-        .mapTo<ChildPlacementType>()
-        .toList()
+        .toList<ChildPlacementType>()
 }
 
 fun Database.Transaction.insertPlacement(
@@ -151,8 +147,7 @@ fun Database.Transaction.insertPlacement(
         .bind("startDate", startDate)
         .bind("endDate", endDate)
         .bind("placeGuarantee", placeGuarantee)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
         .first()
 }
 
@@ -166,8 +161,7 @@ data class PlacementChildAndRange(
 fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
     createQuery("SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = :id")
         .bind("id", placementId)
-        .mapTo<PlacementChildAndRange>()
-        .exactlyOne()
+        .exactlyOne<PlacementChildAndRange>()
 
 fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
@@ -431,8 +425,7 @@ fun Database.Read.getDaycarePlacements(
         .bind("to", endDate)
         .bind("daycareId", daycareId)
         .bind("childId", childId)
-        .mapTo<DaycarePlacementDetails>()
-        .toList()
+        .toList<DaycarePlacementDetails>()
 }
 
 fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
@@ -507,8 +500,7 @@ SELECT
         .bind("daycareId", daycareId)
         .bind("terminationRequestedMinDate", terminationRequestedMinDate)
         .bind("terminationRequestedMaxDate", terminationRequestedMaxDate)
-        .mapTo<TerminatedPlacement>()
-        .toList()
+        .toList<TerminatedPlacement>()
 
 data class TerminatedPlacement(
     val id: PlacementId,
@@ -565,8 +557,7 @@ WHERE
         )
         .bind("childId", childId)
         .bind("today", today)
-        .mapTo<ChildPlacement>()
-        .toList()
+        .toList<ChildPlacement>()
 
 fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
@@ -649,8 +640,7 @@ fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean =
             "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = :groupId)"
         )
         .bind("groupId", groupId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getGroupPlacementsAtDaycare(
     daycareId: DaycareId,
@@ -680,8 +670,7 @@ fun Database.Read.getGroupPlacementsAtDaycare(
     return createQuery(sql)
         .bind("daycareId", daycareId)
         .bind("placementRange", placementRange)
-        .mapTo<DaycareGroupPlacement>()
-        .toList()
+        .toList<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
@@ -702,7 +691,7 @@ fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPl
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<DaycareGroupPlacement>().toList()
+    return createQuery(sql).bind("childId", childId).toList<DaycareGroupPlacement>()
 }
 
 fun Database.Read.getGroupPlacementChildren(
@@ -719,7 +708,7 @@ fun Database.Read.getGroupPlacementChildren(
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).bind("range", range).mapTo<ChildId>().toList()
+    return createQuery(sql).bind("groupId", groupId).bind("range", range).toList<ChildId>()
 }
 
 fun Database.Transaction.createGroupPlacement(
@@ -742,8 +731,7 @@ fun Database.Transaction.createGroupPlacement(
         .bind("groupId", groupId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<GroupPlacementId>()
-        .exactlyOne()
+        .exactlyOne<GroupPlacementId>()
 }
 
 fun Database.Transaction.updateGroupPlacementStartDate(
@@ -912,8 +900,7 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         )
         .bind("childId", childId)
         .bind("range", range)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDate): Language? =
     createQuery(

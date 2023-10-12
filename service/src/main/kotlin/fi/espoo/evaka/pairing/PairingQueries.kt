@@ -35,8 +35,7 @@ fun Database.Transaction.initPairing(
         .bind("employeeId", employeeId)
         .bind("expires", clock.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
-        .mapTo<Pairing>()
-        .exactlyOne()
+        .exactlyOne<Pairing>()
 }
 
 fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: String): Pairing {
@@ -148,8 +147,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
         .bind("id", id)
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<PairingStatus>()
-        .toList()
+        .toList<PairingStatus>()
         .firstOrNull()
         ?: throw NotFound("Valid pairing not found")
 }

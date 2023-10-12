@@ -351,8 +351,8 @@ class StreamingCsvQuery<T : Any>(
         tx: Database.Read,
         useResults: (records: Sequence<String>) -> R
     ): R =
-        query(tx).useIterable { rows ->
-            useResults(toCsvRecords(::printEspooBiCsvField, clazz, rows.asSequence()))
+        query(tx).useSequence { rows ->
+            useResults(toCsvRecords(::printEspooBiCsvField, clazz, rows))
         }
 }
 

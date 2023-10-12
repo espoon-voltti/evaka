@@ -54,8 +54,7 @@ fun Database.Read.getUnitStats(
         .bind("unitId", unitId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<Caretakers>()
-        .exactlyOne()
+        .exactlyOne<Caretakers>()
 }
 
 fun Database.Read.getGroupStats(

@@ -175,8 +175,7 @@ ORDER BY
         .bind("applicationStatuses", applicationStatuses.ifEmpty { defaultApplicationStatuses })
         .bind("earliestApplicationSentDate", earliestApplicationSentDate)
         .bind("latestApplicationSentDate", latestApplicationSentDate)
-        .mapTo<PlacementSketchingReportRow>()
-        .toList()
+        .toList<PlacementSketchingReportRow>()
 }
 
 data class PlacementSketchingReportRow(

@@ -1083,8 +1083,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             """
                     )
                     .bind("childId", childId)
-                    .mapTo<QueryResult>()
-                    .toList()
+                    .toList<QueryResult>()
             }
 
         assertEquals(expected, actual)

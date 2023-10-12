@@ -251,8 +251,7 @@ SELECT EXISTS (
         .bind("today", today)
         .bind("childId", childId)
         .bind("personId", personId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Read.fetchFamilyContacts(clock: EvakaClock, childId: ChildId): List<FamilyContact> {
@@ -354,11 +353,7 @@ ORDER BY priority ASC, role_order ASC
     """
 
     return addDefaultPriorities(
-        createQuery(sql)
-            .bind("today", clock.today())
-            .bind("id", childId)
-            .mapTo<FamilyContact>()
-            .toList()
+        createQuery(sql).bind("today", clock.today()).bind("id", childId).toList<FamilyContact>()
     )
 }
 

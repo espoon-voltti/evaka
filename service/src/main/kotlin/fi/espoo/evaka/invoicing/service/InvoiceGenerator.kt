@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.OperationalDays
@@ -334,8 +333,7 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
                 }
             )
         )
-        .mapTo<FeeDecision>()
-        .toList()
+        .toList<FeeDecision>()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
@@ -346,8 +344,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
         .bind("period_start", period.start)
         .bind("period_end", period.end)
         .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING))
-        .mapTo<PersonId>()
-        .toList()
+        .toList<PersonId>()
 }
 
 data class AbsenceStub(
@@ -372,8 +369,7 @@ fun Database.Read.getAbsenceStubs(
     return createQuery(sql)
         .bind("range", spanningRange)
         .bind("categories", categories)
-        .mapTo<AbsenceStub>()
-        .toList()
+        .toList<AbsenceStub>()
 }
 
 data class PlacementStub(
@@ -492,20 +488,16 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
             AND conflict = false
     """
 
-    return createQuery(sql)
-        .bind("dateRange", dateRange)
-        .bind("childIds", childIds)
-        .map { rv ->
-            Triple(
-                DateRange(rv.mapColumn("start_date"), rv.mapColumn("end_date")),
-                rv.mapColumn<PersonId>("head_of_child"),
-                ChildWithDateOfBirth(
-                    id = rv.mapColumn("child_id"),
-                    dateOfBirth = rv.mapColumn("child_date_of_birth")
-                )
+    return createQuery(sql).bind("dateRange", dateRange).bind("childIds", childIds).toList {
+        Triple(
+            DateRange(column("start_date"), column("end_date")),
+            column<PersonId>("head_of_child"),
+            ChildWithDateOfBirth(
+                id = column("child_id"),
+                dateOfBirth = column("child_date_of_birth")
             )
-        }
-        .toList()
+        )
+    }
 }
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
@@ -561,7 +553,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).mapTo<ChildId>().toList()
+    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).toList<ChildId>()
 }
 
 private fun placementOn(year: Int, month: Int): String {

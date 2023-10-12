@@ -94,8 +94,7 @@ SELECT EXISTS (
                                 .trimIndent()
                         )
                     }
-                    .mapTo<Boolean>()
-                    .exactlyOne()
+                    .exactlyOne<Boolean>()
             else -> false
         }
 
@@ -208,8 +207,7 @@ WHERE employee_id = ${bind(ctx.user.id)}
                                                 .trimIndent()
                                         )
                                     }
-                                    .mapTo<RoleAndFeatures>()
-                                    .toSet()
+                                    .toSet<RoleAndFeatures>()
                             )
                         else -> null
                     }

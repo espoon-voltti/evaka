@@ -128,8 +128,7 @@ ORDER BY valid_from DESC, valid_to DESC
                 .trimIndent()
         )
         .bind("personId", personId)
-        .mapTo<FeeAlteration>()
-        .toList()
+        .toList<FeeAlteration>()
 }
 
 fun Database.Read.getFeeAlterationsFrom(
@@ -161,8 +160,7 @@ WHERE
         )
         .bind("personIds", personIds)
         .bind("from", from)
-        .mapTo<FeeAlteration>()
-        .toList()
+        .toList<FeeAlteration>()
 }
 
 fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {

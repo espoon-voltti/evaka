@@ -28,8 +28,7 @@ fun Database.Read.getEnabledEmailTypes(personId: PersonId): List<EmailMessageTyp
     return createQuery<DatabaseTable> {
             sql("SELECT enabled_email_types FROM person WHERE id = ${bind(personId)}")
         }
-        .mapTo<List<EmailMessageType>?>()
-        .exactlyOne()
+        .exactlyOne<List<EmailMessageType>?>()
         ?: EmailMessageType.values().toList()
 }
 

@@ -29,8 +29,7 @@ fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
         """
         )
         .bind("accountId", accountId)
-        .mapTo<DraftContent>()
-        .toList()
+        .toList<DraftContent>()
 
 fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
     return this.createQuery(
@@ -40,8 +39,7 @@ fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId 
                 .trimIndent()
         )
         .bind("accountId", accountId)
-        .mapTo<MessageDraftId>()
-        .exactlyOne()
+        .exactlyOne<MessageDraftId>()
 }
 
 fun Database.Transaction.updateDraft(

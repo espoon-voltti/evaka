@@ -1504,8 +1504,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
                 tx.createQuery("SELECT * FROM voucher_value_decision")
-                    .mapTo<VoucherValueDecision>()
-                    .toList()
+                    .toList<VoucherValueDecision>()
             }
             .shuffled() // randomize order to expose assumptions
     }

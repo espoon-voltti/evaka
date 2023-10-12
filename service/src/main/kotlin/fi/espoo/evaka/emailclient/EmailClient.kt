@@ -76,6 +76,5 @@ private fun Database.Read.getEmailAddressAndEnabledTypes(
     return createQuery<DatabaseTable> {
             sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
         }
-        .mapTo<EmailAndEnabledEmailTypes>()
-        .exactlyOne()
+        .exactlyOne<EmailAndEnabledEmailTypes>()
 }

@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.domain
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
@@ -33,11 +32,10 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
         createQuery(
                 "SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')"
             )
-            .map { row ->
-                row.mapColumn<DaycareId>("id") to
-                    row.mapColumn<Set<Int>>("operation_days").map { DayOfWeek.of(it) }.toSet()
+            .toList {
+                column<DaycareId>("id") to
+                    column<Set<Int>>("operation_days").map { DayOfWeek.of(it) }.toSet()
             }
-            .toList()
 
     val holidays = getHolidays(range)
 
@@ -59,5 +57,4 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
     createQuery("SELECT date FROM holiday WHERE between_start_and_end(:range, date)")
         .bind("range", range)
-        .mapTo<LocalDate>()
-        .toSet()
+        .toSet<LocalDate>()

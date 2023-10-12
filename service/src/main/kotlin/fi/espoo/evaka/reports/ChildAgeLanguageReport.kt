@@ -108,8 +108,7 @@ private fun Database.Read.getChildAgeLanguageRows(
             )
         }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
-        .mapTo<ChildAgeLanguageReportRow>()
-        .toList()
+        .toList<ChildAgeLanguageReportRow>()
 
 data class ChildAgeLanguageReportRow(
     val careAreaName: String,

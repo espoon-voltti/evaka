@@ -27,9 +27,8 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
@@ -38,7 +37,6 @@ import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
-import org.jdbi.v3.core.result.RowView
 
 private val logger = KotlinLogging.logger {}
 
@@ -93,8 +91,7 @@ fun Database.Transaction.insertApplication(
         .bind("hideFromGuardian", hideFromGuardian)
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
-        .mapTo<ApplicationId>()
-        .exactlyOne()
+        .exactlyOne<ApplicationId>()
 }
 
 fun Database.Read.duplicateApplicationExists(
@@ -119,8 +116,7 @@ fun Database.Read.duplicateApplicationExists(
         .bind("childId", childId)
         .bind("guardianId", guardianId)
         .bind("type", type)
-        .mapTo<Int>()
-        .toList()
+        .toList<Int>()
         .isNotEmpty()
 }
 
@@ -159,8 +155,7 @@ fun Database.Read.activePlacementExists(
         .bind("childId", childId)
         .bind("types", placementTypes)
         .bind("today", today)
-        .mapTo<Int>()
-        .toList()
+        .toList<Int>()
         .isNotEmpty()
 }
 
@@ -483,67 +478,66 @@ fun Database.Read.fetchApplicationSummaries(
             .bind("today", today)
             .addBindings(params)
             .addBindings(freeTextParams)
-            .mapToPaged(pageSize, "total") { row ->
-                val status = row.mapColumn<ApplicationStatus>("application_status")
+            .mapToPaged(pageSize, "total") {
+                val status = column<ApplicationStatus>("application_status")
                 ApplicationSummary(
-                    id = row.mapColumn("id"),
-                    firstName = row.mapColumn("first_name"),
-                    lastName = row.mapColumn("last_name"),
-                    socialSecurityNumber = row.mapColumn("social_security_number"),
-                    dateOfBirth = row.mapColumn("date_of_birth"),
-                    type = row.mapColumn("type"),
-                    placementType = mapRequestedPlacementType(row, "document"),
+                    id = column("id"),
+                    firstName = column("first_name"),
+                    lastName = column("last_name"),
+                    socialSecurityNumber = column("social_security_number"),
+                    dateOfBirth = column("date_of_birth"),
+                    type = column("type"),
+                    placementType = mapRequestedPlacementType("document"),
                     serviceNeed =
-                        row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
+                        column<ServiceNeedOptionId?>("serviceNeedId")?.let {
                             ServiceNeedOption(
                                 it,
-                                row.mapColumn("serviceNeedNameFi"),
-                                row.mapColumn("serviceNeedNameSv"),
-                                row.mapColumn("serviceNeedNameEn"),
-                                row.mapColumn("serviceNeedValidPlacementType")
+                                column("serviceNeedNameFi"),
+                                column("serviceNeedNameSv"),
+                                column("serviceNeedNameEn"),
+                                column("serviceNeedValidPlacementType")
                             )
                         },
-                    dueDate = row.mapColumn("duedate"),
-                    startDate = row.mapColumn("preferredStartDate"),
+                    dueDate = column("duedate"),
+                    startDate = column("preferredStartDate"),
                     preferredUnits =
-                        row.mapJsonColumn<List<String>>("preferredUnits").map {
+                        jsonColumn<List<String>>("preferredUnits").map {
                             PreferredUnit(
                                 id = DaycareId(UUID.fromString(it)),
                                 name = "" // filled afterwards
                             )
                         },
-                    origin = row.mapColumn("origin"),
-                    checkedByAdmin = row.mapColumn("checkedbyadmin"),
+                    origin = column("origin"),
+                    checkedByAdmin = column("checkedbyadmin"),
                     status = status,
-                    additionalInfo = row.mapColumn("additionalInfo"),
+                    additionalInfo = column("additionalInfo"),
                     serviceWorkerNote =
-                        if (canReadServiceWorkerNotes) row.mapColumn("service_worker_note") else "",
-                    siblingBasis = row.mapColumn("siblingBasis"),
-                    assistanceNeed = row.mapColumn("assistanceNeed"),
-                    wasOnClubCare = row.mapColumn("was_on_club_care"),
-                    wasOnDaycare = row.mapColumn("wasOnDaycare"),
-                    extendedCare = row.mapColumn("extendedCare"),
-                    duplicateApplication = row.mapColumn("has_duplicates"),
-                    transferApplication = row.mapColumn("transferapplication"),
-                    urgent = row.mapColumn("urgent"),
-                    attachmentCount = row.mapColumn("attachmentCount"),
-                    additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
+                        if (canReadServiceWorkerNotes) column("service_worker_note") else "",
+                    siblingBasis = column("siblingBasis"),
+                    assistanceNeed = column("assistanceNeed"),
+                    wasOnClubCare = column("was_on_club_care"),
+                    wasOnDaycare = column("wasOnDaycare"),
+                    extendedCare = column("extendedCare"),
+                    duplicateApplication = column("has_duplicates"),
+                    transferApplication = column("transferapplication"),
+                    urgent = column("urgent"),
+                    attachmentCount = column("attachmentCount"),
+                    additionalDaycareApplication = column("additionaldaycareapplication"),
                     placementProposalStatus =
-                        row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
                             ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
                             ?.let {
                                 PlacementProposalStatus(
                                     unitConfirmationStatus = it,
-                                    unitRejectReason = row.mapColumn("unit_reject_reason"),
-                                    unitRejectOtherReason =
-                                        row.mapColumn("unit_reject_other_reason")
+                                    unitRejectReason = column("unit_reject_reason"),
+                                    unitRejectOtherReason = column("unit_reject_other_reason")
                                 )
                             },
-                    placementPlanStartDate = row.mapColumn("placement_plan_start_date"),
-                    placementPlanUnitName = row.mapColumn("placement_plan_unit_name"),
+                    placementPlanStartDate = column("placement_plan_start_date"),
+                    placementPlanUnitName = column("placement_plan_unit_name"),
                     currentPlacementUnit =
-                        row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
-                            PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
+                        column<DaycareId?>("current_placement_unit_id")?.let {
+                            PreferredUnit(it, column("current_placement_unit_name"))
                         }
                 )
             }
@@ -603,10 +597,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("guardianId", guardianId)
-        .mapTo<PersonApplicationSummary>()
-        .toList()
+    return createQuery(sql).bind("guardianId", guardianId).toList<PersonApplicationSummary>()
 }
 
 fun Database.Read.fetchApplicationSummariesForChild(
@@ -637,8 +628,7 @@ fun Database.Read.fetchApplicationSummariesForChild(
                     .trimIndent()
             )
         }
-        .mapTo<PersonApplicationSummary>()
-        .toList()
+        .toList<PersonApplicationSummary>()
 
 fun Database.Read.fetchApplicationSummariesForCitizen(
     citizenId: PersonId
@@ -669,10 +659,7 @@ fun Database.Read.fetchApplicationSummariesForCitizen(
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("guardianId", citizenId)
-        .mapTo<CitizenApplicationSummary>()
-        .toList()
+    return createQuery(sql).bind("guardianId", citizenId).toList<CitizenApplicationSummary>()
 }
 
 data class CitizenChildren(
@@ -703,8 +690,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
     return createQuery(sql)
         .bind("citizenId", citizenId)
         .bind("today", today)
-        .mapTo<CitizenChildren>()
-        .toList()
+        .toList<CitizenChildren>()
 }
 
 fun Database.Read.fetchApplicationDetails(
@@ -877,51 +863,48 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .map { row ->
-            ApplicationUnitSummary(
-                applicationId = row.mapColumn("id"),
-                firstName = row.mapColumn("first_name"),
-                lastName = row.mapColumn("last_name"),
-                dateOfBirth = row.mapColumn("date_of_birth"),
-                guardianFirstName = row.mapColumn("guardian_first_name"),
-                guardianLastName = row.mapColumn("guardian_last_name"),
-                guardianPhone = row.mapColumn("guardian_phone"),
-                guardianEmail = row.mapColumn("guardian_email"),
-                requestedPlacementType = mapRequestedPlacementType(row, "document"),
-                serviceNeed =
-                    row.mapColumn<ServiceNeedOptionId?>("serviceNeedId")?.let {
-                        ServiceNeedOption(
-                            it,
-                            row.mapColumn("serviceNeedNameFi"),
-                            row.mapColumn("serviceNeedNameSv"),
-                            row.mapColumn("serviceNeedNameEn"),
-                            row.mapColumn("serviceNeedValidPlacementType")
-                        )
-                    },
-                preferredStartDate = row.mapColumn("preferred_start_date"),
-                preferenceOrder = row.mapColumn("preference_order"),
-                status = row.mapColumn("status")
-            )
-        }
-        .toList()
+    return createQuery(sql).bind("unitId", unitId).toList {
+        ApplicationUnitSummary(
+            applicationId = column("id"),
+            firstName = column("first_name"),
+            lastName = column("last_name"),
+            dateOfBirth = column("date_of_birth"),
+            guardianFirstName = column("guardian_first_name"),
+            guardianLastName = column("guardian_last_name"),
+            guardianPhone = column("guardian_phone"),
+            guardianEmail = column("guardian_email"),
+            requestedPlacementType = mapRequestedPlacementType("document"),
+            serviceNeed =
+                column<ServiceNeedOptionId?>("serviceNeedId")?.let {
+                    ServiceNeedOption(
+                        it,
+                        column("serviceNeedNameFi"),
+                        column("serviceNeedNameSv"),
+                        column("serviceNeedNameEn"),
+                        column("serviceNeedValidPlacementType")
+                    )
+                },
+            preferredStartDate = column("preferred_start_date"),
+            preferenceOrder = column("preference_order"),
+            status = column("status")
+        )
+    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true) data class FormWithType(val type: String)
 
-fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
-    when (row.mapJsonColumn<FormWithType>(colName).type) {
+fun Row.mapRequestedPlacementType(colName: String): PlacementType =
+    when (jsonColumn<FormWithType>(colName).type) {
         "CLUB" -> PlacementType.CLUB
         "DAYCARE" -> {
-            if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
+            if (jsonColumn<DaycareFormV0>(colName).partTime) {
                 PlacementType.DAYCARE_PART_TIME
             } else {
                 PlacementType.DAYCARE
             }
         }
         "PRESCHOOL" -> {
-            row.mapJsonColumn<DaycareFormV0>(colName).let {
+            jsonColumn<DaycareFormV0>(colName).let {
                 if (it.careDetails.preparatory == true) {
                     if (it.connectedDaycare == true) {
                         PlacementType.PREPARATORY_DAYCARE
@@ -948,8 +931,7 @@ SELECT type FROM application WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<ApplicationType>()
-        .exactlyOne()
+        .exactlyOne<ApplicationType>()
 
 fun Database.Transaction.updateForm(
     id: ApplicationId,
@@ -1129,8 +1111,7 @@ fun Database.Transaction.removeOldDrafts(
                     "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
                 )
             }
-            .mapTo<ApplicationId>()
-            .toList()
+            .toList<ApplicationId>()
 
     if (applicationIds.isNotEmpty()) {
         logger.info(
@@ -1149,8 +1130,7 @@ fun Database.Transaction.removeOldDrafts(
                 createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
                     .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
-                    .mapTo<AttachmentId>()
-                    .toList()
+                    .toList<AttachmentId>()
 
             attachmentIds.forEach { attachmentId -> deleteAttachment(this, attachmentId) }
         }
@@ -1235,8 +1215,7 @@ RETURNING id
             )
         )
         .executeAndReturnGeneratedKeys()
-        .mapTo<ApplicationId>()
-        .toList()
+        .toList<ApplicationId>()
 
 fun Database.Read.getApplicationAttachments(
     applicationId: ApplicationId
@@ -1253,8 +1232,7 @@ WHERE application_id = :applicationId
 """
         )
         .bind("applicationId", applicationId)
-        .mapTo<ApplicationAttachment>()
-        .toList()
+        .toList<ApplicationAttachment>()
 
 fun Database.Transaction.cancelAllActiveTransferApplicationsAfterDate(
     childId: ChildId,
@@ -1277,8 +1255,7 @@ RETURNING id
         .bind("preferredStartDateMinDate", preferredStartDateMinDate)
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<ApplicationId>()
-        .toList()
+        .toList<ApplicationId>()
 
 fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int {
     // language=SQL
@@ -1297,7 +1274,7 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
         """
             .trimIndent()
 
-    return createQuery(sql).bind("guardianId", citizenId).mapTo<Int>().exactlyOne()
+    return createQuery(sql).bind("guardianId", citizenId).exactlyOne<Int>()
 }
 
 fun Database.Read.personHasSentApplicationWithId(
@@ -1317,6 +1294,5 @@ fun Database.Read.personHasSentApplicationWithId(
     return createQuery(sql)
         .bind("citizenId", citizenId)
         .bind("applicationId", applicationId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }

@@ -192,5 +192,4 @@ ORDER BY ca.name, u.name, g.name
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
-        .toList()
+        .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()

@@ -118,8 +118,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             .bind("preparer2Title", data.preparedBy2?.title)
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
             .bind("selectedUnit", data.selectedUnit?.id)
-            .mapTo<AssistanceNeedDecisionId>()
-            .exactlyOne()
+            .exactlyOne<AssistanceNeedDecisionId>()
 
     // language=sql
     val guardianSql =
@@ -310,8 +309,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceNeedDecisionBasics>()
-        .toList()
+        .toList<AssistanceNeedDecisionBasics>()
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
     // language=sql
@@ -362,8 +360,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
-        .mapTo<AssistanceNeedDecisionCitizenListItem>()
-        .toList()
+        .toList<AssistanceNeedDecisionCitizenListItem>()
 }
 
 fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisionId): String? {
@@ -434,8 +431,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
-        .mapTo<UnreadAssistanceNeedDecisionItem>()
-        .toList()
+        .toList<UnreadAssistanceNeedDecisionItem>()
 }
 
 fun Database.Transaction.decideAssistanceNeedDecision(
@@ -504,8 +500,7 @@ fun Database.Read.hasLaterAssistanceNeedDecisions(
         )
         .bind("childId", childId)
         .bind("startDate", startDate)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Transaction.annulAssistanceNeedDecision(

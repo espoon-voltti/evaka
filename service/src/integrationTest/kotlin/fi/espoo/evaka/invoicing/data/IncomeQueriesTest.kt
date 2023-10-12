@@ -62,7 +62,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.createQuery("SELECT id FROM income").mapTo<UUID>().toList()
+            val result = tx.createQuery("SELECT id FROM income").toList<UUID>()
 
             assertEquals(1, result.size)
         }
@@ -73,7 +73,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.createQuery("SELECT updated_at FROM income").mapTo<Instant>().toList()
+            val result = tx.createQuery("SELECT updated_at FROM income").toList<Instant>()
 
             assertNotNull(result.first())
         }

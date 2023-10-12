@@ -52,8 +52,7 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
         """
                 .trimIndent()
         )
-        .mapTo<PreschoolTerm>()
-        .toList()
+        .toList<PreschoolTerm>()
 }
 
 fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {

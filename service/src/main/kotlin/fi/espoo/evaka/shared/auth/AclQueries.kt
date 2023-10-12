@@ -56,8 +56,7 @@ WHERE daycare_id = :daycareId
         )
         .bind("daycareId", daycareId)
         .bind("includeStaffOccupancy", includeStaffOccupancy)
-        .mapTo<DaycareAclRow>()
-        .toList()
+        .toList<DaycareAclRow>()
 
 fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
     createQuery(
@@ -70,8 +69,7 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,

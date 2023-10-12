@@ -388,8 +388,7 @@ fun Database.Transaction.createChildDailyServiceTimes(
     return createQuery(sql)
         .bindKotlin(times.asUpdateRow())
         .bind("childId", childId)
-        .mapTo<DailyServiceTimesId>()
-        .exactlyOne()
+        .exactlyOne<DailyServiceTimesId>()
 }
 
 data class DailyServiceTimesValidityWithId(
@@ -413,8 +412,7 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)
-        .mapTo<DailyServiceTimesValidityWithId>()
-        .toList()
+        .toList<DailyServiceTimesValidityWithId>()
 }
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(

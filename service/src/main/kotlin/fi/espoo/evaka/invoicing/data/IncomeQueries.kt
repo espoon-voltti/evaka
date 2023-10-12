@@ -14,12 +14,10 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
-import org.jdbi.v3.core.result.RowView
 import org.postgresql.util.PGobject
 
 fun Database.Transaction.upsertIncome(
@@ -118,8 +116,7 @@ fun Database.Read.getIncome(
                 .trimIndent()
         )
         .bind("id", id)
-        .map(toIncome(mapper, incomeTypesProvider.get()))
-        .exactlyOneOrNull()
+        .exactlyOneOrNull { toIncome(mapper, incomeTypesProvider.get()) }
 }
 
 fun Database.Read.getIncomesForPerson(
@@ -149,11 +146,9 @@ fun Database.Read.getIncomesForPerson(
         """
             .trimIndent()
 
-    return createQuery(sql)
-        .bind("personId", personId)
-        .bind("validAt", validAt)
-        .map(toIncome(mapper, incomeTypesProvider.get()))
-        .toList()
+    return createQuery(sql).bind("personId", personId).bind("validAt", validAt).toList {
+        toIncome(mapper, incomeTypesProvider.get())
+    }
 }
 
 fun Database.Read.getIncomesFrom(
@@ -174,11 +169,9 @@ fun Database.Read.getIncomesFrom(
             AND (valid_to IS NULL OR valid_to >= :from)
         """
 
-    return createQuery(sql)
-        .bind("personIds", personIds)
-        .bind("from", from)
-        .map(toIncome(mapper, incomeTypesProvider.get()))
-        .toList()
+    return createQuery(sql).bind("personIds", personIds).bind("from", from).toList {
+        toIncome(mapper, incomeTypesProvider.get())
+    }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
@@ -207,23 +200,22 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) = { rv: RowView ->
+fun Row.toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) =
     Income(
-        id = rv.mapColumn<IncomeId>("id"),
-        personId = rv.mapColumn("person_id"),
-        effect = rv.mapColumn("effect"),
-        data = parseIncomeDataJson(rv.mapColumn("data"), mapper, incomeTypes),
-        isEntrepreneur = rv.mapColumn("is_entrepreneur"),
-        worksAtECHA = rv.mapColumn("works_at_echa"),
-        validFrom = rv.mapColumn("valid_from"),
-        validTo = rv.mapColumn("valid_to"),
-        notes = rv.mapColumn("notes"),
-        updatedAt = rv.mapColumn("updated_at"),
-        updatedBy = rv.mapColumn("updated_by_name"),
-        applicationId = rv.mapColumn("application_id"),
-        attachments = rv.mapJsonColumn("attachments")
+        id = column<IncomeId>("id"),
+        personId = column("person_id"),
+        effect = column("effect"),
+        data = parseIncomeDataJson(column("data"), mapper, incomeTypes),
+        isEntrepreneur = column("is_entrepreneur"),
+        worksAtECHA = column("works_at_echa"),
+        validFrom = column("valid_from"),
+        validTo = column("valid_to"),
+        notes = column("notes"),
+        updatedAt = column("updated_at"),
+        updatedBy = column("updated_by_name"),
+        applicationId = column("application_id"),
+        attachments = jsonColumn("attachments")
     )
-}
 
 fun parseIncomeDataJson(
     json: String,

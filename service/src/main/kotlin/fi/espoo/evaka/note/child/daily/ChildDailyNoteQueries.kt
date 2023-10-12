@@ -18,17 +18,16 @@ private fun Database.Read.getChildDailyNotes(
     predicate: Predicate<DatabaseTable.ChildDailyNote> = Predicate.alwaysTrue()
 ) =
     createQuery<DatabaseTable.ChildDailyNote> {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     id, child_id, modified_at,
     note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
 FROM child_daily_note cdn
 WHERE ${predicate(predicate.forTable("cdn"))}
 """
-            )
-        }
-        .mapTo<ChildDailyNote>()
+        )
+    }
 
 fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
     getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
@@ -72,8 +71,7 @@ RETURNING id
         .bindKotlin(note)
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<ChildDailyNoteId>()
-        .exactlyOne()
+        .exactlyOne<ChildDailyNoteId>()
 }
 
 fun Database.Transaction.updateChildDailyNote(
@@ -100,8 +98,7 @@ RETURNING *
         .bind("now", clock.now())
         .bindKotlin(note)
         .executeAndReturnGeneratedKeys()
-        .mapTo<ChildDailyNote>()
-        .exactlyOne()
+        .exactlyOne<ChildDailyNote>()
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {

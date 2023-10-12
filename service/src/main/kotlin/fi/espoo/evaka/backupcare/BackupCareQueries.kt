@@ -34,8 +34,7 @@ WHERE child_id = :childId
 """
         )
         .bind("childId", childId)
-        .mapTo<ChildBackupCare>()
-        .toList()
+        .toList<ChildBackupCare>()
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
@@ -84,8 +83,7 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
         )
         .bind("daycareId", daycareId)
         .bind("period", period)
-        .mapTo<UnitBackupCare>()
-        .toList()
+        .toList<UnitBackupCare>()
 
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
@@ -104,8 +102,7 @@ fun Database.Read.getBackupCareChildrenInGroup(
         .bind("daycareId", daycareId)
         .bind("groupId", groupId)
         .bind("period", period)
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()
 
 data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 
@@ -138,8 +135,7 @@ RETURNING id
         .bind("start", backupCare.period.start)
         .bind("end", backupCare.period.end)
         .executeAndReturnGeneratedKeys()
-        .mapTo<BackupCareId>()
-        .exactlyOne()
+        .exactlyOne<BackupCareId>()
 
 fun Database.Transaction.updateBackupCare(
     id: BackupCareId,
@@ -183,8 +179,7 @@ fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
                 .trimIndent()
         )
         .bind("id", id)
-        .mapTo<ChildId>()
-        .exactlyOne()
+        .exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */
 fun Database.Transaction.recreateBackupCares(childId: ChildId) {

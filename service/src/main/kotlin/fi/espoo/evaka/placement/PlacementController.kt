@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -444,8 +443,7 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
 """
                         )
                         .bind("adultId", adultId)
-                        .map { rv -> FiniteDateRange(rv.mapColumn("start"), rv.mapColumn("end")) }
-                        .toList()
+                        .toList { FiniteDateRange(column("start"), column("end")) }
                 }
             }
             .also {

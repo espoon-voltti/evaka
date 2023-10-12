@@ -674,8 +674,7 @@ RETURNING id
                     )
                     .bindKotlin(employee)
                     .executeAndReturnGeneratedKeys()
-                    .mapTo<EmployeeId>()
-                    .exactlyOne()
+                    .exactlyOne<EmployeeId>()
             }
         }
 
@@ -1769,8 +1768,7 @@ AND state != 'idle'
     """
                 .trimIndent()
         )
-        .mapTo<ActiveConnection>()
-        .toList()
+        .toList<ActiveConnection>()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
@@ -1796,8 +1794,7 @@ fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: Extern
     val employeeId =
         createQuery("SELECT id FROM employee WHERE external_id = :externalId")
             .bind("externalId", externalId)
-            .mapTo<EmployeeId>()
-            .exactlyOneOrNull()
+            .exactlyOneOrNull<EmployeeId>()
     if (employeeId != null) {
         deleteAndCascadeEmployee(employeeId)
     }

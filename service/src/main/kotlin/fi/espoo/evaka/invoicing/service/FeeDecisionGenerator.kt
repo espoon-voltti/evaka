@@ -43,8 +43,6 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -423,8 +421,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 """
                 )
                 .bind("placementIds", placements.map { it.id })
-                .map { row -> row.mapColumn<DateRange>("range") to row.mapRow<ServiceNeedValue>() }
-                .toList()
+                .toList { column<DateRange>("range") to row<ServiceNeedValue>() }
 
         val defaultServiceNeeds =
             createQuery(
@@ -503,6 +500,5 @@ WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedType
         .bind("childId", childId)
         .bind("from", from)
         .bind("excludedTypes", excludedPlacementTypes)
-        .mapTo<Placement>()
-        .toList()
+        .toList<Placement>()
 }

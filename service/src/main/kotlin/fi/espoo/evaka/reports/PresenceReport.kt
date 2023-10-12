@@ -82,7 +82,7 @@ fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<Presence
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
         """
             .trimIndent()
-    return createQuery(sql).bind("from", from).bind("to", to).mapTo<PresenceReportRow>().toList()
+    return createQuery(sql).bind("from", from).bind("to", to).toList<PresenceReportRow>()
 }
 
 data class PresenceReportRow(

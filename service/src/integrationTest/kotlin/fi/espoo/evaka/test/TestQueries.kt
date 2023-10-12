@@ -32,8 +32,7 @@ WHERE id = :applicationId
 """
         )
         .bind("applicationId", applicationId)
-        .mapTo<ApplicationStatus>()
-        .exactlyOne()
+        .exactlyOne<ApplicationStatus>()
 
 data class DecisionTableRow(
     val id: DecisionId,
@@ -68,7 +67,7 @@ fun Database.Read.getDecisionRowById(id: DecisionId) =
             "SELECT * FROM decision WHERE id = :id"
         )
         .bind("id", id)
-        .mapTo<DecisionTableRow>()
+        .exactlyOne<DecisionTableRow>()
 
 data class PlacementTableRow(
     val id: PlacementId,
@@ -118,7 +117,7 @@ fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId)
             "SELECT * FROM placement_plan WHERE application_id = :applicationId"
         )
         .bind("applicationId", applicationId)
-        .mapTo<PlacementPlanTableRow>()
+        .exactlyOne<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
     val id: BackupCareId,
@@ -137,7 +136,7 @@ fun Database.Read.getBackupCareRowById(id: BackupCareId) =
             "SELECT * FROM backup_care WHERE id = :id"
         )
         .bind("id", id)
-        .mapTo<BackupCareTableRow>()
+        .exactlyOne<BackupCareTableRow>()
 
 fun Database.Read.getBackupCareRowsByChild(childId: ChildId) =
     createQuery(

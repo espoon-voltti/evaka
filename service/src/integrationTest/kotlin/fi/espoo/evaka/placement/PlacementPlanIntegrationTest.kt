@@ -397,7 +397,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         )
 
         db.read { r ->
-            r.getPlacementPlanRowByApplication(applicationId).exactlyOne().also {
+            r.getPlacementPlanRowByApplication(applicationId).also {
                 assertEquals(type, it.type)
                 assertEquals(proposal.unitId, it.unitId)
                 assertEquals(proposal.period, it.period())

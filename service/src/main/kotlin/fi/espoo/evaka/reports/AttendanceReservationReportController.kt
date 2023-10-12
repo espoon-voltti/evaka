@@ -188,8 +188,7 @@ WHERE bc.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupI
         .bind("dates", dates.toTypedArray())
         .bind("unitId", unitId)
         .bind("groupIds", groupIds)
-        .mapTo<PlacementInfoRow>()
-        .toList()
+        .toList<PlacementInfoRow>()
 }
 
 private data class ChildRow(val childId: ChildId, val dateOfBirth: LocalDate)
@@ -205,7 +204,7 @@ WHERE p.id = ANY(:children);
     """
             .trimIndent()
 
-    return createQuery(sql).bind("children", children.toTypedArray()).mapTo<ChildRow>().toList()
+    return createQuery(sql).bind("children", children.toTypedArray()).toList<ChildRow>()
 }
 
 private data class ServiceNeedRow(
@@ -238,8 +237,7 @@ WHERE pl.child_id = ANY(:children) AND daterange(sn.start_date, sn.end_date, '[]
         .bind("start", start)
         .bind("end", end)
         .bind("children", children.toTypedArray())
-        .mapTo<ServiceNeedRow>()
-        .toList()
+        .toList<ServiceNeedRow>()
 }
 
 private data class AssistanceNeedRow(
@@ -264,8 +262,7 @@ WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
 """
             )
         }
-        .mapTo<AssistanceNeedRow>()
-        .toList()
+        .toList<AssistanceNeedRow>()
 
 private data class ReservationRow(
     val date: LocalDate,
@@ -511,8 +508,7 @@ private fun Database.Read.getAttendanceReservationReportByChild(
         .bind("end", end)
         .bind("unitId", unitId)
         .bind("groupIds", groupIds)
-        .mapTo<AttendanceReservationReportByChildRow>()
-        .toList()
+        .toList<AttendanceReservationReportByChildRow>()
 }
 
 data class AttendanceReservationReportByChildRow(

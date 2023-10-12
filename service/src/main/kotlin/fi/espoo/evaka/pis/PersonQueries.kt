@@ -12,13 +12,12 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
-import org.jdbi.v3.core.result.RowView
 
 val personDTOColumns =
     listOf(
@@ -72,15 +71,13 @@ WHERE id = :id
                 .trimIndent()
         )
         .bind("id", id)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 }
 
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
-        .mapTo<Boolean>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<Boolean>()
         ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
@@ -95,8 +92,7 @@ FOR UPDATE
                 .trimIndent()
         )
         .bind("ssn", ssn)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery(
@@ -109,15 +105,13 @@ WHERE social_security_number = :ssn
                 .trimIndent()
         )
         .bind("ssn", ssn)
-        .map(toPersonDTO)
-        .exactlyOneOrNull()
+        .exactlyOneOrNull(toPersonDTO)
 }
 
 fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
     createQuery("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = :id")
         .bind("id", id)
-        .map(toPersonDTO)
-        .toList()
+        .toList(toPersonDTO)
 
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
@@ -180,8 +174,7 @@ fun Database.Read.searchPeople(
     return createQuery(sql)
         .addBindings(freeTextParams)
         .applyIf(restricted) { this.bind("userId", user.id) }
-        .mapTo<PersonSummary>()
-        .toList()
+        .toList<PersonSummary>()
 }
 
 fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
@@ -194,7 +187,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         """
             .trimIndent()
 
-    return createQuery(sql).bindKotlin(person).mapTo<PersonId>().exactlyOne()
+    return createQuery(sql).bindKotlin(person).exactlyOne<PersonId>()
 }
 
 fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
@@ -212,8 +205,7 @@ fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
         .bind("lastName", "Sukunimi")
         .bind("dateOfBirth", evakaClock.today())
         .bind("email", "")
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
@@ -256,8 +248,7 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
 
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
@@ -323,8 +314,7 @@ RETURNING id
         )
         .bind("id", id)
         .executeAndReturnGeneratedKeys()
-        .mapTo<PersonId>()
-        .exactlyOneOrNull()
+        .exactlyOneOrNull<PersonId>()
 
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL
@@ -352,8 +342,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .bind("ssn", person.identity)
-        .map(toPersonDTO)
-        .exactlyOne()
+        .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.updatePersonBasicContactInfo(
@@ -437,40 +426,40 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
     createUpdate(sql).bind("id", id).bind("ssn", ssn).execute()
 }
 
-private val toPersonDTO: (RowView) -> PersonDTO = { row ->
+private val toPersonDTO: Row.() -> PersonDTO = {
     PersonDTO(
-        id = PersonId(row.mapColumn("id")),
+        id = PersonId(column("id")),
         identity =
-            row.mapColumn<String?>("social_security_number")?.let { ssn ->
+            column<String?>("social_security_number")?.let { ssn ->
                 ExternalIdentifier.SSN.getInstance(ssn)
             }
                 ?: ExternalIdentifier.NoID,
-        ssnAddingDisabled = row.mapColumn("ssn_adding_disabled"),
-        firstName = row.mapColumn("first_name"),
-        lastName = row.mapColumn("last_name"),
-        preferredName = row.mapColumn("preferred_name"),
-        email = row.mapColumn("email"),
-        phone = row.mapColumn("phone"),
-        backupPhone = row.mapColumn("backup_phone"),
-        language = row.mapColumn("language"),
-        dateOfBirth = row.mapColumn("date_of_birth"),
-        dateOfDeath = row.mapColumn("date_of_death"),
-        nationalities = row.mapColumn("nationalities"),
-        restrictedDetailsEnabled = row.mapColumn("restricted_details_enabled"),
-        restrictedDetailsEndDate = row.mapColumn("restricted_details_end_date"),
-        streetAddress = row.mapColumn("street_address"),
-        postalCode = row.mapColumn("postal_code"),
-        postOffice = row.mapColumn("post_office"),
-        residenceCode = row.mapColumn("residence_code"),
-        updatedFromVtj = row.mapColumn("updated_from_vtj"),
-        vtjGuardiansQueried = row.mapColumn("vtj_guardians_queried"),
-        vtjDependantsQueried = row.mapColumn("vtj_dependants_queried"),
-        invoiceRecipientName = row.mapColumn("invoice_recipient_name"),
-        invoicingStreetAddress = row.mapColumn("invoicing_street_address"),
-        invoicingPostalCode = row.mapColumn("invoicing_postal_code"),
-        invoicingPostOffice = row.mapColumn("invoicing_post_office"),
-        forceManualFeeDecisions = row.mapColumn("force_manual_fee_decisions"),
-        ophPersonOid = row.mapColumn("oph_person_oid")
+        ssnAddingDisabled = column("ssn_adding_disabled"),
+        firstName = column("first_name"),
+        lastName = column("last_name"),
+        preferredName = column("preferred_name"),
+        email = column("email"),
+        phone = column("phone"),
+        backupPhone = column("backup_phone"),
+        language = column("language"),
+        dateOfBirth = column("date_of_birth"),
+        dateOfDeath = column("date_of_death"),
+        nationalities = column("nationalities"),
+        restrictedDetailsEnabled = column("restricted_details_enabled"),
+        restrictedDetailsEndDate = column("restricted_details_end_date"),
+        streetAddress = column("street_address"),
+        postalCode = column("postal_code"),
+        postOffice = column("post_office"),
+        residenceCode = column("residence_code"),
+        updatedFromVtj = column("updated_from_vtj"),
+        vtjGuardiansQueried = column("vtj_guardians_queried"),
+        vtjDependantsQueried = column("vtj_dependants_queried"),
+        invoiceRecipientName = column("invoice_recipient_name"),
+        invoicingStreetAddress = column("invoicing_street_address"),
+        invoicingPostalCode = column("invoicing_postal_code"),
+        invoicingPostOffice = column("invoicing_post_office"),
+        forceManualFeeDecisions = column("force_manual_fee_decisions"),
+        ophPersonOid = column("oph_person_oid")
     )
 }
 
@@ -505,7 +494,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
         order by source.relname, attr.attname
     """
             .trimIndent()
-    return createQuery(sql).mapTo<PersonReference>().toList()
+    return createQuery(sql).toList<PersonReference>()
 }
 
 fun Database.Read.getGuardianDependants(personId: PersonId) =
@@ -519,8 +508,7 @@ WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)
                 .trimIndent()
         )
         .bind("personId", personId)
-        .map(toPersonDTO)
-        .toList()
+        .toList(toPersonDTO)
 
 fun Database.Read.getDependantGuardians(personId: ChildId) =
     createQuery(
@@ -533,8 +521,7 @@ WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)
                 .trimIndent()
         )
         .bind("personId", personId)
-        .map(toPersonDTO)
-        .toList()
+        .toList(toPersonDTO)
 
 fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: Boolean) {
     createUpdate("UPDATE person SET ssn_adding_disabled = :disabled WHERE id = :id")

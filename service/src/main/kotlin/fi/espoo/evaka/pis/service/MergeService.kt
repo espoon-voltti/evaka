@@ -122,8 +122,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 WHERE head_of_child = :id OR child_id = :id
                 """
                     .trimIndent()
-            tx.createQuery(parentsSQL).bind("id", master).mapTo<PersonId>().toList().forEach {
-                parentId ->
+            tx.createQuery(parentsSQL).bind("id", master).toList<PersonId>().forEach { parentId ->
                 sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
             }
         }
@@ -148,7 +147,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             """
                 .trimIndent()
 
-        val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().exactlyOne()
+        val referenceCount = tx.createQuery(sql1).bind("id", id).exactlyOne<Int>()
         if (referenceCount > 0) {
             throw Conflict("Person is still referenced from somewhere and cannot be deleted")
         }

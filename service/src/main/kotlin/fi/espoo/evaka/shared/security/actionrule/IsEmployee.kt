@@ -62,8 +62,7 @@ object IsEmployee : DatabaseActionRule.Params {
                                     .trimIndent()
                             )
                         }
-                        .mapTo<Id<DatabaseTable>>()
-                        .toSet()
+                        .toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets.filter { matched.contains(it) }.associateWith { Permitted }
                         }
@@ -149,8 +148,7 @@ SELECT EXISTS (
                                             .trimIndent()
                                     )
                                 }
-                                .mapTo<Boolean>()
-                                .exactlyOne()
+                                .exactlyOne<Boolean>()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }
@@ -297,8 +295,7 @@ SELECT EXISTS (
                                             .trimIndent()
                                     )
                                 }
-                                .mapTo<Boolean>()
-                                .exactlyOne()
+                                .exactlyOne<Boolean>()
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }

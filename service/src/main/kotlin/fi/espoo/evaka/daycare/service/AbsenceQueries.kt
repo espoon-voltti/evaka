@@ -72,7 +72,7 @@ fun Database.Transaction.upsertAbsences(
         batch.bindKotlin(absence).bind("userId", userId).bind("now", now).add()
     }
 
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 /** If the absence already exists, updates only if was generated */
@@ -99,7 +99,7 @@ fun Database.Transaction.upsertGeneratedAbsences(
             .add()
     }
 
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 data class Presence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
@@ -115,7 +115,7 @@ fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<Ab
 
     val batch = prepareBatch(sql)
     deletions.forEach { batch.bindKotlin(it).add() }
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
@@ -132,7 +132,7 @@ fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
     """
         )
     deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 data class HolidayReservationCreate(
@@ -165,8 +165,7 @@ fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate):
         .bind("childId", childId)
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
-        .mapTo<AbsenceId>()
-        .toList()
+        .toList<AbsenceId>()
 
 fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     now: HelsinkiDateTime,
@@ -188,8 +187,7 @@ RETURNING id
         .bind("range", range)
         .bind("systemUserId", AuthenticatedUser.SystemInternalUser.evakaUserId)
         .bind("now", now)
-        .mapTo<AbsenceId>()
-        .toList()
+        .toList<AbsenceId>()
 
 /**
  * A citizen is allowed to edit:
@@ -215,7 +213,7 @@ RETURNING id
         batch.bind("childId", childId).bind("date", date).add()
     }
 
-    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
+    return batch.executeAndReturn().toList<AbsenceId>()
 }
 
 fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
@@ -253,7 +251,7 @@ fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("groupId", groupId).mapTo<DaycareId>().exactlyOne()
+    return createQuery(sql).bind("groupId", groupId).exactlyOne<DaycareId>()
 }
 
 // language=sql
@@ -309,8 +307,7 @@ JOIN person ON child_id = person.id
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("dateRange", range)
-        .mapTo<QueryResult>()
-        .toList()
+        .toList<QueryResult>()
         .groupBy { it.child }
         .map { (child, queryResults) ->
             child to queryResults.map { AbsencePlacement(it.dateRange, it.type) }
@@ -354,7 +351,7 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).bind("range", range).mapTo<Absence>().toList()
+    return createQuery(sql).bind("childId", childId).bind("range", range).toList<Absence>()
 }
 
 data class ChildAbsenceDateRow(val childId: ChildId, val date: LocalDate)
@@ -468,8 +465,7 @@ AND EXISTS (
         )
         .bind("groupId", groupId)
         .bind("dateRange", dateRange)
-        .mapTo<ChildAttendance>()
-        .toList()
+        .toList<ChildAttendance>()
 
 fun Database.Read.getGroupDailyServiceTimes(
     groupId: GroupId,

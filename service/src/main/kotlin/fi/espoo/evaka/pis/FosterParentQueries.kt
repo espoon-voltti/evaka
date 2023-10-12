@@ -53,8 +53,7 @@ WHERE fp.parent_id = :parentId OR fp.child_id = :childId
         )
         .bind("parentId", parentId)
         .bind("childId", childId)
-        .mapTo<FosterParentRelationship>()
-        .toList()
+        .toList<FosterParentRelationship>()
 }
 
 fun Database.Transaction.createFosterParentRelationship(
@@ -65,8 +64,7 @@ fun Database.Transaction.createFosterParentRelationship(
         )
         .bindKotlin(data)
         .executeAndReturnGeneratedKeys()
-        .mapTo<FosterParentId>()
-        .exactlyOne()
+        .exactlyOne<FosterParentId>()
 
 fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,

@@ -52,8 +52,7 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
         )
         .bind("today", today)
         .bind("userId", id)
-        .mapTo<Child>()
-        .toList()
+        .toList<Child>()
 
 fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
     createQuery(
@@ -65,5 +64,4 @@ SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @>
         )
         .bind("today", today)
         .bind("userId", userId)
-        .mapTo<ChildId>()
-        .toList()
+        .toList<ChildId>()

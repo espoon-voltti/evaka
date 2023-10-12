@@ -23,8 +23,7 @@ fun Database.Transaction.insertVasuDocument(
     val child =
         createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
             .bind("id", childId)
-            .mapTo<VasuChild>(qualifiers = emptyArray())
-            .exactlyOne()
+            .exactlyOne<VasuChild>(qualifiers = emptyArray())
 
     val guardiansAndFosterParents =
         createQuery(
@@ -45,8 +44,7 @@ fun Database.Transaction.insertVasuDocument(
             )
             .bind("id", childId)
             .bind("today", now.toLocalDate())
-            .mapTo<VasuGuardian>(qualifiers = emptyArray())
-            .toList()
+            .toList<VasuGuardian>(qualifiers = emptyArray())
 
     val basics =
         VasuBasics(
@@ -73,8 +71,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("childId", childId)
             .bind("basics", basics)
             .bind("templateId", template.id)
-            .mapTo<VasuDocumentId>()
-            .exactlyOne()
+            .exactlyOne<VasuDocumentId>()
 
     createUpdate(
             """
@@ -329,8 +326,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
         .bind("documentId", documentId)
         .bind("createdBy", createdBy)
         .bind("eventType", eventType)
-        .mapTo<VasuDocumentEvent>()
-        .exactlyOne()
+        .exactlyOne<VasuDocumentEvent>()
 }
 
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
@@ -370,8 +366,7 @@ private fun Database.Read.getVasuPlacements(
         )
         .bind("today", today)
         .bind("id", id)
-        .mapTo<VasuPlacement>(qualifiers = emptyArray())
-        .toList()
+        .toList<VasuPlacement>(qualifiers = emptyArray())
 }
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
@@ -402,8 +397,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
                         .trimIndent()
                 )
                 .bind("id", guardianId)
-                .mapTo<VasuGuardian>(qualifiers = emptyArray())
-                .exactlyOne()
+                .exactlyOne<VasuGuardian>(qualifiers = emptyArray())
         }
 
     createUpdate(
@@ -477,5 +471,4 @@ WHERE cardinality(events) = 0 OR events[cardinality(events)] <> 'MOVED_TO_CLOSED
 """
             )
         }
-        .mapTo<VasuDocumentId>()
-        .toList()
+        .toList<VasuDocumentId>()

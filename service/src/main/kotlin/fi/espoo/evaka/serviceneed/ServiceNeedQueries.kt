@@ -36,7 +36,7 @@ fun Database.Read.getServiceNeedsByChild(childId: ChildId): List<ServiceNeed> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<ServiceNeed>().toList()
+    return createQuery(sql).bind("childId", childId).toList<ServiceNeed>()
 }
 
 fun Database.Read.getServiceNeedsByUnit(
@@ -63,8 +63,7 @@ fun Database.Read.getServiceNeedsByUnit(
         .bind("unitId", unitId)
         .bind("start", startDate)
         .bind("end", endDate)
-        .mapTo<ServiceNeed>()
-        .toList()
+        .toList<ServiceNeed>()
 }
 
 fun Database.Read.getServiceNeedSummary(childId: ChildId): List<ServiceNeedSummary> {
@@ -88,7 +87,7 @@ WHERE p.child_id = :childId
 """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).mapTo<ServiceNeedSummary>().toList()
+    return createQuery(sql).bind("childId", childId).toList<ServiceNeedSummary>()
 }
 
 fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
@@ -150,8 +149,7 @@ fun Database.Transaction.insertServiceNeed(
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
-        .mapTo<ServiceNeedId>()
-        .exactlyOne()
+        .exactlyOne<ServiceNeedId>()
 }
 
 fun Database.Transaction.updateServiceNeed(
@@ -211,8 +209,7 @@ fun Database.Read.getOverlappingServiceNeeds(
         .bind("placementId", placementId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<ServiceNeed>()
-        .toList()
+        .toList<ServiceNeed>()
         .filter { it.id != excluding }
 }
 
@@ -246,8 +243,7 @@ ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_f
         """
                 .trimIndent()
         )
-        .mapTo<ServiceNeedOption>()
-        .toList()
+        .toList<ServiceNeedOption>()
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
@@ -299,8 +295,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
             .trimIndent()
     return createQuery(sql)
         .bind("placementTypes", placementTypes)
-        .mapTo<ServiceNeedOptionPublicInfo>()
-        .toList()
+        .toList<ServiceNeedOptionPublicInfo>()
 }
 
 fun Database.Read.getGroupedActualServiceNeedInfosByRangeAndUnit(
@@ -356,8 +351,7 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
         createQuery(sql)
             .bind("unitId", unitId)
             .bind("range", range)
-            .mapTo<QueryResult>()
-            .toList()
+            .toList<QueryResult>()
             .groupBy { it.groupId }
             .map { (groupId, results) ->
                 groupId to
@@ -432,8 +426,7 @@ ORDER BY child_id, valid_during
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
-        .mapTo<ChildServiceNeedInfo>()
-        .toList()
+        .toList<ChildServiceNeedInfo>()
 }
 
 fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
@@ -453,8 +446,7 @@ WHERE validity && daterange(:from, null, '[]')
                 .trimIndent()
         )
         .bind("from", from)
-        .mapTo<ServiceNeedOptionFee>()
-        .toList()
+        .toList<ServiceNeedOptionFee>()
 }
 
 fun Database.Read.getServiceNeedOptionFees(): List<ServiceNeedOptionFee> {
@@ -472,6 +464,5 @@ FROM service_need_option_fee
         """
                 .trimIndent()
         )
-        .mapTo<ServiceNeedOptionFee>()
-        .toList()
+        .toList<ServiceNeedOptionFee>()
 }

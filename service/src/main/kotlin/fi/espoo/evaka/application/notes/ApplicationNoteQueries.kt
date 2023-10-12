@@ -27,7 +27,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
+    return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
 fun Database.Read.getApplicationSpecialEducationTeacherNotes(
@@ -47,7 +47,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
-    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
+    return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
 fun Database.Transaction.createApplicationNote(
@@ -83,8 +83,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         .bind("content", content)
         .bind("createdBy", createdBy)
         .bind("messageContentId", messageContentId)
-        .mapTo<ApplicationNote>()
-        .exactlyOne()
+        .exactlyOne<ApplicationNote>()
 }
 
 fun Database.Transaction.updateApplicationNote(
@@ -110,8 +109,7 @@ FROM updated_note n
         .bind("content", content)
         .bind("updatedBy", updatedBy)
         .bind("id", id)
-        .mapTo<ApplicationNote>()
-        .exactlyOne()
+        .exactlyOne<ApplicationNote>()
 }
 
 fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) {

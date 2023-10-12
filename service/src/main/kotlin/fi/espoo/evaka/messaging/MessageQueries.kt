@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -62,8 +61,7 @@ fun Database.Read.getUnreadMessagesCounts(
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
         .bind("now", now)
-        .mapTo<UnreadCountByAccount>()
-        .toSet()
+        .toSet<UnreadCountByAccount>()
 }
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
@@ -87,10 +85,7 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
     """
             .trimIndent()
 
-    return this.createQuery(sql)
-        .bind("daycareId", daycareId)
-        .mapTo<UnreadCountByAccountAndGroup>()
-        .toSet()
+    return this.createQuery(sql).bind("daycareId", daycareId).toSet<UnreadCountByAccountAndGroup>()
 }
 
 fun Database.Transaction.markThreadRead(
@@ -130,8 +125,7 @@ fun Database.Transaction.archiveThread(
                 )
                 .bind("accountId", accountId)
                 .executeAndReturnGeneratedKeys()
-                .mapTo<MessageThreadFolderId>()
-                .exactlyOne()
+                .exactlyOne<MessageThreadFolderId>()
     }
 
     return this.createUpdate(
@@ -187,8 +181,7 @@ fun Database.Transaction.insertMessage(
         .bind("recipientNames", recipientNames)
         .bind("municipalAccountName", municipalAccountName)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<MessageId>()
-        .exactlyOne()
+        .exactlyOne<MessageId>()
 }
 
 fun Database.Transaction.insertMessageContent(
@@ -201,8 +194,7 @@ fun Database.Transaction.insertMessageContent(
     return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender)
-        .mapTo<MessageContentId>()
-        .exactlyOne()
+        .exactlyOne<MessageContentId>()
 }
 
 fun Database.Transaction.insertRecipients(
@@ -308,8 +300,7 @@ RETURNING id
         .bind("sentAt", sentAt)
         .bind("contentId", contentId)
         .executeAndReturnGeneratedKeys()
-        .mapTo<MessageId>()
-        .toList()
+        .toList<MessageId>()
 
 fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
     createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
@@ -368,10 +359,9 @@ RETURNING id, thread_id
             .bind("serviceWorkerAccountName", serviceWorkerAccountName)
             .add()
     }
-    return batch
-        .executeAndReturn()
-        .map { rv -> rv.mapColumn<MessageThreadId>("thread_id") to rv.mapColumn<MessageId>("id") }
-        .toList()
+    return batch.executeAndReturn().toList {
+        column<MessageThreadId>("thread_id") to column<MessageId>("id")
+    }
 }
 
 fun Database.Transaction.insertThread(
@@ -388,8 +378,7 @@ fun Database.Transaction.insertThread(
         .bind("title", title)
         .bind("urgent", urgent)
         .bind("isCopy", isCopy)
-        .mapTo<MessageThreadId>()
-        .exactlyOne()
+        .exactlyOne<MessageThreadId>()
 }
 
 fun Database.Transaction.reAssociateMessageAttachments(
@@ -742,8 +731,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
         .bind("messageId", messageId)
         .bind("senderId", senderId)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .mapTo<Message>()
-        .exactlyOne()
+        .exactlyOne<Message>()
 }
 
 fun Database.Read.getCitizenReceivers(
@@ -1004,8 +992,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             )
             .bind("accountId", accountId)
             .bind("threadId", threadId)
-            .mapTo<ReceivedThread>()
-            .exactlyOne()
+            .exactlyOne<ReceivedThread>()
 
     val messagesByThread =
         getThreadMessages(
@@ -1158,8 +1145,7 @@ fun Database.Read.getReceiversForNewMessage(
             )
             .bind("accountIds", accountIds)
             .bind("date", today)
-            .mapTo<UnitMessageReceiversResult>()
-            .toList()
+            .toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val units = receivers.groupBy { it.unitId to it.unitName }
@@ -1196,8 +1182,7 @@ fun Database.Read.getReceiversForNewMessage(
             )
             .bind("accountIds", accountIds)
             .bind("date", today)
-            .mapTo<MunicipalMessageReceiversResult>()
-            .toList()
+            .toList<MunicipalMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val areas = receivers.groupBy { it.areaId to it.areaName }
@@ -1337,10 +1322,7 @@ WHERE p.id = ANY(:citizenRecipients)
             "citizenRecipients",
             groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
         )
-        .map { rv ->
-            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId?>("child_id")
-        }
-        .toList()
+        .toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
 }
 
 fun Database.Transaction.markEmailNotificationAsSent(
@@ -1380,8 +1362,7 @@ AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g
 """
             )
         }
-        .mapTo<MessageAccountId>()
-        .toSet()
+        .toSet<MessageAccountId>()
 }
 
 fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =
@@ -1414,8 +1395,7 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
             )
             .bind("accountId", accountId)
             .bind("messageId", messageId)
-            .mapTo<MessageToUndo>()
-            .exactlyOneOrNull()
+            .exactlyOneOrNull<MessageToUndo>()
             ?: throw BadRequest("No message found with messageId $messageId")
 
     if (messageToUndo.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
@@ -1445,8 +1425,7 @@ WHERE sender_id = :accountId AND content_id = :contentId
             )
             .bind("accountId", accountId)
             .bind("contentId", contentId)
-            .mapTo<MessageToUndo>()
-            .toList()
+            .toList<MessageToUndo>()
 
     if (messagesToUndo.isEmpty()) {
         throw BadRequest("No messages found with contentId $contentId")
@@ -1475,8 +1454,7 @@ WHERE c.id = :contentId
 """
             )
             .bind("contentId", contentId)
-            .mapTo<UpdatableDraftContent>()
-            .exactlyOneOrNull()
+            .exactlyOneOrNull<UpdatableDraftContent>()
             ?: error("Multiple draft contents found")
 
     this.deleteApplicationNotesLinkedToMessages(messagesToUndo.map { it.contentId }.toSet())
@@ -1546,8 +1524,7 @@ SELECT EXISTS (
 """
             )
         }
-        .mapTo<Boolean>()
-        .exactlyOne()
+        .exactlyOne<Boolean>()
 }
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
@@ -1561,5 +1538,4 @@ WHERE id = ${bind(id)}
                     .trimIndent()
             )
         }
-        .mapTo<MessageThreadStub>()
-        .exactlyOne()
+        .exactlyOne<MessageThreadStub>()

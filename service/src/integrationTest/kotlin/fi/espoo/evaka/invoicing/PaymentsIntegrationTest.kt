@@ -363,8 +363,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         return db.read { tx ->
             tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
-                .mapTo<PaymentId>()
-                .toList()
+                .toList<PaymentId>()
         }
     }
 

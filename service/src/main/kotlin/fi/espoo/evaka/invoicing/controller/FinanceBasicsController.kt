@@ -212,8 +212,7 @@ FROM fee_thresholds
         """
                 .trimIndent()
         )
-        .mapTo<FeeThresholdsWithId>()
-        .toList()
+        .toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
     createUpdate(
@@ -279,8 +278,7 @@ RETURNING id
         .bindKotlin(thresholds)
         .bind("id", UUID.randomUUID())
         .executeAndReturnGeneratedKeys()
-        .mapTo<FeeThresholdsId>()
-        .exactlyOne()
+        .exactlyOne<FeeThresholdsId>()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")

@@ -6,7 +6,6 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -191,8 +190,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     private fun getAttendanceEndTimes() =
         db.read {
-            it.createQuery("SELECT id, end_time FROM child_attendance")
-                .map { rv -> rv.mapColumn<LocalTime?>("end_time") }
-                .toList()
+            it.createQuery("SELECT id, end_time FROM child_attendance").toList {
+                column<LocalTime?>("end_time")
+            }
         }
 }

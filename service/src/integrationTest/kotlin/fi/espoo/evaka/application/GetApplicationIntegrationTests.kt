@@ -215,8 +215,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         }
 
         db.transaction { tx ->
-            val data =
-                tx.createQuery("""select id from application""").mapTo<ApplicationId>().toList()
+            val data = tx.createQuery("""select id from application""").toList<ApplicationId>()
 
             assertEquals(3, data.size)
         }
@@ -224,8 +223,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.transaction { tx ->
-            val data =
-                tx.createQuery("""select id from application""").mapTo<ApplicationId>().toSet()
+            val data = tx.createQuery("""select id from application""").toSet<ApplicationId>()
 
             assertEquals(setOf(id1, id2), data)
         }
