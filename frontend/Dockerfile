@@ -21,8 +21,8 @@ COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
 RUN yarn install --immutable
 
 COPY . .
+COPY --from=customizations . src/lib-customizations/docker
 
-ARG EVAKA_CUSTOMIZATIONS=espoo
 ARG ICONS=free
 ARG SENTRY_PUBLISH_ENABLED="false"
 ARG SENTRY_AUTH_TOKEN=""
@@ -30,7 +30,6 @@ ARG SENTRY_ORG="espoon-voltti"
 ARG build=none
 ARG commit=none
 
-ENV EVAKA_CUSTOMIZATIONS="$EVAKA_CUSTOMIZATIONS"
 ENV ICONS="$ICONS"
 ENV SENTRY_PUBLISH_ENABLED="$SENTRY_PUBLISH_ENABLED"
 ENV SENTRY_ORG="$SENTRY_ORG"
@@ -40,6 +39,7 @@ ENV APP_BUILD="$build"
 ENV APP_COMMIT="$commit"
 
 RUN export NODE_OPTIONS="--max-old-space-size=4096" \
+ && export EVAKA_CUSTOMIZATIONS=docker \
  && yarn build
 
 FROM nginx:${NGINX_VERSION}

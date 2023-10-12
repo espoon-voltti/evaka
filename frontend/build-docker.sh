@@ -13,11 +13,13 @@ if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
         --target=builder \
         --build-arg build=0 \
         --build-arg commit="$(git rev-parse HEAD)" \
+        --build-context customizations=src/lib-customizations/espoo \
         -f Dockerfile .
 else
     docker build -t evaka/frontend \
         --build-arg build=0 \
         --build-arg commit="$(git rev-parse HEAD)" \
+        --build-context customizations=src/lib-customizations/espoo \
         -f Dockerfile .
 fi
 

@@ -4,6 +4,7 @@
 
 *
 !src
+src/lib-customizations/espoo
 !packages
 !vendor
 !*.json

@@ -11,6 +11,8 @@ services:
     image: ${FRONTEND_IMAGE:-ghcr.io/espoon-voltti/evaka/frontend-common}:${TAG:-master}
     build:
       context: ../frontend/
+      additional_contexts: # requires docker-compose 2.17.0 or newer
+        customizations: ../frontend/src/lib-customizations/espoo
       cache_from:
         - ghcr.io/espoon-voltti/evaka/frontend-common:cache-${CACHE_TAG:-master}
         - ghcr.io/espoon-voltti/evaka/frontend-common:cache-master
