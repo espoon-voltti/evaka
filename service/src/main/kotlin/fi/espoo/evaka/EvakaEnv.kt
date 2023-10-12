@@ -124,6 +124,7 @@ data class DatabaseEnv(
     val password: Sensitive<String>,
     val flywayUsername: String,
     val flywayPassword: Sensitive<String>,
+    val flywayAdditionalLocations: List<String>?,
     val flywayIgnoreFutureMigrations: Boolean,
     val leakDetectionThreshold: Long,
     val defaultStatementTimeout: Duration,
@@ -140,6 +141,8 @@ data class DatabaseEnv(
                 flywayUsername = env.lookup("evaka.database.flyway.username", "flyway.username"),
                 flywayPassword =
                     Sensitive(env.lookup("evaka.database.flyway.password", "flyway.password")),
+                flywayAdditionalLocations =
+                    env.lookup("evaka.database.flyway.additional_locations"),
                 flywayIgnoreFutureMigrations =
                     env.lookup("evaka.database.flyway.ignore-future-migrations") ?: true,
                 leakDetectionThreshold =
