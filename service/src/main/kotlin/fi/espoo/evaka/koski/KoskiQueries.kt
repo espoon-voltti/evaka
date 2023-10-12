@@ -143,7 +143,7 @@ RETURNING id, void_date IS NOT NULL AS voided
             LEFT JOIN LATERAL (
                 SELECT array_agg(date ORDER BY date) AS holidays
                 FROM holiday h
-                WHERE between_start_and_end(kasr.full_range, date)
+                WHERE between_start_and_end(range_merge(kasr.placements), date)
             ) h ON ksr.type = 'PREPARATORY'
             WHERE ksr.id = :id
                     """

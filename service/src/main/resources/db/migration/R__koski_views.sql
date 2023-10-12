@@ -5,13 +5,12 @@ DROP FUNCTION IF EXISTS koski_placement(today date);
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool
+    placements datemultirange, all_placements_in_past bool, last_of_child bool
 )
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
     SELECT
         child_id, unit_id, type,
-        daterange(min(start_date), max(end_date), '[]') AS full_range,
         range_agg(daterange(start_date, end_date, '[]')) AS placements,
         (max(end_date) < today) AS all_placements_in_past,
         bool_or(last_of_child) AS last_of_child
@@ -33,7 +32,7 @@ CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
-    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
+    placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
     special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
     transport_benefit datemultirange
 )
@@ -45,7 +44,6 @@ BEGIN ATOMIC
         p.type,
         d.oph_unit_oid,
         d.oph_organizer_oid,
-        full_range,
         placements,
         all_placements_in_past,
         last_of_child,
@@ -61,14 +59,14 @@ BEGIN ATOMIC
         FROM absence a
         WHERE a.child_id = p.child_id
         AND a.category = 'NONBILLABLE'
-        AND between_start_and_end(full_range, a.date)
+        AND between_start_and_end(range_merge(placements), a.date)
         AND a.date > '2020-08-01'
     ) pa ON p.type = 'PREPARATORY'
     LEFT JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
-        AND oam.valid_during && full_range
+        AND oam.valid_during && range_merge(placements)
         AND type = 'TRANSPORT_BENEFIT'
     ) oam ON TRUE
     LEFT JOIN LATERAL (
@@ -81,7 +79,7 @@ BEGIN ATOMIC
             ) AS special_support_with_decision_level_2
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
-        AND pa.valid_during && full_range
+        AND pa.valid_during && range_merge(placements)
     ) pras ON TRUE
     WHERE d.upload_to_koski IS TRUE
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
