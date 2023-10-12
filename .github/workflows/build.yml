@@ -190,7 +190,7 @@ jobs:
             ICONS=pro
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           build-contexts:
-            customizations=src/lib-customizations/espoo
+            customizations=frontend/src/lib-customizations/espoo
 
       - name: Docker cleanup
         if: always()
