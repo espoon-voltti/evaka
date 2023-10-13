@@ -49,7 +49,6 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = DateSet.of(preschoolTerm2020),
                 present = DateSet.of(preschoolTerm2020),
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
@@ -89,7 +88,6 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = DateSet.of(preschoolTerm2020),
                 present =
                     DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
@@ -136,7 +134,6 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = DateSet.of(preschoolTerm2020),
                 present =
                     DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
@@ -183,7 +180,6 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = DateSet.of(preschoolTerm2020),
                 present = DateSet.of(preschoolTerm2020),
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
@@ -222,7 +218,6 @@ class KoskiTest {
             )
         assertEquals(
             StudyRightTimelines(
-                placement = DateSet.of(preschoolTerm2020),
                 present =
                     DateSet.of(
                         FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 28)),

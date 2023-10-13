@@ -165,7 +165,7 @@ data class KoskiActiveDataRaw(
         ophMunicipalityCode: String,
         today: LocalDate
     ): KoskiData? {
-        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
+        val placementSpan = placements.spanningRange() ?: return null
 
         val termination =
             if (today.isAfter(placementSpan.end)) {
@@ -226,10 +226,7 @@ data class KoskiActiveDataRaw(
     ): List<Opiskeluoikeusjakso> {
         val present =
             studyRightTimelines.present.ranges().map { Opiskeluoikeusjakso.läsnä(it.start) }
-        val gaps =
-            studyRightTimelines.placement.gaps().map {
-                Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start)
-            }
+        val gaps = placements.gaps().map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
         val holidays =
             studyRightTimelines.plannedAbsence.ranges().map { Opiskeluoikeusjakso.loma(it.start) }
         val sick =
@@ -366,7 +363,7 @@ data class KoskiActiveDataRaw(
         // Example: child changes from unit A to unit B, while having one long ECE date range. When
         // sending the study right for unit A, we need to send the first "half" of the ECE range,
         // and when sending for unit B, the second "half".
-        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
+        val placementSpan = placements.spanningRange() ?: return null
 
         val level1 = specialSupportWithDecisionLevel1.intersection(listOf(placementSpan))
         val level2 = specialSupportWithDecisionLevel2.intersection(listOf(placementSpan))
@@ -420,7 +417,6 @@ internal fun DateSet.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
     )
 
 internal data class StudyRightTimelines(
-    val placement: DateSet,
     val present: DateSet,
     val plannedAbsence: DateSet,
     val sickLeaveAbsence: DateSet,
@@ -470,7 +466,6 @@ internal fun calculateStudyRightTimelines(
         )
 
     return StudyRightTimelines(
-        placement = placements,
         present =
             placements
                 .removeAll(plannedAbsence)
