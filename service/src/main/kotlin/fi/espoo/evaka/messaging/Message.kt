@@ -5,7 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.annotation.JsonTypeName
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -54,18 +55,13 @@ data class MessageThreadStub(
     val isCopy: Boolean
 )
 
-enum class MessageThreadType {
-    REDACTED_MESSAGE_THREAD,
-    MESSAGE_THREAD
-}
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeIdResolver(SealedSubclassSimpleName::class)
+sealed interface CitizenMessageThread {
+    val id: MessageThreadId
+    val urgent: Boolean
+    val children: List<MessageChild>
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class CitizenMessageThread(val type: MessageThreadType) {
-    abstract val id: MessageThreadId
-    abstract val urgent: Boolean
-    abstract val children: List<MessageChild>
-
-    @JsonTypeName("REDACTED_MESSAGE_THREAD")
     data class Redacted(
         override val id: MessageThreadId,
         override val urgent: Boolean,
@@ -73,10 +69,10 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         val sender: MessageAccount?,
         val lastMessageSentAt: HelsinkiDateTime?,
         val hasUnreadMessages: Boolean
-    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD) {
+    ) : CitizenMessageThread {
         companion object {
             fun fromMessageThread(userId: PersonId, messageThread: MessageThread) =
-                CitizenMessageThread.Redacted(
+                Redacted(
                     messageThread.id,
                     messageThread.urgent,
                     messageThread.children,
@@ -89,7 +85,6 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         }
     }
 
-    @JsonTypeName("MESSAGE_THREAD")
     data class Regular(
         override val id: MessageThreadId,
         override val urgent: Boolean,
@@ -99,10 +94,10 @@ sealed class CitizenMessageThread(val type: MessageThreadType) {
         val sensitive: Boolean,
         val isCopy: Boolean,
         val messages: List<Message>
-    ) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD) {
+    ) : CitizenMessageThread {
         companion object {
             fun fromMessageThread(messageThread: MessageThread) =
-                CitizenMessageThread.Regular(
+                Regular(
                     messageThread.id,
                     messageThread.urgent,
                     messageThread.children,

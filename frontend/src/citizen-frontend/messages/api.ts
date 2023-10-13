@@ -25,7 +25,7 @@ import { client } from '../api-client'
 export const deserializeCitizenMessageThread = (
   json: JsonOf<CitizenMessageThread>
 ): CitizenMessageThread =>
-  json.type === 'MESSAGE_THREAD'
+  json.type === 'Regular'
     ? {
         ...json,
         messages: json.messages.map(deserializeMessage)

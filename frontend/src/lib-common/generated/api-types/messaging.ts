@@ -43,7 +43,7 @@ export namespace CitizenMessageThread {
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
   */
   export interface Redacted {
-    type: 'REDACTED_MESSAGE_THREAD'
+    type: 'Redacted'
     children: MessageChild[]
     hasUnreadMessages: boolean
     id: UUID
@@ -56,7 +56,7 @@ export namespace CitizenMessageThread {
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
   */
   export interface Regular {
-    type: 'MESSAGE_THREAD'
+    type: 'Regular'
     children: MessageChild[]
     id: UUID
     isCopy: boolean
@@ -211,13 +211,6 @@ export interface MessageThread {
   type: MessageType
   urgent: boolean
 }
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageThreadType
-*/
-export type MessageThreadType =
-  | 'REDACTED_MESSAGE_THREAD'
-  | 'MESSAGE_THREAD'
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageType

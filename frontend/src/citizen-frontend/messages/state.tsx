@@ -61,11 +61,10 @@ export const MessageContext = createContext<MessagePageState>(defaultState)
 
 export const isRedactedThread = (
   thread: CitizenMessageThread
-): thread is CitizenMessageThread.Redacted =>
-  thread.type === 'REDACTED_MESSAGE_THREAD'
+): thread is CitizenMessageThread.Redacted => thread.type === 'Redacted'
 export const isRegularThread = (
   thread: CitizenMessageThread
-): thread is CitizenMessageThread.Regular => thread.type === 'MESSAGE_THREAD'
+): thread is CitizenMessageThread.Regular => thread.type === 'Regular'
 
 const markMessagesReadByThreadId = (
   threads: CitizenMessageThread[],
