@@ -416,12 +416,7 @@ class AssistanceController(
                     tx.insertAssistanceFactor(user, clock.now(), child, body).also {
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    child,
-                                    body.validDuring.asDateRange()
-                                )
-                            ),
+                            listOf(AsyncJob.GenerateFinanceDecisions.forChild(child)),
                             runAt = clock.now()
                         )
                     }
@@ -454,10 +449,7 @@ class AssistanceController(
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        original.childId,
-                                        it.asDateRange(),
-                                    )
+                                    AsyncJob.GenerateFinanceDecisions.forChild(original.childId)
                                 ),
                                 runAt = clock.now()
                             )
@@ -491,8 +483,7 @@ class AssistanceController(
                                         tx,
                                         listOf(
                                             AsyncJob.GenerateFinanceDecisions.forChild(
-                                                deleted.childId,
-                                                deleted.validDuring.asDateRange()
+                                                deleted.childId
                                             )
                                         ),
                                         runAt = clock.now()

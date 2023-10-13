@@ -325,12 +325,7 @@ fun notifyServiceNeedUpdated(
 ) {
     asyncJobRunner.plan(
         tx,
-        listOf(
-            AsyncJob.GenerateFinanceDecisions.forChild(
-                childRange.childId,
-                childRange.dateRange.asDateRange()
-            )
-        ),
+        listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId)),
         runAt = clock.now()
     )
 }

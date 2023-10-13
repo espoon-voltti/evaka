@@ -20,9 +20,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.util.UUID
@@ -116,12 +114,7 @@ class FeeAlterationController(
                 )
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            feeAlteration.personId,
-                            DateRange(feeAlteration.validFrom, feeAlteration.validTo)
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId)),
                     runAt = clock.now()
                 )
             }
@@ -146,29 +139,14 @@ class FeeAlterationController(
                     Action.FeeAlteration.UPDATE,
                     feeAlterationId
                 )
-                val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.upsertFeeAlteration(
                     clock,
                     feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId)
                 )
 
-                val expandedPeriod =
-                    existing?.let {
-                        DateRange(
-                            minOf(it.validFrom, feeAlteration.validFrom),
-                            maxEndDate(it.validTo, feeAlteration.validTo)
-                        )
-                    }
-                        ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
-
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            feeAlteration.personId,
-                            expandedPeriod
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId)),
                     runAt = clock.now()
                 )
             }
@@ -206,12 +184,7 @@ class FeeAlterationController(
                 existing?.let {
                     asyncJobRunner.plan(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forChild(
-                                existing.personId,
-                                DateRange(existing.validFrom, existing.validTo)
-                            )
-                        ),
+                        listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId)),
                         runAt = clock.now()
                     )
                 }

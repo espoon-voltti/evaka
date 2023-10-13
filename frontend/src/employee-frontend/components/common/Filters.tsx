@@ -417,7 +417,7 @@ export function FeeDecisionStatusFilter({
     'WAITING_FOR_MANUAL_SENDING',
     'SENT',
     'ANNULLED',
-    ...(featureFlags.feeDecisionIgnoredStatus ? ['IGNORED' as const] : [])
+    'IGNORED'
   ]
 
   return (
@@ -554,9 +554,7 @@ export const ValueDecisionStatusFilter = React.memo(
       'WAITING_FOR_MANUAL_SENDING',
       'SENT',
       'ANNULLED',
-      ...(featureFlags.voucherValueDecisionIgnoredStatus
-        ? ['IGNORED' as const]
-        : [])
+      'IGNORED'
     ]
 
     return (

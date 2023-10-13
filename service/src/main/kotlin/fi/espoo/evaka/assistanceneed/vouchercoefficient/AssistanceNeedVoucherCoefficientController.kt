@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -51,12 +50,7 @@ class AssistanceNeedVoucherCoefficientController(
                     tx.insertAssistanceNeedVoucherCoefficient(childId, body).also {
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    childId,
-                                    body.validityPeriod.asDateRange(),
-                                )
-                            ),
+                            listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId)),
                             runAt = clock.now()
                         )
                     }
@@ -131,10 +125,6 @@ class AssistanceNeedVoucherCoefficientController(
                         assistanceNeedVoucherCoefficientId
                     )
 
-                    val combinedRange =
-                        DateSet.of(existing.validityPeriod, body.validityPeriod)
-                            .spanningRange()!!
-                            .asDateRange()
                     tx.updateAssistanceNeedVoucherCoefficient(
                             id = assistanceNeedVoucherCoefficientId,
                             data = body
@@ -143,10 +133,7 @@ class AssistanceNeedVoucherCoefficientController(
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        existing.childId,
-                                        combinedRange
-                                    )
+                                    AsyncJob.GenerateFinanceDecisions.forChild(existing.childId)
                                 ),
                                 runAt = clock.now()
                             )
@@ -184,12 +171,7 @@ class AssistanceNeedVoucherCoefficientController(
                         )
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            existing.childId,
-                            existing.validityPeriod.asDateRange(),
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.childId)),
                     runAt = clock.now()
                 )
             }

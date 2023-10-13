@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
@@ -42,7 +41,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
         return try {
             tx.createParentship(childId, headOfChildId, startDate, endDate, false).also {
-                tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
+                tx.sendFamilyUpdatedMessage(clock, headOfChildId)
             }
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -66,12 +65,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             throw mapPSQLException(e)
         }
 
-        tx.sendFamilyUpdatedMessage(
-            clock,
-            oldParentship.headOfChildId,
-            minOf(startDate, oldParentship.startDate),
-            maxOf(endDate, oldParentship.endDate)
-        )
+        tx.sendFamilyUpdatedMessage(clock, oldParentship.headOfChildId)
 
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
@@ -82,12 +76,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 ?.takeIf { it.conflict }
                 ?.let {
                     tx.retryParentship(it.id)
-                    tx.sendFamilyUpdatedMessage(
-                        clock,
-                        adultId = it.headOfChildId,
-                        startDate = it.startDate,
-                        endDate = it.endDate
-                    )
+                    tx.sendFamilyUpdatedMessage(clock, adultId = it.headOfChildId)
                 }
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -99,21 +88,17 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
-        with(parentship) { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }
+        with(parentship) { tx.sendFamilyUpdatedMessage(clock, headOfChildId) }
     }
 
     private fun Database.Transaction.sendFamilyUpdatedMessage(
         clock: EvakaClock,
-        adultId: PersonId,
-        startDate: LocalDate,
-        endDate: LocalDate
+        adultId: PersonId
     ) {
         logger.info("Sending update family message with adult $adultId")
         asyncJobRunner.plan(
             this,
-            listOf(
-                AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))
-            ),
+            listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId)),
             runAt = clock.now()
         )
     }

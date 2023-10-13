@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.util.UUID
@@ -175,12 +174,7 @@ class OutdatedIncomeNotifications(
 
                 asyncJobRunner.plan(
                     it,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            msg.guardianId,
-                            DateRange(firstDayAfterExpiration, null)
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(msg.guardianId)),
                     runAt = clock.now()
                 )
             }

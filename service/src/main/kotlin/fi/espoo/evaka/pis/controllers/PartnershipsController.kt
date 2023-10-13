@@ -15,10 +15,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -67,12 +65,7 @@ class PartnershipsController(
                         .also {
                             asyncJobRunner.plan(
                                 tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forAdult(
-                                        body.person1Id,
-                                        DateRange(body.startDate, body.endDate)
-                                    )
-                                ),
+                                listOf(AsyncJob.GenerateFinanceDecisions.forAdult(body.person1Id)),
                                 runAt = clock.now()
                             )
                         }
@@ -177,11 +170,7 @@ class PartnershipsController(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
-                            oldPartnership.partners.first().id,
-                            DateRange(
-                                minOf(oldPartnership.startDate, body.startDate),
-                                maxEndDate(oldPartnership.endDate, body.endDate)
-                            )
+                            oldPartnership.partners.first().id
                         )
                     ),
                     runAt = clock.now()
@@ -213,12 +202,7 @@ class PartnershipsController(
                 partnershipService.retryPartnership(tx, partnershipId)?.let {
                     asyncJobRunner.plan(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                it.partners.first().id,
-                                DateRange(it.startDate, it.endDate)
-                            )
-                        ),
+                        listOf(AsyncJob.GenerateFinanceDecisions.forAdult(it.partners.first().id)),
                         runAt = clock.now()
                     )
                 }
@@ -247,10 +231,7 @@ class PartnershipsController(
                     asyncJobRunner.plan(
                         tx,
                         partnership.partners.map {
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                it.id,
-                                DateRange(partnership.startDate, partnership.endDate)
-                            )
+                            AsyncJob.GenerateFinanceDecisions.forAdult(it.id)
                         },
                         runAt = clock.now()
                     )

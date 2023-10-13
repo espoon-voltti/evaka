@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -161,14 +160,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         verify(mergeServiceAsyncJobRunnerMock)
             .plan(
                 any(),
-                eq(
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            adultId,
-                            DateRange(validFrom, validTo)
-                        )
-                    )
-                ),
+                eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId))),
                 any(),
                 any(),
                 any()
@@ -419,14 +411,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         verify(mergeServiceAsyncJobRunnerMock)
             .plan(
                 any(),
-                eq(
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            adultId,
-                            DateRange(placementStart, placementEnd)
-                        )
-                    )
-                ),
+                eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId))),
                 any(),
                 any(),
                 any()

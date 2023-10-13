@@ -304,10 +304,7 @@ class VoucherValueDecisionController(
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            personId,
-                            DateRange(clock.today().minusMonths(15), null)
-                        )
+                        AsyncJob.GenerateFinanceDecisions.forAdult(personId)
                     },
                     runAt = clock.now()
                 )

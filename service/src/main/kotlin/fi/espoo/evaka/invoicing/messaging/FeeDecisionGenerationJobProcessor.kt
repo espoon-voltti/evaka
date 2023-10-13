@@ -46,16 +46,10 @@ class FeeDecisionGenerationJobProcessor(
                         tx,
                         clock,
                         msg.person.adultId,
-                        msg.dateRange.start,
                         skipPropagation = msg.person.skipPropagation == true
                     )
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
-                    generator.generateNewDecisionsForChild(
-                        tx,
-                        clock,
-                        msg.person.childId,
-                        msg.dateRange.start
-                    )
+                    generator.generateNewDecisionsForChild(tx, clock, msg.person.childId)
             }
         }
     }
@@ -79,7 +73,7 @@ fun planFinanceDecisionGeneration(
 
     asyncJobRunner.plan(
         tx,
-        heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) },
+        heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it) },
         runAt = clock.now()
     )
 }

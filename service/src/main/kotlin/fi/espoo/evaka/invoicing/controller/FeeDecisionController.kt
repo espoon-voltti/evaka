@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -201,10 +200,7 @@ class FeeDecisionController(
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            personId,
-                            DateRange(clock.today().minusMonths(15), null)
-                        )
+                        AsyncJob.GenerateFinanceDecisions.forAdult(personId)
                     },
                     runAt = clock.now()
                 )

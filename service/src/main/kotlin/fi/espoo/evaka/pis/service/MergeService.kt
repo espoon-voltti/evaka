@@ -11,9 +11,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -27,33 +25,6 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         master: PersonId,
         duplicate: PersonId
     ) {
-        // language=sql
-        val feeAffectingDatesSQL =
-            """
-            WITH dates AS (
-                SELECT min(start_date) AS min_date, max(coalesce(end_date, 'infinity'::date)) AS max_date FROM fridge_partner SET WHERE person_id = :id_duplicate
-                UNION
-                SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM fridge_child SET WHERE head_of_child = :id_duplicate OR child_id = :id_duplicate
-                UNION
-                SELECT min(valid_from) AS min_date, max(coalesce(valid_to, 'infinity'::date)) AS max_date FROM income WHERE person_id = :id_duplicate
-                UNION
-                SELECT min(valid_from) AS min_date, max(coalesce(valid_to, 'infinity'::date)) AS max_date FROM fee_alteration WHERE person_id = :id_duplicate
-                UNION
-                SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM placement SET WHERE child_id = :id_duplicate
-            )
-            SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING min(min_date) IS NOT NULL;
-            """
-                .trimIndent()
-        val feeAffectingDateRange =
-            tx.createQuery(feeAffectingDatesSQL).bind("id_duplicate", duplicate).exactlyOneOrNull {
-                DateRange(
-                    column("min_date"),
-                    column<LocalDate?>("max_date")?.takeIf {
-                        it.isBefore(LocalDate.of(2200, 1, 1))
-                    } // infinity -> null
-                )
-            }
-
         val personReferences = tx.getTransferablePersonReferences()
 
         // language=sql
@@ -113,18 +84,16 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             throw mapPSQLException(e)
         }
 
-        if (feeAffectingDateRange != null) {
-            // language=sql
-            val parentsSQL =
-                """
+        // language=sql
+        val parentsSQL =
+            """
                 SELECT DISTINCT head_of_child
                 FROM fridge_child
                 WHERE head_of_child = :id OR child_id = :id
                 """
-                    .trimIndent()
-            tx.createQuery(parentsSQL).bind("id", master).toList<PersonId>().forEach { parentId ->
-                sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
-            }
+                .trimIndent()
+        tx.createQuery(parentsSQL).bind("id", master).toList<PersonId>().forEach { parentId ->
+            sendFamilyUpdatedMessage(tx, clock, parentId)
         }
     }
 
@@ -168,12 +137,11 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     private fun sendFamilyUpdatedMessage(
         tx: Database.Transaction,
         clock: EvakaClock,
-        adultId: PersonId,
-        dateRange: DateRange
+        adultId: PersonId
     ) {
         asyncJobRunner.plan(
             tx,
-            listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)),
+            listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId)),
             runAt = clock.now()
         )
     }

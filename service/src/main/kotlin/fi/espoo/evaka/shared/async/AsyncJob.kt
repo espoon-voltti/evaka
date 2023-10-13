@@ -154,19 +154,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class GenerateFinanceDecisions
-    private constructor(val person: Person, val dateRange: DateRange) : AsyncJob {
+    data class GenerateFinanceDecisions private constructor(val person: Person) : AsyncJob {
         override val user: AuthenticatedUser? = null
 
         companion object {
-            fun forAdult(
-                personId: PersonId,
-                dateRange: DateRange,
-                skipPropagation: Boolean? = false
-            ) = GenerateFinanceDecisions(Person.Adult(personId, skipPropagation), dateRange)
+            fun forAdult(personId: PersonId, skipPropagation: Boolean? = false) =
+                GenerateFinanceDecisions(Person.Adult(personId, skipPropagation))
 
-            fun forChild(personId: ChildId, dateRange: DateRange) =
-                GenerateFinanceDecisions(Person.Child(personId), dateRange)
+            fun forChild(personId: ChildId) = GenerateFinanceDecisions(Person.Child(personId))
         }
 
         @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)

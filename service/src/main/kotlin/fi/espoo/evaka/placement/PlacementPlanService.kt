@@ -269,7 +269,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             tx,
             timeline
                 .ranges()
-                .map { AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange()) }
+                .map { AsyncJob.GenerateFinanceDecisions.forChild(childId) }
                 .asIterable(),
             runAt = clock.now()
         )

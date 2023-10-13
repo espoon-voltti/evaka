@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -223,12 +222,7 @@ class PlacementController(
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
                             asyncJobRunner.plan(
                                 tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        body.childId,
-                                        DateRange(body.startDate, body.endDate)
-                                    )
-                                ),
+                                listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId)),
                                 runAt = now
                             )
                         }
@@ -270,15 +264,7 @@ class PlacementController(
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            oldPlacement.childId,
-                            DateRange(
-                                minOf(body.startDate, oldPlacement.startDate),
-                                maxOf(body.endDate, oldPlacement.endDate)
-                            )
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(oldPlacement.childId)),
                     runAt = now
                 )
             }
@@ -307,12 +293,7 @@ class PlacementController(
                         generateAbsencesFromIrregularDailyServiceTimes(tx, now, it.childId)
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    it.childId,
-                                    DateRange(it.startDate, it.endDate)
-                                )
-                            ),
+                            listOf(AsyncJob.GenerateFinanceDecisions.forChild(it.childId)),
                             runAt = now
                         )
                     }

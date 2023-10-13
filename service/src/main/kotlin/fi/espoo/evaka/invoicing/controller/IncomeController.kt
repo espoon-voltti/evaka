@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.util.UUID
@@ -136,16 +135,12 @@ class IncomeController(
                     )
                     asyncJobRunner.plan(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)
-                        ),
+                        listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId)),
                         runAt = clock.now()
                     )
                     asyncJobRunner.plan(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)
-                        ),
+                        listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId)),
                         runAt = clock.now()
                     )
                     id
@@ -168,39 +163,19 @@ class IncomeController(
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
-                val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome =
                     validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
                 tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
 
-                val expandedPeriod =
-                    existing?.let {
-                        DateRange(
-                            minOf(it.validFrom, income.validFrom),
-                            maxEndDate(it.validTo, income.validTo)
-                        )
-                    }
-                        ?: DateRange(income.validFrom, income.validTo)
-
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            validIncome.personId,
-                            expandedPeriod
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId)),
                     runAt = clock.now()
                 )
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            validIncome.personId,
-                            expandedPeriod
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId)),
                     runAt = clock.now()
                 )
             }
@@ -222,7 +197,6 @@ class IncomeController(
                 val existing =
                     tx.getIncome(mapper, incomeTypesProvider, incomeId)
                         ?: throw BadRequest("Income not found")
-                val period = DateRange(existing.validFrom, existing.validTo)
 
                 existing.attachments.map {
                     tx.deleteAttachment(it.id)
@@ -232,12 +206,12 @@ class IncomeController(
 
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId)),
                     runAt = clock.now()
                 )
                 asyncJobRunner.plan(
                     tx,
-                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId)),
                     runAt = clock.now()
                 )
             }

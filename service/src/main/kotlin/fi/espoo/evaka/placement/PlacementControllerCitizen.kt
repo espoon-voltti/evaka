@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -153,12 +152,7 @@ class PlacementControllerCitizen(
 
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    childId,
-                                    DateRange(terminationDate, null)
-                                )
-                            ),
+                            listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId)),
                             runAt = clock.now()
                         )
 

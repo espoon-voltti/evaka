@@ -30,7 +30,6 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
-import fi.espoo.evaka.invoicing.service.AssistanceNeedCoefficient
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -492,3 +491,8 @@ private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
 
 private data class AssistanceNeedRange(override val range: DateRange, val coefficient: BigDecimal) :
     WithRange
+
+private data class AssistanceNeedCoefficient(
+    val validityPeriod: DateRange,
+    val coefficient: BigDecimal
+)

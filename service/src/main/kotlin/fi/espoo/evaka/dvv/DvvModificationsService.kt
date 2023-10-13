@@ -138,22 +138,12 @@ class DvvModificationsService(
                 endFamilyRelations(tx, person.id, dateOfDeath)
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forAdult(
-                            person.id,
-                            DateRange(dateOfDeath, null)
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(person.id)),
                     runAt = clock.now()
                 )
                 asyncJobRunner.plan(
                     tx,
-                    listOf(
-                        AsyncJob.GenerateFinanceDecisions.forChild(
-                            person.id,
-                            DateRange(dateOfDeath, null)
-                        )
-                    ),
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(person.id)),
                     runAt = clock.now()
                 )
             }
