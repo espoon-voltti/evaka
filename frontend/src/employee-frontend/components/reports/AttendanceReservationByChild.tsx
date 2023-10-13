@@ -11,7 +11,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -65,9 +65,7 @@ export default React.memo(function AttendanceReservationByChild() {
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
   const units = useQueryResult(unitsQuery)
-  const groups = useQueryResult(unitGroupsQuery(unitId ?? ''), {
-    enabled: unitId !== null
-  })
+  const groups = useQueryResult(queryOrDefault(unitGroupsQuery, [])(unitId))
   const [report] = useApiState(
     () =>
       unitId !== null

@@ -6,8 +6,12 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Success } from 'lib-common/api'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { combine } from 'lib-common/api'
+import {
+  queryOrDefault,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -52,10 +56,9 @@ export default React.memo(function MarkAbsent() {
   )
 
   const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
-  const rawGroupNotes = useQueryResult(groupNotesQuery(groupId ?? ''), {
-    enabled: !!groupId
-  })
-  const groupNotes = groupId ? rawGroupNotes : Success.of([])
+  const groupNotes = useQueryResult(
+    queryOrDefault(groupNotesQuery, [])(groupId)
+  )
 
   return (
     <TallContentArea

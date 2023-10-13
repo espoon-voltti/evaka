@@ -18,6 +18,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
+  queryOrDefault,
   queryResult,
   useInfiniteQuery,
   useMutation,
@@ -92,9 +93,10 @@ export const MessageContextProvider = React.memo(
 
     const { selectedGroupId } = useSelectedGroup()
 
-    const accounts = useQueryResult(messagingAccountsQuery(unitId ?? ''), {
-      enabled: unitId !== undefined && pinLoginActive
-    })
+    const accounts = useQueryResult(
+      queryOrDefault(messagingAccountsQuery, [])(unitId),
+      { enabled: pinLoginActive }
+    )
 
     const groupAccounts: AuthorizedMessageAccount[] = useMemo(
       () =>
