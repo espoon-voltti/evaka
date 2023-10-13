@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "properties": {
+    "schedulingUnit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "person": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "employeeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "stampedWorkingTimeEvents": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "beginTime": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "beginReasonCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "endTime": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "endReasonCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "date"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "event"
+                  ]
+                }
+              },
+              "required": [
+                "employeeId",
+                "name",
+                "stampedWorkingTimeEvents"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schedulingUnit"
+  ]
+}

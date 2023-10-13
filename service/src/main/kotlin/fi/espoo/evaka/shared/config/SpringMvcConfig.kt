@@ -53,6 +53,9 @@ class SpringMvcConfig(
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
         resolvers.add(
+            asArgumentResolver<AuthenticatedUser.Integration?>(::resolveAuthenticatedUser)
+        )
+        resolvers.add(
             asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser)
         )
         resolvers.add(

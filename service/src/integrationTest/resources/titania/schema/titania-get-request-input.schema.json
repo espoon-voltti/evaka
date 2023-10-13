@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$defs": {
+    "CodeType": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "PeriodType": {
+      "type": "object",
+      "properties": {
+        "beginDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "beginDate",
+        "endDate"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "organisation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CodeType"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "period": {
+      "$ref": "#/$defs/PeriodType"
+    },
+    "schedulingUnit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "person": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "employeeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "employeeId"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "period",
+    "schedulingUnit"
+  ]
+}

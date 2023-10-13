@@ -1,0 +1,61 @@
+{
+  "schedulingUnit": [
+    {
+      "code": "E1100",
+      "name": "Suunnittelupiste A",
+      "person": [
+        {
+          "employeeId": "177111",
+          "name": "ANKKA IINES",
+          "stampedWorkingTimeEvents": {
+            "event": [
+              {
+                "date": "20140303",
+                "beginTime": "0700",
+                "beginReasonCode": null,
+                "endTime": "1500",
+                "endReasonCode": null
+              },
+              {
+                "date": "20140304",
+                "beginTime": "0630",
+                "beginReasonCode": "YT",
+                "endTime": "1200",
+                "endReasonCode": "YT"
+              }
+            ]
+          }
+        },
+        {
+          "employeeId": "00255145",
+          "name": "HOPO HESSU",
+          "stampedWorkingTimeEvents": {
+            "event": [
+              {
+                "date": "20140303",
+                "beginTime": "0700",
+                "beginReasonCode": null,
+                "endTime": "1100",
+                "endReasonCode": null
+              },
+              {
+                "date": "20140303",
+                "beginTime": "1205",
+                "beginReasonCode": null,
+                "endTime": "1610",
+                "endReasonCode": null
+              },
+              {
+                "date": "20140304",
+                "beginTime": "1015",
+                "beginReasonCode": "TA",
+                "endTime": "1715",
+                "endReasonCode": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -147,6 +147,7 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.ws:spring-ws-test")
+    testImplementation("com.networknt:json-schema-validator")
 
     integrationTestImplementation("io.javalin:javalin")
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")

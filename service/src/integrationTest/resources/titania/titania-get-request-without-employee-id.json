@@ -1,0 +1,25 @@
+{
+  "organisation": {
+    "code": "88888",
+    "name": "Virtuaaliorganisaatio"
+  },
+  "period": {
+    "beginDate": "20140303",
+    "endDate": "20140323"
+  },
+  "schedulingUnit": [
+    {
+      "code": "E1100",
+      "name": "Suunnittelupiste A",
+      "person": [
+        {
+          "name": "ANKKA IINES"
+        },
+        {
+          "employeeId": "255145",
+          "name": "HOPO HESSU"
+        }
+      ]
+    }
+  ]
+}

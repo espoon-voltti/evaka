@@ -1,0 +1,71 @@
+{
+  "organisation": {
+    "code": "88888",
+    "name": "Virtuaaliorganisaatio"
+  },
+  "period": {
+    "beginDate": "20110103",
+    "endDate": "20110123"
+  },
+  "schedulingUnit": [
+    {
+      "code": "E1100",
+      "name": "Suunnittelupiste A",
+      "occupation": [
+        {
+          "code": "15510",
+          "name": "Kodinhoitaja",
+          "person": [
+            {
+              "SSN": "160462-938T",
+              "employeeId": "00176716",
+              "name": "ANKKA IINES",
+              "actualWorkingTimeEvents": {
+                "event": [
+                  {
+                    "date": "20110103",
+                    "code": "A",
+                    "beginTime": "0700",
+                    "endTime": "2400",
+                    "placement": {
+                      "code": "VV",
+                      "name": "Vuorovastaava"
+                    },
+                    "administrativeUnit": {
+                      "code": "110",
+                      "name": "Vastuuyksikkö"
+                    },
+                    "operativeUnit": {
+                      "code": "110A",
+                      "name": "Toimipiste"
+                    },
+                    "project": {
+                      "code": "P2000",
+                      "name": "Projekti 2000"
+                    }
+                  },
+                  {
+                    "date": "20110104",
+                    "code": "V",
+                    "description": "Vapaapaiva"
+                  }
+                ]
+              },
+              "payrollItems": {
+                "item": [
+                  {
+                    "code": "1010",
+                    "type": "THIS",
+                    "name": "Saldo",
+                    "value": "90",
+                    "unit": "MINUTE"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

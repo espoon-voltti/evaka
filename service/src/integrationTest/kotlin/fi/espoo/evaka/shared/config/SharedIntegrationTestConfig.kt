@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
+import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import io.opentracing.noop.NoopTracerFactory
@@ -185,6 +186,12 @@ class SharedIntegrationTestConfig {
     @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+
+    @Bean
+    fun titaniaEmployeeIdConverter(): TitaniaEmployeeIdConverter =
+        object : TitaniaEmployeeIdConverter {
+            override fun fromTitania(employeeId: String): String = employeeId.trimStart('0')
+        }
 }
 
 val testFeatureConfig =
