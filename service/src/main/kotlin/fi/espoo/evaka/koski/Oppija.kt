@@ -7,6 +7,7 @@ package fi.espoo.evaka.koski
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
@@ -67,9 +68,11 @@ enum class OpiskeluoikeusjaksonTilaKoodi {
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/opiskeluoikeudentyyppi/latest
-enum class OpiskeluoikeudenTyyppiKoodi {
+enum class OpiskeluoikeudenTyyppiKoodi : DatabaseEnum {
     @JsonProperty("esiopetus") PRESCHOOL,
-    @JsonProperty("perusopetukseenvalmistavaopetus") PREPARATORY
+    @JsonProperty("perusopetukseenvalmistavaopetus") PREPARATORY;
+
+    override val sqlType: String = "koski_study_right_type"
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/suorituksentyyppi/latest

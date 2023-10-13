@@ -36,7 +36,7 @@ FROM koski_active_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
-    to_jsonb(kasr) IS DISTINCT FROM ksr.input_data OR
+    kasr.input_data IS DISTINCT FROM ksr.input_data OR
     ${bind(KOSKI_DATA_VERSION)} IS DISTINCT FROM ksr.input_data_version
 )
 AND ${predicate(childPredicate.forTable("kasr"))}
@@ -62,20 +62,20 @@ fun Database.Transaction.beginKoskiUpload(
     key: KoskiStudyRightKey,
     today: LocalDate
 ) =
-    createQuery(
-            // language=SQL
-            """
+    createQuery<Any> {
+            sql(
+                """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, input_data_version, payload, version)
 SELECT
     child_id, unit_id, type,
-    CASE WHEN kvsr.child_id IS NOT NULL THEN :today END AS void_date,
-    coalesce(to_jsonb(kasr), to_jsonb(kvsr)), :inputDataVersion, '{}', 0
+    CASE WHEN kvsr.child_id IS NOT NULL THEN ${bind(today)} END AS void_date,
+    kasr.input_data, ${bind(KOSKI_DATA_VERSION)}, '{}', 0
 FROM (
-    SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
+    SELECT ${bind(key.childId)} AS child_id, ${bind(key.unitId)} AS unit_id, ${bind(key.type)} AS type
 ) params
-LEFT JOIN koski_active_study_right(:today) kasr
+LEFT JOIN koski_active_study_right(${bind(today)}) kasr
 USING (child_id, unit_id, type)
-LEFT JOIN koski_voided_study_right(:today) kvsr
+LEFT JOIN koski_voided_study_right(${bind(today)}) kvsr
 USING (child_id, unit_id, type)
 WHERE kvsr.void_date IS NULL
 
@@ -87,16 +87,14 @@ DO UPDATE SET
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
-        )
-        .bindKotlin(key)
-        .bind("inputDataVersion", KOSKI_DATA_VERSION)
-        .bind("today", today)
+            )
+        }
         .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
         .let { (id, voided) ->
             if (voided) {
-                createQuery(
-                        // language=SQL
-                        """
+                createQuery<Any> {
+                        sql(
+                            """
             SELECT
                 kvsr.*,
                 ksr.id AS study_right_id,
@@ -108,23 +106,25 @@ RETURNING id, void_date IS NOT NULL AS voided
                 pr.first_name,
                 pr.last_name
             FROM koski_study_right ksr
-            JOIN koski_voided_study_right(:today) kvsr
+            JOIN koski_voided_study_right(${bind(today)}) kvsr
             ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
             JOIN daycare d ON ksr.unit_id = d.id
             JOIN person pr ON ksr.child_id = pr.id
-            WHERE ksr.id = :id
+            WHERE ksr.id = ${bind(id)}
                     """
-                    )
-                    .bind("id", id)
-                    .bind("today", today)
+                        )
+                    }
                     .exactlyOneOrNull<KoskiVoidedDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid)
             } else {
-                createQuery(
-                        // language=SQL
-                        """
+                createQuery<Any> {
+                        sql(
+                            """
             SELECT
-                kasr.*,
+                kasr.child_id,
+                kasr.unit_id,
+                kasr.type,
+                (kasr.input_data).*,
                 ksr.id AS study_right_id,
                 ksr.study_right_oid,
                 d.language AS daycare_language,
@@ -136,20 +136,19 @@ RETURNING id, void_date IS NOT NULL AS voided
                 pr.last_name,
                 holidays
             FROM koski_study_right ksr
-            JOIN koski_active_study_right(:today) kasr
+            JOIN koski_active_study_right(${bind(today)}) kasr
             ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
             JOIN daycare d ON ksr.unit_id = d.id
             JOIN person pr ON ksr.child_id = pr.id
             LEFT JOIN LATERAL (
                 SELECT array_agg(date ORDER BY date) AS holidays
                 FROM holiday h
-                WHERE between_start_and_end(range_merge(kasr.placements), date)
+                WHERE between_start_and_end(range_merge((kasr.input_data).placements), date)
             ) h ON ksr.type = 'PREPARATORY'
-            WHERE ksr.id = :id
+            WHERE ksr.id = ${bind(id)}
                     """
-                    )
-                    .bind("id", id)
-                    .bind("today", today)
+                        )
+                    }
                     .exactlyOneOrNull<KoskiActiveDataRaw>()
                     ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
             }
@@ -164,29 +163,29 @@ data class KoskiUploadResponse(
 )
 
 fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean =
-    createQuery(
-            // language=SQL
-            """
-SELECT ksr.payload != :payload::jsonb
+    createQuery<Any> {
+            sql(
+                """
+SELECT ksr.payload != ${bind(payload)}::jsonb
 FROM (
-    SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
+    SELECT ${bind(key.childId)} AS child_id, ${bind(key.unitId)} AS unit_id, ${bind(key.type)} AS type
 ) params
 LEFT JOIN koski_study_right ksr
 USING (child_id, unit_id, type)
 """
-        )
-        .bindKotlin(key)
-        .bind("payload", payload)
+            )
+        }
         .exactlyOne<Boolean>()
 
 fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate<Any> {
+            sql(
+                """
 UPDATE koski_study_right
-SET study_right_oid = :studyRightOid, person_oid = :personOid, version = :version, payload = :payload::jsonb
-WHERE id = :id
+SET study_right_oid = ${bind(response.studyRightOid)}, person_oid = ${bind(response.personOid)},
+    version = ${bind(response.version)}, payload = ${bind(response.payload)}::jsonb
+WHERE id = ${bind(response.id)}
 """
-        )
-        .bindKotlin(response)
+            )
+        }
         .execute()

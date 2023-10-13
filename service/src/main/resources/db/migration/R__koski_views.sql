@@ -31,10 +31,7 @@ END;
 CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    oph_unit_oid text, oph_organizer_oid text,
-    placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
-    special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
-    transport_benefit datemultirange
+    input_data koski_input_data
 )
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
@@ -42,25 +39,31 @@ BEGIN ATOMIC
         p.child_id,
         p.unit_id,
         p.type,
-        d.oph_unit_oid,
-        d.oph_organizer_oid,
-        placements,
-        all_placements_in_past,
-        last_of_child,
-        preparatory_absences,
-        special_support_with_decision_level_1,
-        special_support_with_decision_level_2,
-        transport_benefit
+        (
+            d.oph_unit_oid,
+            d.oph_organizer_oid,
+            placements,
+            all_placements_in_past,
+            last_of_child,
+            preparatory_absences,
+            special_support_with_decision_level_1,
+            special_support_with_decision_level_2,
+            transport_benefit
+        ) AS input_data
     FROM koski_placement(today) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
     LEFT JOIN LATERAL (
-        SELECT jsonb_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
-        FROM absence a
-        WHERE a.child_id = p.child_id
-        AND a.category = 'NONBILLABLE'
-        AND between_start_and_end(range_merge(placements), a.date)
-        AND a.date > '2020-08-01'
+        SELECT jsonb_object_agg(absence_type, dates) AS preparatory_absences
+        FROM (
+            SELECT a.absence_type, array_agg(a.date ORDER BY a.date) AS dates
+            FROM absence a
+            WHERE a.child_id = p.child_id
+            AND a.category = 'NONBILLABLE'
+            AND between_start_and_end(range_merge(placements), a.date)
+            AND a.date > '2020-08-01'
+            GROUP BY a.absence_type
+        ) grouped
     ) pa ON p.type = 'PREPARATORY'
     LEFT JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit

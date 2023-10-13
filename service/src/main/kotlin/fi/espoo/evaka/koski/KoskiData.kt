@@ -43,8 +43,8 @@ data class KoskiChildRaw(
 ) {
     fun toHenkilö(): Henkilö =
         when {
-            ssn != null && ssn.isNotBlank() -> UusiHenkilö(ssn, firstName, lastName)
-            personOid != null && personOid.isNotBlank() -> OidHenkilö(personOid)
+            !ssn.isNullOrBlank() -> UusiHenkilö(ssn, firstName, lastName)
+            !personOid.isNullOrBlank() -> OidHenkilö(personOid)
             else ->
                 throw IllegalStateException(
                     "not enough information available to create Koski Henkilö"
@@ -145,7 +145,7 @@ data class KoskiActiveDataRaw(
     val lastOfChild: Boolean,
     val placements: DateSet = DateSet.of(),
     val holidays: Set<LocalDate> = emptySet(),
-    @Json val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
+    @Json val preparatoryAbsences: Map<AbsenceType, Set<LocalDate>> = emptyMap(),
     val specialSupportWithDecisionLevel1: DateSet = DateSet.of(),
     val specialSupportWithDecisionLevel2: DateSet = DateSet.of(),
     val transportBenefit: DateSet = DateSet.of(),
@@ -156,7 +156,7 @@ data class KoskiActiveDataRaw(
         calculateStudyRightTimelines(
             placements = placements,
             holidays = holidays,
-            absences = preparatoryAbsences.asSequence()
+            absences = preparatoryAbsences
         )
 
     private val approverTitle = "Esiopetusyksikön johtaja"
@@ -432,17 +432,17 @@ internal data class StudyRightTimelines(
 internal fun calculateStudyRightTimelines(
     placements: DateSet,
     holidays: Set<LocalDate>,
-    absences: Sequence<KoskiPreparatoryAbsence>
+    absences: Map<AbsenceType, Set<LocalDate>>,
 ): StudyRightTimelines {
     val plannedAbsence =
         DateSet.of(
             DateSet.of(
-                    absences
-                        .filter {
-                            it.type == AbsenceType.PLANNED_ABSENCE ||
-                                it.type == AbsenceType.OTHER_ABSENCE
-                        }
-                        .map { it.date.toFiniteDateRange() }
+                    (absences[AbsenceType.PLANNED_ABSENCE]?.map { it.toFiniteDateRange() }
+                        ?: emptyList())
+                )
+                .addAll(
+                    absences[AbsenceType.OTHER_ABSENCE]?.map { it.toFiniteDateRange() }
+                        ?: emptyList()
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
@@ -452,9 +452,7 @@ internal fun calculateStudyRightTimelines(
     val sickLeaveAbsence =
         DateSet.of(
             DateSet.of(
-                    absences
-                        .filter { it.type == AbsenceType.SICKLEAVE }
-                        .map { it.date.toFiniteDateRange() }
+                    absences[AbsenceType.SICKLEAVE]?.map { it.toFiniteDateRange() } ?: emptyList()
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
@@ -464,9 +462,8 @@ internal fun calculateStudyRightTimelines(
     val unknownAbsence =
         DateSet.of(
             DateSet.of(
-                    absences
-                        .filter { it.type == AbsenceType.UNKNOWN_ABSENCE }
-                        .map { it.date.toFiniteDateRange() }
+                    absences[AbsenceType.UNKNOWN_ABSENCE]?.map { it.toFiniteDateRange() }
+                        ?: emptyList()
                 )
                 .fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)

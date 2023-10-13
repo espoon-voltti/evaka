@@ -36,27 +36,15 @@ class KoskiTest {
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
-                    sequenceOf(
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 22),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 23),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 24),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 25),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 26),
-                            AbsenceType.PLANNED_ABSENCE
-                        )
+                    mapOf(
+                        AbsenceType.PLANNED_ABSENCE to
+                            setOf(
+                                LocalDate.of(2021, 3, 22),
+                                LocalDate.of(2021, 3, 23),
+                                LocalDate.of(2021, 3, 24),
+                                LocalDate.of(2021, 3, 25),
+                                LocalDate.of(2021, 3, 26),
+                            )
                     )
             )
         assertEquals(
@@ -87,31 +75,16 @@ class KoskiTest {
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
-                    sequenceOf(
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 22),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 23),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 24),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 25),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 26),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 29),
-                            AbsenceType.UNKNOWN_ABSENCE
-                        )
+                    mapOf(
+                        AbsenceType.UNKNOWN_ABSENCE to
+                            setOf(
+                                LocalDate.of(2021, 3, 22),
+                                LocalDate.of(2021, 3, 23),
+                                LocalDate.of(2021, 3, 24),
+                                LocalDate.of(2021, 3, 25),
+                                LocalDate.of(2021, 3, 26),
+                                LocalDate.of(2021, 3, 29),
+                            )
                     )
             )
         assertEquals(
@@ -149,13 +122,16 @@ class KoskiTest {
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
-                    sequenceOf(
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 22), AbsenceType.SICKLEAVE),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 23), AbsenceType.SICKLEAVE),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 24), AbsenceType.SICKLEAVE),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 25), AbsenceType.SICKLEAVE),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 26), AbsenceType.SICKLEAVE),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 29), AbsenceType.SICKLEAVE)
+                    mapOf(
+                        AbsenceType.SICKLEAVE to
+                            setOf(
+                                LocalDate.of(2021, 3, 22),
+                                LocalDate.of(2021, 3, 23),
+                                LocalDate.of(2021, 3, 24),
+                                LocalDate.of(2021, 3, 25),
+                                LocalDate.of(2021, 3, 26),
+                                LocalDate.of(2021, 3, 29),
+                            )
                     )
             )
         assertEquals(
@@ -194,27 +170,15 @@ class KoskiTest {
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
-                    sequenceOf(
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 26),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 29),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 30),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 31),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 4, 1),
-                            AbsenceType.PLANNED_ABSENCE
-                        )
+                    mapOf(
+                        AbsenceType.PLANNED_ABSENCE to
+                            setOf(
+                                LocalDate.of(2021, 3, 26),
+                                LocalDate.of(2021, 3, 29),
+                                LocalDate.of(2021, 3, 30),
+                                LocalDate.of(2021, 3, 31),
+                                LocalDate.of(2021, 4, 1),
+                            )
                     )
             )
         assertEquals(
@@ -245,24 +209,15 @@ class KoskiTest {
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
-                    sequenceOf(
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 29),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 30),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 3, 31),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(
-                            LocalDate.of(2021, 4, 1),
-                            AbsenceType.PLANNED_ABSENCE
-                        ),
-                        KoskiPreparatoryAbsence(LocalDate.of(2021, 4, 6), AbsenceType.OTHER_ABSENCE)
+                    mapOf(
+                        AbsenceType.PLANNED_ABSENCE to
+                            setOf(
+                                LocalDate.of(2021, 3, 29),
+                                LocalDate.of(2021, 3, 30),
+                                LocalDate.of(2021, 3, 31),
+                                LocalDate.of(2021, 4, 1),
+                            ),
+                        AbsenceType.OTHER_ABSENCE to setOf(LocalDate.of(2021, 4, 6))
                     )
             )
         assertEquals(
