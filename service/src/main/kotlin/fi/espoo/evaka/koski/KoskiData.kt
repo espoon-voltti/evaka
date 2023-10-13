@@ -21,7 +21,7 @@ import org.jdbi.v3.json.Json
  * This number should be incremented to bust the Koski input data cache, for example after making
  * changes to data processing code in this file.
  */
-const val KOSKI_DATA_VERSION: Int = 2
+const val KOSKI_DATA_VERSION: Int = 3
 
 data class KoskiData(
     val oppija: Oppija,
@@ -134,8 +134,6 @@ data class KoskiVoidedDataRaw(
         )
 }
 
-data class KoskiPreparatoryAbsence(val date: LocalDate, val type: AbsenceType)
-
 data class KoskiActiveDataRaw(
     @Nested("") val child: KoskiChildRaw,
     @Nested("") val unit: KoskiUnitRaw,
@@ -145,7 +143,7 @@ data class KoskiActiveDataRaw(
     val lastOfChild: Boolean,
     val placements: DateSet = DateSet.of(),
     val holidays: Set<LocalDate> = emptySet(),
-    @Json val preparatoryAbsences: Map<AbsenceType, Set<LocalDate>> = emptyMap(),
+    @Json val absences: Map<AbsenceType, Set<LocalDate>> = emptyMap(),
     val specialSupportWithDecisionLevel1: DateSet = DateSet.of(),
     val specialSupportWithDecisionLevel2: DateSet = DateSet.of(),
     val transportBenefit: DateSet = DateSet.of(),
@@ -156,7 +154,7 @@ data class KoskiActiveDataRaw(
         calculateStudyRightTimelines(
             placements = placements,
             holidays = holidays,
-            absences = preparatoryAbsences
+            absences = absences
         )
 
     private val approverTitle = "Esiopetusyksikön johtaja"

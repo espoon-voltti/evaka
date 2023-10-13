@@ -1,4 +1,5 @@
-DROP FUNCTION IF EXISTS koski_active_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preschool_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preparatory_study_right(today date);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
 DROP FUNCTION IF EXISTS koski_placement(today date);
 DROP VIEW IF EXISTS koski_unit;
@@ -51,11 +52,8 @@ BEGIN ATOMIC
     GROUP BY child_id, unit_id, type;
 END;
 
-CREATE FUNCTION koski_active_study_right(today date) RETURNS
-TABLE (
-    child_id uuid, unit_id uuid, type koski_study_right_type,
-    input_data koski_input_data
-)
+CREATE FUNCTION koski_active_preschool_study_right(today date) RETURNS
+TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preschool_input_data)
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
     SELECT
@@ -68,7 +66,6 @@ BEGIN ATOMIC
             placements,
             all_placements_in_past,
             last_of_child,
-            preparatory_absences,
             special_support_with_decision_level_1,
             special_support_with_decision_level_2,
             transport_benefit
@@ -76,24 +73,12 @@ BEGIN ATOMIC
     FROM koski_placement(today) p
     JOIN koski_unit d ON p.unit_id = d.id
     LEFT JOIN LATERAL (
-        SELECT jsonb_object_agg(absence_type, dates) AS preparatory_absences
-        FROM (
-            SELECT a.absence_type, array_agg(a.date ORDER BY a.date) AS dates
-            FROM absence a
-            WHERE a.child_id = p.child_id
-            AND a.category = 'NONBILLABLE'
-            AND between_start_and_end(range_merge(placements), a.date)
-            AND a.date > '2020-08-01'
-            GROUP BY a.absence_type
-        ) grouped
-    ) pa ON p.type = 'PREPARATORY'
-    LEFT JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && range_merge(placements)
         AND type = 'TRANSPORT_BENEFIT'
-    ) oam ON p.type = 'PRESCHOOL'
+    ) oam ON TRUE
     LEFT JOIN LATERAL (
         SELECT
             range_agg(valid_during) FILTER (
@@ -105,8 +90,43 @@ BEGIN ATOMIC
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && range_merge(placements)
-    ) pras ON p.type = 'PRESCHOOL'
-    WHERE EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
+    ) pras ON TRUE
+    WHERE p.type = 'PRESCHOOL'
+    AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
+END;
+
+CREATE FUNCTION koski_active_preparatory_study_right(today date) RETURNS
+TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preparatory_input_data)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
+    SELECT
+        p.child_id,
+        p.unit_id,
+        p.type,
+        (
+            d.oph_unit_oid,
+            d.oph_organizer_oid,
+            placements,
+            all_placements_in_past,
+            last_of_child,
+            absences
+        ) AS input_data
+    FROM koski_placement(today) p
+    JOIN koski_unit d ON p.unit_id = d.id
+    LEFT JOIN LATERAL (
+        SELECT jsonb_object_agg(absence_type, dates) AS absences
+        FROM (
+            SELECT a.absence_type, array_agg(a.date ORDER BY a.date) AS dates
+            FROM absence a
+            WHERE a.child_id = p.child_id
+            AND a.category = 'NONBILLABLE'
+            AND between_start_and_end(range_merge(placements), a.date)
+            AND a.date > '2020-08-01'
+            GROUP BY a.absence_type
+        ) grouped
+    ) pa ON TRUE
+    WHERE p.type = 'PREPARATORY'
+    AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
 END;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS

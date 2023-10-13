@@ -8,6 +8,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(
@@ -19,16 +21,32 @@ data class KoskiStudyRightKey(
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
 ): List<KoskiStudyRightKey> {
+    val dataVersionCheck =
+        Predicate<Any> {
+            // intentionally doesn't use bind
+            where("$it.data_version IS DISTINCT FROM $KOSKI_DATA_VERSION")
+        }
     return createQuery<Any> {
             sql(
                 """
-SELECT kasr.child_id, kasr.unit_id, kasr.type
-FROM koski_active_study_right(${bind(today)}) kasr
+SELECT kasr.child_id, kasr.unit_id, 'PRESCHOOL'::koski_study_right_type AS type
+FROM koski_active_preschool_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
-ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
+ON (kasr.child_id, kasr.unit_id, 'PRESCHOOL') = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
-    kasr.input_data IS DISTINCT FROM ksr.input_data OR
-    ${bind(KOSKI_DATA_VERSION)} IS DISTINCT FROM ksr.input_data_version
+    ksr.preschool_input_data IS DISTINCT FROM kasr.input_data OR
+    ${predicate(dataVersionCheck.forTable("ksr"))}
+)
+
+UNION
+
+SELECT kasr.child_id, kasr.unit_id, 'PREPARATORY'::koski_study_right_type AS type
+FROM koski_active_preparatory_study_right(${bind(today)}) kasr
+LEFT JOIN koski_study_right ksr
+ON (kasr.child_id, kasr.unit_id, 'PREPARATORY') = (ksr.child_id, ksr.unit_id, ksr.type)
+WHERE (
+    ksr.preparatory_input_data IS DISTINCT FROM kasr.input_data OR
+    ${predicate(dataVersionCheck.forTable("ksr"))}
 )
 
 UNION
@@ -42,56 +60,79 @@ WHERE kvsr.void_date IS NULL
         .toList<KoskiStudyRightKey>()
 }
 
-fun Database.Transaction.beginKoskiUpload(
-    sourceSystem: String,
-    ophOrganizationOid: String,
-    ophMunicipalityCode: String,
+private fun Database.Transaction.refreshStudyRight(
     key: KoskiStudyRightKey,
     today: LocalDate
-) =
-    createQuery<Any> {
+): Pair<KoskiStudyRightId, Boolean> {
+    val studyRightQuery =
+        QuerySql.of<Any> {
+            when (key.type) {
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                    sql(
+                        """
+SELECT
+    child_id, unit_id, type,
+    input_data AS preschool_input_data, NULL::koski_preparatory_input_data AS preparatory_input_data
+FROM koski_active_preschool_study_right(${bind(today)}) kasr
+"""
+                    )
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                    sql(
+                        """
+SELECT
+    child_id, unit_id, type,
+    NULL::koski_preschool_input_data AS preschool_input_data, input_data AS preparatory_input_data
+FROM koski_active_preparatory_study_right(${bind(today)}) kasr
+"""
+                    )
+            }
+        }
+    return createQuery<Any> {
             sql(
                 """
-INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, input_data_version, payload, version)
+INSERT INTO koski_study_right (child_id, unit_id, type, void_date, preschool_input_data, preparatory_input_data, data_version, payload, version)
 SELECT
     child_id, unit_id, type,
     CASE WHEN kvsr.child_id IS NOT NULL THEN ${bind(today)} END AS void_date,
-    kasr.input_data, ${bind(KOSKI_DATA_VERSION)}, '{}', 0
-FROM (
-    SELECT ${bind(key.childId)} AS child_id, ${bind(key.unitId)} AS unit_id, ${bind(key.type)} AS type
-) params
-LEFT JOIN koski_active_study_right(${bind(today)}) kasr
+    preschool_input_data, preparatory_input_data,
+    ${bind(KOSKI_DATA_VERSION)} AS data_version, '{}' AS payload, 0 AS version
+FROM (${subquery(studyRightQuery)}) study_right
+FULL JOIN koski_voided_study_right(${bind(today)}) kvsr
 USING (child_id, unit_id, type)
-LEFT JOIN koski_voided_study_right(${bind(today)}) kvsr
-USING (child_id, unit_id, type)
-WHERE kvsr.void_date IS NULL
+WHERE (child_id, unit_id, type) = (${bind(key.childId)}, ${bind(key.unitId)}, ${bind(key.type)})
+AND kvsr.void_date IS NULL
 
 ON CONFLICT (child_id, unit_id, type)
 DO UPDATE SET
     void_date = excluded.void_date,
-    input_data = excluded.input_data,
-    input_data_version = excluded.input_data_version,
+    preschool_input_data = excluded.preschool_input_data,
+    preparatory_input_data = excluded.preparatory_input_data,
+    data_version = excluded.data_version,
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
             )
         }
         .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
-        .let { (id, voided) ->
-            if (voided) {
-                createQuery<Any> {
-                        sql(
-                            """
+}
+
+fun Database.Transaction.beginKoskiUpload(
+    sourceSystem: String,
+    ophOrganizationOid: String,
+    ophMunicipalityCode: String,
+    key: KoskiStudyRightKey,
+    today: LocalDate
+): KoskiData? {
+    val (id, voided) = refreshStudyRight(key, today)
+    return if (voided) {
+        createQuery<Any> {
+                sql(
+                    """
             SELECT
                 kvsr.*,
-                ksr.id AS study_right_id,
-                ksr.study_right_oid,
-                d.unit_language,
-                d.provider_type,
-                pr.ssn,
-                pr.oph_person_oid,
-                pr.first_name,
-                pr.last_name
+                ksr.id AS study_right_id, ksr.study_right_oid,
+                d.unit_language, d.provider_type,
+                pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
             FROM koski_study_right ksr
             JOIN koski_voided_study_right(${bind(today)}) kvsr
             ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
@@ -99,47 +140,57 @@ RETURNING id, void_date IS NOT NULL AS voided
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                        )
-                    }
-                    .exactlyOneOrNull<KoskiVoidedDataRaw>()
-                    ?.toKoskiData(sourceSystem, ophOrganizationOid)
-            } else {
-                createQuery<Any> {
+                )
+            }
+            .exactlyOneOrNull<KoskiVoidedDataRaw>()
+            ?.toKoskiData(sourceSystem, ophOrganizationOid)
+    } else {
+        createQuery<Any> {
+                when (key.type) {
+                    OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
                         sql(
                             """
             SELECT
-                kasr.child_id,
-                kasr.unit_id,
-                kasr.type,
-                (kasr.input_data).*,
-                ksr.id AS study_right_id,
-                ksr.study_right_oid,
-                d.unit_language,
-                d.provider_type,
-                d.approver_name,
-                pr.ssn,
-                pr.oph_person_oid,
-                pr.first_name,
-                pr.last_name,
+                kasr.child_id, kasr.unit_id, kasr.type, (kasr.input_data).*,
+                ksr.id AS study_right_id, ksr.study_right_oid,
+                d.unit_language, d.provider_type, d.approver_name,
+                pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
+            FROM koski_study_right ksr
+            JOIN koski_active_preschool_study_right(${bind(today)}) kasr
+            USING (child_id, unit_id, type)
+            JOIN koski_unit d ON ksr.unit_id = d.id
+            JOIN koski_child pr ON ksr.child_id = pr.id
+            WHERE ksr.id = ${bind(id)}
+                    """
+                        )
+                    OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                        sql(
+                            """
+            SELECT
+                kasr.child_id, kasr.unit_id, kasr.type, (kasr.input_data).*,
+                ksr.id AS study_right_id, ksr.study_right_oid,
+                d.unit_language, d.provider_type, d.approver_name,
+                pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name,
                 holidays
             FROM koski_study_right ksr
-            JOIN koski_active_study_right(${bind(today)}) kasr
-            ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
+            JOIN koski_active_preparatory_study_right(${bind(today)}) kasr
+            USING (child_id, unit_id, type)
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
             LEFT JOIN LATERAL (
                 SELECT array_agg(date ORDER BY date) AS holidays
                 FROM holiday h
                 WHERE between_start_and_end(range_merge((kasr.input_data).placements), date)
-            ) h ON ksr.type = 'PREPARATORY'
+            ) h ON true
             WHERE ksr.id = ${bind(id)}
                     """
                         )
-                    }
-                    .exactlyOneOrNull<KoskiActiveDataRaw>()
-                    ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
+                }
             }
-        }
+            .exactlyOneOrNull<KoskiActiveDataRaw>()
+            ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
+    }
+}
 
 data class KoskiUploadResponse(
     val id: KoskiStudyRightId,
