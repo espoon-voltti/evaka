@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
@@ -60,15 +60,17 @@ export default React.memo(function ApplicationFormClub({
 
       <UnitPreferenceSection
         formData={formData.unitPreference}
-        updateFormData={(data) =>
-          setFormData((old) => ({
-            ...old,
-            unitPreference: {
-              ...old.unitPreference,
-              ...data
-            }
-          }))
-        }
+        updateFormData={useCallback(
+          (fn) =>
+            setFormData((old) => ({
+              ...old,
+              unitPreference: {
+                ...old.unitPreference,
+                ...fn(old.unitPreference)
+              }
+            })),
+          [setFormData]
+        )}
         applicationType={applicationType}
         preparatory={false}
         preferredStartDate={formData.serviceNeed.preferredStartDate}

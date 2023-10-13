@@ -5,7 +5,6 @@
 import React from 'react'
 
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
@@ -19,7 +18,9 @@ import { ApplicationFormDataErrors } from '../validations'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData
-  updateFormData: UpdateStateFn<UnitPreferenceFormData>
+  updateFormData: (
+    updater: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>
+  ) => void
   errors: ApplicationFormDataErrors['unitPreference']
   verificationRequested: boolean
   applicationType: ApplicationType
