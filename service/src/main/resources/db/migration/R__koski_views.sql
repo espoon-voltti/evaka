@@ -71,7 +71,7 @@ BEGIN ATOMIC
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && range_merge(placements)
         AND type = 'TRANSPORT_BENEFIT'
-    ) oam ON TRUE
+    ) oam ON p.type = 'PRESCHOOL'
     LEFT JOIN LATERAL (
         SELECT
             range_agg(valid_during) FILTER (
@@ -83,7 +83,7 @@ BEGIN ATOMIC
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && range_merge(placements)
-    ) pras ON TRUE
+    ) pras ON p.type = 'PRESCHOOL'
     WHERE d.upload_to_koski IS TRUE
     AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
     AND nullif(d.oph_unit_oid, '') IS NOT NULL
