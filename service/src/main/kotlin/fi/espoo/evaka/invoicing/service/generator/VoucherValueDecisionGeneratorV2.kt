@@ -474,8 +474,7 @@ private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOf
         """
             )
         }
-        .mapTo<HeadOfChildRelation>()
-        .toList()
+        .toList<HeadOfChildRelation>()
 }
 
 private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
@@ -488,8 +487,7 @@ private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
         """
             )
         }
-        .mapTo<ChildWithDateOfBirth>()
-        .exactlyOne()
+        .exactlyOne<ChildWithDateOfBirth>()
 }
 
 private data class AssistanceNeedRange(override val range: DateRange, val coefficient: BigDecimal) :

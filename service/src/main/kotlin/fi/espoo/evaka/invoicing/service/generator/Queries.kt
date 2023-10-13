@@ -26,8 +26,7 @@ fun Database.Read.getPlacementRangesByChild(childIds: Set<ChildId>) =
             """
             )
         }
-        .mapTo<PlacementRange>()
-        .toList()
+        .toList<PlacementRange>()
         .groupBy { it.childId }
 
 fun Database.Read.getServiceNeedRangesByChild(childIds: Set<ChildId>) =
@@ -41,8 +40,7 @@ fun Database.Read.getServiceNeedRangesByChild(childIds: Set<ChildId>) =
     """
             )
         }
-        .mapTo<ServiceNeedRange>()
-        .toList()
+        .toList<ServiceNeedRange>()
         .groupBy { it.childId }
 
 fun Database.Read.getVoucherValuesByServiceNeedOption() =
@@ -63,8 +61,7 @@ FROM service_need_option_voucher_value
         """
             )
         }
-        .mapTo<ServiceNeedOptionVoucherValueRange>()
-        .toList()
+        .toList<ServiceNeedOptionVoucherValueRange>()
         .groupBy { it.serviceNeedOptionId }
 
 fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, List<ChildRelation>> {
@@ -84,8 +81,7 @@ fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, Lis
         """
         )
         .bind("ids", parentIds.toTypedArray())
-        .mapTo<ChildRelation>()
-        .toList()
+        .toList<ChildRelation>()
         .mapNotNull {
             val under18 =
                 FiniteDateRange(
@@ -109,6 +105,5 @@ fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
         """
         )
         .bind("id", id)
-        .mapTo<PartnerRelation>()
-        .toList()
+        .toList<PartnerRelation>()
 }
