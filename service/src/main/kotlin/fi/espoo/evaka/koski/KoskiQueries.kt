@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Predicate
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(
@@ -19,15 +18,7 @@ data class KoskiStudyRightKey(
 
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
-    params: KoskiSearchParams = KoskiSearchParams()
 ): List<KoskiStudyRightKey> {
-    val childPredicate =
-        if (params.personIds.isEmpty()) Predicate.alwaysTrue()
-        else Predicate<Any> { where("$it.child_id = ANY(${bind(params.personIds)})") }
-    val daycarePredicate =
-        if (params.daycareIds.isEmpty()) Predicate.alwaysTrue()
-        else Predicate<Any> { where("$it.unit_id = ANY(${bind(params.daycareIds)})") }
-
     return createQuery<Any> {
             sql(
                 """
@@ -39,16 +30,12 @@ WHERE (
     kasr.input_data IS DISTINCT FROM ksr.input_data OR
     ${bind(KOSKI_DATA_VERSION)} IS DISTINCT FROM ksr.input_data_version
 )
-AND ${predicate(childPredicate.forTable("kasr"))}
-AND ${predicate(daycarePredicate.forTable("kasr"))}
 
 UNION
 
 SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
 WHERE kvsr.void_date IS NULL
-AND ${predicate(childPredicate.forTable("kvsr"))}
-AND ${predicate(daycarePredicate.forTable("kvsr"))}
 """
             )
         }

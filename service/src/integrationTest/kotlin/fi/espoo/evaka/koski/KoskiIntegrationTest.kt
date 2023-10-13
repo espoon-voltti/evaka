@@ -40,7 +40,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -346,48 +345,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
             studyRights[1].opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
-    }
-
-    @Test
-    fun `pending placements can be limited by person or daycare`() {
-        val today = preschoolTerm2019.end
-        insertPlacement()
-
-        val searchByExistingPerson =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(personIds = listOf(testChild_1.id))
-                )
-            }
-        assertEquals(1, searchByExistingPerson.size)
-
-        val searchByRandomPerson =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(personIds = listOf(ChildId(UUID.randomUUID())))
-                )
-            }
-        assertEquals(0, searchByRandomPerson.size)
-
-        val searchByExistingDaycare =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(daycareIds = listOf(testDaycare.id))
-                )
-            }
-        assertEquals(1, searchByExistingDaycare.size)
-
-        val searchByRandomDaycare =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID())))
-                )
-            }
-        assertEquals(0, searchByRandomDaycare.size)
     }
 
     @Test

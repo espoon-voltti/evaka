@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
-import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
@@ -97,10 +96,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val recipient: MessageRecipientId,
         val device: MobileDeviceId
     ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class ScheduleKoskiUploads(val params: KoskiSearchParams) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -317,7 +312,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     NotifyVoucherValueDecisionApproved::class,
                     NotifyVoucherValueDecisionPdfGenerated::class,
                     RunScheduledJob::class,
-                    ScheduleKoskiUploads::class,
                     SendAssistanceNeedDecisionSfiMessage::class,
                     SendAssistanceNeedPreschoolDecisionSfiMessage::class,
                     SendDecision::class,
