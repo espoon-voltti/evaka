@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
+import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
@@ -143,6 +144,12 @@ class EspooConfig {
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
+
+    @Bean
+    fun titaniaEmployeeIdConverter(): TitaniaEmployeeIdConverter =
+        object : TitaniaEmployeeIdConverter {
+            override fun fromTitania(employeeId: String): String = employeeId.trimStart('0')
+        }
 
     @Bean
     fun espooAsyncJobRunner(

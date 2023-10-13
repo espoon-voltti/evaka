@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$defs": {
+    "CodeType": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "CodeNameType": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "name"
+      ]
+    },
+    "PeriodType": {
+      "type": "object",
+      "properties": {
+        "beginDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "beginDate",
+        "endDate"
+      ]
+    },
+    "payrollItemType": {
+      "type": "string",
+      "enum": [
+        "PREVIOUS",
+        "THIS",
+        "NEXT",
+        "TIME",
+        "MONEY"
+      ]
+    },
+    "payrollItemUnit": {
+      "type": "string",
+      "enum": [
+        "MINUTE",
+        "QUANTITY"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "organisation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CodeType"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "period": {
+      "$ref": "#/$defs/PeriodType"
+    },
+    "schedulingUnit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "occupation": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "person": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "employeeId": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "actualWorkingTimeEvents": {
+                        "type": "object",
+                        "properties": {
+                          "event": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "date": {
+                                  "type": "string"
+                                },
+                                "code": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "description": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "beginTime": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "endTime": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "administrativeUnit": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "placement": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "operativeUnit": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "project": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "eventType": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "eventKind": {
+                                  "oneOf": [
+                                    {
+                                      "$ref": "#/$defs/CodeNameType"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "date"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "event"
+                        ]
+                      },
+                      "payrollItems": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "properties": {
+                          "item": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "$ref": "#/$defs/payrollItemType"
+                                },
+                                "name": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "unit": {
+                                  "$ref": "#/$defs/payrollItemUnit"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "type",
+                                "value",
+                                "unit"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "employeeId",
+                      "name",
+                      "actualWorkingTimeEvents"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "code",
+                "name",
+                "person"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "occupation"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "period",
+    "schedulingUnit"
+  ]
+}
