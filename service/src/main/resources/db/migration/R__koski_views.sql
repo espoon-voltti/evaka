@@ -1,6 +1,29 @@
 DROP FUNCTION IF EXISTS koski_active_study_right(today date);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
 DROP FUNCTION IF EXISTS koski_placement(today date);
+DROP VIEW IF EXISTS koski_unit;
+DROP VIEW IF EXISTS koski_child;
+
+CREATE VIEW koski_unit (id, unit_language, provider_type, approver_name, oph_unit_oid, oph_organizer_oid) AS
+SELECT
+    id, language AS unit_language, provider_type, unit_manager_name AS approver_name,
+    nullif(oph_unit_oid, '') AS oph_unit_oid,
+    nullif(oph_organizer_oid, '') AS oph_organizer_oid
+FROM daycare
+WHERE upload_to_koski IS TRUE
+AND nullif(oph_unit_oid, '') IS NOT NULL
+AND nullif(oph_organizer_oid, '') IS NOT NULL;
+
+CREATE VIEW koski_child (id, ssn, oph_person_oid, first_name, last_name) AS
+SELECT
+    id,
+    nullif(social_security_number, '') AS ssn,
+    nullif(oph_person_oid, '') AS oph_person_oid,
+    first_name,
+    last_name
+FROM person
+WHERE nullif(social_security_number, '') IS NOT NULL
+OR nullif(oph_person_oid, '') IS NOT NULL;
 
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
@@ -51,8 +74,7 @@ BEGIN ATOMIC
             transport_benefit
         ) AS input_data
     FROM koski_placement(today) p
-    JOIN daycare d ON p.unit_id = d.id
-    JOIN person pr ON p.child_id = pr.id
+    JOIN koski_unit d ON p.unit_id = d.id
     LEFT JOIN LATERAL (
         SELECT jsonb_object_agg(absence_type, dates) AS preparatory_absences
         FROM (
@@ -84,10 +106,7 @@ BEGIN ATOMIC
         WHERE pa.child_id = p.child_id
         AND pa.valid_during && range_merge(placements)
     ) pras ON p.type = 'PRESCHOOL'
-    WHERE d.upload_to_koski IS TRUE
-    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
-    AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
+    WHERE EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
 END;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS
@@ -106,16 +125,13 @@ BEGIN ATOMIC
         d.oph_organizer_oid,
         ksr.void_date
     FROM koski_study_right ksr
-    JOIN daycare d ON ksr.unit_id = d.id
+    JOIN koski_unit d ON ksr.unit_id = d.id
     JOIN person pr ON ksr.child_id = pr.id
-    WHERE NOT EXISTS (
+    WHERE EXISTS (SELECT FROM koski_child WHERE koski_child.id = ksr.child_id)
+    AND NOT EXISTS (
         SELECT 1
         FROM koski_placement(today) kp
         WHERE (kp.child_id, kp.unit_id, kp.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
-    AND ksr.study_right_oid IS NOT NULL
-    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
-    AND d.upload_to_koski IS TRUE
-    AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
+    AND ksr.study_right_oid IS NOT NULL;
 END;

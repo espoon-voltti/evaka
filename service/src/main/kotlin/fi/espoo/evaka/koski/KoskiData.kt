@@ -37,14 +37,14 @@ enum class KoskiOperation {
 
 data class KoskiChildRaw(
     val ssn: String?,
-    val personOid: String?,
+    val ophPersonOid: String?,
     val firstName: String,
     val lastName: String
 ) {
     fun toHenkilö(): Henkilö =
         when {
             !ssn.isNullOrBlank() -> UusiHenkilö(ssn, firstName, lastName)
-            !personOid.isNullOrBlank() -> OidHenkilö(personOid)
+            !ophPersonOid.isNullOrBlank() -> OidHenkilö(ophPersonOid)
             else ->
                 throw IllegalStateException(
                     "not enough information available to create Koski Henkilö"
@@ -53,8 +53,8 @@ data class KoskiChildRaw(
 }
 
 data class KoskiUnitRaw(
-    val daycareLanguage: String,
-    val daycareProviderType: ProviderType,
+    val unitLanguage: String,
+    val providerType: ProviderType,
     val ophUnitOid: String,
     val ophOrganizerOid: String
 ) {
@@ -68,7 +68,7 @@ data class KoskiUnitRaw(
                         perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
                     ),
                 toimipiste = Toimipiste(ophUnitOid),
-                suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
+                suorituskieli = Suorituskieli(unitLanguage.uppercase()),
                 tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY)
             )
         } else {
@@ -80,13 +80,13 @@ data class KoskiUnitRaw(
                         perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
                     ),
                 toimipiste = Toimipiste(ophUnitOid),
-                suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
+                suorituskieli = Suorituskieli(unitLanguage.uppercase()),
                 tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
             )
         }
 
     fun haeJärjestämisMuoto() =
-        when (daycareProviderType) {
+        when (providerType) {
             ProviderType.PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
             ProviderType.EXTERNAL_PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
             ProviderType.PRIVATE_SERVICE_VOUCHER ->

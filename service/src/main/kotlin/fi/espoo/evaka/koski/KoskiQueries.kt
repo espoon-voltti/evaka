@@ -99,17 +99,17 @@ RETURNING id, void_date IS NOT NULL AS voided
                 kvsr.*,
                 ksr.id AS study_right_id,
                 ksr.study_right_oid,
-                d.language AS daycare_language,
-                d.provider_type AS daycare_provider_type,
-                nullif(pr.social_security_number, '') ssn,
-                nullif(pr.oph_person_oid, '') person_oid,
+                d.unit_language,
+                d.provider_type,
+                pr.ssn,
+                pr.oph_person_oid,
                 pr.first_name,
                 pr.last_name
             FROM koski_study_right ksr
             JOIN koski_voided_study_right(${bind(today)}) kvsr
             ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-            JOIN daycare d ON ksr.unit_id = d.id
-            JOIN person pr ON ksr.child_id = pr.id
+            JOIN koski_unit d ON ksr.unit_id = d.id
+            JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
                         )
@@ -127,19 +127,19 @@ RETURNING id, void_date IS NOT NULL AS voided
                 (kasr.input_data).*,
                 ksr.id AS study_right_id,
                 ksr.study_right_oid,
-                d.language AS daycare_language,
-                d.provider_type AS daycare_provider_type,
-                unit_manager_name AS approver_name,
-                nullif(pr.social_security_number, '') ssn,
-                nullif(pr.oph_person_oid, '') person_oid,
+                d.unit_language,
+                d.provider_type,
+                d.approver_name,
+                pr.ssn,
+                pr.oph_person_oid,
                 pr.first_name,
                 pr.last_name,
                 holidays
             FROM koski_study_right ksr
             JOIN koski_active_study_right(${bind(today)}) kasr
             ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-            JOIN daycare d ON ksr.unit_id = d.id
-            JOIN person pr ON ksr.child_id = pr.id
+            JOIN koski_unit d ON ksr.unit_id = d.id
+            JOIN koski_child pr ON ksr.child_id = pr.id
             LEFT JOIN LATERAL (
                 SELECT array_agg(date ORDER BY date) AS holidays
                 FROM holiday h
