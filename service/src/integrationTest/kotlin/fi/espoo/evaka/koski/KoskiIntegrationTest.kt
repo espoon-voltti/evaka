@@ -957,6 +957,59 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `moving from last preparatory placement to preschool qualifies the preparatory study right`() {
+        val daycare3 =
+            db.transaction {
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = testArea.id,
+                        uploadToKoski = true,
+                        ophUnitOid = "1.2.246.562.10.3333333333"
+                    )
+                )
+            }
+        val daycare4 =
+            db.transaction {
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = testArea.id,
+                        uploadToKoski = true,
+                        ophUnitOid = "1.2.246.562.10.4444444444"
+                    )
+                )
+            }
+        val placements =
+            listOf(
+                testPeriod(0L to 9L) to Pair(testDaycare.id, PlacementType.PREPARATORY),
+                testPeriod(10L to 19L) to Pair(testDaycare2.id, PlacementType.PRESCHOOL),
+                testPeriod(20L to 29L) to Pair(daycare3, PlacementType.PREPARATORY),
+                testPeriod(30L to null) to Pair(daycare4, PlacementType.PRESCHOOL),
+            )
+        placements.forEach { (dateRange, placement) ->
+            val (unit, type) = placement
+            insertPlacement(child = testChild_1, daycareId = unit, period = dateRange, type)
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        val terminalStates =
+            koskiServer
+                .getStudyRights()
+                .map { it.value.opiskeluoikeus.tila.opiskeluoikeusjaksot.last() }
+                .sortedBy { it.alku }
+
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.eronnut(placements[0].first.end),
+                Opiskeluoikeusjakso.eronnut(placements[1].first.end),
+                Opiskeluoikeusjakso.valmistunut(placements[2].first.end),
+                Opiskeluoikeusjakso.valmistunut(placements[3].first.end)
+            ),
+            terminalStates
+        )
+    }
+
     private fun insertPlacement(
         child: DevPerson = testChild_1,
         daycareId: DaycareId = testDaycare.id,

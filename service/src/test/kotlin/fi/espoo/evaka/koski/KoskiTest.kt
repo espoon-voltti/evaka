@@ -32,7 +32,7 @@ class KoskiTest {
     @Test
     fun testSimpleAbsenceScenario1() {
         val timelines =
-            calculateStudyRightTimelines(
+            calculatePreparatoryAbsences(
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
@@ -48,8 +48,7 @@ class KoskiTest {
                     )
             )
         assertEquals(
-            StudyRightTimelines(
-                present = DateSet.of(preschoolTerm2020),
+            PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
                 unknownAbsence = DateSet.of()
@@ -70,7 +69,7 @@ class KoskiTest {
     @Test
     fun testSimpleAbsenceScenario2() {
         val timelines =
-            calculateStudyRightTimelines(
+            calculatePreparatoryAbsences(
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
@@ -87,12 +86,7 @@ class KoskiTest {
                     )
             )
         assertEquals(
-            StudyRightTimelines(
-                present =
-                    DateSet.of(
-                        FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
-                        FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
-                    ),
+            PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
                 unknownAbsence =
@@ -116,7 +110,7 @@ class KoskiTest {
     @Test
     fun testSimpleAbsenceScenario3() {
         val timelines =
-            calculateStudyRightTimelines(
+            calculatePreparatoryAbsences(
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
@@ -133,12 +127,7 @@ class KoskiTest {
                     )
             )
         assertEquals(
-            StudyRightTimelines(
-                present =
-                    DateSet.of(
-                        FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
-                        FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
-                    ),
+            PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence =
                     DateSet.of(
@@ -163,7 +152,7 @@ class KoskiTest {
     @Test
     fun testComplexAbsenceScenario1() {
         val timelines =
-            calculateStudyRightTimelines(
+            calculatePreparatoryAbsences(
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
@@ -179,8 +168,7 @@ class KoskiTest {
                     )
             )
         assertEquals(
-            StudyRightTimelines(
-                present = DateSet.of(preschoolTerm2020),
+            PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
                 unknownAbsence = DateSet.of()
@@ -201,7 +189,7 @@ class KoskiTest {
     @Test
     fun testComplexAbsenceScenario2() {
         val timelines =
-            calculateStudyRightTimelines(
+            calculatePreparatoryAbsences(
                 placements = DateSet.of(preschoolTerm2020),
                 holidays = holidays,
                 absences =
@@ -217,12 +205,7 @@ class KoskiTest {
                     )
             )
         assertEquals(
-            StudyRightTimelines(
-                present =
-                    DateSet.of(
-                        FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 28)),
-                        FiniteDateRange(LocalDate.of(2021, 4, 7), preschoolTerm2020.end)
-                    ),
+            PreparatoryAbsences(
                 plannedAbsence =
                     DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))

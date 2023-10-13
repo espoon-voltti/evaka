@@ -131,7 +131,7 @@ fun Database.Transaction.beginKoskiUpload(
             SELECT
                 kvsr.*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
-                d.unit_language, d.provider_type,
+                d.unit_language, d.provider_type, d.approver_name,
                 pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
             FROM koski_study_right ksr
             JOIN koski_voided_study_right(${bind(today)}) kvsr
@@ -145,13 +145,13 @@ fun Database.Transaction.beginKoskiUpload(
             .exactlyOneOrNull<KoskiVoidedDataRaw>()
             ?.toKoskiData(sourceSystem, ophOrganizationOid)
     } else {
-        createQuery<Any> {
-                when (key.type) {
-                    OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+        when (key.type) {
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                createQuery<Any> {
                         sql(
                             """
             SELECT
-                kasr.child_id, kasr.unit_id, kasr.type, (kasr.input_data).*,
+                kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
                 d.unit_language, d.provider_type, d.approver_name,
                 pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name
@@ -163,32 +163,33 @@ fun Database.Transaction.beginKoskiUpload(
             WHERE ksr.id = ${bind(id)}
                     """
                         )
-                    OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                    }
+                    .exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                createQuery<Any> {
                         sql(
                             """
             SELECT
-                kasr.child_id, kasr.unit_id, kasr.type, (kasr.input_data).*,
+                kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
                 d.unit_language, d.provider_type, d.approver_name,
                 pr.ssn, pr.oph_person_oid, pr.first_name, pr.last_name,
-                holidays
+                (
+                    SELECT coalesce(array_agg(date ORDER BY date), '{}')
+                    FROM holiday h
+                    WHERE between_start_and_end(range_merge((kasr.input_data).placements), date)
+                ) AS holidays
             FROM koski_study_right ksr
             JOIN koski_active_preparatory_study_right(${bind(today)}) kasr
             USING (child_id, unit_id, type)
             JOIN koski_unit d ON ksr.unit_id = d.id
             JOIN koski_child pr ON ksr.child_id = pr.id
-            LEFT JOIN LATERAL (
-                SELECT array_agg(date ORDER BY date) AS holidays
-                FROM holiday h
-                WHERE between_start_and_end(range_merge((kasr.input_data).placements), date)
-            ) h ON true
             WHERE ksr.id = ${bind(id)}
                     """
                         )
-                }
-            }
-            .exactlyOneOrNull<KoskiActiveDataRaw>()
-            ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
+                    }
+                    .exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
+        }?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
     }
 }
 

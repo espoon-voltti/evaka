@@ -29,7 +29,7 @@ OR nullif(oph_person_oid, '') IS NOT NULL;
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    placements datemultirange, all_placements_in_past bool, last_of_child bool
+    placements datemultirange, all_placements_in_past bool, last_of_child bool, last_of_type bool
 )
 LANGUAGE SQL STABLE PARALLEL SAFE
 BEGIN ATOMIC
@@ -37,16 +37,20 @@ BEGIN ATOMIC
         child_id, unit_id, type,
         range_agg(daterange(start_date, end_date, '[]')) AS placements,
         (max(end_date) < today) AS all_placements_in_past,
-        bool_or(last_of_child) AS last_of_child
+        bool_or(last_of_child) AS last_of_child,
+        bool_or(last_of_type) AS last_of_type
     FROM (
         SELECT
             child_id, unit_id, start_date, end_date,
-            end_date = max(end_date) OVER child AS last_of_child,
+            row_number() OVER child = count(*) OVER child AS last_of_child,
+            row_number() OVER child_type = count(*) OVER child_type AS last_of_type,
             placement.type::koski_study_right_type AS type
         FROM placement
         WHERE start_date <= today
         AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
-        WINDOW child AS (PARTITION BY child_id)
+        WINDOW
+            child AS (PARTITION BY child_id ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
+            child_type AS (PARTITION BY child_id, placement.type::koski_study_right_type ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
     ) p
     WHERE NOT EXISTS (SELECT FROM person duplicate WHERE duplicate.duplicate_of = p.child_id)
     GROUP BY child_id, unit_id, type;
@@ -66,20 +70,20 @@ BEGIN ATOMIC
             placements,
             all_placements_in_past,
             last_of_child,
-            special_support_with_decision_level_1,
-            special_support_with_decision_level_2,
-            transport_benefit
+            coalesce(special_support_with_decision_level_1, '{}'),
+            coalesce(special_support_with_decision_level_2, '{}'),
+            coalesce(transport_benefit, '{}')
         ) AS input_data
     FROM koski_placement(today) p
     JOIN koski_unit d ON p.unit_id = d.id
-    LEFT JOIN LATERAL (
+    JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
         AND oam.valid_during && range_merge(placements)
         AND type = 'TRANSPORT_BENEFIT'
     ) oam ON TRUE
-    LEFT JOIN LATERAL (
+    JOIN LATERAL (
         SELECT
             range_agg(valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1'
@@ -109,11 +113,12 @@ BEGIN ATOMIC
             placements,
             all_placements_in_past,
             last_of_child,
-            absences
+            last_of_type,
+            coalesce(absences, '{}')
         ) AS input_data
     FROM koski_placement(today) p
     JOIN koski_unit d ON p.unit_id = d.id
-    LEFT JOIN LATERAL (
+    JOIN LATERAL (
         SELECT jsonb_object_agg(absence_type, dates) AS absences
         FROM (
             SELECT a.absence_type, array_agg(a.date ORDER BY a.date) AS dates

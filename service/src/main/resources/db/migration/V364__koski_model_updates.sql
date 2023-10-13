@@ -23,7 +23,7 @@ CREATE TYPE koski_preschool_input_data AS (
 
 CREATE TYPE koski_preparatory_input_data AS (
     oph_unit_oid text, oph_organizer_oid text,
-    placements datemultirange, all_placements_in_past bool, last_of_child bool, absences jsonb
+    placements datemultirange, all_placements_in_past bool, last_of_child bool, last_of_type bool, absences jsonb
 );
 
 ALTER TABLE koski_study_right
