@@ -461,7 +461,9 @@ const en: Translations = {
       text: 'The messages cannot be recovered after deleting.',
       cancel: 'Do not delete',
       confirm: 'Delete thread'
-    }
+    },
+    sensitive: 'Sensitive message thread',
+    strongAuthRequired: 'Reading requires strong authentication'
   },
   applications: {
     title: 'Applications',

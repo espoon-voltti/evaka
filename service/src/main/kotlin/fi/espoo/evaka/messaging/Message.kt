@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -38,6 +39,7 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     val urgent: Boolean,
+    val sensitive: Boolean,
     val isCopy: Boolean,
     val children: List<MessageChild>,
     @Json val messages: List<Message>
@@ -48,8 +50,57 @@ data class MessageThreadStub(
     val type: MessageType,
     val title: String,
     val urgent: Boolean,
+    val sensitive: Boolean,
     val isCopy: Boolean
 )
+
+enum class MessageThreadType {
+    REDACTED_MESSAGE_THREAD,
+    MESSAGE_THREAD
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class CitizenMessageThread(val type: MessageThreadType) {
+    abstract val id: MessageThreadId
+    abstract val urgent: Boolean
+    abstract val children: List<MessageChild>
+
+    @JsonTypeName("REDACTED_MESSAGE_THREAD")
+    data class Redacted(
+        override val id: MessageThreadId,
+        override val urgent: Boolean,
+        override val children: List<MessageChild>,
+        val sender: MessageAccount?,
+        val lastMessageSentAt: HelsinkiDateTime?,
+        val hasUnreadMessages: Boolean
+    ) : CitizenMessageThread(MessageThreadType.REDACTED_MESSAGE_THREAD)
+
+    @JsonTypeName("MESSAGE_THREAD")
+    data class Regular(
+        override val id: MessageThreadId,
+        override val urgent: Boolean,
+        override val children: List<MessageChild>,
+        val messageType: MessageType,
+        val title: String,
+        val sensitive: Boolean,
+        val isCopy: Boolean,
+        val messages: List<Message>
+    ) : CitizenMessageThread(MessageThreadType.MESSAGE_THREAD) {
+        companion object {
+            fun fromMessageThread(messageThread: MessageThread) =
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+        }
+    }
+}
 
 data class SentMessage(
     val contentId: MessageContentId,
@@ -58,6 +109,7 @@ data class SentMessage(
     val threadTitle: String,
     val type: MessageType,
     val urgent: Boolean,
+    val sensitive: Boolean,
     @Json val recipients: Set<MessageAccount>,
     val recipientNames: List<String>,
     @Json val attachments: List<MessageAttachment>
@@ -160,4 +212,9 @@ data class MessageChild(
     val preferredName: String
 )
 
-data class NewMessageStub(val title: String, val content: String, val urgent: Boolean)
+data class NewMessageStub(
+    val title: String,
+    val content: String,
+    val urgent: Boolean,
+    val sensitive: Boolean
+)

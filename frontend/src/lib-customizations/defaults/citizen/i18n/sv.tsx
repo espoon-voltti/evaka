@@ -457,7 +457,9 @@ const sv: Translations = {
       text: 'Meddelanden kan inte återställas efter radering.',
       cancel: 'Radera inte',
       confirm: 'Radera tråden'
-    }
+    },
+    sensitive: 'Känslig meddelandetråd',
+    strongAuthRequired: 'Läsning kräver stark autentisering'
   },
   applications: {
     title: 'Ansökningar',

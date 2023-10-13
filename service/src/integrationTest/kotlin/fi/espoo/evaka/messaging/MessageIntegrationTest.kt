@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.*
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.attachment.AttachmentsController
@@ -50,19 +50,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAdult_5
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
@@ -265,12 +252,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then sender does not see it in received messages
-        assertEquals(listOf(), getMessageThreads(employee1Account, employee1))
+        assertEquals(listOf(), getEmployeeMessageThreads(employee1Account, employee1))
 
         // then recipient can see it in received messages
-        val threadWithOneReply = getMessageThreads(person1)[0]
+        val threadWithOneReply = getRegularMessageThreads(person1)[0]
         assertEquals("Juhannus", threadWithOneReply.title)
-        assertEquals(MessageType.MESSAGE, threadWithOneReply.type)
+        assertEquals(MessageType.MESSAGE, threadWithOneReply.messageType)
         assertEquals(
             listOf(Pair(employee1Account, "Juhannus tulee pian")),
             threadWithOneReply.toSenderContentPairs()
@@ -285,9 +272,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then recipients see the same data
-        val person2Threads = getMessageThreads(person2)
-        assertEquals(getMessageThreads(person1), person2Threads)
-        assertEquals(getMessageThreads(employee1Account, employee1), person2Threads)
+        val person2Threads = getRegularMessageThreads(person2)
+        assertEquals(getRegularMessageThreads(person1), person2Threads)
+        assertEquals(
+            getEmployeeMessageThreads(employee1Account, employee1).map { messageThread ->
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+            },
+            person2Threads
+        )
 
         // then thread has both messages in correct order
         assertEquals(1, person2Threads.size)
@@ -318,11 +319,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         assertEquals(
             threadContentWithTwoReplies,
-            getMessageThreads(person1)[0].toSenderContentPairs()
+            getRegularMessageThreads(person1)[0].toSenderContentPairs()
         )
         assertEquals(
             threadContentWithTwoReplies,
-            getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
+            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
         )
 
         // then person two does not see the message
@@ -331,7 +332,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan")
             ),
-            getMessageThreads(person2)[0].toSenderContentPairs()
+            getRegularMessageThreads(person2)[0].toSenderContentPairs()
         )
 
         // when author replies to person two
@@ -350,13 +351,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(person1Account, "No niinpä näyttää tulevan"),
                 Pair(employee1Account, "person 1 does not see this")
             ),
-            getMessageThreads(person2)[0].toSenderContentPairs()
+            getRegularMessageThreads(person2)[0].toSenderContentPairs()
         )
 
         // then person one does not see that
         assertEquals(
             threadContentWithTwoReplies,
-            getMessageThreads(person1)[0].toSenderContentPairs()
+            getRegularMessageThreads(person1)[0].toSenderContentPairs()
         )
 
         // then employee sees all the messages
@@ -367,7 +368,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(person1Account, "person 2 does not see this"),
                 Pair(employee1Account, "person 1 does not see this")
             ),
-            getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
+            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
         )
 
         // then employee can see all sent messages
@@ -449,11 +450,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // person 1 and 2: common child
         // person 2 and 3: common child
         // person 4: no child
-        val person1Threads = getMessageThreads(person1)
-        val person2Threads = getMessageThreads(person2)
-        val person3Threads = getMessageThreads(person3)
-        val person4Threads = getMessageThreads(person4)
-        val person5Threads = getMessageThreads(person5)
+        val person1Threads = getRegularMessageThreads(person1)
+        val person2Threads = getRegularMessageThreads(person2)
+        val person3Threads = getRegularMessageThreads(person3)
+        val person4Threads = getRegularMessageThreads(person4)
+        val person5Threads = getRegularMessageThreads(person5)
 
         assertEquals(1, person1Threads.size)
         assertEquals(1, person2Threads.size)
@@ -484,19 +485,33 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then only the participants should get the message
-        val employeeThreads = getMessageThreads(employee1Account, employee1)
+        val employeeThreads = getEmployeeMessageThreads(employee1Account, employee1)
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             employeeThreads.map { it.toSenderContentPairs() }.flatten()
         )
-        assertEquals(employeeThreads, getMessageThreads(person1))
+        assertEquals(
+            employeeThreads.map { messageThread ->
+                CitizenMessageThread.Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.messages
+                )
+            },
+            getRegularMessageThreads(person1)
+        )
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-            getMessageThreads(person2).map { it.toSenderContentPairs() }.flatten()
+            getRegularMessageThreads(person2).map { it.toSenderContentPairs() }.flatten()
         )
 
-        assertEquals(person3Threads, getMessageThreads(person3))
-        assertEquals(person4Threads, getMessageThreads(person4))
+        assertEquals(person3Threads, getRegularMessageThreads(person3))
+        assertEquals(person4Threads, getRegularMessageThreads(person4))
     }
 
     @Test
@@ -512,9 +527,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then the recipient can see it
-        val thread = getMessageThreads(person1).first()
+        val thread = getRegularMessageThreads(person1).first()
         assertEquals("Tiedote", thread.title)
-        assertEquals(MessageType.BULLETIN, thread.type)
+        assertEquals(MessageType.BULLETIN, thread.messageType)
         assertEquals(
             listOf(Pair(employee1Account, "Juhannus tulee pian")),
             thread.toSenderContentPairs()
@@ -550,7 +565,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(employee1Account, "Nauttikaa siitä")
             ),
-            getMessageThreads(person1).first().toSenderContentPairs()
+            getRegularMessageThreads(person1).first().toSenderContentPairs()
         )
     }
 
@@ -586,7 +601,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(2, getUnreadReceivedMessages(person2Account, person2).size)
 
         // when a thread is marked read
-        markThreadRead(person2, getMessageThreads(person2).first().id)
+        markThreadRead(person2, getRegularMessageThreads(person2).first().id)
 
         // then the thread is marked read
         assertEquals(1, getUnreadReceivedMessages(employee1Account, employee1).size)
@@ -688,7 +703,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // the recipient can read the attachment
-        val threads = getMessageThreads(person1)
+        val threads = getRegularMessageThreads(person1)
         assertEquals(1, threads.size)
         val messages = threads.first().messages
         assertEquals(1, messages.size)
@@ -724,7 +739,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
         )
-        assertEquals(0, getMessageThreads(person4).size)
+        assertEquals(0, getRegularMessageThreads(person4).size)
 
         postNewThread(
             title = "Juhannus",
@@ -734,7 +749,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
         )
-        assertEquals(1, getMessageThreads(person4).size)
+        assertEquals(1, getRegularMessageThreads(person4).size)
     }
 
     @Test
@@ -747,7 +762,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
             user = employee1,
         )
-        assertEquals(0, getMessageThreads(person4).size)
+        assertEquals(0, getRegularMessageThreads(person4).size)
 
         postNewThread(
             title = "Juhannus",
@@ -757,7 +772,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
             user = employee1,
         )
-        assertEquals(1, getMessageThreads(person4).size)
+        assertEquals(1, getRegularMessageThreads(person4).size)
     }
 
     @Test
@@ -775,7 +790,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, unreadMessagesCount(person2))
 
         // citizen reads the message
-        markThreadRead(person1, getMessageThreads(person1).first().id)
+        markThreadRead(person1, getRegularMessageThreads(person1).first().id)
         assertEquals(0, unreadMessagesCount(employee1Account, employee1))
         assertEquals(0, unreadMessagesCount(person1))
         assertEquals(1, unreadMessagesCount(person2))
@@ -783,7 +798,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // thread is replied
         replyToMessage(
             user = person1,
-            messageId = getMessageThreads(person1).first().messages.last().id,
+            messageId = getRegularMessageThreads(person1).first().messages.last().id,
             recipientAccountIds = setOf(person2Account, employee1Account),
             content = "Juhannus on jo ohi"
         )
@@ -934,7 +949,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user = serviceWorker,
             relatedApplicationId = applicationId
         )
-        val thread = getMessageThreads(person1)[0]
+        val thread = getRegularMessageThreads(person1)[0]
         replyToMessage(
             messageId = thread.messages.first().id,
             content = "Vastaus",
@@ -1002,12 +1017,80 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `sensitive messages can be sent from personal accounts for single child recipients`() {
+        postNewThread(
+            title = "title",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            user = employee1,
+            sensitive = true
+        )
+
+        // then the recipient can see it
+        assertEquals(
+            listOf(Pair(employee1Account, "Juhannus tulee pian")),
+            getRegularMessageThreads(person1).first().toSenderContentPairs()
+        )
+    }
+
+    @Test
+    fun `sensitive messages cannot be sent to multiple recipients`() {
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipients =
+                    listOf(
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)
+                    ),
+                user = employee1,
+                sensitive = true
+            )
+        }
+    }
+
+    @Test
+    fun `sensitive messages cannot be sent to != child recipients`() {
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
+                user = employee1,
+                sensitive = true
+            )
+        }
+    }
+
+    @Test
+    fun `sensitive messages cannot from != personal accounts`() {
+        assertThrows<BadRequest> {
+            postNewThread(
+                title = "title",
+                message = "content",
+                messageType = MessageType.MESSAGE,
+                sender = group1Account,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testAdult_1.id)),
+                user = employee1,
+                sensitive = true
+            )
+        }
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen,
         now: HelsinkiDateTime = readTime,
     ) =
-        getMessageThreads(user, now).flatMap {
+        getRegularMessageThreads(user, now).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
         }
 
@@ -1016,7 +1099,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
         now: HelsinkiDateTime = readTime,
     ) =
-        getMessageThreads(accountId, user, now).flatMap {
+        getEmployeeMessageThreads(accountId, user, now).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
         }
 
@@ -1044,6 +1127,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         draftId: MessageDraftId? = null,
         now: HelsinkiDateTime = sendTime,
         relatedApplicationId: ApplicationId? = null,
+        sensitive: Boolean = false,
     ): MessageContentId? {
         val messageContentId =
             messageController.createMessage(
@@ -1060,6 +1144,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     attachmentIds = attachmentIds,
                     draftId = draftId,
                     urgent = false,
+                    sensitive = sensitive,
                     relatedApplicationId = relatedApplicationId
                 )
             )
@@ -1118,16 +1203,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun getMessageThreads(
+    private fun getRegularMessageThreads(
         user: AuthenticatedUser.Citizen,
         now: HelsinkiDateTime = readTime,
-    ): List<MessageThread> {
+    ): List<CitizenMessageThread.Regular> {
         return messageControllerCitizen
             .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1, pageSize = 100)
             .data
+            .filterIsInstance<CitizenMessageThread.Regular>()
     }
 
-    private fun getMessageThreads(
+    private fun getEmployeeMessageThreads(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee,
         now: HelsinkiDateTime = readTime,
@@ -1194,6 +1280,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 }
+
+fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
+    this.messages.map { Pair(it.sender.id, it.content) }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
     this.messages.map { Pair(it.sender.id, it.content) }

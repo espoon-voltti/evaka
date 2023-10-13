@@ -457,6 +457,7 @@ export const MessageContextProvider = React.memo(
                 type: message.type,
                 title: message.threadTitle,
                 urgent: message.urgent,
+                sensitive: message.sensitive,
                 isCopy: false,
                 participants: message.recipientNames,
                 children: [],

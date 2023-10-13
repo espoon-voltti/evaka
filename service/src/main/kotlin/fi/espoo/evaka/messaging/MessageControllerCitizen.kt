@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -88,6 +89,31 @@ class MessageControllerCitizen(
         Audit.MessagingArchiveMessageWrite.log(targetId = threadId)
     }
 
+    fun redactMessageTread(
+        user: AuthenticatedUser.Citizen,
+        messageThread: MessageThread
+    ): CitizenMessageThread.Redacted {
+        return CitizenMessageThread.Redacted(
+            messageThread.id,
+            messageThread.urgent,
+            messageThread.children,
+            messageThread.messages.firstOrNull()?.sender,
+            messageThread.messages.lastOrNull()?.sentAt,
+            messageThread.messages.findLast { message -> message.sender.id != user.id }?.readAt !=
+                null
+        )
+    }
+
+    fun wrapAsCitizenMessageThread(
+        user: AuthenticatedUser.Citizen,
+        messageThread: MessageThread
+    ): CitizenMessageThread {
+        if (user.authLevel != CitizenAuthLevel.STRONG && messageThread.sensitive)
+            return redactMessageTread(user, messageThread)
+
+        return CitizenMessageThread.Regular.fromMessageThread(messageThread)
+    }
+
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,
@@ -95,18 +121,19 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<MessageThread> {
+    ): Paged<CitizenMessageThread> {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
-                    it.getThreads(
-                        accountId,
-                        pageSize,
-                        page,
-                        featureConfig.municipalMessageAccountName,
-                        featureConfig.serviceWorkerMessageAccountName
-                    )
-                }
+                        it.getThreads(
+                            accountId,
+                            pageSize,
+                            page,
+                            featureConfig.municipalMessageAccountName,
+                            featureConfig.serviceWorkerMessageAccountName
+                        )
+                    }
+                    .map { messageThread -> wrapAsCitizenMessageThread(user, messageThread) }
             }
             .also { Audit.MessagingReceivedMessagesRead.log(meta = mapOf("total" to it.total)) }
     }
@@ -195,7 +222,8 @@ class MessageControllerCitizen(
                             NewMessageStub(
                                 title = body.title,
                                 content = body.content,
-                                urgent = false
+                                urgent = false,
+                                sensitive = false
                             ),
                             body.recipients,
                             body.children

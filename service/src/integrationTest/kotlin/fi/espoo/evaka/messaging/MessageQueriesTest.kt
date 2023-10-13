@@ -729,7 +729,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val recipientIds = recipientAccounts.map { it.id }.toSet()
             val contentId = tx.insertMessageContent(content, sender.id)
             val threadId =
-                tx.insertThread(MessageType.MESSAGE, title, urgent = false, isCopy = false)
+                tx.insertThread(
+                    MessageType.MESSAGE,
+                    title,
+                    urgent = false,
+                    sensitive = false,
+                    isCopy = false
+                )
             val messageId =
                 tx.insertMessage(
                     now = now,

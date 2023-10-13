@@ -73,7 +73,14 @@ class MessageService(
         children: Set<ChildId>,
     ): MessageThreadId {
         val contentId = tx.insertMessageContent(msg.content, sender)
-        val threadId = tx.insertThread(MessageType.MESSAGE, msg.title, msg.urgent, isCopy = false)
+        val threadId =
+            tx.insertThread(
+                MessageType.MESSAGE,
+                msg.title,
+                msg.urgent,
+                sensitive = false,
+                isCopy = false
+            )
         tx.upsertSenderThreadParticipants(sender, listOf(threadId), now)
         val recipientNames =
             tx.getAccountNames(recipients, featureConfig.serviceWorkerMessageAccountName)
@@ -147,6 +154,7 @@ class MessageService(
                 type = type,
                 title = msg.title,
                 urgent = msg.urgent,
+                sensitive = msg.sensitive,
                 isCopy = false,
                 contentId = contentId,
                 senderId = sender,
@@ -180,6 +188,7 @@ class MessageService(
                     type = type,
                     title = msg.title,
                     urgent = msg.urgent,
+                    sensitive = false,
                     isCopy = true,
                     contentId = contentId,
                     senderId = sender,

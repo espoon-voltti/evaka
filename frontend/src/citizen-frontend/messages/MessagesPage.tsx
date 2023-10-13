@@ -23,7 +23,7 @@ import MessageEditor from './MessageEditor'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
 import { receiversQuery, sendMessageMutation } from './queries'
-import { MessageContext } from './state'
+import { isRegularThread, MessageContext } from './state'
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;
@@ -105,12 +105,14 @@ export default React.memo(function MessagesPage() {
                 newMessageButtonEnabled={canSendNewMessage}
               />
               {selectedThread ? (
-                <ThreadView
-                  accountId={id}
-                  closeThread={() => selectThread(undefined)}
-                  thread={selectedThread}
-                  onThreadDeleted={() => onSelectedThreadDeleted()}
-                />
+                isRegularThread(selectedThread) && (
+                  <ThreadView
+                    accountId={id}
+                    closeThread={() => selectThread(undefined)}
+                    thread={selectedThread}
+                    onThreadDeleted={() => onSelectedThreadDeleted()}
+                  />
+                )
               ) : (
                 <EmptyThreadView />
               )}

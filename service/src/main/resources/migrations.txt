@@ -359,3 +359,4 @@ V359__really_create_application_document_index.sql
 V360__remove_application_form_fk.sql
 V361__child_document_modified_at.sql
 V362__drop_temporary_fee_decision_v2_tables.sql
+V363__message_thread_sensitivity_flag.sql

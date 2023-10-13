@@ -13,9 +13,9 @@ import React, {
 import styled, { css } from 'styled-components'
 
 import {
+  CitizenMessageThread,
   Message,
-  MessageAccount,
-  MessageThread
+  MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
@@ -198,14 +198,14 @@ const SingleMessage = React.memo(
 
 interface Props {
   accountId: UUID
-  thread: MessageThread
+  thread: CitizenMessageThread.Regular
   closeThread: () => void
   onThreadDeleted: () => void
 }
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id: threadId, messages, title, type, urgent, children },
+  thread: { id: threadId, messages, title, messageType, urgent, children },
   closeThread,
   onThreadDeleted
 }: Props) {
@@ -262,7 +262,7 @@ export default React.memo(function ThreadView({
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
-          <MessageCharacteristics type={type} urgent={urgent} />
+          <MessageCharacteristics type={messageType} urgent={urgent} />
           {children.length > 0 ? (
             <>
               <ScreenReaderOnly>
@@ -313,7 +313,7 @@ export default React.memo(function ThreadView({
           <>
             <Gap size="s" />
             <ActionRow justifyContent="space-between">
-              {type === 'MESSAGE' ? (
+              {messageType === 'MESSAGE' ? (
                 <ReplyToThreadButton
                   icon={faReply}
                   onClick={() => setReplyEditorVisible(true)}
