@@ -317,8 +317,11 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                         .goToNextStatusConfirmTitle[nextStatus]
                     }
                     confirmationText={
-                      i18n.childInformation.childDocuments.editor
-                        .publishConfirmText
+                      nextStatus === 'COMPLETED'
+                        ? i18n.childInformation.childDocuments.editor
+                            .goToCompletedConfirmText
+                        : i18n.childInformation.childDocuments.editor
+                            .publishConfirmText
                     }
                     data-qa="next-status-button"
                   />

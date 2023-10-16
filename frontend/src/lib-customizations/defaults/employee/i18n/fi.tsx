@@ -816,6 +816,8 @@ export const fi = {
           PREPARED: 'Haluatko varmasti julkaista asiakirjan laadittu-tilassa?',
           COMPLETED: 'Haluatko varmasti julkaista asiakirjan valmis-tilassa?'
         },
+        goToCompletedConfirmText:
+          'Huoltaja saa nähdäkseen tämänhetkisen version. Valmis-tilassa olevaa asiakirjaa ei voi enää muokata.',
         goToPrevStatus: {
           DRAFT: 'Palauta luonnokseksi',
           PREPARED: 'Palauta laadituksi',
