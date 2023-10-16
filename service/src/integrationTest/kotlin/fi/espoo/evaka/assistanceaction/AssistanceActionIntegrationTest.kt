@@ -173,7 +173,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `get assistance actions`() {
-        val seoInPlacementUnit =
+        val veoInPlacementUnit =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -202,7 +202,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
         val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, seoInPlacementUnit)
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, assistanceActions.size)
         with(assistanceActions[0]) {
             assertEquals(testChild_1.id, childId)
@@ -218,7 +218,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `update assistance action`() {
-        val seoInPlacementUnit =
+        val veoInPlacementUnit =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -244,14 +244,14 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = placementStartDate.plusDays(9),
                     endDate = placementStartDate.plusDays(22)
                 ),
-                seoInPlacementUnit
+                veoInPlacementUnit
             )
 
         assertEquals(id2, updated.id)
         assertEquals(placementStartDate.plusDays(9), updated.startDate)
         assertEquals(placementStartDate.plusDays(22), updated.endDate)
 
-        val fetched = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, seoInPlacementUnit)
+        val fetched = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, fetched.size)
         assertTrue(
             fetched.any {
@@ -292,7 +292,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `delete assistance action`() {
-        val seoInPlacementUnit =
+        val veoInPlacementUnit =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -313,7 +313,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         whenDeleteAssistanceActionThenExpectSuccess(id2)
 
         val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, seoInPlacementUnit)
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
         assertEquals(id1, assistanceActions.first().id)
     }
@@ -325,7 +325,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `if child is in preschool, show VEO only assistance info that overlaps with earliest preschool placements`() {
-        val seoEmployee =
+        val veoEmployee =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -378,7 +378,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
 
         val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, seoEmployee)
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoEmployee)
         assertEquals(2, assistanceActions.size)
 
         assertEquals(
@@ -414,7 +414,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `if child will be in preschool, show pre preschool assistance actions`() {
-        val seoInPlacementUnit =
+        val veoInPlacementUnit =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -433,7 +433,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
         val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, seoInPlacementUnit)
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
     }
 

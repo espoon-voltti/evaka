@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
@@ -230,7 +231,7 @@ ${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDele
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceAction(hideClosed: Boolean) =
+    fun inPlacementUnitOfChildOfAssistanceAction(hidePastAssistance: Boolean) =
         rule<AssistanceActionId> { user, now ->
             sql(
                 """
@@ -254,13 +255,13 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hideClosed) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
+${if (hidePastAssistance) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceFactor(hideClosed: Boolean) =
+    fun inPlacementUnitOfChildOfAssistanceFactor(hidePastAssistance: Boolean) =
         rule<AssistanceFactorId> { user, now ->
             sql(
                 """
@@ -280,11 +281,11 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = af.child_id
-                AND UPPER(af.valid_during) >= p.start_date
+                AND NOT af.valid_during << daterange(p.start_date, p.end_date, '[]')
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hideClosed) "AND upper(af.valid_during) >= ${bind(now.toLocalDate())}" else ""}    
+${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
                     .trimIndent()
             )
@@ -332,7 +333,7 @@ WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
             )
         }
 
-    fun inPlacementUnitOfChildOfDaycareAssistance(hideClosed: Boolean) =
+    fun inPlacementUnitOfChildOfDaycareAssistance(hidePastAssistance: Boolean) =
         rule<DaycareAssistanceId> { user, now ->
             sql(
                 """
@@ -352,17 +353,17 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = da.child_id
-                AND UPPER(da.valid_during) >= p.start_date
+                AND NOT da.valid_during << daterange(p.start_date, p.end_date, '[]')
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hideClosed) "AND upper(da.valid_during) >= ${bind(now.toLocalDate())}" else ""}    
+${if (hidePastAssistance) "AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(hideClosed: Boolean) =
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(hidePastAssistance: Boolean) =
         rule<OtherAssistanceMeasureId> { user, now ->
             sql(
                 """
@@ -382,17 +383,17 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = oam.child_id
-                AND UPPER(oam.valid_during) >= p.start_date
+                AND NOT oam.valid_during << daterange(p.start_date, p.end_date, '[]')
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hideClosed) "AND upper(oam.valid_during) >= ${bind(now.toLocalDate())}" else ""}  
+${if (hidePastAssistance) "AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfPreschoolAssistance(hideClosed: Boolean) =
+    fun inPlacementUnitOfChildOfPreschoolAssistance(hidePastAssistance: Boolean) =
         rule<PreschoolAssistanceId> { user, now ->
             sql(
                 """
@@ -412,11 +413,11 @@ AND CASE
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = pa.child_id
-                AND UPPER(pa.valid_during) >= p.start_date
+                AND NOT pa.valid_during << daterange(p.start_date, p.end_date, '[]')
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hideClosed) "AND upper(pa.valid_during) >= ${bind(now.toLocalDate())}" else ""}  
+${if (hidePastAssistance) "AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
                     .trimIndent()
             )

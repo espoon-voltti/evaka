@@ -43,8 +43,7 @@ WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_fa
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceFactor>()
-        .toList()
+        .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
@@ -186,8 +185,7 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("preschool_assis
 """
             )
         }
-        .mapTo<PreschoolAssistance>()
-        .toList()
+        .toList<PreschoolAssistance>()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
@@ -259,8 +257,7 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("other_assistanc
 """
             )
         }
-        .mapTo<OtherAssistanceMeasure>()
-        .toList()
+        .toList<OtherAssistanceMeasure>()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
@@ -307,27 +304,6 @@ fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasure
         }
         .execute()
 
-/*
-fun Database.Read.getAssistanceNeedDecisionsByChildId(
-    childId: ChildId,
-    filter: AccessControlFilter<AssistanceNeedDecisionId>
-): List<AssistanceNeedDecisionBasics> =
-    createQuery<Any> {
-            sql(
-                """
-        SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
-            selected_unit selected_unit_id, unit.name selected_unit_name
-        FROM assistance_need_decision ad
-        LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
-    """
-                    .trimIndent()
-            )
-        }
-        .mapTo<AssistanceNeedDecisionBasics>()
-        .list()
- */
-
 fun Database.Read.getAssistanceActionsByChildId(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceActionId>
@@ -346,5 +322,4 @@ ORDER BY start_date DESC
                     .trimIndent()
             )
         }
-        .mapTo<AssistanceAction>()
-        .toList()
+        .toList<AssistanceAction>()
