@@ -99,7 +99,8 @@ function deserializeEmployeeWithDaycareRoles(
   return {
     ...data,
     created: HelsinkiDateTime.parseIso(data.created),
-    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null
+    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null,
+    lastLogin: data.lastLogin ? HelsinkiDateTime.parseIso(data.lastLogin) : null
   }
 }
 

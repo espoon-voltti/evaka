@@ -52,7 +52,8 @@ export function EmployeeList({ employees }: Props) {
         firstName,
         globalRoles,
         id,
-        lastName
+        lastName,
+        lastLogin
       }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
           <Td>
@@ -102,6 +103,7 @@ export function EmployeeList({ employees }: Props) {
               ))}
             </ExpandableList>
           </Td>
+          <Td>{lastLogin?.format() ?? '-'}</Td>
         </LinkTr>
       )
     )
@@ -113,6 +115,7 @@ export function EmployeeList({ employees }: Props) {
           <Tr>
             <Th>{i18n.employees.name}</Th>
             <Th>{i18n.employees.rights}</Th>
+            <Th>{i18n.employees.lastLogin}</Th>
           </Tr>
         </Thead>
         <Tbody>{rows}</Tbody>
