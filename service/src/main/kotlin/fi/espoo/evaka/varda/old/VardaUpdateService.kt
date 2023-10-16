@@ -368,8 +368,20 @@ private fun addServiceNeedDataToVarda(
                 "VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}"
             )
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
-        if (e.message?.contains("MA003") != true)
-            error(errors) // Error code MA003 should result to successful reset
+
+        // MA003: varda needs a moment before retry
+        // PT010: service need belongs to externally managed PAOS unit, we have no right to update
+        // the info
+        // so do not fail the other service needs
+        if (e.message?.contains("MA003") == true) {
+            logger.info(
+                "VardaUpdate: service need ${evakaServiceNeed.id} error response was non critical (MA003) so continuing adding other service needs"
+            )
+        } else if (e.message?.contains("PT010") == true) {
+            logger.info(
+                "VardaUpdate: service need ${evakaServiceNeed.id}  error response was non critical (PT010) so continuing adding other service needs"
+            )
+        } else error(errors) // Fatal error
     }
 }
 
