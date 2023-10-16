@@ -377,10 +377,23 @@ describe('Child Information assistance functionality for employees', () => {
     })
   })
 
-  test('assistance factor before preschool for a child in preschool is not shown for unit supervisor', async () => {
+  test('assistance factor completely before preschool for a child in preschool is not shown for unit supervisor', async () => {
     await setupPlacement('PRESCHOOL')
     const unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save())
       .data
+    await Fixture.assistanceFactor()
+      .with({
+        capacityFactor: 0.5,
+        childId: childId,
+        validDuring: new FiniteDateRange(
+          LocalDate.todayInSystemTz().subDays(2),
+          LocalDate.todayInSystemTz().subDays(2)
+        ),
+        modifiedBy: unitSupervisor.id
+      })
+      .save()
+
+    // Shown because overlaps preschool placement
     await Fixture.assistanceFactor()
       .with({
         capacityFactor: 1.0,
@@ -406,8 +419,10 @@ describe('Child Information assistance functionality for employees', () => {
       .save()
 
     await logUserIn(unitSupervisor)
-    await assistance.assertAssistanceFactorCount(1)
+
+    await assistance.assertAssistanceFactorCount(2)
     await assistance.assistanceFactorRow(0).capacityFactor.assertTextEquals('2')
+    await assistance.assistanceFactorRow(1).capacityFactor.assertTextEquals('1')
   })
 
   test('assistance factor for preschool for a child in preschool is shown for unit manager', async () => {

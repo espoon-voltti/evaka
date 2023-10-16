@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
@@ -230,7 +231,7 @@ ${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDele
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceAction() =
+    fun inPlacementUnitOfChildOfAssistanceAction(hidePastAssistance: Boolean) =
         rule<AssistanceActionId> { user, now ->
             sql(
                 """
@@ -239,12 +240,28 @@ FROM assistance_action aa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = aa.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = aa.child_id
+                AND aa.end_date >= p.start_date
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceFactor() =
+    fun inPlacementUnitOfChildOfAssistanceFactor(hidePastAssistance: Boolean) =
         rule<AssistanceFactorId> { user, now ->
             sql(
                 """
@@ -253,6 +270,22 @@ FROM assistance_factor af
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = af.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = af.child_id
+                AND NOT af.valid_during << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
                     .trimIndent()
             )
@@ -300,7 +333,7 @@ WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
             )
         }
 
-    fun inPlacementUnitOfChildOfDaycareAssistance() =
+    fun inPlacementUnitOfChildOfDaycareAssistance(hidePastAssistance: Boolean) =
         rule<DaycareAssistanceId> { user, now ->
             sql(
                 """
@@ -309,12 +342,28 @@ FROM daycare_assistance da
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = da.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = da.child_id
+                AND NOT da.valid_during << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfOtherAssistanceMeasure() =
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(hidePastAssistance: Boolean) =
         rule<OtherAssistanceMeasureId> { user, now ->
             sql(
                 """
@@ -323,12 +372,28 @@ FROM other_assistance_measure oam
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = oam.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = oam.child_id
+                AND NOT oam.valid_during << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
                     .trimIndent()
             )
         }
 
-    fun inPlacementUnitOfChildOfPreschoolAssistance() =
+    fun inPlacementUnitOfChildOfPreschoolAssistance(hidePastAssistance: Boolean) =
         rule<PreschoolAssistanceId> { user, now ->
             sql(
                 """
@@ -337,6 +402,22 @@ FROM preschool_assistance pa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = pa.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = pa.child_id
+                AND NOT pa.valid_during << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
                     .trimIndent()
             )

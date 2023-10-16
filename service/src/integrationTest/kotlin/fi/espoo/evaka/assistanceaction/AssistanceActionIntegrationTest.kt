@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
@@ -23,7 +24,9 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -170,46 +173,98 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `get assistance actions`() {
-        givenAssistanceAction(testDate(1), testDate(5), testChild_1.id)
-        givenAssistanceAction(testDate(25), testDate(30), testChild_1.id)
-        givenAssistanceAction(testDate(25), testDate(30), testChild_2.id)
+        val veoInPlacementUnit =
+            AuthenticatedUser.Employee(
+                testDecisionMaker_1.id,
+                setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+        db.transaction {
+            it.insertDaycareAclRow(
+                testDaycareId,
+                testDecisionMaker_1.id,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            )
+        }
+        val placementStartDate = LocalDate.now()
+        val placementEndDate = placementStartDate.plusYears(1)
+        givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
 
-        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5), testChild_1.id)
+        givenAssistanceAction(
+            placementStartDate.plusDays(25),
+            placementStartDate.plusDays(30),
+            testChild_1.id
+        )
+        givenAssistanceAction(
+            placementStartDate.plusDays(25),
+            placementStartDate.plusDays(30),
+            testChild_2.id
+        )
+
+        val assistanceActions =
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, assistanceActions.size)
         with(assistanceActions[0]) {
             assertEquals(testChild_1.id, childId)
-            assertEquals(testDate(25), startDate)
-            assertEquals(testDate(30), endDate)
+            assertEquals(placementStartDate.plusDays(25), startDate)
+            assertEquals(placementStartDate.plusDays(30), endDate)
         }
         with(assistanceActions[1]) {
             assertEquals(testChild_1.id, childId)
-            assertEquals(testDate(1), startDate)
-            assertEquals(testDate(5), endDate)
+            assertEquals(placementStartDate, startDate)
+            assertEquals(placementStartDate.plusDays(5), endDate)
         }
     }
 
     @Test
     fun `update assistance action`() {
-        val id1 = givenAssistanceAction(testDate(1), testDate(5))
-        val id2 = givenAssistanceAction(testDate(10), testDate(20))
+        val veoInPlacementUnit =
+            AuthenticatedUser.Employee(
+                testDecisionMaker_1.id,
+                setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+        db.transaction {
+            it.insertDaycareAclRow(
+                testDaycareId,
+                testDecisionMaker_1.id,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            )
+        }
+        val placementStartDate = LocalDate.now()
+        val placementEndDate = placementStartDate.plusYears(1)
+        givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
+
+        val id1 = givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5))
+        val id2 =
+            givenAssistanceAction(placementStartDate.plusDays(10), placementEndDate.plusDays(20))
         val updated =
             whenPutAssistanceActionThenExpectSuccess(
                 id2,
-                AssistanceActionRequest(startDate = testDate(9), endDate = testDate(22))
+                AssistanceActionRequest(
+                    startDate = placementStartDate.plusDays(9),
+                    endDate = placementStartDate.plusDays(22)
+                ),
+                veoInPlacementUnit
             )
 
         assertEquals(id2, updated.id)
-        assertEquals(testDate(9), updated.startDate)
-        assertEquals(testDate(22), updated.endDate)
+        assertEquals(placementStartDate.plusDays(9), updated.startDate)
+        assertEquals(placementStartDate.plusDays(22), updated.endDate)
 
-        val fetched = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        val fetched = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, fetched.size)
         assertTrue(
-            fetched.any { it.id == id1 && it.startDate == testDate(1) && it.endDate == testDate(5) }
+            fetched.any {
+                it.id == id1 &&
+                    it.startDate == placementStartDate &&
+                    it.endDate == placementStartDate.plusDays(5)
+            }
         )
         assertTrue(
             fetched.any {
-                it.id == id2 && it.startDate == testDate(9) && it.endDate == testDate(22)
+                it.id == id2 &&
+                    it.startDate == placementStartDate.plusDays(9) &&
+                    it.endDate == placementStartDate.plusDays(22)
             }
         )
     }
@@ -237,12 +292,28 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `delete assistance action`() {
-        val id1 = givenAssistanceAction(testDate(1), testDate(5))
-        val id2 = givenAssistanceAction(testDate(10), testDate(20))
+        val veoInPlacementUnit =
+            AuthenticatedUser.Employee(
+                testDecisionMaker_1.id,
+                setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+        db.transaction {
+            it.insertDaycareAclRow(
+                testDaycareId,
+                testDecisionMaker_1.id,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            )
+        }
+        val placementStartDate = LocalDate.now()
+        val placementEndDate = placementStartDate.plusYears(1)
+        givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
+        val id1 = givenAssistanceAction(placementStartDate, placementStartDate.plusMonths(1))
+        val id2 = givenAssistanceAction(placementStartDate.plusMonths(2), placementEndDate)
 
         whenDeleteAssistanceActionThenExpectSuccess(id2)
 
-        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        val assistanceActions =
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
         assertEquals(id1, assistanceActions.first().id)
     }
@@ -253,42 +324,116 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `if child is in preschool, only show preschool assistance actions if employee is not an admin`() {
-        val today = LocalDate.now()
-        givenAssistanceAction(today.minusDays(1), today.minusDays(1), testChild_1.id)
-        val assistanceActionNow = givenAssistanceAction(today, today, testChild_1.id)
-
-        // No preschool placement, so expect both
-        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
-
-        // With a non preschool placement expect seeing both
-        val placement = givenPlacement(today, today, PlacementType.DAYCARE)
-        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id).size)
+    fun `if child is in preschool, show VEO only assistance info that overlaps with earliest preschool placements`() {
+        val veoEmployee =
+            AuthenticatedUser.Employee(
+                testDecisionMaker_1.id,
+                setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
         db.transaction {
-            it.createUpdate("delete from placement where id = :id")
-                .bind("id", placement.raw)
-                .execute()
+            it.insertDaycareAclRow(
+                testDaycareId,
+                testDecisionMaker_1.id,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            )
         }
 
-        // With a preschool placement, expect only seeing the assistance need starting after the
-        // placement
-        givenPlacement(today, today, PlacementType.PRESCHOOL)
-        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
-        assertEquals(1, assistanceActions.size)
+        val today = LocalDate.now()
+        val daycarePlacementStart = today.minusYears(1)
+        val daycarePlacementEnd = today.minusDays(1)
+        val preschoolPeriodFirstDate = daycarePlacementEnd.plusDays(1)
 
-        with(assistanceActions[0]) { assertEquals(assistanceActionNow, id) }
+        val daycarePlacement =
+            givenPlacement(daycarePlacementStart, daycarePlacementEnd, PlacementType.DAYCARE)
+        val preschoolPlacementFirst =
+            givenPlacement(
+                preschoolPeriodFirstDate,
+                preschoolPeriodFirstDate,
+                PlacementType.PRESCHOOL_DAYCARE
+            )
+        val preschoolPlacementSecond =
+            givenPlacement(
+                preschoolPeriodFirstDate.plusDays(1),
+                preschoolPeriodFirstDate.plusYears(1),
+                PlacementType.PRESCHOOL
+            )
+
+        // Completely before any preschool placement
+        givenAssistanceAction(
+            daycarePlacementStart,
+            daycarePlacementEnd.minusDays(1),
+            testChild_1.id
+        )
+
+        // Overlaps first preschool placement
+        val assistanceOverlappingPreschool =
+            givenAssistanceAction(daycarePlacementEnd, preschoolPeriodFirstDate, testChild_1.id)
+
+        // Completely after any daycare placement
+        val assistanceDuringPreschool =
+            givenAssistanceAction(
+                preschoolPeriodFirstDate.plusDays(1),
+                preschoolPeriodFirstDate.plusYears(1),
+                testChild_1.id
+            )
+
+        val assistanceActions =
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoEmployee)
+        assertEquals(2, assistanceActions.size)
+
+        assertEquals(
+            assistanceActions.map { it.id }.toSet(),
+            setOf(assistanceOverlappingPreschool, assistanceDuringPreschool)
+        )
 
         // Admin sees all
-        assertEquals(2, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, admin).size)
+        assertEquals(3, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, admin).size)
     }
 
     @Test
-    fun `if child will be in preschool, show pre preschool assistance actions if employee is not an admin`() {
+    fun `before preschool show assistance action only to employees in same unit as child`() {
+        val sameUnitEmployee =
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.STAFF))
+        val differentUnitEmployee =
+            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.STAFF))
+        db.transaction {
+            it.insertDaycareAclRow(testDaycareId, testDecisionMaker_1.id, UserRole.STAFF)
+            it.insertDaycareAclRow(testDaycare2.id, testDecisionMaker_2.id, UserRole.STAFF)
+        }
+
         val today = LocalDate.now()
         givenAssistanceAction(today, today, testChild_1.id)
 
+        givenPlacement(today, today, PlacementType.DAYCARE)
+        val sameUnitAssistanceActions =
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, sameUnitEmployee)
+        assertEquals(1, sameUnitAssistanceActions.size)
+
+        whenGetAssistanceActionsThenExpect403(testChild_1.id, differentUnitEmployee)
+    }
+
+    @Test
+    fun `if child will be in preschool, show pre preschool assistance actions`() {
+        val veoInPlacementUnit =
+            AuthenticatedUser.Employee(
+                testDecisionMaker_1.id,
+                setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+        db.transaction {
+            it.insertDaycareAclRow(
+                testDaycareId,
+                testDecisionMaker_1.id,
+                UserRole.SPECIAL_EDUCATION_TEACHER
+            )
+        }
+        val today = LocalDate.now()
+        givenPlacement(today, today, PlacementType.DAYCARE)
+
+        givenAssistanceAction(today, today, testChild_1.id)
+
         givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
-        val assistanceActions = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id)
+        val assistanceActions =
+            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
     }
 
@@ -372,15 +517,29 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         return result.get().assistanceActions.map { it.action }
     }
 
+    private fun whenGetAssistanceActionsThenExpect403(
+        childId: ChildId,
+        user: AuthenticatedUser = assistanceWorker
+    ) {
+        val (_, res, result) =
+            http
+                .get("/children/$childId/assistance")
+                .asUser(user)
+                .responseObject<AssistanceController.AssistanceResponse>(jsonMapper)
+
+        assertEquals(403, res.statusCode)
+    }
+
     private fun whenPutAssistanceActionThenExpectSuccess(
         id: AssistanceActionId,
-        request: AssistanceActionRequest
+        request: AssistanceActionRequest,
+        employee: AuthenticatedUser.Employee = assistanceWorker
     ): AssistanceAction {
         val (_, res, result) =
             http
                 .put("/assistance-actions/$id")
                 .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(assistanceWorker)
+                .asUser(employee)
                 .responseObject<AssistanceAction>(jsonMapper)
 
         assertEquals(200, res.statusCode)

@@ -4,17 +4,15 @@
 
 package fi.espoo.evaka.assistance
 
-import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.DaycareAssistanceId
-import fi.espoo.evaka.shared.OtherAssistanceMeasureId
-import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.assistanceaction.AssistanceAction
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 
 private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
     QuerySql.of<DatabaseTable.AssistanceFactor> {
@@ -29,6 +27,22 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
+        .toList<AssistanceFactor>()
+
+fun Database.Read.getAssistanceFactorsByChildId(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceFactorId>
+): List<AssistanceFactor> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+FROM assistance_factor
+WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_factor"))}
+"""
+                    .trimIndent()
+            )
+        }
         .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
@@ -86,13 +100,16 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         .executeAndReturnGeneratedKeys()
         .exactlyOneOrNull<AssistanceFactor>()
 
-fun Database.Read.getDaycareAssistances(child: ChildId): List<DaycareAssistance> =
+fun Database.Read.getDaycareAssistanceByChildId(
+    child: ChildId,
+    filter: AccessControlFilter<DaycareAssistanceId>
+): List<DaycareAssistance> =
     createQuery<DatabaseTable.DaycareAssistance> {
             sql(
                 """
 SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
 FROM daycare_assistance
-WHERE child_id = ${bind(child)}
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("daycare_assistance"))}
 """
             )
         }
@@ -155,6 +172,21 @@ WHERE child_id = ${bind(child)}
         }
         .toList<PreschoolAssistance>()
 
+fun Database.Read.getPreschoolAssistanceByChildId(
+    child: ChildId,
+    filter: AccessControlFilter<PreschoolAssistanceId>
+): List<PreschoolAssistance> =
+    createQuery<DatabaseTable.PreschoolAssistance> {
+            sql(
+                """
+SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+FROM preschool_assistance
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("preschool_assistance"))}
+"""
+            )
+        }
+        .toList<PreschoolAssistance>()
+
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
@@ -212,6 +244,21 @@ WHERE child_id = ${bind(child)}
         }
         .toList<OtherAssistanceMeasure>()
 
+fun Database.Read.getOtherAssistanceMeasuresByChildId(
+    child: ChildId,
+    filter: AccessControlFilter<OtherAssistanceMeasureId>
+): List<OtherAssistanceMeasure> =
+    createQuery<DatabaseTable.OtherAssistanceMeasure> {
+            sql(
+                """
+SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
+FROM other_assistance_measure
+WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("other_assistance_measure"))}
+"""
+            )
+        }
+        .toList<OtherAssistanceMeasure>()
+
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
@@ -256,3 +303,23 @@ fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasure
             sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
         }
         .execute()
+
+fun Database.Read.getAssistanceActionsByChildId(
+    childId: ChildId,
+    filter: AccessControlFilter<AssistanceActionId>
+): List<AssistanceAction> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action
+FROM assistance_action aa
+LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
+LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
+WHERE aa.child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
+GROUP BY aa.id, child_id, start_date, end_date, other_action
+ORDER BY start_date DESC     
+            """
+                    .trimIndent()
+            )
+        }
+        .toList<AssistanceAction>()
