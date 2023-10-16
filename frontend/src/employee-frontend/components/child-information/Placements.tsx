@@ -60,7 +60,8 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
               'SERVICE_WORKER',
               'UNIT_SUPERVISOR',
               'FINANCE_ADMIN',
-              'ADMIN'
+              'ADMIN',
+              'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
             ]}
           >
             <AddButtonRow

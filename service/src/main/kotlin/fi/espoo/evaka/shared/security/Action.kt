@@ -1389,8 +1389,14 @@ sealed interface Action {
 
     enum class Group(override vararg val defaultRules: ScopedActionRule<in GroupId>) :
         ScopedAction<GroupId> {
-        UPDATE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
-        DELETE(HasGlobalRole(ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
+        UPDATE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+        ),
+        DELETE(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+        ),
         CREATE_ABSENCES(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
@@ -1781,11 +1787,13 @@ sealed interface Action {
         ScopedAction<PlacementId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfPlacement()
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfFuturePlacement()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfFuturePlacement()
         ),
         CREATE_GROUP_PLACEMENT(
             HasGlobalRole(ADMIN),
@@ -1794,7 +1802,8 @@ sealed interface Action {
         ),
         CREATE_SERVICE_NEED(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPlacement()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfPlacement()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1821,9 +1830,13 @@ sealed interface Action {
         ScopedAction<ServiceNeedId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceNeed()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfServiceNeed()
         ),
-        DELETE(HasGlobalRole(ADMIN));
+        DELETE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(EARLY_CHILDHOOD_EDUCATION_SECRETARY).inPlacementUnitOfChildOfServiceNeed()
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1954,7 +1967,7 @@ sealed interface Action {
         ),
         CREATE_PLACEMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_PLACEMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -1974,7 +1987,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit()
         ),
-        CREATE_GROUP(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        CREATE_GROUP(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
         READ_MOBILE_STATS(IsMobile(requirePinLogin = false).inUnit()),
         READ_MOBILE_INFO(IsMobile(requirePinLogin = false).inUnit()),
         READ_MOBILE_DEVICES(
@@ -2013,7 +2029,7 @@ sealed interface Action {
         ),
         READ_PLACEMENT_GUARANTEE_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
@@ -2026,7 +2042,7 @@ sealed interface Action {
         ),
         READ_ATTENDANCE_RESERVATION_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_CHILD_AGE_AND_LANGUAGE_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
