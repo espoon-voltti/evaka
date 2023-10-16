@@ -151,7 +151,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = past,
                     childId = testChild_2.id,
-                    validityPeriod = DateRange(now.toLocalDate().minusDays(1), now.toLocalDate())
+                    validityPeriod =
+                        DateRange(now.toLocalDate().minusDays(2), now.toLocalDate().minusDays(1))
                 )
             )
         }
@@ -420,10 +421,11 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `updating a daily service times validity end creates a new notification`() {
+        val originalEnd = now.toLocalDate().plusDays(10)
         createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = dailyServiceTimesValidity,
+                validityPeriod = DateRange(now.toLocalDate().plusDays(5), originalEnd),
                 regularTimes = tenToNoonRange
             )
         )
@@ -433,10 +435,11 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val times = this.getDailyServiceTimes(testChild_1.id)
         assertEquals(1, times.size)
-        setDailyServiceTimesEndDate(times[0].dailyServiceTimes.id, LocalDate.now().plusDays(102))
+        setDailyServiceTimesEndDate(times[0].dailyServiceTimes.id, originalEnd.plusDays(5))
 
         val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
         assertEquals(1, newGuardian1Notifications.size)
+        assertEquals(originalEnd.plusDays(1), newGuardian1Notifications[0].dateFrom)
         assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
     }
 
