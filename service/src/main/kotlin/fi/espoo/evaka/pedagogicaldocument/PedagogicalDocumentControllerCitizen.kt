@@ -31,15 +31,15 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
                         childId
                     )
-                    it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
+                    tx.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
                         pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                     }
                 }
@@ -128,8 +128,7 @@ WITH children AS (
     SELECT pd.id, pd.child_id
     FROM children c
     JOIN pedagogical_document pd ON c.child_id = pd.child_id
-    LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-    WHERE (LENGTH(pd.description) > 0 OR a.id IS NOT NULL)
+    JOIN attachment a ON a.pedagogical_document_id = pd.id
 )
 SELECT d.child_id, count(*) as unread_count
 FROM ready_documents d
