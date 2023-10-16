@@ -6,11 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import {
   ApplicationSortColumn,
-  ApplicationSummary
+  ApplicationSummary,
+  PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
@@ -157,7 +157,7 @@ const ApplicationsTableContainer = styled.div`
 `
 
 interface Props {
-  applicationsResult: Paged<ApplicationSummary>
+  applicationsResult: PagedApplicationSummaries
   currentPage: number
   setPage: (page: number) => void
   sortBy: ApplicationSortColumn

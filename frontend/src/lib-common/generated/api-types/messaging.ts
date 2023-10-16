@@ -43,7 +43,7 @@ export namespace CitizenMessageThread {
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
   */
   export interface Redacted {
-    type: 'REDACTED_MESSAGE_THREAD'
+    type: 'Redacted'
     children: MessageChild[]
     hasUnreadMessages: boolean
     id: UUID
@@ -56,7 +56,7 @@ export namespace CitizenMessageThread {
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
   */
   export interface Regular {
-    type: 'MESSAGE_THREAD'
+    type: 'Regular'
     children: MessageChild[]
     id: UUID
     isCopy: boolean
@@ -213,18 +213,47 @@ export interface MessageThread {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageThreadType
-*/
-export type MessageThreadType =
-  | 'REDACTED_MESSAGE_THREAD'
-  | 'MESSAGE_THREAD'
-
-/**
 * Generated from fi.espoo.evaka.messaging.MessageType
 */
 export type MessageType =
   | 'MESSAGE'
   | 'BULLETIN'
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedCitizenMessageThreads
+*/
+export interface PagedCitizenMessageThreads {
+  data: CitizenMessageThread[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedMessageCopies
+*/
+export interface PagedMessageCopies {
+  data: MessageCopy[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedMessageThreads
+*/
+export interface PagedMessageThreads {
+  data: MessageThread[]
+  pages: number
+  total: number
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.PagedSentMessages
+*/
+export interface PagedSentMessages {
+  data: SentMessage[]
+  pages: number
+  total: number
+}
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageController.PostMessageBody

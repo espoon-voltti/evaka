@@ -31,7 +31,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -211,7 +210,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
-    ): Paged<ApplicationSummary> {
+    ): PagedApplicationSummaries {
         if (
             body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd
         ) {

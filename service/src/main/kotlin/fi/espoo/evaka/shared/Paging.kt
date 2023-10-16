@@ -7,40 +7,33 @@ package fi.espoo.evaka.shared
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 
-data class Paged<T>(val data: List<T>, val total: Int, val pages: Int) {
-    companion object {
-        fun <T> forPageSize(data: List<T>, total: Int, pageSize: Int): Paged<T> =
-            Paged(
-                data,
-                total,
-                if (total % pageSize == 0) total / pageSize else total / pageSize + 1
-            )
-    }
+typealias PagedFactory<T, R> = (data: List<T>, total: Int, pages: Int) -> R
 
-    fun <U> map(mapper: (T) -> U): Paged<U> = Paged(data.map(mapper), total, pages)
+fun <T, R> List<T>.pagedForPageSize(f: PagedFactory<T, R>, total: Int, pageSize: Int): R =
+    f(this, total, if (total % pageSize == 0) total / pageSize else total / pageSize + 1)
 
-    fun <U> flatMap(mapper: (T) -> List<U>): Paged<U> = Paged(data.flatMap(mapper), total, pages)
-}
-
-fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =
+fun <T, R> List<WithCount<T>>.mapToPaged(f: PagedFactory<T, R>, pageSize: Int): R =
     if (this.isEmpty()) {
-        Paged(listOf(), 0, 1)
+        f(listOf(), 0, 1)
     } else {
         val count = this.first().count
-        Paged.forPageSize(this.map { it.data }, count, pageSize)
+        this.map { it.data }.pagedForPageSize(f, count, pageSize)
     }
 
-fun <T> Database.Query.mapToPaged(
+fun <T, R> Database.Query.mapToPaged(
+    f: PagedFactory<T, R>,
     pageSize: Int,
     countColumn: String,
     mapper: Row.() -> T
-): Paged<T> = this.toList { WithCount(column(countColumn), mapper()) }.mapToPaged(pageSize)
+): R = this.toList { WithCount(column(countColumn), mapper()) }.mapToPaged(f, pageSize)
 
-fun <T> Database.Query.mapToPaged(pageSize: Int, mapper: Row.() -> T): Paged<T> =
-    this.mapToPaged(pageSize, "count", mapper)
+fun <T, R> Database.Query.mapToPaged(f: PagedFactory<T, R>, pageSize: Int, mapper: Row.() -> T): R =
+    this.mapToPaged(f, pageSize, "count", mapper)
 
-inline fun <reified T> Database.Query.mapToPaged(pageSize: Int): Paged<T> =
-    this.toList(withCountMapper<T>()).mapToPaged(pageSize)
+inline fun <reified T, reified R> Database.Query.mapToPaged(
+    noinline f: PagedFactory<T, R>,
+    pageSize: Int
+): R = this.map(withCountMapper<T>()).toList().mapToPaged(f, pageSize)
 
 data class WithCount<T>(val count: Int, val data: T)
 

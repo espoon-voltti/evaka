@@ -9,10 +9,10 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.placement.Placement
@@ -23,7 +23,6 @@ import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
@@ -611,7 +610,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         status: String,
         searchTerms: String = "",
         distinctionsString: String = "[]"
-    ): Paged<VoucherValueDecisionSummary> {
+    ): PagedVoucherValueDecisionSummaries {
         val (_, _, data) =
             http
                 .post("/value-decisions/search")
@@ -620,7 +619,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
                 .withMockedTime(now)
                 .asUser(financeWorker)
-                .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
+                .responseObject<PagedVoucherValueDecisionSummaries>(jsonMapper)
         return data.get()
     }
 
@@ -634,7 +633,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .jsonBody("""{"page": 0, "pageSize": 100, "statuses": ["DRAFT"]}""")
                 .withMockedTime(now)
                 .asUser(financeWorker)
-                .responseObject<Paged<VoucherValueDecisionSummary>>(jsonMapper)
+                .responseObject<PagedVoucherValueDecisionSummaries>(jsonMapper)
                 .also { (_, res, _) -> assertEquals(200, res.statusCode) }
 
         val decisionIds = data.get().data.map { it.id }

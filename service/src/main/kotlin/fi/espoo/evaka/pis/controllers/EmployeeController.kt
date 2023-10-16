@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
+import fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.getEmployee
@@ -20,7 +21,6 @@ import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -194,7 +194,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest
-    ): Paged<EmployeeWithDaycareRoles> {
+    ): PagedEmployeesWithDaycareRoles {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(

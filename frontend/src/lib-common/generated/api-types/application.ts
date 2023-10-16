@@ -477,6 +477,15 @@ export type OtherGuardianAgreementStatus =
   | 'RIGHT_TO_GET_NOTIFIED'
 
 /**
+* Generated from fi.espoo.evaka.application.PagedApplicationSummaries
+*/
+export interface PagedApplicationSummaries {
+  data: ApplicationSummary[]
+  pages: number
+  total: number
+}
+
+/**
 * Generated from fi.espoo.evaka.application.PaperApplicationCreateRequest
 */
 export interface PaperApplicationCreateRequest {

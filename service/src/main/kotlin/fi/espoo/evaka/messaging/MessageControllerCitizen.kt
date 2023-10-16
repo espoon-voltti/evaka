@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
@@ -89,31 +88,6 @@ class MessageControllerCitizen(
         Audit.MessagingArchiveMessageWrite.log(targetId = threadId)
     }
 
-    fun redactMessageTread(
-        user: AuthenticatedUser.Citizen,
-        messageThread: MessageThread
-    ): CitizenMessageThread.Redacted {
-        return CitizenMessageThread.Redacted(
-            messageThread.id,
-            messageThread.urgent,
-            messageThread.children,
-            messageThread.messages.firstOrNull()?.sender,
-            messageThread.messages.lastOrNull()?.sentAt,
-            messageThread.messages.findLast { message -> message.sender.id != user.id }?.readAt !=
-                null
-        )
-    }
-
-    fun wrapAsCitizenMessageThread(
-        user: AuthenticatedUser.Citizen,
-        messageThread: MessageThread
-    ): CitizenMessageThread {
-        if (user.authLevel != CitizenAuthLevel.STRONG && messageThread.sensitive)
-            return redactMessageTread(user, messageThread)
-
-        return CitizenMessageThread.Regular.fromMessageThread(messageThread)
-    }
-
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,
@@ -121,7 +95,7 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<CitizenMessageThread> {
+    ): PagedCitizenMessageThreads {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
@@ -133,7 +107,13 @@ class MessageControllerCitizen(
                             featureConfig.serviceWorkerMessageAccountName
                         )
                     }
-                    .map { messageThread -> wrapAsCitizenMessageThread(user, messageThread) }
+                    .mapTo(::PagedCitizenMessageThreads) {
+                        if (user.authLevel != CitizenAuthLevel.STRONG && it.sensitive) {
+                            CitizenMessageThread.Redacted.fromMessageThread(user.id, it)
+                        } else {
+                            CitizenMessageThread.Regular.fromMessageThread(it)
+                        }
+                    }
             }
             .also { Audit.MessagingReceivedMessagesRead.log(meta = mapOf("total" to it.total)) }
     }

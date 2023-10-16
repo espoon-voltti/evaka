@@ -305,6 +305,15 @@ export type Origin =
   | 'EVAKA'
 
 /**
+* Generated from fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
+*/
+export interface PagedEmployeesWithDaycareRoles {
+  data: EmployeeWithDaycareRoles[]
+  pages: number
+  total: number
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.Parentship
 */
 export interface Parentship {

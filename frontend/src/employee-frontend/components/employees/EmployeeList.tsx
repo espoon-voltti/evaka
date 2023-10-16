@@ -8,13 +8,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser as Employee } from '../../types/employee'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;
@@ -30,7 +30,7 @@ const Email = styled.div`
 `
 
 interface Props {
-  employees?: Result<Employee[]>
+  employees?: Result<EmployeeWithDaycareRoles[]>
 }
 
 export function EmployeeList({ employees }: Props) {

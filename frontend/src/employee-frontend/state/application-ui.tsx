@@ -12,10 +12,10 @@ import React, {
   useContext
 } from 'react'
 
-import { Result, Loading, Paged } from 'lib-common/api'
+import { Result, Loading } from 'lib-common/api'
 import {
-  ApplicationSummary,
   ApplicationTypeToggle,
+  PagedApplicationSummaries,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
@@ -38,8 +38,8 @@ import { areaQuery } from '../components/unit/queries'
 import { UserContext } from './user'
 
 interface UIState {
-  applicationsResult: Result<Paged<ApplicationSummary>>
-  setApplicationsResult: (result: Result<Paged<ApplicationSummary>>) => void
+  applicationsResult: Result<PagedApplicationSummaries>
+  setApplicationsResult: (result: Result<PagedApplicationSummaries>) => void
   availableAreas: Result<DaycareCareArea[]>
   allUnits: Result<Unit[]>
   setAllUnits: Dispatch<SetStateAction<Result<Unit[]>>>
@@ -120,7 +120,7 @@ export const ApplicationUIContextProvider = React.memo(
     const { loggedIn } = useContext(UserContext)
 
     const [applicationsResult, setApplicationsResult] = useState<
-      Result<Paged<ApplicationSummary>>
+      Result<PagedApplicationSummaries>
     >(Loading.of())
     const availableAreas = useQueryResult(areaQuery, { enabled: loggedIn })
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(

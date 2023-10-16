@@ -19,7 +19,6 @@ import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.controllers.Wrapper
@@ -68,7 +67,7 @@ class InvoiceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchInvoicesRequest
-    ): Paged<InvoiceSummaryResponse> {
+    ): PagedInvoiceSummaryResponses {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
@@ -100,7 +99,7 @@ class InvoiceController(
                             clock,
                             paged.data.map { it.id }
                         )
-                    Paged(
+                    PagedInvoiceSummaryResponses(
                         data =
                             paged.data.map {
                                 InvoiceSummaryResponse(it, permittedActions[it.id] ?: emptySet())
@@ -116,6 +115,12 @@ class InvoiceController(
     data class InvoiceSummaryResponse(
         val data: InvoiceSummary,
         val permittedActions: Set<Action.Invoice>
+    )
+
+    data class PagedInvoiceSummaryResponses(
+        val data: List<InvoiceSummaryResponse>,
+        val total: Int,
+        val pages: Int,
     )
 
     @PostMapping("/create-drafts")

@@ -4,8 +4,9 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Paged, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
+  PagedVoucherValueDecisionSummaries,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
@@ -44,7 +45,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const [totalPages, setTotalPages] = useState<number>()
   const [decisions, setDecisions] = useState<PagedValueDecisions>({})
   const setDecisionsResult = useCallback(
-    (result: Result<Paged<VoucherValueDecisionSummary>>) => {
+    (result: Result<PagedVoucherValueDecisionSummaries>) => {
       setDecisions((prev) => ({
         ...prev,
         [page]: result.map((r) => r.data)

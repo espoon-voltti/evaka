@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -844,7 +843,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(getIncomeStatementChildren().size, 0)
     }
 
-    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> {
+    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getIncomeStatements(
             dbInstance(),
             citizen,
@@ -858,7 +857,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         childId: ChildId,
         pageSize: Int = 10,
         page: Int = 1
-    ): Paged<IncomeStatement> {
+    ): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getChildIncomeStatements(
             dbInstance(),
             citizen,

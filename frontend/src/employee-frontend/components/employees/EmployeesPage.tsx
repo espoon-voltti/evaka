@@ -5,7 +5,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Paged, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
+import {
+  EmployeeWithDaycareRoles,
+  PagedEmployeesWithDaycareRoles
+} from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -17,7 +21,6 @@ import { faSearch } from 'lib-icons'
 
 import { searchEmployees } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
-import { EmployeeUser as Employee } from '../../types/employee'
 
 import { EmployeeList } from './EmployeeList'
 
@@ -47,13 +50,14 @@ export default React.memo(function EmployeesPage() {
   const [page, setPage] = useState<number>(1)
   const [totalEmployees, setTotalEmployees] = useState<number>()
   const [totalPages, setTotalPages] = useState<number>()
-  const [employees, setEmployees] = useState<Result<Employee[]>>()
+  const [employees, setEmployees] =
+    useState<Result<EmployeeWithDaycareRoles[]>>()
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
   const setEmployeesResult = useCallback(
-    (result: Result<Paged<Employee>>) => {
+    (result: Result<PagedEmployeesWithDaycareRoles>) => {
       setEmployees(result.map((r) => r.data))
       if (result.isSuccess) {
         setTotalEmployees(result.value.total)

@@ -9,7 +9,6 @@ import fi.espoo.evaka.attachment.associateAttachments
 import fi.espoo.evaka.attachment.dissociateAllPersonsAttachments
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -40,7 +39,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): Paged<IncomeStatement> {
+    ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -74,7 +73,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): Paged<IncomeStatement> {
+    ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(

@@ -4,10 +4,11 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Paged, Result } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   FeeDecisionSortParam,
   FeeDecisionSummary,
+  PagedFeeDecisionSummaries,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -40,7 +41,7 @@ export default React.memo(function FeeDecisionsPage() {
   const [totalPages, setTotalPages] = useState<number>()
   const [decisions, setDecisions] = useState<PagedFeeDecisions>({})
   const setDecisionsResult = useCallback(
-    (result: Result<Paged<FeeDecisionSummary>>) => {
+    (result: Result<PagedFeeDecisionSummaries>) => {
       setDecisions((prev) => ({
         ...prev,
         [page]: result.map((r) => r.data)

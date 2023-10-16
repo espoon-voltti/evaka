@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeMessageCopy,
   deserializeMessageThread,
@@ -11,12 +11,13 @@ import {
 import {
   AuthorizedMessageAccount,
   DraftContent,
-  MessageCopy,
   MessageReceiversResponse,
   MessageThread,
+  PagedMessageCopies,
+  PagedMessageThreads,
+  PagedSentMessages,
   PostMessageBody,
   ReplyToMessageBody,
-  SentMessage,
   ThreadReply,
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
@@ -59,9 +60,9 @@ export async function getReceivedMessages(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Result<Paged<MessageThread>>> {
+): Promise<Result<PagedMessageThreads>> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
+    .get<JsonOf<PagedMessageThreads>>(`/messages/${accountId}/received`, {
       params: { page, pageSize }
     })
     .then(({ data }) =>
@@ -77,9 +78,9 @@ export async function getArchivedMessages(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Result<Paged<MessageThread>>> {
+): Promise<Result<PagedMessageThreads>> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/archived`, {
+    .get<JsonOf<PagedMessageThreads>>(`/messages/${accountId}/archived`, {
       params: { page, pageSize }
     })
     .then(({ data }) =>
@@ -95,9 +96,9 @@ export async function getMessageCopies(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Result<Paged<MessageCopy>>> {
+): Promise<Result<PagedMessageCopies>> {
   return client
-    .get<JsonOf<Paged<MessageCopy>>>(`/messages/${accountId}/copies`, {
+    .get<JsonOf<PagedMessageCopies>>(`/messages/${accountId}/copies`, {
       params: { page, pageSize }
     })
     .then(({ data }) =>
@@ -110,9 +111,9 @@ export async function getSentMessages(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Result<Paged<SentMessage>>> {
+): Promise<Result<PagedSentMessages>> {
   return client
-    .get<JsonOf<Paged<SentMessage>>>(`/messages/${accountId}/sent`, {
+    .get<JsonOf<PagedSentMessages>>(`/messages/${accountId}/sent`, {
       params: { page, pageSize }
     })
     .then(({ data }) =>

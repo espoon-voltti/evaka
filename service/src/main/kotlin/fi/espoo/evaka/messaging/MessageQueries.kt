@@ -19,7 +19,7 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PagedFactory
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -415,6 +415,27 @@ private data class ReceivedThread(
     @Json val children: List<MessageChild>
 )
 
+data class PagedMessageThreads(
+    val data: List<MessageThread>,
+    val total: Int,
+    val pages: Int,
+) {
+    fun <T, R> mapTo(f: PagedFactory<T, R>, mapper: (MessageThread) -> T): R =
+        f(data.map(mapper), total, pages)
+}
+
+data class PagedCitizenMessageThreads(
+    val data: List<CitizenMessageThread>,
+    val total: Int,
+    val pages: Int,
+)
+
+private data class PagedReceivedThreads(
+    val data: List<ReceivedThread>,
+    val total: Int,
+    val pages: Int,
+)
+
 /** Return all threads that are visible to the account through sent and received messages */
 fun Database.Read.getThreads(
     accountId: MessageAccountId,
@@ -422,7 +443,7 @@ fun Database.Read.getThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String
-): Paged<MessageThread> {
+): PagedMessageThreads {
     val threads =
         createQuery(
                 """
@@ -456,7 +477,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("accountId", accountId)
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
-            .mapToPaged<ReceivedThread>(pageSize)
+            .mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
         getThreadMessages(
@@ -476,7 +497,7 @@ fun Database.Read.getReceivedThreads(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     folderId: MessageThreadFolderId? = null
-): Paged<MessageThread> {
+): PagedMessageThreads {
     val threads =
         createQuery(
                 """
@@ -521,7 +542,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .bind("folderId", folderId)
-            .mapToPaged<ReceivedThread>(pageSize)
+            .mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
         getThreadMessages(
@@ -606,29 +627,31 @@ ORDER BY m.sent_at
 
 private fun combineThreadsAndMessages(
     accountId: MessageAccountId,
-    threads: Paged<ReceivedThread>,
+    threads: PagedReceivedThreads,
     messagesByThread: Map<MessageThreadId, List<Message>>
-): Paged<MessageThread> {
-    return threads.flatMap { thread ->
-        val messages = messagesByThread[thread.id]
-        if (messages == null) {
-            logger.warn("Thread ${thread.id} has no messages for account $accountId")
-            listOf()
-        } else {
-            listOf(
-                MessageThread(
-                    id = thread.id,
-                    type = thread.type,
-                    title = thread.title,
-                    urgent = thread.urgent,
-                    sensitive = thread.sensitive,
-                    isCopy = thread.isCopy,
-                    children = thread.children,
-                    messages = messages
+): PagedMessageThreads {
+    val messageThreads =
+        threads.data.flatMap { thread ->
+            val messages = messagesByThread[thread.id]
+            if (messages == null) {
+                logger.warn("Thread ${thread.id} has no messages for account $accountId")
+                listOf()
+            } else {
+                listOf(
+                    MessageThread(
+                        id = thread.id,
+                        type = thread.type,
+                        title = thread.title,
+                        urgent = thread.urgent,
+                        sensitive = thread.sensitive,
+                        isCopy = thread.isCopy,
+                        children = thread.children,
+                        messages = messages
+                    )
                 )
-            )
+            }
         }
-    }
+    return PagedMessageThreads(messageThreads, threads.total, threads.pages)
 }
 
 data class MessageCopy(
@@ -651,11 +674,17 @@ data class MessageCopy(
     @Json val attachments: List<MessageAttachment>
 )
 
+data class PagedMessageCopies(
+    val data: List<MessageCopy>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
-): Paged<MessageCopy> {
+): PagedMessageCopies {
     // language=SQL
     val sql =
         """
@@ -702,7 +731,7 @@ LIMIT :pageSize OFFSET :offset
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
         .bind("pageSize", pageSize)
-        .mapToPaged(pageSize)
+        .mapToPaged(::PagedMessageCopies, pageSize)
 }
 
 fun Database.Read.getSentMessage(
@@ -864,11 +893,17 @@ ORDER BY type, name  -- groups first
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }
 
+data class PagedSentMessages(
+    val data: List<SentMessage>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.getMessagesSentByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
-): Paged<SentMessage> {
+): PagedSentMessages {
     // language=SQL
     val sql =
         """
@@ -935,7 +970,7 @@ ORDER BY msg.sent_at DESC
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
         .bind("pageSize", pageSize)
-        .mapToPaged(pageSize)
+        .mapToPaged(::PagedSentMessages, pageSize)
 }
 
 data class ThreadWithParticipants(
@@ -1014,7 +1049,11 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             municipalAccountName,
             serviceWorkerAccountName
         )
-    return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
+    return combineThreadsAndMessages(
+            accountId,
+            PagedReceivedThreads(listOf(thread), 1, 1),
+            messagesByThread
+        )
         .data
         .firstOrNull()
         ?: throw NotFound("Thread $threadId not found")
@@ -1066,7 +1105,11 @@ LIMIT 1
                 municipalAccountName,
                 serviceWorkerAccountName
             )
-        return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
+        return combineThreadsAndMessages(
+                accountId,
+                PagedReceivedThreads(listOf(thread), 1, 1),
+                messagesByThread
+            )
             .data
             .firstOrNull()
     }

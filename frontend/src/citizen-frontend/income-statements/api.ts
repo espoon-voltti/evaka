@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Paged } from 'lib-common/api'
 import { deserializeIncomeStatement } from 'lib-common/api-types/incomeStatement'
 import {
   ChildBasicInfo,
-  IncomeStatement
+  IncomeStatement,
+  PagedIncomeStatements
 } from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -19,9 +19,9 @@ import { IncomeStatementBody } from './types/body'
 export async function getIncomeStatements(
   page: number,
   pageSize: number
-): Promise<Paged<IncomeStatement>> {
+): Promise<PagedIncomeStatements> {
   return client
-    .get<JsonOf<Paged<IncomeStatement>>>('/citizen/income-statements', {
+    .get<JsonOf<PagedIncomeStatements>>('/citizen/income-statements', {
       params: { page, pageSize }
     })
     .then(({ data: { data, ...rest } }) => ({
@@ -34,9 +34,9 @@ export async function getChildIncomeStatements(
   childId: string,
   page: number,
   pageSize: number
-): Promise<Paged<IncomeStatement>> {
+): Promise<PagedIncomeStatements> {
   return client
-    .get<JsonOf<Paged<IncomeStatement>>>(
+    .get<JsonOf<PagedIncomeStatements>>(
       `/citizen/income-statements/child/${childId}`,
       {
         params: { page, pageSize }

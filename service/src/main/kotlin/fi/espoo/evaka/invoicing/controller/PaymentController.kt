@@ -5,13 +5,12 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.data.PagedPayments
 import fi.espoo.evaka.invoicing.data.searchPayments
-import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.createPaymentDrafts
 import fi.espoo.evaka.invoicing.service.PaymentService
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -35,7 +34,7 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody params: SearchPaymentsRequest
-    ): Paged<Payment> {
+    ): PagedPayments {
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
 

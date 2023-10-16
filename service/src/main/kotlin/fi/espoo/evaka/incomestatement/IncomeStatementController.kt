@@ -9,7 +9,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -37,7 +36,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): Paged<IncomeStatement> {
+    ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -71,7 +70,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): Paged<IncomeStatement> {
+    ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -160,7 +159,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
-    ): Paged<IncomeStatementAwaitingHandler> {
+    ): PagedIncomeStatementsAwaitingHandler {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(

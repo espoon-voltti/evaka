@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -159,6 +158,12 @@ fun Database.Read.activePlacementExists(
         .isNotEmpty()
 }
 
+data class PagedApplicationSummaries(
+    val data: List<ApplicationSummary>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.fetchApplicationSummaries(
     today: LocalDate,
     page: Int,
@@ -181,7 +186,7 @@ fun Database.Read.fetchApplicationSummaries(
     authorizedUnitsForApplicationsWithoutAssistanceNeed: AclAuthorization,
     authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization,
     canReadServiceWorkerNotes: Boolean
-): Paged<ApplicationSummary> {
+): PagedApplicationSummaries {
     val params =
         listOf(
             Binding.of("page", page),
@@ -478,7 +483,7 @@ fun Database.Read.fetchApplicationSummaries(
             .bind("today", today)
             .addBindings(params)
             .addBindings(freeTextParams)
-            .mapToPaged(pageSize, "total") {
+            .mapToPaged(::PagedApplicationSummaries, pageSize, "total") {
                 val status = column<ApplicationStatus>("application_status")
                 ApplicationSummary(
                     id = column("id"),

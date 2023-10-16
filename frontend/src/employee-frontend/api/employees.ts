@@ -2,20 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
-import { GlobalRole } from 'lib-common/api-types/employee-auth'
+import { Failure, Result, Success } from 'lib-common/api'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import {
   Employee,
   EmployeePreferredFirstName,
-  EmployeeSetPreferredFirstNameUpdateRequest
+  EmployeeSetPreferredFirstNameUpdateRequest,
+  EmployeeWithDaycareRoles,
+  PagedEmployeesWithDaycareRoles
 } from 'lib-common/generated/api-types/pis'
+import { UserRole } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
-import { EmployeeUser } from '../types/employee'
 
 import { client } from './client'
 
@@ -67,27 +68,44 @@ export function searchEmployees(
   page: number,
   pageSize: number,
   searchTerm?: string
-): Promise<Result<Paged<EmployeeUser>>> {
+): Promise<Result<PagedEmployeesWithDaycareRoles>> {
   return client
-    .post<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
+    .post<JsonOf<PagedEmployeesWithDaycareRoles>>('/employee/search', {
       page,
       pageSize,
       searchTerm
     })
-    .then(({ data }) => Success.of(data))
+    .then((res) =>
+      Success.of({
+        ...res.data,
+        data: res.data.data.map(deserializeEmployeeWithDaycareRoles)
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 
-export function getEmployeeDetails(id: UUID): Promise<Result<EmployeeUser>> {
+export function getEmployeeDetails(
+  id: UUID
+): Promise<Result<EmployeeWithDaycareRoles>> {
   return client
-    .get<JsonOf<EmployeeUser>>(`/employee/${id}/details`)
-    .then(({ data }) => Success.of(data))
+    .get<JsonOf<EmployeeWithDaycareRoles>>(`/employee/${id}/details`)
+    .then((res) => Success.of(deserializeEmployeeWithDaycareRoles(res.data)))
     .catch((e) => Failure.fromError(e))
+}
+
+function deserializeEmployeeWithDaycareRoles(
+  data: JsonOf<EmployeeWithDaycareRoles>
+): EmployeeWithDaycareRoles {
+  return {
+    ...data,
+    created: HelsinkiDateTime.parseIso(data.created),
+    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null
+  }
 }
 
 export function updateEmployee(
   id: UUID,
-  globalRoles: GlobalRole[]
+  globalRoles: UserRole[]
 ): Promise<Result<void>> {
   return client
     .put(`/employee/${id}`, {

@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Binding
@@ -290,6 +289,12 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
         .execute()
 }
 
+data class PagedVoucherValueDecisionSummaries(
+    val data: List<VoucherValueDecisionSummary>,
+    val total: Int,
+    val pages: Int,
+)
+
 fun Database.Read.searchValueDecisions(
     evakaClock: EvakaClock,
     postOffice: String,
@@ -307,7 +312,7 @@ fun Database.Read.searchValueDecisions(
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<VoucherValueDecisionDifference>,
     distinctiveParams: List<VoucherValueDecisionDistinctiveParams>
-): Paged<VoucherValueDecisionSummary> {
+): PagedVoucherValueDecisionSummaries {
     val sortColumn =
         when (sortBy) {
             VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -444,7 +449,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
     return this.createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
-        .mapToPaged(pageSize)
+        .mapToPaged(::PagedVoucherValueDecisionSummaries, pageSize)
 }
 
 fun Database.Read.getVoucherValueDecision(

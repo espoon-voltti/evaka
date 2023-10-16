@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -17,7 +17,8 @@ import {
   ApplicationSummary,
   ApplicationType,
   ApplicationSortColumn,
-  PlacementProposalConfirmationUpdate
+  PlacementProposalConfirmationUpdate,
+  PagedApplicationSummaries
 } from 'lib-common/generated/api-types/application'
 import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
@@ -91,9 +92,9 @@ export async function getApplications(
   sortBy: ApplicationSortColumn,
   sortDir: SearchOrder,
   params: ApplicationSearchParams
-): Promise<Result<Paged<ApplicationSummary>>> {
+): Promise<Result<PagedApplicationSummaries>> {
   return client
-    .post<JsonOf<Paged<ApplicationSummary>>>('v2/applications/search', {
+    .post<JsonOf<PagedApplicationSummaries>>('v2/applications/search', {
       page: page,
       pageSize,
       sortBy,

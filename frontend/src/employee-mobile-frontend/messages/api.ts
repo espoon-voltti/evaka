@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeMessageThread,
   deserializeReplyResponse
@@ -10,7 +10,7 @@ import {
 import {
   AuthorizedMessageAccount,
   MessageReceiversResponse,
-  MessageThread,
+  PagedMessageThreads,
   PostMessageBody,
   ReplyToMessageBody,
   ThreadReply,
@@ -44,9 +44,9 @@ export async function getReceivedMessages(
   accountId: UUID,
   page: number,
   pageSize: number
-): Promise<Paged<MessageThread>> {
+): Promise<PagedMessageThreads> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
+    .get<JsonOf<PagedMessageThreads>>(`/messages/${accountId}/received`, {
       params: { page, pageSize }
     })
     .then(({ data }) => ({

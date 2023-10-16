@@ -14,10 +14,10 @@ import fi.espoo.evaka.invoicing.controller.PaymentSortParam
 import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
+import fi.espoo.evaka.invoicing.data.PagedPayments
 import fi.espoo.evaka.invoicing.data.readPayments
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
-import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -25,7 +25,6 @@ import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -341,13 +340,13 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
     }
 
-    private fun searchPayments(params: SearchPaymentsRequest): Paged<Payment> {
+    private fun searchPayments(params: SearchPaymentsRequest): PagedPayments {
         val (_, response, result) =
             http
                 .post("/payments/search")
                 .asUser(financeUser)
                 .jsonBody(jsonMapper.writeValueAsString(params))
-                .responseObject<Paged<Payment>>(jsonMapper)
+                .responseObject<PagedPayments>(jsonMapper)
         assertEquals(200, response.statusCode)
         return result.get()
     }

@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
@@ -37,7 +38,6 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -80,7 +80,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest
-    ): Paged<VoucherValueDecisionSummary> {
+    ): PagedVoucherValueDecisionSummaries {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
