@@ -44,6 +44,7 @@ class DatabaseConfig {
                 }
             )
             .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
+            .locations(*env.flywayLocations.toTypedArray())
             .placeholders(
                 mapOf("application_user" to env.username, "migration_user" to env.flywayUsername)
             )
