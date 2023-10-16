@@ -12,6 +12,7 @@ import {
   ApplicationsReportRow,
   AssistanceNeedDecisionsReportRow,
   AssistanceNeedsAndActionsReport,
+  AssistanceNeedsAndActionsReportByChild,
   AttendanceReservationReportByChildRow,
   AttendanceReservationReportRow,
   ChildAgeLanguageReportRow,
@@ -268,6 +269,22 @@ export async function getAssistanceNeedsAndActionsReport(
   return client
     .get<JsonOf<AssistanceNeedsAndActionsReport>>(
       '/reports/assistance-needs-and-actions',
+      {
+        params: {
+          date: filters.date.formatIso()
+        }
+      }
+    )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceNeedsAndActionsReportByChild(
+  filters: AssistanceNeedsAndActionsReportFilters
+): Promise<Result<AssistanceNeedsAndActionsReportByChild>> {
+  return client
+    .get<JsonOf<AssistanceNeedsAndActionsReportByChild>>(
+      '/reports/assistance-needs-and-actions/by-child',
       {
         params: {
           date: filters.date.formatIso()

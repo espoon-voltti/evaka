@@ -2040,6 +2040,7 @@ sealed interface Action {
                 )
                 .inUnit()
         ),
+        READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD,
         READ_ATTENDANCE_RESERVATION_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()

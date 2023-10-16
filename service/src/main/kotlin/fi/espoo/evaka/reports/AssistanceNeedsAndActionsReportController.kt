@@ -13,6 +13,7 @@ import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -73,6 +74,65 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
         val otherActionCount: Int,
         val noActionCount: Int,
+        @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
+        @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
+    )
+
+    @GetMapping("/reports/assistance-needs-and-actions/by-child")
+    fun getAssistanceNeedReportByChild(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+    ): AssistanceNeedsAndActionsReportByChild {
+        return db.connect { dbc ->
+                dbc.read {
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
+                        )
+                    getAssistanceNeedReportByChild(it, date, filter)
+                }
+            }
+            .also {
+                Audit.AssistanceNeedsReportByChildRead.log(
+                    meta = mapOf("date" to date, "count" to it.rows.size)
+                )
+            }
+    }
+
+    fun getAssistanceNeedReportByChild(
+        tx: Database.Read,
+        date: LocalDate,
+        filter: AccessControlFilter<DaycareId>
+    ): AssistanceNeedsAndActionsReportByChild {
+        tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+        return AssistanceNeedsAndActionsReportByChild(
+            actions = tx.getAssistanceActionOptions(),
+            rows = tx.getReportRowsByChild(date, filter)
+        )
+    }
+
+    data class AssistanceNeedsAndActionsReportByChild(
+        val actions: List<AssistanceActionOption>,
+        val rows: List<AssistanceNeedsAndActionsReportRowByChild>
+    )
+
+    data class AssistanceNeedsAndActionsReportRowByChild(
+        val careAreaName: String,
+        val unitId: DaycareId,
+        val unitName: String,
+        val groupId: GroupId,
+        val groupName: String,
+        val childId: PersonId,
+        val childLastName: String,
+        val childFirstName: String,
+        @Json val actions: Set<AssistanceActionOptionValue>,
+        val otherAction: String,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
@@ -193,3 +253,124 @@ ORDER BY ca.name, u.name, g.name
             )
         }
         .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
+
+private fun Database.Read.getReportRowsByChild(
+    date: LocalDate,
+    unitFilter: AccessControlFilter<DaycareId>
+) =
+    createQuery<DatabaseTable> {
+            sql(
+                """
+WITH actions AS (
+    SELECT
+        gpl.daycare_group_id,
+        aa.child_id,
+        jsonb_agg(o.value) FILTER (WHERE value IS NOT NULL) AS actions,
+        aa.other_action
+    FROM daycare_group_placement gpl
+    JOIN placement pl ON pl.id = gpl.daycare_placement_id
+    JOIN assistance_action aa ON aa.child_id = pl.child_id
+    LEFT JOIN assistance_action_option_ref r ON r.action_id = aa.id
+    LEFT JOIN assistance_action_option o on r.option_id = o.id
+    WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
+    GROUP BY gpl.id, aa.child_id, aa.other_action
+), daycare_assistance_counts AS (
+    SELECT
+        daycare_group_id,
+        child_id,
+        jsonb_object_agg(level, count) AS daycare_assistance_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            da.child_id,
+            level,
+            count(da.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN daycare_assistance da ON da.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND da.valid_during @> ${bind(date)}
+        GROUP BY 1, 2, 3
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id, child_id
+), preschool_assistance_counts AS (
+    SELECT
+        daycare_group_id,
+        child_id,
+        jsonb_object_agg(level, count) AS preschool_assistance_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            pa.child_id,
+            level,
+            count(pa.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN preschool_assistance pa ON pa.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND pa.valid_during @> ${bind(date)}
+        GROUP BY 1, 2, 3
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id, child_id
+), other_assistance_measure_counts AS (
+    SELECT
+        daycare_group_id,
+        child_id,
+        jsonb_object_agg(type, count) AS other_assistance_measure_counts
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            oam.child_id,
+            oam.type,
+            count(oam.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN other_assistance_measure oam ON oam.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND oam.valid_during @> ${bind(date)}
+        GROUP BY 1, 2, 3
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id, child_id
+)
+SELECT
+    ca.name AS care_area_name,
+    u.id AS unit_id,
+    u.name AS unit_name,
+    g.id AS group_id,
+    initcap(g.name) AS group_name,
+    child.id AS child_id,
+    child.last_name AS child_last_name,
+    child.first_name AS child_first_name,
+    coalesce(actions.actions, '[]') AS actions,
+    coalesce(actions.other_action, '') AS other_action,
+    coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
+    coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
+FROM daycare u
+JOIN care_area ca ON u.care_area_id = ca.id
+JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
+JOIN daycare_group_placement dgp ON dgp.daycare_group_id = g.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+JOIN placement p ON p.id = dgp.daycare_placement_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(date)}
+JOIN person child ON child.id = p.child_id
+LEFT JOIN actions ON g.id = actions.daycare_group_id
+    AND child.id = actions.child_id
+LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_group_id
+    AND child.id = daycare_assistance_counts.child_id
+LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
+    AND child.id = preschool_assistance_counts.child_id
+LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
+    AND child.id = other_assistance_measure_counts.child_id
+WHERE ${predicate(unitFilter.forTable("u"))}
+ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
+        """
+                    .trimIndent()
+            )
+        }
+        .toList<
+            AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
+        >()
