@@ -15,13 +15,22 @@ import {
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
-  accounts: (unitId: string) => ['accounts', unitId],
+  accounts: ({
+    unitId,
+    employeeId
+  }: {
+    unitId: string
+    employeeId: string | undefined
+  }) => ['accounts', unitId, employeeId],
   receivedMessages: (accountId: string) => ['receivedMessages', accountId],
   unreadCounts: () => ['unreadCounts']
 })
 
 export const messagingAccountsQuery = query({
-  api: getMessagingAccounts,
+  // employeeId is not sent to api but is used to invalidate the query when it changes, so that there's no risk of
+  // leaking account information from the previous logged-in employee
+  api: ({ unitId }: { unitId: string; employeeId: string | undefined }) =>
+    getMessagingAccounts(unitId),
   queryKey: queryKeys.accounts
 })
 

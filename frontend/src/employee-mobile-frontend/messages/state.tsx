@@ -86,16 +86,25 @@ const markMatchingThreadRead = (
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const { unitInfoResponse } = useContext(UnitContext)
+
     const { user } = useContext(UserContext)
-    const pinLoginActive = user.map((u) => u?.pinLoginActive).getOrElse(false)
+    const pinLoggedEmployeeId = user
+      .map((u) => u?.employeeId ?? undefined)
+      .getOrElse(undefined)
 
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
 
     const { selectedGroupId } = useSelectedGroup()
 
     const accounts = useQueryResult(
-      queryOrDefault(messagingAccountsQuery, [])(unitId),
-      { enabled: pinLoginActive }
+      queryOrDefault(
+        messagingAccountsQuery,
+        []
+      )(
+        unitId && pinLoggedEmployeeId
+          ? { unitId, employeeId: pinLoggedEmployeeId }
+          : undefined
+      )
     )
 
     const groupAccounts: AuthorizedMessageAccount[] = useMemo(
@@ -124,7 +133,10 @@ export const MessageContextProvider = React.memo(
     const { data, transformPages, error, isFetching, isFetchingNextPage } =
       useInfiniteQuery(
         receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
-        { enabled: selectedAccount !== undefined && pinLoginActive }
+        {
+          enabled:
+            selectedAccount !== undefined && pinLoggedEmployeeId !== undefined
+        }
       )
 
     const isFetchingFirstPage = isFetching && !isFetchingNextPage
