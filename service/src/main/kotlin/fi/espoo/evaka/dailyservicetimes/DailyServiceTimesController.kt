@@ -192,7 +192,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     id
                 )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
-                if ((old.validityPeriod.end ?: LocalDate.MAX) <= today) {
+                if ((old.validityPeriod.end ?: LocalDate.MAX) < today) {
                     throw BadRequest(
                         "Daily service times end cannot be updated if their validity has ended"
                     )
@@ -210,7 +210,25 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 }
 
                 tx.updateChildDailyServiceTimesValidity(id, newValidity)
-                deleteCollidingReservationsAndNotify(tx, today, id, old.childId, newValidity)
+
+                val oldEnd = old.validityPeriod.end
+                when {
+                    // end date is removed
+                    oldEnd != null && newValidity.end == null -> DateRange(oldEnd.plusDays(1), null)
+                    // end date is moved later
+                    oldEnd != null && newValidity.end != null && newValidity.end > oldEnd ->
+                        DateRange(oldEnd.plusDays(1), newValidity.end)
+                    else -> null
+                }?.let { changePeriod ->
+                    deleteCollidingReservationsAndNotify(
+                        tx = tx,
+                        today = today,
+                        id = id,
+                        childId = old.childId,
+                        validityPeriod = changePeriod
+                    )
+                }
+
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
