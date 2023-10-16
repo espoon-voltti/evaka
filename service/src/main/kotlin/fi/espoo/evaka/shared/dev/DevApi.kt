@@ -662,8 +662,8 @@ class DevApi(
             dbc.transaction {
                 it.createUpdate(
                         """
-INSERT INTO employee (first_name, last_name, email, external_id, roles)
-VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[])
+INSERT INTO employee (first_name, last_name, email, external_id, roles, active)
+VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[], :active)
 ON CONFLICT (external_id) DO UPDATE SET
     first_name = excluded.first_name,
     last_name = excluded.last_name,
@@ -1775,8 +1775,8 @@ fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
     val sql =
         """
-        INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
-        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
+        INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
+        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
         ON CONFLICT DO NOTHING
         """
             .trimIndent()

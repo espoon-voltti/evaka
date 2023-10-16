@@ -19,6 +19,7 @@ import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployee
+import fi.espoo.evaka.pis.updateEmployeeActive
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -114,6 +115,40 @@ class EmployeeController(private val accessControl: AccessControl) {
             }
         }
         Audit.EmployeeUpdate.log(targetId = id, meta = mapOf("globalRoles" to body.globalRoles))
+    }
+
+    @PutMapping("/{id}/activate")
+    fun activateEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Employee.ACTIVATE, id)
+
+                it.updateEmployeeActive(id = id, active = true)
+            }
+        }
+        Audit.EmployeeActivate.log(targetId = id)
+    }
+
+    @PutMapping("/{id}/deactivate")
+    fun deactivateEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Employee.DEACTIVATE, id)
+
+                it.updateEmployeeActive(id = id, active = false)
+            }
+        }
+        Audit.EmployeeDeactivate.log(targetId = id)
     }
 
     @GetMapping("/{id}/details")

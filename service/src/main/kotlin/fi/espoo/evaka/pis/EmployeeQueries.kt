@@ -269,6 +269,12 @@ fun Database.Transaction.updateEmployeeTemporaryInUnitId(
         .bind("temporaryInUnitId", temporaryInUnitId)
         .updateExactlyOne()
 
+fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
+    createUpdate("UPDATE employee SET active = :active WHERE id = :id")
+        .bind("id", id)
+        .bind("active", active)
+        .updateExactlyOne()
+
 fun Database.Transaction.updateEmployee(id: EmployeeId, globalRoles: List<UserRole>) {
     // language=SQL
     val sql =
