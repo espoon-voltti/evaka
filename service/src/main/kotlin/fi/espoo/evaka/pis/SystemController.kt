@@ -103,7 +103,8 @@ class SystemController(
                             firstName = inserted.preferredFirstName ?: inserted.firstName,
                             lastName = inserted.lastName,
                             globalRoles = roles.globalRoles,
-                            allScopedRoles = roles.allScopedRoles
+                            allScopedRoles = roles.allScopedRoles,
+                            active = inserted.active
                         )
                     it.upsertEmployeeUser(employee.id)
                     employee
@@ -277,7 +278,8 @@ class SystemController(
                 email = email,
                 externalId = externalId,
                 employeeNumber = employeeNumber,
-                temporaryInUnitId = null
+                temporaryInUnitId = null,
+                active = true
             )
     }
 

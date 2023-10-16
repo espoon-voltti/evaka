@@ -205,7 +205,8 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             externalId = null,
             created = HelsinkiDateTime.now(),
             updated = null,
-            temporaryInUnitId = null
+            temporaryInUnitId = null,
+            active = true
         )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =

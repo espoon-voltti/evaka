@@ -1,0 +1,5 @@
+ALTER TABLE employee
+    ADD COLUMN active bool NOT NULL DEFAULT TRUE;
+
+ALTER TABLE employee
+    ALTER COLUMN active DROP DEFAULT;

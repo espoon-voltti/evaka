@@ -393,7 +393,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 email = null,
                                 externalId = null,
                                 employeeNumber = null,
-                                temporaryInUnitId = unitId
+                                temporaryInUnitId = unitId,
+                                active = true
                             )
                         )
                     setTemporaryEmployeeDetails(tx, unitId, employee.id, input)

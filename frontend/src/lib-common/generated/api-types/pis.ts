@@ -98,6 +98,7 @@ export interface EmailNotificationSettings {
 * Generated from fi.espoo.evaka.pis.Employee
 */
 export interface Employee {
+  active: boolean
   created: HelsinkiDateTime
   email: string | null
   externalId: ExternalId | null
@@ -135,6 +136,7 @@ export interface EmployeeUpdate {
 * Generated from fi.espoo.evaka.pis.EmployeeUser
 */
 export interface EmployeeUser {
+  active: boolean
   allScopedRoles: UserRole[]
   firstName: string
   globalRoles: UserRole[]
@@ -160,6 +162,7 @@ export interface EmployeeUserResponse {
 * Generated from fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 */
 export interface EmployeeWithDaycareRoles {
+  active: boolean
   created: HelsinkiDateTime
   daycareGroupRoles: DaycareGroupRole[]
   daycareRoles: DaycareRole[]
@@ -167,6 +170,7 @@ export interface EmployeeWithDaycareRoles {
   firstName: string
   globalRoles: UserRole[]
   id: UUID
+  lastLogin: HelsinkiDateTime | null
   lastName: string
   updated: HelsinkiDateTime | null
 }
@@ -298,6 +302,7 @@ export interface MobileDeviceTracking {
 * Generated from fi.espoo.evaka.pis.NewEmployee
 */
 export interface NewEmployee {
+  active: boolean
   email: string | null
   employeeNumber: string | null
   externalId: ExternalId | null

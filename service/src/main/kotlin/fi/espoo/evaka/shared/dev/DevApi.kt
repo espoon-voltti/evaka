@@ -2101,7 +2101,8 @@ data class DevEmployee(
     val externalId: ExternalId? = null,
     val employeeNumber: String? = null,
     val roles: Set<UserRole> = setOf(),
-    val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now()
+    val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val active: Boolean = true
 )
 
 data class DevMobileDevice(

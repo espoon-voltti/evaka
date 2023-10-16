@@ -2,20 +2,20 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES
-    ('00000000-0000-0000-0000-000000000001', 'Päivi', 'Pääkäyttäjä', 'paivi.paakayttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0000-000000000001', '{ADMIN, SERVICE_WORKER, FINANCE_ADMIN}'::user_role[]),
-    ('00000000-0000-0000-0001-000000000000', 'Paula', 'Palveluohjaaja', 'paula.palveluohjaaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0001-000000000000', '{SERVICE_WORKER}'::user_role[]),
-    ('00000000-0000-0000-0002-000000000000', 'Lasse', 'Laskuttaja', 'lasse.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0002-000000000000', '{FINANCE_ADMIN}'::user_role[]),
-    ('00000000-0000-0000-0009-000000000001', 'Lassi', 'Ulkoistettu Laskuttaja', 'ulkoistettu.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0009-0000-000000000000', '{FINANCE_STAFF}'::user_role[]),
-    ('00000000-0000-0000-0003-000000000000', 'Hemmo', 'Hallinto', 'hemmo.hallinto@espoo.fi', 'espoo-ad:00000000-0000-0000-0003-000000000000', '{DIRECTOR}'::user_role[]),
-    ('00000000-0000-0000-0007-000000000000', 'Raisa', 'Raportoija', 'raisa.raportoija@espoo.fi', 'espoo-ad:00000000-0000-0000-0007-000000000000', '{REPORT_VIEWER}'::user_role[]),
-    ('00000000-0000-0000-0008-000000000000', 'Viena', 'Viestittäjä', 'viena.viestittaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0008-000000000000', '{MESSAGING}'::user_role[]);
-INSERT INTO employee (id, first_name, last_name, email, external_id) VALUES
-    ('00000000-0000-0000-0004-000000000000', 'Essi', 'Esimies', 'essi.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000000'),
-    ('00000000-0000-0000-0004-000000000001', 'Eemeli', 'Esimies', 'eemeli.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000001'),
-    ('00000000-0000-0000-0005-000000000000', 'Kaisa', 'Kasvattaja', 'kaisa.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0005-000000000000'),
-    ('00000000-0000-0000-0005-000000000001', 'Kalle', 'Kasvattaja', 'kalle.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0005-000000000001'),
-    ('00000000-0000-0000-0006-000000000000', 'Erkki', 'Erityisopettaja', 'erkki.erityisopettaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0006-000000000000');
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active) VALUES
+    ('00000000-0000-0000-0000-000000000001', 'Päivi', 'Pääkäyttäjä', 'paivi.paakayttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0000-000000000001', '{ADMIN, SERVICE_WORKER, FINANCE_ADMIN}'::user_role[], TRUE),
+    ('00000000-0000-0000-0001-000000000000', 'Paula', 'Palveluohjaaja', 'paula.palveluohjaaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0001-000000000000', '{SERVICE_WORKER}'::user_role[], TRUE),
+    ('00000000-0000-0000-0002-000000000000', 'Lasse', 'Laskuttaja', 'lasse.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0002-000000000000', '{FINANCE_ADMIN}'::user_role[], TRUE),
+    ('00000000-0000-0000-0009-000000000001', 'Lassi', 'Ulkoistettu Laskuttaja', 'ulkoistettu.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0009-0000-000000000000', '{FINANCE_STAFF}'::user_role[], TRUE),
+    ('00000000-0000-0000-0003-000000000000', 'Hemmo', 'Hallinto', 'hemmo.hallinto@espoo.fi', 'espoo-ad:00000000-0000-0000-0003-000000000000', '{DIRECTOR}'::user_role[], TRUE),
+    ('00000000-0000-0000-0007-000000000000', 'Raisa', 'Raportoija', 'raisa.raportoija@espoo.fi', 'espoo-ad:00000000-0000-0000-0007-000000000000', '{REPORT_VIEWER}'::user_role[], TRUE),
+    ('00000000-0000-0000-0008-000000000000', 'Viena', 'Viestittäjä', 'viena.viestittaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0008-000000000000', '{MESSAGING}'::user_role[], TRUE);
+INSERT INTO employee (id, first_name, last_name, email, external_id, active) VALUES
+    ('00000000-0000-0000-0004-000000000000', 'Essi', 'Esimies', 'essi.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000000', TRUE),
+    ('00000000-0000-0000-0004-000000000001', 'Eemeli', 'Esimies', 'eemeli.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000001', TRUE),
+    ('00000000-0000-0000-0005-000000000000', 'Kaisa', 'Kasvattaja', 'kaisa.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0005-000000000000', TRUE),
+    ('00000000-0000-0000-0005-000000000001', 'Kalle', 'Kasvattaja', 'kalle.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0005-000000000001', TRUE),
+    ('00000000-0000-0000-0006-000000000000', 'Erkki', 'Erityisopettaja', 'erkki.erityisopettaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0006-000000000000', TRUE);
 
 INSERT INTO evaka_user (id, type, employee_id, name)
 SELECT id, 'EMPLOYEE', id, last_name || ' ' || first_name
