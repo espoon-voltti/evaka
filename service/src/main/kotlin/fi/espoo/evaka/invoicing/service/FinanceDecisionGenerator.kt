@@ -69,6 +69,11 @@ WITH ids AS (
 
     SELECT head_of_family_id
     FROM fee_decision
+
+    UNION
+
+    SELECT head_of_family_id
+    FROM voucher_value_decision
 )
 INSERT INTO async_job(type, payload, retry_count, retry_interval)
 SELECT 'GenerateFinanceDecisions',
