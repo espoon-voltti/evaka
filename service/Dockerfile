@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM eclipse-temurin:17-jammy as base
+FROM eclipse-temurin:21-jammy as base
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
