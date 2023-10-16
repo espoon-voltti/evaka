@@ -116,6 +116,20 @@ export function updateEmployee(
     .catch((e) => Failure.fromError(e))
 }
 
+export function activateEmployee(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/employee/${id}/activate`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deactivateEmployee(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/employee/${id}/deactivate`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export function getPersonalMobileDevices(): Promise<Result<MobileDevice[]>> {
   return client
     .get<JsonOf<MobileDevice[]>>('/mobile-devices/personal')

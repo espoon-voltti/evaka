@@ -147,11 +147,17 @@ function MutateFormModal_<Arg, Data, Key extends QueryKey>({
           onClick={resolveAction}
           onSuccess={onSuccess}
           onFailure={onFailure}
+          preventDefault
+          stopPropagation
           data-qa="modal-okBtn"
         />
         <Gap horizontal size="s" />
         <Button
-          onClick={rejectAction}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            rejectAction()
+          }}
           data-qa="modal-cancelBtn"
           text={rejectLabel}
         />

@@ -12,10 +12,13 @@ import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
+
+import { activateEmployeeMutation, deactivateEmployeeMutation } from './queries'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;
@@ -36,9 +39,10 @@ const StyledUl = styled.ul`
 
 interface Props {
   employees?: Result<EmployeeWithDaycareRoles[]>
+  onUpdate: () => void
 }
 
-export function EmployeeList({ employees }: Props) {
+export function EmployeeList({ employees, onUpdate }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -53,7 +57,8 @@ export function EmployeeList({ employees }: Props) {
         globalRoles,
         id,
         lastName,
-        lastLogin
+        lastLogin,
+        active
       }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
           <Td>
@@ -104,6 +109,25 @@ export function EmployeeList({ employees }: Props) {
             </ExpandableList>
           </Td>
           <Td>{lastLogin?.format() ?? '-'}</Td>
+          <Td>
+            {active ? (
+              <ConfirmedMutation
+                buttonText={i18n.employees.deactivate}
+                confirmationTitle={i18n.employees.deactivateConfirm}
+                mutation={deactivateEmployeeMutation}
+                onClick={() => id}
+                onSuccess={onUpdate}
+              />
+            ) : (
+              <ConfirmedMutation
+                buttonText={i18n.employees.activate}
+                confirmationTitle={i18n.employees.activateConfirm}
+                mutation={activateEmployeeMutation}
+                onClick={() => id}
+                onSuccess={onUpdate}
+              />
+            )}
+          </Td>
         </LinkTr>
       )
     )

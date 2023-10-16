@@ -119,7 +119,11 @@ export const ModalCloseButton = React.memo(function ModalCloseButton({
   return (
     <CloseButton
       icon={faTimes}
-      onClick={close}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        close()
+      }}
       aria-label={closeLabel}
       data-qa={dataQa}
     />

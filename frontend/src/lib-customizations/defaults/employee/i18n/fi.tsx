@@ -4063,6 +4063,10 @@ export const fi = {
     rights: 'Oikeudet',
     lastLogin: 'Kirjautunut viimeeksi',
     findByName: 'Etsi nimellä',
+    activate: 'Aktivoi',
+    activateConfirm: 'Haluatko palauttaa käyttäjän aktiiviseksi?',
+    deactivate: 'Deaktivoi',
+    deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
     editor: {
       roles: 'Roolit'
     }
