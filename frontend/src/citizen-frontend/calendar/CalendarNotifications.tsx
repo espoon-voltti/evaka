@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faInfo } from 'Icons'
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'citizen-frontend/localization'
+import { isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { useQuery } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
@@ -44,80 +45,105 @@ export default React.memo(function CalendarNotifications({
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
-  const { data: incomeExpirationDate } = useQuery(incomeExpirationDatesQuery, {
-    onSuccess: (incomeExpirationDate) => {
-      if (incomeExpirationDate) {
-        addNotification(
-          {
-            icon: faInfo,
-            iconColor: colors.main.m2,
-            children: i18n.ctaToast.incomeExpirationCta(
-              incomeExpirationDate.format()
-            ),
-            onClick: () => {
-              navigate('/income')
-              removeNotification('expiring-income-cta')
-            },
-            dataQa: 'expiring-income-cta'
-          },
-          'expiring-income-cta'
-        )
-      }
+  const incomeExpirationDateResult = useQueryResult(incomeExpirationDatesQuery)
+  useEffect(() => {
+    if (
+      !incomeExpirationDateResult.isSuccess ||
+      incomeExpirationDateResult.isReloading
+    ) {
+      return
     }
-  })
-  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
-  const { data: holidayPeriods } = useQuery(holidayPeriodsQuery, {
-    enabled: activeQuestionnaire !== undefined,
-    onSuccess: (periods) => {
-      let cta: HolidayCta
-      if (activeQuestionnaire) {
-        cta = {
-          type: 'questionnaire',
-          deadline: activeQuestionnaire.questionnaire.active.end
-        }
-      } else {
-        const today = LocalDate.todayInSystemTz()
-        const activeHolidayPeriod = periods.find((p) =>
-          p.reservationDeadline.isEqualOrAfter(today)
-        )
-        cta =
-          activeHolidayPeriod !== undefined &&
-          !reservationsExistForPeriod(activeHolidayPeriod.period, calendarDays)
-            ? {
-                type: 'holiday',
-                deadline: activeHolidayPeriod.reservationDeadline,
-                period: activeHolidayPeriod.period
-              }
-            : { type: 'none' }
-      }
 
-      if (cta.type === 'none') {
-        removeNotification('holiday-period-cta')
-      } else {
-        addNotification(
-          {
-            icon: faTreePalm,
-            iconColor: colors.status.warning,
-            onClick() {
-              switch (cta.type) {
-                case 'questionnaire':
-                  openHolidayModal()
-                  break
-                case 'holiday':
-                  openReservationModal(cta.period)
-                  removeNotification('holiday-period-cta')
-                  break
-              }
-              return 'close'
-            },
-            children: getHolidayCtaText(cta, i18n),
-            dataQa: 'holiday-period-cta'
+    const incomeExpirationDate = incomeExpirationDateResult.value
+    if (incomeExpirationDate) {
+      addNotification(
+        {
+          icon: faInfo,
+          iconColor: colors.main.m2,
+          children: i18n.ctaToast.incomeExpirationCta(
+            incomeExpirationDate.format()
+          ),
+          onClick: () => {
+            navigate('/income')
+            removeNotification('expiring-income-cta')
           },
-          'holiday-period-cta'
-        )
-      }
+          dataQa: 'expiring-income-cta'
+        },
+        'expiring-income-cta'
+      )
     }
+  }, [
+    addNotification,
+    removeNotification,
+    navigate,
+    i18n,
+    incomeExpirationDateResult
+  ])
+
+  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
+  const { data: holidayPeriods = [] } = useQuery(holidayPeriodsQuery, {
+    enabled: activeQuestionnaire !== undefined
   })
+  useEffect(() => {
+    if (activeQuestionnaire === undefined) return
+
+    let cta: HolidayCta
+    if (activeQuestionnaire) {
+      cta = {
+        type: 'questionnaire',
+        deadline: activeQuestionnaire.questionnaire.active.end
+      }
+    } else {
+      const today = LocalDate.todayInSystemTz()
+      const activeHolidayPeriod = holidayPeriods.find((p) =>
+        p.reservationDeadline.isEqualOrAfter(today)
+      )
+      cta =
+        activeHolidayPeriod !== undefined &&
+        !reservationsExistForPeriod(activeHolidayPeriod.period, calendarDays)
+          ? {
+              type: 'holiday',
+              deadline: activeHolidayPeriod.reservationDeadline,
+              period: activeHolidayPeriod.period
+            }
+          : { type: 'none' }
+    }
+
+    if (cta.type === 'none') {
+      removeNotification('holiday-period-cta')
+    } else {
+      addNotification(
+        {
+          icon: faTreePalm,
+          iconColor: colors.status.warning,
+          onClick() {
+            switch (cta.type) {
+              case 'questionnaire':
+                openHolidayModal()
+                break
+              case 'holiday':
+                openReservationModal(cta.period)
+                removeNotification('holiday-period-cta')
+                break
+            }
+            return 'close'
+          },
+          children: getHolidayCtaText(cta, i18n),
+          dataQa: 'holiday-period-cta'
+        },
+        'holiday-period-cta'
+      )
+    }
+  }, [
+    activeQuestionnaire,
+    addNotification,
+    calendarDays,
+    holidayPeriods,
+    i18n,
+    openHolidayModal,
+    openReservationModal,
+    removeNotification
+  ])
 
   return (
     <div
@@ -127,7 +153,7 @@ export default React.memo(function CalendarNotifications({
           : 'loading'
       }
       data-expiring-income-cta-status={
-        incomeExpirationDate !== undefined ? 'success' : 'loading'
+        isLoading(incomeExpirationDateResult) ? 'loading' : 'success'
       }
     />
   )

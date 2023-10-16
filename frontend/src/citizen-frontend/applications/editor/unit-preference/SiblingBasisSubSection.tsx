@@ -12,9 +12,10 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+
+import { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'
 
 export default React.memo(function SiblingBasisSubSection({
   applicationType,
@@ -37,7 +38,9 @@ export default React.memo(function SiblingBasisSubSection({
             applicationType
           ]
         }
-        onChange={(checked) => updateFormData({ siblingBasis: checked })}
+        onChange={(checked) =>
+          updateFormData(() => ({ siblingBasis: checked }))
+        }
       />
       {formData.siblingBasis && (
         <>
@@ -60,14 +63,14 @@ export default React.memo(function SiblingBasisSubSection({
                     checked={sibling.selected}
                     label={`${sibling.firstName} ${sibling.lastName}, ${sibling.socialSecurityNumber}`}
                     onChange={() =>
-                      updateFormData({
-                        vtjSiblings: formData.vtjSiblings.map((s) => ({
+                      updateFormData((prev) => ({
+                        vtjSiblings: prev.vtjSiblings.map((s) => ({
                           ...s,
                           selected:
                             s.socialSecurityNumber ===
                             sibling.socialSecurityNumber
                         }))
-                      })
+                      }))
                     }
                   />
                 ))}
@@ -79,12 +82,12 @@ export default React.memo(function SiblingBasisSubSection({
                   }
                   data-qa="other-sibling"
                   onChange={() =>
-                    updateFormData({
-                      vtjSiblings: formData.vtjSiblings.map((s) => ({
+                    updateFormData((prev) => ({
+                      vtjSiblings: prev.vtjSiblings.map((s) => ({
                         ...s,
                         selected: false
                       }))
-                    })
+                    }))
                   }
                 />
               </FixedSpaceColumn>
@@ -101,7 +104,9 @@ export default React.memo(function SiblingBasisSubSection({
                   <InputField
                     value={formData.siblingName}
                     data-qa="siblingName-input"
-                    onChange={(value) => updateFormData({ siblingName: value })}
+                    onChange={(value) =>
+                      updateFormData(() => ({ siblingName: value }))
+                    }
                     width="XL"
                     placeholder={
                       t.applications.editor.unitPreference.siblingBasis
@@ -123,7 +128,9 @@ export default React.memo(function SiblingBasisSubSection({
                     value={formData.siblingSsn}
                     data-qa="siblingSsn-input"
                     onChange={(value) =>
-                      updateFormData({ siblingSsn: value.toUpperCase() })
+                      updateFormData(() => ({
+                        siblingSsn: value.toUpperCase()
+                      }))
                     }
                     placeholder={
                       t.applications.editor.unitPreference.siblingBasis

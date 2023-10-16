@@ -25,15 +25,9 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-describe('Citizen income (desktop)', () => {
-  citizenIncomeTests('desktop')
-})
+const e = ['desktop', 'mobile'] as const
 
-describe('Citizen income (mobile)', () => {
-  citizenIncomeTests('mobile')
-})
-
-function citizenIncomeTests(env: 'desktop' | 'mobile') {
+describe.each(e)('Citizen income (%s)', (env) => {
   let page: Page
   const child = enduserChildFixtureJari
   let daycare: DaycareBuilder
@@ -120,7 +114,7 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
     })
   })
 
-  test('Citizen sees expiring income cta and it disappears if income statement is done', async () => {
+  test('Citizen sees expiring income cta and it does not appear again if income statement is done', async () => {
     const incomeEndDate = today.addWeeks(4).subDays(1)
     await Fixture.income()
       .with({
@@ -157,4 +151,4 @@ function citizenIncomeTests(env: 'desktop' | 'mobile') {
     await header.selectTab('calendar')
     await calendar.assertExpiringIncomeCtaNotVisible()
   })
-}
+})

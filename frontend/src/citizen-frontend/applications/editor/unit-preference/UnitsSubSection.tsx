@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { useQueryResult } from 'lib-common/query'
+import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -21,7 +21,6 @@ import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
-import { UnwrapResult } from '../../../async-rendering'
 import { useTranslation } from '../../../localization'
 import { applicationUnitsQuery } from '../../queries'
 
@@ -41,24 +40,22 @@ export default React.memo(function UnitsSubSection({
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
 
-  const units = useQueryResult(
+  const { data: units = [] } = useQuery(
     applicationUnitsQuery(
       applicationType,
       preparatory,
       preferredStartDate,
       shiftCare
-    ),
-    {
-      placeholderData: [],
-      onSuccess: (units) => {
-        updateFormData({
-          preferredUnits: formData.preferredUnits.filter(({ id }) =>
-            units.some((unit) => unit.id === id)
-          )
-        })
-      }
-    }
+    )
   )
+  useEffect(() => {
+    updateFormData((prev) => ({
+      preferredUnits: prev.preferredUnits.filter(({ id }) =>
+        units.some((unit) => unit.id === id)
+      )
+    }))
+  }, [units, updateFormData])
+
   const maxUnits = getMaxPreferredUnits(applicationType)
 
   return (
@@ -107,142 +104,133 @@ export default React.memo(function UnitsSubSection({
 
           <Gap size="m" />
 
-          <UnwrapResult result={units}>
-            {(units, _isReloading) => (
-              <FixedSpaceFlexWrap horizontalSpacing="L" verticalSpacing="s">
-                <FixedWidthDiv>
-                  <Label htmlFor="unit-selector">
-                    {t.applications.editor.unitPreference.units.select.label(
-                      maxUnits
-                    )}{' '}
-                    *
-                  </Label>
-                  <Gap size="xs" />
-                  <MultiSelect
-                    data-qa="preferredUnits-input"
-                    inputId="unit-selector"
-                    value={units.filter(
-                      (u) =>
-                        !!formData.preferredUnits.find((u2) => u2.id === u.id)
-                    )}
-                    options={units.filter(
-                      (u) =>
-                        (displayFinnish && u.language === 'fi') ||
-                        (displaySwedish && u.language === 'sv')
-                    )}
-                    getOptionId={(unit) => unit.id}
-                    getOptionLabel={(unit) => unit.name}
-                    getOptionSecondaryText={(unit) => unit.streetAddress}
-                    onChange={(selected) => {
-                      if (selected.length <= maxUnits) {
-                        updateFormData({
-                          preferredUnits: selected
-                        })
-                      }
-                    }}
-                    maxSelected={maxUnits}
-                    isClearable={false}
-                    placeholder={
-                      formData.preferredUnits.length < maxUnits
-                        ? t.applications.editor.unitPreference.units.select
-                            .placeholder
-                        : t.applications.editor.unitPreference.units.select
-                            .maxSelected
-                    }
-                    noOptionsMessage={
-                      t.applications.editor.unitPreference.units.select
-                        .noOptions
-                    }
-                    showValuesInInput={false}
-                  />
+          <FixedSpaceFlexWrap horizontalSpacing="L" verticalSpacing="s">
+            <FixedWidthDiv>
+              <Label htmlFor="unit-selector">
+                {t.applications.editor.unitPreference.units.select.label(
+                  maxUnits
+                )}{' '}
+                *
+              </Label>
+              <Gap size="xs" />
+              <MultiSelect
+                data-qa="preferredUnits-input"
+                inputId="unit-selector"
+                value={units.filter(
+                  (u) => !!formData.preferredUnits.find((u2) => u2.id === u.id)
+                )}
+                options={units.filter(
+                  (u) =>
+                    (displayFinnish && u.language === 'fi') ||
+                    (displaySwedish && u.language === 'sv')
+                )}
+                getOptionId={(unit) => unit.id}
+                getOptionLabel={(unit) => unit.name}
+                getOptionSecondaryText={(unit) => unit.streetAddress}
+                onChange={(selected) => {
+                  if (selected.length <= maxUnits) {
+                    updateFormData((prev) => ({
+                      ...prev,
+                      preferredUnits: selected
+                    }))
+                  }
+                }}
+                maxSelected={maxUnits}
+                isClearable={false}
+                placeholder={
+                  formData.preferredUnits.length < maxUnits
+                    ? t.applications.editor.unitPreference.units.select
+                        .placeholder
+                    : t.applications.editor.unitPreference.units.select
+                        .maxSelected
+                }
+                noOptionsMessage={
+                  t.applications.editor.unitPreference.units.select.noOptions
+                }
+                showValuesInInput={false}
+              />
 
-                  <Gap size="s" />
+              <Gap size="s" />
+              <Info>
+                {t.applications.editor.unitPreference.units.preferences.info(
+                  maxUnits
+                )}
+              </Info>
+              <Gap size="xs" />
+            </FixedWidthDiv>
+            <FixedWidthDiv>
+              <Label>
+                {t.applications.editor.unitPreference.units.preferences.label(
+                  maxUnits
+                )}
+              </Label>
+              <Gap size="xs" />
+              {!verificationRequested &&
+                formData.preferredUnits.length === 0 && (
                   <Info>
-                    {t.applications.editor.unitPreference.units.preferences.info(
-                      maxUnits
-                    )}
+                    {
+                      t.applications.editor.unitPreference.units.preferences
+                        .noSelections
+                    }
                   </Info>
-                  <Gap size="xs" />
-                </FixedWidthDiv>
-                <FixedWidthDiv>
-                  <Label>
-                    {t.applications.editor.unitPreference.units.preferences.label(
-                      maxUnits
-                    )}
-                  </Label>
-                  <Gap size="xs" />
-                  {!verificationRequested &&
-                    formData.preferredUnits.length === 0 && (
-                      <Info>
-                        {
-                          t.applications.editor.unitPreference.units.preferences
-                            .noSelections
+                )}
+              {verificationRequested && errors.preferredUnits?.arrayErrors && (
+                <AlertBox
+                  message={
+                    t.validationErrors[errors.preferredUnits.arrayErrors]
+                  }
+                  thin
+                />
+              )}
+              <FixedSpaceColumn spacing="s">
+                {formData.preferredUnits
+                  .map((u) => units.find((u2) => u.id === u2.id))
+                  .map((unit, i) =>
+                    unit ? (
+                      <PreferredUnitBox
+                        key={unit.id}
+                        unit={unit}
+                        n={i + 1}
+                        remove={() =>
+                          updateFormData((prev) => ({
+                            preferredUnits: [
+                              ...prev.preferredUnits.slice(0, i),
+                              ...prev.preferredUnits.slice(i + 1)
+                            ]
+                          }))
                         }
-                      </Info>
-                    )}
-                  {verificationRequested &&
-                    errors.preferredUnits?.arrayErrors && (
-                      <AlertBox
-                        message={
-                          t.validationErrors[errors.preferredUnits.arrayErrors]
+                        moveUp={
+                          i > 0
+                            ? () =>
+                                updateFormData((prev) => ({
+                                  preferredUnits: [
+                                    ...prev.preferredUnits.slice(0, i - 1),
+                                    prev.preferredUnits[i],
+                                    prev.preferredUnits[i - 1],
+                                    ...prev.preferredUnits.slice(i + 1)
+                                  ]
+                                }))
+                            : null
                         }
-                        thin
+                        moveDown={
+                          i < formData.preferredUnits.length - 1
+                            ? () =>
+                                updateFormData((prev) => ({
+                                  preferredUnits: [
+                                    ...prev.preferredUnits.slice(0, i),
+                                    prev.preferredUnits[i + 1],
+                                    prev.preferredUnits[i],
+                                    ...prev.preferredUnits.slice(i + 2)
+                                  ]
+                                }))
+                            : null
+                        }
                       />
-                    )}
-                  <FixedSpaceColumn spacing="s">
-                    {formData.preferredUnits
-                      .map((u) => units.find((u2) => u.id === u2.id))
-                      .map((unit, i) =>
-                        unit ? (
-                          <PreferredUnitBox
-                            key={unit.id}
-                            unit={unit}
-                            n={i + 1}
-                            remove={() =>
-                              updateFormData({
-                                preferredUnits: [
-                                  ...formData.preferredUnits.slice(0, i),
-                                  ...formData.preferredUnits.slice(i + 1)
-                                ]
-                              })
-                            }
-                            moveUp={
-                              i > 0
-                                ? () =>
-                                    updateFormData({
-                                      preferredUnits: [
-                                        ...formData.preferredUnits.slice(
-                                          0,
-                                          i - 1
-                                        ),
-                                        formData.preferredUnits[i],
-                                        formData.preferredUnits[i - 1],
-                                        ...formData.preferredUnits.slice(i + 1)
-                                      ]
-                                    })
-                                : null
-                            }
-                            moveDown={
-                              i < formData.preferredUnits.length - 1
-                                ? () =>
-                                    updateFormData({
-                                      preferredUnits: [
-                                        ...formData.preferredUnits.slice(0, i),
-                                        formData.preferredUnits[i + 1],
-                                        formData.preferredUnits[i],
-                                        ...formData.preferredUnits.slice(i + 2)
-                                      ]
-                                    })
-                                : null
-                            }
-                          />
-                        ) : null
-                      )}
-                  </FixedSpaceColumn>
-                </FixedWidthDiv>
-              </FixedSpaceFlexWrap>
-            )}
-          </UnwrapResult>
+                    ) : null
+                  )}
+              </FixedSpaceColumn>
+            </FixedWidthDiv>
+          </FixedSpaceFlexWrap>
         </>
       )}
     </>

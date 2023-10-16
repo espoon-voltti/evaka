@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
+import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -40,6 +41,18 @@ export default React.memo(function ApplicationFormPreschool({
       enabled: featureFlags.preschoolApplication.serviceNeedOption,
       initialData: []
     }
+  )
+
+  const updateUnitPreferenceFormData = useCallback(
+    (fn: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>) =>
+      setFormData((old) => ({
+        ...old,
+        unitPreference: {
+          ...old.unitPreference,
+          ...fn(old.unitPreference)
+        }
+      })),
+    [setFormData]
   )
 
   if (serviceNeedOptions.isLoading) {
@@ -87,19 +100,7 @@ export default React.memo(function ApplicationFormPreschool({
 
       <UnitPreferenceSection
         formData={formData.unitPreference}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  unitPreference: {
-                    ...old?.unitPreference,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={updateUnitPreferenceFormData}
         applicationType={applicationType}
         preparatory={formData.serviceNeed.preparatory}
         preferredStartDate={formData.serviceNeed.preferredStartDate}

@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 
+import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -39,6 +40,18 @@ export default React.memo(function ApplicationFormDaycare({
       enabled: formData.serviceNeed.serviceNeedOption !== null,
       initialData: []
     }
+  )
+
+  const updateUnitPreferenceFormData = useCallback(
+    (fn: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>) =>
+      setFormData((old) => ({
+        ...old,
+        unitPreference: {
+          ...old.unitPreference,
+          ...fn(old.unitPreference)
+        }
+      })),
+    [setFormData]
   )
 
   return (
@@ -84,19 +97,7 @@ export default React.memo(function ApplicationFormDaycare({
 
           <UnitPreferenceSection
             formData={formData.unitPreference}
-            updateFormData={(data) =>
-              setFormData((old) =>
-                old
-                  ? {
-                      ...old,
-                      unitPreference: {
-                        ...old?.unitPreference,
-                        ...data
-                      }
-                    }
-                  : old
-              )
-            }
+            updateFormData={updateUnitPreferenceFormData}
             applicationType={applicationType}
             preparatory={false}
             preferredStartDate={formData.serviceNeed.preferredStartDate}
