@@ -324,7 +324,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `if child is in preschool, show VEO only assistance info that overlaps with earliest preschool placements`() {
+    fun `if child is in preschool, show VEO all assistance info`() {
         val veoEmployee =
             AuthenticatedUser.Employee(
                 testDecisionMaker_1.id,
@@ -359,11 +359,12 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
 
         // Completely before any preschool placement
-        givenAssistanceAction(
-            daycarePlacementStart,
-            daycarePlacementEnd.minusDays(1),
-            testChild_1.id
-        )
+        val assistanceBeforePreschool =
+            givenAssistanceAction(
+                daycarePlacementStart,
+                daycarePlacementEnd.minusDays(1),
+                testChild_1.id
+            )
 
         // Overlaps first preschool placement
         val assistanceOverlappingPreschool =
@@ -379,11 +380,15 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val assistanceActions =
             whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoEmployee)
-        assertEquals(2, assistanceActions.size)
+        assertEquals(3, assistanceActions.size)
 
         assertEquals(
-            assistanceActions.map { it.id }.toSet(),
-            setOf(assistanceOverlappingPreschool, assistanceDuringPreschool)
+            setOf(
+                assistanceBeforePreschool,
+                assistanceOverlappingPreschool,
+                assistanceDuringPreschool
+            ),
+            assistanceActions.map { it.id }.toSet()
         )
 
         // Admin sees all
