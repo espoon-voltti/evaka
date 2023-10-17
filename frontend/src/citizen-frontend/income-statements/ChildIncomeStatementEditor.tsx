@@ -5,9 +5,13 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Loading, Result, Success } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import {
+  queryOrDefault,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -37,19 +41,21 @@ function useInitialEditorState(
   id: UUID | undefined
 ): Result<EditorState> {
   const incomeStatement = useQueryResult(
-    childIncomeStatementQuery(childId, id ?? ''),
-    { enabled: !!id }
+    queryOrDefault(
+      childIncomeStatementQuery,
+      null
+    )(id ? { childId, id } : undefined)
   )
   const startDates = useQueryResult(
     childIncomeStatementStartDatesQuery(childId)
   )
 
-  return combine(id ? incomeStatement : Success.of(undefined), startDates).map(
+  return combine(incomeStatement, startDates).map(
     ([incomeStatement, startDates]) => ({
       id,
       startDates,
       formData:
-        incomeStatement === undefined
+        incomeStatement === null
           ? { ...emptyIncomeStatementForm, childIncome: true }
           : Form.fromIncomeStatement(incomeStatement)
     })

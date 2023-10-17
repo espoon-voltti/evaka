@@ -42,7 +42,7 @@ export default React.memo(function ChildIncomeStatementView() {
   const t = useTranslation()
   const navigate = useNavigate()
   const result = useQueryResult(
-    childIncomeStatementQuery(childId, incomeStatementId)
+    childIncomeStatementQuery({ childId, id: incomeStatementId })
   )
 
   const handleEdit = useCallback(() => {

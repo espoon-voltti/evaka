@@ -7,11 +7,16 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Success, combine } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
-import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
+import {
+  queryOrDefault,
+  useMutationResult,
+  useQuery,
+  useQueryResult
+} from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -79,10 +84,9 @@ export default React.memo(function MarkPresent() {
   }, [childLatestDeparture, time])
 
   const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
-  const rawGroupNotes = useQueryResult(groupNotesQuery(groupId ?? ''), {
-    enabled: !!groupId
-  })
-  const groupNotes = groupId ? rawGroupNotes : Success.of([])
+  const groupNotes = useQueryResult(
+    queryOrDefault(groupNotesQuery, [])(groupId)
+  )
 
   return (
     <TallContentArea

@@ -11,7 +11,7 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { useQuery } from 'lib-common/query'
+import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -115,9 +115,9 @@ export default React.memo(function ChildListItem({
   }>()
   const { selectedGroupId } = useSelectedGroup()
 
-  const { data: groupNotes } = useQuery(groupNotesQuery(child.groupId ?? ''), {
-    enabled: child.groupId != null
-  })
+  const { data: groupNotes = [] } = useQuery(
+    queryOrDefault(groupNotesQuery, [])(child.groupId)
+  )
   const groupName = unitInfoResponse
     .map(
       ({ groups }) =>
@@ -183,7 +183,7 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               )}
-              {child.groupId && groupNotes && groupNotes.length > 0 ? (
+              {child.groupId && groupNotes.length > 0 ? (
                 <Link
                   to={`/units/${unitId}/groups/${child.groupId}/child-attendance/${child.id}/note`}
                   data-qa="link-child-daycare-daily-note"

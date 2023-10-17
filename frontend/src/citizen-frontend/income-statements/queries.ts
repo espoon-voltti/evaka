@@ -51,11 +51,11 @@ const queryKeys = createQueryKeys('incomeStatements', {
     page,
     pageSize
   ],
-  childIncomeStatement: (childId: UUID, incomeStatementId: UUID) => [
+  childIncomeStatement: ({ childId, id }: { childId: UUID; id: UUID }) => [
     'childIncomeStatements',
     childId,
     'single',
-    incomeStatementId
+    id
   ],
   childIncomeStatementStartDates: (childId: UUID) => [
     'childIncomeStatements',

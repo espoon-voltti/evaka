@@ -17,7 +17,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -78,9 +78,7 @@ export default React.memo(function AttendanceReservation() {
   )
 
   const units = useQueryResult(unitsQuery)
-  const groups = useQueryResult(unitGroupsQuery(unitId ?? ''), {
-    enabled: unitId !== null
-  })
+  const groups = useQueryResult(queryOrDefault(unitGroupsQuery, [])(unitId))
 
   const [report, setReport] = useState<
     Result<AttendanceReservationReportRow[]>

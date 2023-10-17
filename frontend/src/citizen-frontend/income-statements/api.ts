@@ -48,10 +48,13 @@ export async function getChildIncomeStatements(
     }))
 }
 
-export async function getChildIncomeStatement(
-  childId: UUID,
+export async function getChildIncomeStatement({
+  childId,
+  id
+}: {
+  childId: UUID
   id: UUID
-): Promise<IncomeStatement> {
+}): Promise<IncomeStatement> {
   return client
     .get<JsonOf<IncomeStatement>>(
       `/citizen/income-statements/child/${childId}/${id}`

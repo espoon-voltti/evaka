@@ -263,6 +263,27 @@ export function queryKeysNamespace<QueryKeyPrefix extends string>() {
   /* eslint-enable */
 }
 
+function constantQuery<R>(result: R): QueryDescription<R, QueryKey> {
+  return {
+    api: () => Promise.resolve(result),
+    queryKey: ['builtin', 'constant', result],
+    queryOptions: {
+      initialData: result,
+      staleTime: Infinity
+    }
+  }
+}
+
+export function queryOrDefault<T, R, D>(
+  query: (arg: T) => QueryDescription<R, QueryKey>,
+  defaultValue: D
+): (arg: T | null | undefined) => QueryDescription<R | D, QueryKey> {
+  return (arg) =>
+    (arg !== undefined && arg !== null
+      ? query(arg)
+      : constantQuery(defaultValue)) as QueryDescription<R | D, QueryKey>
+}
+
 export const cancelMutation: unique symbol = Symbol('cancelMutation')
 
 export type Either<A, B> =
