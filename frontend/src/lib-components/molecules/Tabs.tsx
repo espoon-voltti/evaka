@@ -15,7 +15,7 @@ import { defaultMargins } from '../white-space'
 interface Tab {
   id: string
   link: string
-  label: string | JSX.Element
+  label: string | React.JSX.Element
   counter?: number
 }
 

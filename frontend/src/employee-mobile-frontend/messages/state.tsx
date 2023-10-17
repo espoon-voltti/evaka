@@ -84,7 +84,11 @@ const markMatchingThreadRead = (
   )
 
 export const MessageContextProvider = React.memo(
-  function MessageContextProvider({ children }: { children: JSX.Element }) {
+  function MessageContextProvider({
+    children
+  }: {
+    children: React.JSX.Element
+  }) {
     const { unitInfoResponse } = useContext(UnitContext)
 
     const { user } = useContext(UserContext)

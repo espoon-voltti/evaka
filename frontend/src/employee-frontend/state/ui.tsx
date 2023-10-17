@@ -46,7 +46,7 @@ export const UIContext = createContext<UiState>(defaultState)
 export const UIContextProvider = React.memo(function UIContextProvider({
   children
 }: {
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [uiMode, setUiMode] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<ErrorMessage | null>(null)

@@ -21,7 +21,7 @@ export const TitleContext = createContext<TitleState>(defaultState)
 export const TitleContextProvider = React.memo(function TitleContextProvider({
   children
 }: {
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const { i18n } = useTranslation()
 

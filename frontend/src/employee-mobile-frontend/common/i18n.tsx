@@ -29,7 +29,7 @@ export const I18nContext = createContext<I18nState>(defaultState)
 export const I18nContextProvider = React.memo(function I18nContextProvider({
   children
 }: {
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [lang, setLang] = useState<Lang>('fi')
 

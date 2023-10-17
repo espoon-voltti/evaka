@@ -46,7 +46,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children
 }: {
   id: UUID
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
   const unitInformation = useQueryResult(unitQuery(id))

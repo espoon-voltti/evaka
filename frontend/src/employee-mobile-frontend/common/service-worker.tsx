@@ -32,7 +32,7 @@ export const ServiceWorkerContextProvider = React.memo(
   function ServiceWorkerContextProvider({
     children
   }: {
-    children: JSX.Element
+    children: React.JSX.Element
   }) {
     const user = useContext(UserContext).user.getOrElse(undefined)
 

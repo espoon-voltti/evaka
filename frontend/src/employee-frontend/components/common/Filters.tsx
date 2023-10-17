@@ -68,9 +68,9 @@ interface Props {
   freeText?: string
   setFreeText?: (s: string) => void
   clearFilters: () => void
-  column1?: JSX.Element
-  column2?: JSX.Element
-  column3?: JSX.Element
+  column1?: React.JSX.Element
+  column2?: React.JSX.Element
+  column3?: React.JSX.Element
   searchPlaceholder?: string
   clearMargin?: number
 }

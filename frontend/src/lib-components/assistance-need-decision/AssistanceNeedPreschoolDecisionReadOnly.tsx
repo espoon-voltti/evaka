@@ -104,7 +104,7 @@ interface ViewTranslations {
   jurisdiction: string
   jurisdictionText: string
   appealInstructionsTitle: string
-  appealInstructions: JSX.Element
+  appealInstructions: React.JSX.Element
 }
 
 export default React.memo(function DecisionFormReadView({

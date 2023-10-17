@@ -13,7 +13,7 @@ import { Bold } from '../typography'
 interface Props {
   newTab: boolean
   to: string
-  text: string | JSX.Element
+  text: string | React.JSX.Element
 }
 
 export const InternalLink = React.memo(function InternalLink({

@@ -16,7 +16,7 @@ import { useTranslation } from '../../state/i18n'
 interface Props {
   application: ApplicationDetails
   decisions?: Decision[]
-  dueDateEditor?: JSX.Element
+  dueDateEditor?: React.JSX.Element
 }
 
 export default React.memo(function ApplicationStatusSection({
