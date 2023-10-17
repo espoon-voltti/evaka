@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG BASE_IMAGE=node:18.17-buster-slim
+ARG BASE_IMAGE=node:18.18.2-buster-slim
 FROM "${BASE_IMAGE}" AS base
 
 WORKDIR /project
