@@ -20,7 +20,7 @@ Gateway between eVaka frontends and backend services
 The service requires redis running on port 6379. Easiest way is to run it with [compose](../compose/README.md) command
 
 ```bash
-docker-compose up -d redis
+docker compose up -d redis
 ```
 
 ## Development

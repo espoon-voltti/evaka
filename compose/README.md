@@ -41,7 +41,7 @@ packages.
 - [JDK](https://openjdk.java.net/projects/jdk/17/) – Java Development
   Kit, version 17. We recommend using OpenJDK.
 - [Docker](https://docs.docker.com/get-docker/) – Docker is an open platform for developing, shipping, and running applications.
-- [docker-compose](https://docs.docker.com/compose/install/) - Tool for running multi-container Docker applications, version 1.26.0+
+- [docker compose](https://docs.docker.com/compose/install/) - Tool for running multi-container Docker applications, version 1.26.0+
 
 ### Required tooling
 
@@ -74,10 +74,10 @@ See sub-projects' README files for more information. At the time of writing,
 you can skip this, if you just want to see if you can get everything running
 locally.
 
-First, start the third-party dependencies using `docker-compose`:
+First, start the third-party dependencies using `docker compose`:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Then, start eVaka projects with PM2:
@@ -119,7 +119,7 @@ Start the whole stack locally:
 ./compose-e2e up -d
 ```
 
-`compose-e2e` is simple wrapper for `docker-compose`.
+`compose-e2e` is simple wrapper for `docker compose`.
 
 Access the frontends at
 
@@ -127,9 +127,9 @@ Access the frontends at
 - <http://localhost:9099/employee> – Frontend for the employee
 - <http://localhost:9099/employee/mobile> – Frontend for the employee mobile
 
-## Running tests inside docker-compose
+## Running tests inside docker compose
 
-To run tests inside `docker-compose` locally.
+To run tests inside `docker compose` locally.
 
 ```sh
 ./test-e2e build
@@ -193,9 +193,9 @@ docker inspect <container> | jq '.[] | .HostConfig.Binds[]'
 docker volume prune
 
 # or take down services and volumes altogether with
-docker-compose down -v
+docker compose down -v
 
-docker-compose build db
+docker compose build db
 ```
 
 ### Unable to start services correctly

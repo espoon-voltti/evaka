@@ -8,17 +8,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 This project has Evaka [KeyCloak](https://www.keycloak.org/). Theme is based to [Helsinki KeyCloak Theme](https://github.com/City-of-Helsinki/helsinki-keycloak-theme).
 
-## docker-compose
+## docker compose
 
-#### Usage with Evaka docker-compose
+#### Usage with Evaka docker compose
 
-Evaka docker-compose already has KeyCloak. To develop KeyCloak theme replace it with compose found here.
+Evaka docker compose already has KeyCloak. To develop KeyCloak theme replace it with compose found here.
 
 ```bash
 cd ../compose
-docker-compose up -d
+docker compose up -d
 
-docker-compose stop keycloak smtp
+docker compose stop keycloak smtp
 
 cd ../keycloak
 ./compose-keycloak up

@@ -22,7 +22,7 @@ To build `./gradlew build`
 Start / setup dependencies with [compose](../compose/README.md):
 
 ```sh
-docker-compose up db sqs
+docker compose up db sqs
 ```
 
 ### Start evaka-service
