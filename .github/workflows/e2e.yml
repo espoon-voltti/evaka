@@ -5,8 +5,8 @@
 name: Build E2E resources
 on:
   push:
-    tags:
-      - '*'
+    banches:
+      - master
     paths:
       - "compose/e2e/**"
       - "compose/db/**"
