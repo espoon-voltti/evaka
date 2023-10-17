@@ -20,8 +20,6 @@ dependencies {
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.6.2")
-        // Fixes CVE-2023-34468
-        api("io.netty:netty-handler:4.1.94.Final")
         api(libs.opentracing.api)
         api(libs.opentracing.util)
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")

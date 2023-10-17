@@ -9,12 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
         <notes><![CDATA[
-        SnakeYaml's Constructor() class does not restrict types which can be instantiated during deserialization. Deserializing yaml content provided by an attacker can lead to remote code execution. No fix released yet as of 2022-12-02. We don't parse YAML files from untrusted sources.
-        ]]></notes>
-        <cve>CVE-2022-1471</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         An issue was discovered jackson-databind thru 2.15.2 allows attackers to cause a denial of service or other unspecified impacts via crafted object that uses cyclic dependencies.
         IGNORED UNTIL FIX IS RELEASED
         ]]></notes>
@@ -27,20 +21,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <cve>CVE-2023-38286</cve>
     </suppress>
     <suppress>
-        <notes>Misidentification</notes>
-        <cve>CVE-2020-21469</cve>
-    </suppress>
-    <suppress>
         <notes><![CDATA[
         Hostname verification is not enabled by default in Netty 4.x. AWS SDK v2 uses Netty 4.x, but explicitly enables hostname verification.
        ]]></notes>
         <cve>CVE-2023-4586</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        Applies to code we don't use
-       ]]></notes>
-        <cve>CVE-2023-41080</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
