@@ -17,7 +17,7 @@ CREATE CAST (placement_type AS koski_study_right_type)
 CREATE TYPE koski_preschool_input_data AS (
     oph_unit_oid text, oph_organizer_oid text,
     placements datemultirange, all_placements_in_past bool, last_of_child bool,
-    special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
+    special_support datemultirange, special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
     transport_benefit datemultirange
 );
 

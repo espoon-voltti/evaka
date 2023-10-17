@@ -70,6 +70,7 @@ BEGIN ATOMIC
             placements,
             all_placements_in_past,
             last_of_child,
+            coalesce(special_support, '{}'),
             coalesce(special_support_with_decision_level_1, '{}'),
             coalesce(special_support_with_decision_level_2, '{}'),
             coalesce(transport_benefit, '{}')
@@ -85,6 +86,9 @@ BEGIN ATOMIC
     ) oam ON TRUE
     JOIN LATERAL (
         SELECT
+            range_agg(valid_during) FILTER (
+                WHERE level = 'SPECIAL_SUPPORT'
+            ) AS special_support,
             range_agg(valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1'
             ) AS special_support_with_decision_level_1,

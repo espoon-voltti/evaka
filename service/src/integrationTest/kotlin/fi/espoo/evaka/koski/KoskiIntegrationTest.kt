@@ -354,21 +354,22 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val level: PreschoolAssistanceLevel,
         )
         insertPlacement(testChild_1)
-        val testCases =
-            listOf(
-                TestCase(testPeriod(0L to 1L), PreschoolAssistanceLevel.INTENSIFIED_SUPPORT),
-                TestCase(testPeriod(2L to 3L), PreschoolAssistanceLevel.SPECIAL_SUPPORT),
-                TestCase(
-                    testPeriod(4L to 5L),
-                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
-                ),
-                TestCase(
-                    testPeriod(6L to 7L),
-                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2
-                )
+        val intensifiedSupport =
+            TestCase(testPeriod(0L to 1L), PreschoolAssistanceLevel.INTENSIFIED_SUPPORT)
+        val specialSupport =
+            TestCase(testPeriod(2L to 3L), PreschoolAssistanceLevel.SPECIAL_SUPPORT)
+        val level1 =
+            TestCase(
+                testPeriod(4L to 5L),
+                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
+            )
+        val level2 =
+            TestCase(
+                testPeriod(6L to 7L),
+                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2
             )
         db.transaction { tx ->
-            testCases.forEach {
+            listOf(intensifiedSupport, specialSupport, level1, level2).forEach {
                 tx.insertTestPreschoolAssistance(
                     DevPreschoolAssistance(
                         modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
@@ -385,24 +386,19 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen =
                     listOf(
-                        Aikajakso.from(testCases[2].period),
+                        Aikajakso.from(level1.period),
                     ),
                 vaikeastiVammainen =
                     listOf(
-                        Aikajakso.from(testCases[3].period),
+                        Aikajakso.from(level2.period),
                     ),
-                pidennettyOppivelvollisuus =
-                    Aikajakso.from(
-                        FiniteDateRange(testCases[2].period.start, testCases[3].period.end)
-                    ),
+                pidennettyOppivelvollisuus = Aikajakso.from(level1.period.merge(level2.period)),
                 kuljetusetu = null,
                 erityisenTuenPäätökset =
                     listOf(
-                        ErityisenTuenPäätös(
-                            alku = testCases[2].period.start,
-                            loppu = testCases[3].period.end,
-                            opiskeleeToimintaAlueittain = false
-                        ),
+                        ErityisenTuenPäätös.from(
+                            level1.period.merge(level2.period).merge(specialSupport.period)
+                        )
                     )
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot

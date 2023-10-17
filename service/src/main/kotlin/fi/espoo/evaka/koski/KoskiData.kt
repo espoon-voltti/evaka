@@ -272,6 +272,7 @@ data class KoskiActivePreschoolDataRaw(
     override val studyRightOid: String?,
     override val placements: DateSet,
     val lastOfChild: Boolean,
+    val specialSupport: DateSet,
     val specialSupportWithDecisionLevel1: DateSet,
     val specialSupportWithDecisionLevel2: DateSet,
     val transportBenefit: DateSet,
@@ -300,21 +301,20 @@ data class KoskiActivePreschoolDataRaw(
 
     override fun haeLisätiedot(): Lisätiedot? {
         // The spanning range of all placements (= gaps are *not* considered) is used to trim
-        // all
-        // the date ranges, because some of them might extend beyond the first/last placements.
+        // all the date ranges, because some of them might extend beyond the first/last placements.
         // Example: child changes from unit A to unit B, while having one long ECE date range.
-        // When
-        // sending the study right for unit A, we need to send the first "half" of the ECE
-        // range,
-        // and when sending for unit B, the second "half".
+        // When sending the study right for unit A, we need to send the first "half" of the ECE
+        // range, and when sending for unit B, the second "half".
         val placementSpan = placements.spanningRange() ?: return null
 
         val level1 = specialSupportWithDecisionLevel1.intersection(listOf(placementSpan))
         val level2 = specialSupportWithDecisionLevel2.intersection(listOf(placementSpan))
-        val specialSupportWithDecision = level1.addAll(level2)
+        val specialSupportWithEce = level1.addAll(level2)
+        val allSpecialSupport =
+            specialSupport.intersection(listOf(placementSpan)).addAll(specialSupportWithEce)
 
         // Koski only accepts one range
-        val longestEce = specialSupportWithDecision.ranges().maxByOrNull { it.durationInDays() }
+        val longestEce = specialSupportWithEce.ranges().maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =
             transportBenefit
@@ -330,7 +330,7 @@ data class KoskiActivePreschoolDataRaw(
                 pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
                 kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
                 erityisenTuenPäätökset =
-                    (specialSupportWithDecision
+                    (allSpecialSupport
                         .ranges()
                         .map { ErityisenTuenPäätös.from(it) }
                         .toList()
