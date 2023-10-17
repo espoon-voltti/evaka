@@ -4,7 +4,7 @@
 
 ARG NGINX_VERSION=1.25.1
 
-FROM node:18.17-buster-slim AS builder
+FROM node:18.18.2-bookworm-slim AS builder
 
 USER root
 
@@ -12,8 +12,7 @@ WORKDIR /project
 
 RUN apt-get update \
  && apt-get -y dist-upgrade \
- && apt-get -y install \
-      ca-certificates \
+ && apt-get -y install ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 COPY ./.yarn ./.yarn
