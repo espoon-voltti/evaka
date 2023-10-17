@@ -20,8 +20,6 @@ dependencies {
         api("com.zaxxer:HikariCP:5.0.1")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.6.2")
-        // Fixes CVE-2023-34468
-        api("io.netty:netty-handler:4.1.94.Final")
         api(libs.opentracing.api)
         api(libs.opentracing.util)
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")
@@ -33,6 +31,11 @@ dependencies {
         api("org.apache.commons:commons-text:1.10.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
         api("org.apache.tika:tika-core:2.9.0")
+        // --- only needed for CVE fix
+        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.14")
+        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.14")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.14")
+        // ---
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.0")
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)
