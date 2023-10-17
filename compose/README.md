@@ -136,17 +136,41 @@ To run tests inside `docker compose` locally.
 ./test-e2e run playwright
 ```
 
-### Updating playwright
+### Updating Playwright
 
-To update playwright, update version in `frontend/package.json` and `compose/docker-compose.e2e-tests.yml`.
+To update Playwright, modify the version in `frontend/package.json` and generate `frontend/yarn.lock`. The updated version will be automatically used in E2E tests.
 
-When changes are merged to master: update `playwright` tag:
+The E2E resources will be installed on every run and it always uses what is specified in `yarn.lock`. The dependencies will be cached in the new E2E image when changes are merged into the master-branch and CI is completed.
+
+#### Updating E2E Image
+
+This applies only when changing image files in `compose/e2e/*`. When updating only Playwright this is not required.
+
+Test chages to E2E-image locally:
 
 ```sh
-git checkout master
-git pull
-git tag -f playwright
-git push --force origin tag playwright
+./test-e2e build playwright # Build compose/e2e/playwright.Dockerfile
+./test-e2e run playwright # Run E2E tests using build image
+```
+
+If changes need to be tested in CI before merging:
+
+1. Push branch changes.
+2. Tag the branch head commit.
+```sh
+git tag -f test-playwright
+git push --force origin tag test-playwright
+```
+3. Wait for successful completion of e2e:playwright job.
+4. Invoke the GitHub Actions Workflow.
+    - Select branch.
+    - Set `playwright_tag` as `test-playwright`.
+    - Run the workflow.
+5. Check CI for results.
+6. Remove the tag when finished.
+```sh
+git tag --delete playwright-test
+git push --delete origin playwright-test
 ```
 
 ## Database dump
