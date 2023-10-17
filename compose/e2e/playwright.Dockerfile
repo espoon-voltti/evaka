@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG PLAYWRIGHT_VERSION=v1.38.0
+ARG PLAYWRIGHT_VERSION=v1.39.0
 ARG FRONTEND_TAG=master
 
 FROM ghcr.io/espoon-voltti/evaka/frontend-common-builder:${FRONTEND_TAG} as frontend
