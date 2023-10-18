@@ -4,12 +4,18 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import { CitizenUserResponse } from 'lib-common/generated/api-types/pis'
+import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 
 import { client } from '../api-client'
 
 export type AuthStatus =
   | { loggedIn: false; apiVersion: string }
-  | { loggedIn: true; user: CitizenUserResponse; apiVersion: string }
+  | {
+      loggedIn: true
+      user: CitizenUserResponse
+      apiVersion: string
+      authLevel: CitizenAuthLevel
+    }
 
 export function getAuthStatus(): Promise<Result<AuthStatus>> {
   return client

@@ -12,11 +12,13 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  CitizenFeatures,
   CitizenUserDetails,
   CitizenUserResponse
 } from 'lib-common/generated/api-types/pis'
-import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
+import {
+  CitizenAuthLevel,
+  CitizenFeatures
+} from 'lib-common/generated/api-types/shared'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
@@ -62,7 +64,16 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
       apiVersion: authStatus.map((a) => a.apiVersion).getOrElse(undefined),
       user: authStatus.map((a) =>
         a.loggedIn
-          ? { ...a.user.details, authLevel: a.user.authLevel }
+          ? {
+              ...a.user.details,
+              // TODO: remove this extra backwards compatibility code and fetch from one property only
+              authLevel: a.authLevel ?? a.user.authLevel,
+              accessibleFeatures:
+                // TODO: remove this extra backwards compatibility code and fetch from one property only
+                ((a.user.details as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+                  .accessibleFeatures as CitizenFeatures) ?? // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+                a.user.accessibleFeatures
+            }
           : undefined
       ),
       fullUserResponse: authStatus.map((a) =>
