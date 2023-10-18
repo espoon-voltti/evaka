@@ -5,8 +5,6 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -49,16 +47,25 @@ class CitizenUserController(
                         Action.Citizen.Person.READ_VTJ_DETAILS,
                         personId
                     )
-                    val person = tx.getPersonById(personId) ?: notFound()
-                    UserDetailsResponse(
-                        details = CitizenUserDetails.from(person),
-                        authLevel = user.authLevel,
-                        accessibleFeatures = accessControlCitizen.getPermittedFeatures(tx, user, clock)
-                    )
+                    val details = tx.getCitizenUserDetails(personId) ?: notFound()
+                    val accessibleFeatures =
+                        accessControlCitizen.getPermittedFeatures(tx, user, clock)
+                    UserDetailsResponse(details, user.authLevel, accessibleFeatures)
                 }
             }
             .also { Audit.VtjRequest.log(targetId = personId) }
     }
+
+    private fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
+        createQuery<Any> {
+                sql(
+                    """
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email
+FROM person WHERE id = ${bind(id)}
+        """
+                )
+            }
+            .exactlyOneOrNull()
 
     data class CitizenUserDetails(
         val id: PersonId,
@@ -70,24 +77,8 @@ class CitizenUserController(
         val postOffice: String,
         val phone: String,
         val backupPhone: String,
-        val email: String?,
-    ) {
-        companion object {
-            fun from(person: PersonDTO): CitizenUserDetails =
-                CitizenUserDetails(
-                    id = person.id,
-                    firstName = person.firstName,
-                    lastName = person.lastName,
-                    preferredName = person.preferredName,
-                    streetAddress = person.streetAddress,
-                    postalCode = person.postalCode,
-                    postOffice = person.postOffice,
-                    phone = person.phone,
-                    backupPhone = person.backupPhone,
-                    email = person.email,
-                )
-        }
-    }
+        val email: String?
+    )
 
     data class UserDetailsResponse(
         val details: CitizenUserDetails,
