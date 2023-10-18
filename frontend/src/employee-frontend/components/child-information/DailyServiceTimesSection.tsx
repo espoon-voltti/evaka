@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -113,6 +114,16 @@ export default React.memo(function DailyServiceTimesSection({
                 }
               }}
               childId={id}
+              hasActiveOrUpcomingServiceTimes={apiData
+                .map((rows) =>
+                  rows.some(
+                    (row) =>
+                      row.dailyServiceTimes.times.validityPeriod.end?.isAfter(
+                        LocalDate.todayInHelsinkiTz()
+                      ) ?? true
+                  )
+                )
+                .getOrElse(false)}
             />
           </>
         )}

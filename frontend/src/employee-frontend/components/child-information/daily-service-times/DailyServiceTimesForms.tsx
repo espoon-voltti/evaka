@@ -209,10 +209,15 @@ const emptyTimeRange: JsonOf<TimeRange> = {
 export interface CreateProps {
   onClose: (shouldRefresh: boolean) => void
   childId: UUID
+  hasActiveOrUpcomingServiceTimes: boolean
 }
 
 export const DailyServiceTimesCreationForm = React.memo(
-  function DailyServiceTimesCreationForm({ onClose, childId }: CreateProps) {
+  function DailyServiceTimesCreationForm({
+    onClose,
+    childId,
+    hasActiveOrUpcomingServiceTimes
+  }: CreateProps) {
     const { i18n, lang } = useTranslation()
 
     const [formData, setFormData] = useState<FormState>({
@@ -272,6 +277,13 @@ export const DailyServiceTimesCreationForm = React.memo(
             data-qa="daily-service-times-validity-period-start"
           />
         </div>
+        {hasActiveOrUpcomingServiceTimes && (
+          <AlertBox
+            message={
+              i18n.childInformation.dailyServiceTimes.preferExtensionWarning
+            }
+          />
+        )}
         <Gap size="m" />
         <div>
           <Label>
