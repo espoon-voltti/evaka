@@ -35,7 +35,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { fontWeights, H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -242,7 +242,7 @@ export default React.memo(
           <ActionContainer>
             <AssureCheckbox>
               <Checkbox
-                label={`${t.income.assure} *`}
+                label={t.income.assure}
                 checked={formData.assure}
                 data-qa="assure-checkbox"
                 onChange={useFieldDispatch(onChange, 'assure')}
@@ -451,6 +451,15 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           checked={formData.incomeSource === 'ATTACHMENTS'}
           onChange={useFieldSetter(onChange, 'incomeSource', 'ATTACHMENTS')}
         />
+        {formData.incomeSource === 'ATTACHMENTS' && (
+          <>
+            <Gap size="s" />
+            <InfoBox
+              message={t.income.grossIncome.attachmentsVerificationInfo}
+              thin
+            />
+          </>
+        )}
         <Gap size="L" />
         <Label>{t.income.grossIncome.estimate}</Label>
         <Gap size="m" />

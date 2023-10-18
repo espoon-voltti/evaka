@@ -1813,6 +1813,7 @@ const en: Translations = {
       incomeSource: 'Reporting income information',
       provideAttachments:
         'I will submit the information as attachments, and my information can be checked from Kela if necessary',
+      attachmentsVerificationInfo: 'Income information is verified annually.',
       estimate: 'Estimate of my gross income',
       estimatedMonthlyIncome:
         'Average earnings including holiday bonus, €/month',
@@ -1987,7 +1988,7 @@ const en: Translations = {
         CHILD_INCOME: 'Documents of child income'
       }
     },
-    assure: 'I testify that the information I have provided is correct.',
+    assure: <>I testify that the information I have provided is correct. *</>,
     errors: {
       invalidForm:
         'The form is missing some required information or the information is incorrect. Please review the information you filled in.',

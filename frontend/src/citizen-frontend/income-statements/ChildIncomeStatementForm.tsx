@@ -293,7 +293,7 @@ export default React.memo(
           <ActionContainer>
             <AssureCheckbox>
               <Checkbox
-                label={`${t.income.assure} *`}
+                label={t.income.assure}
                 checked={formData.assure}
                 data-qa="assure-checkbox"
                 onChange={useFieldDispatch(onChange, 'assure')}

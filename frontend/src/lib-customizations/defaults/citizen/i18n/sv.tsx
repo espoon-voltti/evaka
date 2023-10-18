@@ -2056,6 +2056,7 @@ const sv: Translations = {
       incomeSource: 'Inlämning av inkomstuppgifterna',
       provideAttachments:
         'Jag lämnar in uppgifterna som bilaga, och mina uppgifter får kontrolleras hos FPA vid behov',
+      attachmentsVerificationInfo: 'Inkomstuppgifter kontrolleras årligen.',
       estimate: 'Uppskattning av mina bruttoinkomster',
       estimatedMonthlyIncome:
         'Genomsnittliga inkomster inklusive semesterpenning, €/månad',
@@ -2228,7 +2229,9 @@ const sv: Translations = {
         CHILD_INCOME: 'Kvitton på barnets inkomster'
       }
     },
-    assure: 'Jag försäkrar att de uppgifter jag lämnat in är riktiga.',
+    assure: (
+      <span>Jag försäkrar att de uppgifter jag lämnat in är riktiga. *</span>
+    ),
     errors: {
       invalidForm:
         'Blanketten saknar vissa nödvändiga uppgifter eller uppgifterna är felaktiga. Vänligen kontrollera den information som du har fyllt i.',

@@ -2047,6 +2047,7 @@ export default {
       incomeSource: 'Tulotietojen toimitus',
       provideAttachments:
         'Toimitan tiedot liitteinä, ja tietoni saa tarkastaa Kelasta tarvittaessa',
+      attachmentsVerificationInfo: 'Tulotiedot tarkistetaan vuoden välein.',
       estimate: 'Arvio bruttotuloistani',
       estimatedMonthlyIncome: 'Keskimääräiset tulot sisältäen lomarahat, €/kk',
       otherIncome: 'Muut tulot',
@@ -2213,7 +2214,7 @@ export default {
         CHILD_INCOME: 'Tositteet lapsen tuloista'
       }
     },
-    assure: 'Vakuutan antamani tiedot oikeiksi.',
+    assure: <>Vakuutan antamani tiedot oikeiksi. *</>,
     errors: {
       invalidForm:
         'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
