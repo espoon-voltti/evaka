@@ -142,6 +142,19 @@ export async function citizenLogin(
   return data
 }
 
+export async function getCitizenDetails(
+  req: express.Request,
+  personId: string
+) {
+  const { data } = await client.get(
+    `/system/citizen/${encodeURIComponent(personId)}`,
+    {
+      headers: createServiceRequestHeaders(req, machineUser)
+    }
+  )
+  return data
+}
+
 export interface ValidatePairingRequest {
   challengeKey: string
   responseKey: string
@@ -219,13 +232,6 @@ export async function authenticateMobileDevice(
       throw e
     }
   }
-}
-
-export async function getUserDetails(req: express.Request, personId: string) {
-  const { data } = await client.get(`/persondetails/uuid/${personId}`, {
-    headers: createServiceRequestHeaders(req)
-  })
-  return data
 }
 
 export interface EmployeePinLoginResponse {

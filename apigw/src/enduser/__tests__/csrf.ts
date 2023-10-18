@@ -21,9 +21,7 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
   afterAll(async () => tester?.stop())
 
   async function setupCsrfToken() {
-    tester.nockScope.get(`/persondetails/uuid/${mockUser.id}`).reply(200, {
-      id: mockUser.id
-    })
+    tester.nockScope.get(`/system/citizen/${mockUser.id}`).reply(200, mockUser)
     await tester.client.get('/api/application/auth/status')
     tester.nockScope.done()
 

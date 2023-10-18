@@ -50,7 +50,7 @@ export interface CitizenUserIdentity {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.CitizenUserResponse
+* Generated from fi.espoo.evaka.pis.SystemController.CitizenUserResponse
 */
 export interface CitizenUserResponse {
   accessibleFeatures: CitizenFeatures

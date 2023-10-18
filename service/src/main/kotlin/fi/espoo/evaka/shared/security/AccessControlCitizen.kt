@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
@@ -15,20 +14,20 @@ import org.springframework.stereotype.Service
 class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
     fun getPermittedFeatures(
         tx: Database.Read,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
+        citizen: PersonId
     ): CitizenFeatures {
-        val messaging = tx.citizenHasAccessToMessaging(clock, user.id)
+        val messaging = tx.citizenHasAccessToMessaging(clock, citizen)
         return CitizenFeatures(
             messages = messaging,
-            composeNewMessage = messaging && tx.citizenHasChildWithActivePlacement(clock, user.id),
+            composeNewMessage = messaging && tx.citizenHasChildWithActivePlacement(clock, citizen),
             reservations =
                 tx.citizenHasAccessToReservations(
                     clock,
-                    user.id,
+                    citizen,
                     citizenCalendarEnv.calendarOpenBeforePlacementDays
                 ),
-            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, user.id)
+            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, citizen)
         )
     }
 
