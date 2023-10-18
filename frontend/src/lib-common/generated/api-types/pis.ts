@@ -27,14 +27,7 @@ export interface AddSsnRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.CitizenUser
-*/
-export interface CitizenUser {
-  id: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.CitizenUserDetails
+* Generated from fi.espoo.evaka.pis.CitizenUserDetails
 */
 export interface CitizenUserDetails {
   backupPhone: string
@@ -47,6 +40,22 @@ export interface CitizenUserDetails {
   postalCode: string
   preferredName: string
   streetAddress: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.CitizenUserIdentity
+*/
+export interface CitizenUserIdentity {
+  id: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.CitizenUserResponse
+*/
+export interface CitizenUserResponse {
+  accessibleFeatures: CitizenFeatures
+  authLevel: CitizenAuthLevel
+  details: CitizenUserDetails
 }
 
 /**
@@ -591,13 +600,4 @@ export interface TemporaryEmployee {
   hasStaffOccupancyEffect: boolean
   lastName: string
   pinCode: PinCode | null
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.UserDetailsResponse
-*/
-export interface UserDetailsResponse {
-  accessibleFeatures: CitizenFeatures
-  authLevel: CitizenAuthLevel
-  details: CitizenUserDetails
 }

@@ -5,6 +5,8 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.CitizenUserDetails
+import fi.espoo.evaka.pis.getCitizenUserDetails
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -32,7 +34,7 @@ class CitizenUserController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
-    ): UserDetailsResponse {
+    ): CitizenUserResponse {
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()
@@ -50,37 +52,13 @@ class CitizenUserController(
                     val details = tx.getCitizenUserDetails(personId) ?: notFound()
                     val accessibleFeatures =
                         accessControlCitizen.getPermittedFeatures(tx, user, clock)
-                    UserDetailsResponse(details, user.authLevel, accessibleFeatures)
+                    CitizenUserResponse(details, user.authLevel, accessibleFeatures)
                 }
             }
             .also { Audit.VtjRequest.log(targetId = personId) }
     }
 
-    private fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
-        createQuery<Any> {
-                sql(
-                    """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email
-FROM person WHERE id = ${bind(id)}
-        """
-                )
-            }
-            .exactlyOneOrNull()
-
-    data class CitizenUserDetails(
-        val id: PersonId,
-        val firstName: String,
-        val lastName: String,
-        val preferredName: String,
-        val streetAddress: String,
-        val postalCode: String,
-        val postOffice: String,
-        val phone: String,
-        val backupPhone: String,
-        val email: String?
-    )
-
-    data class UserDetailsResponse(
+    data class CitizenUserResponse(
         val details: CitizenUserDetails,
         val authLevel: CitizenAuthLevel,
         val accessibleFeatures: CitizenFeatures,

@@ -53,7 +53,7 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @RequestBody request: CitizenLoginRequest
-    ): CitizenUser {
+    ): CitizenUserIdentity {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     val citizen =
@@ -64,7 +64,7 @@ class SystemController(
                                     user,
                                     ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
                                 )
-                                ?.let { CitizenUser(it.id) }
+                                ?.let { CitizenUserIdentity(it.id) }
                                 ?: error("No person found with ssn")
                     tx.markPersonLastLogin(clock, citizen.id)
                     tx.upsertCitizenUser(citizen.id)

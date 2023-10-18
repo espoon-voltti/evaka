@@ -53,12 +53,36 @@ val personDTOColumns =
     )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
-data class CitizenUser(val id: PersonId)
+data class CitizenUserIdentity(val id: PersonId)
 
-fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? =
+data class CitizenUserDetails(
+    val id: PersonId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val phone: String,
+    val backupPhone: String,
+    val email: String?
+)
+
+fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email
+FROM person WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull()
+
+fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? =
     createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
         .bind("ssn", ssn)
-        .exactlyOneOrNull<CitizenUser>()
+        .exactlyOneOrNull<CitizenUserIdentity>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(

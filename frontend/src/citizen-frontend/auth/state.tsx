@@ -14,7 +14,7 @@ import { Loading, Result } from 'lib-common/api'
 import {
   CitizenFeatures,
   CitizenUserDetails,
-  UserDetailsResponse
+  CitizenUserResponse
 } from 'lib-common/generated/api-types/pis'
 import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 import { idleTracker } from 'lib-common/utils/idleTracker'
@@ -32,7 +32,7 @@ export interface User extends CitizenUserDetails {
 type AuthState = {
   apiVersion: string | undefined
   user: Result<User | undefined>
-  fullUserResponse: Result<UserDetailsResponse | undefined>
+  fullUserResponse: Result<CitizenUserResponse | undefined>
   refreshAuthStatus: () => void
 }
 
