@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -121,13 +122,16 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     ): PinLoginResponse =
         db.connect { dbc ->
                 dbc.transaction { tx ->
+                    val employee = tx.getEmployeeUser(params.employeeId)
+                    if (employee?.active == false) {
+                        throw Forbidden("User is not active")
+                    }
                     when (accessControl.verifyPinCode(tx, params.employeeId, params.pin, clock)) {
                         AccessControl.PinError.PIN_LOCKED ->
                             PinLoginResponse(PinLoginStatus.PIN_LOCKED)
                         AccessControl.PinError.WRONG_PIN ->
                             PinLoginResponse(PinLoginStatus.WRONG_PIN)
                         null -> {
-                            val employee = tx.getEmployeeUser(params.employeeId)
                             employee?.let {
                                 PinLoginResponse(
                                     PinLoginStatus.SUCCESS,
