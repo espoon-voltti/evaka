@@ -34,7 +34,7 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children
 }: {
   unitId: string
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [unitInfoResponse, reloadUnitInfo] = useApiState(
     () => getMobileUnitInfo(unitId),

@@ -54,7 +54,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   children
 }: {
   id: UUID
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [personResponse, setPersonResponse] = useState<Result<PersonResponse>>(
     Loading.of()

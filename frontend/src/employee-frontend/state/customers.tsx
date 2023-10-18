@@ -46,7 +46,11 @@ const defaultState: CustomersState = {
 export const CustomersContext = createContext<CustomersState>(defaultState)
 
 export const CustomersContextProvider = React.memo(
-  function CustomersContextProvider({ children }: { children: JSX.Element }) {
+  function CustomersContextProvider({
+    children
+  }: {
+    children: React.JSX.Element
+  }) {
     const [customers, setCustomers] = useState<Result<PersonSummary[]>>(
       defaultState.customers
     )

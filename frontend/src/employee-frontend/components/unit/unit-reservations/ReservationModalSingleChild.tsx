@@ -465,7 +465,7 @@ const TimeInputs = React.memo(function TimeInputs({
   bind,
   showAllErrors
 }: {
-  label: JSX.Element
+  label: React.JSX.Element
   bind: BoundForm<typeof times>
   showAllErrors: boolean
 }) {

@@ -172,7 +172,11 @@ const appendMessageAndMoveThreadToTopOfList =
     })
 
 export const MessageContextProvider = React.memo(
-  function MessageContextProvider({ children }: { children: JSX.Element }) {
+  function MessageContextProvider({
+    children
+  }: {
+    children: React.JSX.Element
+  }) {
     const theme = useTheme()
     const { user } = useContext(UserContext)
     const { addNotification, removeNotification } =

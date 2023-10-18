@@ -5,7 +5,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
-import React, { cloneElement, JSX } from 'react'
+import React, { cloneElement } from 'react'
 
 import LocalDate from 'lib-common/local-date'
 
@@ -32,7 +32,7 @@ const translations: Translations = {
 
 describe('DatePicker', () => {
   describe('desktop', () => {
-    const jsx = (child: JSX.Element) => (
+    const jsx = (child: React.JSX.Element) => (
       <TestContextProvider translations={translations}>
         {child}
       </TestContextProvider>
@@ -114,7 +114,7 @@ describe('DatePicker', () => {
     })
   })
   describe('native datepicker (android)', () => {
-    const jsx = (child: JSX.Element) => (
+    const jsx = (child: React.JSX.Element) => (
       <TestContextProvider translations={translations}>
         <label htmlFor="datepicker">Date picker</label>
         {cloneElement(child, { id: 'datepicker', useBrowserPicker: true })}

@@ -41,7 +41,7 @@ export type SearchColumn = 'name' | 'area.name' | 'address' | 'type'
 export const UnitsContextProvider = React.memo(function UnitsContextProvider({
   children
 }: {
-  children: JSX.Element
+  children: React.JSX.Element
 }) {
   const [filter, setFilter] = useState<string>(defaultState.filter)
   const [sortColumn, setSortColumn] = useState<string>(defaultState.sortColumn)

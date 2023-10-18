@@ -855,9 +855,9 @@ export default {
             ),
             CLUB: null
           } as {
-            DAYCARE: JSX.Element | null
-            PRESCHOOL: JSX.Element | null
-            CLUB: JSX.Element | null
+            DAYCARE: React.JSX.Element | null
+            PRESCHOOL: React.JSX.Element | null
+            CLUB: React.JSX.Element | null
           },
           placeholder: 'Valitse aloituspäivä',
           validationText: 'Toivottu aloituspäivä: '
@@ -1061,9 +1061,9 @@ export default {
               </>
             )
           } as {
-            DAYCARE: JSX.Element | null
-            PRESCHOOL: JSX.Element | null
-            CLUB: JSX.Element | null
+            DAYCARE: React.JSX.Element | null
+            PRESCHOOL: React.JSX.Element | null
+            CLUB: React.JSX.Element | null
           },
           checkbox: {
             DAYCARE:

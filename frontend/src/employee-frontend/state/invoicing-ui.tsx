@@ -245,7 +245,11 @@ const defaultState: UiState = {
 export const InvoicingUiContext = createContext<UiState>(defaultState)
 
 export const InvoicingUIContextProvider = React.memo(
-  function InvoicingUIContextProvider({ children }: { children: JSX.Element }) {
+  function InvoicingUIContextProvider({
+    children
+  }: {
+    children: React.JSX.Element
+  }) {
     const { loggedIn } = useContext(UserContext)
 
     const [feeDecisionSearchFilters, setFeeDecisionSearchFilters] =

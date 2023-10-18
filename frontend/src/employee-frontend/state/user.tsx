@@ -26,7 +26,7 @@ export const UserContextProvider = React.memo(function UserContextProvider({
   roles,
   refreshAuthStatus
 }: {
-  children: JSX.Element
+  children: React.JSX.Element
   user: User | undefined
   roles: AdRole[] | undefined
   refreshAuthStatus: () => void

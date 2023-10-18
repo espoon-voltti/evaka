@@ -22,7 +22,7 @@ export function ValueOrNoRecord({
   text,
   translations,
   dataQa = 'value-or-no-record'
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   return (
     <PreFormattedText data-qa={dataQa}>
       {text || <Dimmed>{translations.noRecord}</Dimmed>}

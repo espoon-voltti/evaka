@@ -47,7 +47,7 @@ interface Props {
   startEditing: () => void
   startDeleting: () => void
   permittedActions: Action.Income[]
-  children?: JSX.Element[] | JSX.Element
+  children?: React.JSX.Element[] | React.JSX.Element
 }
 
 const IncomeItemHeader = React.memo(function IncomeItemHeader({

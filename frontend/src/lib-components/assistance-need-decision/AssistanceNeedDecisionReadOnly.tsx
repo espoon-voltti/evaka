@@ -77,7 +77,7 @@ export interface AssistanceNeedDecisionTexts {
   confidential: string
   lawReference: string
   appealInstructionsTitle: string
-  appealInstructions: JSX.Element
+  appealInstructions: React.JSX.Element
   legalInstructions: string
   legalInstructionsText: string
   jurisdiction: string

@@ -76,7 +76,7 @@ export interface CitizenCustomizations {
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: ImgProps
-  footerLogo?: JSX.Element
+  footerLogo?: React.JSX.Element
   routeLinkRootUrl: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags
@@ -243,7 +243,7 @@ interface BaseFeatureFlags {
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
 
-type CityLogo = JSX.Element | ImgProps
+type CityLogo = React.JSX.Element | ImgProps
 
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig

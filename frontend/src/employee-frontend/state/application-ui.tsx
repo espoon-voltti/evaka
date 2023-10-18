@@ -115,7 +115,7 @@ export const ApplicationUIContextProvider = React.memo(
   function ApplicationUIContextProvider({
     children
   }: {
-    children: JSX.Element
+    children: React.JSX.Element
   }) {
     const { loggedIn } = useContext(UserContext)
 

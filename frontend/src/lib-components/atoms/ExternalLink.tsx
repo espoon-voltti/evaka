@@ -8,7 +8,7 @@ import React from 'react'
 import { faExternalLink } from 'lib-icons'
 
 type ExternalLinkProps = {
-  text: string | JSX.Element
+  text: string | React.JSX.Element
   href: string
   newTab?: boolean
   'data-qa'?: string
