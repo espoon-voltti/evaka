@@ -5,11 +5,13 @@
 import React, { useContext } from 'react'
 import { createSearchParams, Navigate, useLocation } from 'react-router-dom'
 
+import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
+
 import { AuthContext } from './auth/state'
 import { getStrongLoginUri } from './navigation/const'
 
 interface Props {
-  strength?: 'STRONG' | 'WEAK' | undefined
+  strength?: CitizenAuthLevel | undefined
   children?: React.ReactNode
 }
 

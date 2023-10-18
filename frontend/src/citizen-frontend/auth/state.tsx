@@ -14,7 +14,8 @@ import { Loading, Result } from 'lib-common/api'
 import {
   CitizenUserDetails,
   UserDetailsResponse
-} from 'lib-common/api-types/vtjclient'
+} from 'lib-common/generated/api-types/pis'
+import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
@@ -23,7 +24,7 @@ import { client } from '../api-client'
 import { getAuthStatus } from './api'
 
 export interface User extends CitizenUserDetails {
-  authLevel: 'STRONG' | 'WEAK'
+  authLevel: CitizenAuthLevel
 }
 
 type AuthState = {

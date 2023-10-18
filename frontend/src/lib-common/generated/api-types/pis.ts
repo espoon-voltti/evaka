@@ -9,6 +9,8 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { CitizenAuthLevel } from './shared'
+import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
 import { ExternalId } from './identity'
 import { IncomeEffect } from './invoicing'
@@ -29,6 +31,23 @@ export interface AddSsnRequest {
 */
 export interface CitizenUser {
   id: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.CitizenUserDetails
+*/
+export interface CitizenUserDetails {
+  accessibleFeatures: CitizenFeatures
+  backupPhone: string
+  email: string | null
+  firstName: string
+  id: UUID
+  lastName: string
+  phone: string
+  postOffice: string
+  postalCode: string
+  preferredName: string
+  streetAddress: string
 }
 
 /**
@@ -573,4 +592,12 @@ export interface TemporaryEmployee {
   hasStaffOccupancyEffect: boolean
   lastName: string
   pinCode: PinCode | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.UserDetailsResponse
+*/
+export interface UserDetailsResponse {
+  authLevel: CitizenAuthLevel
+  details: CitizenUserDetails
 }
