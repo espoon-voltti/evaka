@@ -51,12 +51,9 @@ class CitizenUserController(
                     )
                     val person = tx.getPersonById(personId) ?: notFound()
                     UserDetailsResponse(
-                        details =
-                            CitizenUserDetails.from(
-                                person,
-                                accessControlCitizen.getPermittedFeatures(tx, user, clock)
-                            ),
+                        details = CitizenUserDetails.from(person),
                         authLevel = user.authLevel,
+                        accessibleFeatures = accessControlCitizen.getPermittedFeatures(tx, user, clock)
                     )
                 }
             }
@@ -74,10 +71,9 @@ class CitizenUserController(
         val phone: String,
         val backupPhone: String,
         val email: String?,
-        val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
-            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails =
+            fun from(person: PersonDTO): CitizenUserDetails =
                 CitizenUserDetails(
                     id = person.id,
                     firstName = person.firstName,
@@ -89,7 +85,6 @@ class CitizenUserController(
                     phone = person.phone,
                     backupPhone = person.backupPhone,
                     email = person.email,
-                    accessibleFeatures = accessibleFeatures
                 )
         }
     }
@@ -97,5 +92,6 @@ class CitizenUserController(
     data class UserDetailsResponse(
         val details: CitizenUserDetails,
         val authLevel: CitizenAuthLevel,
+        val accessibleFeatures: CitizenFeatures,
     )
 }

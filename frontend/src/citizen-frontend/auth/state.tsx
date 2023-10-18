@@ -12,6 +12,7 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import {
+  CitizenFeatures,
   CitizenUserDetails,
   UserDetailsResponse
 } from 'lib-common/generated/api-types/pis'
@@ -25,6 +26,7 @@ import { getAuthStatus } from './api'
 
 export interface User extends CitizenUserDetails {
   authLevel: CitizenAuthLevel
+  accessibleFeatures: CitizenFeatures
 }
 
 type AuthState = {
@@ -78,7 +80,12 @@ export const useUser = (): User | undefined => {
   const authContext = useContext(AuthContext)
   const full = authContext.fullUserResponse.getOrElse(undefined)
   return useMemo(
-    () => full && { ...full.details, authLevel: full.authLevel },
+    () =>
+      full && {
+        ...full.details,
+        authLevel: full.authLevel,
+        accessibleFeatures: full.accessibleFeatures
+      },
     [full]
   )
 }

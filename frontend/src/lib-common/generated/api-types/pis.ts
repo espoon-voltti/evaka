@@ -37,7 +37,6 @@ export interface CitizenUser {
 * Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.CitizenUserDetails
 */
 export interface CitizenUserDetails {
-  accessibleFeatures: CitizenFeatures
   backupPhone: string
   email: string | null
   firstName: string
@@ -598,6 +597,7 @@ export interface TemporaryEmployee {
 * Generated from fi.espoo.evaka.pis.controllers.CitizenUserController.UserDetailsResponse
 */
 export interface UserDetailsResponse {
+  accessibleFeatures: CitizenFeatures
   authLevel: CitizenAuthLevel
   details: CitizenUserDetails
 }
