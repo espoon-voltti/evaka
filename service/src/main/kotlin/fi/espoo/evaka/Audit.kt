@@ -171,6 +171,7 @@ enum class Audit(
     CitizenNotificationSettingsRead,
     CitizenNotificationSettingsUpdate,
     CitizenLogin(securityEvent = true, securityLevel = "high"),
+    CitizenUserDetailsRead(securityEvent = true, securityLevel = "high"),
     DaycareAssistanceCreate,
     DaycareAssistanceUpdate,
     DaycareAssistanceDelete,
@@ -198,12 +199,12 @@ enum class Audit(
     EmployeeCreate(securityEvent = true, securityLevel = "high"),
     EmployeeDeactivate(securityEvent = true),
     EmployeeDelete(securityEvent = true, securityLevel = "high"),
-    EmployeeGetOrCreate(securityEvent = true, securityLevel = "high"),
     EmployeeLogin(securityEvent = true, securityLevel = "high"),
     EmployeeRead(securityEvent = true),
     EmployeeUpdate(securityEvent = true, securityLevel = "high"),
     EmployeePreferredFirstNameRead,
     EmployeePreferredFirstNameUpdate,
+    EmployeeUserDetailsRead(securityEvent = true, securityLevel = "high"),
     EmployeesRead(securityEvent = true),
     EndedPlacementsReportRead,
     FamilyConflictReportRead,
@@ -455,8 +456,7 @@ enum class Audit(
     VoucherValueDecisionRead,
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
-    VoucherValueDecisionSetType,
-    VtjRequest(securityEvent = true, securityLevel = "high");
+    VoucherValueDecisionSetType;
 
     private val eventCode = name
 

@@ -107,7 +107,7 @@ class SystemController(
                     val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
                     CitizenUserResponse(details, accessibleFeatures, authLevel)
                 }
-                .also { Audit.PersonDetailsRead.log(targetId = id) }
+                .also { Audit.CitizenUserDetailsRead.log(targetId = id) }
         }
 
     @PostMapping("/system/employee-login")
@@ -249,7 +249,7 @@ class SystemController(
                     }
                 }
             }
-            .also { Audit.EmployeeGetOrCreate.log(targetId = id) }
+            .also { Audit.EmployeeUserDetailsRead.log(targetId = id) }
     }
 
     data class MobileDeviceTracking(val userAgent: String)
