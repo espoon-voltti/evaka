@@ -11,10 +11,7 @@ import React, {
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import {
-  CitizenUserDetails,
-  CitizenUserResponse
-} from 'lib-common/generated/api-types/pis'
+import { CitizenUserDetails } from 'lib-common/generated/api-types/pis'
 import {
   CitizenAuthLevel,
   CitizenFeatures
@@ -34,14 +31,12 @@ export interface User extends CitizenUserDetails {
 type AuthState = {
   apiVersion: string | undefined
   user: Result<User | undefined>
-  fullUserResponse: Result<CitizenUserResponse | undefined>
   refreshAuthStatus: () => void
 }
 
 const defaultState: AuthState = {
   apiVersion: undefined,
   user: Loading.of(),
-  fullUserResponse: Loading.of(),
   refreshAuthStatus: () => undefined
 }
 
@@ -76,9 +71,6 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
             }
           : undefined
       ),
-      fullUserResponse: authStatus.map((a) =>
-        a.loggedIn ? a.user : undefined
-      ),
       refreshAuthStatus
     }),
     [authStatus, refreshAuthStatus]
@@ -89,14 +81,5 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
 
 export const useUser = (): User | undefined => {
   const authContext = useContext(AuthContext)
-  const full = authContext.fullUserResponse.getOrElse(undefined)
-  return useMemo(
-    () =>
-      full && {
-        ...full.details,
-        authLevel: full.authLevel,
-        accessibleFeatures: full.accessibleFeatures
-      },
-    [full]
-  )
+  return authContext.user.getOrElse(undefined)
 }
