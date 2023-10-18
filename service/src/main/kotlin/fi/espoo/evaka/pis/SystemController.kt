@@ -72,7 +72,11 @@ class SystemController(
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                                 ?: error("No person found with ssn")
-                    tx.markPersonLastLogin(clock, citizen.id)
+                    tx.updateCitizenOnLogin(
+                        clock,
+                        citizen.id,
+                        keycloakEmail = request.keycloakEmail
+                    )
                     tx.upsertCitizenUser(citizen.id)
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     citizen
@@ -315,7 +319,9 @@ class SystemController(
     data class CitizenLoginRequest(
         val socialSecurityNumber: String,
         val firstName: String,
-        val lastName: String
+        val lastName: String,
+        // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
+        val keycloakEmail: String?
     )
 
     data class EmployeeUserResponse(

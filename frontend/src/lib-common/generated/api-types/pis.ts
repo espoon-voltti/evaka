@@ -34,6 +34,7 @@ export interface CitizenUserDetails {
   email: string | null
   firstName: string
   id: UUID
+  keycloakEmail: string | null
   lastName: string
   phone: string
   postOffice: string

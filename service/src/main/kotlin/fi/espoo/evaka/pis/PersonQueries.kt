@@ -65,14 +65,15 @@ data class CitizenUserDetails(
     val postOffice: String,
     val phone: String,
     val backupPhone: String,
-    val email: String?
+    val email: String?,
+    val keycloakEmail: String?,
 )
 
 fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
     createQuery<Any> {
             sql(
                 """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email
 FROM person WHERE id = ${bind(id)}
 """
             )
@@ -493,18 +494,22 @@ private val toPersonDTO: Row.() -> PersonDTO = {
     )
 }
 
-fun Database.Transaction.markPersonLastLogin(clock: EvakaClock, id: PersonId) =
-    createUpdate(
-            """
+fun Database.Transaction.updateCitizenOnLogin(
+    clock: EvakaClock,
+    id: PersonId,
+    keycloakEmail: String?
+) =
+    createUpdate<Any> {
+            sql(
+                """
 UPDATE person 
-SET last_login = :now
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
-        .execute()
+SET last_login = ${bind(clock.now())},
+    keycloak_email = coalesce(${bind(keycloakEmail)}, keycloak_email)
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .updateExactlyOne()
 
 data class PersonReference(val table: String, val column: String)
 
