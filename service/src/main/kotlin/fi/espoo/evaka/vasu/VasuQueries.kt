@@ -61,8 +61,8 @@ fun Database.Transaction.insertVasuDocument(
     val documentId =
         createQuery(
                 """
-        INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
-        VALUES (:childId, :basics, :templateId, :now)
+        INSERT INTO curriculum_document (created, updated, child_id, basics, template_id, modified_at)
+        VALUES (:now, :now, :childId, :basics, :templateId, :now)
         RETURNING id
         """
                     .trimIndent()
@@ -75,11 +75,12 @@ fun Database.Transaction.insertVasuDocument(
 
     createUpdate(
             """
-        INSERT INTO curriculum_content (document_id, content)
-        SELECT :documentId, ct.content FROM curriculum_template ct WHERE ct.id = :templateId
+        INSERT INTO curriculum_content (created, updated, document_id, content)
+        SELECT :now, :now, :documentId, ct.content FROM curriculum_template ct WHERE ct.id = :templateId
         """
                 .trimIndent()
         )
+        .bind("now", now)
         .bind("documentId", documentId)
         .bind("templateId", template.id)
         .updateExactlyOne()

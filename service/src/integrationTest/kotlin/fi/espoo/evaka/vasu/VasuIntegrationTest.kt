@@ -538,6 +538,67 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `unit supervisor sees latest daycare document from duplicate of`() {
+        val unitSupervisor =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insertTestDaycare(
+                        DevDaycare(
+                            areaId = testArea.id,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                        )
+                    )
+                val employeeId = tx.insertTestEmployee(DevEmployee())
+                tx.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.UNIT_SUPERVISOR
+                )
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(id = childId))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        unitId = unitId,
+                        childId = childId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
+                )
+                val unitSupervisor =
+                    AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
+                unitSupervisor
+            }
+        val document1Id =
+            vasuController.createDocument(
+                dbInstance(),
+                adminUser,
+                clock,
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+            )
+        vasuController.updateDocumentState(
+            dbInstance(),
+            adminUser,
+            clock,
+            document1Id,
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
+        )
+        clock.tick()
+        val document2Id =
+            vasuController.createDocument(
+                dbInstance(),
+                adminUser,
+                clock,
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+            )
+        assertNotNull(vasuController.getDocument(dbInstance(), unitSupervisor, clock, document2Id))
+        assertThrows<Forbidden> {
+            vasuController.getDocument(dbInstance(), unitSupervisor, clock, document1Id)
+        }
+    }
+
+    @Test
     fun `unit supervisor sees preschool document from duplicate`() {
         val unitSupervisor =
             db.transaction { tx ->
@@ -579,6 +640,48 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
             )
         assertNotNull(vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId))
+    }
+
+    @Test
+    fun `unit supervisor doesn't see preschool document from duplicate of`() {
+        val unitSupervisor =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insertTestDaycare(
+                        DevDaycare(
+                            areaId = testArea.id,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                        )
+                    )
+                val employeeId = tx.insertTestEmployee(DevEmployee())
+                tx.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.UNIT_SUPERVISOR
+                )
+                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insertTestChild(DevChild(id = childId))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        unitId = unitId,
+                        childId = childId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
+                )
+                AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
+            }
+        val documentId =
+            vasuController.createDocument(
+                dbInstance(),
+                adminUser,
+                clock,
+                testChild_1.id,
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+            )
+        assertThrows<Forbidden> {
+            vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId)
+        }
     }
 
     private fun documentPublishingAndStateTransitions(type: CurriculumType) {

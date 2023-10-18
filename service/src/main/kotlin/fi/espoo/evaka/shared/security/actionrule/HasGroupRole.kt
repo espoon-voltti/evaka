@@ -217,6 +217,27 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
+    fun inPlacementGroupOfDuplicateChildOfDaycareCurriculumDocument() =
+        rule<VasuDocumentId> { user, now ->
+            sql(
+                """
+SELECT cd.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM curriculum_document cd
+JOIN curriculum_template ct ON ct.id = cd.template_id
+JOIN person ON person.duplicate_of = cd.child_id
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.id
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
+    SELECT max(curriculum_document.created)
+    FROM curriculum_document
+    JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
+    WHERE child_id = cd.child_id AND curriculum_template.type = ct.type
+)
+            """
+                    .trimIndent()
+            )
+        }
+
     fun inPlacementGroupOfDuplicateChildOfPreschoolCurriculumDocument() =
         rule<VasuDocumentId> { user, now ->
             sql(
