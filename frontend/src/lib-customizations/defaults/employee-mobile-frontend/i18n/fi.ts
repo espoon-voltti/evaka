@@ -360,8 +360,14 @@ export const fi = {
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
       recipientsPlaceholder: 'Valitse...',
-      title: 'Otsikko',
-      message: 'Viesti',
+      subject: {
+        heading: 'Otsikko',
+        placeholder: 'Kirjoita...'
+      },
+      message: {
+        heading: 'Viesti',
+        placeholder: 'Viestin sisältö...'
+      },
       discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',

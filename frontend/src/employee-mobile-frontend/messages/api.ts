@@ -96,14 +96,14 @@ export async function deleteDraft(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postMessage(
-  accountId: UUID,
+export async function sendMessage({
+  accountId,
+  body
+}: {
+  accountId: UUID
   body: PostMessageBody
-): Promise<Result<void>> {
-  return client
-    .post(`/messages/${accountId}`, body)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.post(`/messages/${accountId}`, body).then(() => undefined)
 }
 
 export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
@@ -124,13 +124,10 @@ export async function saveDraft({
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getReceivers(): Promise<
-  Result<MessageReceiversResponse[]>
-> {
+export async function getReceivers(): Promise<MessageReceiversResponse[]> {
   return client
     .get<JsonOf<MessageReceiversResponse[]>>('/messages/receivers')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 async function doSaveAttachment(

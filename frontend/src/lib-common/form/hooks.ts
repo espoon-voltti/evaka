@@ -107,7 +107,8 @@ export function useFormFields<F extends AnyForm>({
   validationError,
   translateError
 }: BoundForm<F>): { [K in keyof ShapeOf<F>]: BoundForm<ShapeOf<F>[K]> } {
-  const fieldNames = useMemo(() => Object.keys(form.shape), [form.shape])
+  const shape = form.shape()
+  const fieldNames = useMemo(() => Object.keys(shape), [shape])
 
   const fieldCallbacks = useMemo(
     () =>
@@ -136,12 +137,12 @@ export function useFormFields<F extends AnyForm>({
           return [
             key,
             {
-              form: form.shape[key],
+              form: shape[key],
               state: state[key],
               update: fieldCallbacks[key].fieldUpdate,
               set: fieldCallbacks[key].fieldSet,
               ...validationHelpers(
-                () => form.shape[key].validate(state[key]),
+                () => shape[key].validate(state[key]),
                 translateError,
                 { get: validationError, map: (error) => error[key] }
               )
@@ -149,14 +150,7 @@ export function useFormFields<F extends AnyForm>({
           ]
         })
       ) as any,
-    [
-      fieldCallbacks,
-      fieldNames,
-      form.shape,
-      state,
-      translateError,
-      validationError
-    ]
+    [fieldCallbacks, fieldNames, shape, state, translateError, validationError]
   )
 }
 
@@ -164,7 +158,7 @@ export function useFormField<F extends AnyForm, K extends keyof ShapeOf<F>>(
   { form, state, update, validationError, translateError }: BoundForm<F>,
   key: K
 ): ShapeOf<F>[K] extends AnyForm ? BoundForm<ShapeOf<F>[K]> : never {
-  const field = form.shape[key]
+  const field = form.shape()[key]
   const fieldState = state[key]
 
   const fieldUpdate = useCallback(
@@ -216,7 +210,7 @@ export function useFormElem<F extends AnyForm>(
     ? BoundForm<ShapeOf<F>> | undefined
     : never
   : never {
-  const elem = form.shape
+  const elem = form.shape()
   const elemUpdate = useCallback(
     (fn: (prev: StateOf<F>[number]) => StateOf<F>[number]) => {
       update((prevElemStates) =>
@@ -267,7 +261,7 @@ export function useFormElems<F extends AnyForm>({
     ? BoundForm<ShapeOf<F>>[]
     : never
   : never {
-  const elem = form.shape
+  const elem = form.shape()
   const len = state.length
 
   const callbacks = useMemo(
@@ -326,10 +320,11 @@ export function useFormUnion<F extends AnyForm>({
       : never
     : never
   : never {
+  const shape = form.shape()
   const branchCallbacks = useMemo(
     () =>
       Object.fromEntries(
-        Object.keys(form.shape).map((branch) => {
+        Object.keys(shape).map((branch) => {
           const elemUpdate = (
             fn: (prev: StateOf<F>['state']) => StateOf<F>['state']
           ) => {
@@ -344,19 +339,20 @@ export function useFormUnion<F extends AnyForm>({
           return [branch, { elemUpdate, elemSet }]
         })
       ),
-    [form.shape, update]
+    [shape, update]
   )
+
   return useMemo(
     () =>
       ({
         branch: state.branch,
         form: {
-          form: form.shape[state.branch],
+          form: shape[state.branch],
           state: state.state,
           update: branchCallbacks[state.branch].elemUpdate,
           set: branchCallbacks[state.branch].elemSet,
           ...validationHelpers(
-            () => form.shape[state.branch].validate(state.state),
+            () => shape[state.branch].validate(state.state),
             translateError,
             {
               get: validationError,
@@ -367,7 +363,7 @@ export function useFormUnion<F extends AnyForm>({
       }) as any,
     [
       branchCallbacks,
-      form.shape,
+      shape,
       state.branch,
       state.state,
       translateError,
@@ -389,7 +385,7 @@ export function useFormUnionBranch<
     ? BoundForm<ShapeOf<F>[K]> | undefined
     : never
   : never {
-  const field = form.shape[branch]
+  const field = form.shape()[branch]
 
   const matches = state.branch === branch
   const fieldState = state.state

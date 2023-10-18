@@ -101,7 +101,7 @@ export default React.memo(function HolidayPeriodForm({
     },
     {
       onUpdate(_, nextState, form) {
-        const period = form.shape.period.validate(nextState.period)
+        const period = form.shape().period.validate(nextState.period)
         if (period.isValid) {
           return {
             ...nextState,

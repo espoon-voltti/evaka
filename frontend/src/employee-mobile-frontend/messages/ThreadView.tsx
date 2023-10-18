@@ -57,14 +57,14 @@ export default React.memo(function ThreadView({
     useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
-  const [replyEditorVisible, setReplyEditorVisible] = useState(false)
-
-  useEffect(() => setReplyEditorVisible(false), [threadId])
+  const [replyEditorVisible, setReplyEditorVisible] = useState(
+    () => getReplyContent(threadId) !== ''
+  )
 
   const autoScrollRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     scrollRefIntoView(autoScrollRef)
-  }, [messages, replyEditorVisible])
+  }, [])
 
   const titleRowRef = useRef<HTMLDivElement>(null)
   useEffect(() => {

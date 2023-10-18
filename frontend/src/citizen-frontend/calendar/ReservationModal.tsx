@@ -96,15 +96,16 @@ export default React.memo(function ReservationModal({
     { ...i18n.validationErrors, ...i18n.calendar.validationErrors },
     {
       onUpdate: (prevState, nextState, form) => {
+        const shape = form.shape()
         const prev = combine(
-          form.shape.repetition.validate(prevState.repetition),
-          form.shape.dateRange.validate(prevState.dateRange),
-          form.shape.selectedChildren.validate(prevState.selectedChildren)
+          shape.repetition.validate(prevState.repetition),
+          shape.dateRange.validate(prevState.dateRange),
+          shape.selectedChildren.validate(prevState.selectedChildren)
         )
         const next = combine(
-          form.shape.repetition.validate(nextState.repetition),
-          form.shape.dateRange.validate(nextState.dateRange),
-          form.shape.selectedChildren.validate(nextState.selectedChildren)
+          shape.repetition.validate(nextState.repetition),
+          shape.dateRange.validate(nextState.dateRange),
+          shape.selectedChildren.validate(nextState.selectedChildren)
         )
 
         if (!next.isValid) return nextState
