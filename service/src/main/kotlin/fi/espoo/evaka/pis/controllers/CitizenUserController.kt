@@ -39,7 +39,7 @@ class CitizenUserController(
         }
 
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
