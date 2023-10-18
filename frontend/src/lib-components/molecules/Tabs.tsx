@@ -12,31 +12,32 @@ import { fontWeights, NavLinkText } from '../typography'
 import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
-interface Tab {
+interface TabLink {
   id: string
   link: string
   label: string | React.JSX.Element
   counter?: number
 }
 
-interface Props extends BaseProps {
+interface TabLinksProps extends BaseProps {
   mobile?: boolean
-  tabs: Tab[]
+  tabs: TabLink[]
   id?: string
 }
 
-export default React.memo(function Tabs({
+
+export const TabLinks = React.memo(function TabLinks({
   mobile,
   'data-qa': dataQa,
   tabs,
   id
-}: Props) {
+}: TabLinksProps) {
   const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Container>
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
-          <TabLinkContainer
+          <TabLink
             key={id}
             to={link}
             data-qa={`${id}-tab`}
@@ -45,7 +46,7 @@ export default React.memo(function Tabs({
           >
             <NavLinkText>{label}</NavLinkText>
             {counter ? <TabCounter>{counter}</TabCounter> : null}
-          </TabLinkContainer>
+          </TabLink>
         ))}
       </TabsContainer>
     </Container>
@@ -64,7 +65,7 @@ const TabsContainer = styled.nav<{ shadow?: boolean }>`
       : ''}
 `
 
-const TabLinkContainer = styled(NavLink)<{
+const TabLink = styled(NavLink)<{
   $maxWidth?: string
   $mobile?: boolean
 }>`

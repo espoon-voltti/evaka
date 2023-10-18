@@ -25,7 +25,7 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import Tabs from 'lib-components/molecules/Tabs'
+import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -193,7 +193,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         </ContentArea>
       </Container>
       <Gap size="s" />
-      <Tabs tabs={tabs} />
+      <TabLinks tabs={tabs} />
       <Gap size="s" />
       <Container>
         <Routes>

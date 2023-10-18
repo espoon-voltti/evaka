@@ -12,7 +12,7 @@ import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import Tabs from 'lib-components/molecules/Tabs'
+import { TabLinks } from 'lib-components/molecules/Tabs'
 import { faPlus } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -143,7 +143,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}
     >
-      <Tabs tabs={tabs} mobile />
+      <TabLinks tabs={tabs} mobile />
       {renderResult(filteredStaff, (staff) => (
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {
