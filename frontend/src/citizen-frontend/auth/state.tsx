@@ -26,10 +26,6 @@ export interface User extends CitizenUserDetails {
   authLevel: 'STRONG' | 'WEAK'
 }
 
-export interface StrongUser extends User {
-  socialSecurityNumber: string
-}
-
 type AuthState = {
   apiVersion: string | undefined
   user: Result<User | undefined>
@@ -83,22 +79,5 @@ export const useUser = (): User | undefined => {
   return useMemo(
     () => full && { ...full.details, authLevel: full.authLevel },
     [full]
-  )
-}
-
-export const useStrongUser = (): StrongUser | undefined => {
-  const authContext = useContext(AuthContext)
-  const user = authContext.fullUserResponse.getOrElse(undefined)
-
-  return useMemo(
-    () =>
-      user?.authLevel === 'STRONG'
-        ? {
-            ...user.details,
-            socialSecurityNumber: user.socialSecurityNumber,
-            authLevel: 'STRONG'
-          }
-        : undefined,
-    [user]
   )
 }

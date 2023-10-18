@@ -32,20 +32,7 @@ export interface CitizenUserDetails {
   streetAddress: string
 }
 
-interface BaseUserDetailsResponse {
+export interface UserDetailsResponse {
   authLevel: 'STRONG' | 'WEAK'
   details: CitizenUserDetails
 }
-
-export interface WeakUserDetailsResponse extends BaseUserDetailsResponse {
-  authLevel: 'WEAK'
-}
-
-export interface StrongUserDetailsResponse extends BaseUserDetailsResponse {
-  authLevel: 'STRONG'
-  socialSecurityNumber: string
-}
-
-export type UserDetailsResponse =
-  | WeakUserDetailsResponse
-  | StrongUserDetailsResponse

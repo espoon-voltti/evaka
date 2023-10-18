@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.PersonId
@@ -30,7 +29,7 @@ class CitizenUserController(
     private val accessControlCitizen: AccessControlCitizen
 ) {
     @GetMapping("/uuid/{personId}")
-    internal fun getDetails(
+    fun getDetails(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
@@ -51,26 +50,20 @@ class CitizenUserController(
                         personId
                     )
                     val person = tx.getPersonById(personId) ?: notFound()
-                    val userDetails =
-                        CitizenUserDetails.from(
-                            person,
-                            accessControlCitizen.getPermittedFeatures(tx, user, clock)
-                        )
-
-                    if (user.authLevel == CitizenAuthLevel.STRONG) {
-                        UserDetailsResponse.Strong(
-                            userDetails,
-                            (person.identity as? ExternalIdentifier.SSN)?.ssn ?: ""
-                        )
-                    } else {
-                        UserDetailsResponse.Weak(userDetails)
-                    }
+                    UserDetailsResponse(
+                        details =
+                            CitizenUserDetails.from(
+                                person,
+                                accessControlCitizen.getPermittedFeatures(tx, user, clock)
+                            ),
+                        authLevel = user.authLevel,
+                    )
                 }
             }
             .also { Audit.VtjRequest.log(targetId = personId) }
     }
 
-    internal data class CitizenUserDetails(
+    data class CitizenUserDetails(
         val id: PersonId,
         val firstName: String,
         val lastName: String,
@@ -101,16 +94,8 @@ class CitizenUserController(
         }
     }
 
-    internal sealed class UserDetailsResponse(
-        open val details: CitizenUserDetails,
-        val authLevel: CitizenAuthLevel
-    ) {
-        internal data class Strong(
-            override val details: CitizenUserDetails,
-            val socialSecurityNumber: String
-        ) : UserDetailsResponse(details, CitizenAuthLevel.STRONG)
-
-        internal data class Weak(override val details: CitizenUserDetails) :
-            UserDetailsResponse(details, CitizenAuthLevel.WEAK)
-    }
+    data class UserDetailsResponse(
+        val details: CitizenUserDetails,
+        val authLevel: CitizenAuthLevel,
+    )
 }
