@@ -17,6 +17,7 @@ import {
   InfiniteData,
   QueryClient
 } from '@tanstack/react-query'
+import uniqBy from 'lodash/uniqBy'
 import { useCallback, useMemo } from 'react'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
@@ -138,6 +139,135 @@ export function infiniteQuery<
         })
   ) as any
   /* eslint-enable */
+}
+
+type Paged<T> = {
+  data: T[]
+  pages: number
+  total: number
+}
+
+export interface PagedInfiniteQueryDescription<Data, Id, Key extends QueryKey> {
+  api: (pageArg: number) => Promise<Paged<Data>>
+  queryKey: Key
+  id: (data: Data) => Id
+  queryOptions?: UseInfiniteQueryOptions<
+    Paged<Data>,
+    unknown,
+    Paged<Data>,
+    Paged<Data>,
+    Key
+  >
+}
+
+export function pagedInfiniteQuery<
+  Args extends unknown[],
+  Data,
+  Id,
+  Key extends QueryKey
+>(opts: {
+  api: (...args: Args) => (pageArg: number) => Promise<Paged<Data>>
+  queryKey: (...arg: Args) => Key
+  id: (data: Data) => Id
+  options?: UseInfiniteQueryOptions<
+    Paged<Data>,
+    unknown,
+    Paged<Data>,
+    Paged<Data>,
+    Key
+  >
+}): (...arg: Args) => PagedInfiniteQueryDescription<Data, Id, Key> {
+  const { api, queryKey, id, options } = opts
+  return (...args: Args) => ({
+    api: api(...args),
+    queryKey: queryKey(...args),
+    id,
+    queryOptions: options
+  })
+}
+
+export interface PagedInfiniteQueryResult<Data> {
+  data: Result<Data[]>
+  hasNextPage: boolean
+  fetchNextPage: () => void
+  transform: (f: (data: Data) => Data) => void
+}
+
+export function usePagedInfiniteQueryResult<Data, Id, Key extends QueryKey>(
+  queryDescription: PagedInfiniteQueryDescription<Data, Id, Key>,
+  options?: UseInfiniteQueryOptions<
+    Paged<Data>,
+    unknown,
+    Paged<Data>,
+    Paged<Data>,
+    Key
+  >
+): PagedInfiniteQueryResult<Data> {
+  const queryClient = useQueryClient()
+  const { queryKey, api, id, queryOptions } = queryDescription
+  const {
+    data,
+    error,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage = false,
+    fetchNextPage
+  } = useInfiniteQueryOriginal({
+    queryKey,
+    queryFn: (context: { pageParam?: number }) => api(context.pageParam ?? 1),
+    getNextPageParam: (lastPage, pages) => {
+      const nextPage = pages.length + 1
+      return nextPage <= lastPage.pages ? nextPage : undefined
+    },
+    ...queryOptions,
+    ...options
+  })
+
+  const isFetchingFirstPage = isFetching && !isFetchingNextPage
+  const result = useMemo(
+    () =>
+      // Use .map() to only call uniqBy/flatMap when it's a Success
+      queryResult(null, error, isFetchingFirstPage).map(() =>
+        data
+          ? uniqBy(
+              data.pages.flatMap((p) => p.data),
+              id
+            )
+          : []
+      ),
+    [data, error, isFetchingFirstPage, id]
+  )
+
+  const maybeFetchNextPage = useCallback(() => {
+    if (!isFetchingNextPage && hasNextPage) {
+      void fetchNextPage()
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage])
+
+  const transform = useCallback(
+    (f: (data: Data) => Data) => {
+      queryClient.setQueryData<InfiniteData<Paged<Data>>>(
+        queryKey,
+        (currentData) =>
+          currentData
+            ? {
+                ...currentData,
+                pages: currentData.pages.map((page) => ({
+                  ...page,
+                  data: page.data.map(f)
+                }))
+              }
+            : undefined
+      )
+    },
+    [queryClient, queryKey]
+  )
+  return {
+    data: result,
+    hasNextPage,
+    fetchNextPage: maybeFetchNextPage,
+    transform
+  }
 }
 
 export type UseInfiniteQueryResultWithTransform<Data> =
