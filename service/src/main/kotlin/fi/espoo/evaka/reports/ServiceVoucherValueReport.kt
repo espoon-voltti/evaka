@@ -289,7 +289,7 @@ WITH min_voucher_decision_date AS (
     JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
     JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
     WHERE lower(p.period) < :reportDate
-        AND decision.status = ANY(:effective::voucher_value_decision_status[])
+        AND (decision.status = ANY(:effective::voucher_value_decision_status[]) OR decision.status = 'ANNULLED')
         AND decision.validity_updated_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
         AND (daterange(decision.valid_from, decision.valid_to, '[]') * p.period) <> sn_decision.realized_period
 
