@@ -45,7 +45,11 @@ import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePick
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
-import { applicationTypes, featureFlags } from 'lib-customizations/employee'
+import {
+  applicationTypes,
+  featureFlags,
+  unitProviderTypes
+} from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -1399,20 +1403,11 @@ export function ProviderTypeFilter({
 }: ProviderTypeFilterProps) {
   const { i18n } = useTranslation()
 
-  const providerTypes: ProviderType[] = [
-    'MUNICIPAL',
-    'PURCHASED',
-    'PRIVATE',
-    'MUNICIPAL_SCHOOL',
-    'PRIVATE_SERVICE_VOUCHER',
-    'EXTERNAL_PURCHASED'
-  ]
-
   return (
     <>
       <Label>{i18n.filters.providerType}</Label>
       <Gap size="xs" />
-      {providerTypes.map((id) => (
+      {unitProviderTypes.map((id) => (
         <Checkbox
           key={id}
           label={i18n.common.providerType[id]}
