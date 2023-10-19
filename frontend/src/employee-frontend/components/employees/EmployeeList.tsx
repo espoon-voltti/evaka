@@ -15,6 +15,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -31,6 +32,11 @@ const Name = styled.div`
 const Email = styled.div`
   font-weight: ${fontWeights.semibold};
   font-size: 14px;
+`
+
+const ExtId = styled.div`
+  font-size: 14px;
+  color: ${colors.grayscale.g70};
 `
 
 const StyledUl = styled.ul`
@@ -58,6 +64,7 @@ export function EmployeeList({ employees, onUpdate }: Props) {
         id,
         lastName,
         lastLogin,
+        externalId,
         active
       }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
@@ -66,6 +73,7 @@ export function EmployeeList({ employees, onUpdate }: Props) {
               {lastName} {firstName}
             </Name>
             <Email>{email}</Email>
+            {!!externalId && <ExtId>{externalId}</ExtId>}
           </Td>
           <Td>
             <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>

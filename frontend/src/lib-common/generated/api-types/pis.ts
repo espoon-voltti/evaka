@@ -167,6 +167,7 @@ export interface EmployeeWithDaycareRoles {
   daycareGroupRoles: DaycareGroupRole[]
   daycareRoles: DaycareRole[]
   email: string | null
+  externalId: string | null
   firstName: string
   globalRoles: UserRole[]
   id: UUID
