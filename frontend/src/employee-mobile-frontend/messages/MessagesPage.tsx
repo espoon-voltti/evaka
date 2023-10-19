@@ -12,7 +12,10 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { OnEnterView } from 'lib-components/OnEnterView'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { ContentArea } from 'lib-components/layout/Container'
 import EmptyMessageFolder from 'lib-components/messages/EmptyMessageFolder'
 import { H1 } from 'lib-components/typography'
@@ -50,8 +53,14 @@ export default function MessagesPage() {
   const { unitInfoResponse } = useContext(UnitContext)
   const { groupRoute } = useSelectedGroup()
 
-  const { groupAccounts, receivedMessages, selectedAccount, markThreadAsRead } =
-    useContext(MessageContext)
+  const {
+    groupAccounts,
+    receivedMessages,
+    hasMoreMessages,
+    fetchMoreMessages,
+    selectedAccount,
+    markThreadAsRead
+  } = useContext(MessageContext)
 
   const recipients = useQueryResult(recipientsQuery)
 
@@ -110,23 +119,33 @@ export default function MessagesPage() {
                       <H1 noMargin={true}>{i18n.messages.title}</H1>
                     </HeaderContainer>
                     {threads.length > 0 ? (
-                      threads.map((thread) => (
-                        <MessagePreview
-                          thread={thread}
-                          hasUnreadMessages={thread.messages.some(
-                            (item) =>
-                              !item.readAt &&
-                              item.sender.id !== selectedAccount?.account.id &&
-                              !groupAccounts.some(
-                                (ga) => ga.account.id === item.sender.id
-                              )
-                          )}
-                          onClick={() => {
-                            selectThread(thread.id)
-                          }}
-                          key={thread.id}
-                        />
-                      ))
+                      <>
+                        {threads.map((thread) => (
+                          <MessagePreview
+                            thread={thread}
+                            hasUnreadMessages={thread.messages.some(
+                              (item) =>
+                                !item.readAt &&
+                                item.sender.id !==
+                                  selectedAccount?.account.id &&
+                                !groupAccounts.some(
+                                  (ga) => ga.account.id === item.sender.id
+                                )
+                            )}
+                            onClick={() => {
+                              selectThread(thread.id)
+                            }}
+                            key={thread.id}
+                          />
+                        ))}
+                        {hasMoreMessages && (
+                          <>
+                            <OnEnterView onEnter={fetchMoreMessages} />
+                            <HorizontalLine />
+                            <SpinnerSegment />
+                          </>
+                        )}
+                      </>
                     ) : (
                       <EmptyMessageFolder
                         loading={isReloading}

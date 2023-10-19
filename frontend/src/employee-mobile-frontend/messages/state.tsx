@@ -46,6 +46,8 @@ export interface MessagesState {
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
+  hasMoreMessages: boolean
+  fetchMoreMessages: () => void
   markThreadAsRead: (threadId: UUID) => void
   sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
@@ -57,6 +59,8 @@ const defaultState: MessagesState = {
   selectedAccount: undefined,
   groupAccounts: [],
   receivedMessages: Loading.of(),
+  hasMoreMessages: false,
+  fetchMoreMessages: () => undefined,
   markThreadAsRead: () => undefined,
   sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
@@ -132,14 +136,21 @@ export const MessageContextProvider = React.memo(
       [groupAccounts, selectedGroupId]
     )
 
-    const { data, transformPages, error, isFetching, isFetchingNextPage } =
-      useInfiniteQuery(
-        receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
-        {
-          enabled:
-            selectedAccount !== undefined && pinLoggedEmployeeId !== undefined
-        }
-      )
+    const {
+      data,
+      transformPages,
+      error,
+      isFetching,
+      isFetchingNextPage,
+      hasNextPage,
+      fetchNextPage
+    } = useInfiniteQuery(
+      receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
+      {
+        enabled:
+          selectedAccount !== undefined && pinLoggedEmployeeId !== undefined
+      }
+    )
 
     const isFetchingFirstPage = isFetching && !isFetchingNextPage
     const threads = useMemo(
@@ -211,6 +222,8 @@ export const MessageContextProvider = React.memo(
         selectedAccount,
         groupAccounts,
         receivedMessages: threads,
+        hasMoreMessages: hasNextPage ?? false,
+        fetchMoreMessages: fetchNextPage,
         markThreadAsRead,
         getReplyContent,
         sendReply: sendReplyAndClear,
@@ -221,6 +234,8 @@ export const MessageContextProvider = React.memo(
         groupAccounts,
         selectedAccount,
         threads,
+        hasNextPage,
+        fetchNextPage,
         markThreadAsRead,
         getReplyContent,
         sendReplyAndClear,

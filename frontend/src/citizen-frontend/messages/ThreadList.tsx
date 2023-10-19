@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
+import { OnEnterView } from 'lib-components/OnEnterView'
 import Button from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -213,27 +214,3 @@ const FloatingButton = styled(Button)`
   border-radius: 40px;
   z-index: 10;
 `
-
-const OnEnterView = React.memo(function IsInView({
-  onEnter
-}: {
-  onEnter: () => void
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!ref.current) return undefined
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        onEnter()
-      }
-    })
-    observer.observe(ref.current)
-    return () => {
-      observer.disconnect()
-    }
-  }, [onEnter])
-
-  return <div ref={ref} />
-})
