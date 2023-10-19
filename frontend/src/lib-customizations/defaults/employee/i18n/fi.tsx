@@ -3613,6 +3613,11 @@ export const fi = {
         PRESCHOOL: 'Esiopetus'
       },
       level: 'Tuen taso ja muut toimet',
+      groupingTypes: {
+        NO_GROUPING: 'Lapset',
+        AREA: 'Toimintayksiköt alueittain',
+        UNIT: 'Toimintayksiköt'
+      },
       basisMissing: 'Peruste puuttuu',
       action: 'Tukitoimi',
       actionMissing: 'Tukitoimi puuttuu'
