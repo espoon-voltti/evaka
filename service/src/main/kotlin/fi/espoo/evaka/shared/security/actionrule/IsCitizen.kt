@@ -58,14 +58,15 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> =
             when (ctx.user) {
-                is AuthenticatedUser.Citizen ->
+                is AuthenticatedUser.Citizen -> {
+                    val targetCheck = targets.idTargetPredicate()
                     ctx.tx
                         .createQuery<T> {
                             sql(
                                 """
-                        SELECT id
-                        FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
-                        WHERE id = ANY(${bind(targets.map { it.raw })})
+                    SELECT id
+                    FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                                     .trimIndent()
                             )
@@ -76,6 +77,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                                 .filter { matched.contains(it) }
                                 .associateWith { Deferred(ctx.user.authLevel) }
                         }
+                }
                 else -> emptyMap()
             }
 

@@ -50,14 +50,15 @@ object IsEmployee : DatabaseActionRule.Params {
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
+                    val targetCheck = targets.idTargetPredicate()
                     ctx.tx
                         .createQuery<T> {
                             sql(
                                 """
                     SELECT id
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                                     .trimIndent()
                             )
@@ -66,6 +67,7 @@ object IsEmployee : DatabaseActionRule.Params {
                         .let { matched ->
                             targets.filter { matched.contains(it) }.associateWith { Permitted }
                         }
+                }
                 else -> emptyMap()
             }
 
