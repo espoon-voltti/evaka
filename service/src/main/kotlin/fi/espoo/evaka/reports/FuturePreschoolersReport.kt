@@ -154,7 +154,8 @@ SELECT dg.id,
     NULL AS language_emphaseis -- cannot be obtained from current dataset
 FROM daycare d
 JOIN daycare_group dg on d.id = dg.daycare_id
-WHERE d.type && '{PRESCHOOL}'::care_types[] AND 
+WHERE d.type && '{PRESCHOOL}'::care_types[] AND
+dg.start_date <= :today AND (dg.end_date IS NULL OR dg.end_date >= :today) AND
 CASE WHEN :municipal THEN d.provider_type = 'MUNICIPAL' ELSE d.provider_type != 'MUNICIPAL' END 
             """
                     .trimIndent()
