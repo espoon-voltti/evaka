@@ -34,12 +34,22 @@ export async function enduserLogin(page: Page, ssn = '070644-937X') {
   await page.goto(config.enduserUrl + '/applications')
 }
 
-export async function enduserLoginWeak(page: Page) {
+export type CitizenWeakAccount = { username: string; password: string }
+
+export const defaultCitizenWeakAccount: CitizenWeakAccount = {
+  username: 'test@example.com',
+  password: 'test123'
+}
+
+export async function enduserLoginWeak(
+  page: Page,
+  account = defaultCitizenWeakAccount
+) {
   await page.goto(config.enduserLoginUrl)
   await page.findByDataQa('weak-login').click()
 
-  await new TextInput(page.find('[id="username"]')).fill('test@example.com')
-  await new TextInput(page.find('[id="password"]')).fill('test123')
+  await new TextInput(page.find('[id="username"]')).fill(account.username)
+  await new TextInput(page.find('[id="password"]')).fill(account.password)
   await page.find('[id="kc-login"]').click()
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()

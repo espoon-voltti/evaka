@@ -11,6 +11,9 @@ export default class CitizenPersonalDetails {
   personalDetailsSection = new CitizenPersonalDetailsSection(
     this.page.findByDataQa('personal-details-section')
   )
+  loginDetailsSection = new LoginDetailsSection(
+    this.page.findByDataQa('login-details-section')
+  )
   notificationSettingsSectiong = new CitizenNotificationSettingsSection(
     this.page.findByDataQa('notification-settings-section')
   )
@@ -95,6 +98,10 @@ export class CitizenPersonalDetailsSection extends Element {
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }
+}
+
+export class LoginDetailsSection extends Element {
+  keycloakEmail = this.findByDataQa('keycloak-email')
 }
 
 export class CitizenNotificationSettingsSection extends Element {

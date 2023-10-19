@@ -1630,6 +1630,10 @@ const en: Translations = {
       emailInfo:
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.'
     },
+    loginDetailsSection: {
+      title: 'Login information',
+      keycloakEmail: 'Username'
+    },
     notificationsSection: {
       title: 'Email notifications',
       info: 'You can choose to receive email notifications on the following topics. You can edit the settings by clicking on the Edit button',

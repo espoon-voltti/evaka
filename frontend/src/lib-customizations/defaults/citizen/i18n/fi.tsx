@@ -1863,6 +1863,10 @@ export default {
       emailInfo:
         'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.'
     },
+    loginDetailsSection: {
+      title: 'Kirjautumistiedot',
+      keycloakEmail: 'Käyttäjätunnus'
+    },
     notificationsSection: {
       title: 'Sähköposti-ilmoitukset',
       info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',

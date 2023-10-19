@@ -10,11 +10,15 @@ import CitizenPersonalDetailsPage, {
   CitizenPersonalDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
 import { Page } from '../../utils/page'
-import { enduserLogin } from '../../utils/user'
+import {
+  defaultCitizenWeakAccount,
+  enduserLogin,
+  enduserLoginWeak
+} from '../../utils/user'
 
-let page: Page
 let header: CitizenHeader
 let personalDetailsPage: CitizenPersonalDetailsPage
+let page: Page
 
 const citizenFixture = {
   ...enduserGuardianFixture,
@@ -27,16 +31,16 @@ const citizenFixture = {
 beforeEach(async () => {
   await resetDatabase()
   await Fixture.person().with(citizenFixture).save()
-
   page = await Page.open()
-  await enduserLogin(page)
-  header = new CitizenHeader(page)
 })
 
 describe('Citizen personal details', () => {
   let section: CitizenPersonalDetailsSection
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await enduserLogin(page)
+    header = new CitizenHeader(page)
+
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
     section = personalDetailsPage.personalDetailsSection
   })
@@ -90,10 +94,26 @@ describe('Citizen personal details', () => {
   })
 })
 
+test('Citizen keycloak email is shown', async () => {
+  const account = defaultCitizenWeakAccount
+  await enduserLoginWeak(page, account)
+  header = new CitizenHeader(page)
+
+  await header.selectTab('personal-details')
+  personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+  await personalDetailsPage.loginDetailsSection.keycloakEmail.assertTextEquals(
+    account.username
+  )
+})
+
 describe('Citizen notification settings', () => {
   let section: CitizenNotificationSettingsSection
 
   beforeEach(async () => {
+    await enduserLogin(page)
+    header = new CitizenHeader(page)
+
     await header.selectTab('personal-details')
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
     section = personalDetailsPage.notificationSettingsSectiong
