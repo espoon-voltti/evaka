@@ -59,6 +59,7 @@ dependencies {
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
+    api(platform("io.netty:netty-bom:4.1.100.Final")) // only needed for CVE fix
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     api(platform("org.jdbi:jdbi3-bom:3.41.2"))
     api(platform(libs.kotlin.bom))
