@@ -1,80 +1,94 @@
-DROP FUNCTION IF EXISTS koski_active_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preschool_study_right(today date);
+DROP FUNCTION IF EXISTS koski_active_preparatory_study_right(today date);
 DROP FUNCTION IF EXISTS koski_voided_study_right(today date);
 DROP FUNCTION IF EXISTS koski_placement(today date);
+DROP VIEW IF EXISTS koski_unit;
+DROP VIEW IF EXISTS koski_child;
+
+CREATE VIEW koski_unit (id, unit_language, provider_type, approver_name, oph_unit_oid, oph_organizer_oid) AS
+SELECT
+    id, language AS unit_language, provider_type, unit_manager_name AS approver_name,
+    nullif(oph_unit_oid, '') AS oph_unit_oid,
+    nullif(oph_organizer_oid, '') AS oph_organizer_oid
+FROM daycare
+WHERE upload_to_koski IS TRUE
+AND nullif(oph_unit_oid, '') IS NOT NULL
+AND nullif(oph_organizer_oid, '') IS NOT NULL;
+
+CREATE VIEW koski_child (id, ssn, oph_person_oid, first_name, last_name) AS
+SELECT
+    id,
+    nullif(social_security_number, '') AS ssn,
+    nullif(oph_person_oid, '') AS oph_person_oid,
+    first_name,
+    last_name
+FROM person
+WHERE nullif(social_security_number, '') IS NOT NULL
+OR nullif(oph_person_oid, '') IS NOT NULL;
 
 CREATE FUNCTION koski_placement(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
-    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool
-) AS $$
+    placements datemultirange, all_placements_in_past bool, last_of_child bool, last_of_type bool
+)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         child_id, unit_id, type,
-        daterange(min(start_date), max(end_date), '[]') AS full_range,
         range_agg(daterange(start_date, end_date, '[]')) AS placements,
         (max(end_date) < today) AS all_placements_in_past,
-        bool_or(last_of_child) AS last_of_child
+        bool_or(last_of_child) AS last_of_child,
+        bool_or(last_of_type) AS last_of_type
     FROM (
         SELECT
             child_id, unit_id, start_date, end_date,
-            end_date = max(end_date) OVER child AS last_of_child,
-            (CASE placement.type
-                WHEN 'PRESCHOOL' THEN 'PRESCHOOL'
-                WHEN 'PRESCHOOL_DAYCARE' THEN 'PRESCHOOL'
-                WHEN 'PRESCHOOL_CLUB' THEN 'PRESCHOOL'
-                WHEN 'PREPARATORY' THEN 'PREPARATORY'
-                WHEN 'PREPARATORY_DAYCARE' THEN 'PREPARATORY'
-            END)::koski_study_right_type AS type
+            row_number() OVER child = count(*) OVER child AS last_of_child,
+            row_number() OVER child_type = count(*) OVER child_type AS last_of_type,
+            placement.type::koski_study_right_type AS type
         FROM placement
         WHERE start_date <= today
         AND placement.type IN ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB', 'PREPARATORY', 'PREPARATORY_DAYCARE')
-        WINDOW child AS (PARTITION BY child_id)
+        WINDOW
+            child AS (PARTITION BY child_id ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
+            child_type AS (PARTITION BY child_id, placement.type::koski_study_right_type ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
     ) p
     WHERE NOT EXISTS (SELECT FROM person duplicate WHERE duplicate.duplicate_of = p.child_id)
-    GROUP BY child_id, unit_id, type
-$$ LANGUAGE SQL STABLE;
+    GROUP BY child_id, unit_id, type;
+END;
 
-CREATE FUNCTION koski_active_study_right(today date) RETURNS
-TABLE (
-    child_id uuid, unit_id uuid, type koski_study_right_type,
-    oph_unit_oid text, oph_organizer_oid text,
-    full_range daterange, placements datemultirange, all_placements_in_past bool, last_of_child bool, preparatory_absences jsonb,
-    special_support_with_decision_level_1 datemultirange, special_support_with_decision_level_2 datemultirange,
-    transport_benefit datemultirange
-) AS $$
+CREATE FUNCTION koski_active_preschool_study_right(today date) RETURNS
+TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preschool_input_data)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         p.child_id,
         p.unit_id,
         p.type,
-        d.oph_unit_oid,
-        d.oph_organizer_oid,
-        full_range,
-        placements,
-        all_placements_in_past,
-        last_of_child,
-        preparatory_absences,
-        special_support_with_decision_level_1,
-        special_support_with_decision_level_2,
-        transport_benefit
+        (
+            d.oph_unit_oid,
+            d.oph_organizer_oid,
+            placements,
+            all_placements_in_past,
+            last_of_child,
+            coalesce(special_support, '{}'),
+            coalesce(special_support_with_decision_level_1, '{}'),
+            coalesce(special_support_with_decision_level_2, '{}'),
+            coalesce(transport_benefit, '{}')
+        ) AS input_data
     FROM koski_placement(today) p
-    JOIN daycare d ON p.unit_id = d.id
-    JOIN person pr ON p.child_id = pr.id
-    LEFT JOIN LATERAL (
-        SELECT jsonb_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
-        FROM absence a
-        WHERE a.child_id = p.child_id
-        AND a.category = 'NONBILLABLE'
-        AND between_start_and_end(full_range, a.date)
-        AND a.date > '2020-08-01'
-    ) pa ON p.type = 'PREPARATORY'
-    LEFT JOIN LATERAL (
+    JOIN koski_unit d ON p.unit_id = d.id
+    JOIN LATERAL (
         SELECT range_agg(valid_during) AS transport_benefit
         FROM other_assistance_measure oam
         WHERE oam.child_id = p.child_id
-        AND oam.valid_during && full_range
+        AND oam.valid_during && range_merge(placements)
         AND type = 'TRANSPORT_BENEFIT'
     ) oam ON TRUE
-    LEFT JOIN LATERAL (
+    JOIN LATERAL (
         SELECT
+            range_agg(valid_during) FILTER (
+                WHERE level = 'SPECIAL_SUPPORT'
+            ) AS special_support,
             range_agg(valid_during) FILTER (
                 WHERE level = 'SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1'
             ) AS special_support_with_decision_level_1,
@@ -83,20 +97,55 @@ TABLE (
             ) AS special_support_with_decision_level_2
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
-        AND pa.valid_during && full_range
+        AND pa.valid_during && range_merge(placements)
     ) pras ON TRUE
-    WHERE d.upload_to_koski IS TRUE
-    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
-    AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL STABLE;
+    WHERE p.type = 'PRESCHOOL'
+    AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
+END;
+
+CREATE FUNCTION koski_active_preparatory_study_right(today date) RETURNS
+TABLE (child_id uuid, unit_id uuid, type koski_study_right_type, input_data koski_preparatory_input_data)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
+    SELECT
+        p.child_id,
+        p.unit_id,
+        p.type,
+        (
+            d.oph_unit_oid,
+            d.oph_organizer_oid,
+            placements,
+            all_placements_in_past,
+            last_of_child,
+            last_of_type,
+            coalesce(absences, '{}')
+        ) AS input_data
+    FROM koski_placement(today) p
+    JOIN koski_unit d ON p.unit_id = d.id
+    JOIN LATERAL (
+        SELECT jsonb_object_agg(absence_type, dates) AS absences
+        FROM (
+            SELECT a.absence_type, array_agg(a.date ORDER BY a.date) AS dates
+            FROM absence a
+            WHERE a.child_id = p.child_id
+            AND a.category = 'NONBILLABLE'
+            AND between_start_and_end(range_merge(placements), a.date)
+            AND a.date > '2020-08-01'
+            GROUP BY a.absence_type
+        ) grouped
+    ) pa ON TRUE
+    WHERE p.type = 'PREPARATORY'
+    AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);
+END;
 
 CREATE FUNCTION koski_voided_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organizer_oid text,
     void_date date
-) AS $$
+)
+LANGUAGE SQL STABLE PARALLEL SAFE
+BEGIN ATOMIC
     SELECT
         ksr.child_id,
         ksr.unit_id,
@@ -105,16 +154,13 @@ TABLE (
         d.oph_organizer_oid,
         ksr.void_date
     FROM koski_study_right ksr
-    JOIN daycare d ON ksr.unit_id = d.id
+    JOIN koski_unit d ON ksr.unit_id = d.id
     JOIN person pr ON ksr.child_id = pr.id
-    WHERE NOT EXISTS (
+    WHERE EXISTS (SELECT FROM koski_child WHERE koski_child.id = ksr.child_id)
+    AND NOT EXISTS (
         SELECT 1
         FROM koski_placement(today) kp
         WHERE (kp.child_id, kp.unit_id, kp.type) = (ksr.child_id, ksr.unit_id, ksr.type)
     )
-    AND ksr.study_right_oid IS NOT NULL
-    AND (nullif(pr.social_security_number, '') IS NOT NULL OR nullif(pr.oph_person_oid, '') IS NOT NULL)
-    AND d.upload_to_koski IS TRUE
-    AND nullif(d.oph_unit_oid, '') IS NOT NULL
-    AND nullif(d.oph_organizer_oid, '') IS NOT NULL;
-$$ LANGUAGE SQL STABLE;
+    AND ksr.study_right_oid IS NOT NULL;
+END;

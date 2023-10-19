@@ -15,7 +15,6 @@ import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
-import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
@@ -226,7 +225,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun koskiUpdate(db: Database.Connection, clock: EvakaClock) {
-        koskiUpdateService.scheduleKoskiUploads(db, clock, KoskiSearchParams())
+        koskiUpdateService.scheduleKoskiUploads(db, clock)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {

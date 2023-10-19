@@ -25,6 +25,23 @@ enum class PlacementType : DatabaseEnum {
     TEMPORARY_DAYCARE_PART_DAY,
     SCHOOL_SHIFT_CARE;
 
+    fun isRelevantToKoski(): Boolean =
+        when (this) {
+            CLUB,
+            DAYCARE,
+            DAYCARE_PART_TIME,
+            DAYCARE_FIVE_YEAR_OLDS,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            TEMPORARY_DAYCARE,
+            TEMPORARY_DAYCARE_PART_DAY,
+            SCHOOL_SHIFT_CARE -> false
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE,
+            PRESCHOOL_CLUB,
+            PREPARATORY,
+            PREPARATORY_DAYCARE -> true
+        }
+
     fun isInvoiced(): Boolean =
         when (this) {
             CLUB -> false

@@ -40,7 +40,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -349,69 +348,28 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `pending placements can be limited by person or daycare`() {
-        val today = preschoolTerm2019.end
-        insertPlacement()
-
-        val searchByExistingPerson =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(personIds = listOf(testChild_1.id))
-                )
-            }
-        assertEquals(1, searchByExistingPerson.size)
-
-        val searchByRandomPerson =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(personIds = listOf(ChildId(UUID.randomUUID())))
-                )
-            }
-        assertEquals(0, searchByRandomPerson.size)
-
-        val searchByExistingDaycare =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(daycareIds = listOf(testDaycare.id))
-                )
-            }
-        assertEquals(1, searchByExistingDaycare.size)
-
-        val searchByRandomDaycare =
-            db.read {
-                it.getPendingStudyRights(
-                    today,
-                    KoskiSearchParams(daycareIds = listOf(DaycareId(UUID.randomUUID())))
-                )
-            }
-        assertEquals(0, searchByRandomDaycare.size)
-    }
-
-    @Test
     fun `preschool assistance info is converted to Koski extra information`() {
         data class TestCase(
             val period: FiniteDateRange,
             val level: PreschoolAssistanceLevel,
         )
         insertPlacement(testChild_1)
-        val testCases =
-            listOf(
-                TestCase(testPeriod(0L to 1L), PreschoolAssistanceLevel.INTENSIFIED_SUPPORT),
-                TestCase(testPeriod(2L to 3L), PreschoolAssistanceLevel.SPECIAL_SUPPORT),
-                TestCase(
-                    testPeriod(4L to 5L),
-                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
-                ),
-                TestCase(
-                    testPeriod(6L to 7L),
-                    PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2
-                )
+        val intensifiedSupport =
+            TestCase(testPeriod(0L to 1L), PreschoolAssistanceLevel.INTENSIFIED_SUPPORT)
+        val specialSupport =
+            TestCase(testPeriod(2L to 3L), PreschoolAssistanceLevel.SPECIAL_SUPPORT)
+        val level1 =
+            TestCase(
+                testPeriod(4L to 5L),
+                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
+            )
+        val level2 =
+            TestCase(
+                testPeriod(6L to 7L),
+                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2
             )
         db.transaction { tx ->
-            testCases.forEach {
+            listOf(intensifiedSupport, specialSupport, level1, level2).forEach {
                 tx.insertTestPreschoolAssistance(
                     DevPreschoolAssistance(
                         modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
@@ -428,24 +386,19 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen =
                     listOf(
-                        Aikajakso.from(testCases[2].period),
+                        Aikajakso.from(level1.period),
                     ),
                 vaikeastiVammainen =
                     listOf(
-                        Aikajakso.from(testCases[3].period),
+                        Aikajakso.from(level2.period),
                     ),
-                pidennettyOppivelvollisuus =
-                    Aikajakso.from(
-                        FiniteDateRange(testCases[2].period.start, testCases[3].period.end)
-                    ),
+                pidennettyOppivelvollisuus = Aikajakso.from(level1.period.merge(level2.period)),
                 kuljetusetu = null,
                 erityisenTuenPäätökset =
                     listOf(
-                        ErityisenTuenPäätös(
-                            alku = testCases[2].period.start,
-                            loppu = testCases[3].period.end,
-                            opiskeleeToimintaAlueittain = false
-                        ),
+                        ErityisenTuenPäätös.from(
+                            level1.period.merge(level2.period).merge(specialSupport.period)
+                        )
                     )
             ),
             koskiServer.getStudyRights().values.single().opiskeluoikeus.lisätiedot
@@ -708,7 +661,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `absences have no effect on pre-2020 preparatory study rights`() {
-        insertPlacement(period = preschoolTerm2019, type = PlacementType.PRESCHOOL)
+        insertPlacement(period = preschoolTerm2019, type = PlacementType.PREPARATORY)
 
         val today = preschoolTerm2019.end.plusDays(1)
         koskiTester.triggerUploads(today)
@@ -1000,6 +953,59 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `moving from last preparatory placement to preschool qualifies the preparatory study right`() {
+        val daycare3 =
+            db.transaction {
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = testArea.id,
+                        uploadToKoski = true,
+                        ophUnitOid = "1.2.246.562.10.3333333333"
+                    )
+                )
+            }
+        val daycare4 =
+            db.transaction {
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = testArea.id,
+                        uploadToKoski = true,
+                        ophUnitOid = "1.2.246.562.10.4444444444"
+                    )
+                )
+            }
+        val placements =
+            listOf(
+                testPeriod(0L to 9L) to Pair(testDaycare.id, PlacementType.PREPARATORY),
+                testPeriod(10L to 19L) to Pair(testDaycare2.id, PlacementType.PRESCHOOL),
+                testPeriod(20L to 29L) to Pair(daycare3, PlacementType.PREPARATORY),
+                testPeriod(30L to null) to Pair(daycare4, PlacementType.PRESCHOOL),
+            )
+        placements.forEach { (dateRange, placement) ->
+            val (unit, type) = placement
+            insertPlacement(child = testChild_1, daycareId = unit, period = dateRange, type)
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        val terminalStates =
+            koskiServer
+                .getStudyRights()
+                .map { it.value.opiskeluoikeus.tila.opiskeluoikeusjaksot.last() }
+                .sortedBy { it.alku }
+
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.eronnut(placements[0].first.end),
+                Opiskeluoikeusjakso.eronnut(placements[1].first.end),
+                Opiskeluoikeusjakso.valmistunut(placements[2].first.end),
+                Opiskeluoikeusjakso.valmistunut(placements[3].first.end)
+            ),
+            terminalStates
+        )
+    }
+
     private fun insertPlacement(
         child: DevPerson = testChild_1,
         daycareId: DaycareId = testDaycare.id,
@@ -1038,7 +1044,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 }
 
 private fun Database.Transaction.clearKoskiInputCache() =
-    createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()
+    createUpdate(
+            "UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL"
+        )
+        .execute()
 
 private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
