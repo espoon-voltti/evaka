@@ -30,6 +30,7 @@ export interface DaycareAclRow {
 * Generated from fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 */
 export interface DaycareAclRowEmployee {
+  active: boolean
   email: string | null
   firstName: string
   hasStaffOccupancyEffect: boolean | null

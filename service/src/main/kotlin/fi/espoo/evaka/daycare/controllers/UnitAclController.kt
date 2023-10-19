@@ -83,7 +83,17 @@ class UnitAclController(private val accessControl: AccessControl) {
                             daycareId
                         )
 
-                    val aclRows = tx.getDaycareAclRows(daycareId, hasOccupancyPermission)
+                    val aclRows =
+                        tx.getDaycareAclRows(daycareId, hasOccupancyPermission).map {
+                            if (it.employee.active) it
+                            else
+                                it.copy(
+                                    employee =
+                                        it.employee.copy(
+                                            lastName = "${it.employee.lastName} (poistunut)"
+                                        )
+                                )
+                        }
 
                     Audit.UnitAclRead.log(
                         targetId = daycareId,

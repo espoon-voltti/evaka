@@ -55,7 +55,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             lastName = "Last",
             email = "test@example.com",
             temporary = false,
-            hasStaffOccupancyEffect = false
+            hasStaffOccupancyEffect = false,
+            active = true
         )
     private lateinit var admin: AuthenticatedUser
 
@@ -178,7 +179,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             firstName = employee.firstName,
                             lastName = employee.lastName,
                             temporary = employee.temporary,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
+                            active = true
                         ),
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = emptyList()
@@ -217,7 +219,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             firstName = employee.firstName,
                             lastName = employee.lastName,
                             temporary = employee.temporary,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
+                            active = true
                         ),
                     role = UserRole.UNIT_SUPERVISOR,
                     groupIds = emptyList()
