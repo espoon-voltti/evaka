@@ -60,6 +60,22 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     name = "Test voucher group 1"
                 )
             )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(UUID.randomUUID()),
+                    daycareId = testDaycare.id,
+                    name = "Test closed group",
+                    endDate = LocalDate.of(2019, 1, 31)
+                )
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = GroupId(UUID.randomUUID()),
+                    daycareId = testVoucherDaycare.id,
+                    name = "Test closed voucher group",
+                    endDate = LocalDate.of(2019, 1, 31)
+                )
+            )
         }
     }
 
@@ -125,13 +141,13 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `municipal groups are found in report`() {
+    fun `open municipal groups are found in report`() {
         val report = getGroupReport(true)
         assertEquals(1, report.size)
     }
 
     @Test
-    fun `private groups are found in report`() {
+    fun `open private groups are found in report`() {
         val report = getGroupReport(false)
         assertEquals(1, report.size)
     }
