@@ -54,10 +54,10 @@ ENV NGINX_ENV=local \
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && apt-get -y --no-install-recommends install ruby \
- && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.3.0/s3downloader-linux-amd64 \
+ && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.4.1/s3downloader-linux-amd64 \
        -o /bin/s3download \
  && chmod +x /bin/s3download \
- && echo "d0ee074cbc04c1a36fb8cee6f99d9ff591fee89ea38d34a328d0ee1acb039a48  /bin/s3download" | sha256sum -c - \
+ && echo "520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f  /bin/s3download" | sha256sum -c - \
  && rm -rf /var/lib/apt/lists/*
 
 
