@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import uniqBy from 'lodash/uniqBy'
 import React, {
   createContext,
   useCallback,
@@ -15,10 +14,9 @@ import { Failure, Loading, Result } from 'lib-common/api'
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
-  queryResult,
-  useInfiniteQuery,
   useMutation,
   useMutationResult,
+  usePagedInfiniteQueryResult,
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -67,21 +65,18 @@ export const isRegularThread = (
 ): thread is CitizenMessageThread.Regular => thread.type === 'Regular'
 
 const markMessagesReadByThreadId = (
-  threads: CitizenMessageThread[],
+  thread: CitizenMessageThread,
   threadId: UUID
-): CitizenMessageThread[] =>
-  threads.filter(isRegularThread).map(
-    (t): CitizenMessageThread.Regular =>
-      t.id === threadId
-        ? {
-            ...t,
-            messages: t.messages.map((m) => ({
-              ...m,
-              readAt: m.readAt ?? HelsinkiDateTime.now()
-            }))
-          }
-        : t
-  )
+): CitizenMessageThread =>
+  isRegularThread(thread) && thread.id === threadId
+    ? {
+        ...thread,
+        messages: thread.messages.map((m) => ({
+          ...m,
+          readAt: m.readAt ?? HelsinkiDateTime.now()
+        }))
+      }
+    : thread
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
@@ -92,31 +87,13 @@ export const MessageContextProvider = React.memo(
     })
 
     const {
-      data,
+      data: threads,
       fetchNextPage,
-      transformPages,
-      error,
-      isFetching,
-      isFetchingNextPage,
-      hasNextPage
-    } = useInfiniteQuery(receivedMessagesQuery(10), {
+      hasNextPage,
+      transform
+    } = usePagedInfiniteQueryResult(receivedMessagesQuery(10), {
       enabled: accountId.isSuccess
     })
-
-    const isFetchingFirstPage = isFetching && !isFetchingNextPage
-    const threads = useMemo(
-      () =>
-        // Use .map() to only call uniqBy/flatMap when it's a Success
-        queryResult(null, error, isFetchingFirstPage).map(() =>
-          data
-            ? uniqBy(
-                data.pages.flatMap((p) => p.data),
-                'id'
-              )
-            : []
-        ),
-      [data, error, isFetchingFirstPage]
-    )
 
     const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
 
@@ -167,18 +144,9 @@ export const MessageContextProvider = React.memo(
 
       if (hasUnreadMessages && isRegularThread(selectedThread)) {
         markThreadRead(selectedThread.id)
-        transformPages((page) => ({
-          ...page,
-          data: markMessagesReadByThreadId(page.data, selectedThreadId)
-        }))
+        transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
       }
-    }, [
-      accountId,
-      markThreadRead,
-      selectedThread,
-      selectedThreadId,
-      transformPages
-    ])
+    }, [accountId, markThreadRead, selectedThread, selectedThreadId, transform])
 
     const value = useMemo(
       () => ({
@@ -187,7 +155,7 @@ export const MessageContextProvider = React.memo(
         getReplyContent,
         setReplyContent,
         loadMoreThreads: () => {
-          if (hasNextPage && !isFetchingNextPage) {
+          if (hasNextPage) {
             void fetchNextPage()
           }
         },
@@ -201,7 +169,6 @@ export const MessageContextProvider = React.memo(
         fetchNextPage,
         getReplyContent,
         hasNextPage,
-        isFetchingNextPage,
         selectedThread,
         sendReplyAndClear,
         setReplyContent,
