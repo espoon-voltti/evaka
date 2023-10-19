@@ -215,7 +215,10 @@ const PlacementGuaranteeTable = ({
         <Tbody>
           {sortedRows.length > 0 ? (
             sortedRows.map((row) => (
-              <Tr key={row.childId} data-qa="placement-guarantee-row">
+              <Tr
+                key={`${row.childId}-${row.placementStartDate.formatIso()}`}
+                data-qa="placement-guarantee-row"
+              >
                 <Td data-qa="area-name">{row.areaName}</Td>
                 <Td data-qa="unit-name">{row.unitName}</Td>
                 <Td data-qa="child-name">

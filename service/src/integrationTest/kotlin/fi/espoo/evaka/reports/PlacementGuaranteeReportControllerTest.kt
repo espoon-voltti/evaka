@@ -5,13 +5,10 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -41,59 +38,67 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `getPlacementGuaranteeReport smoke`() {
-        val today = LocalDate.of(2023, 9, 12)
-        val yesterday = today.minusDays(1)
-        val tomorrow = today.plusDays(1)
+        val date = LocalDate.of(2023, 9, 12)
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(8, 8)))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.of(8, 8)))
         val unitId =
             db.transaction { tx ->
                 val areaId = tx.insertTestCareArea(DevCareArea())
                 tx.insertTestDaycare(DevDaycare(areaId = areaId))
             }
-        db.transaction { tx ->
-            tx.insertSingleDatePlacement(unitId, yesterday, false)
-            tx.insertSingleDatePlacement(unitId, today, false)
-            tx.insertSingleDatePlacement(unitId, tomorrow, false)
-        }
-        val childYesterday =
-            db.transaction { tx -> tx.insertSingleDatePlacement(unitId, yesterday, true) }
-        val childToday = db.transaction { tx -> tx.insertSingleDatePlacement(unitId, today, true) }
-        val childTomorrow =
-            db.transaction { tx -> tx.insertSingleDatePlacement(unitId, tomorrow, true) }
+        val childId =
+            db.transaction { tx ->
+                val childId = tx.insertTestPerson(DevPerson())
+                tx.insertTestChild(DevChild(id = childId))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = date.minusDays(1),
+                        endDate = date.minusDays(1),
+                        placeGuarantee = false
+                    )
+                )
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = date.plusDays(1),
+                        endDate = date.plusDays(1),
+                        placeGuarantee = true
+                    )
+                )
+                childId
+            }
 
         val yesterdayReport =
             placementGuaranteeReportController.getPlacementGuaranteeReport(
                 dbInstance(),
                 user,
                 clock,
-                yesterday
+                date.minusDays(1)
             )
-        assertThat(yesterdayReport)
-            .extracting({ it.childId }, { it.placementStartDate }, { it.placementEndDate })
-            .containsExactly(Tuple(childYesterday, yesterday, yesterday))
+        assertThat(yesterdayReport).isEmpty()
 
         val todayReport =
             placementGuaranteeReportController.getPlacementGuaranteeReport(
                 dbInstance(),
                 user,
                 clock,
-                today
+                date
             )
         assertThat(todayReport)
             .extracting({ it.childId }, { it.placementStartDate }, { it.placementEndDate })
-            .containsExactly(Tuple(childToday, today, today))
+            .containsExactly(Tuple(childId, date.plusDays(1), date.plusDays(1)))
 
         val tomorrowReport =
             placementGuaranteeReportController.getPlacementGuaranteeReport(
                 dbInstance(),
                 user,
                 clock,
-                tomorrow
+                date.plusDays(1)
             )
-        assertThat(tomorrowReport)
-            .extracting({ it.childId }, { it.placementStartDate }, { it.placementEndDate })
-            .containsExactly(Tuple(childTomorrow, tomorrow, tomorrow))
+        assertThat(tomorrowReport).isEmpty()
     }
 
     @Test
@@ -102,8 +107,50 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val areaId = db.transaction { tx -> tx.insertTestCareArea(DevCareArea()) }
         val unitId1 = db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
         val unitId2 = db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
-        val childId = db.transaction { tx -> tx.insertSingleDatePlacement(unitId1, date, true) }
-        db.transaction { tx -> tx.insertSingleDatePlacement(unitId2, date, true) }
+        val childId =
+            db.transaction { tx ->
+                val childId1 = tx.insertTestPerson(DevPerson())
+                tx.insertTestChild(DevChild(id = childId1))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId1,
+                        unitId = unitId1,
+                        startDate = date.minusDays(1),
+                        endDate = date.minusDays(1),
+                        placeGuarantee = false
+                    )
+                )
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId1,
+                        unitId = unitId1,
+                        startDate = date.plusDays(1),
+                        endDate = date.plusDays(1),
+                        placeGuarantee = true
+                    )
+                )
+                val childId2 = tx.insertTestPerson(DevPerson())
+                tx.insertTestChild(DevChild(id = childId2))
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId2,
+                        unitId = unitId2,
+                        startDate = date.minusDays(1),
+                        endDate = date.minusDays(1),
+                        placeGuarantee = false
+                    )
+                )
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId2,
+                        unitId = unitId2,
+                        startDate = date.plusDays(1),
+                        endDate = date.plusDays(1),
+                        placeGuarantee = true
+                    )
+                )
+                childId1
+            }
         val employeeId =
             db.transaction { tx ->
                 val employeeId = tx.insertTestEmployee(DevEmployee())
@@ -137,23 +184,4 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
 
         assertThat(unit2Rows).isEmpty()
     }
-}
-
-private fun Database.Transaction.insertSingleDatePlacement(
-    unitId: DaycareId,
-    date: LocalDate,
-    placementGuarantee: Boolean
-): PersonId {
-    val childId = insertTestPerson(DevPerson())
-    insertTestChild(DevChild(id = childId))
-    insertTestPlacement(
-        DevPlacement(
-            childId = childId,
-            unitId = unitId,
-            startDate = date,
-            endDate = date,
-            placeGuarantee = placementGuarantee
-        )
-    )
-    return childId
 }
