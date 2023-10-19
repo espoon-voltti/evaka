@@ -13,6 +13,7 @@ import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -83,7 +84,14 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     }
 }
 
-@Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)
+@Json
+data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
+    init {
+        // input sanity check since list element nullability is not fully guaranteed in jackson
+        @Suppress("SENSELESS_COMPARISON")
+        if (answers.any { it == null }) throw BadRequest("Must not contain null answers")
+    }
+}
 
 enum class DocumentStatus(val editable: Boolean) {
     DRAFT(editable = true),
