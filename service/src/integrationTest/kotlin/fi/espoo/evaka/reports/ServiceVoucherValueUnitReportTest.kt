@@ -1061,6 +1061,43 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         marReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 86000, 0, 86000)
     }
 
+    @Test
+    fun `when a decision is first reduced in validity and then annulled in the same month the refunds and corrections are correct`() {
+        val decision =
+            createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
+
+        val endedDecision = decision.copy(validTo = janFirst.toEndOfMonth())
+        db.transaction {
+            it.updateVoucherValueDecisionEndDates(listOf(endedDecision), febFreeze.plusWeeks(1))
+        }
+
+        db.transaction {
+            it.annulVoucherValueDecisions(listOf(endedDecision.id), febFreeze.plusWeeks(2))
+        }
+
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 86000, coPayment = 0)
+
+        db.transaction {
+            freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze)
+        }
+
+        val marReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
+
+        assertEquals(5, marReport.size)
+        marReport.assertContainsRow(ORIGINAL, marFirst, marFirst.toEndOfMonth(), 86000, 0, 86000)
+        marReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 0, -87000)
+        marReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 86000, 0, 86000)
+        marReport.assertContainsRow(REFUND, febFirst, febFirst.toEndOfMonth(), 87000, 0, -87000)
+        marReport.assertContainsRow(CORRECTION, febFirst, febFirst.toEndOfMonth(), 86000, 0, 86000)
+    }
+
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
         type: VoucherReportRowType,
         periodStart: LocalDate,
