@@ -12,6 +12,49 @@ import { fontWeights, NavLinkText } from '../typography'
 import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
+interface Tab {
+  id: string
+  onClick: () => void
+  label: string | React.JSX.Element
+  counter?: number
+}
+
+interface TabsProps extends BaseProps {
+  mobile?: boolean
+  active: string
+  tabs: Tab[]
+  id?: string
+}
+
+export const Tabs = React.memo(function Tabs({
+  mobile,
+  'data-qa': dataQa,
+  active,
+  tabs,
+  id
+}: TabsProps) {
+  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
+  return (
+    <Container>
+      <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
+        {tabs.map(({ id, onClick, label, counter }) => (
+          <Tab
+            key={id}
+            onClick={onClick}
+            data-qa={`${id}-tab`}
+            className={active === id ? 'active' : undefined}
+            $maxWidth={maxWidth}
+            $mobile={mobile}
+          >
+            <NavLinkText>{label}</NavLinkText>
+            {counter ? <TabCounter>{counter}</TabCounter> : null}
+          </Tab>
+        ))}
+      </TabsContainer>
+    </Container>
+  )
+})
+
 interface TabLink {
   id: string
   link: string
@@ -24,7 +67,6 @@ interface TabLinksProps extends BaseProps {
   tabs: TabLink[]
   id?: string
 }
-
 
 export const TabLinks = React.memo(function TabLinks({
   mobile,
@@ -65,7 +107,7 @@ const TabsContainer = styled.nav<{ shadow?: boolean }>`
       : ''}
 `
 
-const TabLink = styled(NavLink)<{
+const tabStyles = css<{
   $maxWidth?: string
   $mobile?: boolean
 }>`
@@ -123,6 +165,20 @@ const TabLink = styled(NavLink)<{
       }
     }
   }
+`
+
+const Tab = styled.div<{
+  $maxWidth?: string
+  $mobile?: boolean
+}>`
+  ${tabStyles}
+`
+
+const TabLink = styled(NavLink)<{
+  $maxWidth?: string
+  $mobile?: boolean
+}>`
+  ${tabStyles}
 `
 
 const TabCounter = styled.div`
