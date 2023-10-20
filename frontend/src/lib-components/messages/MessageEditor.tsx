@@ -208,7 +208,7 @@ export default React.memo(function MessageEditor({
     senderAccountType
   )
 
-  const setSender = useCallback(
+  const handleSenderChange = useCallback(
     (sender: SelectOption | null) => {
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
         selectedReceivers,
@@ -237,26 +237,25 @@ export default React.memo(function MessageEditor({
     },
     [availableReceivers, message.type, selectedReceivers, updateMessage]
   )
-  const updateReceivers = useCallback(
-    (receivers: SelectorNode[]) => {
-      setReceiverTree(receivers)
-      const selected = getSelected(receivers)
-      setMessage((old) => ({
-        ...old,
-        recipientIds: selected.map((s) => s.key),
-        recipientNames: selected.map((s) => s.text)
-      }))
+  const handleRecipientChange = useCallback(
+    (recipients: SelectorNode[]) => {
+      setReceiverTree(recipients)
+      const selected = getSelected(recipients)
 
       const shouldResetSensitivity = !shouldSensitiveCheckboxBeEnabled(
         selected,
         message.type,
         senderAccountType
       )
-      if (shouldResetSensitivity) {
-        updateMessage({ sensitive: false })
-      }
+
+      setMessage((old) => ({
+        ...old,
+        recipientIds: selected.map((s) => s.key),
+        recipientNames: selected.map((s) => s.text),
+        sensitive: shouldResetSensitivity ? false : old.sensitive
+      }))
     },
-    [message.type, senderAccountType, updateMessage]
+    [message.type, senderAccountType]
   )
 
   const [expandedView, setExpandedView] = useState(false)
@@ -487,7 +486,7 @@ export default React.memo(function MessageEditor({
                 <Bold>{i18n.messageEditor.sender}</Bold>
                 <Combobox
                   items={senderOptions}
-                  onChange={setSender}
+                  onChange={handleSenderChange}
                   selectedItem={message.sender}
                   getItemLabel={(sender) => sender.label}
                   data-qa="select-sender"
@@ -499,7 +498,7 @@ export default React.memo(function MessageEditor({
                 <Bold>{i18n.messages.recipients}</Bold>
                 <TreeDropdown
                   tree={receiverTree}
-                  onChange={updateReceivers}
+                  onChange={handleRecipientChange}
                   placeholder={i18n.messageEditor.recipientsPlaceholder}
                   data-qa="select-receiver"
                 />

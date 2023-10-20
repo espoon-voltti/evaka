@@ -118,7 +118,7 @@ const components: Translations = {
       bulletin: 'Tiedote (ei voi vastata)'
     },
     flags: {
-      heading: 'Viestin lisämekinnät',
+      heading: 'Viestin lisämerkinnät',
       urgent: {
         info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
         label: 'Kiireellinen'
