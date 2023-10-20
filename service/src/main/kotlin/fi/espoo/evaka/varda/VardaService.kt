@@ -153,9 +153,6 @@ fun resetVardaChild(
                     feeDecisionMinDate,
                     municipalOrganizerOid
                 )
-                logger.info(
-                    "VardaService: successfully created new service need from $serviceNeedId"
-                )
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
             logger.info(
@@ -313,6 +310,9 @@ private fun addServiceNeedDataToVarda(
                         serviceNeedFeeData.first()
                     )
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
+            logger.info(
+                "VardaService: successfully created new service need from ${evakaServiceNeed.id}"
+            )
         }
     } catch (e: Exception) {
         val errors =
@@ -320,7 +320,16 @@ private fun addServiceNeedDataToVarda(
                 "VardaUpdate: error adding service need ${evakaServiceNeed.id} to Varda: ${e.message}"
             )
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
-        error(errors)
+        // MA003: varda needs a moment before retry
+        // PT010: service need belongs to externally managed PAOS unit, we have no right to update
+        // PO003: There is no active PaosOikeus
+        val skipErrorCodes = listOf("MA003", "PT010", "PO003")
+
+        if (skipErrorCodes.any { skipError -> e.message?.contains(skipError) == true }) {
+            logger.info(
+                "VardaUpdate: service need ${evakaServiceNeed.id} error response contained non critical error so continuing"
+            )
+        } else error(errors) // Fatal error
     }
 }
 

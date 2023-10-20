@@ -239,7 +239,6 @@ private fun handleUpdatedEvakaServiceNeed(
             feeDecisionMinDate,
             municipalOrganizerOid
         )
-        logger.info("VardaUpdate: successfully updated service need $evakaServiceNeedId")
     } catch (e: Exception) {
         db.transaction {
             it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage))
@@ -269,7 +268,6 @@ fun handleNewEvakaServiceNeed(
         feeDecisionMinDate,
         municipalOrganizerOid
     )
-    logger.info("VardaUpdate: successfully created new service need from $evakaServiceNeedId")
 }
 
 // Delete decision, placement and related fee data from Varda by stored id's
@@ -361,6 +359,9 @@ private fun addServiceNeedDataToVarda(
                         serviceNeedFeeData.first()
                     )
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
+            logger.info(
+                "VardaUpdate: successfully created new service need from ${evakaServiceNeed.id}"
+            )
         }
     } catch (e: Exception) {
         val errors =
@@ -369,17 +370,15 @@ private fun addServiceNeedDataToVarda(
             )
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed, errors) }
 
+        // Non fatal error codes:
         // MA003: varda needs a moment before retry
         // PT010: service need belongs to externally managed PAOS unit, we have no right to update
-        // the info
-        // so do not fail the other service needs
-        if (e.message?.contains("MA003") == true) {
+        // PO003: There is no active PaosOikeus
+        val skipErrorCodes = listOf("MA003", "PT010", "PO003")
+
+        if (skipErrorCodes.any { skipError -> e.message?.contains(skipError) == true }) {
             logger.info(
-                "VardaUpdate: service need ${evakaServiceNeed.id} error response was non critical (MA003) so continuing adding other service needs"
-            )
-        } else if (e.message?.contains("PT010") == true) {
-            logger.info(
-                "VardaUpdate: service need ${evakaServiceNeed.id}  error response was non critical (PT010) so continuing adding other service needs"
+                "VardaUpdate: service need ${evakaServiceNeed.id} error response contained non critical error so continuing"
             )
         } else error(errors) // Fatal error
     }
