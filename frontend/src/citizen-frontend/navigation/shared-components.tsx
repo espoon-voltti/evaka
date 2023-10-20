@@ -23,16 +23,14 @@ import { fasChevronDown, fasChevronUp } from 'lib-icons'
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
 })`
-  width: ${defaultMargins.s};
-  height: ${defaultMargins.s};
+  height: ${defaultMargins.m};
   border: 1px solid ${colors.grayscale.g100};
-  padding: 11px;
+  padding: 0 5px;
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  border-radius: 100%;
-  letter-spacing: 0;
+  border-radius: 12px;
+  min-width: ${defaultMargins.m};
 `
 
 const dropDownButtonStyles = css`
