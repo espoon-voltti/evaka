@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -42,6 +43,7 @@ import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.lang.Integer.max
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
@@ -350,6 +352,190 @@ class AttendanceReservationController(
             getNextReservableMonday(clock.now(), featureConfig.citizenReservationThresholdHours)
                 .minusDays(1)
         return FiniteDateRange(startDate, endDate)
+    }
+
+    data class ChildDailyReservationInfo(
+        val childId: ChildId,
+        val reservations: List<Reservation>,
+        val groupId: GroupId?,
+        val absent: Boolean,
+        val outOnBackupPlacement: Boolean,
+        val dailyServiceTimes: DailyServiceTimesValue?,
+        val occupancyCoefficient: BigDecimal
+    )
+
+    data class UnitDailyReservationInfo(
+        val date: LocalDate,
+        val reservationInfos: List<ChildDailyReservationInfo>
+    )
+
+    data class UnitReservationConfirmedDaysResult(
+        val children: Map<ChildId, ReservationChildInfo>,
+        val dailyReservations: List<UnitDailyReservationInfo>
+    )
+
+    data class ReservationChildInfo(
+        val id: ChildId,
+        val firstName: String,
+        val lastName: String,
+        val preferredName: String,
+        val dateOfBirth: LocalDate
+    )
+
+    @GetMapping("/confirmed-days")
+    fun getChildReservationsForConfirmedDays(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId
+    ): UnitReservationConfirmedDaysResult {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_RESERVATIONS,
+                        unitId
+                    )
+
+                    val unitData =
+                        tx.getDaycare(unitId) ?: throw BadRequest("Invalid unit id $unitId")
+                    val nonReservableRange =
+                        FiniteDateRange(
+                            clock.today().plusDays(1),
+                            getNextReservableMonday(
+                                    clock.now(),
+                                    featureConfig.citizenReservationThresholdHours,
+                                )
+                                .minusDays(1)
+                        )
+
+                    val nextConfirmedUnitDays =
+                        nonReservableRange
+                            .dates()
+                            .filter { unitData.operationDays.contains(it.dayOfWeek.value) }
+                            .toList()
+
+                    val rowsByDate =
+                        tx.getDailyReservationInfoForUnit(
+                            unitId = unitId,
+                            nextDays = nextConfirmedUnitDays
+                        )
+                    val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
+
+                    // collect children and their reservation information per day
+                    val dailyReservationInfoList =
+                        nextConfirmedUnitDays.map { date ->
+                            val childResultsByDay = rowsByDate[date].orEmpty()
+                            val resultRowsByChild = childResultsByDay.groupBy { it.childId }
+                            val childReservationInfos =
+                                resultRowsByChild.map { childEntry ->
+                                    // every row duplicates full basic info for child
+                                    val basicInfoItem = childEntry.value[0]
+                                    childMap.putIfAbsent(
+                                        basicInfoItem.childId,
+                                        ReservationChildInfo(
+                                            id = basicInfoItem.childId,
+                                            firstName = basicInfoItem.firstName,
+                                            lastName = basicInfoItem.lastName,
+                                            preferredName = basicInfoItem.preferredName,
+                                            dateOfBirth = basicInfoItem.dateOfBirth
+                                        )
+                                    )
+
+                                    val backupPlacementRows =
+                                        childEntry.value.filter { it.incomingBackup }
+                                    val isChildPrimaryPlacedToday = backupPlacementRows.isEmpty()
+
+                                    val groupId: GroupId?
+                                    val reservationRows: List<DailyReservationInfoRow>
+
+                                    if (isChildPrimaryPlacedToday) {
+                                        groupId = basicInfoItem.groupId
+                                        reservationRows = childEntry.value
+                                    } else {
+                                        // 0-1 backup placements per day
+                                        groupId = backupPlacementRows[0].groupId
+                                        reservationRows = backupPlacementRows
+                                    }
+
+                                    val res =
+                                        reservationRows.map {
+                                            if (
+                                                it.reservationStartTime != null &&
+                                                    it.reservationEndTime != null
+                                            )
+                                                Reservation.Times(
+                                                    startTime = it.reservationStartTime,
+                                                    endTime = it.reservationEndTime
+                                                )
+                                            else Reservation.NoTimes
+                                        }
+
+                                    ChildDailyReservationInfo(
+                                        reservations = res,
+                                        absent = basicInfoItem.absenceType != null,
+                                        groupId = groupId,
+                                        occupancyCoefficient =
+                                            (basicInfoItem.occupancyCoefficient ?: BigDecimal.ONE) *
+                                                basicInfoItem.assistanceFactor,
+                                        childId = basicInfoItem.childId,
+                                        outOnBackupPlacement = basicInfoItem.backupUnitId != null,
+                                        dailyServiceTimes =
+                                            when (basicInfoItem.dailyServiceTimeType) {
+                                                DailyServiceTimesType.REGULAR ->
+                                                    DailyServiceTimesValue.RegularTimes(
+                                                        validityPeriod =
+                                                            basicInfoItem.validityPeriod
+                                                                ?: DateRange(date, date),
+                                                        regularTimes =
+                                                            basicInfoItem.regularTimes
+                                                                ?: throw IllegalStateException(
+                                                                    "Regular daily service time must have designated regular times"
+                                                                )
+                                                    )
+                                                DailyServiceTimesType.IRREGULAR ->
+                                                    DailyServiceTimesValue.IrregularTimes(
+                                                        validityPeriod =
+                                                            basicInfoItem.validityPeriod
+                                                                ?: DateRange(date, date),
+                                                        monday = basicInfoItem.mondayTimes,
+                                                        tuesday = basicInfoItem.tuesdayTimes,
+                                                        wednesday = basicInfoItem.wednesdayTimes,
+                                                        thursday = basicInfoItem.thursdayTimes,
+                                                        friday = basicInfoItem.fridayTimes,
+                                                        saturday = basicInfoItem.saturdayTimes,
+                                                        sunday = basicInfoItem.sundayTimes
+                                                    )
+                                                DailyServiceTimesType.VARIABLE_TIME ->
+                                                    DailyServiceTimesValue.VariableTimes(
+                                                        validityPeriod =
+                                                            basicInfoItem.validityPeriod
+                                                                ?: DateRange(date, date)
+                                                    )
+                                                else -> null
+                                            }
+                                    )
+                                }
+                            UnitDailyReservationInfo(
+                                date = date,
+                                reservationInfos = childReservationInfos
+                            )
+                        }
+
+                    UnitReservationConfirmedDaysResult(
+                        children = childMap,
+                        dailyReservations = dailyReservationInfoList
+                    )
+                }
+            }
+            .also {
+                Audit.ChildReservationStatusRead.log(
+                    targetId = unitId,
+                    meta = mapOf("childCount" to it.children.size)
+                )
+            }
     }
 }
 

@@ -1,0 +1,104 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import React from 'react'
+import styled from 'styled-components'
+
+import {
+  AttendanceStatus,
+  AttendanceChild
+} from 'lib-common/generated/api-types/attendance'
+import {
+  ReservationChildInfo,
+  UnitDailyReservationInfo
+} from 'lib-common/generated/api-types/reservations'
+import { UUID } from 'lib-common/types'
+import colors from 'lib-customizations/common'
+
+import { useTranslation } from '../common/i18n'
+
+import DayListItem, { ChevronBox, DateBox } from './DayListItem'
+
+export interface ListItem extends AttendanceChild {
+  status: AttendanceStatus
+}
+
+interface Props {
+  reservationDays: UnitDailyReservationInfo[]
+  childMap: Record<UUID, ReservationChildInfo>
+}
+
+export default React.memo(function DayList({
+  reservationDays,
+  childMap
+}: Props) {
+  const { i18n } = useTranslation()
+
+  return (
+    <>
+      <HeaderBox>
+        <DateBox />
+        <DayListTitle>{i18n.attendances.status.COMING}</DayListTitle>
+        <DayListTitle>{i18n.attendances.status.ABSENT}</DayListTitle>
+        <ChevronBox />
+      </HeaderBox>
+      <NoMarginList>
+        {reservationDays.map((dr) => (
+          <Li key={`${dr.date.format()}-li`}>
+            <DayListItem
+              key={`${dr.date.format()}-dli`}
+              dailyReservationData={dr}
+              childMap={childMap}
+            />
+          </Li>
+        ))}
+      </NoMarginList>
+    </>
+  )
+})
+
+const HeaderBox = styled.div`
+  margin-left: 24px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+`
+
+const DayListTitle = styled.span`
+  font-family: Montserrat, sans-serif;
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-decoration: none;
+`
+
+const NoMarginList = styled.ol`
+  list-style: none;
+  padding: 0;
+  margin-top: 0;
+
+  li {
+    margin-bottom: 0px;
+
+    &:last-child {
+      margin-bottom: 0px;
+    }
+  }
+`
+
+const Li = styled.li`
+  &:after {
+    content: '';
+    width: 100%;
+    background: ${colors.grayscale.g15};
+    height: 2px;
+    display: block;
+    position: absolute;
+  }
+`

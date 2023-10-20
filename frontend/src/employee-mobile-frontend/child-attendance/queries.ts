@@ -21,7 +21,11 @@ import {
   putNonReservableReservationservations,
   returnToComing,
   returnToPresent,
-  uploadChildImage
+  uploadChildImage,
+  deleteChildImage,
+  uploadChildImage,
+  getChildDeparture,
+  getUnitConfirmedDaysReservations
 } from './api'
 
 const queryKeys = createQueryKeys('childAttendance', {
@@ -39,6 +43,10 @@ const queryKeys = createQueryKeys('childAttendance', {
     'childDeparture',
     unitId,
     childId
+  ],
+  confirmedDaysReservations: (unitId: string) => [
+    'confirmedDaysReservations',
+    unitId
   ]
 })
 
@@ -62,6 +70,11 @@ export const childDepartureQuery = query({
   api: getChildDeparture,
   queryKey: ({ unitId, childId }) =>
     queryKeys.childDeparture({ unitId, childId })
+})
+
+export const confirmedDaysReservationsQuery = query({
+  api: getUnitConfirmedDaysReservations,
+  queryKey: queryKeys.confirmedDaysReservations
 })
 
 export const getNonReservableReservationsQuery = query({

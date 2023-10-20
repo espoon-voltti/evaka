@@ -29,6 +29,8 @@ import RequireAuth from './RequireAuth'
 import UnitList from './UnitList'
 import { UserContext, UserContextProvider } from './auth/state'
 import AttendancePageWrapper from './child-attendance/AttendancePageWrapper'
+import AttendanceTodayWrapper from './child-attendance/AttendanceTodayWrapper'
+import ConfimedReservationDaysWrapper from './child-attendance/ConfimedReservationDaysWrapper'
 import MarkAbsent from './child-attendance/actions/MarkAbsent'
 import MarkAbsentBeforehand from './child-attendance/actions/MarkAbsentBeforehand'
 import MarkDeparted from './child-attendance/actions/MarkDeparted'
@@ -168,10 +170,18 @@ function ChildAttendanceRouter() {
 
   return (
     <Routes>
-      <Route
-        path="list/:attendanceStatus"
-        element={<AttendancePageWrapper />}
-      />
+      <Route path="/" element={<AttendancePageWrapper />}>
+        <Route
+          path="list/:attendanceStatus"
+          element={<AttendanceTodayWrapper />}
+        />
+        <Route
+          path="daylist"
+          id="daylist"
+          element={<ConfimedReservationDaysWrapper />}
+        />
+      </Route>
+
       <Route path=":childId" element={<AttendanceChildPage />} />
       <Route path=":childId/mark-present" element={<MarkPresent />} />
       <Route path=":childId/mark-absent" element={<MarkAbsent />} />

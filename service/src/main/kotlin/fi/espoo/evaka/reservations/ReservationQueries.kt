@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.reservations
 
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
@@ -13,6 +15,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -22,6 +25,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -209,6 +213,50 @@ fun Database.Read.getUnitReservations(
         )
         .bind("unitId", unitId)
         .bind("date", date)
+        .mapTo<ReservationRow>()
+        .useIterable { rows ->
+            rows
+                .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { (_, value) -> value.sorted() }
+        }
+
+fun Database.Read.getUnitReservationsForDateRange(
+    unitId: DaycareId,
+    startDate: LocalDate,
+    endDate: LocalDate
+): Map<ChildId, List<Reservation>> =
+    createQuery(
+            """
+    WITH placed_children_per_day AS (
+        SELECT * from
+         generate_series(:startDate, :endDate, '1 day') d
+         join 
+        (SELECT child_id, start_date, end_date FROM placement WHERE unit_id = :unitId AND daterange(:startDate, :endDate, '[]') && daterange(start_date, end_date, '[]') 
+        UNION
+        SELECT child_id, start_date, end_date FROM backup_care WHERE unit_id = :unitId AND daterange(:startDate, :endDate, '[]') && daterange(start_date, end_date, '[]')) placed_children on daterange(placed_children.start_date, placed_children.end_date, '[]') @> d 
+        
+        
+    )
+    SELECT
+        pl.child_id,
+        ar.start_time,
+        ar.end_time,
+        ar.date
+    FROM placement pl
+    JOIN backup_care bc ON 
+        bc.unit_id = :unitId 
+        AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:startDate, :endDate, '[]')
+    JOIN attendance_reservation ar ON 
+        ar.child_id = pl.child_id 
+        AND daterange(pl.start_date, pl.end_date, []) @> ar.date
+    WHERE daterange(:startDate, :endDate, '[]') @> ar.date
+    """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("date", startDate)
+        .bind("endDate", endDate)
         .mapTo<ReservationRow>()
         .useIterable { rows ->
             rows
@@ -542,4 +590,138 @@ fun Database.Read.getReservationContractDayRanges(
         .bind("childIds", childIds)
         .bind("range", range)
         .toMap { columnPair("child_id", "contract_days") }
+}
+
+data class DailyReservationInfoRow(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val dateOfBirth: LocalDate,
+    val date: LocalDate,
+    val reservationStartTime: LocalTime?,
+    val reservationEndTime: LocalTime?,
+    val groupId: GroupId?,
+    val absenceType: AbsenceType?,
+    val backupUnitId: DaycareId?,
+    val dailyServiceTimeType: DailyServiceTimesType?,
+    val validityPeriod: DateRange?,
+    val regularTimes: TimeRange?,
+    val mondayTimes: TimeRange?,
+    val tuesdayTimes: TimeRange?,
+    val wednesdayTimes: TimeRange?,
+    val thursdayTimes: TimeRange?,
+    val fridayTimes: TimeRange?,
+    val saturdayTimes: TimeRange?,
+    val sundayTimes: TimeRange?,
+    val occupancyCoefficient: BigDecimal?,
+    val assistanceFactor: BigDecimal,
+    val incomingBackup: Boolean
+)
+
+fun Database.Read.getDailyReservationInfoForUnit(
+    nextDays: List<LocalDate>,
+    unitId: DaycareId
+): Map<LocalDate, List<DailyReservationInfoRow>> {
+    return createQuery(
+            """
+WITH placed_child_days AS (SELECT *
+                           FROM (SELECT t.day
+                                 FROM unnest(:nextDays::date[]) AS t(day)) d
+                                    JOIN
+                                (SELECT child_id,
+                                        pl.start_date        as placement_start,
+                                        pl.end_date          as placement_end,
+                                        gpl.start_date       as grouping_start,
+                                        gpl.end_date         as grouping_end,
+                                        gpl.daycare_group_id as group_id,
+                                        false                as backup
+                                 FROM placement pl
+                                          LEFT JOIN daycare_group_placement gpl
+                                                    ON pl.id = gpl.daycare_placement_id
+                                 WHERE unit_id = :unitId
+                                   AND daterange(pl.start_date, pl.end_date, '[]') @> ANY (:nextDays)
+                                 UNION
+                                 SELECT bc.child_id,
+                                        bc.start_date as placement_start,
+                                        bc.end_date   as placement_end,
+                                        bc.start_date as grouping_start,
+                                        bc.end_date   as grouping_end,
+                                        bc.group_id   as group_id,
+                                        true          as backup
+                                 FROM backup_care bc
+                                 WHERE unit_id = :unitId
+                                   AND daterange(start_date, end_date, '[]') @> ANY (:nextDays)) cpl
+                                ON daterange(cpl.placement_start, cpl.placement_end, '[]') @> d.day AND
+                                   daterange(cpl.grouping_start, cpl.grouping_end, '[]') @> d.day)
+SELECT pcd.day                            as date,
+       pcd.child_id,
+       p.date_of_birth,
+       p.first_name,
+       p.last_name,
+       p.preferred_name,
+       pcd.group_id,
+       ar.start_time                      as reservation_start_time,
+       ar.end_time                        as reservation_end_time,
+       ab.absence_type                    as absence_type,
+       dst.type                           as daily_service_time_type,
+       dst.validity_period,
+       dst.regular_times,
+       dst.monday_times,
+       dst.tuesday_times,
+       dst.wednesday_times,
+       dst.thursday_times,
+       dst.friday_times,
+       dst.saturday_times,
+       dst.sunday_times,
+       bc.unit_id                         as backup_unit_id,
+       pcd.backup                         as incoming_backup,
+       CASE
+           WHEN u.type && array ['FAMILY', 'GROUP_FAMILY']::care_types[]
+               THEN $familyUnitPlacementCoefficient
+           ELSE CASE
+                    WHEN (extract('year' from age(pcd.day, p.date_of_birth)) < 3)
+                        THEN coalesce(sno.realized_occupancy_coefficient_under_3y,
+                                      sno_default.realized_occupancy_coefficient_under_3y)
+                    ELSE coalesce(sno.realized_occupancy_coefficient, sno_default.realized_occupancy_coefficient)
+               END
+           END                            as occupancy_coefficient,
+       coalesce(af.capacity_factor, 1.00) as assistance_factor
+FROM placed_child_days pcd
+         JOIN daycare u ON u.id = :unitId
+         LEFT JOIN attendance_reservation ar
+                   ON ar.child_id = pcd.child_id
+                       AND ar.date = pcd.day
+         LEFT JOIN absence ab
+                   ON ab.child_id = pcd.child_id
+                       AND ab.date = pcd.day
+         LEFT JOIN backup_care bc
+                   ON bc.child_id = pcd.child_id
+                       AND bc.unit_id <> :unitId
+                       AND daterange(bc.start_date, bc.end_date, '[]') @> pcd.day
+         JOIN placement pl
+              ON pcd.child_id = pl.child_id
+                  AND daterange(pl.start_date, pl.end_date, '[]') @> pcd.day
+         LEFT JOIN service_need sn
+                   ON pl.id = sn.placement_id
+         LEFT JOIN service_need_option sno
+                   ON sn.option_id = sno.id
+         LEFT JOIN service_need_option sno_default
+                   ON sno_default.default_option IS TRUE
+                       AND sno_default.valid_placement_type = pl.type
+         JOIN person p
+              ON pcd.child_id = p.id
+         LEFT JOIN daily_service_time dst
+                   ON pcd.child_id = dst.child_id
+                       AND dst.validity_period @> pcd.day
+         LEFT JOIN assistance_factor af
+                   ON pcd.child_id = af.child_id
+                       AND af.valid_during @> pcd.day
+        """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("nextDays", nextDays)
+        .toList<DailyReservationInfoRow>()
+        .groupBy { it.date }
 }

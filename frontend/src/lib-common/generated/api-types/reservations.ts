@@ -32,6 +32,19 @@ export interface AbsenceRequest {
   dateRange: FiniteDateRange
 }
 
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ChildDailyReservationInfo
+*/
+export interface ChildDailyReservationInfo {
+  absent: boolean
+  childId: UUID
+  dailyServiceTimes: DailyServiceTimesValue | null
+  groupId: UUID | null
+  occupancyCoefficient: number
+  outOnBackupPlacement: boolean
+  reservations: Reservation[]
+}
+
 export namespace DailyReservationRequest {
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absent
@@ -158,6 +171,17 @@ export interface ReservationChild {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ReservationChildInfo
+*/
+export interface ReservationChildInfo {
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
+  preferredName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.ReservationResponseDay
 */
 export interface ReservationResponseDay {
@@ -186,4 +210,20 @@ export interface ReservationsResponse {
   children: ReservationChild[]
   days: ReservationResponseDay[]
   reservableRange: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.UnitDailyReservationInfo
+*/
+export interface UnitDailyReservationInfo {
+  date: LocalDate
+  reservationInfos: ChildDailyReservationInfo[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.UnitReservationConfirmedDaysResult
+*/
+export interface UnitReservationConfirmedDaysResult {
+  children: Record<string, ReservationChildInfo>
+  dailyReservations: UnitDailyReservationInfo[]
 }
