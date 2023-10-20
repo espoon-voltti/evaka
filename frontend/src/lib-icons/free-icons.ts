@@ -137,6 +137,7 @@ export { faChevronUp as fasChevronUp } from '@fortawesome/free-solid-svg-icons/f
 export { faMagnifyingGlassPlus } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlassPlus'
 export { faMagnifyingGlassMinus } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlassMinus'
 export { faTimeline as faListTimeline } from '@fortawesome/free-solid-svg-icons/faTimeline'
+export { faReply } from '@fortawesome/free-solid-svg-icons/faReply'
 
 import type * as FreeIconsSet from './free-icons'
 import { typeAssert } from './utils'

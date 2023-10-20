@@ -141,4 +141,5 @@ declare module 'Icons' {
   const faMagnifyingGlassPlus: IconDefinition
   const faMagnifyingGlassMinus: IconDefinition
   const faListTimeline: IconDefinition
+  const faReply: IconDefinition
 }

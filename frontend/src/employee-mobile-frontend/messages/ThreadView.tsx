@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faReply } from '@fortawesome/free-solid-svg-icons'
 import React, {
   useCallback,
   useContext,
@@ -34,6 +33,7 @@ import { fontWeights, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faReply } from 'lib-icons'
 
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
