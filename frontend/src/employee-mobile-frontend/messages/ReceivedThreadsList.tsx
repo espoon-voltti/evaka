@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutation, usePagedInfiniteQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { OnEnterView } from 'lib-components/OnEnterView'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -23,6 +26,7 @@ import colors from 'lib-customizations/common'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 
+import { markThreadReadMutation, receivedMessagesQuery } from './queries'
 import { MessageContext } from './state'
 
 interface Props {
@@ -33,15 +37,41 @@ export default React.memo(function ReceivedThreadsList({
   onSelectThread
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    groupAccounts,
-    receivedMessages,
-    hasMoreMessages,
-    fetchMoreMessages,
-    selectedAccount
-  } = useContext(MessageContext)
+  const { groupAccounts, selectedAccount } = useContext(MessageContext)
 
-  return renderResult(receivedMessages, (threads) =>
+  const {
+    data: threads,
+    hasNextPage,
+    fetchNextPage,
+    transform
+  } = usePagedInfiniteQueryResult(
+    receivedMessagesQuery(selectedAccount?.account.id ?? ''),
+    {
+      enabled: selectedAccount !== undefined
+    }
+  )
+
+  const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
+
+  const selectThread = useCallback(
+    (thread: MessageThread) => {
+      onSelectThread(thread)
+
+      if (!selectedAccount) throw new Error('Should never happen')
+      const { id: accountId } = selectedAccount.account
+
+      const hasUnreadMessages = thread.messages.some(
+        (m) => !m.readAt && m.sender.id !== accountId
+      )
+      if (hasUnreadMessages) {
+        markThreadRead({ accountId, id: thread.id })
+        transform((t) => markMatchingThreadRead(t, thread.id))
+      }
+    },
+    [markThreadRead, onSelectThread, selectedAccount, transform]
+  )
+
+  return renderResult(threads, (threads, isReloading) =>
     threads.length > 0 ? (
       <div>
         {threads.map((thread) => (
@@ -54,12 +84,12 @@ export default React.memo(function ReceivedThreadsList({
                 item.sender.id !== selectedAccount?.account.id &&
                 !groupAccounts.some((ga) => ga.account.id === item.sender.id)
             )}
-            onClick={() => onSelectThread(thread)}
+            onClick={() => selectThread(thread)}
           />
         ))}
-        {hasMoreMessages && (
+        {hasNextPage && (
           <>
-            <OnEnterView onEnter={fetchMoreMessages} />
+            <OnEnterView onEnter={fetchNextPage} />
             <HorizontalLine />
             <SpinnerSegment />
           </>
@@ -67,13 +97,24 @@ export default React.memo(function ReceivedThreadsList({
       </div>
     ) : (
       <EmptyMessageFolder
-        loading={receivedMessages.isLoading}
+        loading={isReloading}
         iconColor={colors.grayscale.g35}
         text={i18n.messages.emptyInbox}
       />
     )
   )
 })
+
+const markMatchingThreadRead = (t: MessageThread, id: UUID): MessageThread =>
+  t.id === id
+    ? {
+        ...t,
+        messages: t.messages.map((m) => ({
+          ...m,
+          readAt: m.readAt ?? HelsinkiDateTime.now()
+        }))
+      }
+    : t
 
 const MessagePreview = React.memo(function MessagePreview({
   thread,

@@ -11,16 +11,10 @@ import React, {
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import {
-  AuthorizedMessageAccount,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import {
   queryOrDefault,
-  useMutation,
   useMutationResult,
-  usePagedInfiniteQueryResult,
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -30,21 +24,12 @@ import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
 import { ReplyToThreadParams } from './api'
-import {
-  markThreadReadMutation,
-  messagingAccountsQuery,
-  receivedMessagesQuery,
-  replyToThreadMutation
-} from './queries'
+import { messagingAccountsQuery, replyToThreadMutation } from './queries'
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
-  receivedMessages: Result<MessageThread[]>
-  hasMoreMessages: boolean
-  fetchMoreMessages: () => void
-  markThreadAsRead: (threadId: UUID) => void
   sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
@@ -54,27 +39,12 @@ const defaultState: MessagesState = {
   accounts: Loading.of(),
   selectedAccount: undefined,
   groupAccounts: [],
-  receivedMessages: Loading.of(),
-  hasMoreMessages: false,
-  fetchMoreMessages: () => undefined,
-  markThreadAsRead: () => undefined,
   sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
-
-const markMatchingThreadRead = (t: MessageThread, id: UUID): MessageThread =>
-  t.id === id
-    ? {
-        ...t,
-        messages: t.messages.map((m) => ({
-          ...m,
-          readAt: m.readAt ?? HelsinkiDateTime.now()
-        }))
-      }
-    : t
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
@@ -127,42 +97,6 @@ export const MessageContextProvider = React.memo(
       [groupAccounts, selectedGroupId]
     )
 
-    const {
-      data: threads,
-      hasNextPage,
-      fetchNextPage,
-      transform
-    } = usePagedInfiniteQueryResult(
-      receivedMessagesQuery(selectedAccount?.account.id ?? ''),
-      {
-        enabled:
-          selectedAccount !== undefined && pinLoggedEmployeeId !== undefined
-      }
-    )
-
-    const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
-
-    const markThreadAsRead = useCallback(
-      (threadId: UUID) => {
-        if (!selectedAccount) throw new Error('Should never happen')
-        const { id: accountId } = selectedAccount.account
-
-        if (!threads.isSuccess) return
-        const thread = threads.value.find((t) => t.id === threadId)
-        if (!thread) return
-
-        const hasUnreadMessages = thread.messages.some(
-          (m) => !m.readAt && m.sender.id !== accountId
-        )
-
-        if (hasUnreadMessages) {
-          markThreadRead({ accountId, id: thread.id })
-          transform((t) => markMatchingThreadRead(t, thread.id))
-        }
-      },
-      [markThreadRead, selectedAccount, threads, transform]
-    )
-
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
 
     const getReplyContent = useCallback(
@@ -190,10 +124,6 @@ export const MessageContextProvider = React.memo(
         accounts,
         selectedAccount,
         groupAccounts,
-        receivedMessages: threads,
-        hasMoreMessages: hasNextPage ?? false,
-        fetchMoreMessages: fetchNextPage,
-        markThreadAsRead,
         getReplyContent,
         sendReply: sendReplyAndClear,
         setReplyContent
@@ -202,10 +132,6 @@ export const MessageContextProvider = React.memo(
         accounts,
         groupAccounts,
         selectedAccount,
-        threads,
-        hasNextPage,
-        fetchNextPage,
-        markThreadAsRead,
         getReplyContent,
         sendReplyAndClear,
         setReplyContent

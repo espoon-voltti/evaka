@@ -52,8 +52,7 @@ export default function MessagesPage() {
   const { unitInfoResponse } = useContext(UnitContext)
   const { groupRoute } = useSelectedGroup()
 
-  const { groupAccounts, selectedAccount, markThreadAsRead } =
-    useContext(MessageContext)
+  const { groupAccounts, selectedAccount } = useContext(MessageContext)
 
   const recipients = useQueryResult(recipientsQuery, {
     enabled: selectedAccount !== undefined
@@ -82,17 +81,13 @@ export default function MessagesPage() {
   const [activeTab, setActiveTab] = useState<Tab>('received')
   const [uiState, setUiState] = useState<UiState>({ type: 'threadList' })
 
-  const selectThread = useCallback(
-    (thread: MessageThread | undefined) => {
-      if (thread === undefined) {
-        setUiState({ type: 'threadList' })
-      } else {
-        setUiState({ type: 'thread', thread })
-        markThreadAsRead(thread.id)
-      }
-    },
-    [markThreadAsRead]
-  )
+  const selectThread = useCallback((thread: MessageThread | undefined) => {
+    if (thread === undefined) {
+      setUiState({ type: 'threadList' })
+    } else {
+      setUiState({ type: 'thread', thread })
+    }
+  }, [])
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
