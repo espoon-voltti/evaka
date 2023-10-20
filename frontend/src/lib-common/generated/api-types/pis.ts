@@ -55,6 +55,16 @@ export interface CreatePersonBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.DaycareGroupRole
+*/
+export interface DaycareGroupRole {
+  daycareId: UUID
+  daycareName: string
+  groupId: UUID
+  groupName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.DaycareRole
 */
 export interface DaycareRole {
@@ -151,6 +161,7 @@ export interface EmployeeUserResponse {
 */
 export interface EmployeeWithDaycareRoles {
   created: HelsinkiDateTime
+  daycareGroupRoles: DaycareGroupRole[]
   daycareRoles: DaycareRole[]
   email: string | null
   firstName: string

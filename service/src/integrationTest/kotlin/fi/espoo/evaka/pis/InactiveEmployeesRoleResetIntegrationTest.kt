@@ -112,9 +112,9 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
         db.transaction { it.clearRolesForInactiveEmployees(firstOfAugust2021) }
 
-        val scopedRoles =
-            db.read { it.getEmployeeWithRoles(employeeId) }!!.daycareRoles.map { it.role }
-        assertEquals(listOf(), scopedRoles)
+        val employeeWithRoles = db.read { it.getEmployeeWithRoles(employeeId) }!!
+        assertEquals(listOf(), employeeWithRoles.daycareRoles)
+        assertEquals(listOf(), employeeWithRoles.daycareGroupRoles)
     }
 
     @Test
