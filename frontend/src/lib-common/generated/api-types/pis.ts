@@ -173,6 +173,7 @@ export interface EmployeeWithDaycareRoles {
   id: UUID
   lastLogin: HelsinkiDateTime | null
   lastName: string
+  temporaryUnitName: string | null
   updated: HelsinkiDateTime | null
 }
 

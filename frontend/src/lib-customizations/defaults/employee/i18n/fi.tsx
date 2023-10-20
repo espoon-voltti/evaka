@@ -4062,6 +4062,7 @@ export const fi = {
     name: 'Nimi',
     rights: 'Oikeudet',
     lastLogin: 'Kirjautunut viimeeksi',
+    temporary: 'Tilapäinen sijainen',
     findByName: 'Etsi nimellä',
     activate: 'Aktivoi',
     activateConfirm: 'Haluatko palauttaa käyttäjän aktiiviseksi?',

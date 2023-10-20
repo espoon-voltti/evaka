@@ -21,7 +21,7 @@ import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getPinCode
 import fi.espoo.evaka.pis.getTemporaryEmployees
 import fi.espoo.evaka.pis.updateEmployee
-import fi.espoo.evaka.pis.updateEmployeeTemporaryInUnitId
+import fi.espoo.evaka.pis.updateEmployeeActive
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -370,7 +370,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         Action.Unit.READ_TEMPORARY_EMPLOYEE,
                         unitId
                     )
-                    tx.getTemporaryEmployees(unitId)
+                    tx.getTemporaryEmployees(unitId).filter { it.active }
                 }
             }
         Audit.TemporaryEmployeesRead.log(meta = mapOf("unitId" to unitId))
@@ -534,8 +534,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                     Action.Unit.DELETE_TEMPORARY_EMPLOYEE,
                     unitId
                 )
+                tx.updateEmployeeActive(employeeId, active = false)
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
-                tx.updateEmployeeTemporaryInUnitId(employee.id, null)
             }
         }
         Audit.TemporaryEmployeeDelete.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
@@ -583,7 +583,8 @@ class UnitAclController(private val accessControl: AccessControl) {
         unitId: DaycareId,
         employeeId: EmployeeId
     ): Employee =
-        tx.getEmployee(employeeId).takeIf { it?.temporaryInUnitId == unitId } ?: throw NotFound()
+        tx.getEmployee(employeeId).takeIf { it?.temporaryInUnitId == unitId && it.active }
+            ?: throw NotFound()
 
     private fun deleteTemporaryEmployeeAcl(
         tx: Database.Transaction,

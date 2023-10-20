@@ -34,7 +34,7 @@ const Email = styled.div`
   font-size: 14px;
 `
 
-const ExtId = styled.div`
+const Details = styled.div`
   font-size: 14px;
   color: ${colors.grayscale.g70};
 `
@@ -65,6 +65,7 @@ export function EmployeeList({ employees, onUpdate }: Props) {
         lastName,
         lastLogin,
         externalId,
+        temporaryUnitName,
         active
       }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
@@ -73,7 +74,12 @@ export function EmployeeList({ employees, onUpdate }: Props) {
               {lastName} {firstName}
             </Name>
             <Email>{email}</Email>
-            {!!externalId && <ExtId>{externalId}</ExtId>}
+            {!!externalId && <Details>{externalId}</Details>}
+            {!!temporaryUnitName && (
+              <Details>
+                {i18n.employees.temporary}: {temporaryUnitName}
+              </Details>
+            )}
           </Td>
           <Td>
             <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>

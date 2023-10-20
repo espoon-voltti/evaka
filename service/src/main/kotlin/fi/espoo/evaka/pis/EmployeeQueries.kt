@@ -65,6 +65,7 @@ data class EmployeeWithDaycareRoles(
     val globalRoles: List<UserRole> = listOf(),
     @Json val daycareRoles: List<DaycareRole> = listOf(),
     @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf(),
+    val temporaryUnitName: String?,
     val active: Boolean
 )
 
@@ -222,15 +223,16 @@ fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles
     val sql =
         """
 SELECT
-    id,
-    external_id,
-    created,
-    updated,
-    last_login,
-    first_name,
-    last_name,
-    email,
-    active,
+    employee.id,
+    employee.external_id,
+    employee.created,
+    employee.updated,
+    employee.last_login,
+    employee.first_name,
+    employee.last_name,
+    employee.email,
+    employee.active,
+    temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
         SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
@@ -246,7 +248,8 @@ SELECT
         WHERE acl.employee_id = employee.id
     ) AS daycare_group_roles
 FROM employee
-WHERE id = :id
+LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
+WHERE employee.id = :id
     """
             .trimIndent()
 
@@ -260,15 +263,6 @@ fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastN
         .bind("id", id)
         .bind("firstName", firstName)
         .bind("lastName", lastName)
-        .updateExactlyOne()
-
-fun Database.Transaction.updateEmployeeTemporaryInUnitId(
-    id: EmployeeId,
-    temporaryInUnitId: DaycareId?
-) =
-    createUpdate("UPDATE employee SET temporary_in_unit_id = :temporaryInUnitId WHERE id = :id")
-        .bind("id", id)
-        .bind("temporaryInUnitId", temporaryInUnitId)
         .updateExactlyOne()
 
 fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
@@ -322,16 +316,17 @@ fun getEmployeesPaged(
     val sql =
         """
 SELECT
-    id,
-    external_id,
-    created,
-    updated,
-    last_login,
-    preferred_first_name,
-    first_name,
-    last_name,
-    email,
-    active,
+    employee.id,
+    employee.external_id,
+    employee.created,
+    employee.updated,
+    employee.last_login,
+    employee.preferred_first_name,
+    employee.first_name,
+    employee.last_name,
+    employee.email,
+    employee.active,
+    temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
         SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
@@ -348,6 +343,7 @@ SELECT
     ) AS daycare_group_roles,
     count(*) OVER () AS count
 FROM employee
+LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE $whereClause
 ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
