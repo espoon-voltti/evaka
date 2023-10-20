@@ -43,7 +43,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileGroupMessages: true,
-    sensitiveMessaging: false
+    sensitiveMessaging: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -74,7 +74,8 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: true,
-    employeeMobileGroupMessages: true
+    employeeMobileGroupMessages: true,
+    sensitiveMessaging: false
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -104,7 +105,8 @@ const features: Features = {
     childDocuments: false,
     feeDecisionIgnoredStatus: true,
     hojks: false,
-    employeeMobileGroupMessages: false
+    employeeMobileGroupMessages: false,
+    sensitiveMessaging: false
   }
 }
 

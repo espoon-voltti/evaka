@@ -555,14 +555,12 @@ export default React.memo(function MessageEditor({
                 </HalfWidthColumn>
               </FixedSpaceRow>
               {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
-                <FixedSpaceRow fullWidth zeroMarginLastChild={false}>
-                  <ExpandingInfoBox
-                    width="auto"
-                    info={i18n.messageEditor.flags.sensitive.whyDisabled}
-                    close={onSensitiveInfoClick}
-                    closeLabel={i18n.common.close}
-                  />
-                </FixedSpaceRow>
+                <ExpandingInfoBox
+                  width="full"
+                  info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                  close={onSensitiveInfoClick}
+                  closeLabel={i18n.common.close}
+                />
               )}
               {flagsInfo}
             </>
