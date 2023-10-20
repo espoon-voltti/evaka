@@ -225,13 +225,13 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
         FROM daycare_acl acl
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
     ) AS daycare_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
         FROM daycare_group_acl acl
         JOIN daycare_group dg on dg.id = acl.daycare_group_id
         JOIN daycare d ON d.id = dg.daycare_id
@@ -317,13 +317,13 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
         FROM daycare_acl acl
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
     ) AS daycare_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
         FROM daycare_group_acl acl
         JOIN daycare_group dg on dg.id = acl.daycare_group_id
         JOIN daycare d ON d.id = dg.daycare_id
