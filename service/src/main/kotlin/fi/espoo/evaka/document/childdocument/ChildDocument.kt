@@ -83,7 +83,14 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     }
 }
 
-@Json data class DocumentContent(val answers: List<AnsweredQuestion<*>>)
+@Json
+data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
+    init {
+        // input sanity check since list element nullability is not fully guaranteed in jackson
+        @Suppress("SENSELESS_COMPARISON")
+        if (answers.any { it == null }) error("Document content must not contain null answers")
+    }
+}
 
 enum class DocumentStatus(val editable: Boolean) {
     DRAFT(editable = true),
