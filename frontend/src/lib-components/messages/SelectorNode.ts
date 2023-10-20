@@ -26,7 +26,8 @@ export interface SelectorNode extends TreeNode {
 
 export const receiversAsSelectorNode = (
   accountId: UUID,
-  receivers: MessageReceiversResponse[]
+  receivers: MessageReceiversResponse[],
+  checkedIds: UUID[] = []
 ): SelectorNode[] => {
   const accountReceivers = receivers.find(
     (receiver) => receiver.accountId === accountId
@@ -41,8 +42,22 @@ export const receiversAsSelectorNode = (
   if (selectorNodes.length === 1 && selectorNodes[0].children.length === 0) {
     return selectorNodes.map((node) => ({ ...node, checked: true }))
   }
-
+  if (checkedIds.length > 0) {
+    return selectorNodes.map((node) => checkSelected(checkedIds, node))
+  }
   return selectorNodes
+}
+
+function checkSelected(selectedIds: UUID[], node: SelectorNode): SelectorNode {
+  const children = node.children.map((child) =>
+    checkSelected(selectedIds, child)
+  )
+  return {
+    ...node,
+    checked:
+      selectedIds.includes(node.key) || children.some((child) => child.checked),
+    children
+  }
 }
 
 const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({

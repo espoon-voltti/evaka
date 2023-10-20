@@ -10,11 +10,13 @@ import { array, mapped, object, recursive, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
 import {
+  DraftContent,
   MessageAccount,
   MessageReceiversResponse,
   MessageRecipient,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
@@ -51,44 +53,62 @@ const messageForm = mapped(
     title: string(),
     content: string()
   }),
-  (output): PostMessageBody => {
-    const selectedRecipients = getSelected(output.recipients)
-    return {
-      title: output.title,
-      content: output.content,
-      type: 'MESSAGE',
-      urgent: output.urgent,
-      sensitive: false,
-      recipients: selectedRecipients.map((r) => r.messageRecipient),
-      recipientNames: selectedRecipients.map((r) => r.text),
-      attachmentIds: [],
-      draftId: null,
-      relatedApplicationId: null
+  (output) =>
+    (draftId: UUID | undefined): PostMessageBody => {
+      const selectedRecipients = getSelected(output.recipients)
+      return {
+        title: output.title,
+        content: output.content,
+        type: 'MESSAGE',
+        urgent: output.urgent,
+        sensitive: false,
+        recipients: selectedRecipients.map((r) => r.messageRecipient),
+        recipientNames: selectedRecipients.map((r) => r.text),
+        attachmentIds: [],
+        draftId: draftId ?? null,
+        relatedApplicationId: null
+      }
     }
-  }
 )
 
 interface Props {
   account: MessageAccount
   availableRecipients: MessageReceiversResponse[]
+  draft: DraftContent | undefined
   onClose: () => void
 }
 
 export default React.memo(function MessageEditor({
   account,
   availableRecipients,
+  draft,
   onClose
 }: Props) {
   const { i18n } = useTranslation()
 
   const form = useForm(
     messageForm,
-    () => ({
-      recipients: receiversAsSelectorNode(account.id, availableRecipients),
-      urgent: false,
-      title: '',
-      content: ''
-    }),
+    () =>
+      draft
+        ? {
+            recipients: receiversAsSelectorNode(
+              account.id,
+              availableRecipients,
+              draft.recipientIds
+            ),
+            urgent: draft.urgent,
+            title: draft.title,
+            content: draft.content
+          }
+        : {
+            recipients: receiversAsSelectorNode(
+              account.id,
+              availableRecipients
+            ),
+            urgent: false,
+            title: '',
+            content: ''
+          },
     {}
   )
   const { recipients, urgent, title, content } = useFormFields(form)
@@ -174,7 +194,10 @@ export default React.memo(function MessageEditor({
             primary
             text={i18n.messages.messageEditor.send}
             disabled={!form.isValid()}
-            onClick={() => ({ accountId: account.id, body: form.value() })}
+            onClick={() => ({
+              accountId: account.id,
+              body: form.value()(draft?.id)
+            })}
             onSuccess={onClose}
             data-qa="send-message-btn"
           />

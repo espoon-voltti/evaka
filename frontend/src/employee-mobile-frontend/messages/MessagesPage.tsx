@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import {
   AuthorizedMessageAccount,
+  DraftContent,
   MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
@@ -45,7 +46,7 @@ type UiState =
   | { type: 'list' }
   | { type: 'receivedThread'; thread: MessageThread }
   | { type: 'sentMessage'; message: SentMessage }
-  | { type: 'newMessage' }
+  | { type: 'newMessage'; draft: DraftContent | undefined }
 
 export default function MessagesPage() {
   const { i18n } = useTranslation()
@@ -96,6 +97,11 @@ export default function MessagesPage() {
     []
   )
 
+  const selectDraftMessage = useCallback(
+    (draft: DraftContent) => setUiState({ type: 'newMessage', draft }),
+    []
+  )
+
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       if (group) navigate(`/units/${unitId}/groups/${group.id}/messages`)
@@ -140,12 +146,14 @@ export default function MessagesPage() {
                   ) : activeTab === 'sent' ? (
                     <SentMessagesList onSelectMessage={selectSentMessage} />
                   ) : (
-                    <DraftMessagesList />
+                    <DraftMessagesList onSelectDraft={selectDraftMessage} />
                   )}
                   {featureFlags.employeeMobileGroupMessages && (
                     <HoverButton
                       primary
-                      onClick={() => setUiState({ type: 'newMessage' })}
+                      onClick={() =>
+                        setUiState({ type: 'newMessage', draft: undefined })
+                      }
                       data-qa="new-message-btn"
                     >
                       <FontAwesomeIcon icon={faPlus} />
@@ -186,6 +194,7 @@ export default function MessagesPage() {
               <MessageEditor
                 availableRecipients={availableRecipients}
                 account={selectedAccount.account}
+                draft={uiState.draft}
                 onClose={() => setUiState({ type: 'list' })}
               />
             ))

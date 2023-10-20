@@ -74,7 +74,11 @@ export const unreadCountsQuery = query({
 })
 
 export const sendMessageMutation = mutation({
-  api: sendMessage
+  api: sendMessage,
+  invalidateQueryKeys: ({ accountId }) => [
+    queryKeys.sentMessages(accountId),
+    queryKeys.draftMessages(accountId)
+  ]
 })
 
 export const replyToThreadMutation = mutation({

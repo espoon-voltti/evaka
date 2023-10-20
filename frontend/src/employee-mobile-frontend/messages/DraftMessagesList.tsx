@@ -22,7 +22,11 @@ import { useTranslation } from '../common/i18n'
 import { draftMessagesQuery } from './queries'
 import { MessageContext } from './state'
 
-export default React.memo(function DraftMessagesList() {
+interface Props {
+  onSelectDraft: (draft: DraftContent) => void
+}
+
+export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
   const { selectedAccount } = useContext(MessageContext)
   const draftMessages = useQueryResult(
     queryOrDefault(
@@ -37,7 +41,7 @@ export default React.memo(function DraftMessagesList() {
         <DraftMessagePreview
           key={message.id}
           message={message}
-          onClick={() => undefined}
+          onClick={() => onSelectDraft(message)}
         />
       ))}
     </div>
