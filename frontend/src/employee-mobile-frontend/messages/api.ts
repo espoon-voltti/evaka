@@ -9,14 +9,20 @@ import {
 } from 'lib-common/api-types/messaging'
 import {
   AuthorizedMessageAccount,
+  DraftContent,
   MessageReceiversResponse,
   PagedMessageThreads,
+  PagedSentMessages,
   PostMessageBody,
   ReplyToMessageBody,
   ThreadReply,
   UnreadCountByAccountAndGroup
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
+import {
+  deserializeDraftContent,
+  deserializeSentMessage
+} from 'lib-common/messaging'
 import { UUID } from 'lib-common/types'
 import { SaveDraftParams } from 'lib-components/messages/types'
 
@@ -53,6 +59,29 @@ export async function getReceivedMessages(
       ...data,
       data: data.data.map((d) => deserializeMessageThread(d))
     }))
+}
+
+export async function getSentMessages(
+  accountId: UUID,
+  page: number,
+  pageSize: number
+): Promise<PagedSentMessages> {
+  return client
+    .get<JsonOf<PagedSentMessages>>(`/messages/${accountId}/sent`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map(deserializeSentMessage)
+    }))
+}
+
+export async function getMessageDrafts(
+  accountId: UUID
+): Promise<DraftContent[]> {
+  return client
+    .get<JsonOf<DraftContent[]>>(`/messages/${accountId}/drafts`)
+    .then(({ data }) => data.map(deserializeDraftContent))
 }
 
 export type ReplyToThreadParams = ReplyToMessageBody & {

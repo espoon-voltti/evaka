@@ -3,24 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { OnEnterView } from 'lib-components/OnEnterView'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { ContentArea } from 'lib-components/layout/Container'
-import EmptyMessageFolder from 'lib-components/messages/EmptyMessageFolder'
-import { H1 } from 'lib-components/typography'
+import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faPlus } from 'lib-icons'
 
@@ -32,15 +27,19 @@ import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
+import DraftMessagesList from './DraftMessagesList'
 import MessageEditor from './MessageEditor'
-import { MessagePreview } from './MessagePreview'
+import ReceivedThreadsList from './ReceivedThreadsList'
+import SentMessagesList from './SentMessagesList'
 import ThreadView from './ThreadView'
 import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
+type Tab = 'received' | 'sent' | 'drafts'
+
 type UiState =
   | { type: 'threadList' }
-  | { type: 'thread'; threadId: UUID }
+  | { type: 'thread'; thread: MessageThread }
   | { type: 'newMessage' }
 
 export default function MessagesPage() {
@@ -53,25 +52,43 @@ export default function MessagesPage() {
   const { unitInfoResponse } = useContext(UnitContext)
   const { groupRoute } = useSelectedGroup()
 
-  const {
-    groupAccounts,
-    receivedMessages,
-    hasMoreMessages,
-    fetchMoreMessages,
-    selectedAccount,
-    markThreadAsRead
-  } = useContext(MessageContext)
+  const { groupAccounts, selectedAccount, markThreadAsRead } =
+    useContext(MessageContext)
 
-  const recipients = useQueryResult(recipientsQuery)
+  const recipients = useQueryResult(recipientsQuery, {
+    enabled: selectedAccount !== undefined
+  })
 
+  const threadListTabs = useMemo(
+    () => [
+      {
+        id: 'received',
+        onClick: () => setActiveTab('received'),
+        label: i18n.messages.tabs.received
+      },
+      {
+        id: 'sent',
+        onClick: () => setActiveTab('sent'),
+        label: i18n.messages.tabs.sent
+      },
+      {
+        id: 'drafts',
+        onClick: () => setActiveTab('drafts'),
+        label: i18n.messages.tabs.drafts
+      }
+    ],
+    [i18n]
+  )
+  const [activeTab, setActiveTab] = useState<Tab>('received')
   const [uiState, setUiState] = useState<UiState>({ type: 'threadList' })
+
   const selectThread = useCallback(
-    (threadId: UUID | undefined) => {
-      if (threadId === undefined) {
+    (thread: MessageThread | undefined) => {
+      if (thread === undefined) {
         setUiState({ type: 'threadList' })
       } else {
-        setUiState({ type: 'thread', threadId })
-        markThreadAsRead(threadId)
+        setUiState({ type: 'thread', thread })
+        markThreadAsRead(thread.id)
       }
     },
     [markThreadAsRead]
@@ -86,122 +103,81 @@ export default function MessagesPage() {
   const onBack = useCallback(() => selectThread(undefined), [selectThread])
 
   return selectedAccount
-    ? renderResult(
-        combine(receivedMessages, recipients),
-        ([threads, availableRecipients], isReloading) => {
-          switch (uiState.type) {
-            case 'threadList':
-              return (
-                <PageWithNavigation
-                  selected="messages"
-                  selectedGroup={
-                    selectedAccount?.daycareGroup
-                      ? {
-                          id: selectedAccount.daycareGroup.id,
-                          name: selectedAccount.daycareGroup.name,
-                          utilization: 0
-                        }
-                      : undefined
-                  }
-                  onChangeGroup={changeGroup}
-                  allowedGroupIds={groupAccounts.flatMap(
-                    (ga) => ga.daycareGroup?.id || []
-                  )}
-                  includeSelectAll={false}
-                >
-                  <ContentArea
-                    opaque
-                    paddingVertical="zero"
-                    paddingHorizontal="zero"
-                    data-qa="messages-page-content-area"
-                  >
-                    <HeaderContainer>
-                      <H1 noMargin={true}>{i18n.messages.title}</H1>
-                    </HeaderContainer>
-                    {threads.length > 0 ? (
-                      <>
-                        {threads.map((thread) => (
-                          <MessagePreview
-                            thread={thread}
-                            hasUnreadMessages={thread.messages.some(
-                              (item) =>
-                                !item.readAt &&
-                                item.sender.id !==
-                                  selectedAccount?.account.id &&
-                                !groupAccounts.some(
-                                  (ga) => ga.account.id === item.sender.id
-                                )
-                            )}
-                            onClick={() => {
-                              selectThread(thread.id)
-                            }}
-                            key={thread.id}
-                          />
-                        ))}
-                        {hasMoreMessages && (
-                          <>
-                            <OnEnterView onEnter={fetchMoreMessages} />
-                            <HorizontalLine />
-                            <SpinnerSegment />
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <EmptyMessageFolder
-                        loading={isReloading}
-                        iconColor={colors.grayscale.g35}
-                        text={i18n.messages.emptyInbox}
-                      />
-                    )}
-                    {featureFlags.employeeMobileGroupMessages && (
-                      <HoverButton
-                        primary
-                        onClick={() => setUiState({ type: 'newMessage' })}
-                        data-qa="new-message-btn"
-                      >
-                        <FontAwesomeIcon icon={faPlus} />
-                        {i18n.messages.newMessage}
-                      </HoverButton>
-                    )}
-                  </ContentArea>
-                </PageWithNavigation>
-              )
-            case 'thread': {
-              const selectedThread = threads.find(
-                (t) => t.id === uiState.threadId
-              )
-              if (!selectedThread) {
-                // Data for selected thread not found, should not happen
-                setUiState({ type: 'threadList' })
-                return null
-              }
-              return (
+    ? (() => {
+        switch (uiState.type) {
+          case 'threadList':
+            return (
+              <PageWithNavigation
+                selected="messages"
+                selectedGroup={
+                  selectedAccount?.daycareGroup
+                    ? {
+                        id: selectedAccount.daycareGroup.id,
+                        name: selectedAccount.daycareGroup.name,
+                        utilization: 0
+                      }
+                    : undefined
+                }
+                onChangeGroup={changeGroup}
+                allowedGroupIds={groupAccounts.flatMap(
+                  (ga) => ga.daycareGroup?.id || []
+                )}
+                includeSelectAll={false}
+              >
                 <ContentArea
-                  opaque={false}
-                  fullHeight
-                  paddingHorizontal="zero"
+                  opaque
                   paddingVertical="zero"
+                  paddingHorizontal="zero"
                   data-qa="messages-page-content-area"
                 >
-                  <ThreadView
-                    thread={selectedThread}
-                    onBack={onBack}
-                    accountId={selectedAccount.account.id}
-                  />
+                  <Tabs mobile active={activeTab} tabs={threadListTabs} />
+                  {activeTab === 'received' ? (
+                    <ReceivedThreadsList onSelectThread={selectThread} />
+                  ) : activeTab === 'sent' ? (
+                    <SentMessagesList />
+                  ) : (
+                    <DraftMessagesList />
+                  )}
+                  {featureFlags.employeeMobileGroupMessages && (
+                    <HoverButton
+                      primary
+                      onClick={() => setUiState({ type: 'newMessage' })}
+                      data-qa="new-message-btn"
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                      {i18n.messages.newMessage}
+                    </HoverButton>
+                  )}
                 </ContentArea>
-              )
-            }
-            case 'newMessage':
-              return (
-                <MessageEditor
-                  availableRecipients={availableRecipients}
-                  account={selectedAccount.account}
-                  onClose={() => setUiState({ type: 'threadList' })}
+              </PageWithNavigation>
+            )
+          case 'thread': {
+            return (
+              <ContentArea
+                opaque={false}
+                fullHeight
+                paddingHorizontal="zero"
+                paddingVertical="zero"
+                data-qa="messages-page-content-area"
+              >
+                <ThreadView
+                  thread={uiState.thread}
+                  onBack={onBack}
+                  accountId={selectedAccount.account.id}
                 />
-              )
+              </ContentArea>
+            )
           }
+          case 'newMessage':
+            return renderResult(recipients, (availableRecipients) => (
+              <MessageEditor
+                availableRecipients={availableRecipients}
+                account={selectedAccount.account}
+                onClose={() => setUiState({ type: 'threadList' })}
+              />
+            ))
         }
-      )
+      })()
     : renderResult(unitInfoResponse, (unit) => (
         <ContentArea
           opaque
@@ -210,9 +186,6 @@ export default function MessagesPage() {
           data-qa="messages-page-content-area"
         >
           <TopBar title={unit.name} />
-          <HeaderContainer>
-            <H1 noMargin={true}>{i18n.messages.title}</H1>
-          </HeaderContainer>
           {groupAccounts.length === 0 ? (
             <NoAccounts data-qa="info-no-account-access">
               {i18n.messages.noAccountAccess}
@@ -224,10 +197,6 @@ export default function MessagesPage() {
         </ContentArea>
       ))
 }
-
-export const HeaderContainer = styled.div`
-  padding: ${defaultMargins.m} ${defaultMargins.s};
-`
 
 const NoAccounts = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};

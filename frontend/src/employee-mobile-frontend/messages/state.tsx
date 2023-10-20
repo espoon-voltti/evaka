@@ -37,8 +37,6 @@ import {
   replyToThreadMutation
 } from './queries'
 
-const PAGE_SIZE = 20
-
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
   groupAccounts: AuthorizedMessageAccount[]
@@ -135,7 +133,7 @@ export const MessageContextProvider = React.memo(
       fetchNextPage,
       transform
     } = usePagedInfiniteQueryResult(
-      receivedMessagesQuery(selectedAccount?.account.id ?? '', PAGE_SIZE),
+      receivedMessagesQuery(selectedAccount?.account.id ?? ''),
       {
         enabled:
           selectedAccount !== undefined && pinLoggedEmployeeId !== undefined

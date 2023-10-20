@@ -13,7 +13,9 @@ import {
   markThreadRead,
   sendMessage,
   replyToThread,
-  getReceivers
+  getReceivers,
+  getSentMessages,
+  getMessageDrafts
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
@@ -25,6 +27,8 @@ const queryKeys = createQueryKeys('messages', {
     employeeId: string | undefined
   }) => ['accounts', unitId, employeeId],
   receivedMessages: (accountId: string) => ['receivedMessages', accountId],
+  sentMessages: (accountId: string) => ['sentMessages', accountId],
+  draftMessages: (accountId: string) => ['draftMessages', accountId],
   recipients: () => ['recipients'],
   unreadCounts: () => ['unreadCounts']
 })
@@ -37,11 +41,25 @@ export const messagingAccountsQuery = query({
   queryKey: queryKeys.accounts
 })
 
+const PAGE_SIZE = 20
+
 export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: string, pageSize: number) => (page: number) =>
-    getReceivedMessages(accountId, page, pageSize),
+  api: (accountId: string) => (page: number) =>
+    getReceivedMessages(accountId, page, PAGE_SIZE),
   id: (thread) => thread.id,
   queryKey: queryKeys.receivedMessages
+})
+
+export const sentMessagesQuery = pagedInfiniteQuery({
+  api: (accountId: string) => (page: number) =>
+    getSentMessages(accountId, page, PAGE_SIZE),
+  id: (message) => message.contentId,
+  queryKey: queryKeys.sentMessages
+})
+
+export const draftMessagesQuery = query({
+  api: getMessageDrafts,
+  queryKey: queryKeys.draftMessages
 })
 
 // The results are dependent on the PIN-logged user

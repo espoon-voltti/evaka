@@ -15,7 +15,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { useTranslations } from '../i18n'
 
 // TODO is the 20px line-height in StaticChip unintentional?
-const Chip = styled(StaticChip)`
+export const MessageTypeChip = styled(StaticChip)`
   line-height: 16px;
 `
 
@@ -48,7 +48,9 @@ export function MessageCharacteristics({ type, urgent }: Props) {
           content="!"
         />
       )}
-      <Chip color={chipColor(theme, type)}>{i18n.messages.types[type]}</Chip>
+      <MessageTypeChip color={chipColor(theme, type)}>
+        {i18n.messages.types[type]}
+      </MessageTypeChip>
     </FixedSpaceRow>
   )
 }

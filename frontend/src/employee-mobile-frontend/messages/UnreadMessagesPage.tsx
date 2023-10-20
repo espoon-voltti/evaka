@@ -29,7 +29,6 @@ import {
 import { UnitContext } from '../common/unit'
 import { WideLinkButton } from '../pairing/components'
 
-import { HeaderContainer } from './MessagesPage'
 import { unreadCountsQuery } from './queries'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
@@ -93,6 +92,10 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
     </ContentArea>
   ))
 })
+
+export const HeaderContainer = styled.div`
+  padding: ${defaultMargins.m} ${defaultMargins.s};
+`
 
 const NotificationSettings = React.memo(function NotificationSettings({
   pushNotifications
