@@ -21,6 +21,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   deleteAttachment,
@@ -236,6 +237,7 @@ export default React.memo(function MessagesPage({
               saveMessageAttachment={saveMessageAttachment}
               sending={sending}
               defaultTitle={prefilledTitle ?? undefined}
+              sensitiveMessagingEnabled={featureFlags.sensitiveMessaging}
             />
           )}
       </PanelContainer>

@@ -27,7 +27,8 @@ export const testTranslations: Translations = {
     saved: '',
     saving: '',
     search: '',
-    yes: ''
+    yes: '',
+    openExpandingInfo: ''
   },
   datePicker: {
     placeholder: '',
@@ -102,10 +103,17 @@ export const testTranslations: Translations = {
       message: '',
       bulletin: ''
     },
-    urgent: {
+    flags: {
       heading: '',
-      info: '',
-      label: ''
+      urgent: {
+        info: '',
+        label: ''
+      },
+      sensitive: {
+        info: '',
+        label: '',
+        whyDisabled: ''
+      }
     },
     sender: '',
     recipientsPlaceholder: '',

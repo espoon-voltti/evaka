@@ -22,7 +22,8 @@ const components: Translations = {
     saving: 'Saving',
     saved: 'Saved',
     search: 'Search',
-    yes: 'Yes'
+    yes: 'Yes',
+    openExpandingInfo: 'Open the details'
   },
   datePicker: {
     placeholder: 'dd.mm.yyyy',
@@ -118,10 +119,17 @@ const components: Translations = {
       message: '',
       bulletin: ''
     },
-    urgent: {
+    flags: {
       heading: '',
-      info: '',
-      label: ''
+      urgent: {
+        info: '',
+        label: ''
+      },
+      sensitive: {
+        info: '',
+        label: '',
+        whyDisabled: ''
+      }
     },
     sender: '',
     recipientsPlaceholder: '',
