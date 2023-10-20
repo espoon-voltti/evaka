@@ -90,7 +90,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 it.copy(
                                     employee =
                                         it.employee.copy(
-                                            lastName = "${it.employee.lastName} (poistunut)"
+                                            lastName = "${it.employee.lastName} (deaktivoitu)"
                                         )
                                 )
                         }

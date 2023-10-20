@@ -55,7 +55,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.getEmployees()
                 }
             }
-            .map { if (it.active) it else it.copy(lastName = "${it.lastName} (poistunut)") }
+            .map { if (it.active) it else it.copy(lastName = "${it.lastName} (deaktivoitu)") }
             .sortedBy { it.email }
             .also { Audit.EmployeesRead.log() }
     }
@@ -77,7 +77,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.getFinanceDecisionHandlers()
                 }
             }
-            .map { if (it.active) it else it.copy(lastName = "${it.lastName} (poistunut)") }
+            .map { if (it.active) it else it.copy(lastName = "${it.lastName} (deaktivoitu)") }
             .sortedBy { it.email }
             .also { Audit.EmployeesRead.log() }
     }
