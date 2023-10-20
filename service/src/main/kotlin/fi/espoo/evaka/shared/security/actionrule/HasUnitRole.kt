@@ -117,14 +117,15 @@ SELECT EXISTS (
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
+                    val targetCheck = targets.idTargetPredicate()
                     ctx.tx
                         .createQuery<T> {
                             sql(
                                 """
                     SELECT id, role, unit_features, unit_provider_type
                     FROM (${subquery { getUnitRoles(ctx.user, ctx.now) } }) fragment
-                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                                     .trimIndent()
                             )
@@ -141,6 +142,7 @@ SELECT EXISTS (
                             }
                         }
                         .mapValues { (_, queryResult) -> Deferred(queryResult) }
+                }
                 else -> emptyMap()
             }
 

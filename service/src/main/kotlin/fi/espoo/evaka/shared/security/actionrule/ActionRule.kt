@@ -157,3 +157,10 @@ fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> =
 
 fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql<T> =
     toPredicate().forTable(table)
+
+/** Converts a set of ids to an SQL predicate that checks that an id column value is in the set */
+fun <T : Id<*>> Set<T>.idTargetPredicate(): Predicate<T> = Predicate {
+    // specialize size=1 case, because it can generate a better query plan
+    if (size == 1) where("$it.id = ${bind(single().raw)}")
+    else where("$it.id = ANY(${bind(map { target -> target.raw})})")
+}

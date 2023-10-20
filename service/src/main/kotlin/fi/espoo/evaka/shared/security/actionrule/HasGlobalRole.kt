@@ -60,14 +60,15 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> =
             when (ctx.user) {
-                is AuthenticatedUser.Employee ->
+                is AuthenticatedUser.Employee -> {
+                    val targetCheck = targets.idTargetPredicate()
                     ctx.tx
                         .createQuery<T> {
                             sql(
                                 """
                     SELECT id
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE id = ANY(${bind(targets.map {it.raw })})
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                                     .trimIndent()
                             )
@@ -78,6 +79,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                                 .filter { matched.contains(it) }
                                 .associateWith { Deferred(ctx.user.globalRoles) }
                         }
+                }
                 else -> emptyMap()
             }
 

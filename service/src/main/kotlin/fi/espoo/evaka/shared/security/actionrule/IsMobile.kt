@@ -55,14 +55,15 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsMobile>> =
             when (ctx.user) {
-                is AuthenticatedUser.MobileDevice ->
+                is AuthenticatedUser.MobileDevice -> {
+                    val targetCheck = targets.idTargetPredicate()
                     ctx.tx
                         .createQuery<T> {
                             sql(
                                 """
                     SELECT id
                     FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                                     .trimIndent()
                             )
@@ -73,6 +74,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                                 .filter { matched.contains(it) }
                                 .associateWith { Deferred(ctx.user.authLevel) }
                         }
+                }
                 else -> emptyMap()
             }
 

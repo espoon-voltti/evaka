@@ -42,22 +42,22 @@ CREATE FUNCTION employee_child_group_acl(today date) RETURNS
 TABLE (
     employee_id uuid, child_id uuid, daycare_group_id uuid, daycare_id uuid, role user_role
 ) AS $$
-    SELECT employee_id, child_id, daycare_group_id, daycare_id, daycare_acl.role
-    FROM (
-        SELECT child_id, dgp.daycare_group_id
-        FROM daycare_group_placement dgp
-        JOIN placement dp ON dp.id = dgp.daycare_placement_id
-        WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> today
-
-        UNION ALL
-
-        SELECT child_id, group_id AS daycare_group_id
-        FROM backup_care bc
-        WHERE bc.end_date > today - interval '1 month'
-    ) child_group
+    SELECT employee_id, child_id, dgp.daycare_group_id, daycare_id, daycare_acl.role
+    FROM daycare_group_placement dgp
+    JOIN placement dp ON dp.id = dgp.daycare_placement_id
     JOIN daycare_group_acl AS group_acl USING (daycare_group_id)
     JOIN daycare_group ON daycare_group_id = daycare_group.id
     JOIN daycare_acl USING (employee_id, daycare_id)
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> today
+
+    UNION ALL
+
+    SELECT employee_id, child_id, group_id AS daycare_group_id, daycare_id, daycare_acl.role
+    FROM backup_care bc
+    JOIN daycare_group_acl AS group_acl ON bc.group_id = daycare_group_id
+    JOIN daycare_group ON daycare_group_id = daycare_group.id
+    JOIN daycare_acl USING (employee_id, daycare_id)
+    WHERE bc.end_date > today - interval '1 month'
 $$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION child_daycare_acl(today date) RETURNS
@@ -86,13 +86,30 @@ CREATE FUNCTION employee_child_daycare_acl(today date) RETURNS
 TABLE (
     employee_id uuid, child_id uuid, daycare_id uuid, role user_role
 ) AS $$
-    SELECT employee_id, child_id, daycare_id, (CASE
-        WHEN is_backup_care AND role != 'UNIT_SUPERVISOR' THEN 'STAFF'
-        ELSE role
-    END)
-    FROM child_daycare_acl(today)
-    JOIN daycare_acl USING (daycare_id)
-    WHERE NOT (from_application AND role = 'SPECIAL_EDUCATION_TEACHER' AND is_assistance_needed IS FALSE)
+    SELECT employee_id, child_id, pl.unit_id AS daycare_id, role
+    FROM placement pl
+    JOIN daycare_acl ON pl.unit_id = daycare_acl.daycare_id
+    WHERE today < pl.end_date + interval '1 month'
+
+    UNION ALL
+
+    SELECT employee_id, child_id, pp.unit_id AS daycare_id, role
+    FROM placement_plan pp
+    JOIN application a ON pp.application_id = a.id
+    JOIN daycare_acl ON pp.unit_id = daycare_acl.daycare_id
+    WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
+    AND NOT (role = 'SPECIAL_EDUCATION_TEACHER' AND coalesce((a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean, FALSE) IS FALSE)
+
+    UNION ALL
+
+    SELECT employee_id, child_id, bc.unit_id AS daycare_id,
+       (CASE
+            WHEN role != 'UNIT_SUPERVISOR' THEN 'STAFF'
+            ELSE role
+        END) AS role
+    FROM backup_care bc
+    JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
+    WHERE today < bc.end_date + interval '1 month'
 $$ LANGUAGE SQL STABLE;
 
 CREATE VIEW person_acl_view(employee_id, person_id, daycare_id, role) AS (
