@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { infiniteQuery, mutation, query } from 'lib-common/query'
+import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
 
 import { createQueryKeys } from '../query'
 
@@ -37,15 +37,11 @@ export const messagingAccountsQuery = query({
   queryKey: queryKeys.accounts
 })
 
-export const receivedMessagesQuery = infiniteQuery({
+export const receivedMessagesQuery = pagedInfiniteQuery({
   api: (accountId: string, pageSize: number) => (page: number) =>
     getReceivedMessages(accountId, page, pageSize),
-  queryKey: queryKeys.receivedMessages,
-  firstPageParam: 1,
-  getNextPageParam: (lastPage, pages) => {
-    const nextPage = pages.length + 1
-    return nextPage <= lastPage.pages ? nextPage : undefined
-  }
+  id: (thread) => thread.id,
+  queryKey: queryKeys.receivedMessages
 })
 
 // The results are dependent on the PIN-logged user
