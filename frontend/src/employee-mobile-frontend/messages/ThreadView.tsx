@@ -13,8 +13,10 @@ import styled, { css } from 'styled-components'
 
 import {
   Message,
+  MessageAccount,
   MessageChild,
-  MessageThread
+  MessageThread,
+  SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
@@ -41,17 +43,17 @@ import { useTranslation } from '../common/i18n'
 import { getAttachmentUrl } from './api'
 import { MessageContext } from './state'
 
-interface Props {
+interface ReceivedThreadViewProps {
   accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
-export default React.memo(function ThreadView({
+export const ReceivedThreadView = React.memo(function ReceivedThreadView({
   accountId,
   thread: { id: threadId, messages, title, type, children },
   onBack
-}: Props) {
+}: ReceivedThreadViewProps) {
   const { i18n } = useTranslation()
   const { sendReply, setReplyContent, getReplyContent } =
     useContext(MessageContext)
@@ -158,28 +160,6 @@ export default React.memo(function ThreadView({
   )
 })
 
-const MobileThreadContainer = styled(ThreadContainer)`
-  height: 100vh;
-  overflow-y: auto;
-`
-
-const TitleRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  & + & {
-    margin-top: ${defaultMargins.L};
-  }
-`
-
-const MessageList = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-`
-
-// eslint-disable-next-line react/display-name
 const SingleMessage = React.memo(
   React.forwardRef(function SingleMessage(
     {
@@ -233,6 +213,78 @@ const SingleMessage = React.memo(
     )
   })
 )
+
+interface SentMessageViewProps {
+  account: MessageAccount
+  message: SentMessage
+  onBack: () => void
+}
+
+export const SentMessageView = React.memo(function SentMessageView({
+  account,
+  message,
+  onBack
+}: SentMessageViewProps) {
+  return (
+    <MobileThreadContainer data-qa="thread-reader">
+      <TopBar title={message.threadTitle} onBack={onBack} invertedColors />
+      <Gap size="s" />
+      <MessageList>
+        <MessageContainer>
+          <TitleRow>
+            <SenderName data-qa="single-message-sender-name">
+              {account.name}
+            </SenderName>
+            <InformationText>
+              {message.sentAt.toLocalDate().format()}
+            </InformationText>
+          </TitleRow>
+          <InformationText>{message.recipientNames.join(', ')}</InformationText>
+          <MessageContent data-qa="single-message-content">
+            <Linkify text={message.content} />
+          </MessageContent>
+          {message.attachments.length > 0 && (
+            <>
+              <HorizontalLine slim />
+              <FixedSpaceColumn spacing="xs">
+                {message.attachments.map((attachment) => (
+                  <FileDownloadButton
+                    key={attachment.id}
+                    file={attachment}
+                    getFileUrl={getAttachmentUrl}
+                    icon
+                    data-qa="attachment"
+                  />
+                ))}
+              </FixedSpaceColumn>
+            </>
+          )}
+        </MessageContainer>
+      </MessageList>
+    </MobileThreadContainer>
+  )
+})
+
+const MobileThreadContainer = styled(ThreadContainer)`
+  height: 100vh;
+  overflow-y: auto;
+`
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & + & {
+    margin-top: ${defaultMargins.L};
+  }
+`
+
+const MessageList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+`
 
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};

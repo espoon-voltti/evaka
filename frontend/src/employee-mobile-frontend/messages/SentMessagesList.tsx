@@ -21,7 +21,13 @@ import { renderResult } from '../async-rendering'
 import { sentMessagesQuery } from './queries'
 import { MessageContext } from './state'
 
-export default React.memo(function SentMessagesList() {
+interface Props {
+  onSelectMessage: (message: SentMessage) => void
+}
+
+export default React.memo(function SentMessagesList({
+  onSelectMessage
+}: Props) {
   const { selectedAccount } = useContext(MessageContext)
 
   const { data: sentMessages } = usePagedInfiniteQueryResult(
@@ -35,7 +41,7 @@ export default React.memo(function SentMessagesList() {
         <SentMessagePreview
           key={message.contentId}
           message={message}
-          onClick={() => undefined}
+          onClick={() => onSelectMessage(message)}
         />
       ))}
     </div>

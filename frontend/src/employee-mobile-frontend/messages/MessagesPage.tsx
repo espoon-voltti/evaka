@@ -8,7 +8,11 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import {
+  AuthorizedMessageAccount,
+  MessageThread,
+  SentMessage
+} from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -31,15 +35,16 @@ import DraftMessagesList from './DraftMessagesList'
 import MessageEditor from './MessageEditor'
 import ReceivedThreadsList from './ReceivedThreadsList'
 import SentMessagesList from './SentMessagesList'
-import ThreadView from './ThreadView'
+import { ReceivedThreadView, SentMessageView } from './ThreadView'
 import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
 type Tab = 'received' | 'sent' | 'drafts'
 
 type UiState =
-  | { type: 'threadList' }
-  | { type: 'thread'; thread: MessageThread }
+  | { type: 'list' }
+  | { type: 'receivedThread'; thread: MessageThread }
+  | { type: 'sentMessage'; message: SentMessage }
   | { type: 'newMessage' }
 
 export default function MessagesPage() {
@@ -79,15 +84,17 @@ export default function MessagesPage() {
     [i18n]
   )
   const [activeTab, setActiveTab] = useState<Tab>('received')
-  const [uiState, setUiState] = useState<UiState>({ type: 'threadList' })
+  const [uiState, setUiState] = useState<UiState>({ type: 'list' })
 
-  const selectThread = useCallback((thread: MessageThread | undefined) => {
-    if (thread === undefined) {
-      setUiState({ type: 'threadList' })
-    } else {
-      setUiState({ type: 'thread', thread })
-    }
-  }, [])
+  const selectReceivedThread = useCallback(
+    (thread: MessageThread) => setUiState({ type: 'receivedThread', thread }),
+    []
+  )
+
+  const selectSentMessage = useCallback(
+    (message: SentMessage) => setUiState({ type: 'sentMessage', message }),
+    []
+  )
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
@@ -95,12 +102,12 @@ export default function MessagesPage() {
     },
     [navigate, unitId]
   )
-  const onBack = useCallback(() => selectThread(undefined), [selectThread])
+  const onBack = useCallback(() => setUiState({ type: 'list' }), [])
 
   return selectedAccount
-    ? (() => {
+    ? ((selectedAccount: AuthorizedMessageAccount) => {
         switch (uiState.type) {
-          case 'threadList':
+          case 'list':
             return (
               <PageWithNavigation
                 selected="messages"
@@ -127,9 +134,11 @@ export default function MessagesPage() {
                 >
                   <Tabs mobile active={activeTab} tabs={threadListTabs} />
                   {activeTab === 'received' ? (
-                    <ReceivedThreadsList onSelectThread={selectThread} />
+                    <ReceivedThreadsList
+                      onSelectThread={selectReceivedThread}
+                    />
                   ) : activeTab === 'sent' ? (
-                    <SentMessagesList />
+                    <SentMessagesList onSelectMessage={selectSentMessage} />
                   ) : (
                     <DraftMessagesList />
                   )}
@@ -146,7 +155,8 @@ export default function MessagesPage() {
                 </ContentArea>
               </PageWithNavigation>
             )
-          case 'thread': {
+          case 'receivedThread':
+          case 'sentMessage': {
             return (
               <ContentArea
                 opaque={false}
@@ -155,11 +165,19 @@ export default function MessagesPage() {
                 paddingVertical="zero"
                 data-qa="messages-page-content-area"
               >
-                <ThreadView
-                  thread={uiState.thread}
-                  onBack={onBack}
-                  accountId={selectedAccount.account.id}
-                />
+                {uiState.type === 'receivedThread' ? (
+                  <ReceivedThreadView
+                    thread={uiState.thread}
+                    onBack={onBack}
+                    accountId={selectedAccount.account.id}
+                  />
+                ) : (
+                  <SentMessageView
+                    account={selectedAccount.account}
+                    message={uiState.message}
+                    onBack={onBack}
+                  />
+                )}
               </ContentArea>
             )
           }
@@ -168,11 +186,11 @@ export default function MessagesPage() {
               <MessageEditor
                 availableRecipients={availableRecipients}
                 account={selectedAccount.account}
-                onClose={() => setUiState({ type: 'threadList' })}
+                onClose={() => setUiState({ type: 'list' })}
               />
             ))
         }
-      })()
+      })(selectedAccount)
     : renderResult(unitInfoResponse, (unit) => (
         <ContentArea
           opaque
