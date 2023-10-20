@@ -29,8 +29,17 @@ describe('Placement guarantee report', () => {
       .with({
         childId: child.data.id,
         unitId: unit.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday,
+        startDate: mockedToday.subDays(1),
+        endDate: mockedToday.subDays(1),
+        placeGuarantee: false
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        childId: child.data.id,
+        unitId: unit.data.id,
+        startDate: mockedToday.addDays(1),
+        endDate: mockedToday.addDays(1),
         placeGuarantee: true
       })
       .save()
@@ -47,7 +56,7 @@ describe('Placement guarantee report', () => {
         areaName: area.data.name,
         unitName: unit.data.name,
         childName: `${child.data.lastName}, ${child.data.firstName}`,
-        placementPeriod: '14.09.2023 - 14.09.2023'
+        placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
   })
@@ -64,8 +73,17 @@ describe('Placement guarantee report', () => {
       .with({
         childId: child.data.id,
         unitId: unit.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday,
+        startDate: mockedToday.subDays(1),
+        endDate: mockedToday.subDays(1),
+        placeGuarantee: false
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        childId: child.data.id,
+        unitId: unit.data.id,
+        startDate: mockedToday.addDays(1),
+        endDate: mockedToday.addDays(1),
         placeGuarantee: false
       })
       .save()
@@ -92,6 +110,15 @@ describe('Placement guarantee report', () => {
       .with({
         childId: child1.data.id,
         unitId: unit.data.id,
+        startDate: mockedToday.subDays(3),
+        endDate: mockedToday.subDays(3),
+        placeGuarantee: false
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        childId: child1.data.id,
+        unitId: unit.data.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: true
@@ -99,6 +126,15 @@ describe('Placement guarantee report', () => {
       .save()
     const child2 = await Fixture.person().with({ ssn: undefined }).save()
     await Fixture.child(child2.data.id).save()
+    await Fixture.placement()
+      .with({
+        childId: child2.data.id,
+        unitId: unit.data.id,
+        startDate: mockedToday.subDays(3),
+        endDate: mockedToday.subDays(1),
+        placeGuarantee: false
+      })
+      .save()
     await Fixture.placement()
       .with({
         childId: child2.data.id,
@@ -116,7 +152,7 @@ describe('Placement guarantee report', () => {
     })
 
     const report = await navigateToReport(page, admin.data)
-    await report.selectDate('13.09.2023')
+    await report.selectDate('12.09.2023')
     await report.assertRows([
       {
         areaName: area.data.name,
@@ -125,7 +161,7 @@ describe('Placement guarantee report', () => {
         placementPeriod: '13.09.2023 - 13.09.2023'
       }
     ])
-    await report.selectDate('15.09.2023')
+    await report.selectDate('14.09.2023')
     await report.assertRows([
       {
         areaName: area.data.name,
@@ -149,8 +185,17 @@ describe('Placement guarantee report', () => {
       .with({
         childId: child1.data.id,
         unitId: unit1.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday,
+        startDate: mockedToday.subDays(1),
+        endDate: mockedToday.subDays(1),
+        placeGuarantee: false
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        childId: child1.data.id,
+        unitId: unit1.data.id,
+        startDate: mockedToday.addDays(1),
+        endDate: mockedToday.addDays(1),
         placeGuarantee: true
       })
       .save()
@@ -160,8 +205,17 @@ describe('Placement guarantee report', () => {
       .with({
         childId: child2.data.id,
         unitId: unit2.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday,
+        startDate: mockedToday.subDays(1),
+        endDate: mockedToday.subDays(1),
+        placeGuarantee: false
+      })
+      .save()
+    await Fixture.placement()
+      .with({
+        childId: child2.data.id,
+        unitId: unit2.data.id,
+        startDate: mockedToday.addDays(1),
+        endDate: mockedToday.addDays(1),
         placeGuarantee: true
       })
       .save()
@@ -179,7 +233,7 @@ describe('Placement guarantee report', () => {
         areaName: area.data.name,
         unitName: unit1.data.name,
         childName: `${child1.data.lastName}, ${child1.data.firstName}`,
-        placementPeriod: '14.09.2023 - 14.09.2023'
+        placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
     await report.selectUnit(unit2.data.name)
@@ -188,7 +242,7 @@ describe('Placement guarantee report', () => {
         areaName: area.data.name,
         unitName: unit2.data.name,
         childName: `${child2.data.lastName}, ${child2.data.firstName}`,
-        placementPeriod: '14.09.2023 - 14.09.2023'
+        placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
   })

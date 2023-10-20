@@ -70,8 +70,9 @@ JOIN care_area area ON area.id = unit.care_area_id
 JOIN person child ON child.id = placement.child_id
 WHERE placement.place_guarantee = TRUE
   AND ${predicate(filter.forTable("unit"))}
-  AND ${bind(date)} BETWEEN placement.start_date AND placement.end_date
+  AND placement.start_date > ${bind(date)}
   AND (${bind(unitId)} IS NULL OR ${bind(unitId)} = placement.unit_id)
+  AND NOT EXISTS (SELECT FROM placement WHERE child_id = child.id AND ${bind(date)} BETWEEN start_date AND end_date)
     """
                     .trimIndent()
             )
