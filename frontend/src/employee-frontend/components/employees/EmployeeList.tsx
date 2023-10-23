@@ -12,6 +12,7 @@ import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
@@ -29,6 +30,10 @@ const Email = styled.div`
   font-size: 14px;
 `
 
+const StyledUl = styled.ul`
+  margin-top: 0;
+`
+
 interface Props {
   employees?: Result<EmployeeWithDaycareRoles[]>
 }
@@ -40,7 +45,15 @@ export function EmployeeList({ employees }: Props) {
   const rows =
     employees?.isSuccess &&
     employees.value.map(
-      ({ daycareRoles, email, firstName, globalRoles, id, lastName }) => (
+      ({
+        daycareRoles,
+        daycareGroupRoles,
+        email,
+        firstName,
+        globalRoles,
+        id,
+        lastName
+      }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
           <Td>
             <Name data-qa="employee-name">
@@ -52,12 +65,38 @@ export function EmployeeList({ employees }: Props) {
             <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
               {[
                 ...sortBy(globalRoles.map((r) => i18n.roles.adRoles[r])),
-                ...sortBy(daycareRoles, 'daycareName').map((r) => (
-                  <>
-                    <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link> (
-                    {i18n.roles.adRoles[r.role]?.toLowerCase()})
-                  </>
-                ))
+                ...sortBy(daycareRoles, 'daycareName').map((r) => {
+                  const groupRoles = daycareGroupRoles.filter(
+                    (gr) => gr.daycareId === r.daycareId
+                  )
+
+                  return (
+                    <>
+                      <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link>{' '}
+                      ({i18n.roles.adRoles[r.role]?.toLowerCase()})
+                      {groupRoles.length > 0 && (
+                        <StyledUl>
+                          <li>
+                            {groupRoles.map((gr) => gr.groupName).join(', ')}
+                          </li>
+                        </StyledUl>
+                      )}
+                    </>
+                  )
+                }),
+                daycareGroupRoles
+                  .filter(
+                    (gr) =>
+                      !daycareRoles.some((r) => r.daycareId === gr.daycareId)
+                  )
+                  .map((gr) => (
+                    <AlertBox
+                      key={gr.groupId}
+                      noMargin
+                      thin
+                      message={`Luvitettu vain ryhmään: ${gr.daycareName} / ${gr.groupName}`}
+                    />
+                  ))
               ].map((role, i) => (
                 <div key={i}>{role}</div>
               ))}

@@ -44,6 +44,13 @@ data class EmployeeRoles(
 
 data class DaycareRole(val daycareId: DaycareId, val daycareName: String, val role: UserRole)
 
+data class DaycareGroupRole(
+    val daycareId: DaycareId,
+    val daycareName: String,
+    val groupId: DaycareId,
+    val groupName: String
+)
+
 data class EmployeeWithDaycareRoles(
     val id: EmployeeId,
     val created: HelsinkiDateTime,
@@ -52,7 +59,8 @@ data class EmployeeWithDaycareRoles(
     val lastName: String,
     val email: String?,
     val globalRoles: List<UserRole> = listOf(),
-    @Json val daycareRoles: List<DaycareRole> = listOf()
+    @Json val daycareRoles: List<DaycareRole> = listOf(),
+    @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf()
 )
 
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
@@ -217,11 +225,18 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
         FROM daycare_acl acl
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
-    ) AS daycare_roles
+    ) AS daycare_roles,
+    (
+        SELECT jsonb_agg(jsonb_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
+        FROM daycare_group_acl acl
+        JOIN daycare_group dg on dg.id = acl.daycare_group_id
+        JOIN daycare d ON d.id = dg.daycare_id
+        WHERE acl.employee_id = employee.id
+    ) AS daycare_group_roles
 FROM employee
 WHERE id = :id
     """
@@ -302,11 +317,18 @@ SELECT
     email,
     employee.roles AS global_roles,
     (
-        SELECT jsonb_agg(json_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
+        SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
         FROM daycare_acl acl
         JOIN daycare d ON acl.daycare_id = d.id
         WHERE acl.employee_id = employee.id
     ) AS daycare_roles,
+    (
+        SELECT jsonb_agg(jsonb_build_object('daycareId', d.id, 'daycareName', d.name, 'groupId', dg.id, 'groupName', dg.name))
+        FROM daycare_group_acl acl
+        JOIN daycare_group dg on dg.id = acl.daycare_group_id
+        JOIN daycare d ON d.id = dg.daycare_id
+        WHERE acl.employee_id = employee.id
+    ) AS daycare_group_roles,
     count(*) OVER () AS count
 FROM employee
 WHERE $whereClause
