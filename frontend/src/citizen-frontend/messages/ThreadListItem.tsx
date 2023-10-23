@@ -90,17 +90,18 @@ export default React.memo(function ThreadListItem({
             {participants}
           </Truncated>
           <FixedSpaceRow>
-            <DeleteThreadButton
-              aria-label={i18n.common.delete}
-              data-qa="delete-thread-btn"
-              onClick={handleDelete}
-            />
             {isRegularThread(thread) && (
-              <MessageCharacteristics
-                type={thread.messageType}
-                urgent={thread.urgent}
+              <DeleteThreadButton
+                aria-label={i18n.common.delete}
+                data-qa="delete-thread-btn"
+                onClick={handleDelete}
               />
             )}
+            <MessageCharacteristics
+              type={isRegularThread(thread) ? thread.messageType : 'MESSAGE'}
+              urgent={thread.urgent}
+              sensitive={!isRegularThread(thread) || thread.sensitive}
+            />
           </FixedSpaceRow>
         </Header>
         <ScreenReaderOnly>

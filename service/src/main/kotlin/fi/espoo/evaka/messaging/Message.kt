@@ -80,7 +80,7 @@ sealed interface CitizenMessageThread {
                     messageThread.messages.lastOrNull()?.sentAt,
                     messageThread.messages
                         .findLast { message -> message.sender.id != userId }
-                        ?.readAt != null
+                        ?.readAt == null
                 )
         }
     }

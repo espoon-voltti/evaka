@@ -459,7 +459,9 @@ const sv: Translations = {
       confirm: 'Radera tråden'
     },
     sensitive: 'Känslig meddelandetråd',
-    strongAuthRequired: 'Läsning kräver stark autentisering'
+    strongAuthRequired: 'Läsning kräver stark autentisering',
+    strongAuthRequiredThread: 'Läsning kräver stark autentisering.',
+    strongAuthLink: 'Autentisera'
   },
   applications: {
     title: 'Ansökningar',

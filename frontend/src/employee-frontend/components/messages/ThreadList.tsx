@@ -33,6 +33,7 @@ export type ThreadListItem = {
   title: string
   content: string
   urgent: boolean
+  sensitive: boolean
   participants: string[]
   unread: boolean
   onClick: () => void
@@ -70,6 +71,7 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
             <Truncated>
               <Title unread={item.unread} data-qa="thread-list-item-title">
                 {item.title}
+                {item.sensitive && ` (${i18n.messages.sensitive})`}
               </Title>
               <Hyphen>{' ― '}</Hyphen>
               <span data-qa="thread-list-item-content">{item.content}</span>
@@ -88,7 +90,11 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
               />
             )}
             <TypeAndDate>
-              <MessageCharacteristics type={item.type} urgent={item.urgent} />
+              <MessageCharacteristics
+                type={item.type}
+                urgent={item.urgent}
+                sensitive={item.sensitive}
+              />
               {item.timestamp && <Timestamp date={item.timestamp} />}
             </TypeAndDate>
           </FixedSpaceRow>

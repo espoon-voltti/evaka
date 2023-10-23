@@ -59,7 +59,7 @@ const TitleRow = styled.div`
   }
 `
 
-const ThreadTitleRow = styled.div`
+export const ThreadTitleRow = styled.div`
   background-color: ${colors.grayscale.g0};
   max-height: 215px; // fits roughly 5 rows of heading text with the chip and paddings
   overflow: auto;
@@ -205,7 +205,15 @@ interface Props {
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id: threadId, messages, title, messageType, urgent, children },
+  thread: {
+    id: threadId,
+    messages,
+    title,
+    messageType,
+    urgent,
+    sensitive,
+    children
+  },
   closeThread,
   onThreadDeleted
 }: Props) {
@@ -262,7 +270,11 @@ export default React.memo(function ThreadView({
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
-          <MessageCharacteristics type={messageType} urgent={urgent} />
+          <MessageCharacteristics
+            type={messageType}
+            urgent={urgent}
+            sensitive={sensitive}
+          />
           {children.length > 0 ? (
             <>
               <ScreenReaderOnly>

@@ -460,7 +460,10 @@ export default {
       confirm: 'Poista viestiketju'
     },
     sensitive: 'Arkaluontoinen viestiketju',
-    strongAuthRequired: 'Lukeminen vaatii vahvan tunnistautuminen'
+    strongAuthRequired: 'Lukeminen vaatii vahvan tunnistautuminen',
+    strongAuthRequiredThread:
+      'Viestiketjun lukeminen vaatii vahvan tunnistautumisen.',
+    strongAuthLink: 'Tunnistaudu'
   },
   applications: {
     title: 'Hakemukset',

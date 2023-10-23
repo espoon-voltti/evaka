@@ -102,4 +102,8 @@ export const ThreadContainer = styled.div`
   max-width: 100%;
   min-height: 500px;
   overflow-y: auto;
+
+  a {
+    text-decoration: underline;
+  }
 `
