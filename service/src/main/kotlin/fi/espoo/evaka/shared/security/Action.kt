@@ -1350,7 +1350,9 @@ sealed interface Action {
         ),
         READ_DETAILS(HasGlobalRole(ADMIN)),
         DELETE(HasGlobalRole(ADMIN)),
-        UPDATE(HasGlobalRole(ADMIN));
+        UPDATE(HasGlobalRole(ADMIN)),
+        ACTIVATE(HasGlobalRole(ADMIN)),
+        DEACTIVATE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

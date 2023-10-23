@@ -104,7 +104,10 @@ export default React.memo(function EmployeesPage() {
             />
           </PaginationContainer>
         </TopBar>
-        <EmployeeList employees={employees} />
+        <EmployeeList
+          employees={employees}
+          onUpdate={() => loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)}
+        />
         {employees?.isSuccess && (
           <PaginationContainer>
             <Pagination

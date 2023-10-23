@@ -12,10 +12,14 @@ import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
+
+import { activateEmployeeMutation, deactivateEmployeeMutation } from './queries'
 
 const LinkTr = styled(Tr)`
   cursor: pointer;
@@ -30,15 +34,21 @@ const Email = styled.div`
   font-size: 14px;
 `
 
+const Details = styled.div`
+  font-size: 14px;
+  color: ${colors.grayscale.g70};
+`
+
 const StyledUl = styled.ul`
   margin-top: 0;
 `
 
 interface Props {
   employees?: Result<EmployeeWithDaycareRoles[]>
+  onUpdate: () => void
 }
 
-export function EmployeeList({ employees }: Props) {
+export function EmployeeList({ employees, onUpdate }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -52,7 +62,11 @@ export function EmployeeList({ employees }: Props) {
         firstName,
         globalRoles,
         id,
-        lastName
+        lastName,
+        lastLogin,
+        externalId,
+        temporaryUnitName,
+        active
       }) => (
         <LinkTr key={id} onClick={() => navigate(`/employees/${id}`)}>
           <Td>
@@ -60,6 +74,12 @@ export function EmployeeList({ employees }: Props) {
               {lastName} {firstName}
             </Name>
             <Email>{email}</Email>
+            {!!externalId && <Details>{externalId}</Details>}
+            {!!temporaryUnitName && (
+              <Details>
+                {i18n.employees.temporary}: {temporaryUnitName}
+              </Details>
+            )}
           </Td>
           <Td>
             <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
@@ -102,6 +122,26 @@ export function EmployeeList({ employees }: Props) {
               ))}
             </ExpandableList>
           </Td>
+          <Td>{lastLogin?.format() ?? '-'}</Td>
+          <Td>
+            {active ? (
+              <ConfirmedMutation
+                buttonText={i18n.employees.deactivate}
+                confirmationTitle={i18n.employees.deactivateConfirm}
+                mutation={deactivateEmployeeMutation}
+                onClick={() => id}
+                onSuccess={onUpdate}
+              />
+            ) : (
+              <ConfirmedMutation
+                buttonText={i18n.employees.activate}
+                confirmationTitle={i18n.employees.activateConfirm}
+                mutation={activateEmployeeMutation}
+                onClick={() => id}
+                onSuccess={onUpdate}
+              />
+            )}
+          </Td>
         </LinkTr>
       )
     )
@@ -113,6 +153,7 @@ export function EmployeeList({ employees }: Props) {
           <Tr>
             <Th>{i18n.employees.name}</Th>
             <Th>{i18n.employees.rights}</Th>
+            <Th>{i18n.employees.lastLogin}</Th>
           </Tr>
         </Thead>
         <Tbody>{rows}</Tbody>

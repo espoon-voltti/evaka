@@ -21,7 +21,7 @@ import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getPinCode
 import fi.espoo.evaka.pis.getTemporaryEmployees
 import fi.espoo.evaka.pis.updateEmployee
-import fi.espoo.evaka.pis.updateEmployeeTemporaryInUnitId
+import fi.espoo.evaka.pis.updateEmployeeActive
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -83,7 +83,17 @@ class UnitAclController(private val accessControl: AccessControl) {
                             daycareId
                         )
 
-                    val aclRows = tx.getDaycareAclRows(daycareId, hasOccupancyPermission)
+                    val aclRows =
+                        tx.getDaycareAclRows(daycareId, hasOccupancyPermission).map {
+                            if (it.employee.active) it
+                            else
+                                it.copy(
+                                    employee =
+                                        it.employee.copy(
+                                            lastName = "${it.employee.lastName} (deaktivoitu)"
+                                        )
+                                )
+                        }
 
                     Audit.UnitAclRead.log(
                         targetId = daycareId,
@@ -360,7 +370,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         Action.Unit.READ_TEMPORARY_EMPLOYEE,
                         unitId
                     )
-                    tx.getTemporaryEmployees(unitId)
+                    tx.getTemporaryEmployees(unitId).filter { it.active }
                 }
             }
         Audit.TemporaryEmployeesRead.log(meta = mapOf("unitId" to unitId))
@@ -393,7 +403,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 email = null,
                                 externalId = null,
                                 employeeNumber = null,
-                                temporaryInUnitId = unitId
+                                temporaryInUnitId = unitId,
+                                active = true
                             )
                         )
                     setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
@@ -523,8 +534,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                     Action.Unit.DELETE_TEMPORARY_EMPLOYEE,
                     unitId
                 )
+                tx.updateEmployeeActive(employeeId, active = false)
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
-                tx.updateEmployeeTemporaryInUnitId(employee.id, null)
             }
         }
         Audit.TemporaryEmployeeDelete.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
@@ -572,7 +583,8 @@ class UnitAclController(private val accessControl: AccessControl) {
         unitId: DaycareId,
         employeeId: EmployeeId
     ): Employee =
-        tx.getEmployee(employeeId).takeIf { it?.temporaryInUnitId == unitId } ?: throw NotFound()
+        tx.getEmployee(employeeId).takeIf { it?.temporaryInUnitId == unitId && it.active }
+            ?: throw NotFound()
 
     private fun deleteTemporaryEmployeeAcl(
         tx: Database.Transaction,

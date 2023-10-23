@@ -47,7 +47,11 @@ function ConfirmedMutation_<Arg, Data, Key extends QueryKey>({
     <div className={className}>
       <Button
         text={buttonText}
-        onClick={() => setConfirming(true)}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setConfirming(true)
+        }}
         primary={primary}
         disabled={disabled}
         data-qa={dataQa}

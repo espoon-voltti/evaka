@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.EmployeeFeatures
@@ -96,6 +97,9 @@ class SystemController(
                         )
                     }
                     val inserted = it.loginEmployee(clock, request.toNewEmployee())
+                    if (!inserted.active) {
+                        throw Forbidden("User is not active")
+                    }
                     val roles = it.getEmployeeRoles(inserted.id)
                     val employee =
                         EmployeeUser(
@@ -103,7 +107,8 @@ class SystemController(
                             firstName = inserted.preferredFirstName ?: inserted.firstName,
                             lastName = inserted.lastName,
                             globalRoles = roles.globalRoles,
-                            allScopedRoles = roles.allScopedRoles
+                            allScopedRoles = roles.allScopedRoles,
+                            active = inserted.active
                         )
                     it.upsertEmployeeUser(employee.id)
                     employee
@@ -277,7 +282,8 @@ class SystemController(
                 email = email,
                 externalId = externalId,
                 employeeNumber = employeeNumber,
-                temporaryInUnitId = null
+                temporaryInUnitId = null,
+                active = true
             )
     }
 

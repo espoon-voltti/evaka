@@ -102,7 +102,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             lastName = employee.lastName,
             externalId = employee.externalId,
             employeeNumber = null,
-            temporaryInUnitId = null
+            temporaryInUnitId = null,
+            active = true
         )
 
     val employee1 =
@@ -116,7 +117,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             created = HelsinkiDateTime.now(),
             updated = HelsinkiDateTime.now(),
             id = EmployeeId(UUID.randomUUID()),
-            temporaryInUnitId = null
+            temporaryInUnitId = null,
+            active = true
         )
 
     val employee2 =
@@ -130,6 +132,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             created = HelsinkiDateTime.now(),
             updated = HelsinkiDateTime.now(),
             id = EmployeeId(UUID.randomUUID()),
-            temporaryInUnitId = null
+            temporaryInUnitId = null,
+            active = true
         )
 }

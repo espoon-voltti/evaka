@@ -25,7 +25,8 @@ data class NewEmployee(
     val externalId: ExternalId?,
     val employeeNumber: String?,
     val roles: Set<UserRole> = setOf(),
-    val temporaryInUnitId: DaycareId?
+    val temporaryInUnitId: DaycareId?,
+    val active: Boolean
 )
 
 data class EmployeeUser(
@@ -34,7 +35,8 @@ data class EmployeeUser(
     val firstName: String,
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
-    val allScopedRoles: Set<UserRole> = setOf()
+    val allScopedRoles: Set<UserRole> = setOf(),
+    val active: Boolean
 )
 
 data class EmployeeRoles(
@@ -53,14 +55,18 @@ data class DaycareGroupRole(
 
 data class EmployeeWithDaycareRoles(
     val id: EmployeeId,
+    val externalId: String?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
+    val lastLogin: HelsinkiDateTime?,
     val firstName: String,
     val lastName: String,
     val email: String?,
     val globalRoles: List<UserRole> = listOf(),
     @Json val daycareRoles: List<DaycareRole> = listOf(),
-    @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf()
+    @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf(),
+    val temporaryUnitName: String?,
+    val active: Boolean
 )
 
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
@@ -69,9 +75,9 @@ fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
     createUpdate(
             // language=SQL
             """
-INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.temporaryInUnitId)
-RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id, active)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.temporaryInUnitId, :employee.active)
+RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id, active
     """
                 .trimIndent()
         )
@@ -94,11 +100,11 @@ fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee)
     createUpdate(
             // language=SQL
             """
-INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, last_login)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :now)
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active, last_login)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.active, :now)
 ON CONFLICT (external_id) DO UPDATE
 SET last_login = :now, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
-RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles
+RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active
     """
                 .trimIndent()
         )
@@ -143,7 +149,7 @@ private fun Database.Read.searchEmployees(
     createQuery(
             // language=SQL
             """
-SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id
+SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id, e.active
 FROM employee e
 WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
   AND (:temporaryInUnitId IS NULL OR e.temporary_in_unit_id = :temporaryInUnitId)
@@ -159,7 +165,7 @@ private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) 
     createQuery(
             // language=SQL
             """
-SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles, e.active
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (:id::uuid IS NULL OR e.id = :id)
@@ -186,7 +192,7 @@ fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? =
 private fun Database.Read.createEmployeeUserQuery(where: String) =
     createQuery(
         """
-SELECT id, preferred_first_name, first_name, last_name, email, employee.roles AS global_roles, (
+SELECT id, preferred_first_name, first_name, last_name, email, active, employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id
@@ -217,12 +223,16 @@ fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles
     val sql =
         """
 SELECT
-    id,
-    created,
-    updated,
-    first_name,
-    last_name,
-    email,
+    employee.id,
+    employee.external_id,
+    employee.created,
+    employee.updated,
+    employee.last_login,
+    employee.first_name,
+    employee.last_name,
+    employee.email,
+    employee.active,
+    temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
         SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
@@ -238,7 +248,8 @@ SELECT
         WHERE acl.employee_id = employee.id
     ) AS daycare_group_roles
 FROM employee
-WHERE id = :id
+LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
+WHERE employee.id = :id
     """
             .trimIndent()
 
@@ -254,13 +265,10 @@ fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastN
         .bind("lastName", lastName)
         .updateExactlyOne()
 
-fun Database.Transaction.updateEmployeeTemporaryInUnitId(
-    id: EmployeeId,
-    temporaryInUnitId: DaycareId?
-) =
-    createUpdate("UPDATE employee SET temporary_in_unit_id = :temporaryInUnitId WHERE id = :id")
+fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
+    createUpdate("UPDATE employee SET active = :active WHERE id = :id")
         .bind("id", id)
-        .bind("temporaryInUnitId", temporaryInUnitId)
+        .bind("active", active)
         .updateExactlyOne()
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, globalRoles: List<UserRole>) {
@@ -308,13 +316,17 @@ fun getEmployeesPaged(
     val sql =
         """
 SELECT
-    id,
-    created,
-    updated,
-    preferred_first_name,
-    first_name,
-    last_name,
-    email,
+    employee.id,
+    employee.external_id,
+    employee.created,
+    employee.updated,
+    employee.last_login,
+    employee.preferred_first_name,
+    employee.first_name,
+    employee.last_name,
+    employee.email,
+    employee.active,
+    temp_unit.name as temporary_unit_name,
     employee.roles AS global_roles,
     (
         SELECT jsonb_agg(jsonb_build_object('daycareId', acl.daycare_id, 'daycareName', d.name, 'role', acl.role))
@@ -331,6 +343,7 @@ SELECT
     ) AS daycare_group_roles,
     count(*) OVER () AS count
 FROM employee
+LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE $whereClause
 ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
@@ -453,7 +466,8 @@ WITH employees_to_reset AS (
 ), delete_daycare_group_acl AS (
     DELETE FROM daycare_group_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
 )
-UPDATE employee SET roles = '{}' WHERE id = ANY (SELECT id FROM employees_to_reset)
+UPDATE employee SET roles = '{}', active = FALSE
+WHERE id = ANY (SELECT id FROM employees_to_reset)
 RETURNING id
 """
         )
@@ -492,7 +506,7 @@ fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?):
     return if (unitId == null) {
         createQuery(
                 """
-SELECT id, first_name, last_name, email, external_id, created, updated
+SELECT id, first_name, last_name, email, external_id, created, updated, active
 FROM employee
 WHERE roles && :globalRoles::user_role[]
 ORDER BY last_name, first_name
@@ -503,7 +517,7 @@ ORDER BY last_name, first_name
     } else {
         createQuery(
                 """
-SELECT id, first_name, last_name, email, external_id, created, updated
+SELECT id, first_name, last_name, email, external_id, created, updated, active
 FROM employee
 WHERE roles && :globalRoles::user_role[] OR id IN (
     SELECT employee_id

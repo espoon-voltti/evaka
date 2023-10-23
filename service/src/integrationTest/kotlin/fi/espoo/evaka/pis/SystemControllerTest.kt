@@ -68,7 +68,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Teppo",
                 lastName = "Testaaja",
                 globalRoles = setOf(),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertNull(db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -101,7 +102,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Teppo",
                 lastName = "Testaaja",
                 globalRoles = setOf(),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -144,7 +146,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Kutsumanimi",
                 lastName = "Testaaja",
                 globalRoles = setOf(UserRole.FINANCE_ADMIN),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -188,7 +191,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Kutsumanimi",
                 lastName = "Testaaja",
                 globalRoles = setOf(UserRole.FINANCE_ADMIN),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -221,7 +225,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Teppo",
                 lastName = "Testaaja",
                 globalRoles = setOf(),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected1, result1.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result1.get().id) })
@@ -249,7 +254,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 firstName = "Teppo",
                 lastName = "Testaaja",
                 globalRoles = setOf(),
-                allScopedRoles = setOf()
+                allScopedRoles = setOf(),
+                active = true
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result.get().id) })

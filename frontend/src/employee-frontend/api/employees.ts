@@ -99,7 +99,8 @@ function deserializeEmployeeWithDaycareRoles(
   return {
     ...data,
     created: HelsinkiDateTime.parseIso(data.created),
-    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null
+    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null,
+    lastLogin: data.lastLogin ? HelsinkiDateTime.parseIso(data.lastLogin) : null
   }
 }
 
@@ -111,6 +112,20 @@ export function updateEmployee(
     .put(`/employee/${id}`, {
       globalRoles
     })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function activateEmployee(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/employee/${id}/activate`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export function deactivateEmployee(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/employee/${id}/deactivate`)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

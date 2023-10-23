@@ -4061,7 +4061,13 @@ export const fi = {
   employees: {
     name: 'Nimi',
     rights: 'Oikeudet',
+    lastLogin: 'Kirjautunut viimeksi',
+    temporary: 'Tilapäinen sijainen',
     findByName: 'Etsi nimellä',
+    activate: 'Aktivoi',
+    activateConfirm: 'Haluatko palauttaa käyttäjän aktiiviseksi?',
+    deactivate: 'Deaktivoi',
+    deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
     editor: {
       roles: 'Roolit'
     }

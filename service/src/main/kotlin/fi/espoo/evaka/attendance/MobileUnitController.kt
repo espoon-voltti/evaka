@@ -239,7 +239,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             WHERE dg.daycare_id = :id
             GROUP BY employee_id
         ) group_acl ON acl.employee_id = group_acl.employee_id
-        WHERE acl.daycare_id = :id
+        WHERE acl.daycare_id = :id AND e.active
         """
                     .trimIndent()
             )

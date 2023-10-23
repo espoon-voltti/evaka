@@ -443,7 +443,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             if (pairing.mobileDeviceId != null) {
                 tx.createUpdate(
-                        "INSERT INTO employee (id, first_name, last_name) VALUES (:id, '', '')"
+                        "INSERT INTO employee (id, first_name, last_name, active) VALUES (:id, '', '', TRUE)"
                     )
                     .bind("id", pairing.mobileDeviceId)
                     .execute()

@@ -22,7 +22,8 @@ data class DaycareAclRowEmployee(
     val lastName: String,
     val email: String?,
     val temporary: Boolean,
-    val hasStaffOccupancyEffect: Boolean?
+    val hasStaffOccupancyEffect: Boolean?,
+    val active: Boolean
 )
 
 fun Database.Read.getDaycareAclRows(
@@ -37,6 +38,7 @@ SELECT e.id,
        e.last_name,
        e.email,
        role,
+       active,
        coalesce(group_ids, array []::uuid[]) AS group_ids,
        temporary_in_unit_id IS NOT NULL      AS temporary,
        CASE
