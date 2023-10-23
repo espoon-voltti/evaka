@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
+import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -104,6 +105,10 @@ class VasuController(
                     )
                     val documents =
                         tx.getVasuDocumentSummaries(childId) +
+                            (tx.getPersonDuplicateOf(childId)?.let { duplicateId ->
+                                tx.getVasuDocumentSummaries(duplicateId)
+                            }
+                                ?: emptyList()) +
                             tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
                                 tx.getVasuDocumentSummaries(duplicate.id)
                             }

@@ -113,6 +113,12 @@ fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
         .bind("id", id)
         .toList(toPersonDTO)
 
+fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? =
+    createQuery("SELECT duplicate_of FROM person WHERE id = :id")
+        .bind("id", id)
+        .mapTo<PersonId>()
+        .exactlyOneOrNull()
+
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 

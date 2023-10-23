@@ -37,10 +37,6 @@ class VasuPageCommon {
     await this.#documentSection.first().waitUntilVisible()
   }
 
-  async assertDocumentNotVisible() {
-    await this.#documentSection.first().waitUntilHidden()
-  }
-
   get basicInfoSection(): BasicInfoSection {
     return new BasicInfoSection(this.getDocumentSection(0))
   }

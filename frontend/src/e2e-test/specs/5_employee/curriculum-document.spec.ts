@@ -25,6 +25,7 @@ beforeEach(resetDatabase)
 describe('curriculum document with person duplicate', () => {
   let admin: EmployeeBuilder
   let daycareSupervisor: EmployeeBuilder
+  let preschoolSupervisor: EmployeeBuilder
   let child: PersonBuilder
   let duplicate: PersonBuilder
 
@@ -48,6 +49,9 @@ describe('curriculum document with person duplicate', () => {
         enabledPilotFeatures: ['VASU_AND_PEDADOC']
       })
       .save()
+    preschoolSupervisor = await Fixture.employeeUnitSupervisor(
+      preschool.data.id
+    ).save()
 
     child = await Fixture.person().save()
     await Fixture.child(child.data.id).save()
@@ -77,20 +81,6 @@ describe('curriculum document with person duplicate', () => {
         endDate: mockedDate
       })
       .save()
-  })
-
-  it('unit supervisor doesn`t see daycare document from duplicate', async () => {
-    const templateId = await insertVasuTemplateFixture({
-      type: 'DAYCARE',
-      valid: new FiniteDateRange(mockedDate, mockedDate)
-    })
-    const documentId = await insertVasuDocument(duplicate.data.id, templateId)
-
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
-    await employeeLogin(page, daycareSupervisor.data)
-    await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
-    const vasuPage = new VasuPage(page)
-    await vasuPage.assertDocumentNotVisible()
   })
 
   it('unit supervisor sees preschool document from duplicate', async () => {
@@ -134,6 +124,54 @@ describe('curriculum document with person duplicate', () => {
     ])
     const curriculumDocumentPage =
       await childDocumentsSection.openCurriculumDocument(preschoolDocumentId)
+    await curriculumDocumentPage.assertDocumentVisible()
+    await curriculumDocumentPage.back()
+    await childInformationPage.waitUntilLoaded()
+  })
+
+  it('unit supervisor sees daycare document from duplicate of', async () => {
+    const templateId = await insertVasuTemplateFixture({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    })
+    const documentId = await insertVasuDocument(child.data.id, templateId)
+
+    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    await employeeLogin(page, preschoolSupervisor.data)
+    await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
+    const vasuPage = new VasuPage(page)
+    await vasuPage.assertDocumentVisible()
+  })
+
+  it('unit supervisor sees daycare documents from duplicate of', async () => {
+    const daycareTemplateId = await insertVasuTemplateFixture({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    })
+    const daycareDocumentId = await insertVasuDocument(
+      child.data.id,
+      daycareTemplateId
+    )
+    const preschoolTemplateId = await insertVasuTemplateFixture({
+      type: 'PRESCHOOL',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    })
+    await insertVasuDocument(child.data.id, preschoolTemplateId)
+
+    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    await employeeLogin(page, preschoolSupervisor.data)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${duplicate.data.id}`
+    )
+    const childInformationPage = new ChildInformationPage(page)
+    const childDocumentsSection = await childInformationPage.openCollapsible(
+      'childDocuments'
+    )
+    await childDocumentsSection.assertCurriculumDocuments([
+      { id: daycareDocumentId }
+    ])
+    const curriculumDocumentPage =
+      await childDocumentsSection.openCurriculumDocument(daycareDocumentId)
     await curriculumDocumentPage.assertDocumentVisible()
     await curriculumDocumentPage.back()
     await childInformationPage.waitUntilLoaded()

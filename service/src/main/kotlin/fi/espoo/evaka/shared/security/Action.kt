@@ -2211,7 +2211,13 @@ sealed interface Action {
                 .inPlacementGroupOfChildOfVasuDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfDuplicateChildOfDaycareCurriculumDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfDuplicateChildOfPreschoolCurriculumDocument(),
