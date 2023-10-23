@@ -27,6 +27,7 @@ export const UndoMessage = React.memo(function UndoMessageToast({
   const [secondsLeft, setSecondsLeft] = useState<number>(() =>
     getSecondsLeft(message.sentAt)
   )
+  const [cancelling, setCancelling] = useState(false)
 
   const cancelMessage = useCallback(() => {
     if (!message) {
@@ -38,15 +39,18 @@ export const UndoMessage = React.memo(function UndoMessageToast({
         ? undoMessage(message.accountId, message.contentId)
         : undoMessageReply(message.accountId, message.messageId)
 
-    void request.then((result) => {
-      if (result.isSuccess) {
-        close()
-        refreshMessages(message.accountId)
-        if ('contentId' in message) {
-          selectThread(undefined)
+    setCancelling(true)
+    void request
+      .then((result) => {
+        if (result.isSuccess) {
+          close()
+          refreshMessages(message.accountId)
+          if ('contentId' in message) {
+            selectThread(undefined)
+          }
         }
-      }
-    })
+      })
+      .finally(() => setCancelling(false))
   }, [close, message, refreshMessages, selectThread])
 
   useEffect(() => {
@@ -66,6 +70,7 @@ export const UndoMessage = React.memo(function UndoMessageToast({
           secondsLeft
         )})`}
         onClick={cancelMessage}
+        disabled={cancelling}
         data-qa="cancel-message"
       />
     </FixedSpaceColumn>
