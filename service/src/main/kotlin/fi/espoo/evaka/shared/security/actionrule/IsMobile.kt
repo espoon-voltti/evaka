@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
@@ -95,11 +96,19 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
 
     private data class Deferred(private val authLevel: MobileAuthLevel) :
         DatabaseActionRule.Deferred<IsMobile> {
+        private data object PinLoginRequired : AccessControlDecision {
+            override fun isPermitted(): Boolean = false
+
+            override fun assert() = throw Forbidden("PIN login required", "PIN_LOGIN_REQUIRED")
+
+            override fun assertIfTerminal() = assert()
+        }
+
         override fun evaluate(params: IsMobile): AccessControlDecision =
             if (params.isPermittedAuthLevel(authLevel)) {
                 AccessControlDecision.Permitted(params)
             } else {
-                AccessControlDecision.Denied(params, "PIN login required", "PIN_LOGIN_REQUIRED")
+                PinLoginRequired
             }
     }
 

@@ -266,15 +266,20 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
             for (rule in rules) {
                 when (rule) {
                     is StaticActionRule ->
-                        if (rule.evaluate(user).isPermitted()) {
-                            return@withSpan AccessControlFilter.PermitAll
+                        rule.evaluate(user).let { decision ->
+                            if (decision.isPermitted()) {
+                                return@withSpan AccessControlFilter.PermitAll
+                            } else {
+                                decision.assertIfTerminal()
+                            }
                         }
                     is DatabaseActionRule.Unscoped<*> ->
-                        when (val decision = unscopedEvaluator.evaluate(rule)) {
-                            is AccessControlDecision.Denied -> throw decision.toException()
-                            AccessControlDecision.None -> {}
-                            is AccessControlDecision.Permitted ->
+                        unscopedEvaluator.evaluate(rule).let { decision ->
+                            if (decision.isPermitted()) {
                                 return@withSpan AccessControlFilter.PermitAll
+                            } else {
+                                decision.assertIfTerminal()
+                            }
                         }
                     is DatabaseActionRule.Scoped<in T, *> ->
                         scopedEvaluator.queryWithParams(rule)?.let { filter -> filters += filter }
