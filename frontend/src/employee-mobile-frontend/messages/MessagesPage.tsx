@@ -21,7 +21,6 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faPlus } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -148,18 +147,16 @@ export default function MessagesPage() {
                   ) : (
                     <DraftMessagesList onSelectDraft={selectDraftMessage} />
                   )}
-                  {featureFlags.employeeMobileGroupMessages && (
-                    <HoverButton
-                      primary
-                      onClick={() =>
-                        setUiState({ type: 'newMessage', draft: undefined })
-                      }
-                      data-qa="new-message-btn"
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                      {i18n.messages.newMessage}
-                    </HoverButton>
-                  )}
+                  <HoverButton
+                    primary
+                    onClick={() =>
+                      setUiState({ type: 'newMessage', draft: undefined })
+                    }
+                    data-qa="new-message-btn"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                    {i18n.messages.newMessage}
+                  </HoverButton>
                 </ContentArea>
               </PageWithNavigation>
             )
