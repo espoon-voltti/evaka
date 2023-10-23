@@ -77,6 +77,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
       <MessageEditor
         account={childGroupAccount.account}
         availableRecipients={receivers}
+        draft={undefined}
         onClose={onHide}
       />
     ) : (

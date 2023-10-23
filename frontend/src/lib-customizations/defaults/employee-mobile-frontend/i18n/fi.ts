@@ -373,7 +373,6 @@ export const fi = {
         heading: 'Viesti',
         placeholder: 'Viestin sisältö...'
       },
-      discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'

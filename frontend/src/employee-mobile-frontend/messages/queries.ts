@@ -15,7 +15,10 @@ import {
   replyToThread,
   getReceivers,
   getSentMessages,
-  getMessageDrafts
+  getMessageDrafts,
+  initDraft,
+  saveDraft,
+  deleteDraft
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
@@ -91,4 +94,19 @@ export const replyToThreadMutation = mutation({
 export const markThreadReadMutation = mutation({
   api: markThreadRead,
   invalidateQueryKeys: () => [queryKeys.unreadCounts()]
+})
+
+export const initDraftMutation = mutation({
+  api: initDraft,
+  invalidateQueryKeys: (accountId) => [queryKeys.draftMessages(accountId)]
+})
+
+export const saveDraftMutation = mutation({
+  api: saveDraft,
+  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
+})
+
+export const deleteDraftMutation = mutation({
+  api: deleteDraft,
+  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
 })

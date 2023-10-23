@@ -115,16 +115,6 @@ export async function markThreadRead({
     .then(() => undefined)
 }
 
-export async function deleteDraft(
-  accountId: UUID,
-  draftId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/messages/${accountId}/drafts/${draftId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function sendMessage({
   accountId,
   body
@@ -135,22 +125,32 @@ export async function sendMessage({
   return client.post(`/messages/${accountId}`, body).then(() => undefined)
 }
 
-export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
+export async function initDraft(accountId: UUID): Promise<UUID> {
   return client
     .post<UUID>(`/messages/${accountId}/drafts`)
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function saveDraft({
   accountId,
   draftId,
   content
-}: SaveDraftParams): Promise<Result<void>> {
+}: SaveDraftParams): Promise<void> {
   return client
     .put(`/messages/${accountId}/drafts/${draftId}`, content)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
+}
+
+export async function deleteDraft({
+  accountId,
+  draftId
+}: {
+  accountId: UUID
+  draftId: UUID
+}): Promise<void> {
+  return client
+    .delete(`/messages/${accountId}/drafts/${draftId}`)
+    .then(() => undefined)
 }
 
 export async function getReceivers(): Promise<MessageReceiversResponse[]> {
