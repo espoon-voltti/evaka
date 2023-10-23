@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 
 sealed interface AccessControlDecision {
     /** No decision was made, so action is denied by default */
-    object None : AccessControlDecision
+    data object None : AccessControlDecision
 
     /** Action was explicitly permitted based on some rule */
     data class Permitted(val rule: Any) : AccessControlDecision

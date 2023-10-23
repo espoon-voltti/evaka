@@ -144,7 +144,7 @@ internal data class RoleAndFeatures(
 )
 
 sealed interface AccessControlFilter<out T> {
-    object PermitAll : AccessControlFilter<Nothing>
+    data object PermitAll : AccessControlFilter<Nothing>
 
     data class Some<T>(val filter: QuerySql<T>) : AccessControlFilter<T>
 }
