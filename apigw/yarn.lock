@@ -549,13 +549,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@datadog/native-iast-taint-tracking@npm:1.5.0"
+"@datadog/native-iast-taint-tracking@npm:1.6.1":
+  version: 1.6.1
+  resolution: "@datadog/native-iast-taint-tracking@npm:1.6.1"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^3.9.0
-  checksum: b5d8e9e615218c32b9e39c5050ff6471acf12c528459f93955944ed0d59ff77e9a54c628b5e7b2dfb264cc0fb59eb24093da624f7e456b4a1dba2b5aad33210c
+  checksum: c3d5184a8da38cd6ee76942386c800eff64da33e1012ae9d6d5085713020cd293639c226bed6909d797a338c60aaec53b9d2dba923428291e6e840748e5be932
   languageName: node
   linkType: hard
 
@@ -570,9 +570,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:3.2.0":
-  version: 3.2.0
-  resolution: "@datadog/pprof@npm:3.2.0"
+"@datadog/pprof@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@datadog/pprof@npm:4.0.0"
   dependencies:
     delay: ^5.0.0
     node-gyp: latest
@@ -580,7 +580,7 @@ __metadata:
     p-limit: ^3.1.0
     pprof-format: ^2.0.7
     source-map: ^0.7.4
-  checksum: e8d57b23eb228e897668a59150249167c254ac985f344ee8eafe8837f3d8680934fe99871bc7f9ec9ffcf18b2ec3b9886f8f1f8e8f833af67423a1e6ce546cc5
+  checksum: b61aedcc4dd541d615666a35a8854071fe271aa04fa7d533e4464de52ffa1ed56d789b27d331ab84f278d1398b5ae6952d3d96bbc27e420495cb9f05f83ddf68
   languageName: node
   linkType: hard
 
@@ -2745,15 +2745,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.16.0":
-  version: 4.16.0
-  resolution: "dd-trace@npm:4.16.0"
+"dd-trace@npm:^4.17.0":
+  version: 4.17.0
+  resolution: "dd-trace@npm:4.17.0"
   dependencies:
     "@datadog/native-appsec": ^4.0.0
     "@datadog/native-iast-rewriter": 2.1.3
-    "@datadog/native-iast-taint-tracking": 1.5.0
+    "@datadog/native-iast-taint-tracking": 1.6.1
     "@datadog/native-metrics": ^2.0.0
-    "@datadog/pprof": 3.2.0
+    "@datadog/pprof": 4.0.0
     "@datadog/sketches-js": ^2.1.0
     "@opentelemetry/api": ^1.0.0
     "@opentelemetry/core": ^1.14.0
@@ -2764,6 +2764,7 @@ __metadata:
     int64-buffer: ^0.1.9
     ipaddr.js: ^2.1.0
     istanbul-lib-coverage: 3.2.0
+    jest-docblock: ^29.7.0
     koalas: ^1.0.2
     limiter: ^1.1.4
     lodash.kebabcase: ^4.1.1
@@ -2780,7 +2781,7 @@ __metadata:
     protobufjs: ^7.2.4
     retry: ^0.13.1
     semver: ^7.5.4
-  checksum: 0fec0dcf1a0dfb48cbba2f817239940766fb56b7ab58d8675ef22e8f8450ee74b28c0c36e051cd71ad83b8974cc1421f46fcda2929ff6059aebefbed3c0cbdd8
+  checksum: a626335f917817cc792695a1588c7cacc00d1322f8ec53e7d72ab2cc46abf59c26bf84dd72fa7f4e9809398ccab41f9c6647ba429814a2c36177abb8cf14d763
   languageName: node
   linkType: hard
 
@@ -3277,7 +3278,7 @@ __metadata:
     cookie-parser: ^1.4.6
     csurf: ^1.11.0
     date-fns: ^2.30.0
-    dd-trace: ^4.16.0
+    dd-trace: ^4.17.0
     eslint: ^8.52.0
     eslint-config-prettier: ^9.0.0
     eslint-plugin-prettier: ^5.0.0
@@ -4457,6 +4458,15 @@ __metadata:
   dependencies:
     detect-newline: ^3.0.0
   checksum: e0e9df1485bb8926e5b33478cdf84b3387d9caf3658e7dc1eaa6dc34cb93dea0d2d74797f6e940f0233a88f3dadd60957f2288eb8f95506361f85b84bf8661df
+  languageName: node
+  linkType: hard
+
+"jest-docblock@npm:^29.7.0":
+  version: 29.7.0
+  resolution: "jest-docblock@npm:29.7.0"
+  dependencies:
+    detect-newline: ^3.0.0
+  checksum: 66390c3e9451f8d96c5da62f577a1dad701180cfa9b071c5025acab2f94d7a3efc2515cfa1654ebe707213241541ce9c5530232cdc8017c91ed64eea1bd3b192
   languageName: node
   linkType: hard
 
