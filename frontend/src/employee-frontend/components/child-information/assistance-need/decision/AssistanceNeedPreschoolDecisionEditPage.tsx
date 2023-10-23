@@ -61,7 +61,7 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
-import { translations } from 'lib-customizations/employee'
+import { featureFlags, translations } from 'lib-customizations/employee'
 
 import { Unit } from '../../../../api/daycare'
 import { getEmployees } from '../../../../api/employees'
@@ -507,14 +507,17 @@ const DecisionEditor = React.memo(function DecisionEditor({
     <div>
       <Container>
         <ContentArea opaque>
-          <FixedSpaceRow alignItems="baseline">
-            <Label>
-              {i18n.childInformation.assistanceNeedDecision.formLanguage}
-            </Label>
-            <SelectF bind={language} />
-          </FixedSpaceRow>
-
-          <HorizontalLine />
+          {featureFlags.assistanceNeedDecisionsLanguageSelect && (
+            <>
+              <FixedSpaceRow alignItems="baseline">
+                <Label>
+                  {i18n.childInformation.assistanceNeedDecision.formLanguage}
+                </Label>
+                <SelectF bind={language} />
+              </FixedSpaceRow>
+              <HorizontalLine />
+            </>
+          )}
 
           <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
             <FixedSpaceColumn>
