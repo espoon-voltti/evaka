@@ -125,12 +125,3 @@ fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) {
 
     createUpdate(sql).bind("id", id).execute()
 }
-
-fun Database.Transaction.deleteApplicationNotesLinkedToMessages(
-    messageContentIds: Set<MessageContentId>
-) {
-    // language=SQL
-    val sql = "DELETE FROM application_note WHERE message_content_id = ANY(:messageContentIds)"
-
-    createUpdate(sql).bind("messageContentIds", messageContentIds).execute()
-}

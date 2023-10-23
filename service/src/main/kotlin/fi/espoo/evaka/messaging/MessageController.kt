@@ -566,7 +566,7 @@ class MessageController(
     ): MessageDraftId {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction { it.undoMessageAndAllThreads(clock.now(), accountId, contentId) }
+                dbc.transaction { it.undoNewMessages(clock.now(), accountId, contentId) }
             }
             .also { Audit.MessagingUndoMessage.log(targetId = contentId) }
     }
