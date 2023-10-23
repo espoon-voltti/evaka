@@ -36,7 +36,7 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-el:10.1.14")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.14")
         // ---
-        api("org.apache.wss4j:wss4j-ws-security-dom:3.0.0")
+        api("org.apache.wss4j:wss4j-ws-security-dom:3.0.1")
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)
         api(libs.flyway.core)
@@ -56,6 +56,7 @@ dependencies {
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
+        api("org.apache.santuario:xmlsec:3.0.3")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
