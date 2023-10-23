@@ -61,7 +61,9 @@ data object IsEmployee : DatabaseActionRule.Params {
                         }
                         .toSet<Id<DatabaseTable>>()
                         .let { matched ->
-                            targets.filter { matched.contains(it) }.associateWith { Permitted }
+                            targets
+                                .filter { matched.contains(it) }
+                                .associateWith { DatabaseActionRule.Deferred.Permitted }
                         }
                 }
                 else -> emptyMap()
@@ -75,11 +77,6 @@ data object IsEmployee : DatabaseActionRule.Params {
                 is AuthenticatedUser.Employee -> QuerySql.of { filter(ctx.user, ctx.now) }
                 else -> null
             }
-    }
-
-    private object Permitted : DatabaseActionRule.Deferred<IsEmployee> {
-        override fun evaluate(params: IsEmployee): AccessControlDecision =
-            AccessControlDecision.Permitted(params)
     }
 
     fun any() =
@@ -105,7 +102,9 @@ data object IsEmployee : DatabaseActionRule.Params {
                     ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
-                                targets.filter { it == ctx.user.id }.associateWith { Permitted }
+                                targets
+                                    .filter { it == ctx.user.id }
+                                    .associateWith { DatabaseActionRule.Deferred.Permitted }
                             else -> emptyMap()
                         }
 
@@ -130,7 +129,7 @@ data object IsEmployee : DatabaseActionRule.Params {
 
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee>? =
+                ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -147,8 +146,11 @@ SELECT EXISTS (
                                     )
                                 }
                                 .exactlyOne<Boolean>()
-                                .let { isPermitted -> if (isPermitted) Permitted else null }
-                        else -> null
+                                .let { isPermitted ->
+                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
+                                    else DatabaseActionRule.Deferred.None
+                                }
+                        else -> DatabaseActionRule.Deferred.None
                     }
             }
         )
@@ -276,7 +278,7 @@ AND sent_for_decision IS NOT NULL
 
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee>? =
+                ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -294,8 +296,11 @@ SELECT EXISTS (
                                     )
                                 }
                                 .exactlyOne<Boolean>()
-                                .let { isPermitted -> if (isPermitted) Permitted else null }
-                        else -> null
+                                .let { isPermitted ->
+                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
+                                    else DatabaseActionRule.Deferred.None
+                                }
+                        else -> DatabaseActionRule.Deferred.None
                     }
             }
         )

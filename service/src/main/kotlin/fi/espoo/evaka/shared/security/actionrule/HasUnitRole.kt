@@ -194,7 +194,7 @@ SELECT EXISTS (
 
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<HasUnitRole>? =
+                ): DatabaseActionRule.Deferred<HasUnitRole> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             Deferred(
@@ -212,7 +212,7 @@ WHERE employee_id = ${bind(ctx.user.id)}
                                     }
                                     .toSet<RoleAndFeatures>()
                             )
-                        else -> null
+                        else -> DatabaseActionRule.Deferred.None
                     }
             }
         )
