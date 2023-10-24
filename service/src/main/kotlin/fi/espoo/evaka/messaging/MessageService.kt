@@ -45,6 +45,7 @@ class MessageService(
         msg: AsyncJob.MarkMessagesAsSent
     ) {
         db.transaction { tx ->
+            tx.lockMessageContentForUpdate(msg.messageContentId)
             val sender = tx.getMessageAuthor(msg.messageContentId) ?: return@transaction
             tx.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
             val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)

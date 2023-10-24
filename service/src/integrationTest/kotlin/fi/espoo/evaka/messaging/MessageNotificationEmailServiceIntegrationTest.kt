@@ -234,12 +234,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertTrue(MockEmailClient.emails.isEmpty())
 
-        // orphan threads are deleted with a scheduled job
-        assertEquals(
-            1,
-            db.read { it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>() }
-        )
-        scheduledJobs.removeOrphanMessageThreads(db, clock)
+        // threads are also deleted
         assertEquals(
             0,
             db.read { it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>() }

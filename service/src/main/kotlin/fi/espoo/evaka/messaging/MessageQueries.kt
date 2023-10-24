@@ -1457,7 +1457,7 @@ fun Database.Transaction.undoMessageReply(
             "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
         )
     }
-
+    lockMessageContentForUpdate(undoTarget.contentId)
     this.deleteMessages(undoTarget.contentId)
     this.resetSenderThreadParticipants(undoTarget.threadId, accountId)
 }
@@ -1467,6 +1467,8 @@ fun Database.Transaction.undoNewMessages(
     accountId: MessageAccountId,
     contentId: MessageContentId
 ): MessageDraftId {
+    lockMessageContentForUpdate(contentId)
+
     this.createQuery<Any> {
             sql(
                 """
@@ -1516,6 +1518,22 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId) {
 
     this.createUpdate<Any> {
             sql("DELETE FROM attachment WHERE message_content_id = ${bind(contentId)}")
+        }
+        .execute()
+
+    this.createUpdate<Any> {
+            sql(
+                """
+            DELETE FROM message_thread
+            WHERE id IN (
+                SELECT mt.id
+                FROM message_thread mt
+                JOIN message m on mt.id = m.thread_id
+                WHERE m.content_id = ${bind(contentId)}
+                FOR UPDATE 
+            )
+        """
+            )
         }
         .execute()
 
@@ -1574,3 +1592,8 @@ WHERE id = ${bind(id)}
             )
         }
         .exactlyOne<MessageThreadStub>()
+
+fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
+    createQuery<Any> { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
+        .exactlyOneOrNull<Int>()
+}

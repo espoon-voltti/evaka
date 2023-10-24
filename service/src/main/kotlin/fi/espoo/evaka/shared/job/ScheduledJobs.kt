@@ -94,10 +94,6 @@ enum class ScheduledJob(
         ScheduledJobs::removeOldDraftApplications,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30)))
     ),
-    RemoveOrphanMessageThreads(
-        ScheduledJobs::removeOrphanMessageThreads,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(4, 30)))
-    ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0)))
@@ -278,20 +274,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun removeOldAsyncJobs(db: Database.Connection, clock: EvakaClock) {
         db.removeOldAsyncJobs(clock.now())
-    }
-
-    fun removeOrphanMessageThreads(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            tx.createUpdate(
-                    """
-                    DELETE FROM message_thread
-                    WHERE NOT EXISTS(
-                        SELECT 1 FROM message WHERE thread_id = message_thread.id
-                    )
-                """
-                )
-                .execute()
-        }
     }
 
     fun inactivePeopleCleanup(db: Database.Connection, clock: EvakaClock) {
