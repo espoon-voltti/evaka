@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
-import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> =
     createQuery(
@@ -113,7 +112,7 @@ fun Database.Transaction.markStaffArrival(
     groupId: GroupId,
     arrivalTime: HelsinkiDateTime,
     occupancyCoefficient: BigDecimal
-): StaffAttendanceId =
+): StaffAttendanceRealtimeId =
     createUpdate(
             """
     INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient) VALUES (
@@ -128,10 +127,10 @@ fun Database.Transaction.markStaffArrival(
         .bind("arrived", arrivalTime)
         .bind("occupancyCoefficient", occupancyCoefficient)
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<StaffAttendanceId>()
+        .exactlyOne<StaffAttendanceRealtimeId>()
 
 data class StaffAttendance(
-    val id: StaffAttendanceId?,
+    val id: StaffAttendanceRealtimeId?,
     val employeeId: EmployeeId,
     val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
@@ -141,14 +140,14 @@ data class StaffAttendance(
 )
 
 fun Database.Transaction.upsertStaffAttendance(
-    attendanceId: StaffAttendanceId?,
+    attendanceId: StaffAttendanceRealtimeId?,
     employeeId: EmployeeId?,
     groupId: GroupId?,
     arrivalTime: HelsinkiDateTime,
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType
-): StaffAttendanceId =
+): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
         createUpdate(
                 """
@@ -165,7 +164,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("occupancyCoefficient", occupancyCoefficient)
             .bind("type", type)
             .executeAndReturnGeneratedKeys()
-            .exactlyOne<StaffAttendanceId>()
+            .exactlyOne<StaffAttendanceRealtimeId>()
     } else {
         createUpdate(
                 """
@@ -184,7 +183,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .let { attendanceId }
     }
 
-fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceId) {
+fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceRealtimeId) {
     createUpdate(
             """
            DELETE FROM staff_attendance_realtime
@@ -197,7 +196,7 @@ fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceId) 
 }
 
 fun Database.Transaction.markStaffDeparture(
-    attendanceId: StaffAttendanceId,
+    attendanceId: StaffAttendanceRealtimeId,
     departureTime: HelsinkiDateTime
 ) =
     createUpdate(
@@ -306,7 +305,7 @@ fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttend
 }
 
 data class RawAttendance(
-    val id: UUID,
+    val id: StaffAttendanceRealtimeId,
     val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
@@ -559,7 +558,7 @@ fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     unitId: DaycareId,
     employeeId: EmployeeId,
     timeRange: HelsinkiDateTimeRange,
-    exceptIds: List<StaffAttendanceId>
+    exceptIds: List<StaffAttendanceRealtimeId>
 ) =
     createUpdate(
             """

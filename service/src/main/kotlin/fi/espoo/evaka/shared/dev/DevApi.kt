@@ -157,7 +157,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -2181,7 +2181,7 @@ data class DevUpsertStaffOccupancyCoefficient(
 )
 
 data class DevStaffAttendance(
-    val id: StaffAttendanceId,
+    val id: StaffAttendanceRealtimeId,
     val employeeId: EmployeeId,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,

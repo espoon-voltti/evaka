@@ -8,12 +8,11 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
-import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import java.math.BigDecimal
-import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -77,7 +76,7 @@ data class StaffMember(
 }
 
 data class StaffMemberAttendance(
-    @PropagateNull val id: StaffAttendanceId,
+    @PropagateNull val id: StaffAttendanceRealtimeId,
     val employeeId: EmployeeId,
     val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
@@ -97,7 +96,7 @@ data class ExternalAttendance(
 }
 
 data class Attendance(
-    val id: UUID,
+    val id: StaffAttendanceRealtimeId,
     val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,

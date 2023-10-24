@@ -156,6 +156,8 @@ sealed interface DatabaseTable {
 
     sealed class StaffAttendance : DatabaseTable
 
+    sealed class StaffAttendanceRealtime : DatabaseTable
+
     sealed class StaffAttendanceExternal : DatabaseTable
 
     sealed class StaffAttendancePlan : DatabaseTable
@@ -315,6 +317,8 @@ typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 typealias ServiceNeedOptionVoucherValueId = Id<DatabaseTable.ServiceNeedOptionVoucherValue>
 
 typealias StaffAttendanceId = Id<DatabaseTable.StaffAttendance>
+
+typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 
 typealias StaffAttendanceExternalId = Id<DatabaseTable.StaffAttendanceExternal>
 
