@@ -369,6 +369,9 @@ export default {
       selectedChildren: 'Valitse lapset, jotka ovat poissa',
       selectChildrenInfo:
         'Ilmoita tässä vain koko päivän kestävät poissaolot. Osapäiväiset poissaolot voit ilmoittaa muokkaamalla lapsen läsnäoloaikaa.',
+      lockedAbsencesWarningTitle: 'Poissaolo useammalle päivälle',
+      lockedAbsencesWarningText:
+        'Olet merkitsemässä poissaoloa useammalle päivälle, jonka ilmoittautumisaika on mennyt umpeen. Tämän voi perua vain olemalla yhteydessä henkilökuntaan.',
       dateRange: 'Poissaoloilmoitus päiville',
       absenceType: 'Poissaolon syy',
       absenceTypes: {

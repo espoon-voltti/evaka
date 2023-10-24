@@ -112,6 +112,22 @@ describe('FiniteDateRange', () => {
     })
   })
 
+  describe('complement', () => {
+    it('returns complement', () => {
+      const r = range(10, 20)
+      expect(r.complement(range(1, 5))).toEqual([r])
+      expect(r.complement(range(21, 30))).toEqual([r])
+      expect(r.complement(range(10, 20))).toEqual([])
+      expect(r.complement(range(5, 25))).toEqual([])
+      expect(r.complement(range(10, 15))).toEqual([range(16, 20)])
+      expect(r.complement(range(15, 20))).toEqual([range(10, 14)])
+      expect(r.complement(range(11, 19))).toEqual([
+        range(10, 10),
+        range(20, 20)
+      ])
+    })
+  })
+
   const localDate = (startDay: number) => LocalDate.of(2000, 1, startDay)
   const range = (startDay: number, endDay: number) =>
     new FiniteDateRange(localDate(startDay), localDate(endDay))

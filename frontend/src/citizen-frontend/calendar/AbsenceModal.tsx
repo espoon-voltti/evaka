@@ -27,6 +27,7 @@ import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -119,6 +120,13 @@ export default React.memo(function AbsenceModal({
     i18n
   )
 
+  const absencesWarning =
+    range.isValid() &&
+    range
+      .value()
+      .complement(reservationsResponse.reservableRange)
+      .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
@@ -183,6 +191,16 @@ export default React.memo(function AbsenceModal({
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
+                {absencesWarning && (
+                  <AlertBox
+                    title={
+                      i18n.calendar.absenceModal.lockedAbsencesWarningTitle
+                    }
+                    message={
+                      i18n.calendar.absenceModal.lockedAbsencesWarningText
+                    }
+                  />
+                )}
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
