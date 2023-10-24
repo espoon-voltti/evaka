@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -196,9 +195,8 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childMId =
                     tx.insert(
                         DevPerson(firstName = "Mark", lastName = "Multiple"),
-                        DevPersonType.RAW_ROW
+                        DevPersonType.CHILD
                     )
-                tx.insert(DevChild(id = childMId))
                 tx.insertTestPlacement(
                     childId = childMId,
                     unitId = testData.daycareBId,
@@ -300,9 +298,8 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childPId =
                     tx.insert(
                         DevPerson(firstName = "Peter", lastName = "Placer"),
-                        DevPersonType.RAW_ROW
+                        DevPersonType.CHILD
                     )
-                tx.insert(DevChild(id = childPId))
                 tx.insertTestPlacement(
                     childId = childPId,
                     unitId = testData.daycareBId,
@@ -405,9 +402,8 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childPId =
                     tx.insert(
                         DevPerson(firstName = "Peter", lastName = "Placer"),
-                        DevPersonType.RAW_ROW
+                        DevPersonType.CHILD
                     )
-                tx.insert(DevChild(id = childPId))
 
                 val backupDaycareId =
                     tx.insert(
@@ -575,7 +571,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         firstName = "Aapo",
                         lastName = "Aarnio"
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.CHILD
                 )
             val childBId =
                 tx.insert(
@@ -584,10 +580,8 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         firstName = "Bertil",
                         lastName = "Becker"
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.CHILD
                 )
-            tx.insert(DevChild(id = childAId))
-            tx.insert(DevChild(id = childBId))
             tx.insertTestPlacement(
                 childId = childAId,
                 unitId = daycareAId,

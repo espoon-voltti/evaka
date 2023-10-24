@@ -7,7 +7,6 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -113,8 +112,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testAdult_2, DevPersonType.RAW_ROW)
             children.forEachIndexed { i, it ->
-                tx.insert(it, DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = it.id))
+                tx.insert(it, DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = it.id,

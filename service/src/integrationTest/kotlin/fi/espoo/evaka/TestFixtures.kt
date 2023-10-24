@@ -42,7 +42,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -557,10 +556,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
 
     allAdults.forEach { insert(it, DevPersonType.ADULT) }
 
-    allChildren.forEach {
-        insert(it, DevPersonType.RAW_ROW)
-        insert(DevChild(id = it.id))
-    }
+    allChildren.forEach { insert(it, DevPersonType.CHILD) }
 
     insert(
         FeeThresholds(

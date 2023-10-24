@@ -22,8 +22,6 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -177,7 +175,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `head of family and their child are not cleaned up when child has a placement`() {
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insertChild(testChild_1)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
             tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
         }
@@ -189,8 +187,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `family with two children is not cleaned up when one of the children has a placement`() {
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.insertChild(testChild_1)
-            tx.insertChild(testChild_2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
             tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
@@ -204,8 +202,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            tx.insertChild(testChild_1)
-            tx.insertChild(testChild_2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
@@ -220,8 +218,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testAdult_2, DevPersonType.RAW_ROW)
-            tx.insertChild(testChild_1)
-            tx.insertChild(testChild_2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
             tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
             tx.insertTestParentship(headOfChild = testAdult_2.id, childId = testChild_2.id)
@@ -331,10 +329,5 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         val result = db.transaction { cleanUpInactivePeople(it, queryDate) }
 
         assertEquals(cleanedUpPeople, result)
-    }
-
-    private fun Database.Transaction.insertChild(person: DevPerson) {
-        insert(person, DevPersonType.RAW_ROW)
-        insert(DevChild(id = person.id))
     }
 }

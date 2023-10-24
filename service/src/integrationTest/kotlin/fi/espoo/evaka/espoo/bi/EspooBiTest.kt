@@ -59,7 +59,6 @@ import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
@@ -436,7 +435,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         insert(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
 
     private fun Database.Transaction.insertTestChild(): ChildId =
-        insert(DevPerson(), DevPersonType.RAW_ROW).also { insert(DevChild(it)) }
+        insert(DevPerson(), DevPersonType.CHILD)
 
     private fun Database.Transaction.insertTestPlacement(daycare: DaycareId? = null): PlacementId =
         insert(DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare()))

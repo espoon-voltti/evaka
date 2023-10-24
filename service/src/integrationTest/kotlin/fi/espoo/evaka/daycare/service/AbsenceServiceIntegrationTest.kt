@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -996,9 +995,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)),
-                DevPersonType.RAW_ROW
+                DevPersonType.CHILD
             )
-            it.insert(DevChild(childId2))
         }
 
         val absenceDate = placementEnd

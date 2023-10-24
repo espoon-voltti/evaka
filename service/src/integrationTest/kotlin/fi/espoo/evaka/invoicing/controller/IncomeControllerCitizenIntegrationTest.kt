@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -72,10 +71,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.STRONG)
             val areaId = tx.insert(DevCareArea())
             val daycareId = tx.insert(DevDaycare(areaId = areaId))
-            childId =
-                tx.insert(testChild, DevPersonType.RAW_ROW).also {
-                    tx.insert(DevChild(testChild.id))
-                }
+            childId = tx.insert(testChild, DevPersonType.CHILD)
             tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)

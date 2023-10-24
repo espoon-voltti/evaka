@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -84,7 +83,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
-            child = tx.insert(DevPerson(), DevPersonType.RAW_ROW).also { tx.insert(DevChild(it)) }
+            child = tx.insert(DevPerson(), DevPersonType.CHILD)
             tx.insert(DevGuardian(guardianId = guardian, childId = child))
             tx.insert(
                 DevPlacement(

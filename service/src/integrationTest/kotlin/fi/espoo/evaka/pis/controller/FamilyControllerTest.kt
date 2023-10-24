@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevFridgeChild
@@ -49,7 +48,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
                     roles = setOf(UserRole.ADMIN)
                 )
-            child = tx.insert(DevPerson(), DevPersonType.RAW_ROW).also { tx.insert(DevChild(it)) }
+            child = tx.insert(DevPerson(), DevPersonType.CHILD)
         }
     }
 

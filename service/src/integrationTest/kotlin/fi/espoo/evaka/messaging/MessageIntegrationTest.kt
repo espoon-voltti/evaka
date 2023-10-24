@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -105,9 +104,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
         tx.insert(
             DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName),
-            DevPersonType.RAW_ROW
+            DevPersonType.CHILD
         )
-        tx.insert(DevChild(id = child.id))
 
         val placementId =
             tx.insert(

@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -34,10 +33,7 @@ class ChildAccessControlTest : AccessControlTest() {
 
     @BeforeEach
     fun beforeEach() {
-        childId =
-            db.transaction { tx ->
-                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also { tx.insert(DevChild(id = it)) }
-            }
+        childId = db.transaction { tx -> tx.insert(DevPerson(), DevPersonType.CHILD) }
     }
 
     @Test

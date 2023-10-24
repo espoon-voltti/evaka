@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -45,8 +44,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
             tx.insert(admin)
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId, openingDate = mockToday.today()))
-            val preschoolChildId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = preschoolChildId))
+            val preschoolChildId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val preschoolPlacementId =
                 tx.insertTestPlacement(
                     childId = preschoolChildId,
@@ -69,9 +67,8 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
             val daycareU3yChildId =
                 tx.insert(
                     DevPerson(dateOfBirth = mockToday.today().minusYears(2)),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.CHILD
                 )
-            tx.insert(DevChild(id = daycareU3yChildId))
             val daycarePlacementId =
                 tx.insertTestPlacement(
                     childId = daycareU3yChildId,

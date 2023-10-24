@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -517,10 +516,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
-                childId
+                tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
             }
         val documentId =
             vasuController.createDocument(
@@ -553,8 +549,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     role = UserRole.UNIT_SUPERVISOR
                 )
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         unitId = unitId,
@@ -626,10 +621,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
-                childId
+                tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
             }
         val documentId =
             vasuController.createDocument(
@@ -660,8 +652,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     role = UserRole.UNIT_SUPERVISOR
                 )
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         unitId = unitId,

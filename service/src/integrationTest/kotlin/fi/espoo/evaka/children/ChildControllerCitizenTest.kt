@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -43,8 +42,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,
@@ -100,8 +98,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,
@@ -141,8 +138,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,
@@ -182,8 +178,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,
@@ -223,8 +218,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,
@@ -257,8 +251,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val areaId = tx.insert(DevCareArea())
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
                 tx.insertTestPlacement(
                     childId = childId,

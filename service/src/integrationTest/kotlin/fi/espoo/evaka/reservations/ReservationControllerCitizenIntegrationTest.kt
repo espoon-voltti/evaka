@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -95,8 +94,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(testAdult_1, DevPersonType.ADULT)
 
             listOf(testChild_1, testChild_2).forEach { child ->
-                tx.insert(child, DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = child.id))
+                tx.insert(child, DevPersonType.CHILD)
             }
 
             tx.insertTestPlacement(
@@ -133,8 +131,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertTestHoliday(wednesday)
 
-            tx.insert(testChild_3, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_3.id))
+            tx.insert(testChild_3, DevPersonType.CHILD)
 
             // Fixed schedule (PRESCHOOL)
             tx.insertTestPlacement(
@@ -299,8 +296,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insertTestHoliday(tuesday)
 
             listOf(testChild_3, testChild_4).forEach { child ->
-                tx.insert(child, DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = child.id))
+                tx.insert(child, DevPersonType.CHILD)
             }
 
             // Normal shift care

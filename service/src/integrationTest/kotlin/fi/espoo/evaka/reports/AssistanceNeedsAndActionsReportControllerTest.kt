@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -73,8 +72,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
 
         val child1Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 1"), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 1"), DevPersonType.CHILD)
                 val placementId =
                     tx.insert(
                         DevPlacement(
@@ -111,8 +109,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child2Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 2"), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 2"), DevPersonType.CHILD)
                 val placementId =
                     tx.insert(
                         DevPlacement(
@@ -149,8 +146,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child3Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 3"), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 3"), DevPersonType.CHILD)
                 val placementId =
                     tx.insert(
                         DevPlacement(

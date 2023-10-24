@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -80,8 +79,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare.copy(language = Language.sv))
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(testChild_1.id))
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(testAdult_1.id, testChild_1.id))
             tx.insertTestPlacement(

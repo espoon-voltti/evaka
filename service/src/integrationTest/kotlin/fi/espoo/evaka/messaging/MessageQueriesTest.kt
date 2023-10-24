@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -425,9 +424,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val childId =
                 tx.insert(
                     DevPerson(firstName = "Firstname", lastName = "Test Child"),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.CHILD
                 )
-            tx.insert(DevChild(id = childId))
             tx.insert(
                 DevParentship(
                     childId = childId,
@@ -498,9 +496,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             // and person1 has a child who is placed into the group
             tx.insert(
                 DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"),
-                DevPersonType.RAW_ROW
+                DevPersonType.CHILD
             )
-            tx.insert(DevChild(id = testChild_1.id))
             tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
@@ -571,10 +568,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     name = group.name,
                     type = AccountType.GROUP
                 )
-            child1Id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(DevChild(child1Id))
-            child2Id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.insert(DevChild(child2Id))
+            child1Id = tx.insert(DevPerson(), DevPersonType.CHILD)
+            child2Id = tx.insert(DevPerson(), DevPersonType.CHILD)
             listOf(child1Id, child2Id).forEach { childId ->
                 listOf(person1.id, person2.id).forEach { guardianId ->
                     tx.insert(DevGuardian(guardianId = guardianId, childId = childId))

@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -73,8 +72,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             daycareId = it.insert(DevDaycare(areaId = areaId))
             groupId = it.insert(DevDaycareGroup(daycareId = daycareId))
             guardianId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
-            childId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
-            it.insert(DevChild(id = childId))
+            childId = it.insert(DevPerson(), DevPersonType.CHILD)
             fridgeParentId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
             it.insert(
                 DevFridgeChild(

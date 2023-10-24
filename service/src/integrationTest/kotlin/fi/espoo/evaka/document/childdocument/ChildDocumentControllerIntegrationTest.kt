@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -153,8 +152,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(testChild_1.id))
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -509,8 +507,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             db.transaction { tx ->
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(childId))
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,
@@ -537,8 +534,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             db.transaction { tx ->
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(childId))
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,
@@ -571,8 +567,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         )
                     )
                 val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(childId))
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,

@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -44,8 +43,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
             }
         val childId =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId,
@@ -105,8 +103,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val unitId2 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
         val childId =
             db.transaction { tx ->
-                val childId1 = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId1))
+                val childId1 = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId1,
@@ -125,8 +122,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = true
                     )
                 )
-                val childId2 = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                tx.insert(DevChild(id = childId2))
+                val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insert(
                     DevPlacement(
                         childId = childId2,

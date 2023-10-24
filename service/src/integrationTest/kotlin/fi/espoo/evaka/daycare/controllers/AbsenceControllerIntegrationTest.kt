@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAbsence
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -59,8 +58,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insert(testDecisionMaker_1)
             tx.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
 
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_1.id))
+            tx.insert(testChild_1, DevPersonType.CHILD)
 
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -70,8 +68,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
 
-            tx.insert(testChild_2, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_2.id))
+            tx.insert(testChild_2, DevPersonType.CHILD)
 
             tx.insertTestPlacement(
                 childId = testChild_2.id,

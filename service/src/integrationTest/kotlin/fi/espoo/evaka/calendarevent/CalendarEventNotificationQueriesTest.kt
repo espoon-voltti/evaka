@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -59,8 +58,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)
 
-            tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_1.id))
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -71,8 +69,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
 
-            tx.insert(testChild_2, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_2.id))
+            tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestPlacement(
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
@@ -91,8 +88,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_2, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id))
 
-            tx.insert(testChild_3, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = testChild_3.id))
+            tx.insert(testChild_3, DevPersonType.CHILD)
             tx.insertTestPlacement(
                     childId = testChild_3.id,
                     unitId = testDaycare.id,

@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -87,19 +86,15 @@ class FixtureBuilder(
             return fixtureBuilder
         }
 
-        private fun doInsert(): ChildId {
-            val childId =
-                person?.id
-                    ?: tx.insert(
-                        DevPerson(
-                            dateOfBirth = dateOfBirth
-                                    ?: throw IllegalStateException("date of birth not set")
-                        ),
-                        DevPersonType.RAW_ROW
-                    )
-            if (person == null) tx.insert(DevChild(childId))
-            return childId
-        }
+        private fun doInsert(): ChildId =
+            person?.id
+                ?: tx.insert(
+                    DevPerson(
+                        dateOfBirth = dateOfBirth
+                                ?: throw IllegalStateException("date of birth not set")
+                    ),
+                    DevPersonType.CHILD
+                )
     }
 
     @TestFixture
