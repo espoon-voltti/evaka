@@ -1524,15 +1524,10 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId) {
     this.createUpdate<Any> {
             sql(
                 """
-            DELETE FROM message_thread
-            WHERE id IN (
-                SELECT mt.id
-                FROM message_thread mt
-                JOIN message m on mt.id = m.thread_id
-                WHERE m.content_id = ${bind(contentId)}
-                FOR UPDATE 
-            )
-        """
+                DELETE FROM message_thread mt
+                USING message m
+                WHERE mt.id = m.thread_id AND m.content_id = ${bind(contentId)}
+            """
             )
         }
         .execute()
