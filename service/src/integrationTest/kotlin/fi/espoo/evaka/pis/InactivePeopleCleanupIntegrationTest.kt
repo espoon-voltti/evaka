@@ -29,16 +29,12 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertIncomeStatement
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
@@ -60,10 +56,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.insertTestCareArea(testArea)
-            it.insertTestDaycare(
-                DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id)
-            )
+            it.insert(testArea)
+            it.insert(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id))
         }
     }
 
@@ -261,7 +255,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
             )
             val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
@@ -300,7 +294,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
             )
             val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
@@ -341,7 +335,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     }
 
     private fun Database.Transaction.insertPerson(person: DevPerson) =
-        insertTestPerson(
+        insert(
             DevPerson(
                 id = person.id,
                 dateOfBirth = person.dateOfBirth,
@@ -358,6 +352,6 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
     private fun Database.Transaction.insertChild(person: DevPerson) {
         insertPerson(person)
-        insertTestChild(DevChild(id = person.id))
+        insert(DevChild(id = person.id))
     }
 }

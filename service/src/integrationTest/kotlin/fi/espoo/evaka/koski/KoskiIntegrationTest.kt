@@ -24,11 +24,8 @@ import fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestOtherAssistanceMeasure
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestPreschoolAssistance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
@@ -370,7 +367,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         db.transaction { tx ->
             listOf(intensifiedSupport, specialSupport, level1, level2).forEach {
-                tx.insertTestPreschoolAssistance(
+                tx.insert(
                     DevPreschoolAssistance(
                         modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
@@ -417,7 +414,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         db.transaction { tx ->
             otherAssistanceMeasures.forEach {
-                tx.insertTestOtherAssistanceMeasure(
+                tx.insert(
                     DevOtherAssistanceMeasure(
                         modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
@@ -600,9 +597,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a daycare with purchased provider type is marked as such in study rights`() {
         val daycareId =
             db.transaction {
-                it.insertTestDaycare(
-                    DevDaycare(areaId = testArea.id, providerType = ProviderType.PURCHASED)
-                )
+                it.insert(DevDaycare(areaId = testArea.id, providerType = ProviderType.PURCHASED))
             }
         insertPlacement(daycareId = daycareId)
 
@@ -620,9 +615,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a daycare with private provider type is marked as purchased in study rights`() {
         val daycareId =
             db.transaction {
-                it.insertTestDaycare(
-                    DevDaycare(areaId = testArea.id, providerType = ProviderType.PRIVATE)
-                )
+                it.insert(DevDaycare(areaId = testArea.id, providerType = ProviderType.PRIVATE))
             }
         insertPlacement(daycareId = daycareId)
 
@@ -957,7 +950,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `moving from last preparatory placement to preschool qualifies the preparatory study right`() {
         val daycare3 =
             db.transaction {
-                it.insertTestDaycare(
+                it.insert(
                     DevDaycare(
                         areaId = testArea.id,
                         uploadToKoski = true,
@@ -967,7 +960,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val daycare4 =
             db.transaction {
-                it.insertTestDaycare(
+                it.insert(
                     DevDaycare(
                         areaId = testArea.id,
                         uploadToKoski = true,
@@ -1013,7 +1006,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         type: PlacementType = PlacementType.PRESCHOOL
     ): PlacementId =
         db.transaction {
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = daycareId,

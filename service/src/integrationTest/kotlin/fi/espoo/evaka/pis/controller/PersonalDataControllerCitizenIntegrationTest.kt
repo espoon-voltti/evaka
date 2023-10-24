@@ -9,7 +9,7 @@ import fi.espoo.evaka.pis.EmailNotificationSettings
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
@@ -21,7 +21,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `all notifications are enabled by default`() {
-        db.transaction { tx -> tx.insertTestPerson(testAdult_1) }
+        db.transaction { tx -> tx.insert(testAdult_1) }
 
         val settings =
             personalDataController.getNotificationSettings(
@@ -46,7 +46,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
 
     @Test
     fun `notification settings can be updated`() {
-        db.transaction { tx -> tx.insertTestPerson(testAdult_1) }
+        db.transaction { tx -> tx.insert(testAdult_1) }
 
         personalDataController.updateNotificationSettings(
             dbInstance(),

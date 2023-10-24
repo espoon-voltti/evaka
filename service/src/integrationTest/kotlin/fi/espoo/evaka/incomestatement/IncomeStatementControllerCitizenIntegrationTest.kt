@@ -18,8 +18,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -734,9 +733,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         val employeeId = EmployeeId(UUID.randomUUID())
         val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
         db.transaction {
-            it.insertTestEmployee(
-                DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN))
-            )
+            it.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
         }
 
         createIncomeStatement(
@@ -810,7 +807,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
 
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     startDate = LocalDate.now(),
@@ -829,7 +826,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
 
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     startDate = LocalDate.now().minusWeeks(1),

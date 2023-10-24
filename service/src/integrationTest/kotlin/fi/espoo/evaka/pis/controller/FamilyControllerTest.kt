@@ -18,13 +18,8 @@ import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevFridgePartnership
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertFosterParent
-import fi.espoo.evaka.shared.dev.insertFridgeChild
-import fi.espoo.evaka.shared.dev.insertFridgePartnership
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -51,10 +46,10 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             user =
                 AuthenticatedUser.Employee(
-                    tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
                     roles = setOf(UserRole.ADMIN)
                 )
-            child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
+            child = tx.insert(DevPerson()).also { tx.insert(DevChild(it)) }
         }
     }
 
@@ -67,14 +62,11 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         lateinit var householdAdult: PersonId
 
         db.transaction { tx ->
-            guardian =
-                tx.insertTestPerson(DevPerson()).also {
-                    tx.insertTestGuardian(DevGuardian(it, child))
-                }
+            guardian = tx.insert(DevPerson()).also { tx.insertTestGuardian(DevGuardian(it, child)) }
             guardianAndHouseholdHead =
-                tx.insertTestPerson(DevPerson()).also {
+                tx.insert(DevPerson()).also {
                     tx.insertTestGuardian(DevGuardian(it, child))
-                    tx.insertFridgeChild(
+                    tx.insert(
                         DevFridgeChild(
                             childId = child,
                             headOfChild = it,
@@ -84,8 +76,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             fosterParent =
-                tx.insertTestPerson(DevPerson()).also {
-                    tx.insertFosterParent(
+                tx.insert(DevPerson()).also {
+                    tx.insert(
                         DevFosterParent(
                             childId = child,
                             parentId = it,
@@ -94,8 +86,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             householdSibling =
-                tx.insertTestPerson(DevPerson()).also {
-                    tx.insertFridgeChild(
+                tx.insert(DevPerson()).also {
+                    tx.insert(
                         DevFridgeChild(
                             childId = it,
                             headOfChild = guardianAndHouseholdHead,
@@ -105,8 +97,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             householdAdult =
-                tx.insertTestPerson(DevPerson()).also {
-                    tx.insertFridgePartnership(
+                tx.insert(DevPerson()).also {
+                    tx.insert(
                         DevFridgePartnership(
                             first = guardianAndHouseholdHead,
                             second = it,
@@ -134,15 +126,15 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         db.transaction { tx ->
             fosterParentAndHouseholdHead =
-                tx.insertTestPerson(DevPerson()).also {
-                    tx.insertFosterParent(
+                tx.insert(DevPerson()).also {
+                    tx.insert(
                         DevFosterParent(
                             childId = child,
                             parentId = it,
                             validDuring = currentlyValid.asDateRange()
                         )
                     )
-                    tx.insertFridgeChild(
+                    tx.insert(
                         DevFridgeChild(
                             childId = child,
                             headOfChild = it,

@@ -11,7 +11,7 @@ import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -30,9 +30,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart)
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart))
             tx.execute(
                 "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (?, ?, NULL, 3)",
                 groupId,

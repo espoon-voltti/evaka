@@ -21,8 +21,8 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackupCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -66,13 +66,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 listOf(testDaycare.id),
                 listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE)
             )
-            groupId =
-                tx.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = testDaycare.id, name = groupName)
-                )
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2)
-            )
+            groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
+            tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child
                 ->
                 val daycarePlacementId = PlacementId(UUID.randomUUID())
@@ -162,7 +157,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `unit utilization is same in both unit info and stats when backup care is involved`() {
         db.transaction { tx ->
             val child = testChild_7
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = testDaycare2.id,

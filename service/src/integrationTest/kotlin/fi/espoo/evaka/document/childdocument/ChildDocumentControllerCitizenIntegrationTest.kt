@@ -21,14 +21,8 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestChildDocument
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDocumentTemplate
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -83,12 +77,12 @@ class ChildDocumentControllerCitizenIntegrationTest :
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.insertTestEmployee(testDecisionMaker_1)
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(testChild_1.id))
-            tx.insertTestPerson(testAdult_1)
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare.copy(language = Language.sv))
+            tx.insert(testChild_1)
+            tx.insert(DevChild(testChild_1.id))
+            tx.insert(testAdult_1)
             tx.insertTestGuardian(DevGuardian(testAdult_1.id, testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -96,7 +90,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 startDate = clock.today(),
                 endDate = clock.today().plusDays(5)
             )
-            tx.insertTestDocumentTemplate(
+            tx.insert(
                 DevDocumentTemplate(
                     id = templateId,
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
@@ -105,7 +99,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     content = templateContent
                 )
             )
-            tx.insertTestChildDocument(
+            tx.insert(
                 DevChildDocument(
                     id = documentId,
                     status = DocumentStatus.DRAFT,

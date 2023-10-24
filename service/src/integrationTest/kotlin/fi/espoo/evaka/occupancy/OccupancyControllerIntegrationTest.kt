@@ -16,10 +16,10 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -65,7 +65,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `No previous placements`() {
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
             tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
         }
         val applicationId = createApplication(testChild_1.id)
@@ -96,7 +96,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Has previous placements`() {
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
             tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
 
             // Under 3 years (coefficient 1.75)
@@ -145,7 +145,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool speculation`() {
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
             tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
 
             // Under 3 years (coefficient 1.75)
@@ -199,7 +199,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool and connected daycare speculation`() {
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
             tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
 
             // Under 3 years (coefficient 1.75)
@@ -256,7 +256,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `Preschool and connected daycare speculation, child already has a placement`() {
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
             tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
 
             // Under 3 years (coefficient 1.75)

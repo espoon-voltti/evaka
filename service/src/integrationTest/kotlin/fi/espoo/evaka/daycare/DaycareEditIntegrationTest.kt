@@ -12,8 +12,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -102,8 +101,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name)
             )
         }

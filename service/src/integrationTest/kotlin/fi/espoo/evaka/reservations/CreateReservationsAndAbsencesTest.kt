@@ -20,10 +20,10 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -412,7 +412,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                 category = AbsenceCategory.BILLABLE,
                 modifiedBy = EvakaUserId(testAdult_1.id.raw)
             )
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = tuesday,
@@ -1068,7 +1068,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = holidayPeriodStart,
@@ -1200,7 +1200,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             )
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
-            it.insertTestReservation(
+            it.insert(
                 // NoTimes reservation
                 DevReservation(
                     childId = testChild_1.id,

@@ -28,11 +28,8 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -76,7 +73,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
 
             val groupId = GroupId(UUID.randomUUID())
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = groupId,
                     daycareId = testDaycare.id,
@@ -85,7 +82,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             )
 
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
@@ -100,7 +97,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 endDate = placementEnd
             )
 
-            testPersons.forEach { tx.insertTestPerson(it) }
+            testPersons.forEach { tx.insert(it) }
             tx.insertGuardian(testGuardianFi.id, testChild_1.id)
             tx.insertGuardian(testGuardianSv.id, testChild_1.id)
             tx.createParentship(
@@ -110,7 +107,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 LocalDate.now().plusYears(1)
             )
 
-            tx.insertTestEmployee(DevEmployee(id = employeeId))
+            tx.insert(DevEmployee(id = employeeId))
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }

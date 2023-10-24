@@ -11,11 +11,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -43,13 +39,13 @@ class ChildDiscussionIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     internal fun setUp() {
         db.transaction { tx ->
             employeeUser =
-                tx.insertTestEmployee(DevEmployee()).let {
+                tx.insert(DevEmployee()).let {
                     AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
                 }
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(testChild_1.id))
+            tx.insert(testArea)
+            tx.insert(testDaycare.copy(language = Language.sv))
+            tx.insert(testChild_1)
+            tx.insert(DevChild(testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,

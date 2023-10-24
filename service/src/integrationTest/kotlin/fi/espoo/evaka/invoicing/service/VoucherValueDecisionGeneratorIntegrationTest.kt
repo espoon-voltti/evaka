@@ -34,14 +34,11 @@ import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
-import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
@@ -479,8 +476,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { tx ->
             listOf(twin1, twin2).forEach {
-                tx.insertTestPerson(it)
-                tx.insertTestChild(DevChild(id = it.id))
+                tx.insert(it)
+                tx.insert(DevChild(id = it.id))
             }
         }
 
@@ -514,9 +511,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction {
-            it.insertTestAssistanceFactor(
-                DevAssistanceFactor(childId = testChild_2.id, capacityFactor = 3.0)
-            )
+            it.insert(DevAssistanceFactor(childId = testChild_2.id, capacityFactor = 3.0))
         }
 
         db.transaction {
@@ -1136,7 +1131,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 )
                 .bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
-            tx.insertTestFeeThresholds(
+            tx.insert(
                 FeeThresholds(
                     validDuring = subPeriod2.copy(end = null),
                     minIncomeThreshold2 = 213600,

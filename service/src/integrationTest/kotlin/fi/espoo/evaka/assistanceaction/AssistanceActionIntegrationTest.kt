@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -468,7 +468,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         childId: ChildId = testChild_1.id
     ): PlacementId {
         return db.transaction {
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = childId,
                     startDate = startDate,

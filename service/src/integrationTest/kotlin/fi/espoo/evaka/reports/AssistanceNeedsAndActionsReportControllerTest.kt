@@ -19,16 +19,8 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareAssistance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -50,7 +42,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
     fun setup() {
         admin =
             db.transaction { tx ->
-                val employeeId = tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN)))
+                val employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN)))
                 AuthenticatedUser.Employee(employeeId, setOf(UserRole.ADMIN))
             }
         db.transaction { tx -> tx.insertAssistanceActionOptions() }
@@ -63,34 +55,28 @@ class AssistanceNeedsAndActionsReportControllerTest :
 
         val unitId =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                tx.insertTestDaycare(DevDaycare(areaId = areaId))
+                val areaId = tx.insert(DevCareArea())
+                tx.insert(DevDaycare(areaId = areaId))
             }
         val group1Id =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = unitId, name = "Group 1", startDate = date)
-                )
+                tx.insert(DevDaycareGroup(daycareId = unitId, name = "Group 1", startDate = date))
             }
         val group2Id =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = unitId, name = "Group 2", startDate = date)
-                )
+                tx.insert(DevDaycareGroup(daycareId = unitId, name = "Group 2", startDate = date))
             }
         val group3Id =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = unitId, name = "Group 3", startDate = date)
-                )
+                tx.insert(DevDaycareGroup(daycareId = unitId, name = "Group 3", startDate = date))
             }
 
         val child1Id =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson(firstName = "Test 1"))
-                tx.insertTestChild(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 1"))
+                tx.insert(DevChild(id = childId))
                 val placementId =
-                    tx.insertTestPlacement(
+                    tx.insert(
                         DevPlacement(
                             childId = childId,
                             unitId = unitId,
@@ -98,7 +84,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             endDate = date
                         )
                     )
-                tx.insertTestDaycareGroupPlacement(
+                tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placementId,
                         daycareGroupId = group1Id,
@@ -106,7 +92,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         endDate = date
                     )
                 )
-                tx.insertTestDaycareAssistance(
+                tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),
@@ -125,10 +111,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child2Id =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson(firstName = "Test 2"))
-                tx.insertTestChild(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 2"))
+                tx.insert(DevChild(id = childId))
                 val placementId =
-                    tx.insertTestPlacement(
+                    tx.insert(
                         DevPlacement(
                             childId = childId,
                             unitId = unitId,
@@ -136,7 +122,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             endDate = date
                         )
                     )
-                tx.insertTestDaycareGroupPlacement(
+                tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placementId,
                         daycareGroupId = group1Id,
@@ -144,7 +130,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         endDate = date
                     )
                 )
-                tx.insertTestDaycareAssistance(
+                tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),
@@ -163,10 +149,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child3Id =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson(firstName = "Test 3"))
-                tx.insertTestChild(DevChild(id = childId))
+                val childId = tx.insert(DevPerson(firstName = "Test 3"))
+                tx.insert(DevChild(id = childId))
                 val placementId =
-                    tx.insertTestPlacement(
+                    tx.insert(
                         DevPlacement(
                             childId = childId,
                             unitId = unitId,
@@ -174,7 +160,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             endDate = date
                         )
                     )
-                tx.insertTestDaycareGroupPlacement(
+                tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placementId,
                         daycareGroupId = group2Id,
@@ -182,7 +168,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         endDate = date
                     )
                 )
-                tx.insertTestDaycareAssistance(
+                tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),

@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -70,9 +70,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun testUpdate() {
         val groupId =
-            db.transaction { tx ->
-                tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
-            }
+            db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
         val period = FiniteDateRange(backupCareStart, backupCareEnd)
         val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = backupCareEnd.plusDays(4))
@@ -120,9 +118,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val groupName = "Test Group"
         val groupId =
             db.transaction {
-                it.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = testDaycare.id, name = groupName)
-                )
+                it.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             }
         val id = createBackupCareAndAssert(groupId = groupId)
         val backupCares =
@@ -151,9 +147,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val serviceNeedPeriod = FiniteDateRange(period.start.plusDays(1), period.end)
         val groupId =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = testDaycare.id, name = groupName)
-                )
+                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             }
         db.transaction { tx ->
             tx.insertTestServiceNeed(
@@ -221,9 +215,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun `backup care must be during a placement when modifying range`() {
         val groupId =
-            db.transaction { tx ->
-                tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
-            }
+            db.transaction { tx -> tx.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
         val id = createBackupCareAndAssert(groupId = groupId)
 
         val newPeriod = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))

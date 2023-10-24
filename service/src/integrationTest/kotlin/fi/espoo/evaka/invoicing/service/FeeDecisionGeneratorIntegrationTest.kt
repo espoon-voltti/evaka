@@ -54,13 +54,11 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
@@ -1125,8 +1123,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             listOf(twin1, twin2).forEach {
-                tx.insertTestPerson(it)
-                tx.insertTestChild(DevChild(id = it.id))
+                tx.insert(it)
+                tx.insert(DevChild(id = it.id))
             }
         }
 
@@ -1211,8 +1209,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val clock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(placementPeriod.start, LocalTime.of(0, 0)))
         val birthday = LocalDate.of(2001, 7, 1)
-        val childTurning18Id =
-            db.transaction { it.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
+        val childTurning18Id = db.transaction { it.insert(DevPerson(dateOfBirth = birthday)) }
 
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -1686,7 +1683,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
                 .bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
-            tx.insertTestFeeThresholds(
+            tx.insert(
                 FeeThresholds(
                     validDuring = subPeriod2.copy(end = null),
                     minIncomeThreshold2 = 213600,

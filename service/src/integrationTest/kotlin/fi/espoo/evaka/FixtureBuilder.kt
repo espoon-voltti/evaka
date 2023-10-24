@@ -27,15 +27,12 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
-import fi.espoo.evaka.shared.dev.insertEmployeePin
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -93,13 +90,13 @@ class FixtureBuilder(
         private fun doInsert(): ChildId {
             val childId =
                 person?.id
-                    ?: tx.insertTestPerson(
+                    ?: tx.insert(
                         DevPerson(
                             dateOfBirth = dateOfBirth
                                     ?: throw IllegalStateException("date of birth not set")
                         )
                     )
-            if (person == null) tx.insertTestChild(DevChild(childId))
+            if (person == null) tx.insert(DevChild(childId))
             return childId
         }
     }
@@ -187,7 +184,7 @@ class FixtureBuilder(
             this.apply { this.preschoolDaycareDates = range }
 
         fun save(): ChildFixture {
-            val applicationGuardianId = tx.insertTestPerson(DevPerson())
+            val applicationGuardianId = tx.insert(DevPerson())
             val applicationId =
                 tx.insertTestApplication(
                     guardianId = applicationGuardianId,
@@ -485,13 +482,13 @@ class FixtureBuilder(
                     lastName = lastName,
                     lastLogin = lastLogin
                 )
-            val employeeId = tx.insertTestEmployee(employee)
+            val employeeId = tx.insert(employee)
             unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId, role) }
             groups.forEach { (unitId, groupId) ->
                 tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId))
             }
             pinCode.also {
-                if (it != null) tx.insertEmployeePin(DevEmployeePin(userId = employeeId, pin = it))
+                if (it != null) tx.insert(DevEmployeePin(userId = employeeId, pin = it))
             }
             return employeeId
         }

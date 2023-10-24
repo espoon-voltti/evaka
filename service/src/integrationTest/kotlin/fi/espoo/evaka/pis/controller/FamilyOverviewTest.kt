@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
@@ -162,7 +162,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusYears(1)
             )
-            it.insertTestEmployee(unitSupervisor)
+            it.insert(unitSupervisor)
             it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)
         }
         return AuthenticatedUser.Employee(unitSupervisor.id, setOf())

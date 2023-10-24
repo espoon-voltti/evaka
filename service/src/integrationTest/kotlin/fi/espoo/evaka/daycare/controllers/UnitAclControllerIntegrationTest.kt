@@ -21,10 +21,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -68,20 +65,20 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             admin =
                 AuthenticatedUser.Employee(
-                    tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
                     roles = setOf(UserRole.ADMIN)
                 )
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name)
             )
-            tx.insertTestDaycare(
+            tx.insert(
                 DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name)
             )
-            tx.insertTestDaycareGroup(testDaycareGroup)
+            tx.insert(testDaycareGroup)
 
             employee.also {
-                tx.insertTestEmployee(
+                tx.insert(
                     DevEmployee(
                         id = it.id,
                         firstName = it.firstName,

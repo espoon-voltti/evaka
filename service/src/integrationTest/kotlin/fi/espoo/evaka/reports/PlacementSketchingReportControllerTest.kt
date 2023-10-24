@@ -18,11 +18,9 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -84,10 +82,10 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
         val serviceNeedOption = null
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            val guardianId = tx.insertTestPerson(DevPerson())
-            val childId = tx.insertTestPerson(DevPerson())
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val guardianId = tx.insert(DevPerson())
+            val childId = tx.insert(DevPerson())
             val applicationId =
                 tx.insertTestApplication(
                     type = ApplicationType.PRESCHOOL,
@@ -130,10 +128,10 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
         val serviceNeedOption =
             ServiceNeedOption(ServiceNeedOptionId(UUID.randomUUID()), "", "", "", null)
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            val guardianId = tx.insertTestPerson(DevPerson())
-            val childId = tx.insertTestPerson(DevPerson())
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val guardianId = tx.insert(DevPerson())
+            val childId = tx.insert(DevPerson())
             val applicationId =
                 tx.insertTestApplication(
                     type = ApplicationType.PRESCHOOL,

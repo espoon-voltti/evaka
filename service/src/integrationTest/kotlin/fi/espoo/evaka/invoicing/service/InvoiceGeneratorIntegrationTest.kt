@@ -41,11 +41,9 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -4438,7 +4436,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         insertDecisionsAndPlacements(decisions)
         db.transaction {
-            it.insertTestInvoiceCorrection(
+            it.insert(
                 DevInvoiceCorrection(
                     headOfFamilyId = testAdult_1.id,
                     childId = testChild_1.id,
@@ -5980,7 +5978,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2023, 8, 21), LocalDate.of(2023, 8, 25)).dates() +
                     FiniteDateRange(LocalDate.of(2023, 8, 28), LocalDate.of(2023, 8, 29)).dates()
             dates.forEach { date ->
-                tx.insertTestAbsence(
+                tx.insert(
                     DevAbsence(
                         childId = testChild_1.id,
                         date = date,
@@ -6013,7 +6011,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             PlacementType.PRESCHOOL_CLUB
         )
         db.transaction { tx ->
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = LocalDate.of(2023, 8, 30),
@@ -6159,7 +6157,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2023, 9, 18), LocalDate.of(2023, 9, 22)).dates() +
                     FiniteDateRange(LocalDate.of(2023, 9, 25), LocalDate.of(2023, 9, 26)).dates()
             dates.forEach { date ->
-                tx.insertTestAbsence(
+                tx.insert(
                     DevAbsence(
                         childId = testChild_1.id,
                         date = date,
@@ -6192,7 +6190,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             PlacementType.PRESCHOOL_CLUB
         )
         db.transaction { tx ->
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = LocalDate.of(2023, 9, 20),
@@ -6481,10 +6479,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
             val placementId = db.transaction(insertPlacement(child.id, period))
-            val groupId =
-                db.transaction {
-                    it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
-                }
+            val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
             db.transaction { tx ->
                 tx.insertTestDaycareGroupPlacement(
                     daycarePlacementId = placementId,

@@ -21,15 +21,10 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -79,11 +74,11 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardian = tx.insertTestPerson(DevPerson(email = guardianEmail))
+            guardian = tx.insert(DevPerson(email = guardianEmail))
             tx.upsertCitizenUser(guardian)
-            val areaId = tx.insertTestCareArea(DevCareArea())
+            val areaId = tx.insert(DevCareArea())
             val daycareId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = areaId,
                         operationTimes = operationTimes,
@@ -91,9 +86,9 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
-            child = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(it)) }
+            child = tx.insert(DevPerson()).also { tx.insert(DevChild(it)) }
             tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = child,
                     unitId = daycareId,
@@ -170,7 +165,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         startTime: LocalTime? = LocalTime.of(8, 0),
         endTime: LocalTime? = LocalTime.of(16, 0)
     ) =
-        insertTestReservation(
+        insert(
             DevReservation(
                 childId = child,
                 date = date,

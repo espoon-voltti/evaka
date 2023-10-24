@@ -8,7 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -21,8 +21,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            val employeeId =
-                tx.insertTestEmployee(DevEmployee(firstName = "Firstname", lastName = "Employee"))
+            val employeeId = tx.insert(DevEmployee(firstName = "Firstname", lastName = "Employee"))
             tx.createUpdate(
                     "INSERT INTO message_account (id, employee_id, type) VALUES (:id, :employeeId, 'PERSONAL')"
                 )

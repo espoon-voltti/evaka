@@ -33,17 +33,10 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertEvakaUser
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -112,13 +105,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var serviceWorkerAccount: MessageAccountId
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
-        tx.insertTestPerson(
-            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName)
-        )
-        tx.insertTestChild(DevChild(id = child.id))
+        tx.insert(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
+        tx.insert(DevChild(id = child.id))
 
         val placementId =
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = testDaycare.id,
@@ -137,8 +128,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testDaycare.id,
@@ -146,7 +137,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
-            tx.insertTestDaycare(
+            tx.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testDaycare2.id,
@@ -156,7 +147,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             fun insertGroup(id: GroupId): MessageAccountId {
-                tx.insertTestDaycareGroup(
+                tx.insert(
                     DevDaycareGroup(id = id, daycareId = testDaycare.id, startDate = placementStart)
                 )
                 return tx.createDaycareGroupMessageAccount(id)
@@ -165,8 +156,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group2Account = insertGroup(groupId2)
 
             fun insertPerson(person: DevPerson): MessageAccountId {
-                val id = tx.insertTestPerson(person)
-                tx.insertEvakaUser(
+                val id = tx.insert(person)
+                tx.insert(
                     EvakaUser(
                         id = EvakaUserId(id.raw),
                         type = EvakaUserType.CITIZEN,
@@ -218,20 +209,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertGuardian(person5.id, it.id)
             }
 
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
             )
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
             tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId1, groupId2))
 
-            tx.insertTestEmployee(
-                DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor")
-            )
+            tx.insert(DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor"))
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
 
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = serviceWorker.id, firstName = "Service", lastName = "Worker")
             )
             serviceWorkerAccount =

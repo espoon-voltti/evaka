@@ -25,12 +25,8 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
-import fi.espoo.evaka.shared.dev.insertTestCareArea
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -79,13 +75,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction {
             it.insertServiceNeedOptions()
-            it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.insertTestEmployee(DevEmployee(id = employeeId2))
+            it.insert(DevEmployee(id = employeeId))
+            it.insert(DevEmployee(id = employeeId2))
 
-            it.insertTestCareArea(DevCareArea(id = careArea1, name = "1", shortName = "1"))
-            it.insertTestCareArea(DevCareArea(id = careArea2, name = "2", shortName = "2"))
+            it.insert(DevCareArea(id = careArea1, name = "1", shortName = "1"))
+            it.insert(DevCareArea(id = careArea2, name = "2", shortName = "2"))
 
-            it.insertTestDaycare(
+            it.insert(
                 DevDaycare(
                     id = daycareInArea1,
                     areaId = careArea1,
@@ -94,16 +90,12 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
             )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = daycareGroup1, daycareId = daycareInArea1)
-            )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = daycareGroup2, daycareId = daycareInArea1)
-            )
+            it.insert(DevDaycareGroup(id = daycareGroup1, daycareId = daycareInArea1))
+            it.insert(DevDaycareGroup(id = daycareGroup2, daycareId = daycareInArea1))
             it.insertTestCaretakers(groupId = daycareGroup1, amount = 3.0)
             it.insertTestCaretakers(groupId = daycareGroup2, amount = 3.0)
 
-            it.insertTestDaycare(
+            it.insert(
                 DevDaycare(
                     id = familyUnitInArea2,
                     areaId = careArea2,
@@ -111,16 +103,12 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = setOf(CareType.FAMILY)
                 )
             )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = familyGroup1, daycareId = familyUnitInArea2)
-            )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2)
-            )
+            it.insert(DevDaycareGroup(id = familyGroup1, daycareId = familyUnitInArea2))
+            it.insert(DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2))
             it.insertTestCaretakers(groupId = familyGroup1, amount = 3.0)
             it.insertTestCaretakers(groupId = familyGroup2, amount = 3.0)
 
-            it.insertTestDaycare(
+            it.insert(
                 DevDaycare(
                     id = openingDaycare,
                     areaId = careArea1,
@@ -131,12 +119,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
             )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = openingDaycareGroup, daycareId = openingDaycare)
-            )
+            it.insert(DevDaycareGroup(id = openingDaycareGroup, daycareId = openingDaycare))
             it.insertTestCaretakers(groupId = openingDaycareGroup, amount = 3.0)
 
-            it.insertTestDaycare(
+            it.insert(
                 DevDaycare(
                     id = closedDaycare,
                     areaId = careArea1,
@@ -147,9 +133,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
                 )
             )
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(id = closedDaycareGroup, daycareId = closedDaycare)
-            )
+            it.insert(DevDaycareGroup(id = closedDaycareGroup, daycareId = closedDaycare))
             it.insertTestCaretakers(groupId = closedDaycareGroup, amount = 3.0)
         }
     }
@@ -727,7 +711,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     .fromDay(0)
                     .toDay(1)
                     .save()
-                tx.insertTestAssistanceFactor(
+                tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
                         capacityFactor = 2.0,

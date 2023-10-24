@@ -11,7 +11,7 @@ import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -95,7 +95,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO =
         db.transaction { tx ->
-            tx.insertTestPerson(
+            tx.insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),

@@ -80,7 +80,11 @@ sealed interface DatabaseTable {
 
     sealed class Employee : DatabaseTable
 
+    sealed class EmployeePin : DatabaseTable
+
     sealed class EvakaUser : DatabaseTable
+
+    sealed class FamilyContact : DatabaseTable
 
     sealed class FeeAlteration : DatabaseTable
 
@@ -132,8 +136,10 @@ sealed interface DatabaseTable {
 
     sealed class Pairing : DatabaseTable
 
+    // Actually fridge_child
     sealed class Parentship : DatabaseTable
 
+    // Actually fridge_partner
     sealed class Partnership : DatabaseTable
 
     sealed class Payment : DatabaseTable
@@ -226,6 +232,8 @@ typealias ChildImageId = Id<DatabaseTable.ChildImage>
 
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 
+typealias EmployeePinId = Id<DatabaseTable.EmployeePin>
+
 typealias GroupNoteId = Id<DatabaseTable.GroupNote>
 
 typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
@@ -243,6 +251,8 @@ typealias DocumentTemplateId = Id<DatabaseTable.DocumentTemplate>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 
 typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
+
+typealias FamilyContactId = Id<DatabaseTable.FamilyContact>
 
 typealias FeeAlterationId = Id<DatabaseTable.FeeAlteration>
 

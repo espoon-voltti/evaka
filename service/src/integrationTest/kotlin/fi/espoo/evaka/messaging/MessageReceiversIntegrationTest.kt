@@ -24,10 +24,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
@@ -75,7 +73,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         unitId: DaycareId
     ): PlacementId {
         if (guardianId != null) tx.insertGuardian(guardianId, childId)
-        return tx.insertTestPlacement(
+        return tx.insert(
             DevPlacement(
                 childId = childId,
                 unitId = unitId,
@@ -106,12 +104,10 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
 
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             groupMessageAccount = tx.createDaycareGroupMessageAccount(groupId)
 
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = secondGroupId,
                     daycareId = secondUnit.id,
@@ -134,9 +130,9 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnit.id)
             tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
-            tx.insertTestEmployee(DevEmployee(id = supervisorId))
+            tx.insert(DevEmployee(id = supervisorId))
             supervisor1MessageAccount = tx.upsertEmployeeMessageAccount(supervisorId)
-            tx.insertTestEmployee(DevEmployee(id = supervisor2Id))
+            tx.insert(DevEmployee(id = supervisor2Id))
             supervisor2MessageAccount = tx.upsertEmployeeMessageAccount(supervisor2Id)
             tx.insertDaycareAclRow(unit.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(secondUnit.id, supervisor2Id, UserRole.UNIT_SUPERVISOR)

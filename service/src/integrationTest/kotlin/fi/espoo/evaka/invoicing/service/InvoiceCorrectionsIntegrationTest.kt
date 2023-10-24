@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
-import fi.espoo.evaka.shared.dev.insertTestInvoiceCorrection
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
@@ -586,7 +586,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     ): InvoiceCorrectionId {
         val period = FiniteDateRange.ofMonth(year, month)
         return db.transaction {
-            it.insertTestInvoiceCorrection(
+            it.insert(
                 DevInvoiceCorrection(
                     headOfFamilyId = testAdult_1.id,
                     childId = testChild_1.id,

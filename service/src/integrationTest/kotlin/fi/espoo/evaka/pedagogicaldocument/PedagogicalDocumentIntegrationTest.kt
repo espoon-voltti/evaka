@@ -23,10 +23,9 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -76,16 +75,16 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
-            tx.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.ADMIN)))
-            tx.insertTestEmployee(DevEmployee(id = supervisorId, roles = setOf()))
-            tx.insertTestEmployee(DevEmployee(id = staffId, roles = setOf()))
-            tx.insertTestEmployee(DevEmployee(id = groupStaffId, roles = setOf()))
+            tx.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.ADMIN)))
+            tx.insert(DevEmployee(id = supervisorId, roles = setOf()))
+            tx.insert(DevEmployee(id = staffId, roles = setOf()))
+            tx.insert(DevEmployee(id = groupStaffId, roles = setOf()))
 
             tx.updateDaycareAclWithEmployee(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.updateDaycareAclWithEmployee(testDaycare.id, staffId, UserRole.STAFF)
             tx.updateDaycareAclWithEmployee(testDaycare.id, groupStaffId, UserRole.STAFF)
 
-            tx.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
+            tx.insert(DevDaycareGroup(groupId, testDaycare.id))
             tx.insertEmployeeToDaycareGroupAcl(groupId, groupStaffId)
 
             val placementId =
@@ -288,11 +287,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val staff2Id = EmployeeId(UUID.randomUUID())
         val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
         db.transaction {
-            it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
+            it.insert(DevEmployee(id = staff2Id, roles = setOf()))
             it.updateDaycareAclWithEmployee(testDaycare2.id, staff2Id, UserRole.STAFF)
 
             val group2Id = GroupId(UUID.randomUUID())
-            it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare2.id))
+            it.insert(DevDaycareGroup(group2Id, testDaycare2.id))
             it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 
@@ -308,10 +307,10 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val staff2Id = EmployeeId(UUID.randomUUID())
         val staff2 = AuthenticatedUser.Employee(staff2Id, setOf())
         db.transaction {
-            it.insertTestEmployee(DevEmployee(id = staff2Id, roles = setOf()))
+            it.insert(DevEmployee(id = staff2Id, roles = setOf()))
 
             val group2Id = GroupId(UUID.randomUUID())
-            it.insertTestDaycareGroup(DevDaycareGroup(group2Id, testDaycare.id))
+            it.insert(DevDaycareGroup(group2Id, testDaycare.id))
             it.insertEmployeeToDaycareGroupAcl(group2Id, staff2Id)
         }
 

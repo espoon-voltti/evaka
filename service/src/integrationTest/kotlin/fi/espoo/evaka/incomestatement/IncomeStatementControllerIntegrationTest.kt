@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -65,9 +65,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestEmployee(
-                DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN))
-            )
+            tx.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
         }
     }
 

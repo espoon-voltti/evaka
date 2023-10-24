@@ -17,7 +17,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertFridgeChild
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -40,7 +40,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `conflicting child relationship without a placement is not shown`() {
         db.transaction {
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = today,
@@ -57,7 +57,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `conflicting child relationship with a placement is shown`() {
         db.transaction {
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = today,
@@ -75,7 +75,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `normal child relationship with a placement is not shown`() {
         db.transaction {
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = today,
@@ -93,7 +93,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `conflicting child relationship with a future placement is shown`() {
         db.transaction {
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = today,
@@ -111,7 +111,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `conflicting child relationship show the unit of the first placement`() {
         db.transaction {
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = today,

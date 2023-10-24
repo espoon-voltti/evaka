@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -41,8 +41,8 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
         val personWithoutSsn = personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null)
         db.transaction {
-            it.insertTestPerson(personWithSsn)
-            it.insertTestPerson(personWithoutSsn)
+            it.insert(personWithSsn)
+            it.insert(personWithoutSsn)
         }
 
         val (_, _, result) =
@@ -76,8 +76,8 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 lastName = " " + lastName
             )
         db.transaction {
-            it.insertTestPerson(personWithSsn)
-            it.insertTestPerson(personWithoutSsn)
+            it.insert(personWithSsn)
+            it.insert(personWithoutSsn)
         }
 
         val (_, _, result) =
@@ -110,8 +110,8 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 dateOfBirth = dateOfBirth.plusDays(1)
             )
         db.transaction {
-            it.insertTestPerson(personWithSsn)
-            it.insertTestPerson(personWithoutSsn)
+            it.insert(personWithSsn)
+            it.insert(personWithoutSsn)
         }
 
         val (_, _, result) =
@@ -139,8 +139,8 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val ssn2 = "010170-1124"
         val personWithSsn2 = personWithSsn1.copy(id = PersonId(UUID.randomUUID()), ssn = ssn2)
         db.transaction {
-            it.insertTestPerson(personWithSsn1)
-            it.insertTestPerson(personWithSsn2)
+            it.insert(personWithSsn1)
+            it.insert(personWithSsn2)
         }
 
         val (_, _, result) =

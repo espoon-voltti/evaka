@@ -29,9 +29,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -87,14 +86,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
-            tx.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
-            tx.insertTestDaycareGroup(
+            tx.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
+            tx.insert(
                 DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "TestGroup1")
             )
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id))
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = unit2GroupId, daycareId = testDaycare2.id)
-            )
+            tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id))
+            tx.insert(DevDaycareGroup(id = unit2GroupId, daycareId = testDaycare2.id))
             placementId =
                 tx.insertTestPlacement(
                     childId = testChild_1.id,
@@ -1218,7 +1215,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `events cannot be created for children that don't have any group placement in the group`() {
         db.transaction { tx ->
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = testChild_3.id,
                     unitId = testDaycare.id,

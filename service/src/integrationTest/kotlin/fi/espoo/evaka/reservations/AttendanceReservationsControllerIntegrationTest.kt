@@ -25,15 +25,13 @@ import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -91,10 +89,10 @@ class AttendanceReservationsControllerIntegrationTest :
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestDaycareGroup(testGroup1)
-            it.insertTestDaycareGroup(testGroup2)
+            it.insert(testGroup1)
+            it.insert(testGroup2)
 
-            it.insertTestEmployee(DevEmployee(employeeId))
+            it.insert(DevEmployee(employeeId))
             it.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
     }
@@ -139,7 +137,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 startDate = fri,
                 endDate = fri
             )
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = mon,
@@ -162,7 +160,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 modifiedBy = EvakaUserId(employeeId.raw)
             )
             // Reservation with no times
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = wed,
@@ -246,7 +244,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = fri
             )
             // Reservation is shown in the result because the child is in this unit
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_6.id,
                     date = thu,
@@ -256,7 +254,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 )
             )
             // Reservation is NOT shown in the result because the child is in another unit
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_6.id,
                     date = fri,
@@ -569,7 +567,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         createdBy = EvakaUserId(employeeId.raw)
                     )
                 )
-                .forEach { tx.insertTestReservation(it) }
+                .forEach { tx.insert(it) }
 
             listOf(
                     Pair(

@@ -31,7 +31,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -1913,7 +1913,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 restrictedDetailsEnabled = true
             )
         db.transaction {
-            it.insertTestPerson(testChildRestricted)
+            it.insert(testChildRestricted)
             it.insertGuardian(testAdult_1.id, testChildRestricted.id)
             it.insertGuardian(testAdult_1.id, testChild_2.id)
             it.insertGuardian(testAdult_2.id, testChildRestricted.id)

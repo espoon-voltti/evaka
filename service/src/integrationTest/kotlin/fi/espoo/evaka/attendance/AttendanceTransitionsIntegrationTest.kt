@@ -15,9 +15,9 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -54,9 +54,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
         }
     }

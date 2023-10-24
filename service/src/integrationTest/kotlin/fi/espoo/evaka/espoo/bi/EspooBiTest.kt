@@ -71,26 +71,13 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.TestDecision
-import fi.espoo.evaka.shared.dev.insertPedagogicalDocument
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareAssistance
-import fi.espoo.evaka.shared.dev.insertTestDaycareCaretaker
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestPreschoolAssistance
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -145,7 +132,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         val id =
             db.transaction {
                 it.insertTestDaycare().let { daycare ->
-                    it.insertTestDaycareGroupPlacement(
+                    it.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = it.insertTestPlacement(daycare),
                             daycareGroupId = it.insertTestGroup(daycare),
@@ -160,7 +147,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getAbsences() {
         val id =
             db.transaction {
-                it.insertTestAbsence(
+                it.insert(
                     DevAbsence(
                         childId = it.insertTestChild(),
                         date = LocalDate.of(2020, 1, 1),
@@ -175,7 +162,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getGroupCaretakerAllocations() {
         val id =
             db.transaction {
-                it.insertTestDaycareCaretaker(
+                it.insert(
                     DevDaycareCaretaker(
                         groupId = it.insertTestGroup(),
                     )
@@ -278,7 +265,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getPedagogicalDocuments() {
         val id =
             db.transaction {
-                it.insertPedagogicalDocument(
+                it.insert(
                     DevPedagogicalDocument(
                         id = PedagogicalDocumentId(UUID.randomUUID()),
                         childId = it.insertTestChild(),
@@ -291,30 +278,20 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getAssistanceFactors() {
-        val id =
-            db.transaction {
-                it.insertTestAssistanceFactor(DevAssistanceFactor(childId = it.insertTestChild()))
-            }
+        val id = db.transaction { it.insert(DevAssistanceFactor(childId = it.insertTestChild())) }
         assertSingleRowContainingId(EspooBi.getAssistanceFactors, id)
     }
 
     @Test
     fun getDaycareAssistanceEntries() {
-        val id =
-            db.transaction {
-                it.insertTestDaycareAssistance(DevDaycareAssistance(childId = it.insertTestChild()))
-            }
+        val id = db.transaction { it.insert(DevDaycareAssistance(childId = it.insertTestChild())) }
         assertSingleRowContainingId(EspooBi.getDaycareAssistanceEntries, id)
     }
 
     @Test
     fun getPreschoolAssistanceEntries() {
         val id =
-            db.transaction {
-                it.insertTestPreschoolAssistance(
-                    DevPreschoolAssistance(childId = it.insertTestChild())
-                )
-            }
+            db.transaction { it.insert(DevPreschoolAssistance(childId = it.insertTestChild())) }
         assertSingleRowContainingId(EspooBi.getPreschoolAssistanceEntries, id)
     }
 
@@ -415,13 +392,13 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 otherRepresentativeHeard = false,
                                 otherRepresentativeDetails = "",
                                 viewOfGuardians = "",
-                                preparer1EmployeeId = it.insertTestEmployee(DevEmployee()),
+                                preparer1EmployeeId = it.insert(DevEmployee()),
                                 preparer1Title = "",
                                 preparer1PhoneNumber = "",
                                 preparer2EmployeeId = null,
                                 preparer2Title = "",
                                 preparer2PhoneNumber = "",
-                                decisionMakerEmployeeId = it.insertTestEmployee(DevEmployee()),
+                                decisionMakerEmployeeId = it.insert(DevEmployee()),
                                 decisionMakerTitle = "",
                             ),
                         status = AssistanceNeedDecisionStatus.ACCEPTED,
@@ -449,21 +426,19 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun String.looksLikeHeaderRow() = trim().contains(',')
 
-    private fun Database.Transaction.insertTestArea(): AreaId = insertTestCareArea(DevCareArea())
+    private fun Database.Transaction.insertTestArea(): AreaId = insert(DevCareArea())
 
     private fun Database.Transaction.insertTestDaycare(): DaycareId =
-        insertTestDaycare(DevDaycare(areaId = insertTestArea()))
+        insert(DevDaycare(areaId = insertTestArea()))
 
     private fun Database.Transaction.insertTestGroup(daycare: DaycareId? = null): GroupId =
-        insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
+        insert(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
 
     private fun Database.Transaction.insertTestChild(): ChildId =
-        insertTestPerson(DevPerson()).also { insertTestChild(DevChild(it)) }
+        insert(DevPerson()).also { insert(DevChild(it)) }
 
     private fun Database.Transaction.insertTestPlacement(daycare: DaycareId? = null): PlacementId =
-        insertTestPlacement(
-            DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare())
-        )
+        insert(DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare()))
 
     private fun Database.Transaction.insertTestApplicationWithForm(
         daycare: DaycareId? = null
@@ -471,7 +446,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         insertTestApplication(
                 type = ApplicationType.DAYCARE,
                 childId = insertTestChild(),
-                guardianId = insertTestPerson(DevPerson())
+                guardianId = insert(DevPerson())
             )
             .also {
                 insertTestApplicationForm(
@@ -558,7 +533,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     childIncome = null,
                                 )
                             ),
-                        headOfFamilyId = insertTestPerson(DevPerson()),
+                        headOfFamilyId = insert(DevPerson()),
                         validDuring = DateRange.ofMonth(2019, Month.JANUARY),
                         status = FeeDecisionStatus.SENT,
                         decisionNumber = 999L,
@@ -582,7 +557,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         id = id,
                         validFrom = LocalDate.of(2022, 1, 1),
                         validTo = LocalDate.of(2022, 2, 1),
-                        headOfFamilyId = insertTestPerson(DevPerson()),
+                        headOfFamilyId = insert(DevPerson()),
                         status = VoucherValueDecisionStatus.SENT,
                         decisionNumber = 999L,
                         decisionType = VoucherValueDecisionType.NORMAL,

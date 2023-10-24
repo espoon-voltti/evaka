@@ -15,11 +15,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import java.time.LocalDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -36,12 +32,11 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            childId =
-                tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(id = it)) }
+            val areaId = tx.insert(DevCareArea())
+            daycareId = tx.insert(DevDaycare(areaId = areaId))
+            childId = tx.insert(DevPerson()).also { tx.insert(DevChild(id = it)) }
             placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,

@@ -22,8 +22,8 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -78,9 +78,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "")
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,

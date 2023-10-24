@@ -21,13 +21,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -64,12 +63,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
-            )
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName)
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
@@ -372,7 +367,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val reservationStart = LocalTime.of(8, 0)
         val reservationEnd = LocalTime.of(16, 0)
         db.transaction {
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = now.toLocalDate(),
@@ -392,7 +387,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservations with no times for children are shown`() {
         db.transaction {
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = now.toLocalDate(),
@@ -419,7 +414,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = now.minusDays(1).toLocalDate(),
                 endDate = now.toLocalDate()
             )
-            it.insertTestReservation(
+            it.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = now.toLocalDate(),

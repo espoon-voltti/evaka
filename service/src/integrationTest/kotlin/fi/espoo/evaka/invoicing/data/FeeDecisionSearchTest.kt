@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -245,7 +245,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         db.transaction { tx ->
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = testChild_3.id,
                     unitId = testDaycare.id,

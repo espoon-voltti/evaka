@@ -27,13 +27,9 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -90,18 +86,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
 
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
 
-            tx.insertTestEmployee(testDecisionMaker_1)
-            tx.insertTestEmployee(DevEmployee(testStaffId))
+            tx.insert(testDecisionMaker_1)
+            tx.insert(DevEmployee(testStaffId))
 
-            tx.insertTestPerson(testAdult_1)
+            tx.insert(testAdult_1)
             tx.upsertCitizenUser(testAdult_1.id)
 
             listOf(testChild_1, testChild_2).forEach { child ->
-                tx.insertTestPerson(child)
-                tx.insertTestChild(DevChild(id = child.id))
+                tx.insert(child)
+                tx.insert(DevChild(id = child.id))
             }
 
             tx.insertTestPlacement(
@@ -138,8 +134,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         db.transaction { tx ->
             tx.insertTestHoliday(wednesday)
 
-            tx.insertTestPerson(testChild_3)
-            tx.insertTestChild(DevChild(id = testChild_3.id))
+            tx.insert(testChild_3)
+            tx.insert(DevChild(id = testChild_3.id))
 
             // Fixed schedule (PRESCHOOL)
             tx.insertTestPlacement(
@@ -304,12 +300,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insertTestHoliday(tuesday)
 
             listOf(testChild_3, testChild_4).forEach { child ->
-                tx.insertTestPerson(child)
-                tx.insertTestChild(DevChild(id = child.id))
+                tx.insert(child)
+                tx.insert(DevChild(id = child.id))
             }
 
             // Normal shift care
-            tx.insertTestDaycare(roundTheClockDaycare)
+            tx.insert(roundTheClockDaycare)
             tx.insertTestPlacement(
                 childId = testChild_3.id,
                 unitId = roundTheClockDaycare.id,

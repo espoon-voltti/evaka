@@ -24,12 +24,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDocumentTemplate
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -136,18 +131,18 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     internal fun setUp() {
         db.transaction { tx ->
             employeeUser =
-                tx.insertTestEmployee(DevEmployee()).let {
+                tx.insert(DevEmployee()).let {
                     AuthenticatedUser.Employee(it, setOf(UserRole.ADMIN))
                 }
-            areaId = tx.insertTestCareArea(testArea)
+            areaId = tx.insert(testArea)
             val unitId =
-                tx.insertTestDaycare(
+                tx.insert(
                     testDaycare.copy(
                         language = Language.sv,
                         enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                     )
                 )
-            val unitSupervisorId = tx.insertTestEmployee(DevEmployee())
+            val unitSupervisorId = tx.insert(DevEmployee())
             unitSupervisorUser =
                 unitSupervisorId.let {
                     AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
@@ -157,17 +152,17 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(testChild_1.id))
+            tx.insert(testChild_1)
+            tx.insert(DevChild(testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = clock.today(),
                 endDate = clock.today().plusDays(5)
             )
-            tx.insertTestDocumentTemplate(devTemplatePed)
-            tx.insertTestDocumentTemplate(devTemplatePedagogicalReport)
-            tx.insertTestDocumentTemplate(devTemplateHojks)
+            tx.insert(devTemplatePed)
+            tx.insert(devTemplatePedagogicalReport)
+            tx.insert(devTemplateHojks)
         }
     }
 
@@ -244,7 +239,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `creating new document not allowed for expired document`() {
         val template2 =
             db.transaction {
-                it.insertTestDocumentTemplate(
+                it.insert(
                     DevDocumentTemplate(
                         validity =
                             DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
@@ -266,7 +261,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `creating new document not allowed for unpublished document`() {
         val template2 =
             db.transaction {
-                it.insertTestDocumentTemplate(
+                it.insert(
                     DevDocumentTemplate(
                         validity = DateRange(clock.today(), clock.today()),
                         published = false,
@@ -511,9 +506,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
         val duplicateId =
             db.transaction { tx ->
-                val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(childId))
+                val unitId = tx.insert(DevDaycare(areaId = areaId))
+                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,
@@ -538,9 +533,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     fun `unit supervisor doesn't see pedagogical report document from duplicate`() {
         val duplicateId =
             db.transaction { tx ->
-                val unitId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(childId))
+                val unitId = tx.insert(DevDaycare(areaId = areaId))
+                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,
@@ -566,14 +561,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val duplicateId =
             db.transaction { tx ->
                 val unitId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             areaId = areaId,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(childId))
+                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,
                     unitId = unitId,

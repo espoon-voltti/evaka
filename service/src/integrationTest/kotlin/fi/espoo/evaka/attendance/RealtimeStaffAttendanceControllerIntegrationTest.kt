@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDaycare
@@ -45,10 +45,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(id = groupId1, daycareId = testDaycare.id, name = "Testiläiset 1")
             )
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = "Testiläiset 2")
             )
 

@@ -28,11 +28,10 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -75,10 +74,8 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
 
-            tx.insertTestEmployee(
-                DevEmployee(id = supervisorId, firstName = "Elina", lastName = "Esimies")
-            )
-            tx.insertTestEmployee(DevEmployee(id = staffId))
+            tx.insert(DevEmployee(id = supervisorId, firstName = "Elina", lastName = "Esimies"))
+            tx.insert(DevEmployee(id = staffId))
             tx.insertDaycareAclRow(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
         }
@@ -123,8 +120,8 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val group = DevDaycareGroup(daycareId = testDaycare.id)
         val placement = DevPlacement(unitId = testDaycare.id, childId = testChild_1.id)
         db.transaction {
-            it.insertTestPlacement(placement)
-            it.insertTestDaycareGroup(group)
+            it.insert(placement)
+            it.insert(group)
             it.createDaycareGroupMessageAccount(group.id)
             it.insertTestDaycareGroupPlacement(placement.id, group.id)
         }
@@ -138,7 +135,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `cannot delete a group when it is a backup care`() {
         val group = DevDaycareGroup(daycareId = testDaycare.id)
         db.transaction {
-            it.insertTestDaycareGroup(group)
+            it.insert(group)
             it.createDaycareGroupMessageAccount(group.id)
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id)
             it.insertTestBackupCare(
@@ -160,7 +157,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `cannot delete a group when it has messages`() {
         val group = DevDaycareGroup(daycareId = testDaycare.id)
         db.transaction {
-            it.insertTestDaycareGroup(group)
+            it.insert(group)
             val accountId = it.createDaycareGroupMessageAccount(group.id)
             it.insertMessageContent("Juhannus tulee pian", accountId)
         }
@@ -178,10 +175,10 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val placementId2 = PlacementId(UUID.randomUUID())
         val placementId3 = PlacementId(UUID.randomUUID())
         db.transaction {
-            it.insertTestDaycareGroup(group1)
+            it.insert(group1)
             it.insertTestCaretakers(group1.id, amount = 3.0)
 
-            it.insertTestDaycareGroup(group2)
+            it.insert(group2)
             it.insertTestCaretakers(group2.id, amount = 1.0)
 
             // Missing group
@@ -263,7 +260,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val placementId4 = PlacementId(UUID.randomUUID())
         val placementId5 = PlacementId(UUID.randomUUID())
         db.transaction {
-            it.insertTestDaycareGroup(group)
+            it.insert(group)
 
             // Terminated over 2 weeks ago -> not listed
             it.insertTestPlacement(

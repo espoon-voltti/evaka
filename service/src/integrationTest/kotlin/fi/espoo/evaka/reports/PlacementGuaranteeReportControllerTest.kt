@@ -15,12 +15,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -43,14 +38,14 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val clock = MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.of(8, 8)))
         val unitId =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                tx.insertTestDaycare(DevDaycare(areaId = areaId))
+                val areaId = tx.insert(DevCareArea())
+                tx.insert(DevDaycare(areaId = areaId))
             }
         val childId =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson())
-                tx.insertTestChild(DevChild(id = childId))
-                tx.insertTestPlacement(
+                val childId = tx.insert(DevPerson())
+                tx.insert(DevChild(id = childId))
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = unitId,
@@ -59,7 +54,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = false
                     )
                 )
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = unitId,
@@ -104,14 +99,14 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
     @Test
     fun `getPlacementGuaranteeReport unit supervisor`() {
         val date = LocalDate.of(2023, 9, 12)
-        val areaId = db.transaction { tx -> tx.insertTestCareArea(DevCareArea()) }
-        val unitId1 = db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
-        val unitId2 = db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
+        val areaId = db.transaction { tx -> tx.insert(DevCareArea()) }
+        val unitId1 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
+        val unitId2 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
         val childId =
             db.transaction { tx ->
-                val childId1 = tx.insertTestPerson(DevPerson())
-                tx.insertTestChild(DevChild(id = childId1))
-                tx.insertTestPlacement(
+                val childId1 = tx.insert(DevPerson())
+                tx.insert(DevChild(id = childId1))
+                tx.insert(
                     DevPlacement(
                         childId = childId1,
                         unitId = unitId1,
@@ -120,7 +115,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = false
                     )
                 )
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId1,
                         unitId = unitId1,
@@ -129,9 +124,9 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = true
                     )
                 )
-                val childId2 = tx.insertTestPerson(DevPerson())
-                tx.insertTestChild(DevChild(id = childId2))
-                tx.insertTestPlacement(
+                val childId2 = tx.insert(DevPerson())
+                tx.insert(DevChild(id = childId2))
+                tx.insert(
                     DevPlacement(
                         childId = childId2,
                         unitId = unitId2,
@@ -140,7 +135,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = false
                     )
                 )
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId2,
                         unitId = unitId2,
@@ -153,7 +148,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
             }
         val employeeId =
             db.transaction { tx ->
-                val employeeId = tx.insertTestEmployee(DevEmployee())
+                val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId1,
                     employeeId = employeeId,

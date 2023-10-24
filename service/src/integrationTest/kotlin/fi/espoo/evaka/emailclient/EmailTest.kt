@@ -8,7 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.updateEnabledEmailTypes
 import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertTestPerson(testAdult_1) }
+        db.transaction { tx -> tx.insert(testAdult_1) }
     }
 
     @Test

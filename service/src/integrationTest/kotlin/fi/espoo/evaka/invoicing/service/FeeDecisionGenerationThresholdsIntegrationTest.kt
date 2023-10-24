@@ -19,13 +19,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -60,11 +55,11 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertTestPerson(testAdult_1)
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(id = testChild_1.id))
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare)
+            tx.insert(testAdult_1)
+            tx.insert(testChild_1)
+            tx.insert(DevChild(id = testChild_1.id))
+            tx.insert(testArea)
+            tx.insert(testDaycare)
             tx.insertTestPlacement(
                 id = placementId,
                 childId = testChild_1.id,
@@ -79,10 +74,8 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                 endDate = originalRange.end!!.plusYears(1)
             )
             feeThresholdId =
-                tx.insertTestFeeThresholds(
-                    testFeeThresholds.copy(validDuring = originalFeeThresholdRange)
-                )
-            tx.insertTestEmployee(testDecisionMaker_1)
+                tx.insert(testFeeThresholds.copy(validDuring = originalFeeThresholdRange))
+            tx.insert(testDecisionMaker_1)
             tx.insertServiceNeedOptions()
         }
         generate()
@@ -100,7 +93,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                 feeThresholdId,
                 DateRange(originalFeeThresholdRange.start, day(9))
             )
-            tx.insertTestFeeThresholds(
+            tx.insert(
                 testFeeThresholds.copy(
                     validDuring = newFeeThresholdRange,
                     maxFee = 2 * testFeeThresholds.maxFee

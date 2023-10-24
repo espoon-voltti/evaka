@@ -17,12 +17,8 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -45,8 +41,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
     fun beforeEach() {
         assistanceNeedDecisionId =
             db.transaction { tx ->
-                childId =
-                    tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(id = it)) }
+                childId = tx.insert(DevPerson()).also { tx.insert(DevChild(id = it)) }
                 tx.insertTestAssistanceNeedDecision(
                     childId,
                     DevAssistanceNeedDecision(
@@ -166,9 +161,9 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
         )
         val daycareId =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                tx.insertTestPlacement(
+                val areaId = tx.insert(DevCareArea())
+                val daycareId = tx.insert(DevDaycare(areaId = areaId))
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
@@ -228,9 +223,9 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
         )
         val daycareId =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                tx.insertTestPlacement(
+                val areaId = tx.insert(DevCareArea())
+                val daycareId = tx.insert(DevDaycare(areaId = areaId))
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
