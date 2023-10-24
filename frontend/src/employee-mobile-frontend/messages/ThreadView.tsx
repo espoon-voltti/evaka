@@ -83,11 +83,6 @@ const ReceivedThread = React.memo(function ReceivedThread({
     () => getReplyContent(threadId) !== ''
   )
 
-  const titleRowRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    titleRowRef.current?.focus()
-  }, [threadId])
-
   const lastMessageRef = useRef<HTMLLIElement>(null)
 
   const onUpdateContent = useCallback(
