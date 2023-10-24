@@ -83,11 +83,6 @@ const ReceivedThread = React.memo(function ReceivedThread({
     () => getReplyContent(threadId) !== ''
   )
 
-  const autoScrollRef = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    scrollRefIntoView(autoScrollRef)
-  }, [])
-
   const titleRowRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     titleRowRef.current?.focus()
@@ -176,7 +171,6 @@ const ReceivedThread = React.memo(function ReceivedThread({
           </>
         )
       )}
-      {replyEditorVisible && <span ref={autoScrollRef} />}
     </MobileThreadContainer>
   )
 })
