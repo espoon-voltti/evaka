@@ -49,7 +49,11 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.EmployeeChildAclConfig
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.employeeChildAclViaApplication
+import fi.espoo.evaka.shared.security.employeeChildAclViaBackupCare
+import fi.espoo.evaka.shared.security.employeeChildAclViaPlacement
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
@@ -103,6 +107,43 @@ SELECT EXISTS (
         getUnitRoles: GetUnitRoles
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getUnitRoles))
+
+    /**
+     * Creates a rule that is based on the relation between an employee and a child.
+     *
+     * @param cfg configuration for the employee/child relation
+     * @param idChildQuery a query that must return rows with columns `id` and `child_id`
+     */
+    private fun <T : Id<*>> ruleViaChildAcl(
+        cfg: EmployeeChildAclConfig,
+        idChildQuery: QuerySql.Builder<T>.() -> QuerySql<T>
+    ): DatabaseActionRule.Scoped<T, HasUnitRole> =
+        DatabaseActionRule.Scoped.Simple(
+            this,
+            Query { user, now ->
+                val aclQueries =
+                    listOfNotNull(
+                        if (cfg.placement) employeeChildAclViaPlacement(user.id, now) else null,
+                        if (cfg.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
+                        if (cfg.application) employeeChildAclViaApplication(user.id) else null
+                    )
+                union(
+                    all = true,
+                    aclQueries.map { aclQuery ->
+                        QuerySql.of {
+                            sql(
+                                """
+SELECT target.id, acl.role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
+FROM (${subquery { idChildQuery() }}) target
+JOIN (${subquery(aclQuery)}) acl USING (child_id)
+JOIN daycare ON acl.unit_id = daycare.id
+"""
+                            )
+                        }
+                    }
+                )
+            }
+        )
 
     private class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) :
         DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
@@ -811,18 +852,14 @@ WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
             )
         }
 
-    fun inPlacementUnitOfChildOfVasuDocument() =
-        rule<VasuDocumentId> { user, now ->
-            sql(
-                """
-SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+    fun inPlacementUnitOfChildOfVasuDocument(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<VasuDocumentId>(cfg) {
+            sql("""
+SELECT curriculum_document.id, child_id
 FROM curriculum_document
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
+""")
         }
 
     fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument() =
