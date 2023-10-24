@@ -378,7 +378,7 @@ export default React.memo(function MessageEditor({
   const sensitiveCheckbox = (
     <FixedSpaceRow spacing="xs" alignItems="center">
       <Checkbox
-        data-qa="checkbox-senstitive"
+        data-qa="checkbox-sensitive"
         label={i18n.messageEditor.flags.sensitive.label}
         checked={message.sensitive}
         disabled={!sensitiveCheckboxEnabled}

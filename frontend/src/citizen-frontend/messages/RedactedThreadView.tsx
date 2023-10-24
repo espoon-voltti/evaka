@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 import styled from 'styled-components'
 
@@ -42,7 +46,7 @@ export default React.memo(function ThreadView({
             sensitive={true}
           />
         </FixedSpaceFlexWrap>
-        <H2 noMargin data-qa="thread-reader-title">
+        <H2 noMargin data-qa="redacted-thread-reader-title">
           {i18n.messages.sensitive}
         </H2>
       </ThreadTitleRow>
@@ -50,7 +54,7 @@ export default React.memo(function ThreadView({
       <RedactedThreadInfo>
         <p>
           {i18n.messages.strongAuthRequiredThread}{' '}
-          <a href={getStrongLoginUri(returnUrl)}>
+          <a href={getStrongLoginUri(returnUrl)} data-qa="strong-auth-link">
             {i18n.messages.strongAuthLink}
           </a>
         </p>

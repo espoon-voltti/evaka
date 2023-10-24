@@ -273,7 +273,7 @@ export default React.memo(function ThreadView({
           <MessageCharacteristics
             type={messageType}
             urgent={urgent}
-            sensitive={sensitive}
+            sensitive={false}
           />
           {children.length > 0 ? (
             <>
@@ -291,6 +291,7 @@ export default React.memo(function ThreadView({
         <H2 noMargin data-qa="thread-reader-title">
           <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
           {title}
+          {sensitive && ` (${i18n.messages.sensitive})`}
         </H2>
         <ScreenReaderButton
           data-qa="jump-to-end"

@@ -5,6 +5,17 @@
 import { waitUntilTrue } from '../../utils'
 import { Element, Page, TextInput, TreeDropdown } from '../../utils/page'
 
+export class MockStrongAuthPage {
+  constructor(private readonly page: Page) {}
+
+  async login(ssn: string) {
+    const checkbox = this.page.find(`[id="${ssn}"]`)
+    await checkbox.click()
+    const submit = this.page.find('button')
+    await submit.click()
+    return new CitizenMessagesPage(this.page)
+  }
+}
 export default class CitizenMessagesPage {
   constructor(private readonly page: Page) {}
 
@@ -15,6 +26,10 @@ export default class CitizenMessagesPage {
   )
   #threadListItem = this.page.find('[data-qa="thread-list-item"]')
   #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
+  #redactedThreadTitle = this.page.find(
+    '[data-qa="redacted-thread-reader-title"]'
+  )
+  #strongAuthLink = this.page.find('[data-qa="strong-auth-link"]')
   #inboxEmpty = this.page.find('[data-qa="inbox-empty"][data-loading="false"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
   #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
@@ -44,15 +59,26 @@ export default class CitizenMessagesPage {
     title: string
     content: string
     urgent?: boolean
+    sensitive?: boolean
   }) {
     await this.#threadListItem.click()
-    await this.#threadTitle.assertTextEquals(message.title)
+    await this.#threadTitle.assertTextEquals(
+      message.title + (message.sensitive ? ' (Arkaluontoinen viestiketju)' : '')
+    )
     await this.#threadContent.only().assertTextEquals(message.content)
     if (message.urgent ?? false) {
       await this.#threadUrgent.waitUntilVisible()
     } else {
       await this.#threadUrgent.waitUntilHidden()
     }
+  }
+  async assertThreadIsRedacted() {
+    await this.#threadListItem.click()
+    await this.#redactedThreadTitle.waitUntilVisible()
+  }
+  async openStrongAuthPage() {
+    await this.#strongAuthLink.click()
+    return new MockStrongAuthPage(this.page)
   }
 
   getThreadAttachmentCount(): Promise<number> {

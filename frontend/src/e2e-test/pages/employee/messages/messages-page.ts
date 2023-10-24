@@ -47,6 +47,7 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
+  #sensitive = new Checkbox(this.page.findByDataQa('checkbox-sensitive'))
   #messageTypeMessage = new Checkbox(
     this.page.findByDataQa('radio-message-type-message')
   )
@@ -121,6 +122,7 @@ export default class MessagesPage {
     title: string
     content: string
     urgent?: boolean
+    sensitive?: boolean
     attachmentCount?: number
     sender?: string
     receiver?: string
@@ -135,6 +137,7 @@ export default class MessagesPage {
     if (message.sender) {
       await this.#senderSelection.fillAndSelectFirst(message.sender)
     }
+
     if (message.receiver) {
       await this.#receiverSelection.open()
       await this.#receiverSelection.expandAll()
@@ -147,6 +150,9 @@ export default class MessagesPage {
     }
     if (message.urgent ?? false) {
       await this.#urgent.check()
+    }
+    if (message.sensitive ?? false) {
+      await this.#sensitive.check()
     }
 
     if (attachmentCount > 0) {
