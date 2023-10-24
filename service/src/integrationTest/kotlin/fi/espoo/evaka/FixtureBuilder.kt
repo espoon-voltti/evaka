@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.dev.insertTestStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -574,7 +573,7 @@ class FixtureBuilder(
             }
 
         fun save(): EmployeeFixture {
-            tx.insertTestStaffAttendancePlan(
+            tx.insert(
                 DevStaffAttendancePlan(
                     employeeId = employeeFixture.employeeId,
                     type = this.type ?: StaffAttendanceType.PRESENT,

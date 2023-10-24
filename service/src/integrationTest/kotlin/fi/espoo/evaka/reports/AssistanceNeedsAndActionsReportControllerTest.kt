@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -99,7 +98,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         level = DaycareAssistanceLevel.GENERAL_SUPPORT
                     )
                 )
-                tx.insertTestAssistanceAction(
+                tx.insert(
                     DevAssistanceAction(
                         childId = childId,
                         startDate = date,
@@ -137,7 +136,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         level = DaycareAssistanceLevel.GENERAL_SUPPORT
                     )
                 )
-                tx.insertTestAssistanceAction(
+                tx.insert(
                     DevAssistanceAction(
                         childId = childId,
                         startDate = date,
@@ -175,7 +174,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         level = DaycareAssistanceLevel.GENERAL_SUPPORT
                     )
                 )
-                tx.insertTestAssistanceAction(
+                tx.insert(
                     DevAssistanceAction(
                         childId = childId,
                         startDate = date,

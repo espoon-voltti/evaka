@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -572,7 +571,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(DevChild(child2Id))
             listOf(child1Id, child2Id).forEach { childId ->
                 listOf(person1.id, person2.id).forEach { guardianId ->
-                    tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
+                    tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
                 }
             }
             val startDate = now.toLocalDate()

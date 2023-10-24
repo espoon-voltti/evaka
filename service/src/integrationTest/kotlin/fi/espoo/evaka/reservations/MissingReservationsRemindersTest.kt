@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -87,7 +86,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
             child = tx.insert(DevPerson()).also { tx.insert(DevChild(it)) }
-            tx.insertTestGuardian(DevGuardian(guardianId = guardian, childId = child))
+            tx.insert(DevGuardian(guardianId = guardian, childId = child))
             tx.insert(
                 DevPlacement(
                     childId = child,

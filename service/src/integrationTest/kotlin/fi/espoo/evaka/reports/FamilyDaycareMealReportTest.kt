@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -415,7 +414,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     type = PlacementType.DAYCARE,
                 )
 
-                tx.insertTestBackupCare(
+                tx.insert(
                     DevBackupCare(
                         childId = childPId,
                         unitId = backupDaycareId,

@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -138,7 +137,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(group)
             it.createDaycareGroupMessageAccount(group.id)
             it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id)
-            it.insertTestBackupCare(
+            it.insert(
                 DevBackupCare(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,

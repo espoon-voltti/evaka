@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -122,9 +121,8 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = LocalDate.now()
                     )
                 )
-                tx.insertTestGuardian(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
-                if (i % 2 == 1)
-                    tx.insertTestGuardian(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
+                tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
+                if (i % 2 == 1) tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
             }
         }
 

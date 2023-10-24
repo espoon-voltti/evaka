@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -1015,7 +1014,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
 
             // Daily service times 8-16 on all three days, so these should show on the second day
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(startDate, endDate)

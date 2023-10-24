@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -69,9 +68,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             )
 
             tx.insert(testAdult_1)
-            tx.insertTestGuardian(
-                DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            )
+            tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
 
             tx.insert(testChild_2)
             tx.insert(DevChild(id = testChild_2.id))
@@ -91,9 +88,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 }
 
             tx.insert(testAdult_2)
-            tx.insertTestGuardian(
-                DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id)
-            )
+            tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id))
 
             tx.insert(testChild_3)
             tx.insert(DevChild(id = testChild_3.id))

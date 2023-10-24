@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -83,7 +83,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = range.start.minusYears(1)
             )
 
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     testChild_1.id,
                     id = incomeId,

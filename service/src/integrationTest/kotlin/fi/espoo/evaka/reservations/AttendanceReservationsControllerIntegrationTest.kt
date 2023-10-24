@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -205,7 +204,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 confirmedAt = null
             )
 
-            it.insertTestDailyServiceTimes(
+            it.insert(
                 DevDailyServiceTimes(
                     childId = testChild_5.id,
                     validityPeriod = monFri.asDateRange(),

@@ -30,9 +30,7 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertIncomeStatement
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -150,8 +148,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             val applicationOwner = tx.insertPerson(DevPerson())
             otherGuardian = tx.insertPerson(DevPerson())
             val child = tx.insertPerson(DevPerson())
-            tx.insertTestGuardian(DevGuardian(guardianId = applicationOwner, childId = child))
-            tx.insertTestGuardian(DevGuardian(guardianId = otherGuardian, childId = child))
+            tx.insert(DevGuardian(guardianId = applicationOwner, childId = child))
+            tx.insert(DevGuardian(guardianId = otherGuardian, childId = child))
             val application =
                 tx.insertTestApplication(
                     type = ApplicationType.DAYCARE,
@@ -236,7 +234,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `adult with income statement is not cleaned up`() {
         db.transaction { tx ->
             tx.insertPerson(testAdult_1)
-            tx.insertIncomeStatement(
+            tx.insert(
                 DevIncomeStatement(
                     IncomeStatementId(UUID.randomUUID()),
                     testAdult_1.id,

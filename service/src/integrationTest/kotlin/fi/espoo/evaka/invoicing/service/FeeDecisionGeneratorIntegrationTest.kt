@@ -55,8 +55,6 @@ import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -3928,7 +3926,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         effect: IncomeEffect = IncomeEffect.INCOME
     ) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -3947,7 +3945,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun insertEchaIncome(adultId: PersonId, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -3967,7 +3965,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestFeeAlteration(
+            tx.insert(
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId,

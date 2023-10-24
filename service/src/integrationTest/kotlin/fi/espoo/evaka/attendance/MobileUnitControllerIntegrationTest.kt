@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -166,7 +165,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     type = PlacementType.PRESCHOOL_DAYCARE
                 )
             )
-            tx.insertTestBackupCare(
+            tx.insert(
                 DevBackupCare(
                     childId = child.id,
                     unitId = testDaycare.id,

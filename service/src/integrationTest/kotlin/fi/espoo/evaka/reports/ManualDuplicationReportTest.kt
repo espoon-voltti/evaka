@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.validPreschoolApplication
@@ -64,7 +63,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             tx.insert(admin)
             tx.insert(testChild)
             tx.insert(testGuardian)
-            tx.insertTestGuardian(DevGuardian(testGuardian.id, testChild.id))
+            tx.insert(DevGuardian(testGuardian.id, testChild.id))
             val areaId = tx.insert(DevCareArea())
             val preschoolId =
                 tx.insert(

@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -83,7 +82,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             tx.insert(testChild_1)
             tx.insert(DevChild(testChild_1.id))
             tx.insert(testAdult_1)
-            tx.insertTestGuardian(DevGuardian(testAdult_1.id, testChild_1.id))
+            tx.insert(DevGuardian(testAdult_1.id, testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,

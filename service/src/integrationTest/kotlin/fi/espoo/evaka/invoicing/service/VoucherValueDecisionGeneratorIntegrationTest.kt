@@ -35,8 +35,6 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -1160,7 +1158,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     temporaryFeeSiblingPartDay = 800
                 )
             )
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = testAdult_1.id,
                     validFrom = period.start,
@@ -1506,7 +1504,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -1525,7 +1523,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestFeeAlteration(
+            tx.insert(
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId = personId,

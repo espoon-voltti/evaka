@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevFridgePartnership
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -62,10 +61,10 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         lateinit var householdAdult: PersonId
 
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson()).also { tx.insertTestGuardian(DevGuardian(it, child)) }
+            guardian = tx.insert(DevPerson()).also { tx.insert(DevGuardian(it, child)) }
             guardianAndHouseholdHead =
                 tx.insert(DevPerson()).also {
-                    tx.insertTestGuardian(DevGuardian(it, child))
+                    tx.insert(DevGuardian(it, child))
                     tx.insert(
                         DevFridgeChild(
                             childId = child,

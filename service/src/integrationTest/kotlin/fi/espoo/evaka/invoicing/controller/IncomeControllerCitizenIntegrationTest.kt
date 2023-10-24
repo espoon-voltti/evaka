@@ -24,8 +24,6 @@ import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.upsertCitizenUser
@@ -76,7 +74,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             val areaId = tx.insert(DevCareArea())
             val daycareId = tx.insert(DevDaycare(areaId = areaId))
             childId = tx.insert(testChild).also { tx.insert(DevChild(testChild.id)) }
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
+            tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
             val placementId =
@@ -108,7 +106,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
     fun `expiring income date found`() {
         val expirationDate = clock.today().plusWeeks(4)
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,

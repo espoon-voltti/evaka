@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -552,7 +551,7 @@ internal class AttendanceReservationReportByChildTest :
             )
 
             // 8-16 every day
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(startDate, endDate)

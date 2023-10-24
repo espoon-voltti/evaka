@@ -29,9 +29,9 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -434,7 +434,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = LocalDate.now().minusDays(150),
                     endDate = LocalDate.now().plusDays(150)
                 )
-                it.insertTestBackupCare(
+                it.insert(
                     DevBackupCare(
                         childId = testChild_2.id,
                         groupId = null,

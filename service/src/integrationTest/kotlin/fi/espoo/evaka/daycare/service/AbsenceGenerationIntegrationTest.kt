@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -78,7 +77,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     endDate = placementPeriod.end
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_2.id,
                     validityPeriod = DateRange(today, null),
@@ -96,7 +95,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     endDate = placementPeriod.end
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_3.id,
                     validityPeriod = DateRange(today, null),
@@ -105,7 +104,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             )
 
             // Irregular daily service times but no placement
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_4.id,
                     validityPeriod = DateRange(today, null),
@@ -133,7 +132,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         db.transaction { tx ->
             // Absent on mondays
             listOf(testChild_1.id, testChild_2.id, testChild_3.id).forEach {
-                tx.insertTestDailyServiceTimes(
+                tx.insert(
                     DevDailyServiceTimes(
                         childId = it,
                         validityPeriod = DateRange(today, null),
@@ -234,7 +233,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     endDate = placementPeriod.end
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(today, null),
@@ -309,7 +308,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             )
 
             // Absent on mondays and tuesdays
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     id = dailyServiceTimesId,
                     childId = testChild_1.id,
@@ -363,7 +362,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.deleteChildDailyServiceTimes(dailyServiceTimesId)
 
             // Absent on mondays and wednesdays
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(today, null),

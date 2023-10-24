@@ -323,9 +323,7 @@ class DevApi(
 
     @PostMapping("/daycare-group-acl")
     fun createDaycareGroupAclRows(db: Database, @RequestBody rows: List<DevDaycareGroupAcl>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-groups")
@@ -558,7 +556,7 @@ class DevApi(
 
     @PostMapping("/income")
     fun createIncome(db: Database, @RequestBody body: DevIncome) {
-        db.connect { dbc -> dbc.transaction { it.insertTestIncome(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/income-notifications")
@@ -674,9 +672,7 @@ RETURNING id
 
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> guardians.forEach { tx.insertTestGuardian(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> guardians.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/child")
@@ -725,9 +721,7 @@ RETURNING id
 
     @PostMapping("/backup-cares")
     fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> backupCares.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/applications")
@@ -1484,11 +1478,11 @@ RETURNING id
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
-        db.connect { dbc -> dbc.transaction { it.insertTestStaffAttendancePlan(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
-        db.connect { dbc -> dbc.transaction { it.insertTestDailyServiceTimes(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time-notification")
     fun addDailyServiceTimeNotification(
@@ -1823,7 +1817,7 @@ data class DevCareArea(
 )
 
 data class DevBackupCare(
-    val id: BackupCareId? = null,
+    val id: BackupCareId = BackupCareId(UUID.randomUUID()),
     val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId? = null,

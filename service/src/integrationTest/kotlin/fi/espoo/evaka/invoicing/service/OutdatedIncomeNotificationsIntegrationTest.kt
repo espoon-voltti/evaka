@@ -36,9 +36,6 @@ import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertIncomeStatement
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -94,7 +91,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             val areaId = tx.insert(DevCareArea())
             daycareId = tx.insert(DevDaycare(areaId = areaId))
             childId = tx.insert(testChild).also { tx.insert(DevChild(testChild.id)) }
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
+            tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
             val placementId =
@@ -127,7 +124,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         db.transaction {
             // This income is expiring, but not notified because there is another income starting
             // afterwards
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -136,7 +133,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 )
             )
 
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -152,7 +149,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `expiring income is notified 4 weeks beforehand`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -173,7 +170,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `if expiration date is in the past no notification is sent`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -191,7 +188,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -200,7 +197,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 )
             )
 
-            it.insertIncomeStatement(
+            it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
                     personId = guardianId,
@@ -220,7 +217,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         val incomeExpirationDate = clock.today().plusWeeks(4)
 
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -229,7 +226,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 )
             )
 
-            it.insertIncomeStatement(
+            it.insert(
                 DevIncomeStatement(
                     id = IncomeStatementId(UUID.randomUUID()),
                     personId = guardianId,
@@ -248,7 +245,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     fun `If there is no placement a day after expiration no notification is sent`() {
         val expirationDate = clock.today().plusWeeks(2)
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -287,7 +284,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `If there is no invoicable service need option for the placement no notification is sent`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -307,7 +304,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `if first notification was already sent and it is not yet time for the second notification a new first notification is not sent`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -341,7 +338,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `second notification is only sent after first notification`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -384,7 +381,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `Final notification is sent after income expires`() {
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
@@ -489,7 +486,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 )
 
             tx.insert(testChild2).also { tx.insert(DevChild(testChild2.id)) }
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = testChild2.id))
+            tx.insert(DevGuardian(guardianId = guardianId, childId = testChild2.id))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
             val placementId =
@@ -511,7 +508,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 confirmedAt = null
             )
 
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,

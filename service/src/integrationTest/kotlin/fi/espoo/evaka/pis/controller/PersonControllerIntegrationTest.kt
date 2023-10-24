@@ -23,8 +23,6 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -127,7 +125,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         db.transaction { tx ->
             val guardianId = tx.insert(DevPerson())
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = person.id))
+            tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
         }
 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
@@ -144,7 +142,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         db.transaction { tx ->
             val childId = tx.insert(DevPerson())
-            tx.insertTestGuardian(DevGuardian(guardianId = person.id, childId = childId))
+            tx.insert(DevGuardian(guardianId = person.id, childId = childId))
         }
 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
@@ -318,9 +316,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.createUpdate("DELETE FROM guardian WHERE child_id = :id")
                 .bind("id", blockedDependant.id)
                 .execute()
-            tx.insertTestGuardianBlocklistEntry(
-                DevGuardianBlocklistEntry(guardianId, blockedDependant.id)
-            )
+            tx.insert(DevGuardianBlocklistEntry(guardianId, blockedDependant.id))
             tx.execute(
                 "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
             )
@@ -350,9 +346,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.createUpdate("DELETE FROM guardian WHERE guardian_id = :id")
                 .bind("id", blockedGuardian.id)
                 .execute()
-            tx.insertTestGuardianBlocklistEntry(
-                DevGuardianBlocklistEntry(blockedGuardian.id, childId)
-            )
+            tx.insert(DevGuardianBlocklistEntry(blockedGuardian.id, childId))
             tx.execute(
                 "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
             )

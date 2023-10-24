@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -125,7 +124,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 startDate = LocalDate.of(2015, 1, 1),
                 endDate = LocalDate.of(2030, 1, 1)
             )
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     adultIdDuplicate,
                     validFrom = validFrom,
