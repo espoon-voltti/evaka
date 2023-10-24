@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { FileInput, Page, TextInput } from '../../utils/page'
+import { Checkbox, FileInput, Page, TextInput } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   constructor(private readonly page: Page) {}
@@ -44,7 +44,7 @@ export class CitizenChildIncomeStatementEditPage {
   startDateInput = new TextInput(this.page.findByDataQa('start-date'))
 
   private otherInfoInput = new TextInput(this.page.findByDataQa('other-info'))
-  private assure = this.page.findByDataQa('assure-checkbox')
+  private assure = new Checkbox(this.page.findByDataQa('assure-checkbox'))
   private saveButton = this.page.findByDataQa('save-btn')
 
   async waitUntilReady() {
@@ -61,7 +61,7 @@ export class CitizenChildIncomeStatementEditPage {
   }
 
   async selectAssure() {
-    await this.assure.click()
+    await this.assure.check()
   }
 
   async save() {

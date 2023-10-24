@@ -9,6 +9,7 @@ export default class CitizenIncomePage {
 
   rows = this.page.findAll('tbody tr')
   requiredAttachments = this.page.find('[data-qa="required-attachments"]')
+  assureCheckBox = new Checkbox(this.page.find('[data-qa="assure-checkbox"]'))
 
   async createNewIncomeStatement() {
     await this.page.find('[data-qa="new-income-statement-btn"]').click()
@@ -32,7 +33,7 @@ export default class CitizenIncomePage {
   }
 
   async checkAssured() {
-    await this.page.find('[data-qa="assure-checkbox"]').click()
+    await this.assureCheckBox.check()
   }
 
   async checkIncomesRegisterConsent() {
