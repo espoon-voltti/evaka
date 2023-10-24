@@ -70,8 +70,8 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
             group = tx.insert(DevDaycareGroup(daycareId = unit))
             groupAccount = tx.createDaycareGroupMessageAccount(group)
             device = tx.insert(DevMobileDevice(unitId = unit))
-            val citizen = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            citizenAccount = tx.createPersonMessageAccount(citizen)
+            val citizen = tx.insert(DevPerson(), DevPersonType.ADULT)
+            citizenAccount = tx.getCitizenMessageAccount(citizen)
         }
     }
 

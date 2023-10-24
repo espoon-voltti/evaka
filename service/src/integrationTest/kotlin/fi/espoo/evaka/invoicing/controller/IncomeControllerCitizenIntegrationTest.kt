@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.snDaycareContractDays15
 import java.time.LocalDate
@@ -68,8 +67,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.RAW_ROW)
-            tx.upsertCitizenUser(guardianId)
+            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
             guardianAuthenticatedUser =
                 AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.STRONG)
             val areaId = tx.insert(DevCareArea())

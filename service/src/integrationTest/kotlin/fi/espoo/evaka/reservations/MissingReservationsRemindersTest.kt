@@ -31,7 +31,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.snDefaultDaycare
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -74,8 +73,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.RAW_ROW)
-            tx.upsertCitizenUser(guardian)
+            guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
             val areaId = tx.insert(DevCareArea())
             val daycareId =
                 tx.insert(

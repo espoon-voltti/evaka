@@ -9,8 +9,8 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.archiveThread
-import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getArchiveFolderId
+import fi.espoo.evaka.messaging.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.getReceivedThreads
 import fi.espoo.evaka.messaging.getThreads
@@ -35,7 +35,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -230,8 +229,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val (senderAccount, senderDuplicateAccount) =
             db.transaction { tx ->
                 listOf(senderId, senderIdDuplicate).map {
-                    tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
-                    tx.createPersonMessageAccount(it)
+                    tx.insert(DevPerson(id = it), DevPersonType.ADULT)
+                    tx.getCitizenMessageAccount(it)
                 }
             }
 
@@ -274,8 +273,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 listOf(receiverId, receiverIdDuplicate)
                     .map {
-                        tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
-                        tx.createPersonMessageAccount(it)
+                        tx.insert(DevPerson(id = it), DevPersonType.ADULT)
+                        tx.getCitizenMessageAccount(it)
                     }
                     .also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
             }
@@ -339,8 +338,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val (receiverAccount, receiverDuplicateAccount) =
             db.transaction { tx ->
                 listOf(receiverId, receiverIdDuplicate).map {
-                    tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
-                    tx.createPersonMessageAccount(it)
+                    tx.insert(DevPerson(id = it), DevPersonType.ADULT)
+                    tx.getCitizenMessageAccount(it)
                 }
             }
         db.transaction { tx ->
@@ -435,10 +434,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val person = DevPerson()
         val duplicate = DevPerson()
         db.transaction {
-            it.insert(person, DevPersonType.RAW_ROW)
-            it.upsertCitizenUser(person.id)
-            it.insert(duplicate, DevPersonType.RAW_ROW)
-            it.upsertCitizenUser(duplicate.id)
+            it.insert(person, DevPersonType.ADULT)
+            it.insert(duplicate, DevPersonType.ADULT)
         }
         db.read {
             val (citizenId, name) =

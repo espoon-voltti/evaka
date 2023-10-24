@@ -99,9 +99,8 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
 
             testPersons.forEach {
-                tx.insert(it, DevPersonType.RAW_ROW)
+                tx.insert(it, DevPersonType.ADULT)
                 tx.insertGuardian(it.id, testChild_1.id)
-                tx.createPersonMessageAccount(it.id)
             }
 
             tx.insert(DevEmployee(id = employeeId))

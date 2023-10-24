@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
@@ -121,10 +120,6 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             // Child 2 has a placement but is not in any group => should not show up in receivers
             // list
             insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unit.id)
-
-            listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id).forEach {
-                tx.createPersonMessageAccount(it)
-            }
 
             // Child 3 has no guardians => should not show up in receivers list
             insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnit.id)

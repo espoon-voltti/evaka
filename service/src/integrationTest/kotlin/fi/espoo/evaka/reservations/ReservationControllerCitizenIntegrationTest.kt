@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
@@ -93,8 +92,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(testDecisionMaker_1)
             tx.insert(DevEmployee(testStaffId))
 
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.upsertCitizenUser(testAdult_1.id)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
 
             listOf(testChild_1, testChild_2).forEach { child ->
                 tx.insert(child, DevPersonType.RAW_ROW)

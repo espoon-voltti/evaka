@@ -58,8 +58,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     protected fun createTestCitizen(authLevel: CitizenAuthLevel) =
         db.transaction { tx ->
-            val id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            tx.upsertCitizenUser(id)
+            val id = tx.insert(DevPerson(), DevPersonType.ADULT)
             AuthenticatedUser.Citizen(id, authLevel)
         }
 

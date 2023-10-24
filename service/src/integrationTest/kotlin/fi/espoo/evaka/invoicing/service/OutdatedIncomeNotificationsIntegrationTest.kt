@@ -42,7 +42,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.snDaycareContractDays15
 import java.math.BigDecimal
@@ -87,8 +86,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.RAW_ROW)
-            tx.upsertCitizenUser(guardianId)
+            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
             val areaId = tx.insert(DevCareArea())
             daycareId = tx.insert(DevDaycare(areaId = areaId))
             childId =

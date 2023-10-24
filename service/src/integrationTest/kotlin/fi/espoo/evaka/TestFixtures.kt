@@ -57,7 +57,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -556,10 +555,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         updateDaycareAcl(testDaycare.id, unitSupervisorExternalId, UserRole.UNIT_SUPERVISOR)
     }
 
-    allAdults.forEach {
-        insert(it, DevPersonType.RAW_ROW)
-        upsertCitizenUser(it.id)
-    }
+    allAdults.forEach { insert(it, DevPersonType.ADULT) }
 
     allChildren.forEach {
         insert(it, DevPersonType.RAW_ROW)

@@ -48,9 +48,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevPerson(id = personId, firstName = "Firstname", lastName = "Person"),
-                DevPersonType.RAW_ROW
+                DevPersonType.ADULT
             )
-            it.createPersonMessageAccount(personId)
 
             it.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")

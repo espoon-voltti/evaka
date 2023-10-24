@@ -76,14 +76,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
         db.transaction { tx ->
-            tx.insert(person1, DevPersonType.RAW_ROW)
-            tx.insert(person2, DevPersonType.RAW_ROW)
+            tx.insert(person1, DevPersonType.ADULT)
+            tx.insert(person2, DevPersonType.ADULT)
             tx.insert(employee1)
             tx.insert(employee2)
             accounts =
                 TestAccounts(
-                    person1 = tx.createAccount(person1),
-                    person2 = tx.createAccount(person2),
+                    person1 = tx.getAccount(person1),
+                    person2 = tx.getAccount(person2),
                     employee1 = tx.createAccount(employee1),
                     employee2 = tx.createAccount(employee2)
                 )
@@ -789,9 +789,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun unreadMessagesCount(account: MessageAccount) =
         db.read { it.getUnreadMessagesCounts(readTime, setOf(account.id)).first().unreadCount }
 
-    private fun Database.Transaction.createAccount(person: DevPerson) =
+    private fun Database.Transaction.getAccount(person: DevPerson) =
         MessageAccount(
-            id = createPersonMessageAccount(person.id),
+            id = getCitizenMessageAccount(person.id),
             name = "${person.lastName} ${person.firstName}",
             type = AccountType.CITIZEN
         )

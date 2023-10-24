@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -158,9 +157,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group2Account = insertGroup(groupId2)
 
             fun insertPerson(person: DevPerson): MessageAccountId {
-                val id = tx.insert(person, DevPersonType.RAW_ROW)
-                tx.upsertCitizenUser(id)
-                return tx.createPersonMessageAccount(person.id)
+                val id = tx.insert(person, DevPersonType.ADULT)
+                return tx.getCitizenMessageAccount(id)
             }
             person1Account = insertPerson(testAdult_1)
             person2Account = insertPerson(testAdult_2)
