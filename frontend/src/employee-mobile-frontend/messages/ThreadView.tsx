@@ -19,6 +19,7 @@ import {
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -37,23 +38,42 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faReply } from 'lib-icons'
 
+import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 
 import { getAttachmentUrl } from './api'
+import { threadQuery } from './queries'
 import { MessageContext } from './state'
 
 interface ReceivedThreadViewProps {
   accountId: UUID
-  thread: MessageThread
+  threadId: UUID
   onBack: () => void
 }
 
 export const ReceivedThreadView = React.memo(function ReceivedThreadView({
   accountId,
-  thread: { id: threadId, messages, title, type, children },
+  threadId,
   onBack
 }: ReceivedThreadViewProps) {
+  const thread = useQueryResult(threadQuery(accountId, threadId))
+  return renderResult(thread, (thread) => (
+    <ReceivedThread accountId={accountId} thread={thread} onBack={onBack} />
+  ))
+})
+
+interface ReceivedThreadProps {
+  accountId: UUID
+  thread: MessageThread
+  onBack: () => void
+}
+
+const ReceivedThread = React.memo(function ReceivedThread({
+  accountId,
+  thread: { id: threadId, messages, title, type, children },
+  onBack
+}: ReceivedThreadProps) {
   const { i18n } = useTranslation()
   const { sendReply, setReplyContent, getReplyContent } =
     useContext(MessageContext)
@@ -89,6 +109,7 @@ export const ReceivedThreadView = React.memo(function ReceivedThreadView({
   const onSubmit = useCallback(async () => {
     const result = await sendReply({
       accountId,
+      threadId,
       content: replyContent,
       messageId: messages.slice(-1)[0].id,
       recipientAccountIds: recipients.filter((r) => r.selected).map((r) => r.id)
@@ -97,7 +118,7 @@ export const ReceivedThreadView = React.memo(function ReceivedThreadView({
       setReplyEditorVisible(false)
     }
     return result
-  }, [accountId, messages, recipients, replyContent, sendReply])
+  }, [accountId, threadId, messages, recipients, replyContent, sendReply])
 
   const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
 

@@ -18,7 +18,8 @@ import {
   getMessageDrafts,
   initDraft,
   saveDraft,
-  deleteDraft
+  deleteDraft,
+  getThread
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
@@ -32,6 +33,11 @@ const queryKeys = createQueryKeys('messages', {
   receivedMessages: (accountId: string) => ['receivedMessages', accountId],
   sentMessages: (accountId: string) => ['sentMessages', accountId],
   draftMessages: (accountId: string) => ['draftMessages', accountId],
+  thread: (accountId: string, threadId: string) => [
+    'thread',
+    accountId,
+    threadId
+  ],
   recipients: () => ['recipients'],
   unreadCounts: () => ['unreadCounts']
 })
@@ -65,6 +71,11 @@ export const draftMessagesQuery = query({
   queryKey: queryKeys.draftMessages
 })
 
+export const threadQuery = query({
+  api: getThread,
+  queryKey: queryKeys.thread
+})
+
 // The results are dependent on the PIN-logged user
 export const recipientsQuery = query({
   api: getReceivers,
@@ -86,8 +97,9 @@ export const sendMessageMutation = mutation({
 
 export const replyToThreadMutation = mutation({
   api: replyToThread,
-  invalidateQueryKeys: ({ accountId }) => [
-    queryKeys.receivedMessages(accountId)
+  invalidateQueryKeys: ({ accountId, threadId }) => [
+    queryKeys.receivedMessages(accountId),
+    queryKeys.thread(accountId, threadId)
   ]
 })
 

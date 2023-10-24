@@ -30,7 +30,7 @@ import { markThreadReadMutation, receivedMessagesQuery } from './queries'
 import { MessageContext } from './state'
 
 interface Props {
-  onSelectThread: (thread: MessageThread) => void
+  onSelectThread: (threadId: UUID) => void
 }
 
 export default React.memo(function ReceivedThreadsList({
@@ -55,7 +55,7 @@ export default React.memo(function ReceivedThreadsList({
 
   const selectThread = useCallback(
     (thread: MessageThread) => {
-      onSelectThread(thread)
+      onSelectThread(thread.id)
 
       if (!selectedAccount) throw new Error('Should never happen')
       const { id: accountId } = selectedAccount.account

@@ -11,6 +11,7 @@ import {
   AuthorizedMessageAccount,
   DraftContent,
   MessageReceiversResponse,
+  MessageThread,
   PagedMessageThreads,
   PagedSentMessages,
   PostMessageBody,
@@ -84,7 +85,17 @@ export async function getMessageDrafts(
     .then(({ data }) => data.map(deserializeDraftContent))
 }
 
+export async function getThread(
+  accountId: UUID,
+  threadId: UUID
+): Promise<MessageThread> {
+  return client
+    .get<JsonOf<MessageThread>>(`/messages/${accountId}/thread/${threadId}`)
+    .then(({ data }) => deserializeMessageThread(data))
+}
+
 export type ReplyToThreadParams = ReplyToMessageBody & {
+  threadId: UUID
   messageId: UUID
   accountId: UUID
 }

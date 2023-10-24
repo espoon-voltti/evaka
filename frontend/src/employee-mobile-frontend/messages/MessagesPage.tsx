@@ -11,7 +11,6 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import {
   AuthorizedMessageAccount,
   DraftContent,
-  MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
@@ -43,7 +42,7 @@ type Tab = 'received' | 'sent' | 'drafts'
 
 type UiState =
   | { type: 'list' }
-  | { type: 'receivedThread'; thread: MessageThread }
+  | { type: 'receivedThread'; threadId: UUID }
   | { type: 'sentMessage'; message: SentMessage }
   | { type: 'newMessage'; draft: DraftContent | undefined }
 
@@ -87,7 +86,7 @@ export default function MessagesPage() {
   const [uiState, setUiState] = useState<UiState>({ type: 'list' })
 
   const selectReceivedThread = useCallback(
-    (thread: MessageThread) => setUiState({ type: 'receivedThread', thread }),
+    (threadId: UUID) => setUiState({ type: 'receivedThread', threadId }),
     []
   )
 
@@ -172,7 +171,7 @@ export default function MessagesPage() {
               >
                 {uiState.type === 'receivedThread' ? (
                   <ReceivedThreadView
-                    thread={uiState.thread}
+                    threadId={uiState.threadId}
                     onBack={onBack}
                     accountId={selectedAccount.account.id}
                   />
