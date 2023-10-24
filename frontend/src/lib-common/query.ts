@@ -23,23 +23,19 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
-export interface QueryDescription<Data, Key extends QueryKey> {
+export interface QueryDescription<Data> {
   api: () => Promise<Data>
-  queryKey: Key
-  queryOptions: UseQueryOptions<Data, unknown, Data, Key> | undefined
+  queryKey: QueryKey
+  queryOptions: UseQueryOptions<Data, unknown, Data> | undefined
 }
 
-export function query<
-  Args extends unknown[],
-  Data,
-  Key extends QueryKey
->(opts: {
+export function query<Args extends unknown[], Data>(opts: {
   api: (...arg: Args) => Promise<Data>
-  queryKey: (...arg: Args) => Key
-  options?: UseQueryOptions<Data, unknown, Data, Key>
+  queryKey: (...arg: Args) => QueryKey
+  options?: UseQueryOptions<Data, unknown, Data>
 }): Args extends []
-  ? QueryDescription<Data, Key>
-  : (...arg: Args) => QueryDescription<Data, Key> {
+  ? QueryDescription<Data>
+  : (...arg: Args) => QueryDescription<Data> {
   /* eslint-disable */
   const { api, queryKey, options } = opts
   return (
@@ -54,12 +50,9 @@ export function query<
   /* eslint-enable */
 }
 
-export function useQuery<Data, Key extends QueryKey>(
-  queryDescription: QueryDescription<Data, Key>,
-  options?: Omit<
-    UseQueryOptions<Data, unknown, Data, Key>,
-    'queryKey' | 'queryFn'
-  >
+export function useQuery<Data>(
+  queryDescription: QueryDescription<Data>,
+  options?: Omit<UseQueryOptions<Data, unknown, Data>, 'queryKey' | 'queryFn'>
 ): UseQueryResult<Data> {
   const { api, queryKey, queryOptions } = queryDescription
   return useQueryOriginal({
@@ -85,9 +78,9 @@ export function queryResult<T>(
   return Loading.of()
 }
 
-export function useQueryResult<Data, Key extends QueryKey>(
-  queryDescription: QueryDescription<Data, Key>,
-  options?: UseQueryOptions<Data, unknown, Data, Key>
+export function useQueryResult<Data>(
+  queryDescription: QueryDescription<Data>,
+  options?: UseQueryOptions<Data, unknown, Data>
 ): Result<Data> {
   const { data, error, isFetching } = useQuery(queryDescription, options)
   return useMemo(
@@ -102,36 +95,29 @@ type Paged<T> = {
   total: number
 }
 
-export interface PagedInfiniteQueryDescription<Data, Id, Key extends QueryKey> {
+export interface PagedInfiniteQueryDescription<Data, Id> {
   api: (pageArg: number) => Promise<Paged<Data>>
-  queryKey: Key
+  queryKey: QueryKey
   id: (data: Data) => Id
   queryOptions?: UseInfiniteQueryOptions<
     Paged<Data>,
     unknown,
     Paged<Data>,
-    Paged<Data>,
-    Key
+    Paged<Data>
   >
 }
 
-export function pagedInfiniteQuery<
-  Args extends unknown[],
-  Data,
-  Id,
-  Key extends QueryKey
->(opts: {
+export function pagedInfiniteQuery<Args extends unknown[], Data, Id>(opts: {
   api: (...args: Args) => (pageArg: number) => Promise<Paged<Data>>
-  queryKey: (...arg: Args) => Key
+  queryKey: (...arg: Args) => QueryKey
   id: (data: Data) => Id
   options?: UseInfiniteQueryOptions<
     Paged<Data>,
     unknown,
     Paged<Data>,
-    Paged<Data>,
-    Key
+    Paged<Data>
   >
-}): (...arg: Args) => PagedInfiniteQueryDescription<Data, Id, Key> {
+}): (...arg: Args) => PagedInfiniteQueryDescription<Data, Id> {
   const { api, queryKey, id, options } = opts
   return (...args: Args) => ({
     api: api(...args),
@@ -148,14 +134,13 @@ export interface PagedInfiniteQueryResult<Data> {
   transform: (f: (data: Data) => Data) => void
 }
 
-export function usePagedInfiniteQueryResult<Data, Id, Key extends QueryKey>(
-  queryDescription: PagedInfiniteQueryDescription<Data, Id, Key>,
+export function usePagedInfiniteQueryResult<Data, Id>(
+  queryDescription: PagedInfiniteQueryDescription<Data, Id>,
   options?: UseInfiniteQueryOptions<
     Paged<Data>,
     unknown,
     Paged<Data>,
-    Paged<Data>,
-    Key
+    Paged<Data>
   >
 ): PagedInfiniteQueryResult<Data> {
   const queryClient = useQueryClient()
@@ -225,20 +210,20 @@ export function usePagedInfiniteQueryResult<Data, Id, Key extends QueryKey>(
   }
 }
 
-export interface MutationDescription<Arg, Data, Key extends QueryKey> {
+export interface MutationDescription<Arg, Data> {
   api: (arg: Arg) => Promise<Data>
-  invalidateQueryKeys?: ((arg: Arg) => Key[]) | undefined
+  invalidateQueryKeys?: ((arg: Arg) => QueryKey[]) | undefined
 }
 
-export function mutation<Arg, Data, Key extends QueryKey>(
-  description: MutationDescription<Arg, Data, Key>
-): MutationDescription<Arg, Data, Key> {
+export function mutation<Arg, Data>(
+  description: MutationDescription<Arg, Data>
+): MutationDescription<Arg, Data> {
   return description
 }
 
-export async function invalidateDependencies<Arg, Key extends QueryKey>(
+export async function invalidateDependencies<Arg>(
   queryClient: QueryClient,
-  mutationDescription: MutationDescription<Arg, unknown, Key>,
+  mutationDescription: MutationDescription<Arg, unknown>,
   arg: Arg
 ) {
   const { invalidateQueryKeys } = mutationDescription
@@ -249,8 +234,8 @@ export async function invalidateDependencies<Arg, Key extends QueryKey>(
   }
 }
 
-export function useMutation<Arg, Data, Key extends QueryKey>(
-  mutationDescription: MutationDescription<Arg, Data, Key>,
+export function useMutation<Arg, Data>(
+  mutationDescription: MutationDescription<Arg, Data>,
   options?: Omit<UseMutationOptions<Data, unknown, Arg>, 'mutationFn'>
 ): UseMutationResult<Data, unknown, Arg> {
   const { api } = mutationDescription
@@ -267,8 +252,8 @@ export function useMutation<Arg, Data, Key extends QueryKey>(
 
 type Override<T, U> = Omit<T, keyof U> & U
 
-export function useMutationResult<Arg, Data, Key extends QueryKey>(
-  mutationDescription: MutationDescription<Arg, Data, Key>,
+export function useMutationResult<Arg, Data>(
+  mutationDescription: MutationDescription<Arg, Data>,
   options?: Omit<UseMutationOptions<Data, unknown, Arg>, 'mutationFn'>
 ): Override<
   UseMutationResult<Data, unknown, Arg>,
@@ -312,7 +297,7 @@ export function queryKeysNamespace<QueryKeyPrefix extends string>() {
   /* eslint-enable */
 }
 
-function constantQuery<R>(result: R): QueryDescription<R, QueryKey> {
+function constantQuery<R>(result: R): QueryDescription<R> {
   return {
     api: () => Promise.resolve(result),
     queryKey: ['builtin', 'constant', result],
@@ -324,13 +309,13 @@ function constantQuery<R>(result: R): QueryDescription<R, QueryKey> {
 }
 
 export function queryOrDefault<T, R, D>(
-  query: (arg: T) => QueryDescription<R, QueryKey>,
+  query: (arg: T) => QueryDescription<R>,
   defaultValue: D
-): (arg: T | null | undefined) => QueryDescription<R | D, QueryKey> {
+): (arg: T | null | undefined) => QueryDescription<R | D> {
   return (arg) =>
     (arg !== undefined && arg !== null
       ? query(arg)
-      : constantQuery(defaultValue)) as QueryDescription<R | D, QueryKey>
+      : constantQuery(defaultValue)) as QueryDescription<R | D>
 }
 
 export const cancelMutation: unique symbol = Symbol('cancelMutation')
@@ -351,42 +336,29 @@ export function second<B>(value?: B): Either<never, B | void> {
   return { tag: 'second', value }
 }
 
-export function useSelectMutation<
-  ArgA,
-  DataA,
-  KeyA extends QueryKey,
-  SelectA,
-  ArgB,
-  DataB,
-  KeyB extends QueryKey,
-  SelectB
->(
+export function useSelectMutation<ArgA, DataA, SelectA, ArgB, DataB, SelectB>(
   select: () => Either<SelectA, SelectB> | typeof cancelMutation,
   firstMutation: [
-    MutationDescription<ArgA, DataA, KeyA>,
+    MutationDescription<ArgA, DataA>,
     (value: SelectA) => ArgA | typeof cancelMutation
   ],
   secondMutation: [
-    MutationDescription<ArgB, DataB, KeyB>,
+    MutationDescription<ArgB, DataB>,
     (value: SelectB) => ArgB | typeof cancelMutation
   ]
 ): [
-  MutationDescription<Either<ArgA, ArgB>, Either<DataA, DataB>, QueryKey>,
+  MutationDescription<Either<ArgA, ArgB>, Either<DataA, DataB>>,
   () => Either<ArgA, ArgB> | typeof cancelMutation
 ] {
   const [mutationA, onClickA] = firstMutation
   const [mutationB, onClickB] = secondMutation
   const mutation = useMemo(
-    (): MutationDescription<
-      Either<ArgA, ArgB>,
-      Either<DataA, DataB>,
-      QueryKey
-    > => ({
+    (): MutationDescription<Either<ArgA, ArgB>, Either<DataA, DataB>> => ({
       api: (arg: Either<ArgA, ArgB>): Promise<Either<DataA, DataB>> =>
         arg.tag === 'first'
           ? mutationA.api(arg.value).then((r) => first(r))
           : mutationB.api(arg.value).then((r) => second(r)),
-      invalidateQueryKeys: (arg: Either<ArgA, ArgB>): KeyA[] | KeyB[] =>
+      invalidateQueryKeys: (arg: Either<ArgA, ArgB>): QueryKey[] =>
         arg.tag === 'first'
           ? mutationA.invalidateQueryKeys?.(arg.value) ?? []
           : mutationB.invalidateQueryKeys?.(arg.value) ?? []
