@@ -80,7 +80,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import java.time.Instant
 import java.time.LocalDate
@@ -1307,17 +1306,6 @@ RETURNING id
 """
         )
         .let(::EmployeePinId)
-
-fun Database.Transaction.insert(evakaUser: EvakaUser) =
-    insertTestDataRow(
-            evakaUser,
-            """
-INSERT INTO evaka_user (id, type, name)
-VALUES (:id, :type, :name)
-RETURNING id
-"""
-        )
-        .let(::EvakaUserId)
 
 fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
     createQuery("SELECT id FROM employee WHERE external_id = :id")

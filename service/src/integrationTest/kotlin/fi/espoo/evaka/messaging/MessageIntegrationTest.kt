@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -43,8 +42,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -157,13 +155,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             fun insertPerson(person: DevPerson): MessageAccountId {
                 val id = tx.insert(person)
-                tx.insert(
-                    EvakaUser(
-                        id = EvakaUserId(id.raw),
-                        type = EvakaUserType.CITIZEN,
-                        name = "${person.lastName} ${person.firstName}"
-                    )
-                )
+                tx.upsertCitizenUser(id)
                 return tx.createPersonMessageAccount(person.id)
             }
             person1Account = insertPerson(testAdult_1)
