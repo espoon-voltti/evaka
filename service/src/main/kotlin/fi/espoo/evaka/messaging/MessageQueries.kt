@@ -1458,7 +1458,7 @@ fun Database.Transaction.undoMessageReply(
         )
     }
     lockMessageContentForUpdate(undoTarget.contentId)
-    this.deleteMessages(undoTarget.contentId)
+    this.deleteMessages(undoTarget.contentId, deleteThreads = false)
     this.resetSenderThreadParticipants(undoTarget.threadId, accountId)
 }
 
@@ -1503,14 +1503,14 @@ LIMIT 1 -- all threads with same content are identical in regards to this query
             .bind("contentId", contentId)
             .exactlyOne<UpdatableDraftContent>()
 
-    this.deleteMessages(contentId)
+    this.deleteMessages(contentId, deleteThreads = true)
 
     val draftId = this.initDraft(accountId)
     this.updateDraft(accountId, draftId, draftContent)
     return draftId
 }
 
-fun Database.Transaction.deleteMessages(contentId: MessageContentId) {
+fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThreads: Boolean) {
     this.createUpdate<Any> {
             sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
         }
@@ -1521,22 +1521,25 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId) {
         }
         .execute()
 
-    this.createUpdate<Any> {
-            sql(
-                """
+    if (deleteThreads) {
+        this.createUpdate<Any> {
+                sql(
+                    """
                 DELETE FROM message_thread mt
                 USING message m
-                WHERE mt.id = m.thread_id AND m.content_id = ${bind(contentId)}
+                WHERE m.thread_id = mt.id AND m.content_id = ${bind(contentId)} AND NOT exists(
+                    SELECT FROM message m2
+                    WHERE m2.thread_id = mt.id AND m2.id != m.id
+                )
             """
-            )
-        }
-        .execute()
+                )
+            }
+            .execute()
+    }
 
     // cascade deletes from message and message_recipients
     this.createUpdate<Any> { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }
         .execute()
-
-    // this will leave orphan message_threads which will be cleaned separately
 }
 
 fun Database.Transaction.resetSenderThreadParticipants(
