@@ -23,7 +23,7 @@ import { areaQuery, createUnitMutation } from '../queries'
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const areas = useQueryResult(areaQuery)
+  const areas = useQueryResult(areaQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
 

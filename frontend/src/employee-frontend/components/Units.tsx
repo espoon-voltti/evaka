@@ -57,7 +57,7 @@ export default React.memo(function Units() {
     setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
   const navigate = useNavigate()
-  const units = useQueryResult(unitsQuery)
+  const units = useQueryResult(unitsQuery())
 
   const sortBy = (column: SearchColumn) => {
     if (sortColumn === column) {

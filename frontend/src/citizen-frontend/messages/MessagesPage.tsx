@@ -45,7 +45,7 @@ export default React.memo(function MessagesPage() {
     useContext(MessageContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
-  const receivers = useQueryResult(receiversQuery)
+  const receivers = useQueryResult(receiversQuery())
 
   const user = useUser()
 

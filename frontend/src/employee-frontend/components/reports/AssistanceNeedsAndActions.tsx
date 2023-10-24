@@ -221,8 +221,8 @@ export default React.memo(function AssistanceNeedsAndActions() {
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
     })
-  const areasResult = useQueryResult(areaQuery)
-  const unitsResult = useQueryResult(unitsQuery)
+  const areasResult = useQueryResult(areaQuery())
+  const unitsResult = useQueryResult(unitsQuery())
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
   const [columnFilters, setColumnFilters] =

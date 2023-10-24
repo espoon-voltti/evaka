@@ -26,22 +26,22 @@ import { LanguageMenu } from './shared-components'
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const loggedIn = useUser() !== undefined
 
-  const { data: unreadMessagesCount } = useQuery(unreadMessagesCountQuery, {
+  const { data: unreadMessagesCount } = useQuery(unreadMessagesCountQuery(), {
     enabled: loggedIn
   })
 
   const { data: unreadAssistanceNeedDecisionCounts = [] } = useQuery(
-    assistanceDecisionUnreadCountsQuery,
+    assistanceDecisionUnreadCountsQuery(),
     { enabled: loggedIn }
   )
 
   const { data: unreadAssistanceNeedPreschoolDecisionCounts = [] } = useQuery(
-    assistanceNeedPreschoolDecisionUnreadCountsQuery,
+    assistanceNeedPreschoolDecisionUnreadCountsQuery(),
     { enabled: loggedIn }
   )
 
   const { data: waitingConfirmationCount = 0 } = useQuery(
-    applicationNotificationsQuery,
+    applicationNotificationsQuery(),
     { enabled: loggedIn }
   )
 

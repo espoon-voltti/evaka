@@ -33,21 +33,13 @@ export function query<Args extends unknown[], Data>(opts: {
   api: (...arg: Args) => Promise<Data>
   queryKey: (...arg: Args) => QueryKey
   options?: UseQueryOptions<Data, unknown, Data>
-}): Args extends []
-  ? QueryDescription<Data>
-  : (...arg: Args) => QueryDescription<Data> {
-  /* eslint-disable */
+}): (...arg: Args) => QueryDescription<Data> {
   const { api, queryKey, options } = opts
-  return (
-    api.length === 0
-      ? { api, queryKey: (queryKey as any)(), queryOptions: options }
-      : (...args: Args) => ({
-          api: () => api(...args),
-          queryKey: queryKey(...args),
-          queryOptions: options
-        })
-  ) as any
-  /* eslint-enable */
+  return (...args: Args) => ({
+    api: () => api(...args),
+    queryKey: queryKey(...args),
+    queryOptions: options
+  })
 }
 
 export function useQuery<Data>(

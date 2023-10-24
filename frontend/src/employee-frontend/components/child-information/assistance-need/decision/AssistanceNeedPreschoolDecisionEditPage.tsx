@@ -1028,7 +1028,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
-  const unitsResult = useQueryResult(preschoolUnitsQuery)
+  const unitsResult = useQueryResult(preschoolUnitsQuery())
   const [employeesResult] = useApiState(() => getEmployees(), [])
 
   // invalidate cached decision on onmount

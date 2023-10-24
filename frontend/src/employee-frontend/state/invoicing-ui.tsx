@@ -327,7 +327,7 @@ export const InvoicingUIContextProvider = React.memo(
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
       Result<FinanceDecisionHandlerOption[]>
     >(defaultState.shared.financeDecisionHandlers)
-    const availableAreas = useQueryResult(areaQuery, { enabled: loggedIn })
+    const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
 
     const value = useMemo(
       () => ({

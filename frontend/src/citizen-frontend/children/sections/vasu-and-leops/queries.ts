@@ -34,7 +34,7 @@ export const givePermissionToShareVasuMutation = mutation({
   api: givePermissionToShareVasu,
   invalidateQueryKeys: (documentId) => [
     vasuDocumentQuery(documentId).queryKey,
-    unreadVasuDocumentsCountQuery.queryKey
+    unreadVasuDocumentsCountQuery().queryKey
   ]
 })
 

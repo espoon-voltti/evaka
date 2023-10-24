@@ -30,8 +30,8 @@ export default React.memo(function HolidayPeriodsPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const holidayPeriods = useQueryResult(holidayPeriodsQuery)
-  const questionnaires = useQueryResult(questionnairesQuery)
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
+  const questionnaires = useQueryResult(questionnairesQuery())
 
   const [periodToDelete, setPeriodToDelete] = useState<UUID>()
   const { mutateAsync: deleteHolidayPeriod } = useMutationResult(

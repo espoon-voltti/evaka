@@ -24,7 +24,7 @@ import { guardianApplicationsQuery } from './queries'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
-  const guardianApplications = useQueryResult(guardianApplicationsQuery)
+  const guardianApplications = useQueryResult(guardianApplicationsQuery())
 
   useTitle(t, t.applicationsList.title)
 

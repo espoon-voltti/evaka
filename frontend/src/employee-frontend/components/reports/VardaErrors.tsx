@@ -31,7 +31,7 @@ const FlatList = styled.ul`
 
 export default React.memo(function VardaErrors() {
   const { i18n } = useTranslation()
-  const vardaErrorsResult = useQueryResult(vardaErrorsQuery)
+  const vardaErrorsResult = useQueryResult(vardaErrorsQuery())
   const { mutateAsync: startVardaUpdate, isLoading: isOngoing } =
     useMutationResult(startVardaUpdateMutation)
 

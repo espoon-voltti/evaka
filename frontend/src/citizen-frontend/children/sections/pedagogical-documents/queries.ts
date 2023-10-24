@@ -33,6 +33,6 @@ export const markPedagogicalDocumentAsReadMutation = mutation({
     markPedagogicalDocumentAsRead(arg.documentId),
   invalidateQueryKeys: ({ childId }) => [
     pedagogicalDocumentsQuery(childId).queryKey,
-    unreadPedagogicalDocumentsCountQuery.queryKey
+    unreadPedagogicalDocumentsCountQuery().queryKey
   ]
 })

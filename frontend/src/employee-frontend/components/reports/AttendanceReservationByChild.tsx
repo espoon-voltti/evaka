@@ -64,7 +64,7 @@ export default React.memo(function AttendanceReservationByChild() {
   )
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
-  const units = useQueryResult(unitsQuery)
+  const units = useQueryResult(unitsQuery())
   const groups = useQueryResult(queryOrDefault(unitGroupsQuery, [])(unitId))
   const [report] = useApiState(
     () =>

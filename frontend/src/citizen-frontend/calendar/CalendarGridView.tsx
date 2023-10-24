@@ -92,14 +92,14 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const holidayPeriodResult = useQueryResult(holidayPeriodsQuery)
+  const holidayPeriodResult = useQueryResult(holidayPeriodsQuery())
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
   )
 
   const questionnaireAvailable = isQuestionnaireAvailable(
-    useQueryResult(activeQuestionnaireQuery),
+    useQueryResult(activeQuestionnaireQuery()),
     useUser()
   )
 

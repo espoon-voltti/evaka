@@ -58,7 +58,7 @@ export default function MessagesPage() {
 
   const { groupAccounts, selectedAccount } = useContext(MessageContext)
 
-  const recipients = useQueryResult(recipientsQuery, {
+  const recipients = useQueryResult(recipientsQuery(), {
     enabled: selectedAccount !== undefined
   })
 

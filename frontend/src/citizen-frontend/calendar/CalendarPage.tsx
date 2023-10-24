@@ -86,7 +86,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     [data]
   )
 
-  const holidayPeriods = useQueryResult(holidayPeriodsQuery)
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
   const dayIsHolidayPeriod = useCallback(
     (date: LocalDate) =>
       holidayPeriods
@@ -109,7 +109,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     )
   }, [holidayPeriods])
 
-  const { data: questionnaire } = useQuery(activeQuestionnaireQuery)
+  const { data: questionnaire } = useQuery(activeQuestionnaireQuery())
 
   const firstReservableDate = useMemo(() => {
     if (data.isSuccess) {

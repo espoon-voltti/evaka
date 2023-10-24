@@ -45,7 +45,9 @@ export default React.memo(function CalendarNotifications({
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
-  const incomeExpirationDateResult = useQueryResult(incomeExpirationDatesQuery)
+  const incomeExpirationDateResult = useQueryResult(
+    incomeExpirationDatesQuery()
+  )
   useEffect(() => {
     if (
       !incomeExpirationDateResult.isSuccess ||
@@ -80,8 +82,8 @@ export default React.memo(function CalendarNotifications({
     incomeExpirationDateResult
   ])
 
-  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
-  const { data: holidayPeriods = [] } = useQuery(holidayPeriodsQuery, {
+  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery())
+  const { data: holidayPeriods = [] } = useQuery(holidayPeriodsQuery(), {
     enabled: activeQuestionnaire !== undefined
   })
   useEffect(() => {

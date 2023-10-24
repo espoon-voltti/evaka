@@ -68,7 +68,7 @@ export default React.memo(function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
   const { roles } = useContext(UserContext)
-  const areas = useQueryResult(areaQuery)
+  const areas = useQueryResult(areaQuery())
   const allAreasOption = useMemo(
     () => ({
       id: 'all',

@@ -21,19 +21,19 @@ const empty = {}
 export function useUnreadChildNotifications() {
   const loggedIn = useUser() !== undefined
   const { data: childConsentNotifications = empty } = useQuery(
-    childConsentNotificationsQuery,
+    childConsentNotificationsQuery(),
     { enabled: loggedIn }
   )
   const { data: unreadPedagogicalDocumentsCount = empty } = useQuery(
-    unreadPedagogicalDocumentsCountQuery,
+    unreadPedagogicalDocumentsCountQuery(),
     { enabled: loggedIn }
   )
   const { data: unreadVasuDocumentsCount = empty } = useQuery(
-    unreadVasuDocumentsCountQuery,
+    unreadVasuDocumentsCountQuery(),
     { enabled: loggedIn }
   )
   const { data: unreadChildDocumentsCount = empty } = useQuery(
-    unreadChildDocumentsCountQuery,
+    unreadChildDocumentsCountQuery(),
     { enabled: loggedIn }
   )
 
@@ -66,7 +66,7 @@ export function useUnreadChildNotifications() {
 }
 
 export function useChildrenWithOwnPage(): Child[] {
-  const { data } = useQuery(childrenQuery)
+  const { data } = useQuery(childrenQuery())
   return useMemo(() => {
     if (!data) return []
     return data.filter(

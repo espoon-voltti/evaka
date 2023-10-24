@@ -42,7 +42,7 @@ export default React.memo(function ApplicationCreation() {
   const { childId } = useNonNullableParams<{ childId: string }>()
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
-  const children = useQueryResult(applicationChildrenQuery)
+  const children = useQueryResult(applicationChildrenQuery())
   const childName = useMemo(
     () =>
       children.map((children) => {
