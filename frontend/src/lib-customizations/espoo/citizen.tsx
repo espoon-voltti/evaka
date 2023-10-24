@@ -105,7 +105,7 @@ const customizations: CitizenCustomizations = {
               target="_blank"
               rel="noreferrer"
             >
-              Early education fees as of 1 august 2023 | City of Espoo
+              Early education fees as of 1 August 2023 | City of Espoo
             </a>
           </MultiLineCheckboxLabel>
         ),
