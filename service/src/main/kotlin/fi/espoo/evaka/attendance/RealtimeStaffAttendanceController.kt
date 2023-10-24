@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
-import fi.espoo.evaka.shared.StaffAttendanceId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -149,7 +149,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     data class UpsertStaffAttendance(
-        val attendanceId: StaffAttendanceId?,
+        val attendanceId: StaffAttendanceRealtimeId?,
         val employeeId: EmployeeId,
         val groupId: GroupId?,
         val arrived: HelsinkiDateTime,
@@ -261,7 +261,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     data class StaffAttendanceUpsert(
-        val id: StaffAttendanceId?,
+        val id: StaffAttendanceRealtimeId?,
         val groupId: GroupId?,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?,
@@ -421,7 +421,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable attendanceId: StaffAttendanceId
+        @PathVariable attendanceId: StaffAttendanceRealtimeId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
