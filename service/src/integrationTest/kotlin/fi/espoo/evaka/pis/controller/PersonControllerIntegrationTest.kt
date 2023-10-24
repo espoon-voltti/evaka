@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -124,7 +125,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            val guardianId = tx.insert(DevPerson())
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
         }
 
@@ -141,7 +142,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            val childId = tx.insert(DevPerson())
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = person.id, childId = childId))
         }
 
@@ -157,7 +158,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            val fosterParentId = tx.insert(DevPerson())
+            val fosterParentId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(
                 DevFosterParent(
                     parentId = fosterParentId,
@@ -181,7 +182,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            val childId = tx.insert(DevPerson())
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(
                 DevFosterParent(
                     parentId = person.id,
@@ -304,7 +305,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         lastName = "Karhula",
                         firstName = "Johannes Olavi Antero Tapio",
                         ssn = "070644-937X"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             }
 
@@ -334,7 +336,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         lastName = "Karhula",
                         firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
                         ssn = "070714A9126"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             }
 
@@ -366,7 +369,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
                 .let { tx.getPersonById(it)!! }
         }

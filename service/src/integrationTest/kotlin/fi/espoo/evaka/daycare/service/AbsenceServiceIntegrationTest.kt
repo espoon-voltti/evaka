@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -993,7 +994,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val childId2 = ChildId(UUID.randomUUID())
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL_DAYCARE)
         db.transaction {
-            it.insert(DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)))
+            it.insert(
+                DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)),
+                DevPersonType.RAW_ROW
+            )
             it.insert(DevChild(childId2))
         }
 

@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -73,7 +74,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson(email = guardianEmail))
+            guardian = tx.insert(DevPerson(email = guardianEmail), DevPersonType.RAW_ROW)
             tx.upsertCitizenUser(guardian)
             val areaId = tx.insert(DevCareArea())
             val daycareId =
@@ -85,7 +86,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
-            child = tx.insert(DevPerson()).also { tx.insert(DevChild(it)) }
+            child = tx.insert(DevPerson(), DevPersonType.RAW_ROW).also { tx.insert(DevChild(it)) }
             tx.insert(DevGuardian(guardianId = guardian, childId = child))
             tx.insert(
                 DevPlacement(

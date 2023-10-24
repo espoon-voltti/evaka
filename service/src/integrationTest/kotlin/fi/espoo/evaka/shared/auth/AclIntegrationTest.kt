@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -71,10 +72,10 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             val areaId = it.insert(DevCareArea(name = "Test area"))
             daycareId = it.insert(DevDaycare(areaId = areaId))
             groupId = it.insert(DevDaycareGroup(daycareId = daycareId))
-            guardianId = it.insert(DevPerson())
-            childId = it.insert(DevPerson())
+            guardianId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
+            childId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
             it.insert(DevChild(id = childId))
-            fridgeParentId = it.insert(DevPerson())
+            fridgeParentId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
             it.insert(
                 DevFridgeChild(
                     childId = childId,

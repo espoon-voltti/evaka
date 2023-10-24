@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -75,8 +76,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare.copy(language = Language.sv))
-            tx.insert(testAdult_2)
-            tx.insert(testChild_1)
+            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(DevChild(testChild_1.id))
             tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id))
             tx.insertTestPlacement(

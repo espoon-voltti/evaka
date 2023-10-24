@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -152,7 +153,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            tx.insert(testChild_1)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(DevChild(testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -507,7 +508,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val duplicateId =
             db.transaction { tx ->
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,
@@ -534,7 +536,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val duplicateId =
             db.transaction { tx ->
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,
@@ -567,7 +570,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(childId))
                 tx.insertTestPlacement(
                     childId = childId,

@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -345,7 +346,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 postOffice = person.postOffice,
                 email = person.email,
                 restrictedDetailsEnabled = person.restrictedDetailsEnabled
-            )
+            ),
+            DevPersonType.RAW_ROW
         )
 
     private fun Database.Transaction.insertChild(person: DevPerson) {

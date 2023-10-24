@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -45,7 +46,10 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 36)))
         db.transaction {
-            it.insert(DevPerson(id = personId, firstName = "Firstname", lastName = "Person"))
+            it.insert(
+                DevPerson(id = personId, firstName = "Firstname", lastName = "Person"),
+                DevPersonType.RAW_ROW
+            )
             it.createPersonMessageAccount(personId)
 
             it.insert(

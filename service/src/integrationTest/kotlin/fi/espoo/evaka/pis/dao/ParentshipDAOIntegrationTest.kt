@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -128,7 +129,8 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 lastName = "Meikäläinen",
                                 email = "${firstName.lowercase()}.meikalainen@example.com",
                                 language = "fi"
-                            )
+                            ),
+                            DevPersonType.RAW_ROW
                         )
                         .let { tx.getPersonById(it)!! }
             }

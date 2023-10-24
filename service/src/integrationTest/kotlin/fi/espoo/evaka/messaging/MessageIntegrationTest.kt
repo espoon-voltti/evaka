@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -103,7 +104,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var serviceWorkerAccount: MessageAccountId
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
-        tx.insert(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
+        tx.insert(
+            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName),
+            DevPersonType.RAW_ROW
+        )
         tx.insert(DevChild(id = child.id))
 
         val placementId =
@@ -154,7 +158,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group2Account = insertGroup(groupId2)
 
             fun insertPerson(person: DevPerson): MessageAccountId {
-                val id = tx.insert(person)
+                val id = tx.insert(person, DevPersonType.RAW_ROW)
                 tx.upsertCitizenUser(id)
                 return tx.createPersonMessageAccount(person.id)
             }

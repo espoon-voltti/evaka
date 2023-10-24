@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import java.time.LocalDate
 import java.util.UUID
@@ -268,7 +269,8 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         lastName = "Meikäläinen",
                         email = "${firstName.lowercase()}.meikalainen@example.com",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
                 .let { tx.getPersonById(it)!! }
         }

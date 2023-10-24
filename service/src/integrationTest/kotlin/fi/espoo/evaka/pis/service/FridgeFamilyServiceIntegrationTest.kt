@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -147,7 +148,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             it.getPersonById(id)!!
         }

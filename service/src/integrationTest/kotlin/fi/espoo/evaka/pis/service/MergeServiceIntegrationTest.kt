@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -70,7 +71,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `empty person can be deleted`() {
         val id = ChildId(UUID.randomUUID())
         db.transaction {
-            it.insert(DevPerson(id = id))
+            it.insert(DevPerson(id = id), DevPersonType.RAW_ROW)
             it.insert(DevChild(id))
         }
 
@@ -99,7 +100,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `cannot delete person with data - placement`() {
         val id = ChildId(UUID.randomUUID())
         db.transaction {
-            it.insert(DevPerson(id = id))
+            it.insert(DevPerson(id = id), DevPersonType.RAW_ROW)
             it.insert(DevChild(id))
             it.insert(DevPlacement(childId = id, unitId = testDaycare.id))
         }
@@ -115,9 +116,9 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val validFrom = LocalDate.of(2010, 1, 1)
         val validTo = LocalDate.of(2020, 12, 30)
         db.transaction {
-            it.insert(DevPerson(id = childId))
-            it.insert(DevPerson(id = adultId))
-            it.insert(DevPerson(id = adultIdDuplicate))
+            it.insert(DevPerson(id = childId), DevPersonType.RAW_ROW)
+            it.insert(DevPerson(id = adultId), DevPersonType.RAW_ROW)
+            it.insert(DevPerson(id = adultIdDuplicate), DevPersonType.RAW_ROW)
             it.insertTestParentship(
                 headOfChild = adultId,
                 childId = childId,
@@ -176,8 +177,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val childId = ChildId(UUID.randomUUID())
         val childIdDuplicate = ChildId(UUID.randomUUID())
         db.transaction {
-            it.insert(DevPerson(id = childId))
-            it.insert(DevPerson(id = childIdDuplicate))
+            it.insert(DevPerson(id = childId), DevPersonType.RAW_ROW)
+            it.insert(DevPerson(id = childIdDuplicate), DevPersonType.RAW_ROW)
             it.insert(DevChild(childIdDuplicate))
         }
         val from = LocalDate.of(2010, 1, 1)
@@ -229,7 +230,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val (senderAccount, senderDuplicateAccount) =
             db.transaction { tx ->
                 listOf(senderId, senderIdDuplicate).map {
-                    tx.insert(DevPerson(id = it))
+                    tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
                     tx.createPersonMessageAccount(it)
                 }
             }
@@ -273,7 +274,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 listOf(receiverId, receiverIdDuplicate)
                     .map {
-                        tx.insert(DevPerson(id = it))
+                        tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
                         tx.createPersonMessageAccount(it)
                     }
                     .also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
@@ -338,7 +339,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val (receiverAccount, receiverDuplicateAccount) =
             db.transaction { tx ->
                 listOf(receiverId, receiverIdDuplicate).map {
-                    tx.insert(DevPerson(id = it))
+                    tx.insert(DevPerson(id = it), DevPersonType.RAW_ROW)
                     tx.createPersonMessageAccount(it)
                 }
             }
@@ -385,10 +386,10 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val childId = ChildId(UUID.randomUUID())
         val childIdDuplicate = ChildId(UUID.randomUUID())
         db.transaction {
-            it.insert(DevPerson(id = adultId))
-            it.insert(DevPerson(id = childId))
+            it.insert(DevPerson(id = adultId), DevPersonType.RAW_ROW)
+            it.insert(DevPerson(id = childId), DevPersonType.RAW_ROW)
             it.insert(DevChild(childId))
-            it.insert(DevPerson(id = childIdDuplicate))
+            it.insert(DevPerson(id = childIdDuplicate), DevPersonType.RAW_ROW)
             it.insert(DevChild(childIdDuplicate))
             it.insertTestParentship(
                 headOfChild = adultId,
@@ -434,9 +435,9 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val person = DevPerson()
         val duplicate = DevPerson()
         db.transaction {
-            it.insert(person)
+            it.insert(person, DevPersonType.RAW_ROW)
             it.upsertCitizenUser(person.id)
-            it.insert(duplicate)
+            it.insert(duplicate, DevPersonType.RAW_ROW)
             it.upsertCitizenUser(duplicate.id)
         }
         db.read {

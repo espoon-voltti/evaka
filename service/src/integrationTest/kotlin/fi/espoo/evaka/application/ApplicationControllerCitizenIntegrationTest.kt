@@ -10,6 +10,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -36,8 +37,8 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testAdult_1)
-            tx.insert(testChild_1)
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDecisionMaker_1)

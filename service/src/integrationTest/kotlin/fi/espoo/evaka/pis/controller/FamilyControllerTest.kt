@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevFridgePartnership
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -48,7 +49,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
                     roles = setOf(UserRole.ADMIN)
                 )
-            child = tx.insert(DevPerson()).also { tx.insert(DevChild(it)) }
+            child = tx.insert(DevPerson(), DevPersonType.RAW_ROW).also { tx.insert(DevChild(it)) }
         }
     }
 
@@ -61,9 +62,12 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         lateinit var householdAdult: PersonId
 
         db.transaction { tx ->
-            guardian = tx.insert(DevPerson()).also { tx.insert(DevGuardian(it, child)) }
+            guardian =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(DevGuardian(it, child))
+                }
             guardianAndHouseholdHead =
-                tx.insert(DevPerson()).also {
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(DevGuardian(it, child))
                     tx.insert(
                         DevFridgeChild(
@@ -75,7 +79,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             fosterParent =
-                tx.insert(DevPerson()).also {
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFosterParent(
                             childId = child,
@@ -85,7 +89,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             householdSibling =
-                tx.insert(DevPerson()).also {
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFridgeChild(
                             childId = it,
@@ -96,7 +100,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             householdAdult =
-                tx.insert(DevPerson()).also {
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFridgePartnership(
                             first = guardianAndHouseholdHead,
@@ -125,7 +129,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         db.transaction { tx ->
             fosterParentAndHouseholdHead =
-                tx.insert(DevPerson()).also {
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
                         DevFosterParent(
                             childId = child,

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -105,8 +106,8 @@ class AttachmentAccessControlTest : AccessControlTest() {
     private fun insertApplicationAttachment(user: AuthenticatedUser) =
         db.transaction { tx ->
             val attachmentId = AttachmentId(UUID.randomUUID())
-            val guardianId = tx.insert(DevPerson())
-            val childId = tx.insert(DevPerson())
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val applicationId =
                 tx.insertTestApplication(
                     guardianId = guardianId,

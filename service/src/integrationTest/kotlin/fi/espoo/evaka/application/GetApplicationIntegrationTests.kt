@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -107,7 +108,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `restricted child address is hidden`() {
-        val childId = db.transaction { it.insert(DevPerson(restrictedDetailsEnabled = true)) }
+        val childId =
+            db.transaction {
+                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+            }
 
         val applicationId =
             db.transaction { tx ->
@@ -143,7 +147,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `restricted guardian address is hidden`() {
-        val guardianId = db.transaction { it.insert(DevPerson(restrictedDetailsEnabled = true)) }
+        val guardianId =
+            db.transaction {
+                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+            }
 
         val applicationId =
             db.transaction { tx ->

@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -556,12 +557,12 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     allAdults.forEach {
-        insert(it)
+        insert(it, DevPersonType.RAW_ROW)
         upsertCitizenUser(it.id)
     }
 
     allChildren.forEach {
-        insert(it)
+        insert(it, DevPersonType.RAW_ROW)
         insert(DevChild(id = it.id))
     }
 

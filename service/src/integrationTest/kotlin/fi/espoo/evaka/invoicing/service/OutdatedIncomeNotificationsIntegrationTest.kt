@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -86,11 +87,14 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardianId = tx.insert(DevPerson(email = guardianEmail))
+            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.RAW_ROW)
             tx.upsertCitizenUser(guardianId)
             val areaId = tx.insert(DevCareArea())
             daycareId = tx.insert(DevDaycare(areaId = areaId))
-            childId = tx.insert(testChild).also { tx.insert(DevChild(testChild.id)) }
+            childId =
+                tx.insert(testChild, DevPersonType.RAW_ROW).also {
+                    tx.insert(DevChild(testChild.id))
+                }
             tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
@@ -485,7 +489,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     restrictedDetailsEnabled = false
                 )
 
-            tx.insert(testChild2).also { tx.insert(DevChild(testChild2.id)) }
+            tx.insert(testChild2, DevPersonType.RAW_ROW).also { tx.insert(DevChild(testChild2.id)) }
             tx.insert(DevGuardian(guardianId = guardianId, childId = testChild2.id))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)

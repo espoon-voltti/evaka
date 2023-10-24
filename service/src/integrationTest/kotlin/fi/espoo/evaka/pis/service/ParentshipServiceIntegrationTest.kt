@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
@@ -75,7 +76,8 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             it.getPersonById(id)!!
         }

@@ -84,7 +84,6 @@ import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.messaging.MessageType
-import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
@@ -176,7 +175,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
@@ -593,9 +591,7 @@ class DevApi(
     fun createPerson(db: Database, @RequestBody body: DevPerson): PersonId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val personId = tx.insert(body)
-                tx.upsertCitizenUser(personId)
-                tx.createPersonMessageAccount(personId)
+                val personId = tx.insert(body, DevPersonType.ADULT)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {
                     tx.updatePersonFromVtj(dto)
@@ -677,24 +673,7 @@ RETURNING id
 
     @PostMapping("/child")
     fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insert(
-                        DevPerson(
-                            id = body.id,
-                            dateOfBirth = body.dateOfBirth,
-                            firstName = body.firstName,
-                            lastName = body.lastName,
-                            ssn = body.ssn,
-                            streetAddress = body.streetAddress,
-                            postalCode = body.postalCode,
-                            postOffice = body.postOffice,
-                            restrictedDetailsEnabled = body.restrictedDetailsEnabled
-                        )
-                    )
-                    .also { id -> it.insert(DevChild(id = id)) }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insert(body, DevPersonType.CHILD) } }
 
     @PostMapping("/message-account/upsert-all")
     fun createMessageAccounts(db: Database) {

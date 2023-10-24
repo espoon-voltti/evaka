@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -70,7 +71,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 }
             tx.insert(testArea)
             tx.insert(testDaycare.copy(language = Language.sv))
-            tx.insert(testChild_1)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(DevChild(testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,

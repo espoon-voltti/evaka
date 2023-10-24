@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
@@ -57,7 +58,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     protected fun createTestCitizen(authLevel: CitizenAuthLevel) =
         db.transaction { tx ->
-            val id = tx.insert(DevPerson())
+            val id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.upsertCitizenUser(id)
             AuthenticatedUser.Citizen(id, authLevel)
         }

@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -69,7 +70,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
             group = tx.insert(DevDaycareGroup(daycareId = unit))
             groupAccount = tx.createDaycareGroupMessageAccount(group)
             device = tx.insert(DevMobileDevice(unitId = unit))
-            val citizen = tx.insert(DevPerson())
+            val citizen = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             citizenAccount = tx.createPersonMessageAccount(citizen)
         }
     }

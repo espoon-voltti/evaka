@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -516,7 +517,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId))
                 childId
             }
@@ -550,7 +552,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId))
                 tx.insert(
                     DevPlacement(
@@ -623,7 +626,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId))
                 childId
             }
@@ -655,7 +659,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                val childId = tx.insert(DevPerson().copy(duplicateOf = testChild_1.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId))
                 tx.insert(
                     DevPlacement(

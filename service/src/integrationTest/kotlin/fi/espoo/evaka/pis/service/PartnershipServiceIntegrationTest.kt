@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import java.time.LocalDate
@@ -46,7 +47,8 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
                 .let { tx.getPersonById(it)!! }
         }

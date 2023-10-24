@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -93,7 +94,8 @@ class FixtureBuilder(
                         DevPerson(
                             dateOfBirth = dateOfBirth
                                     ?: throw IllegalStateException("date of birth not set")
-                        )
+                        ),
+                        DevPersonType.RAW_ROW
                     )
             if (person == null) tx.insert(DevChild(childId))
             return childId
@@ -183,7 +185,7 @@ class FixtureBuilder(
             this.apply { this.preschoolDaycareDates = range }
 
         fun save(): ChildFixture {
-            val applicationGuardianId = tx.insert(DevPerson())
+            val applicationGuardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val applicationId =
                 tx.insertTestApplication(
                     guardianId = applicationGuardianId,

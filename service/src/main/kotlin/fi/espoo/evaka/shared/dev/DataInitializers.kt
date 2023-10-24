@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.ProductKey
+import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -80,6 +81,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import java.time.Instant
@@ -259,7 +261,13 @@ RETURNING id
         )
         .let(::MobileDeviceId)
 
-fun Database.Transaction.insert(person: DevPerson) =
+enum class DevPersonType {
+    CHILD,
+    ADULT,
+    RAW_ROW,
+}
+
+fun Database.Transaction.insert(person: DevPerson, type: DevPersonType) =
     insertTestDataRow(
             person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null),
             """
@@ -276,6 +284,18 @@ RETURNING id
 """
         )
         .let(::PersonId)
+        .also { id ->
+            when (type) {
+                DevPersonType.CHILD -> {
+                    insert(DevChild(id))
+                }
+                DevPersonType.ADULT -> {
+                    upsertCitizenUser(id)
+                    createPersonMessageAccount(id)
+                }
+                DevPersonType.RAW_ROW -> {}
+            }
+        }
 
 fun Database.Transaction.insertTestParentship(
     headOfChild: PersonId,

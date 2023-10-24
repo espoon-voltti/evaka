@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -55,8 +56,8 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testAdult_1)
-            tx.insert(testChild_1)
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = testChild_1.id))
             tx.insert(testArea)
             tx.insert(testDaycare)

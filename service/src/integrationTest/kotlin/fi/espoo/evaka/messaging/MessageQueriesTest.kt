@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -75,8 +76,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
         db.transaction { tx ->
-            tx.insert(person1)
-            tx.insert(person2)
+            tx.insert(person1, DevPersonType.RAW_ROW)
+            tx.insert(person2, DevPersonType.RAW_ROW)
             tx.insert(employee1)
             tx.insert(employee2)
             accounts =
@@ -421,7 +422,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.createAccount(group2)
 
             // and person1 has a child who is placed into a group
-            val childId = tx.insert(DevPerson(firstName = "Firstname", lastName = "Test Child"))
+            val childId =
+                tx.insert(
+                    DevPerson(firstName = "Firstname", lastName = "Test Child"),
+                    DevPersonType.RAW_ROW
+                )
             tx.insert(DevChild(id = childId))
             tx.insert(
                 DevParentship(
@@ -492,7 +497,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // and person1 has a child who is placed into the group
             tx.insert(
-                DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child")
+                DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"),
+                DevPersonType.RAW_ROW
             )
             tx.insert(DevChild(id = testChild_1.id))
             tx.insert(
@@ -565,9 +571,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     name = group.name,
                     type = AccountType.GROUP
                 )
-            child1Id = tx.insert(DevPerson())
+            child1Id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevChild(child1Id))
-            child2Id = tx.insert(DevPerson())
+            child2Id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             tx.insert(DevChild(child2Id))
             listOf(child1Id, child2Id).forEach { childId ->
                 listOf(person1.id, person2.id).forEach { guardianId ->

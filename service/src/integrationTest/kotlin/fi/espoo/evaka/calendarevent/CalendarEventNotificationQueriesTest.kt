@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -58,7 +59,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)
 
-            tx.insert(testChild_1)
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -67,10 +68,10 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 endDate = today.plusYears(1)
             )
 
-            tx.insert(testAdult_1)
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
 
-            tx.insert(testChild_2)
+            tx.insert(testChild_2, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = testChild_2.id))
             tx.insertTestPlacement(
                     childId = testChild_2.id,
@@ -87,10 +88,10 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     )
                 }
 
-            tx.insert(testAdult_2)
+            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id))
 
-            tx.insert(testChild_3)
+            tx.insert(testChild_3, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = testChild_3.id))
             tx.insertTestPlacement(
                     childId = testChild_3.id,
@@ -107,7 +108,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     )
                 }
 
-            tx.insert(testAdult_3.copy(language = "sv"))
+            tx.insert(testAdult_3.copy(language = "sv"), DevPersonType.RAW_ROW)
             tx.insert(
                 DevFosterParent(
                     parentId = testAdult_3.id,

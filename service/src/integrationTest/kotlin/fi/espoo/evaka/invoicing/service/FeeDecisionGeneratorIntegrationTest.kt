@@ -54,6 +54,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -1121,7 +1122,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             listOf(twin1, twin2).forEach {
-                tx.insert(it)
+                tx.insert(it, DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = it.id))
             }
         }
@@ -1207,7 +1208,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val clock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(placementPeriod.start, LocalTime.of(0, 0)))
         val birthday = LocalDate.of(2001, 7, 1)
-        val childTurning18Id = db.transaction { it.insert(DevPerson(dateOfBirth = birthday)) }
+        val childTurning18Id =
+            db.transaction { it.insert(DevPerson(dateOfBirth = birthday), DevPersonType.RAW_ROW) }
 
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(

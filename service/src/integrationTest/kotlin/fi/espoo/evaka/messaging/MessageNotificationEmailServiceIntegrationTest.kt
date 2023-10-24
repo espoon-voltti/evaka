@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -98,7 +99,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
 
             testPersons.forEach {
-                tx.insert(it)
+                tx.insert(it, DevPersonType.RAW_ROW)
                 tx.insertGuardian(it.id, testChild_1.id)
                 tx.createPersonMessageAccount(it.id)
             }

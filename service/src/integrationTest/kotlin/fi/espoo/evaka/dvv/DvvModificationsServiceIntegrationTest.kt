@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -450,7 +451,7 @@ class DvvModificationsServiceIntegrationTest :
         )
 
     private fun createTestPerson(devPerson: DevPerson): PersonId =
-        db.transaction { tx -> tx.insert(devPerson) }
+        db.transaction { tx -> tx.insert(devPerson, DevPersonType.RAW_ROW) }
 
     private fun createVtjPerson(person: DevPerson) {
         MockPersonDetailsService.addPerson(

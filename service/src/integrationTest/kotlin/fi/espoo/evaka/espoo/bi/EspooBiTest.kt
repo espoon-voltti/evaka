@@ -68,6 +68,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.TestDecision
@@ -435,7 +436,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         insert(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
 
     private fun Database.Transaction.insertTestChild(): ChildId =
-        insert(DevPerson()).also { insert(DevChild(it)) }
+        insert(DevPerson(), DevPersonType.RAW_ROW).also { insert(DevChild(it)) }
 
     private fun Database.Transaction.insertTestPlacement(daycare: DaycareId? = null): PlacementId =
         insert(DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare()))
@@ -446,7 +447,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         insertTestApplication(
                 type = ApplicationType.DAYCARE,
                 childId = insertTestChild(),
-                guardianId = insert(DevPerson())
+                guardianId = insert(DevPerson(), DevPersonType.RAW_ROW)
             )
             .also {
                 insertTestApplicationForm(
@@ -533,7 +534,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     childIncome = null,
                                 )
                             ),
-                        headOfFamilyId = insert(DevPerson()),
+                        headOfFamilyId = insert(DevPerson(), DevPersonType.RAW_ROW),
                         validDuring = DateRange.ofMonth(2019, Month.JANUARY),
                         status = FeeDecisionStatus.SENT,
                         decisionNumber = 999L,
@@ -557,7 +558,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         id = id,
                         validFrom = LocalDate.of(2022, 1, 1),
                         validTo = LocalDate.of(2022, 2, 1),
-                        headOfFamilyId = insert(DevPerson()),
+                        headOfFamilyId = insert(DevPerson(), DevPersonType.RAW_ROW),
                         status = VoucherValueDecisionStatus.SENT,
                         decisionNumber = 999L,
                         decisionType = VoucherValueDecisionType.NORMAL,

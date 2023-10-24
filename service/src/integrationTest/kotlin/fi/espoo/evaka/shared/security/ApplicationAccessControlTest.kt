@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -45,7 +46,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
     fun beforeEach() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
-            childId = tx.insert(DevPerson())
+            childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             applicationId =
                 tx.insertTestApplication(
                     guardianId = creatorCitizen.id,

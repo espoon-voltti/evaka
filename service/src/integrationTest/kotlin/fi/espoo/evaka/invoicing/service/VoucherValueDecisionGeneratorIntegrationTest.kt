@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -474,7 +475,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { tx ->
             listOf(twin1, twin2).forEach {
-                tx.insert(it)
+                tx.insert(it, DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = it.id))
             }
         }

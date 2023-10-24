@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -35,8 +36,8 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
         super.beforeAll()
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
-            val childId = tx.insert(DevPerson())
-            val guardianId = tx.insert(DevPerson())
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             daycareId = tx.insert(DevDaycare(areaId = areaId))
             applicationId =
                 tx.insertTestApplication(

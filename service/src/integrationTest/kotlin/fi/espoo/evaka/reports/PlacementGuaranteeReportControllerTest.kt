@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -43,7 +44,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
             }
         val childId =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson())
+                val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId))
                 tx.insert(
                     DevPlacement(
@@ -104,7 +105,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val unitId2 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
         val childId =
             db.transaction { tx ->
-                val childId1 = tx.insert(DevPerson())
+                val childId1 = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId1))
                 tx.insert(
                     DevPlacement(
@@ -124,7 +125,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         placeGuarantee = true
                     )
                 )
-                val childId2 = tx.insert(DevPerson())
+                val childId2 = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 tx.insert(DevChild(id = childId2))
                 tx.insert(
                     DevPlacement(
