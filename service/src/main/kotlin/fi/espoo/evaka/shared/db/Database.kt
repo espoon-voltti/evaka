@@ -20,7 +20,9 @@ import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
+import org.jdbi.v3.core.statement.Slf4JSqlLogger
 import org.jdbi.v3.json.Json
+import org.slf4j.LoggerFactory
 
 // What does it mean when a function accepts a Database/Database.* parameter?
 //
@@ -75,6 +77,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             hasOpenHandle = true
             it.addCleanable { hasOpenHandle = false }
         }
+
+    companion object {
+        val sqlLogger = Slf4JSqlLogger(LoggerFactory.getLogger("fi.espoo.evaka.sql"))
+    }
 
     /**
      * A single *possibly open* database connection tied to a single thread.
@@ -297,6 +303,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun bindKotlin(name: String, value: Any): This {
             raw.bindKotlin(name, value)
+            return self()
+        }
+
+        fun logFinalSql(): This {
+            raw.setSqlLogger(Database.sqlLogger)
             return self()
         }
     }
