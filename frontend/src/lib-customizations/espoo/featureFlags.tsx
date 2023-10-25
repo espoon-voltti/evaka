@@ -101,6 +101,7 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     childDocuments: false,
+    assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: false,
     sensitiveMessaging: false
