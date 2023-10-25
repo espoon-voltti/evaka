@@ -404,7 +404,7 @@ describe('Assistance need decisions report', () => {
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
 
     const assistanceNeedDecisionsPage = new AssistanceNeedDecisionsReport(page)
-    await waitUntilEqual(() => assistanceNeedDecisionsPage.rows.count(), 1)
+    await waitUntilEqual(() => assistanceNeedDecisionsPage.rows.count(), 2)
     await waitUntilEqual(() => assistanceNeedDecisionsPage.row(0), {
       ...baseReportRow,
       sentForDecision: '06.01.2021',

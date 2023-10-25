@@ -100,10 +100,69 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
 
     @Test
     fun `HasUnitRole inPlacementUnitOfChildOfAssistanceNeedDecision`() {
+        val closedAssistanceNeedDecisionId =
+            db.transaction { tx ->
+                tx.insertTestAssistanceNeedDecision(
+                    childId,
+                    DevAssistanceNeedDecision(
+                        id = AssistanceNeedDecisionId(UUID.randomUUID()),
+                        decisionNumber = 10000,
+                        childId = childId,
+                        validityPeriod =
+                            DateRange(clock.today().minusMonths(1), clock.today().minusDays(1)),
+                        status = AssistanceNeedDecisionStatus.DRAFT,
+                        language = AssistanceNeedDecisionLanguage.FI,
+                        decisionMade = clock.today().minusMonths(1),
+                        sentForDecision = clock.today().minusMonths(1),
+                        selectedUnit = null,
+                        preparedBy1 = null,
+                        preparedBy2 = null,
+                        decisionMaker = null,
+                        pedagogicalMotivation = null,
+                        structuralMotivationOptions =
+                            StructuralMotivationOptions(
+                                smallerGroup = false,
+                                specialGroup = false,
+                                smallGroup = false,
+                                groupAssistant = false,
+                                childAssistant = false,
+                                additionalStaff = false
+                            ),
+                        structuralMotivationDescription = null,
+                        careMotivation = null,
+                        serviceOptions =
+                            ServiceOptions(
+                                consultationSpecialEd = false,
+                                partTimeSpecialEd = false,
+                                fullTimeSpecialEd = false,
+                                interpretationAndAssistanceServices = false,
+                                specialAides = false
+                            ),
+                        servicesMotivation = null,
+                        expertResponsibilities = null,
+                        guardiansHeardOn = null,
+                        guardianInfo = emptySet(),
+                        viewOfGuardians = null,
+                        otherRepresentativeHeard = false,
+                        otherRepresentativeDetails = null,
+                        assistanceLevels = emptySet(),
+                        motivationForDecision = null,
+                        unreadGuardianIds = null,
+                        annulmentReason = "",
+                    )
+                )
+            }
+
         val action = Action.AssistanceNeedDecision.READ
         rules.add(
             action,
-            HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision()
+            HasUnitRole(UserRole.UNIT_SUPERVISOR)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+        )
+        rules.add(
+            action,
+            HasUnitRole(UserRole.SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false)
         )
         val daycareId =
             db.transaction { tx ->
@@ -120,6 +179,8 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
             }
         val unitSupervisor =
             createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
+        val veo =
+            createTestEmployee(emptySet(), mapOf(daycareId to UserRole.SPECIAL_EDUCATION_TEACHER))
         db.read { tx ->
             assertTrue(
                 accessControl.hasPermissionFor(
@@ -128,6 +189,24 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     clock,
                     action,
                     assistanceNeedDecisionId
+                )
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(
+                    tx,
+                    unitSupervisor,
+                    clock,
+                    action,
+                    closedAssistanceNeedDecisionId
+                )
+            )
+            assertTrue(
+                accessControl.hasPermissionFor(
+                    tx,
+                    veo,
+                    clock,
+                    action,
+                    closedAssistanceNeedDecisionId
                 )
             )
         }

@@ -293,7 +293,7 @@ ${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().t
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedDecision() =
+    fun inPlacementUnitOfChildOfAssistanceNeedDecision(hidePastAssistance: Boolean) =
         rule<AssistanceNeedDecisionId> { user, now ->
             sql(
                 """
@@ -302,6 +302,22 @@ FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = ad.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = ad.child_id
+                AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+${if (hidePastAssistance) "AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""} 
             """
                     .trimIndent()
             )
@@ -316,6 +332,22 @@ FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND ad.status = 'ACCEPTED'
+AND CASE 
+        WHEN EXISTS (
+            SELECT true 
+            FROM placement p
+            WHERE p.child_id = ad.child_id 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+                AND p.start_date <=  ${bind(now.toLocalDate())})
+            THEN EXISTS (
+                SELECT true
+                FROM PLACEMENT p
+                WHERE p.child_id = ad.child_id
+                AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
+        ELSE TRUE 
+     END
+AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())} 
             """
                     .trimIndent()
             )
