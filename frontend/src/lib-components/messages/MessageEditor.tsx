@@ -10,11 +10,11 @@ import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
-  DraftContent,
   AuthorizedMessageAccount,
+  DraftContent,
+  MessageReceiversResponse,
   PostMessageBody,
-  UpdatableDraftContent,
-  MessageReceiversResponse
+  UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -32,8 +32,8 @@ import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
   receiversAsSelectorNode,
-  SelectorNode,
-  SelectedNode
+  SelectedNode,
+  SelectorNode
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
 import { Draft, useDraft } from 'lib-components/messages/useDraft'
@@ -513,16 +513,16 @@ export default React.memo(function MessageEditor({
             </Dropdowns>
             {expandedView && !simpleMode && (
               <ExpandedRightPane>
-                <HorizontalField long={true}>
+                <ExpandedHorizontalField>
                   <Bold>{i18n.messageEditor.type.label}</Bold>
                   {messageType}
-                </HorizontalField>
+                </ExpandedHorizontalField>
                 <Gap size="s" />
-                <HorizontalField long={true}>
+                <ExpandedHorizontalField>
                   <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
                   {sensitiveMessagingEnabled && sensitiveCheckbox}
-                </HorizontalField>
+                </ExpandedHorizontalField>
                 {sensitiveInfoOpen && (
                   <FixedSpaceRow fullWidth>
                     <ExpandingInfoBox
@@ -701,7 +701,7 @@ const BottomBar = styled.div`
   padding: ${defaultMargins.xs};
 `
 
-const HorizontalField = styled.div<{ long?: boolean }>`
+const HorizontalField = styled.div`
   display: flex;
   align-items: center;
 
@@ -711,7 +711,23 @@ const HorizontalField = styled.div<{ long?: boolean }>`
 
   & > :nth-child(1) {
     flex: 0 0 auto;
-    width: ${(props) => (props.long ? '200px' : '130px')};
+    width: 130px;
+  }
+`
+const ExpandedHorizontalField = styled.div`
+  display: flex;
+  align-items: center;
+
+  & > * {
+    width: 150px;
+  }
+
+  & > :first-child {
+    width: 190px;
+  }
+
+  & > :last-child {
+    width: unset;
   }
 `
 
