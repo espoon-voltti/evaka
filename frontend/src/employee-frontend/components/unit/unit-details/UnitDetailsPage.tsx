@@ -28,7 +28,7 @@ export default React.memo(function UnitDetailsPage() {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(unitQuery(id))
-  const areas = useQueryResult(areaQuery)
+  const areas = useQueryResult(areaQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)

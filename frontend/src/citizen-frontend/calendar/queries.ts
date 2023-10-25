@@ -80,7 +80,7 @@ export const activeQuestionnaireQuery = query({
 export const answerFixedPeriodQuestionnaireMutation = mutation({
   api: postFixedPeriodQuestionnaireAnswer,
   invalidateQueryKeys: () => [
-    activeQuestionnaireQuery.queryKey,
+    activeQuestionnaireQuery().queryKey,
     queryKeys.allReservations()
   ]
 })

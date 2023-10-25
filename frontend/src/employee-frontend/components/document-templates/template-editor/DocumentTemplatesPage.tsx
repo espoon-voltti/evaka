@@ -157,7 +157,7 @@ export default React.memo(function DocumentTemplatesPage() {
     null
   )
 
-  const templates = useQueryResult(documentTemplateSummariesQuery)
+  const templates = useQueryResult(documentTemplateSummariesQuery())
   return (
     <Container>
       <ContentArea opaque>

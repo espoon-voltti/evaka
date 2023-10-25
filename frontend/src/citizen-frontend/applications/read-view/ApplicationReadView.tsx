@@ -22,7 +22,7 @@ export default React.memo(function ApplicationReadView() {
   const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const application = useQueryResult(applicationQuery(applicationId))
-  const children = useQueryResult(applicationChildrenQuery)
+  const children = useQueryResult(applicationChildrenQuery())
 
   useTitle(
     t,

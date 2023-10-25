@@ -25,7 +25,7 @@ import { notificationSettingsQuery } from './queries'
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
   const { user, refreshAuthStatus } = useContext(AuthContext)
-  const notificationSettings = useQueryResult(notificationSettingsQuery)
+  const notificationSettings = useQueryResult(notificationSettingsQuery())
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

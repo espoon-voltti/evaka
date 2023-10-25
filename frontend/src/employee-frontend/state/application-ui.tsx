@@ -122,7 +122,7 @@ export const ApplicationUIContextProvider = React.memo(
     const [applicationsResult, setApplicationsResult] = useState<
       Result<PagedApplicationSummaries>
     >(Loading.of())
-    const availableAreas = useQueryResult(areaQuery, { enabled: loggedIn })
+    const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
     const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
       defaultState.allUnits
     )

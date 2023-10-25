@@ -84,7 +84,7 @@ export default React.memo(function MessageEditor({
 
   const send = useCallback(() => onSend(message), [message, onSend])
 
-  const children = useQueryResult(childrenQuery)
+  const children = useQueryResult(childrenQuery())
 
   const validAccounts = useMemo(() => {
     const accounts = receiverOptions.messageAccounts.filter((account) =>

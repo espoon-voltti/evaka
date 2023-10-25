@@ -23,7 +23,7 @@ const DownloadWrapper = styled.div`
 
 export default React.memo(function FuturePreschoolersReport() {
   const { i18n } = useTranslation()
-  const preschoolerRows = useQueryResult(futurePreschoolersQuery)
+  const preschoolerRows = useQueryResult(futurePreschoolersQuery())
   const municipalGroupRows = useQueryResult(preschoolGroupsQuery(true))
   const privateVoucherGroupRows = useQueryResult(preschoolGroupsQuery(false))
 

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { QueryKey } from '@tanstack/react-query'
 import React, { FormEvent, useCallback } from 'react'
 
 import { Failure, Result } from 'lib-common/api'
@@ -112,8 +111,8 @@ export const AsyncFormModal = React.memo(
   AsyncFormModal_
 ) as typeof AsyncFormModal_
 
-type MutateFormModalProps<Arg, Data, Key extends QueryKey> = ModalBaseProps & {
-  resolveMutation: MutationDescription<Arg, Data, Key>
+type MutateFormModalProps<Arg, Data> = ModalBaseProps & {
+  resolveMutation: MutationDescription<Arg, Data>
   resolveAction: () => Arg | typeof cancelMutation
   resolveLabel: string
   resolveDisabled?: boolean
@@ -123,7 +122,7 @@ type MutateFormModalProps<Arg, Data, Key extends QueryKey> = ModalBaseProps & {
   rejectLabel: string
 }
 
-function MutateFormModal_<Arg, Data, Key extends QueryKey>({
+function MutateFormModal_<Arg, Data>({
   children,
   resolveMutation,
   resolveAction,
@@ -134,7 +133,7 @@ function MutateFormModal_<Arg, Data, Key extends QueryKey>({
   rejectAction,
   rejectLabel,
   ...props
-}: MutateFormModalProps<Arg, Data, Key>) {
+}: MutateFormModalProps<Arg, Data>) {
   return (
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}

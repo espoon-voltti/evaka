@@ -41,7 +41,7 @@ export default React.memo(function ActionPickerModal({
     [openAbsences]
   )
   const questionnaireAvailable = isQuestionnaireAvailable(
-    useQueryResult(activeQuestionnaireQuery),
+    useQueryResult(activeQuestionnaireQuery()),
     useUser()
   )
 

@@ -79,9 +79,9 @@ export function useUnitReservationEditState(
     // TODO: It would be better if the data was saved on stopEditing instead of
     // on-the-fly. This would allow to invalidate the query normally after a
     // successful mutation.
-    void queryClient.invalidateQueries(
-      unitQueryKeys.unitAttendanceReservations()
-    )
+    void queryClient.invalidateQueries({
+      queryKey: unitQueryKeys.unitAttendanceReservations()
+    })
   }, [queryClient])
 
   const startEditing = useCallback(

@@ -55,11 +55,14 @@ export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
   const loggedIn = user.map((u) => u !== undefined).getOrElse(false)
-  const { data: unreadMessagesCount = 0 } = useQuery(unreadMessagesCountQuery, {
-    enabled: loggedIn
-  })
+  const { data: unreadMessagesCount = 0 } = useQuery(
+    unreadMessagesCountQuery(),
+    {
+      enabled: loggedIn
+    }
+  )
   const { data: unreadDecisions = 0 } = useQuery(
-    applicationNotificationsQuery,
+    applicationNotificationsQuery(),
     { enabled: loggedIn }
   )
 

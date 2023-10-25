@@ -107,7 +107,7 @@ export default React.memo(function MessageEditor({
 
   const [draftId, setDraftId] = useState<UUID | null>(draft?.id ?? null)
   const { mutateAsync: init } = useMutation(initDraftMutation)
-  const { mutate: saveDraft, isLoading: isSavingDraft } =
+  const { mutate: saveDraft, isPending: isSavingDraft } =
     useMutation(saveDraftMutation)
 
   const [debouncedSaveDraft, cancelSaveDraft, saveDraftImmediately] =

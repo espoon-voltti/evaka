@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { QueryKey, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
@@ -14,23 +14,23 @@ import AsyncButton, { AsyncButtonProps } from './AsyncButton'
 
 export { cancelMutation }
 
-export interface MutateButtonProps<Arg, Data, Key extends QueryKey>
+export interface MutateButtonProps<Arg, Data>
   extends Omit<AsyncButtonProps<unknown>, 'onClick' | 'onSuccess'> {
-  mutation: MutationDescription<Arg, Data, Key>
+  mutation: MutationDescription<Arg, Data>
   onClick: () => Arg | typeof cancelMutation
   onSuccess?: (value: Data) => void
 }
 
-function MutateButton<Arg, Data, Key extends QueryKey>({
+function MutateButton<Arg, Data>({
   mutation,
   onClick,
   onSuccess,
   ...props
-}: MutateButtonProps<Arg, Data, Key>) {
+}: MutateButtonProps<Arg, Data>) {
   const { api } = mutation
   const queryClient = useQueryClient()
 
-  const { mutateAsync } = useMutation(api)
+  const { mutateAsync } = useMutation({ mutationFn: api })
 
   const handleClick = useCallback(():
     | Promise<Result<{ value: Data; arg: Arg }>>

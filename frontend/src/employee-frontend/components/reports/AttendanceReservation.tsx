@@ -77,7 +77,7 @@ export default React.memo(function AttendanceReservation() {
     filters.range.start.addMonths(2)
   )
 
-  const units = useQueryResult(unitsQuery)
+  const units = useQueryResult(unitsQuery())
   const groups = useQueryResult(queryOrDefault(unitGroupsQuery, [])(unitId))
 
   const [report, setReport] = useState<

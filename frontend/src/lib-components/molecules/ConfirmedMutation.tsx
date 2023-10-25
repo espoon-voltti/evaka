@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { QueryKey } from '@tanstack/react-query'
 import React, { useState } from 'react'
 
 import { cancelMutation, MutationDescription } from 'lib-common/query'
@@ -13,11 +12,10 @@ import { BaseProps } from '../utils'
 
 import { MutateFormModal } from './modals/FormModal'
 
-export interface ConfirmedMutationProps<Arg, Data, Key extends QueryKey>
-  extends BaseProps {
+export interface ConfirmedMutationProps<Arg, Data> extends BaseProps {
   buttonText: string
   confirmationTitle: string
-  mutation: MutationDescription<Arg, Data, Key>
+  mutation: MutationDescription<Arg, Data>
   onClick: () => Arg | typeof cancelMutation
   primary?: boolean
   disabled?: boolean
@@ -27,7 +25,7 @@ export interface ConfirmedMutationProps<Arg, Data, Key extends QueryKey>
   onSuccess?: (value: Data) => void
 }
 
-function ConfirmedMutation_<Arg, Data, Key extends QueryKey>({
+function ConfirmedMutation_<Arg, Data>({
   buttonText,
   primary,
   disabled,
@@ -40,7 +38,7 @@ function ConfirmedMutation_<Arg, Data, Key extends QueryKey>({
   cancelLabel,
   'data-qa': dataQa,
   className
-}: ConfirmedMutationProps<Arg, Data, Key>) {
+}: ConfirmedMutationProps<Arg, Data>) {
   const i18n = useTranslations()
   const [confirming, setConfirming] = useState(false)
   return (

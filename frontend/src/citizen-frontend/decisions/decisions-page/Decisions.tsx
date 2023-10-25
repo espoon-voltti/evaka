@@ -29,11 +29,11 @@ import AssistancePreschoolDecision from './AssistancePreschoolDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
-  const children = useQueryResult(childrenQuery)
-  const applicationDecisions = useQueryResult(decisionsQuery)
-  const assistanceDecisions = useQueryResult(assistanceDecisionsQuery)
+  const children = useQueryResult(childrenQuery())
+  const applicationDecisions = useQueryResult(decisionsQuery())
+  const assistanceDecisions = useQueryResult(assistanceDecisionsQuery())
   const assistancePreschoolDecisions = useQueryResult(
-    assistanceNeedPreschoolDecisionsQuery
+    assistanceNeedPreschoolDecisionsQuery()
   )
 
   useTitle(t, t.decisions.title)

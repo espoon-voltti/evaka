@@ -26,7 +26,7 @@ import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
   const { childId } = useNonNullableParams<{ childId: string }>()
-  const children = useQueryResult(childrenQuery)
+  const children = useQueryResult(childrenQuery())
   const child = children.chain<Child>((children) => {
     const child = children.find((child) => child.id === childId)
     return child ? Success.of(child) : Failure.of({ message: 'Not found' })

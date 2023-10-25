@@ -40,7 +40,7 @@ export const acceptDecisionMutation = mutation({
   api: acceptDecision,
   invalidateQueryKeys: ({ applicationId }) => [
     decisionsOfApplicationQuery(applicationId).queryKey,
-    applicationNotificationsQuery.queryKey
+    applicationNotificationsQuery().queryKey
   ]
 })
 
@@ -48,6 +48,6 @@ export const rejectDecisionMutation = mutation({
   api: rejectDecision,
   invalidateQueryKeys: ({ applicationId }) => [
     decisionsOfApplicationQuery(applicationId).queryKey,
-    applicationNotificationsQuery.queryKey
+    applicationNotificationsQuery().queryKey
   ]
 })

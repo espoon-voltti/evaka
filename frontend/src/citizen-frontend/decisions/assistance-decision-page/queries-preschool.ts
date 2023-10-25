@@ -38,6 +38,6 @@ export const assistanceNeedPreschoolDecisionUnreadCountsQuery = query({
 export const markAssistanceNeedPreschoolDecisionAsReadMutation = mutation({
   api: markAssistanceNeedPreschoolDecisionAsRead,
   invalidateQueryKeys: () => [
-    assistanceNeedPreschoolDecisionUnreadCountsQuery.queryKey
+    assistanceNeedPreschoolDecisionUnreadCountsQuery().queryKey
   ]
 })

@@ -46,7 +46,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
     [child.groupId, groupAccounts]
   )
 
-  const messageReceivers = useQueryResult(recipientsQuery)
+  const messageReceivers = useQueryResult(recipientsQuery())
 
   const receivers = useMemo(() => {
     const findChildReceivers = (

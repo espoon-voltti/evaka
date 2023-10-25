@@ -385,7 +385,7 @@ export default React.memo(function PedagogicalDocumentsSection({
   const [open, setOpen] = useState(false)
   const t = useTranslation()
   const { data: unreadPedagogicalDocumentsCount } = useQuery(
-    unreadPedagogicalDocumentsCountQuery
+    unreadPedagogicalDocumentsCountQuery()
   )
   const user = useUser()
 

@@ -90,10 +90,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
 
-  const { data: preschoolTerms } = useQuery(preschoolTermsQuery, {
+  const { data: preschoolTerms } = useQuery(preschoolTermsQuery(), {
     enabled: application.type === 'PRESCHOOL'
   })
-  const { data: clubTerms } = useQuery(clubTermsQuery, {
+  const { data: clubTerms } = useQuery(clubTermsQuery(), {
     enabled: application.type === 'CLUB'
   })
   const terms = useMemo(() => {
@@ -157,11 +157,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const hasOtherGuardian = !!application.otherGuardianId
 
-  const { mutateAsync: saveApplicationDraft, isLoading: savingDraft } =
+  const { mutateAsync: saveApplicationDraft, isPending: savingDraft } =
     useMutation(saveApplicationDraftMutation)
-  const { mutateAsync: updateApplication, isLoading: updatingApplication } =
+  const { mutateAsync: updateApplication, isPending: updatingApplication } =
     useMutation(updateApplicationMutation)
-  const { mutateAsync: sendApplication, isLoading: sendingApplication } =
+  const { mutateAsync: sendApplication, isPending: sendingApplication } =
     useMutation(sendApplicationMutation)
   const submitting = savingDraft || updatingApplication || sendingApplication
 
@@ -471,7 +471,7 @@ export default React.memo(function ApplicationEditor() {
   const { applicationId } = useBetterParams<{ applicationId: UUID }>()
   const t = useTranslation()
   const application = useQueryResult(applicationQuery(applicationId))
-  const children = useQueryResult(applicationChildrenQuery)
+  const children = useQueryResult(applicationChildrenQuery())
 
   useTitle(
     t,

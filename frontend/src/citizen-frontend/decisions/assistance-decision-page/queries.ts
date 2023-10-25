@@ -37,5 +37,5 @@ export const assistanceDecisionUnreadCountsQuery = query({
 
 export const markAssistanceNeedDecisionAsReadMutation = mutation({
   api: markAssistanceNeedDecisionAsRead,
-  invalidateQueryKeys: () => [assistanceDecisionUnreadCountsQuery.queryKey]
+  invalidateQueryKeys: () => [assistanceDecisionUnreadCountsQuery().queryKey]
 })

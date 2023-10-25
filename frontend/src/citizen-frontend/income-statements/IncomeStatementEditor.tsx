@@ -40,7 +40,7 @@ function useInitialEditorState(id: UUID | undefined): Result<EditorState> {
   const incomeStatement = useQueryResult(
     queryOrDefault(incomeStatementQuery, null)(id)
   )
-  const startDates = useQueryResult(incomeStatementStartDatesQuery)
+  const startDates = useQueryResult(incomeStatementStartDatesQuery())
 
   return combine(incomeStatement, startDates).map(
     ([incomeStatement, startDates]) => ({

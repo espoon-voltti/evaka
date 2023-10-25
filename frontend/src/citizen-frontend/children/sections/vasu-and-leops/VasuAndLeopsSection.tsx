@@ -218,11 +218,11 @@ export default React.memo(function PedagogicalDocumentsSection({
   const user = useUser()
 
   const { data: unreadVasuDocumentsCount } = useQuery(
-    unreadVasuDocumentsCountQuery
+    unreadVasuDocumentsCountQuery()
   )
 
   const { data: unreadChildDocumentsCount } = useQuery(
-    unreadChildDocumentsCountQuery
+    unreadChildDocumentsCountQuery()
   )
 
   const unreadCount = useMemo(

@@ -81,7 +81,7 @@ const markMessagesReadByThreadId = (
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
     const isLoggedIn = useUser() !== undefined
-    const accountId = useQueryResult(messageAccountQuery, {
+    const accountId = useQueryResult(messageAccountQuery(), {
       enabled: isLoggedIn,
       staleTime: 24 * 60 * 60 * 1000
     })
@@ -136,15 +136,14 @@ export const MessageContextProvider = React.memo(
       if (!accountId.isSuccess) return
       if (!selectedThreadId || !selectedThread) return
 
-      const hasUnreadMessages = isRedactedThread(selectedThread)
-        ? selectedThread.hasUnreadMessages
-        : selectedThread.messages.some(
-            (m) => !m.readAt && m.sender.id !== accountId.value
-          )
-
-      if (hasUnreadMessages && isRegularThread(selectedThread)) {
-        markThreadRead(selectedThread.id)
-        transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
+      if (isRegularThread(selectedThread)) {
+        const hasUnreadMessages = selectedThread.messages.some(
+          (m) => !m.readAt && m.sender.id !== accountId.value
+        )
+        if (hasUnreadMessages) {
+          markThreadRead(selectedThread.id)
+          transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
+        }
       }
     }, [accountId, markThreadRead, selectedThread, selectedThreadId, transform])
 

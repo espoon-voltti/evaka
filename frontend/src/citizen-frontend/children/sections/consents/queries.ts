@@ -30,7 +30,7 @@ export const childConsentNotificationsQuery = query({
 export const insertChildConsentsMutation = mutation({
   api: insertChildConsents,
   invalidateQueryKeys: () => [
-    childConsentsQuery.queryKey,
-    childConsentNotificationsQuery.queryKey
+    childConsentsQuery().queryKey,
+    childConsentNotificationsQuery().queryKey
   ]
 })

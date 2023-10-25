@@ -310,7 +310,7 @@ function formatAverage(
 
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
-  const areas = useQueryResult(areaQuery)
+  const areas = useQueryResult(areaQuery())
   const now = mockNow() ?? new Date()
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: now.getFullYear(),

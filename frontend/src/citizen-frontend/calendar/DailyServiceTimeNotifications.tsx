@@ -20,7 +20,7 @@ export default React.memo(function DailyServiceTimeNotification() {
   const i18n = useTranslation()
 
   const dailyServiceTimeNotifications = useQueryResult(
-    dailyServiceTimeNotificationsQuery
+    dailyServiceTimeNotificationsQuery()
   )
 
   const notifications = dailyServiceTimeNotifications.getOrElse([])

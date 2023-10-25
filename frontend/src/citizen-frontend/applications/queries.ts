@@ -141,7 +141,7 @@ export const saveApplicationDraftMutation = mutation({
 
 export const removeUnprocessableApplicationMutation = mutation({
   api: removeUnprocessedApplication,
-  invalidateQueryKeys: () => [guardianApplicationsQuery.queryKey]
+  invalidateQueryKeys: () => [guardianApplicationsQuery().queryKey]
 })
 
 export const sendApplicationMutation = mutation({

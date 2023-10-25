@@ -31,9 +31,10 @@ const FlatList = styled.ul`
 
 export default React.memo(function VardaErrors() {
   const { i18n } = useTranslation()
-  const vardaErrorsResult = useQueryResult(vardaErrorsQuery)
-  const { mutateAsync: startVardaUpdate, isLoading: isOngoing } =
-    useMutationResult(startVardaUpdateMutation)
+  const vardaErrorsResult = useQueryResult(vardaErrorsQuery())
+  const { mutateAsync: startVardaUpdate, isPending } = useMutationResult(
+    startVardaUpdateMutation
+  )
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -45,7 +46,7 @@ export default React.memo(function VardaErrors() {
         <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
         <Button
           text={i18n.reports.vardaErrors.vardaResetButton}
-          disabled={isOngoing}
+          disabled={isPending}
           onClick={startVardaUpdate}
         />
         {renderResult(vardaErrorsResult, (rows) => (

@@ -41,7 +41,7 @@ export default React.memo(function ChildConsentsSection({
   const t = useTranslation()
   const [open, setOpen] = useState(false)
   const user = useUser()
-  const { data: unconsentedCounts } = useQuery(childConsentNotificationsQuery)
+  const { data: unconsentedCounts } = useQuery(childConsentNotificationsQuery())
   const unconsentedCount =
     (unconsentedCounts && unconsentedCounts[childId]) ?? 0
 
@@ -70,7 +70,7 @@ const ChildConsentsContent = React.memo(function ChildConsentsContent({
 }: ChildConsentsProps) {
   const t = useTranslation()
 
-  const childConsents = useQueryResult(childConsentsQuery)
+  const childConsents = useQueryResult(childConsentsQuery())
 
   const consents = useMemo(
     () =>

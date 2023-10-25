@@ -116,7 +116,7 @@ const DecisionView = React.memo(function DecisionView({
   const { refreshAssistanceNeedDecisionCounts } = useContext(
     AssistanceNeedDecisionReportContext
   )
-  const { mutateAsync: decide, isLoading: submitting } = useMutationResult(
+  const { mutateAsync: decide, isPending: submitting } = useMutationResult(
     decideAssistanceNeedPreschoolDecisionMutation
   )
 

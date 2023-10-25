@@ -57,7 +57,7 @@ const PlacementGuaranteeFilters = ({
   setFilters: (filters: PlacementGuaranteeReportFilters) => void
 }) => {
   const { i18n, lang } = useTranslation()
-  const unitsResult = useQueryResult(unitsQuery)
+  const unitsResult = useQueryResult(unitsQuery())
   return (
     <>
       <FilterRow>
