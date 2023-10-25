@@ -344,7 +344,7 @@ export const fi = {
     thread: {
       reply: 'Vastaa viestiin'
     },
-    draft: 'Lunnos',
+    draft: 'Luonnos',
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {
