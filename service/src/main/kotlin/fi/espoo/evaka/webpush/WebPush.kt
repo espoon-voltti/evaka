@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.utils.writerFor
 import fi.espoo.voltti.logging.loggers.error
 import java.lang.RuntimeException
 import java.net.URI
@@ -129,7 +130,7 @@ private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 class WebPush(env: WebPushEnv) {
     private val fuel = FuelManager()
     private val secureRandom = SecureRandom()
-    private val jsonMapper = defaultJsonMapperBuilder().build()
+    private val jsonWriter = defaultJsonMapperBuilder().build().writerFor<List<WebPushPayload>>()
     private val vapidKeyPair: WebPushKeyPair =
         WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String
@@ -160,7 +161,7 @@ class WebPush(env: WebPushEnv) {
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
-                    data = jsonMapper.writeValueAsBytes(notification.payloads),
+                    data = jsonWriter.writeValueAsBytes(notification.payloads),
                     urgency = Urgency.Normal
                 )
                 .withVapid(vapidJwt)
