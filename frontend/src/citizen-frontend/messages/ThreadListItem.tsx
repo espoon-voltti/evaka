@@ -116,7 +116,7 @@ export default React.memo(function ThreadListItem({
             </ScreenReaderOnly>
             {isRegularThread(thread)
               ? thread.title +
-                (thread.sensitive && ` (${i18n.messages.sensitive})`)
+                (thread.sensitive ? ` (${i18n.messages.sensitive})` : '')
               : i18n.messages.sensitive}
           </Truncated>
           <div>
