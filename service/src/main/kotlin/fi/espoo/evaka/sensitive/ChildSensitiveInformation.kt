@@ -17,8 +17,6 @@ data class ChildSensitiveInformation(
     val dateOfBirth: LocalDate,
     val ssn: String,
     val childAddress: String,
-    val placementTypes:
-        List<PlacementType>, // TODO only for backward compatibility, safe to remove in Dec 2021
     val placementType: PlacementType?,
     val allergies: String,
     val diet: String,

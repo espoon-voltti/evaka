@@ -33,7 +33,6 @@ fun Database.Read.getChildSensitiveInfo(
         dateOfBirth = person.dateOfBirth,
         ssn = person.identity.toString(),
         childAddress = person.streetAddress,
-        placementTypes = listOfNotNull(placementType),
         placementType = placementType,
         allergies = child?.additionalInformation?.allergies ?: "",
         diet = child?.additionalInformation?.diet ?: "",
