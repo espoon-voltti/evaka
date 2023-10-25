@@ -370,7 +370,7 @@ const sv: Translations = {
         'Anmäl endast heldagsfrånvaro. Kortare frånvaro kan anmälas genom reservationer.',
       lockedAbsencesWarningTitle: 'Frånvaro i flera dagar',
       lockedAbsencesWarningText:
-        'Du håller på att markera frånvaro för dagar ,där anmälningstiden har gått ut. Detta kan endast återkallas genom att vara i kontakt med personalen.',
+        'Du håller på att markera frånvaro för flera dagar, där anmälningstiden har gått ut. Detta kan endast återkallas genom att vara i kontakt med personalen.',
       dateRange: 'Frånvaromeddelande för ',
       absenceType: 'Anledning till frånvaro',
       absenceTypes: {
