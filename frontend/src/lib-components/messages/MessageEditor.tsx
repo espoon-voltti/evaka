@@ -420,20 +420,27 @@ export default React.memo(function MessageEditor({
         />
       </>
     )
+  const FlagsInfoContent = () => {
+    // If only one of the flags is present
+    if (message.urgent !== message.sensitive) {
+      if (message.urgent) return <>{i18n.messageEditor.flags.urgent.info}</>
+      if (message.sensitive)
+        return <>{i18n.messageEditor.flags.sensitive.info}</>
+      return null
+    }
+
+    // If both flags are present
+    return (
+      <UlNoMargin>
+        <li>{i18n.messageEditor.flags.urgent.info}</li>
+        <li>{i18n.messageEditor.flags.sensitive.info}</li>)
+      </UlNoMargin>
+    )
+  }
   const flagsInfo = (message.urgent || message.sensitive) && (
     <>
       <Gap size="s" />
-      <InfoBox
-        message={
-          <UlNoMargin>
-            {message.urgent && <li>{i18n.messageEditor.flags.urgent.info}</li>}
-            {message.sensitive && (
-              <li>{i18n.messageEditor.flags.sensitive.info}</li>
-            )}
-          </UlNoMargin>
-        }
-        noMargin={true}
-      />
+      <InfoBox noMargin={true} message={<FlagsInfoContent />} />
     </>
   )
 

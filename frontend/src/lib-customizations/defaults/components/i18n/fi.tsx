@@ -127,7 +127,7 @@ const components: Translations = {
         info: 'Arkaluontoisen viestin avaaminen vaatii kuntalaiselta vahvan tunnistautumisen.',
         label: 'Arkaluontoinen',
         whyDisabled:
-          'Arkaluontoisen viestin voi lähettää vain normaalina viestinä yksittäisen lapsen huoltajille henkilökohtaisesta lähettäjätilistä.'
+          'Arkaluontoisen viestin voi lähettää vain henkilökohtaisesta käyttäjätilistä yksittäisen lapsen huoltajille.'
       }
     },
     sender: 'Lähettäjä',

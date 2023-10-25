@@ -230,11 +230,7 @@ export function SingleThreadView({
             {title}
             {sensitive && ` (${i18n.messages.sensitive})`}
           </H2>
-          <MessageCharacteristics
-            type={type}
-            urgent={urgent}
-            sensitive={sensitive}
-          />
+          <MessageCharacteristics type={type} urgent={urgent} />
         </StickyTitleRow>
         {messages.map((message, idx) => (
           <React.Fragment key={`${message.id}-fragment`}>

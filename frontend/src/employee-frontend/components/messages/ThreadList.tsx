@@ -90,11 +90,7 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
               />
             )}
             <TypeAndDate>
-              <MessageCharacteristics
-                type={item.type}
-                urgent={item.urgent}
-                sensitive={item.sensitive}
-              />
+              <MessageCharacteristics type={item.type} urgent={item.urgent} />
               {item.timestamp && <Timestamp date={item.timestamp} />}
             </TypeAndDate>
           </FixedSpaceRow>

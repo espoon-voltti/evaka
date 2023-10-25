@@ -270,11 +270,7 @@ export default React.memo(function ThreadView({
     <ThreadContainer data-qa="thread-reader">
       <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
-          <MessageCharacteristics
-            type={messageType}
-            urgent={urgent}
-            sensitive={false}
-          />
+          <MessageCharacteristics type={messageType} urgent={urgent} />
           {children.length > 0 ? (
             <>
               <ScreenReaderOnly>

@@ -33,10 +33,14 @@ function chipColor(theme: Theme, type: 'MESSAGE' | 'BULLETIN'): string {
 interface Props {
   type: MessageType
   urgent: boolean
-  sensitive: boolean
+  sensitive?: boolean
 }
 
-export function MessageCharacteristics({ type, urgent, sensitive }: Props) {
+export function MessageCharacteristics({
+  type,
+  urgent,
+  sensitive = false
+}: Props) {
   const theme = useTheme()
   const i18n = useTranslations()
   return (

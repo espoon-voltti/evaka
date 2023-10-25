@@ -139,11 +139,7 @@ const MessagePreview = React.memo(function MessagePreview({
           <Truncated data-qa="message-participants">
             {participants.join(', ')}
           </Truncated>
-          <MessageCharacteristics
-            type={thread.type}
-            urgent={thread.urgent}
-            sensitive={false}
-          />
+          <MessageCharacteristics type={thread.type} urgent={thread.urgent} />
         </Header>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-preview-title">{thread.title}</Truncated>
