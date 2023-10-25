@@ -66,7 +66,9 @@ export const ServiceWorkerContextProvider = React.memo(
 
     useEffect(() => {
       if (pushNotifications) {
-        pushNotifications.enable().catch((err) => Sentry.captureException(err))
+        pushNotifications
+          .refreshSubscription()
+          .catch((err) => Sentry.captureException(err))
       } else if (pushManager) {
         unsubscribe(pushManager).catch((err) => Sentry.captureException(err))
       }
@@ -102,7 +104,12 @@ export class PushNotifications {
   }
 
   async enable(): Promise<boolean> {
-    const sub = await this.refreshSubscription()
+    if (!(await this.requestPermission())) return false
+    return await this.refreshSubscription()
+  }
+
+  async refreshSubscription(): Promise<boolean> {
+    const sub = await this.getSubscription()
     const authSecret = sub?.getKey('auth')
     const ecdhKey = sub?.getKey('p256dh')
     if (sub && authSecret && ecdhKey) {
@@ -139,10 +146,9 @@ export class PushNotifications {
     return result === 'granted'
   }
 
-  private async refreshSubscription(): Promise<PushSubscription | undefined> {
-    if (!(await this.requestPermission())) return undefined
+  private async getSubscription(): Promise<PushSubscription | undefined> {
     const state = await this.pushManager.permissionState(this.options)
-    if (state !== 'granted' && state !== 'prompt') {
+    if (state !== 'granted') {
       return undefined
     }
     const sub = await this.pushManager.getSubscription()
