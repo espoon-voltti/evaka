@@ -1,3 +1,4 @@
+/*
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
@@ -6,9 +7,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 
 import { Loading, Result, Success } from 'lib-common/api'
-import { ChildDailyRecords } from 'lib-common/api-types/reservations'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import { ChildRecordOfDay, DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -44,7 +44,7 @@ export interface TimeRangeWithErrors extends JsonOf<TimeRange> {
 let requestId = 0
 
 export function useUnitReservationEditState(
-  dailyData: ChildDailyRecords[],
+  dailyData: ChildRecordOfDay[],
   unitId: UUID
 ) {
   const [state, setState] = useState<EditState>()
@@ -86,13 +86,12 @@ export function useUnitReservationEditState(
 
   const startEditing = useCallback(
     (childId: string, date: LocalDate) => {
-      const childData =
-        dailyData.find((d) => d.child.id === childId)?.dailyData ?? []
+      const childData = dailyData.find((d) => d.childId === childId)
       setState({
         childId,
         date,
         request: { id: requestId, result: Success.of() },
-        reservations: childData.map((row) =>
+        reservations: childData.reservations.map((row) =>
           Object.fromEntries(
             Object.entries(row).map(([date, { reservation }]) => {
               const initial =
@@ -346,3 +345,4 @@ export function useUnitReservationEditState(
 const lastSavedStateHasNotChanged = (timeRange: TimeRangeWithErrors) =>
   timeRange.startTime === timeRange.lastSavedState.startTime &&
   timeRange.endTime === timeRange.lastSavedState.endTime
+*/

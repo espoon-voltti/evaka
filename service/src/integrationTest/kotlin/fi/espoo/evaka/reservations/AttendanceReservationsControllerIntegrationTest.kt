@@ -342,12 +342,12 @@ class AttendanceReservationsControllerIntegrationTest :
                         mapOf(
                             mon to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation =
+                                    reservations =
                                         Reservation.Times(
                                             LocalTime.of(8, 0),
                                             LocalTime.of(16, 0),
                                         ),
-                                    attendance =
+                                    attendances =
                                         UnitAttendanceReservations.AttendanceTimes(
                                             "08:15",
                                             "16:05"
@@ -360,8 +360,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ),
                             tue to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = null,
-                                    attendance = null,
+                                    reservations = null,
+                                    attendances = null,
                                     absence =
                                         UnitAttendanceReservations.Absence(
                                             AbsenceType.OTHER_ABSENCE
@@ -373,8 +373,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ),
                             wed to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = Reservation.NoTimes,
-                                    attendance = null,
+                                    reservations = Reservation.NoTimes,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
@@ -383,8 +383,8 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ),
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = null,
-                                    attendance = null,
+                                    reservations = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
@@ -406,8 +406,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         mapOf(
                             wed to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = null,
-                                    attendance = null,
+                                    reservations = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
@@ -417,12 +417,12 @@ class AttendanceReservationsControllerIntegrationTest :
                             // Backup in group 2
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation =
+                                    reservations =
                                         Reservation.Times(
                                             LocalTime.of(9, 0),
                                             LocalTime.of(15, 0),
                                         ),
-                                    attendance = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
@@ -432,8 +432,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             // Backup in another unit
                             fri to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = null,
-                                    attendance = null,
+                                    reservations = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = true,
@@ -473,12 +473,12 @@ class AttendanceReservationsControllerIntegrationTest :
                             // Backup in group 2
                             thu to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation =
+                                    reservations =
                                         Reservation.Times(
                                             LocalTime.of(9, 0),
                                             LocalTime.of(15, 0),
                                         ),
-                                    attendance = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes = null,
                                     inOtherUnit = false,
@@ -501,8 +501,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             // Normally in another unit, backup in group 2
                             fri to
                                 UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservation = null,
-                                    attendance = null,
+                                    reservations = null,
+                                    attendances = null,
                                     absence = null,
                                     dailyServiceTimes =
                                         DailyServiceTimesValue.RegularTimes(
@@ -625,12 +625,12 @@ class AttendanceReservationsControllerIntegrationTest :
                             mapOf(
                                 mon to
                                     UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservation =
+                                        reservations =
                                             Reservation.Times(
                                                 LocalTime.of(19, 0),
                                                 LocalTime.of(23, 59),
                                             ),
-                                        attendance =
+                                        attendances =
                                             UnitAttendanceReservations.AttendanceTimes(
                                                 "19:10",
                                                 "23:59"
@@ -643,12 +643,12 @@ class AttendanceReservationsControllerIntegrationTest :
                                     ),
                                 tue to
                                     UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservation =
+                                        reservations =
                                             Reservation.Times(
                                                 LocalTime.of(0, 0),
                                                 LocalTime.of(8, 0),
                                             ),
-                                        attendance =
+                                        attendances =
                                             UnitAttendanceReservations.AttendanceTimes(
                                                 "00:00",
                                                 "10:30"
@@ -661,12 +661,12 @@ class AttendanceReservationsControllerIntegrationTest :
                                     ),
                                 wed to
                                     UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservation =
+                                        reservations =
                                             Reservation.Times(
                                                 LocalTime.of(0, 0),
                                                 LocalTime.of(9, 30),
                                             ),
-                                        attendance = null,
+                                        attendances = null,
                                         absence = null,
                                         dailyServiceTimes = null,
                                         inOtherUnit = false,
@@ -680,12 +680,12 @@ class AttendanceReservationsControllerIntegrationTest :
                             mapOf(
                                 tue to
                                     UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservation =
+                                        reservations =
                                             Reservation.Times(
                                                 LocalTime.of(17, 30),
                                                 LocalTime.of(23, 59),
                                             ),
-                                        attendance =
+                                        attendances =
                                             UnitAttendanceReservations.AttendanceTimes(
                                                 "17:00",
                                                 null
@@ -1301,8 +1301,8 @@ class AttendanceReservationsControllerIntegrationTest :
             .map {
                 it to
                     UnitAttendanceReservations.ChildRecordOfDay(
-                        reservation = null,
-                        attendance = null,
+                        reservations = null,
+                        attendances = null,
                         absence = null,
                         dailyServiceTimes = null,
                         inOtherUnit = false,

@@ -2,19 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import mapValues from 'lodash/mapValues'
-
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   parseDailyServiceTimes,
   parseIsoTimeRange
 } from 'lib-common/api-types/daily-service-times'
-import {
-  ChildDailyRecords,
-  UnitAttendanceReservations,
-  UnitServiceNeedInfo
-} from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
@@ -53,7 +46,10 @@ import {
   PlacementPlanDetails,
   TerminatedPlacement
 } from 'lib-common/generated/api-types/placement'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import {
+  DailyReservationRequest,
+  UnitAttendanceReservations
+} from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -832,63 +828,39 @@ export async function getUnitAttendanceReservations(
       }
     })
     .then(({ data }) => ({
-      unit: data.unit,
-      operationalDays: data.operationalDays.map((operationalDay) => ({
-        ...operationalDay,
-        date: LocalDate.parseIso(operationalDay.date),
-        time:
-          operationalDay.time !== null
-            ? {
-                start: LocalTime.parseIso(operationalDay.time.start),
-                end: LocalTime.parseIso(operationalDay.time.end)
-              }
+      ...data,
+      children: data.children.map((child) => ({
+        ...child,
+        dateOfBirth: LocalDate.parseIso(child.dateOfBirth),
+        serviceNeeds: child.serviceNeeds.map((sn) => ({
+          ...sn,
+          validDuring: FiniteDateRange.parseJson(sn.validDuring)
+        }))
+      })),
+      days: data.days.map((day) => ({
+        ...day,
+        children: day.children.map((child) => ({
+          ...child,
+          reservations: child.reservations.map(parseReservation),
+          attendances: child.attendances.map(({ startTime, endTime }) => ({
+            startTime: LocalTime.parseIso(startTime),
+            endTime: endTime ? LocalTime.parseIso(endTime) : null
+          })),
+          dailyServiceTimes: child.dailyServiceTimes
+            ? parseDailyServiceTimes(child.dailyServiceTimes)
             : null
-      })),
-      groups: data.groups.map(({ group, children }) => ({
-        group,
-        children: children.map(toChildDayRows)
-      })),
-      ungrouped: data.ungrouped.map(toChildDayRows),
-      unitServiceNeedInfo: deserializeUnitServiceNeedInfo(
-        data.unitServiceNeedInfo
-      )
+        })),
+        date: LocalDate.parseIso(day.date),
+        dateInfo: {
+          ...day.dateInfo,
+          time:
+            day.dateInfo.time !== null
+              ? {
+                  start: LocalTime.parseIso(day.dateInfo.time.start),
+                  end: LocalTime.parseIso(day.dateInfo.time.end)
+                }
+              : null
+        }
+      }))
     }))
 }
-
-const toChildDayRows = (
-  json: JsonOf<ChildDailyRecords>
-): ChildDailyRecords => ({
-  ...json,
-  child: {
-    ...json.child,
-    dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
-  },
-  dailyData: json.dailyData.map((record) =>
-    mapValues(record, (daily) => ({
-      ...daily,
-      reservation: daily.reservation
-        ? parseReservation(daily.reservation)
-        : daily.reservation,
-      dailyServiceTimes: daily.dailyServiceTimes
-        ? parseDailyServiceTimes(daily.dailyServiceTimes)
-        : null
-    }))
-  )
-})
-
-const deserializeUnitServiceNeedInfo = (
-  info: JsonOf<UnitServiceNeedInfo>
-): UnitServiceNeedInfo => ({
-  ...info,
-  groups: info.groups.map((group) => ({
-    ...group,
-    childInfos: group.childInfos.map((cinfo) => ({
-      ...cinfo,
-      validDuring: FiniteDateRange.parseJson(cinfo.validDuring)
-    }))
-  })),
-  ungrouped: info.ungrouped.map((uci) => ({
-    ...uci,
-    validDuring: FiniteDateRange.parseJson(uci.validDuring)
-  }))
-})

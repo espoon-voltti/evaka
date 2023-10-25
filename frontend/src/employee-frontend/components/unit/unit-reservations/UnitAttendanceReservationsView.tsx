@@ -6,9 +6,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
-import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { Child } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -130,7 +130,7 @@ export default React.memo(function UnitAttendanceReservationsView({
         {selectedGroup.type === 'staff' ? (
           <StaffAttendanceTable
             unitId={unitId}
-            operationalDays={childData.operationalDays}
+            operationalDays={childData.days}
             staffAttendances={staffData.staff}
             externalAttendances={staffData.extraAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
@@ -144,7 +144,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             selectedGroup.type === 'group' ? (
               <StaffAttendanceTable
                 unitId={unitId}
-                operationalDays={childData.operationalDays}
+                operationalDays={childData.days} /* TODO: uhm... */
                 staffAttendances={staffData.staff}
                 externalAttendances={staffData.extraAttendances}
                 reloadStaffAttendances={reloadStaffAttendances}
@@ -155,35 +155,11 @@ export default React.memo(function UnitAttendanceReservationsView({
             ) : null}
             <ChildReservationsTable
               unitId={unitId}
-              operationalDays={childData.operationalDays}
-              allDayRows={
-                selectedGroup.type === 'all-children'
-                  ? childData.groups
-                      .flatMap(({ children }) => children)
-                      .concat(childData.ungrouped)
-                  : selectedGroup.type === 'no-group'
-                    ? childData.ungrouped
-                    : selectedGroup.type === 'group'
-                      ? childData.groups.find(
-                          (g) => g.group.id === selectedGroup.id
-                        )?.children ?? []
-                      : []
-              }
+              days={childData.days}
+              childBasics={childData.children}
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}
-              childServiceNeedInfos={
-                selectedGroup.type === 'all-children'
-                  ? childData.unitServiceNeedInfo.groups
-                      .flatMap(({ childInfos }) => childInfos)
-                      .concat(childData.unitServiceNeedInfo.ungrouped)
-                  : selectedGroup.type === 'no-group'
-                    ? childData.unitServiceNeedInfo.ungrouped
-                    : selectedGroup.type === 'group'
-                      ? childData.unitServiceNeedInfo.groups.find(
-                          (g) => g.groupId === selectedGroup.id
-                        )?.childInfos ?? []
-                      : []
-              }
+              selectedGroup={selectedGroup}
             />
           </>
         )}

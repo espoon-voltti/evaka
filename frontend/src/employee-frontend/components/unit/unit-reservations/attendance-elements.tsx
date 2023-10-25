@@ -6,9 +6,7 @@ import React from 'react'
 import styled, { css } from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
-import { TimeRange } from 'lib-common/reservations'
+import { OperationalDay } from 'lib-common/generated/api-types/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
@@ -19,8 +17,6 @@ import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { stickyTopBarHeight } from '../TabCalendar'
-
-import { TimeRangeWithErrors } from './reservation-table-edit-state'
 
 export const EditStateIndicator = React.memo(function EditStateIndicator({
   status,
@@ -167,8 +163,8 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
         <CustomTh>
           <LabelLike>{nameColumnLabel}</LabelLike>
         </CustomTh>
-        {operationalDays.map(({ date, isHoliday }) => (
-          <DateTh shrink key={date.formatIso()} faded={isHoliday}>
+        {operationalDays.map(({ date, dateInfo }) => (
+          <DateTh shrink key={date.formatIso()} faded={dateInfo.isHoliday}>
             <Date highlight={date.isToday()}>
               {date.format('EEEEEE d.M.', lang)}
             </Date>
@@ -180,7 +176,7 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
   )
 })
 
-export const TimeRangeEditor = React.memo(function TimeRangeEditor({
+/*export const TimeRangeEditor = React.memo(function TimeRangeEditor({
   timeRange,
   update,
   save
@@ -209,7 +205,7 @@ export const TimeRangeEditor = React.memo(function TimeRangeEditor({
       />
     </>
   )
-})
+})*/
 
 export const TimeInputWithoutPadding = styled(TimeInput)`
   padding: 0;

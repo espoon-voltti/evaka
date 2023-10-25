@@ -12,7 +12,6 @@ import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
@@ -24,6 +23,7 @@ import {
   ExternalAttendanceUpsert
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { OperationalDay } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'

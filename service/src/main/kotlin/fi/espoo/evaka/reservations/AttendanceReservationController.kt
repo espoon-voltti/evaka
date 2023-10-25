@@ -5,16 +5,14 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
-import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.Daycare
-import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
@@ -25,7 +23,7 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
+import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -48,6 +46,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -90,7 +89,15 @@ class AttendanceReservationController(
                     val preschoolTerms = tx.getPreschoolTerms()
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
-                    val unitName = unit.name
+                    val groups =
+                        tx.getDaycareGroupSummaries(unitId)
+                            .filter { it.endDate == null || it.endDate.isAfter(clock.today()) }
+                            .map {
+                                UnitAttendanceReservations.ReservationGroup(
+                                    id = it.id,
+                                    name = it.name
+                                )
+                            }
 
                     val holidays = tx.getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
@@ -106,8 +113,6 @@ class AttendanceReservationController(
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
 
-                    val unitServiceNeedInfo =
-                        tx.getGroupedActualServiceNeedInfosByRangeAndUnit(unitId, period)
                     val flatData =
                         period
                             .dates()
@@ -160,44 +165,52 @@ class AttendanceReservationController(
 
                     val childIds = flatData.map { it.childId }.toSet()
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
-                    val childData = tx.getChildData(childIds, period)
-
-                    val byGroup = flatData.groupBy { it.group }
+                    val childData = tx.getChildData(unitId, childIds, period)
 
                     UnitAttendanceReservations(
-                        unit = unitName,
-                        operationalDays = operationalDays,
-                        groups =
-                            byGroup.entries.mapNotNull { (group, rows) ->
-                                if (group == null) {
-                                    null
-                                } else {
-                                    UnitAttendanceReservations.GroupAttendanceReservations(
-                                        group = group,
-                                        children =
-                                            toChildDayRows(
-                                                rows,
-                                                serviceTimes,
-                                                childData,
-                                                includeNonOperationalDays,
-                                                clubTerms,
-                                                preschoolTerms
+                        unit = unit.name,
+                        groups = groups,
+                        children = childData.values.map { it.child },
+                        days =
+                            operationalDays.map { day ->
+                                val date = day.date
+                                val placementStatusesOfDay = flatData.filter { it.date == date }
+                                day.copy(
+                                    children =
+                                        childData.values.mapNotNull { childData ->
+                                            val childId = childData.child.id
+                                            val placementStatus =
+                                                placementStatusesOfDay.find {
+                                                    it.childId == childId
+                                                }
+                                                    ?: return@mapNotNull null
+                                            UnitAttendanceReservations.ChildRecordOfDay(
+                                                childId = childData.child.id,
+                                                reservations = childData.reservations[date]
+                                                        ?: emptyList(),
+                                                attendances = childData.attendances[date]
+                                                        ?: emptyList(),
+                                                absence = childData.absences[date],
+                                                dailyServiceTimes =
+                                                    serviceTimes[childId]?.find {
+                                                        it.validityPeriod.includes(day.date)
+                                                    },
+                                                inOtherUnit = placementStatus.inOtherUnit,
+                                                groupId = placementStatus.group?.id,
+                                                isInBackupGroup =
+                                                    placementStatus.isOriginalGroup &&
+                                                        placementStatus.group !=
+                                                            placementStatus.otherGroup,
+                                                scheduleType =
+                                                    placementStatus.placementType.scheduleType(
+                                                        date,
+                                                        clubTerms,
+                                                        preschoolTerms
+                                                    )
                                             )
-                                    )
-                                }
-                            },
-                        ungrouped =
-                            byGroup[null]?.let {
-                                toChildDayRows(
-                                    it,
-                                    serviceTimes,
-                                    childData,
-                                    includeNonOperationalDays,
-                                    clubTerms,
-                                    preschoolTerms
+                                        }
                                 )
-                            } ?: emptyList(),
-                        unitServiceNeedInfo = unitServiceNeedInfo
+                            }
                     )
                 }
             }
@@ -547,7 +560,7 @@ class AttendanceReservationController(
                         )
 
                     val nextConfirmedUnitDays =
-                        operationalDays.filter { !it.isHoliday }.map { it.date }
+                        operationalDays.filter { !it.dateInfo.isHoliday }.map { it.date }
 
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(
@@ -590,52 +603,39 @@ class AttendanceReservationController(
     }
 }
 
-@ExcludeCodeGen
 data class UnitAttendanceReservations(
     val unit: String,
-    val operationalDays: List<OperationalDay>,
-    val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildDailyRecords>,
-    val unitServiceNeedInfo: UnitServiceNeedInfo
+    val groups: List<ReservationGroup>,
+    val children: List<Child>,
+    val days: List<OperationalDay>,
 ) {
+    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
+
     data class OperationalDay(
         val date: LocalDate,
+        val dateInfo: UnitDateInfo,
+        val children: List<ChildRecordOfDay>
+    )
+
+    data class UnitDateInfo(
         val time: TimeRange?,
         val isHoliday: Boolean,
         val isInHolidayPeriod: Boolean
     )
 
-    data class GroupAttendanceReservations(
-        val group: ReservationGroup,
-        val children: List<ChildDailyRecords>
-    )
-
-    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
-
-    data class ChildDailyRecords(
-        val child: Child,
-
-        // TODO: Refactor this data model
-        //
-        // Currently, each child has 0 or more ChildRecordOfDay objects for each day. It would be
-        // more realistic if each child had 0 or 1 ChildRecordOfDay object for each day instead, and
-        // the fields in ChildRecordOfDay that can have multiple values (e.g. attendance times)
-        // would be lists.
-        //
-        val dailyData: List<Map<LocalDate, ChildRecordOfDay>>
-    )
-
     data class ChildRecordOfDay(
-        val reservation: Reservation?,
-        val attendance: AttendanceTimes?,
+        val childId: ChildId,
+        val reservations: List<Reservation>,
+        val attendances: List<AttendanceTimes>,
         val absence: Absence?,
         val dailyServiceTimes: DailyServiceTimesValue?,
+        val groupId: GroupId?,
         val inOtherUnit: Boolean,
         val isInBackupGroup: Boolean,
         val scheduleType: ScheduleType
     )
 
-    data class AttendanceTimes(val startTime: String, val endTime: String?)
+    data class AttendanceTimes(val startTime: LocalTime, val endTime: LocalTime?)
 
     data class Absence(val type: AbsenceType)
 
@@ -644,18 +644,8 @@ data class UnitAttendanceReservations(
         val firstName: String,
         val lastName: String,
         val preferredName: String,
-        val dateOfBirth: LocalDate
-    )
-
-    data class UnitServiceNeedInfo(
-        val unitId: DaycareId,
-        val groups: List<GroupServiceNeedInfo>,
-        val ungrouped: List<ChildServiceNeedInfo>
-    )
-
-    data class GroupServiceNeedInfo(
-        val groupId: GroupId,
-        val childInfos: List<ChildServiceNeedInfo>
+        val dateOfBirth: LocalDate,
+        @Json val serviceNeeds: List<ChildServiceNeedInfo>
     )
 }
 
@@ -682,14 +672,19 @@ private fun getUnitOperationalDayData(
                 isRoundTheClockUnit ||
                 unit.operationDays.contains(it.dayOfWeek.value)
         }
-        .map {
+        .map { date ->
             UnitAttendanceReservations.OperationalDay(
-                it,
-                time = unit.operationTimes[it.dayOfWeek.value - 1],
-                isHoliday =
-                    !isRoundTheClockUnit &&
-                        (holidays.contains(it) || !unit.operationDays.contains(it.dayOfWeek.value)),
-                isInHolidayPeriod = holidayPeriodDates.contains(it)
+                date = date,
+                dateInfo =
+                    UnitAttendanceReservations.UnitDateInfo(
+                        time = unit.operationTimes[date.dayOfWeek.value - 1],
+                        isHoliday =
+                            !isRoundTheClockUnit &&
+                                (holidays.contains(date) ||
+                                    !unit.operationDays.contains(date.dayOfWeek.value)),
+                        isInHolidayPeriod = holidayPeriodDates.contains(date),
+                    ),
+                children = emptyList()
             )
         }
         .toList()
@@ -784,6 +779,17 @@ private data class ChildData(
     val absences: Map<LocalDate, UnitAttendanceReservations.Absence>
 )
 
+private data class ChildDataQueryResult(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val dateOfBirth: LocalDate,
+    @Json val reservations: List<ReservationTimesForDate>,
+    @Json val attendances: List<AttendanceTimesForDate>,
+    @Json val absences: List<AbsenceForDate>
+)
+
 private data class ReservationTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime?,
@@ -798,8 +804,8 @@ private data class ReservationTimesForDate(
 
 private data class AttendanceTimesForDate(
     val date: LocalDate,
-    val startTime: String,
-    val endTime: String?
+    val startTime: LocalTime,
+    val endTime: LocalTime?
 ) {
     fun toAttendanceTimes() = UnitAttendanceReservations.AttendanceTimes(startTime, endTime)
 }
@@ -809,12 +815,15 @@ private data class AbsenceForDate(val date: LocalDate, val type: AbsenceType) {
 }
 
 private fun Database.Read.getChildData(
+    unitId: DaycareId,
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange
 ): Map<ChildId, ChildData> {
+    val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
+
     return createQuery(
             """
-SELECT            
+SELECT
     p.id,
     p.first_name,
     p.last_name,
@@ -822,23 +831,23 @@ SELECT
     p.date_of_birth,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
-            'date', to_char(ar.date, 'YYYY-MM-DD'),
-            'startTime', to_char(ar.start_time, 'HH24:MI'),
-            'endTime', to_char(ar.end_time, 'HH24:MI')
+            'date', ar.date,
+            'startTime', ar.start_time,
+            'endTime', ar.end_time
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
     ), '[]'::jsonb) AS reservations,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
-            'date', to_char(att.date, 'YYYY-MM-DD'),
-            'startTime', to_char(att.start_time, 'HH24:MI'),
-            'endTime', to_char(att.end_time, 'HH24:MI')
+            'date', att.date,
+            'startTime', att.start_time,
+            'endTime', att.end_time
         ) ORDER BY att.date, att.start_time)
         FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(:dateRange, att.date)
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(json_build_object(
-            'date', to_char(a.date, 'YYYY-MM-DD'),
+            'date', a.date,
             'type', a.absence_type
         ) ORDER BY a.date)
         FROM absence a
@@ -848,109 +857,37 @@ FROM person p
 WHERE p.id = ANY(:childIds)
 """
         )
+        .bind("unitId", unitId)
         .bind("dateRange", dateRange)
         .bind("childIds", childIds)
-        .toMap {
-            val childId = column<ChildId>("id")
-            childId to
-                ChildData(
-                    child = row<UnitAttendanceReservations.Child>(),
-                    reservations =
-                        jsonColumn<List<ReservationTimesForDate>>("reservations")
-                            .groupBy({ it.date }, { it.toReservationTimes() }),
-                    attendances =
-                        jsonColumn<List<AttendanceTimesForDate>>("attendances")
-                            .groupBy({ it.date }, { it.toAttendanceTimes() }),
-                    // The SQL query can return multiple absences for the same date, but here we
-                    // only
-                    // take one
-                    absences =
-                        jsonColumn<List<AbsenceForDate>>("absences")
-                            .associateBy({ it.date }, { it.toAbsence() })
-                )
-        }
-}
-
-private fun toChildDayRows(
-    rows: List<ChildPlacementStatus>,
-    serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
-    childData: Map<ChildId, ChildData>,
-    includeNonOperationalDays: Boolean,
-    clubTerms: List<ClubTerm>,
-    preschoolTerms: List<PreschoolTerm>
-): List<UnitAttendanceReservations.ChildDailyRecords> {
-    return rows
-        .groupBy { it.childId }
-        .map { (childId, dailyData) ->
-            val child =
-                childData[childId]
-                    ?: throw IllegalStateException("Child data not found for child $childId")
-            val maxRecordCountOnAnyDay =
-                max(
-                    1,
-                    dailyData.maxOf { placementStatus ->
-                        val date = placementStatus.date
-                        if (!placementStatus.inOtherUnit) {
-                            max(
-                                (child.reservations[date] ?: listOf()).size,
-                                (child.attendances[date] ?: listOf()).size
-                            )
-                        } else {
-                            0
-                        }
-                    }
-                )
-
-            UnitAttendanceReservations.ChildDailyRecords(
-                child = child.child,
-                dailyData =
-                    (0 until maxRecordCountOnAnyDay).map { rowIndex ->
-                        dailyData.associateBy(
-                            { it.date },
-                            {
-                                dailyRecord(
-                                    it,
-                                    rowIndex,
-                                    child,
-                                    serviceTimes[childId],
-                                    includeNonOperationalDays,
-                                    clubTerms,
-                                    preschoolTerms
-                                )
-                            }
-                        )
-                    }
+        .toList<ChildDataQueryResult>()
+        .map { row ->
+            ChildData(
+                child =
+                    UnitAttendanceReservations.Child(
+                        id = row.id,
+                        firstName = row.firstName,
+                        lastName = row.lastName,
+                        preferredName = row.preferredName,
+                        dateOfBirth = row.dateOfBirth,
+                        serviceNeeds = serviceNeedInfos.filter { it.childId == row.id }
+                    ),
+                reservations =
+                    row.reservations.groupBy(
+                        keySelector = { it.date },
+                        valueTransform = { it.toReservationTimes() }
+                    ),
+                attendances =
+                    row.attendances.groupBy(
+                        keySelector = { it.date },
+                        valueTransform = { it.toAttendanceTimes() }
+                    ),
+                absences =
+                    row.absences.associateBy(
+                        keySelector = { it.date },
+                        valueTransform = { it.toAbsence() }
+                    ),
             )
         }
-}
-
-private fun dailyRecord(
-    placementStatus: ChildPlacementStatus,
-    rowIndex: Int,
-    childData: ChildData,
-    serviceTimes: List<DailyServiceTimesValue>?,
-    includeNonOperationalDays: Boolean,
-    clubTerms: List<ClubTerm>,
-    preschoolTerms: List<PreschoolTerm>
-): UnitAttendanceReservations.ChildRecordOfDay {
-    val date = placementStatus.date
-    val inOtherUnit = placementStatus.inOtherUnit
-
-    val reservation =
-        if (!includeNonOperationalDays && inOtherUnit) null
-        else childData.reservations[date]?.getOrNull(rowIndex)
-    val attendance =
-        if (!includeNonOperationalDays && inOtherUnit) null
-        else childData.attendances[date]?.getOrNull(rowIndex)
-
-    return UnitAttendanceReservations.ChildRecordOfDay(
-        reservation = reservation,
-        attendance = attendance,
-        absence = childData.absences[date],
-        dailyServiceTimes = serviceTimes?.find { dst -> dst.validityPeriod.includes(date) },
-        inOtherUnit = inOtherUnit,
-        isInBackupGroup =
-            placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup,
-        scheduleType = placementStatus.placementType.scheduleType(date, clubTerms, preschoolTerms)
-    )
+        .associateBy { it.child.id }
 }

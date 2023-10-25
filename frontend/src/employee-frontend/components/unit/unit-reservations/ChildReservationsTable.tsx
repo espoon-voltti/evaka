@@ -3,16 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
+import max from 'lodash/max'
+import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { Success } from 'lib-common/api'
 import {
   Child,
-  ChildDailyRecords,
-  OperationalDay
-} from 'lib-common/api-types/reservations'
-import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
+  ChildRecordOfDay,
+  OperationalDay,
+  UnitDateInfo
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { Table, Tbody } from 'lib-components/layout/Table'
@@ -22,8 +25,10 @@ import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
+import { AttendanceGroupFilter } from '../TabCalendar'
 
-import ChildDay from './ChildDay'
+import ChildDayAttendance from './ChildDayAttendance'
+import ChildDayReservation from './ChildDayReservation'
 import {
   AttendanceTableHeader,
   NameWrapper,
@@ -34,170 +39,247 @@ import {
   StyledTd,
   ChipWrapper
 } from './attendance-elements'
-import { useUnitReservationEditState } from './reservation-table-edit-state'
 
 interface Props {
   unitId: UUID
-  operationalDays: OperationalDay[]
-  allDayRows: ChildDailyRecords[]
+  days: OperationalDay[]
+  childBasics: Child[]
   onMakeReservationForChild: (child: Child) => void
   selectedDate: LocalDate
-  childServiceNeedInfos: ChildServiceNeedInfo[]
+  selectedGroup: AttendanceGroupFilter
 }
 
-export default React.memo(function ChildReservationsTable(props: Props) {
-  const { selectedDate } = props
+const childFilter = (
+  child: ChildRecordOfDay,
+  selectedGroup: AttendanceGroupFilter
+): boolean =>
+  selectedGroup.type === 'group'
+    ? child.groupId === selectedGroup.id
+    : selectedGroup.type === 'no-group'
+    ? child.groupId === null
+    : selectedGroup.type === 'all-children'
 
-  // Reset edit state when the selected date changes
-  return <ChildReservations key={selectedDate.formatIso()} {...props} />
-})
-
-const ChildReservations = React.memo(function ChildReservations(props: Props) {
-  const {
-    operationalDays,
-    onMakeReservationForChild,
-    selectedDate,
-    childServiceNeedInfos
-  } = props
+export default React.memo(function ChildReservationsTable({
+  days,
+  childBasics,
+  onMakeReservationForChild,
+  selectedDate,
+  selectedGroup
+}: Props) {
   const { i18n } = useTranslation()
-  const { editState, stopEditing, startEditing, ...editCallbacks } =
-    useUnitReservationEditState(props.allDayRows, props.unitId)
 
-  const contractDayServiceNeeds = childServiceNeedInfos.filter(
-    (c) => c.hasContractDays
-  )
-  const allDayRows = useMemo(
-    () =>
-      sortBy(
-        props.allDayRows,
-        ({ child }) => child.lastName,
-        ({ child }) => child.firstName
-      ),
-    [props.allDayRows]
-  )
+  const displayedChildren = useMemo(() => {
+    // children that are in the correct group at least during one day
+    const filteredChildren = childBasics.filter((c) =>
+      days.some((d) =>
+        d.children.some(
+          (c2) => c2.childId === c.id && childFilter(c2, selectedGroup)
+        )
+      )
+    )
+    return sortBy(
+      filteredChildren,
+      (child) => child.lastName,
+      (child) => child.firstName
+    )
+  }, [childBasics, days, selectedGroup])
 
   return (
     <Table data-qa="child-reservations-table">
       <AttendanceTableHeader
-        operationalDays={operationalDays}
+        operationalDays={days}
         nameColumnLabel={i18n.unit.attendanceReservations.childName}
       />
       <Tbody>
-        {allDayRows.flatMap(({ child, dailyData }) => {
-          const multipleRows = dailyData.length > 1
-          const childContractDayServiceNeeds = contractDayServiceNeeds.filter(
-            (c) => c.childId === child.id
+        {displayedChildren.flatMap((childBasics) => {
+          const childDays = days.map((d) => ({
+            date: d.date,
+            dateInfo: d.dateInfo,
+            child: d.children.find((c) => c.childId === childBasics.id)
+          }))
+          return (
+            <ChildRowGroup
+              key={childBasics.id}
+              childBasics={childBasics}
+              days={childDays}
+              selectedDate={selectedDate}
+              onMakeReservationForChild={onMakeReservationForChild}
+              selectedGroup={selectedGroup}
+            />
           )
-          return dailyData.map((childDailyRecordRow, index) => {
-            const childEditState =
-              editState?.childId === child.id &&
-              editState.date.isEqual(selectedDate)
-                ? editState
-                : undefined
-
-            return (
-              <DayTr
-                key={`${child.id}-${index}`}
-                data-qa={`reservation-row-child-${child.id}`}
-              >
-                <NameTd
-                  partialRow={multipleRows}
-                  rowIndex={index}
-                  maxRows={dailyData.length - 1}
-                >
-                  {index == 0 && (
-                    <NameWrapper>
-                      <ChipWrapper spacing="xs">
-                        <AgeIndicatorChip
-                          age={selectedDate.differenceInYears(
-                            child.dateOfBirth
-                          )}
-                        />
-                        {childContractDayServiceNeeds.length > 0 && (
-                          <ContractDaysIndicatorChip
-                            contractDayServiceNeeds={
-                              childContractDayServiceNeeds
-                            }
-                          />
-                        )}
-                      </ChipWrapper>
-                      <Link to={`/child-information/${child.id}`}>
-                        {formatName(
-                          child.firstName.split(/\s/)[0],
-                          child.lastName,
-                          i18n,
-                          true
-                        )}
-                        {child.preferredName ? ` (${child.preferredName})` : ''}
-                      </Link>
-                    </NameWrapper>
-                  )}
-                </NameTd>
-                {operationalDays.map((day) => (
-                  <DayTd
-                    key={day.date.formatIso()}
-                    className={classNames({ 'is-today': day.date.isToday() })}
-                    partialRow={multipleRows}
-                    rowIndex={index}
-                    maxRows={dailyData.length - 1}
-                  >
-                    <ChildDay
-                      day={day}
-                      dataForAllDays={childDailyRecordRow}
-                      serviceNeedInfo={childServiceNeedInfos.find(
-                        (info) =>
-                          info.childId === child.id &&
-                          info.validDuring.includes(day.date)
-                      )}
-                      rowIndex={index}
-                      editState={childEditState}
-                      {...editCallbacks}
-                    />
-                  </DayTd>
-                ))}
-                {index === 0 && (
-                  <StyledTd
-                    partialRow={multipleRows}
-                    rowIndex={index}
-                    maxRows={1}
-                    rowSpan={dailyData.length}
-                  >
-                    {childEditState ? (
-                      <EditStateIndicator
-                        status={childEditState.request.result}
-                        stopEditing={stopEditing}
-                      />
-                    ) : (
-                      <RowMenu
-                        i18n={i18n}
-                        child={child}
-                        selectedDate={selectedDate}
-                        startEditing={startEditing}
-                        openReservationModal={onMakeReservationForChild}
-                      />
-                    )}
-                  </StyledTd>
-                )}
-              </DayTr>
-            )
-          })
         })}
       </Tbody>
     </Table>
   )
 })
 
+const ChildRowGroup = React.memo(function ChildRowGroup({
+  childBasics,
+  days,
+  onMakeReservationForChild,
+  selectedDate,
+  selectedGroup
+}: {
+  childBasics: Child
+  days: {
+    date: LocalDate
+    dateInfo: UnitDateInfo
+    child: ChildRecordOfDay | undefined
+  }[]
+  onMakeReservationForChild: (child: Child) => void
+  selectedDate: LocalDate
+  selectedGroup: AttendanceGroupFilter
+}) {
+  const { i18n } = useTranslation()
+  const [editing, setEditing] = useState(false)
+
+  const childId = childBasics.id
+  const childContractDayServiceNeeds = childBasics.serviceNeeds.filter(
+    (sn) => sn.hasContractDays
+  )
+  const reservationRowCount =
+    max(days.map((d) => Math.max(1, d.child?.reservations?.length ?? 0))) ?? 1
+  const attendanceRowCount =
+    max(days.map((d) => Math.max(1, d.child?.attendances?.length ?? 0))) ?? 1
+  const rowsCount = reservationRowCount + attendanceRowCount
+
+  return (
+    <>
+      {/* reservation rows */}
+      {range(0, reservationRowCount).map((index) => (
+        <DayTr
+          key={`${childId}-${index}`}
+          data-qa={`reservation-row-child-${childId}`}
+        >
+          {index == 0 && (
+            <NameTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
+              <NameWrapper>
+                <ChipWrapper spacing="xs">
+                  <AgeIndicatorChip
+                    age={selectedDate.differenceInYears(
+                      childBasics.dateOfBirth
+                    )}
+                  />
+                  {childContractDayServiceNeeds.length > 0 && (
+                    <ContractDaysIndicatorChip
+                      contractDayServiceNeeds={childContractDayServiceNeeds}
+                    />
+                  )}
+                </ChipWrapper>
+                <Link to={`/child-information/${childId}`}>
+                  {formatName(
+                    childBasics.firstName.split(/\s/)[0],
+                    childBasics.lastName,
+                    i18n,
+                    true
+                  )}
+                  {childBasics.preferredName
+                    ? ` (${childBasics.preferredName})`
+                    : ''}
+                </Link>
+              </NameWrapper>
+            </NameTd>
+          )}
+          {days.map(({ date, dateInfo, child }) => (
+            <DayTd
+              key={date.formatIso()}
+              className={classNames({ 'is-today': date.isToday() })}
+              partialRow={reservationRowCount > 1}
+              rowIndex={index}
+              maxRows={reservationRowCount}
+            >
+              {child && childFilter(child, selectedGroup) && (
+                <ChildDayReservation
+                  date={date}
+                  reservationIndex={index}
+                  editing={false}
+                  dateInfo={dateInfo}
+                  reservation={child.reservations[index]}
+                  absence={index === 0 ? child.absence : null}
+                  dailyServiceTimes={child.dailyServiceTimes}
+                  inOtherUnit={child.inOtherUnit}
+                  isInBackupGroup={child.isInBackupGroup}
+                  scheduleType={child.scheduleType}
+                  serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
+                    sn.validDuring.includes(date)
+                  )}
+                  deleteAbsence={() => undefined}
+                  updateReservation={() => undefined}
+                  saveReservation={() => undefined}
+                />
+              )}
+            </DayTd>
+          ))}
+          {index === 0 && (
+            <StyledTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
+              {editing ? (
+                <EditStateIndicator
+                  status={Success.of()}
+                  stopEditing={() => setEditing(false)}
+                />
+              ) : (
+                <RowMenu
+                  i18n={i18n}
+                  child={childBasics}
+                  startEditing={() => setEditing(true)}
+                  openReservationModal={onMakeReservationForChild}
+                />
+              )}
+            </StyledTd>
+          )}
+        </DayTr>
+      ))}
+
+      {/* attendance rows */}
+      {range(0, attendanceRowCount).map((index) => (
+        <DayTr
+          key={`${childId}-${index}`}
+          data-qa={`attendance-row-child-${childId}`}
+        >
+          {days.map(({ date, dateInfo, child }) => (
+            <DayTd
+              key={date.formatIso()}
+              className={classNames({ 'is-today': date.isToday() })}
+              partialRow={attendanceRowCount > 1}
+              rowIndex={index}
+              maxRows={attendanceRowCount}
+            >
+              {child && childFilter(child, selectedGroup) && (
+                <ChildDayAttendance
+                  date={date}
+                  attendanceIndex={index}
+                  editing={false}
+                  dateInfo={dateInfo}
+                  attendance={child.attendances[index]}
+                  reservations={child.reservations}
+                  dailyServiceTimes={child.dailyServiceTimes}
+                  inOtherUnit={child.inOtherUnit}
+                  isInBackupGroup={child.isInBackupGroup}
+                  serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
+                    sn.validDuring.includes(date)
+                  )}
+                  deleteAbsence={() => undefined}
+                  updateAttendance={() => undefined}
+                  saveAttendance={() => undefined}
+                />
+              )}
+            </DayTd>
+          ))}
+        </DayTr>
+      ))}
+    </>
+  )
+})
+
 const RowMenu = React.memo(function RowMenu({
   i18n,
   child,
-  selectedDate,
   startEditing,
   openReservationModal
 }: {
   i18n: Translations
   child: Child
-  selectedDate: LocalDate
-  startEditing: (c: string, d: LocalDate) => void
+  startEditing: () => void
   openReservationModal: (c: Child) => void
 }) {
   return (
@@ -206,7 +288,7 @@ const RowMenu = React.memo(function RowMenu({
         {
           id: 'edit-row',
           label: i18n.unit.attendanceReservations.editRow,
-          onClick: () => startEditing(child.id, selectedDate)
+          onClick: () => startEditing()
         },
         {
           id: 'reservation-modal',

@@ -6,7 +6,6 @@ package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reservations.UnitAttendanceReservations
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -298,90 +297,45 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
         .toList<ServiceNeedOptionPublicInfo>()
 }
 
-fun Database.Read.getGroupedActualServiceNeedInfosByRangeAndUnit(
+fun Database.Read.getChildServiceNeedInfos(
     unitId: DaycareId,
-    range: FiniteDateRange
-): UnitAttendanceReservations.UnitServiceNeedInfo {
-    data class QueryResult(
-        val childId: ChildId,
-        val hasContractDays: Boolean,
-        val optionName: String,
-        val validDuring: FiniteDateRange,
-        val shiftCare: ShiftCareType,
-        val groupId: GroupId?
-    )
-    val sql =
-        """
-SELECT p.child_id,
-       sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
-       sno.name_fi                                 AS option_name,
-       daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-       sn.shift_care,
-       gp.daycare_group_id                         AS group_id
-FROM placement p
-         JOIN service_need sn ON sn.placement_id = p.id
-         JOIN service_need_option sno ON sn.option_id = sno.id
-         LEFT JOIN daycare_group_placement gp ON p.id = gp.daycare_placement_id AND
-                                                 daterange(p.start_date, p.end_date, '[]') &&
-                                                 daterange(gp.start_date, gp.end_date, '[]')
-WHERE daterange(sn.start_date, sn.end_date, '[]') *
-      daterange(COALESCE(gp.start_date, p.start_date), COALESCE(gp.end_date, p.end_date), '[]') && :range
-  AND p.unit_id = :unitId
-
-UNION ALL
-
-SELECT bc.child_id,
-       sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
-       sno.name_fi                                 AS option_name,
-       daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-       sn.shift_care,
-       bc.group_id                                 AS group_id
-FROM backup_care bc
-         JOIN placement p ON bc.child_id = p.child_id AND
-                             daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-         JOIN service_need sn ON sn.placement_id = p.id
-         JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :range
-  AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :range
-  AND bc.unit_id = :unitId
-  ORDER BY group_id, valid_during
-        """
-
-    val groupMap =
-        createQuery(sql)
-            .bind("unitId", unitId)
-            .bind("range", range)
-            .toList<QueryResult>()
-            .groupBy { it.groupId }
-            .map { (groupId, results) ->
-                groupId to
-                    results.map {
-                        ChildServiceNeedInfo(
-                            childId = it.childId,
-                            hasContractDays = it.hasContractDays,
-                            optionName = it.optionName,
-                            validDuring = it.validDuring,
-                            shiftCare = it.shiftCare,
-                        )
-                    }
-            }
-            .toMap()
-
-    return UnitAttendanceReservations.UnitServiceNeedInfo(
-        unitId = unitId,
-        groups =
-            groupMap.entries.mapNotNull { (groupId, childInfos) ->
-                if (groupId == null) {
-                    null
-                } else {
-                    UnitAttendanceReservations.GroupServiceNeedInfo(
-                        groupId = groupId,
-                        childInfos = childInfos
-                    )
-                }
-            },
-        ungrouped = groupMap[null] ?: emptyList()
-    )
+    childIds: Set<ChildId>,
+    dateRange: FiniteDateRange
+): List<ChildServiceNeedInfo> {
+    return createQuery(
+            """
+    SELECT p.child_id,
+           sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
+           sno.name_fi                                 AS option_name,
+           daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+           sn.shift_care
+    FROM placement p
+    JOIN service_need sn ON sn.placement_id = p.id
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE p.child_id = ANY(:childIds) AND p.unit_id = :unitId AND daterange(sn.start_date, sn.end_date, '[]') && :dateRange
+    
+    UNION ALL
+    
+    SELECT bc.child_id,
+           sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
+           sno.name_fi                                 AS option_name,
+           daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
+           sn.shift_care
+    FROM backup_care bc
+    JOIN placement p ON bc.child_id = p.child_id 
+        AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    JOIN service_need sn ON sn.placement_id = p.id
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE bc.child_id = ANY(:childIds) AND bc.unit_id = :unitId 
+        AND (daterange(p.start_date, p.end_date, '[]') 
+        * daterange(bc.start_date, bc.end_date, '[]') 
+        * daterange(sn.start_date, sn.end_date, '[]')) && :dateRange
+"""
+        )
+        .bind("unitId", unitId)
+        .bind("dateRange", dateRange)
+        .bind("childIds", childIds)
+        .toList<ChildServiceNeedInfo>()
 }
 
 fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(

@@ -7,7 +7,6 @@ import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, localDateRange, localTimeRange } from 'lib-common/form/fields'
 import {
@@ -35,7 +34,10 @@ import {
   StateOf,
   ValidationSuccess
 } from 'lib-common/form/types'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
+import {
+  Child,
+  DailyReservationRequest
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
