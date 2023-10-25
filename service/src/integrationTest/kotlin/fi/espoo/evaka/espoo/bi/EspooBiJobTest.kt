@@ -28,7 +28,8 @@ class EspooBiJobTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var job: EspooBiJob
 
     @BeforeAll
-    fun beforeAll() {
+    override fun beforeAll() {
+        super.beforeAll()
         server = MockBiServer.start(credentials)
         val client =
             EspooBiHttpClient(

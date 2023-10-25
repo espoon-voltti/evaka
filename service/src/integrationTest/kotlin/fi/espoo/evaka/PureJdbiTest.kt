@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
+import org.slf4j.LoggerFactory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
@@ -27,7 +28,9 @@ abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
     protected fun dbInstance(): Database = Database(jdbi, noopTracer)
 
     @BeforeAll
-    fun initializeJdbi() {
+    open fun beforeAll() {
+        (LoggerFactory.getLogger("fi.espoo.evaka") as ch.qos.logback.classic.Logger).level =
+            ch.qos.logback.classic.Level.DEBUG
         dataSource = getTestDataSource()
         jdbi = configureJdbi(Jdbi.create(dataSource))
         db = Database(jdbi, noopTracer).connectWithManualLifecycle()
