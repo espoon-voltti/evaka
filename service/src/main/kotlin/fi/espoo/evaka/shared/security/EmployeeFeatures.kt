@@ -24,5 +24,4 @@ data class EmployeeFeatures(
     val assistanceNeedDecisionsReport: Boolean,
     val createDraftInvoices: Boolean,
     val submitPatuReport: Boolean,
-    val useNewAssistanceModel: Boolean,
 )

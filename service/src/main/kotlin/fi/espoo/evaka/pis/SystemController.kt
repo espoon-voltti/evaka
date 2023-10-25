@@ -206,7 +206,6 @@ class SystemController(
                                     permittedGlobalActions.contains(
                                         Action.Global.SUBMIT_PATU_REPORT
                                     ),
-                                useNewAssistanceModel = true,
                             )
 
                         EmployeeUserResponse(
