@@ -67,7 +67,11 @@ const SentMessagePreview = React.memo(function SentMessagePreview({
           <Truncated data-qa="message-recipients">
             {message.recipientNames.join(', ')}
           </Truncated>
-          <MessageCharacteristics type={message.type} urgent={message.urgent} />
+          <MessageCharacteristics
+            type={message.type}
+            urgent={message.urgent}
+            sensitive={false}
+          />
         </Header>
         <TitleAndDate isRead={true}>
           <Truncated data-qa="message-preview-title">
