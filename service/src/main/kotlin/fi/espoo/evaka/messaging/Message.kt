@@ -60,26 +60,23 @@ data class MessageThreadStub(
 sealed interface CitizenMessageThread {
     val id: MessageThreadId
     val urgent: Boolean
-    val children: List<MessageChild>
 
     data class Redacted(
         override val id: MessageThreadId,
         override val urgent: Boolean,
-        override val children: List<MessageChild>,
         val sender: MessageAccount?,
         val lastMessageSentAt: HelsinkiDateTime?,
         val hasUnreadMessages: Boolean
     ) : CitizenMessageThread {
         companion object {
-            fun fromMessageThread(userId: PersonId, messageThread: MessageThread) =
+            fun fromMessageThread(accountId: MessageAccountId, messageThread: MessageThread) =
                 Redacted(
                     messageThread.id,
                     messageThread.urgent,
-                    messageThread.children,
                     messageThread.messages.firstOrNull()?.sender,
                     messageThread.messages.lastOrNull()?.sentAt,
                     messageThread.messages
-                        .findLast { message -> message.sender.id != userId }
+                        .findLast { message -> message.sender.id != accountId }
                         ?.readAt == null
                 )
         }
@@ -88,7 +85,7 @@ sealed interface CitizenMessageThread {
     data class Regular(
         override val id: MessageThreadId,
         override val urgent: Boolean,
-        override val children: List<MessageChild>,
+        val children: List<MessageChild>,
         val messageType: MessageType,
         val title: String,
         val sensitive: Boolean,
