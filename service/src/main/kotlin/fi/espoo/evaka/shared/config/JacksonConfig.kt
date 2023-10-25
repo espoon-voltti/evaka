@@ -44,17 +44,6 @@ fun defaultJsonMapperBuilder(): JsonMapper.Builder =
         // this, but it's still a good idea to ensure global defaults are sane.
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
-@Deprecated(
-    "use defaultJsonMapperBuilder instead, and configure features based on actual requirements",
-    replaceWith = ReplaceWith("defaultJsonMapperBuilder()")
-)
-fun defaultJsonMapper(): JsonMapper =
-    defaultJsonMapperBuilder()
-        .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
-        .build()
-
 @Configuration
 class JacksonConfig {
     // This replaces default JsonMapper provided by Spring Boot autoconfiguration

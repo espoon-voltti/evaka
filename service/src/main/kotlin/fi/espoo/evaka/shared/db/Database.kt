@@ -8,7 +8,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import java.time.Duration
-import java.util.Optional
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -17,7 +16,6 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.mapper.ColumnMapper
-import org.jdbi.v3.core.mapper.RowViewMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.Slf4JSqlLogger
@@ -349,16 +347,6 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
-
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
-
         override fun <T> map(mapper: Row.() -> T): Result<T> =
             Result(raw.map { row -> mapper(Row(row)) })
     }
@@ -422,119 +410,6 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                     result
                 }
             }
-
-        // legacy functions
-
-        @Deprecated("Use either toList or useIterable and call map on it instead")
-        fun <R> map(f: (T) -> R): List<R> = useIterable { it.map(f) }
-
-        @Deprecated("Use either toList or useIterable and map it instead")
-        fun <R> mapNotNull(f: (T) -> R?): List<R> = useIterable { it.mapNotNull(f) }
-
-        @Deprecated(
-            "Use exactlyOne/exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
-        )
-        fun first() = rows.first()
-
-        @Deprecated(
-            "Use exactlyOneOrNull if you expect only one result. If you *really* want to fetch N rows and throw away N-1, use useIterable instead"
-        )
-        fun firstOrNull(): T? = rows.use { it.firstOrNull() }
-
-        @Deprecated("Use useIterable instead") fun asSequence(): Sequence<T> = rows.asSequence()
-
-        @Deprecated("Use toList instead", ReplaceWith("toList()")) fun list(): List<T> = toList()
-
-        @Deprecated("Use toSet instead", ReplaceWith("toSet()")) fun set(): Set<T> = toSet()
-
-        @Deprecated("Use exactlyOne instead", ReplaceWith("exactlyOne()"))
-        fun one(): T = exactlyOne()
-
-        @Deprecated("Use exactlyOne instead", ReplaceWith("exactlyOne()"))
-        fun single(): T = exactlyOne()
-
-        @Deprecated(
-            "Use exactlyOneOrNull if you expect 0-1 results. If you really want to map >1 counts to null, use useIterable instead"
-        )
-        fun singleOrNull(): T? = rows.use { it.singleOrNull() }
-
-        @Deprecated("Use exactlyOneOrNull instead")
-        fun findOne(): Optional<T & Any> =
-            rows.use {
-                val iterator = it.iterator()
-                if (!iterator.hasNext()) Optional.empty() else Optional.ofNullable(iterator.next())
-            }
-
-        @Deprecated("Use SELECT EXISTS + exactlyOne instead")
-        fun any(): Boolean = rows.use { it.any() }
-
-        @Deprecated("Use either toList or useIterable and call all on it instead")
-        inline fun all(crossinline predicate: (T) -> Boolean): Boolean = useIterable {
-            it.all(predicate)
-        }
-
-        @Deprecated("Use either toList or useIterable and call forEach on it instead")
-        inline fun forEach(crossinline action: (T) -> Unit) = useIterable { it.forEach(action) }
-
-        @Deprecated("Use either toList or useIterable and call flatMap it instead")
-        fun <R> flatMap(transform: (T) -> Iterable<R>): List<R> = useIterable {
-            it.flatMap(transform)
-        }
-
-        @Deprecated("Use either toList or useIterable and call associate on it instead")
-        inline fun <K, V> associate(crossinline transform: (T) -> Pair<K, V>): Map<K, V> =
-            useIterable {
-                it.associate(transform)
-            }
-
-        @Deprecated("Use either toList or useIterable and call associateBy on it instead")
-        inline fun <K> associateBy(crossinline keySelector: (T) -> K): Map<K, T> = useIterable {
-            it.associateBy(keySelector)
-        }
-
-        @Deprecated("Use either toList or useIterable and call associateBy on it instead")
-        inline fun <K, V> associateBy(
-            crossinline keySelector: (T) -> K,
-            crossinline valueTransform: (T) -> V
-        ): Map<K, V> = useIterable { it.associateBy(keySelector, valueTransform) }
-
-        @Deprecated("Use either toList or useIterable and call associateByTo on it instead")
-        inline fun <K, V, M : MutableMap<in K, in V>> associateByTo(
-            destination: M,
-            crossinline keySelector: (T) -> K,
-            crossinline valueTransform: (T) -> V
-        ): M = useIterable { it.associateByTo(destination, keySelector, valueTransform) }
-
-        @Deprecated("Use either toList or useIterable and call groupBy on it instead")
-        inline fun <K> groupBy(crossinline f: (T) -> K): Map<K, List<T>> = useIterable {
-            it.groupBy(f)
-        }
-
-        @Deprecated("Use either toList or useIterable and call groupBy on it instead")
-        inline fun <K, V> groupBy(
-            crossinline keySelector: (T) -> K,
-            crossinline valueTransform: (T) -> V
-        ): Map<K, List<V>> = useIterable { it.groupBy(keySelector, valueTransform) }
-
-        @Deprecated("Use either toList or useIterable and call fold on it instead")
-        inline fun <R> fold(initial: R, crossinline operation: (acc: R, T) -> R): R = useIterable {
-            it.fold(initial, operation)
-        }
-
-        @Deprecated("Use either toList or useIterable and call partition on it instead")
-        inline fun partition(crossinline predicate: (T) -> Boolean): Pair<List<T>, List<T>> =
-            useIterable {
-                it.partition(predicate)
-            }
-
-        @Deprecated("Use either toList or useIterable and call sortedBy on it instead")
-        inline fun <R : Comparable<R>> sortedBy(crossinline selector: (T) -> R?): List<T> =
-            useIterable {
-                it.sortedBy(selector)
-            }
-
-        @Deprecated("Use either toList or useIterable and call shuffled on it instead")
-        fun shuffled(): List<T> = useIterable { it.shuffled() }
     }
 
     class Update internal constructor(override val raw: org.jdbi.v3.core.statement.Update) :
@@ -664,32 +539,12 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         override fun <T> mapTo(type: QualifiedType<T>): Result<T> = Result(raw.mapTo(type))
 
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        override fun <T> map(mapper: ColumnMapper<T>): Result<T> = Result(raw.map(mapper))
-
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        override fun <T> map(mapper: RowViewMapper<T>): Result<T> = Result(raw.map(mapper))
-
         override fun <T> map(mapper: Row.() -> T): Result<T> =
             Result(raw.map { row -> mapper(Row(row)) })
     }
 
     interface ResultBearing {
         fun <T> mapTo(type: QualifiedType<T>): Result<T>
-
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        fun <T> map(mapper: ColumnMapper<T>): Result<T>
-
-        @Deprecated(
-            "Use the new row mapper mechanism instead (the `map` function overload that takes a Row.() -> T)"
-        )
-        fun <T> map(mapper: RowViewMapper<T>): Result<T>
 
         fun <T> map(mapper: Row.() -> T): Result<T>
 
