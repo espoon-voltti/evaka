@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.application.notes.deleteApplicationNotesLinkedToMessages
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -1429,13 +1428,10 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
         .bind("accountId", accountId)
         .exactlyOneOrNull<MessageThreadFolderId>()
 
-data class MessageToUndo(
-    val created: HelsinkiDateTime,
-    val messageId: MessageId,
+data class UndoReplyTarget(
     val contentId: MessageContentId,
     val threadId: MessageThreadId,
-    val senderId: MessageAccountId,
-    val onlyMessageInThread: Boolean
+    val messageCreated: HelsinkiDateTime
 )
 
 fun Database.Transaction.undoMessageReply(
@@ -1443,108 +1439,106 @@ fun Database.Transaction.undoMessageReply(
     accountId: MessageAccountId,
     messageId: MessageId
 ) {
-    val messageToUndo =
-        this.createQuery(
-                """
-SELECT created, id AS message_id, content_id, thread_id, sender_id, FALSE AS only_message_in_thread
-FROM message WHERE sender_id = :accountId AND id = :messageId
-"""
-            )
-            .bind("accountId", accountId)
-            .bind("messageId", messageId)
-            .exactlyOneOrNull<MessageToUndo>()
-            ?: throw BadRequest("No message found with messageId $messageId")
+    val undoTarget =
+        createQuery<Any> {
+                sql(
+                    """
+            SELECT content_id, thread_id, created AS message_created
+            FROM message 
+            WHERE id = ${bind(messageId)} AND sender_id = ${bind(accountId)}
+        """
+                )
+            }
+            .exactlyOneOrNull<UndoReplyTarget>()
+            ?: throw BadRequest("No message found with messageId $messageId for account $accountId")
 
-    if (messageToUndo.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
+    if (undoTarget.messageCreated.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
         throw BadRequest(
             "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
         )
     }
-
-    this.deleteApplicationNotesLinkedToMessages(listOf(messageToUndo.contentId).toSet())
-    this.deleteMessages(listOf(messageToUndo))
-    this.resetSenderThreadParticipants(messageToUndo.threadId, messageToUndo.senderId)
+    lockMessageContentForUpdate(undoTarget.contentId)
+    this.deleteMessages(undoTarget.contentId, deleteThreads = false)
+    this.resetSenderThreadParticipants(undoTarget.threadId, accountId)
 }
 
-fun Database.Transaction.undoMessageAndAllThreads(
+fun Database.Transaction.undoNewMessages(
     now: HelsinkiDateTime,
     accountId: MessageAccountId,
     contentId: MessageContentId
 ): MessageDraftId {
-    val messagesToUndo =
-        this.createQuery(
+    lockMessageContentForUpdate(contentId)
+
+    this.createQuery<Any> {
+            sql(
                 """
-SELECT m.created, m.id AS message_id, m.content_id, m.thread_id, m.sender_id,
-    NOT EXISTS (SELECT 1 FROM message m2 WHERE m.thread_id = m2.thread_id AND m2.content_id != :contentId) AS only_message_in_thread
-FROM message m
-WHERE sender_id = :accountId AND content_id = :contentId
-"""
+            SELECT created
+            FROM message m
+            WHERE sender_id = ${bind(accountId)} AND content_id = ${bind(contentId)}
+            LIMIT 1 -- created should be essentially same for each
+        """
             )
-            .bind("accountId", accountId)
-            .bind("contentId", contentId)
-            .toList<MessageToUndo>()
-
-    if (messagesToUndo.isEmpty()) {
-        throw BadRequest("No messages found with contentId $contentId")
-    }
-
-    if (
-        messagesToUndo.any { it.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now) }
-    ) {
-        throw BadRequest(
-            "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
-        )
-    }
-
-    if (messagesToUndo.any { !it.onlyMessageInThread }) {
-        throw BadRequest("Cannot undo message threads that have replies")
-    }
+        }
+        .exactlyOneOrNull<HelsinkiDateTime>()
+        ?.also { created ->
+            if (created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
+                throw BadRequest(
+                    "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
+                )
+            }
+        }
+        ?: throw BadRequest("No messages found with contentId $contentId")
 
     val draftContent =
         this.createQuery(
                 """
-SELECT DISTINCT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
+SELECT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
 FROM message_content c
 JOIN message m ON c.id = m.content_id
 JOIN message_thread t ON m.thread_id = t.id
 WHERE c.id = :contentId
+LIMIT 1 -- all threads with same content are identical in regards to this query
 """
             )
             .bind("contentId", contentId)
-            .exactlyOneOrNull<UpdatableDraftContent>()
-            ?: error("Multiple draft contents found")
+            .exactlyOne<UpdatableDraftContent>()
 
-    this.deleteApplicationNotesLinkedToMessages(messagesToUndo.map { it.contentId }.toSet())
-    this.deleteMessages(messagesToUndo)
+    this.deleteMessages(contentId, deleteThreads = true)
 
     val draftId = this.initDraft(accountId)
     this.updateDraft(accountId, draftId, draftContent)
     return draftId
 }
 
-fun Database.Transaction.deleteMessages(messages: List<MessageToUndo>) {
-    this.createUpdate(
+fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThreads: Boolean) {
+    this.createUpdate<Any> {
+            sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
+        }
+        .execute()
+
+    this.createUpdate<Any> {
+            sql("DELETE FROM attachment WHERE message_content_id = ${bind(contentId)}")
+        }
+        .execute()
+
+    if (deleteThreads) {
+        this.createUpdate<Any> {
+                sql(
+                    """
+                DELETE FROM message_thread mt
+                USING message m
+                WHERE m.thread_id = mt.id AND m.content_id = ${bind(contentId)} AND NOT exists(
+                    SELECT FROM message m2
+                    WHERE m2.thread_id = mt.id AND m2.id != m.id
+                )
             """
-WITH deleted_message AS (
-    DELETE FROM message WHERE id = ANY(:messageIds)
-), deleted_recipients AS (
-    DELETE FROM message_recipients WHERE message_id = ANY(:messageIds)
-), deleted_thread AS (
-    DELETE FROM message_thread WHERE id = ANY(:threadIds)
-), deleted_thread_children AS (
-    DELETE FROM message_thread_children WHERE thread_id = ANY(:threadIds)
-), deleted_attachment AS (
-    DELETE FROM attachment WHERE message_content_id = ANY(:contentIds)
-)
-DELETE FROM message_content WHERE id = ANY(:contentIds)
-"""
-        )
-        .bind("messageIds", messages.map { it.messageId }.distinct())
-        .bind(
-            "threadIds",
-            messages.filter { it.onlyMessageInThread }.map { it.threadId }.distinct()
-        )
-        .bind("contentIds", messages.map { it.contentId }.distinct())
+                )
+            }
+            .execute()
+    }
+
+    // cascade deletes from message and message_recipients
+    this.createUpdate<Any> { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }
         .execute()
 }
 
@@ -1596,3 +1590,8 @@ WHERE id = ${bind(id)}
             )
         }
         .exactlyOne<MessageThreadStub>()
+
+fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
+    createQuery<Any> { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
+        .exactlyOneOrNull<Int>()
+}

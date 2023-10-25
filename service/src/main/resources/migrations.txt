@@ -362,3 +362,4 @@ V362__drop_temporary_fee_decision_v2_tables.sql
 V363__message_thread_sensitivity_flag.sql
 V364__koski_model_updates.sql
 V365__employee_active.sql
+V366__message_delete_cascades.sql

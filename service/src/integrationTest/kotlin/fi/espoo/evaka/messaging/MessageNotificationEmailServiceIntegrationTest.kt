@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.testChild_1
@@ -47,6 +48,7 @@ class MessageNotificationEmailServiceIntegrationTest :
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var accessControl: AccessControl
     @Autowired lateinit var messageController: MessageController
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
@@ -231,6 +233,12 @@ class MessageNotificationEmailServiceIntegrationTest :
         )
 
         assertTrue(MockEmailClient.emails.isEmpty())
+
+        // threads are also deleted
+        assertEquals(
+            0,
+            db.read { it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>() }
+        )
     }
 
     @Test
