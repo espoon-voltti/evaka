@@ -334,12 +334,17 @@ export const fi = {
     loggedIn: 'Kirjautunut sisään'
   },
   messages: {
-    title: 'Saapuneet viestit',
+    tabs: {
+      received: 'Saapuneet',
+      sent: 'Lähetetyt',
+      drafts: 'Luonnokset'
+    },
     inputPlaceholder: 'Kirjoita...',
     newMessage: 'Uusi viesti',
     thread: {
       reply: 'Vastaa viestiin'
     },
+    draft: 'Lunnos',
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {
@@ -368,7 +373,6 @@ export const fi = {
         heading: 'Viesti',
         placeholder: 'Viestin sisältö...'
       },
-      discard: 'Hylkää',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       sending: 'Lähetetään'

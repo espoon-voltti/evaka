@@ -5,7 +5,7 @@
 import React, { useContext, useMemo } from 'react'
 import { Outlet } from 'react-router-dom'
 
-import Tabs from 'lib-components/molecules/Tabs'
+import { TabLinks } from 'lib-components/molecules/Tabs'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -64,7 +64,7 @@ export default React.memo(function FinancePage() {
 
   return (
     <>
-      <Tabs tabs={tabs} />
+      <TabLinks tabs={tabs} />
       <Gap size="s" />
       <Outlet />
     </>

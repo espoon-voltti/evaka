@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faReply } from '@fortawesome/free-solid-svg-icons'
 import React, {
   useCallback,
   useContext,
@@ -14,10 +13,13 @@ import styled, { css } from 'styled-components'
 
 import {
   Message,
+  MessageAccount,
   MessageChild,
-  MessageThread
+  MessageThread,
+  SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -34,24 +36,44 @@ import { fontWeights, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faReply } from 'lib-icons'
 
+import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 
 import { getAttachmentUrl } from './api'
+import { threadQuery } from './queries'
 import { MessageContext } from './state'
 
-interface Props {
+interface ReceivedThreadViewProps {
+  accountId: UUID
+  threadId: UUID
+  onBack: () => void
+}
+
+export const ReceivedThreadView = React.memo(function ReceivedThreadView({
+  accountId,
+  threadId,
+  onBack
+}: ReceivedThreadViewProps) {
+  const thread = useQueryResult(threadQuery(accountId, threadId))
+  return renderResult(thread, (thread) => (
+    <ReceivedThread accountId={accountId} thread={thread} onBack={onBack} />
+  ))
+})
+
+interface ReceivedThreadProps {
   accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
-export default React.memo(function ThreadView({
+const ReceivedThread = React.memo(function ReceivedThread({
   accountId,
   thread: { id: threadId, messages, title, type, children },
   onBack
-}: Props) {
+}: ReceivedThreadProps) {
   const { i18n } = useTranslation()
   const { sendReply, setReplyContent, getReplyContent } =
     useContext(MessageContext)
@@ -60,16 +82,6 @@ export default React.memo(function ThreadView({
   const [replyEditorVisible, setReplyEditorVisible] = useState(
     () => getReplyContent(threadId) !== ''
   )
-
-  const autoScrollRef = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    scrollRefIntoView(autoScrollRef)
-  }, [])
-
-  const titleRowRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    titleRowRef.current?.focus()
-  }, [threadId])
 
   const lastMessageRef = useRef<HTMLLIElement>(null)
 
@@ -87,6 +99,7 @@ export default React.memo(function ThreadView({
   const onSubmit = useCallback(async () => {
     const result = await sendReply({
       accountId,
+      threadId,
       content: replyContent,
       messageId: messages.slice(-1)[0].id,
       recipientAccountIds: recipients.filter((r) => r.selected).map((r) => r.id)
@@ -95,7 +108,7 @@ export default React.memo(function ThreadView({
       setReplyEditorVisible(false)
     }
     return result
-  }, [accountId, messages, recipients, replyContent, sendReply])
+  }, [accountId, threadId, messages, recipients, replyContent, sendReply])
 
   const sendEnabled = !!replyContent && recipients.some((r) => r.selected)
 
@@ -153,33 +166,10 @@ export default React.memo(function ThreadView({
           </>
         )
       )}
-      {replyEditorVisible && <span ref={autoScrollRef} />}
     </MobileThreadContainer>
   )
 })
 
-const MobileThreadContainer = styled(ThreadContainer)`
-  height: 100vh;
-  overflow-y: auto;
-`
-
-const TitleRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  & + & {
-    margin-top: ${defaultMargins.L};
-  }
-`
-
-const MessageList = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-`
-
-// eslint-disable-next-line react/display-name
 const SingleMessage = React.memo(
   React.forwardRef(function SingleMessage(
     {
@@ -233,6 +223,78 @@ const SingleMessage = React.memo(
     )
   })
 )
+
+interface SentMessageViewProps {
+  account: MessageAccount
+  message: SentMessage
+  onBack: () => void
+}
+
+export const SentMessageView = React.memo(function SentMessageView({
+  account,
+  message,
+  onBack
+}: SentMessageViewProps) {
+  return (
+    <MobileThreadContainer data-qa="thread-reader">
+      <TopBar title={message.threadTitle} onBack={onBack} invertedColors />
+      <Gap size="s" />
+      <MessageList>
+        <MessageContainer>
+          <TitleRow>
+            <SenderName data-qa="single-message-sender-name">
+              {account.name}
+            </SenderName>
+            <InformationText>
+              {message.sentAt.toLocalDate().format()}
+            </InformationText>
+          </TitleRow>
+          <InformationText>{message.recipientNames.join(', ')}</InformationText>
+          <MessageContent data-qa="single-message-content">
+            <Linkify text={message.content} />
+          </MessageContent>
+          {message.attachments.length > 0 && (
+            <>
+              <HorizontalLine slim />
+              <FixedSpaceColumn spacing="xs">
+                {message.attachments.map((attachment) => (
+                  <FileDownloadButton
+                    key={attachment.id}
+                    file={attachment}
+                    getFileUrl={getAttachmentUrl}
+                    icon
+                    data-qa="attachment"
+                  />
+                ))}
+              </FixedSpaceColumn>
+            </>
+          )}
+        </MessageContainer>
+      </MessageList>
+    </MobileThreadContainer>
+  )
+})
+
+const MobileThreadContainer = styled(ThreadContainer)`
+  height: 100vh;
+  overflow-y: auto;
+`
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & + & {
+    margin-top: ${defaultMargins.L};
+  }
+`
+
+const MessageList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
+`
 
 const SenderName = styled.div`
   font-weight: ${fontWeights.semibold};

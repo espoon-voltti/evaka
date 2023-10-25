@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { boolean, string } from 'lib-common/form/fields'
@@ -10,13 +10,20 @@ import { array, mapped, object, recursive, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
 import {
+  DraftContent,
   MessageAccount,
   MessageReceiversResponse,
   MessageRecipient,
-  PostMessageBody
+  PostMessageBody,
+  UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { cancelMutation, useMutation } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
+import MutateButton, {
+  InlineMutateButton
+} from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -33,7 +40,12 @@ import { Gap } from 'lib-components/white-space'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 
-import { sendMessageMutation } from './queries'
+import {
+  deleteDraftMutation,
+  initDraftMutation,
+  saveDraftMutation,
+  sendMessageMutation
+} from './queries'
 
 const treeNode = (): Form<SelectorNode, never, SelectorNode, unknown> =>
   object({
@@ -51,19 +63,29 @@ const messageForm = mapped(
     title: string(),
     content: string()
   }),
-  (output): PostMessageBody => {
+  (output) => {
     const selectedRecipients = getSelected(output.recipients)
-    return {
+    const commonContent = {
       title: output.title,
       content: output.content,
-      type: 'MESSAGE',
+      type: 'MESSAGE' as const,
       urgent: output.urgent,
-      sensitive: false,
-      recipients: selectedRecipients.map((r) => r.messageRecipient),
-      recipientNames: selectedRecipients.map((r) => r.text),
-      attachmentIds: [],
-      draftId: null,
-      relatedApplicationId: null
+      sensitive: false
+    }
+    return {
+      messageContent: (draftId: UUID | null): PostMessageBody => ({
+        ...commonContent,
+        recipients: selectedRecipients.map((r) => r.messageRecipient),
+        recipientNames: selectedRecipients.map((r) => r.text),
+        attachmentIds: [],
+        draftId,
+        relatedApplicationId: null
+      }),
+      draftContent: (): UpdatableDraftContent => ({
+        ...commonContent,
+        recipientIds: selectedRecipients.map((r) => r.messageRecipient.id),
+        recipientNames: selectedRecipients.map((r) => r.text)
+      })
     }
   }
 )
@@ -71,25 +93,71 @@ const messageForm = mapped(
 interface Props {
   account: MessageAccount
   availableRecipients: MessageReceiversResponse[]
+  draft: DraftContent | undefined
   onClose: () => void
 }
 
 export default React.memo(function MessageEditor({
   account,
   availableRecipients,
+  draft,
   onClose
 }: Props) {
   const { i18n } = useTranslation()
 
+  const [draftId, setDraftId] = useState<UUID | null>(draft?.id ?? null)
+  const { mutateAsync: init } = useMutation(initDraftMutation)
+  const { mutate: saveDraft, isLoading: isSavingDraft } =
+    useMutation(saveDraftMutation)
+
+  const [debouncedSaveDraft, cancelSaveDraft, saveDraftImmediately] =
+    useDebouncedCallback(saveDraft, isAutomatedTest ? 200 : 2000)
+
+  useEffect(() => {
+    if (!draftId) {
+      void init(account.id).then(setDraftId)
+    }
+  }, [account.id, draftId, init])
+
   const form = useForm(
     messageForm,
-    () => ({
-      recipients: receiversAsSelectorNode(account.id, availableRecipients),
-      urgent: false,
-      title: '',
-      content: ''
-    }),
-    {}
+    () =>
+      draft
+        ? {
+            recipients: receiversAsSelectorNode(
+              account.id,
+              availableRecipients,
+              draft.recipientIds
+            ),
+            urgent: draft.urgent,
+            title: draft.title,
+            content: draft.content
+          }
+        : {
+            recipients: receiversAsSelectorNode(
+              account.id,
+              availableRecipients
+            ),
+            urgent: false,
+            title: '',
+            content: ''
+          },
+    {},
+    {
+      onUpdate(_prevState, nextState, form) {
+        if (draftId && !isSavingDraft) {
+          const result = form.validate(nextState)
+          if (result.isValid) {
+            debouncedSaveDraft({
+              accountId: account.id,
+              draftId,
+              content: result.value.draftContent()
+            })
+          }
+        }
+        return nextState
+      }
+    }
   )
   const { recipients, urgent, title, content } = useFormFields(form)
 
@@ -98,7 +166,10 @@ export default React.memo(function MessageEditor({
       <TopBar
         invertedColors
         title={i18n.messages.messageEditor.newMessage}
-        onClose={onClose}
+        onClose={() => {
+          saveDraftImmediately()
+          onClose()
+        }}
       />
       <ContentArea opaque>
         <Bold>{i18n.messages.messageEditor.sender}</Bold>
@@ -164,9 +235,18 @@ export default React.memo(function MessageEditor({
         <Gap size="s" />
 
         <BottomRow>
-          <Button
-            text={i18n.messages.messageEditor.discard}
-            onClick={onClose}
+          <InlineMutateButton
+            text={i18n.messages.messageEditor.deleteDraft}
+            mutation={deleteDraftMutation}
+            disabled={!draftId}
+            onClick={() => {
+              cancelSaveDraft()
+              if (draftId) {
+                return { accountId: account.id, draftId }
+              }
+              return cancelMutation
+            }}
+            onSuccess={onClose}
           />
           <span />
           <MutateButton
@@ -174,7 +254,13 @@ export default React.memo(function MessageEditor({
             primary
             text={i18n.messages.messageEditor.send}
             disabled={!form.isValid()}
-            onClick={() => ({ accountId: account.id, body: form.value() })}
+            onClick={() => {
+              cancelSaveDraft()
+              return {
+                accountId: account.id,
+                body: form.value().messageContent(draftId)
+              }
+            }}
             onSuccess={onClose}
             data-qa="send-message-btn"
           />

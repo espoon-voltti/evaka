@@ -42,7 +42,6 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: true,
-    employeeMobileGroupMessages: true,
     sensitiveMessaging: true
   },
   staging: {
@@ -74,7 +73,6 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: true,
-    employeeMobileGroupMessages: true,
     sensitiveMessaging: false
   },
   prod: {
@@ -105,7 +103,6 @@ const features: Features = {
     childDocuments: false,
     feeDecisionIgnoredStatus: true,
     hojks: false,
-    employeeMobileGroupMessages: false,
     sensitiveMessaging: false
   }
 }

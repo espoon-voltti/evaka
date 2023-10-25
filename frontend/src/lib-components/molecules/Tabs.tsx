@@ -14,29 +14,72 @@ import { defaultMargins } from '../white-space'
 
 interface Tab {
   id: string
+  onClick: () => void
+  label: string | React.JSX.Element
+  counter?: number
+}
+
+interface TabsProps extends BaseProps {
+  mobile?: boolean
+  active: string
+  tabs: Tab[]
+  id?: string
+}
+
+export const Tabs = React.memo(function Tabs({
+  mobile,
+  'data-qa': dataQa,
+  active,
+  tabs,
+  id
+}: TabsProps) {
+  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
+  return (
+    <Container>
+      <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
+        {tabs.map(({ id, onClick, label, counter }) => (
+          <Tab
+            key={id}
+            onClick={onClick}
+            data-qa={`${id}-tab`}
+            className={active === id ? 'active' : undefined}
+            $maxWidth={maxWidth}
+            $mobile={mobile}
+          >
+            <NavLinkText>{label}</NavLinkText>
+            {counter ? <TabCounter>{counter}</TabCounter> : null}
+          </Tab>
+        ))}
+      </TabsContainer>
+    </Container>
+  )
+})
+
+interface TabLink {
+  id: string
   link: string
   label: string | React.JSX.Element
   counter?: number
 }
 
-interface Props extends BaseProps {
+interface TabLinksProps extends BaseProps {
   mobile?: boolean
-  tabs: Tab[]
+  tabs: TabLink[]
   id?: string
 }
 
-export default React.memo(function Tabs({
+export const TabLinks = React.memo(function TabLinks({
   mobile,
   'data-qa': dataQa,
   tabs,
   id
-}: Props) {
+}: TabLinksProps) {
   const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Container>
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
-          <TabLinkContainer
+          <TabLink
             key={id}
             to={link}
             data-qa={`${id}-tab`}
@@ -45,7 +88,7 @@ export default React.memo(function Tabs({
           >
             <NavLinkText>{label}</NavLinkText>
             {counter ? <TabCounter>{counter}</TabCounter> : null}
-          </TabLinkContainer>
+          </TabLink>
         ))}
       </TabsContainer>
     </Container>
@@ -64,7 +107,7 @@ const TabsContainer = styled.nav<{ shadow?: boolean }>`
       : ''}
 `
 
-const TabLinkContainer = styled(NavLink)<{
+const tabStyles = css<{
   $maxWidth?: string
   $mobile?: boolean
 }>`
@@ -122,6 +165,20 @@ const TabLinkContainer = styled(NavLink)<{
       }
     }
   }
+`
+
+const Tab = styled.div<{
+  $maxWidth?: string
+  $mobile?: boolean
+}>`
+  ${tabStyles}
+`
+
+const TabLink = styled(NavLink)<{
+  $maxWidth?: string
+  $mobile?: boolean
+}>`
+  ${tabStyles}
 `
 
 const TabCounter = styled.div`

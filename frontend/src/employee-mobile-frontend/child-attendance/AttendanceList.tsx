@@ -10,7 +10,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
-import Tabs from 'lib-components/molecules/Tabs'
+import { TabLinks } from 'lib-components/molecules/Tabs'
 
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
@@ -123,7 +123,7 @@ export default React.memo(function AttendanceList({
 
   return (
     <>
-      <Tabs tabs={tabs} mobile />
+      <TabLinks tabs={tabs} mobile />
       <ContentArea
         opaque={false}
         paddingVertical="zero"

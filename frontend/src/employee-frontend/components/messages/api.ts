@@ -22,12 +22,14 @@ import {
   UnreadCountByAccount
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
+import {
+  deserializeDraftContent,
+  deserializeSentMessage
+} from 'lib-common/messaging'
 import { UUID } from 'lib-common/types'
 import { SaveDraftParams } from 'lib-components/messages/types'
 
 import { client } from '../../api/client'
-
-import { deserializeDraftContent, deserializeSentMessage } from './types'
 
 export async function getReceivers(): Promise<
   Result<MessageReceiversResponse[]>

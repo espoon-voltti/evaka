@@ -9,14 +9,21 @@ import {
 } from 'lib-common/api-types/messaging'
 import {
   AuthorizedMessageAccount,
+  DraftContent,
   MessageReceiversResponse,
+  MessageThread,
   PagedMessageThreads,
+  PagedSentMessages,
   PostMessageBody,
   ReplyToMessageBody,
   ThreadReply,
   UnreadCountByAccountAndGroup
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
+import {
+  deserializeDraftContent,
+  deserializeSentMessage
+} from 'lib-common/messaging'
 import { UUID } from 'lib-common/types'
 import { SaveDraftParams } from 'lib-components/messages/types'
 
@@ -55,7 +62,40 @@ export async function getReceivedMessages(
     }))
 }
 
+export async function getSentMessages(
+  accountId: UUID,
+  page: number,
+  pageSize: number
+): Promise<PagedSentMessages> {
+  return client
+    .get<JsonOf<PagedSentMessages>>(`/messages/${accountId}/sent`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map(deserializeSentMessage)
+    }))
+}
+
+export async function getMessageDrafts(
+  accountId: UUID
+): Promise<DraftContent[]> {
+  return client
+    .get<JsonOf<DraftContent[]>>(`/messages/${accountId}/drafts`)
+    .then(({ data }) => data.map(deserializeDraftContent))
+}
+
+export async function getThread(
+  accountId: UUID,
+  threadId: UUID
+): Promise<MessageThread> {
+  return client
+    .get<JsonOf<MessageThread>>(`/messages/${accountId}/thread/${threadId}`)
+    .then(({ data }) => deserializeMessageThread(data))
+}
+
 export type ReplyToThreadParams = ReplyToMessageBody & {
+  threadId: UUID
   messageId: UUID
   accountId: UUID
 }
@@ -86,16 +126,6 @@ export async function markThreadRead({
     .then(() => undefined)
 }
 
-export async function deleteDraft(
-  accountId: UUID,
-  draftId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/messages/${accountId}/drafts/${draftId}`)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function sendMessage({
   accountId,
   body
@@ -106,22 +136,32 @@ export async function sendMessage({
   return client.post(`/messages/${accountId}`, body).then(() => undefined)
 }
 
-export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
+export async function initDraft(accountId: UUID): Promise<UUID> {
   return client
     .post<UUID>(`/messages/${accountId}/drafts`)
-    .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }
 
 export async function saveDraft({
   accountId,
   draftId,
   content
-}: SaveDraftParams): Promise<Result<void>> {
+}: SaveDraftParams): Promise<void> {
   return client
     .put(`/messages/${accountId}/drafts/${draftId}`, content)
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
+}
+
+export async function deleteDraft({
+  accountId,
+  draftId
+}: {
+  accountId: UUID
+  draftId: UUID
+}): Promise<void> {
+  return client
+    .delete(`/messages/${accountId}/drafts/${draftId}`)
+    .then(() => undefined)
 }
 
 export async function getReceivers(): Promise<MessageReceiversResponse[]> {

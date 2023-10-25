@@ -13,7 +13,13 @@ import {
   markThreadRead,
   sendMessage,
   replyToThread,
-  getReceivers
+  getReceivers,
+  getSentMessages,
+  getMessageDrafts,
+  initDraft,
+  saveDraft,
+  deleteDraft,
+  getThread
 } from './api'
 
 const queryKeys = createQueryKeys('messages', {
@@ -25,6 +31,13 @@ const queryKeys = createQueryKeys('messages', {
     employeeId: string | undefined
   }) => ['accounts', unitId, employeeId],
   receivedMessages: (accountId: string) => ['receivedMessages', accountId],
+  sentMessages: (accountId: string) => ['sentMessages', accountId],
+  draftMessages: (accountId: string) => ['draftMessages', accountId],
+  thread: (accountId: string, threadId: string) => [
+    'thread',
+    accountId,
+    threadId
+  ],
   recipients: () => ['recipients'],
   unreadCounts: () => ['unreadCounts']
 })
@@ -37,11 +50,30 @@ export const messagingAccountsQuery = query({
   queryKey: queryKeys.accounts
 })
 
+const PAGE_SIZE = 20
+
 export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: (accountId: string, pageSize: number) => (page: number) =>
-    getReceivedMessages(accountId, page, pageSize),
+  api: (accountId: string) => (page: number) =>
+    getReceivedMessages(accountId, page, PAGE_SIZE),
   id: (thread) => thread.id,
   queryKey: queryKeys.receivedMessages
+})
+
+export const sentMessagesQuery = pagedInfiniteQuery({
+  api: (accountId: string) => (page: number) =>
+    getSentMessages(accountId, page, PAGE_SIZE),
+  id: (message) => message.contentId,
+  queryKey: queryKeys.sentMessages
+})
+
+export const draftMessagesQuery = query({
+  api: getMessageDrafts,
+  queryKey: queryKeys.draftMessages
+})
+
+export const threadQuery = query({
+  api: getThread,
+  queryKey: queryKeys.thread
 })
 
 // The results are dependent on the PIN-logged user
@@ -56,17 +88,37 @@ export const unreadCountsQuery = query({
 })
 
 export const sendMessageMutation = mutation({
-  api: sendMessage
+  api: sendMessage,
+  invalidateQueryKeys: ({ accountId }) => [
+    queryKeys.sentMessages(accountId),
+    queryKeys.draftMessages(accountId)
+  ]
 })
 
 export const replyToThreadMutation = mutation({
   api: replyToThread,
-  invalidateQueryKeys: ({ accountId }) => [
-    queryKeys.receivedMessages(accountId)
+  invalidateQueryKeys: ({ accountId, threadId }) => [
+    queryKeys.receivedMessages(accountId),
+    queryKeys.thread(accountId, threadId)
   ]
 })
 
 export const markThreadReadMutation = mutation({
   api: markThreadRead,
   invalidateQueryKeys: () => [queryKeys.unreadCounts()]
+})
+
+export const initDraftMutation = mutation({
+  api: initDraft,
+  invalidateQueryKeys: (accountId) => [queryKeys.draftMessages(accountId)]
+})
+
+export const saveDraftMutation = mutation({
+  api: saveDraft,
+  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
+})
+
+export const deleteDraftMutation = mutation({
+  api: deleteDraft,
+  invalidateQueryKeys: ({ accountId }) => [queryKeys.draftMessages(accountId)]
 })

@@ -134,6 +134,7 @@ export { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-
 export { faMagnifyingGlassPlus } from '@fortawesome/pro-light-svg-icons/faMagnifyingGlassPlus'
 export { faMagnifyingGlassMinus } from '@fortawesome/pro-light-svg-icons/faMagnifyingGlassMinus'
 export { faListTimeline } from '@fortawesome/pro-light-svg-icons/faListTimeline'
+export { faReply } from '@fortawesome/pro-light-svg-icons/faReply'
 
 import type * as ProIconsSet from './pro-icons'
 import { typeAssert } from './utils'
