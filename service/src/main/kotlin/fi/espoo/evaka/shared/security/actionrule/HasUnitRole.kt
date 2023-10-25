@@ -94,7 +94,6 @@ SELECT EXISTS (
     ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
 )
                 """
-                                .trimIndent()
                         )
                     }
                     .exactlyOne<Boolean>()
@@ -245,7 +244,6 @@ FROM daycare_acl acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(ctx.user.id)}
                                 """
-                                                .trimIndent()
                                         )
                                     }
                                     .toSet<RoleAndFeatures>()
@@ -266,7 +264,6 @@ JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
 WHERE employee_id = ${bind(user.id)} AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 ${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
             """
-                    .trimIndent()
             )
         }
 
@@ -295,7 +292,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
             """
-                    .trimIndent()
             )
         }
 
@@ -324,7 +320,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
-                    .trimIndent()
             )
         }
 
@@ -353,7 +348,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""} 
             """
-                    .trimIndent()
             )
         }
 
@@ -382,7 +376,6 @@ AND CASE
      END
 AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())} 
             """
-                    .trimIndent()
             )
         }
 
@@ -395,7 +388,6 @@ FROM assistance_need_preschool_decision apd
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
             """
-                    .trimIndent()
             )
         }
 
@@ -424,7 +416,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
             """
-                    .trimIndent()
             )
         }
 
@@ -453,7 +444,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
-                    .trimIndent()
             )
         }
 
@@ -482,7 +472,6 @@ AND CASE
      END
 ${if (hidePastAssistance) "AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
             """
-                    .trimIndent()
             )
         }
 
@@ -495,7 +484,6 @@ FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -510,7 +498,6 @@ JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE ad.decision_maker_employee_id = ${bind(user.id)}
   AND ad.sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -523,7 +510,6 @@ FROM assistance_need_preschool_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -536,7 +522,6 @@ FROM assistance_need_preschool_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -551,7 +536,6 @@ JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE ad.decision_maker_employee_id = ${bind(user.id)}
   AND ad.sent_for_decision IS NOT NULL
             """
-                    .trimIndent()
             )
         }
 
@@ -569,7 +553,6 @@ WHERE employee_id = ${bind(user.id)} AND EXISTS(
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
             """
-                    .trimIndent()
             )
         }
 
@@ -582,7 +565,6 @@ FROM backup_care bc
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -595,7 +577,6 @@ FROM backup_pickup bp
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -607,7 +588,6 @@ SELECT child_id AS id, role, acl.daycare_id AS unit_id
 FROM employee_child_daycare_acl(${bind(now.toLocalDate())}) acl
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -620,7 +600,6 @@ FROM child_daily_note cdn
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -633,7 +612,6 @@ FROM child_sticky_note csn
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -646,7 +624,6 @@ FROM child_images img
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -659,7 +636,6 @@ FROM decision
 JOIN daycare_acl acl ON decision.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -672,7 +648,6 @@ FROM fridge_child
 JOIN person_acl_view acl ON fridge_child.head_of_child = acl.person_id OR fridge_child.child_id = acl.person_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -685,7 +660,6 @@ FROM fridge_partner
 JOIN person_acl_view acl ON fridge_partner.person_id = acl.person_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -698,7 +672,6 @@ FROM pedagogical_document pd
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -712,7 +685,6 @@ JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -724,7 +696,6 @@ SELECT person_id AS id, role, acl.daycare_id AS unit_id
 FROM person_acl_view acl
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -737,7 +708,6 @@ FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -750,7 +720,6 @@ FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)} AND placement.start_date > ${bind(now)}
             """
-                    .trimIndent()
             )
         }
 
@@ -764,7 +733,6 @@ JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -777,7 +745,6 @@ FROM child_discussion
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -797,7 +764,6 @@ ${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.edi
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
             """
-                    .trimIndent()
             )
         }
 
@@ -812,7 +778,6 @@ JOIN person ON person.id = child_document.child_id
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
 WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
             """
-                    .trimIndent()
             )
         }
 
@@ -842,7 +807,6 @@ WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
     WHERE child_id = cd.child_id AND curriculum_template.type = ct.type
 )
             """
-                    .trimIndent()
             )
         }
 
@@ -857,7 +821,6 @@ JOIN person ON person.id = curriculum_document.child_id
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
 WHERE employee_id = ${bind(user.id)} AND curriculum_template.type = 'PRESCHOOL'
             """
-                    .trimIndent()
             )
         }
 
@@ -870,7 +833,6 @@ FROM daily_service_time dst
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -884,7 +846,6 @@ JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE employee_id = ${bind(user.id)}
   AND lower(dst.validity_period) > ${bind(now.toLocalDate())}
             """
-                    .trimIndent()
             )
         }
 
@@ -897,7 +858,6 @@ FROM application_view av
 JOIN daycare_acl acl ON acl.daycare_id = ANY (av.preferredunits)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -910,7 +870,6 @@ FROM daycare_group g
 JOIN daycare_acl acl USING (daycare_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -924,7 +883,6 @@ JOIN daycare_group g ON gn.group_id = g.id
 JOIN daycare_acl acl USING (daycare_id)
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -938,7 +896,6 @@ JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -951,7 +908,6 @@ FROM daycare_acl acl
 JOIN mobile_device d ON acl.daycare_id = d.unit_id
 WHERE acl.employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -964,7 +920,6 @@ FROM daycare_acl acl
 JOIN pairing p ON acl.daycare_id = p.unit_id
 WHERE acl.employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -976,7 +931,6 @@ SELECT daycare_id AS id, role, acl.daycare_id AS unit_id
 FROM daycare_acl acl
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -992,7 +946,6 @@ JOIN daycare_acl ON daycare.id = daycare_acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
 AND attachment.type = 'EXTENDED_CARE'
             """
-                    .trimIndent()
             )
         }
 
@@ -1009,7 +962,6 @@ WHERE employee_id = ${bind(user.id)} AND EXISTS(
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
             """
-                    .trimIndent()
             )
         }
 
@@ -1022,7 +974,6 @@ FROM calendar_event_attendee cea
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 WHERE employee_id = ${bind(user.id)}
             """
-                    .trimIndent()
             )
         }
 
@@ -1036,7 +987,6 @@ JOIN daycare_group dg ON acc.daycare_group_id = dg.id
 JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
 WHERE acl.employee_id = ${bind(user.id)} AND acc.active = TRUE
                 """
-                    .trimIndent()
             )
         }
 }
