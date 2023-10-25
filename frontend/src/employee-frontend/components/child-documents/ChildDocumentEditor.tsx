@@ -83,14 +83,15 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   const [editMode, setEditMode] = useState(false)
   const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
   const [lastSavedContent, setLastSavedContent] = useState(document.content)
-  const { mutateAsync: updateChildDocumentContent, isLoading: submitting } =
+  const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
     useMutationResult(updateChildDocumentContentMutation)
 
   // invalidate cached document on onmount
   const queryClient = useQueryClient()
   useEffect(
     () => () => {
-      void queryClient.invalidateQueries(queryKeys.childDocument(document.id), {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.childDocument(document.id),
         type: 'all'
       })
     },

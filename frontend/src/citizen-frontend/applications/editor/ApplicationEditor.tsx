@@ -157,11 +157,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const hasOtherGuardian = !!application.otherGuardianId
 
-  const { mutateAsync: saveApplicationDraft, isLoading: savingDraft } =
+  const { mutateAsync: saveApplicationDraft, isPending: savingDraft } =
     useMutation(saveApplicationDraftMutation)
-  const { mutateAsync: updateApplication, isLoading: updatingApplication } =
+  const { mutateAsync: updateApplication, isPending: updatingApplication } =
     useMutation(updateApplicationMutation)
-  const { mutateAsync: sendApplication, isLoading: sendingApplication } =
+  const { mutateAsync: sendApplication, isPending: sendingApplication } =
     useMutation(sendApplicationMutation)
   const submitting = savingDraft || updatingApplication || sendingApplication
 

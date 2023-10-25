@@ -30,7 +30,7 @@ function MutateButton<Arg, Data>({
   const { api } = mutation
   const queryClient = useQueryClient()
 
-  const { mutateAsync } = useMutation(api)
+  const { mutateAsync } = useMutation({ mutationFn: api })
 
   const handleClick = useCallback(():
     | Promise<Result<{ value: Data; arg: Arg }>>

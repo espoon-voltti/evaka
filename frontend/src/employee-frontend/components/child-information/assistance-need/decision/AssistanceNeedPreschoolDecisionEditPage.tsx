@@ -449,7 +449,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   const [lastSavedAt, setLastSavedAt] = useState(HelsinkiDateTime.now())
   const {
     mutateAsync: updateAssistanceNeedPreschoolDecision,
-    isLoading: saving
+    isPending: saving
   } = useMutationResult(updateAssistanceNeedPreschoolDecisionMutation)
 
   useEffect(() => {
@@ -1035,18 +1035,14 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const queryClient = useQueryClient()
   useEffect(
     () => () => {
-      void queryClient.invalidateQueries(
-        queryKeys.assistanceNeedPreschoolDecision(decisionId),
-        {
-          type: 'all'
-        }
-      )
-      void queryClient.invalidateQueries(
-        queryKeys.assistanceNeedPreschoolDecisionBasics(childId),
-        {
-          type: 'all'
-        }
-      )
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.assistanceNeedPreschoolDecision(decisionId),
+        type: 'all'
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics(childId),
+        type: 'all'
+      })
     },
     [queryClient, childId, decisionId]
   )

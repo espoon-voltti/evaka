@@ -38,7 +38,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
   const { permittedActions } = useContext<ChildState>(ChildContext)
   const refSectionTop = useRef(null)
 
-  const { mutateAsync: createDecision, isLoading: creatingDecision } =
+  const { mutateAsync: createDecision, isPending: creatingDecision } =
     useMutationResult(createAssistanceNeedPreschoolDecisionMutation)
 
   const navigate = useNavigate()

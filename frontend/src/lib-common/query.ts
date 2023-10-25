@@ -13,8 +13,8 @@ import {
   UseQueryOptions,
   UseQueryResult,
   UseInfiniteQueryOptions,
-  InfiniteData,
-  QueryClient
+  QueryClient,
+  InfiniteData
 } from '@tanstack/react-query'
 import uniqBy from 'lodash/uniqBy'
 import { useCallback, useMemo } from 'react'
@@ -26,14 +26,16 @@ import { useStableCallback } from './utils/useStableCallback'
 export interface QueryDescription<Data> {
   api: () => Promise<Data>
   queryKey: QueryKey
-  queryOptions: UseQueryOptions<Data, unknown, Data> | undefined
+  queryOptions:
+    | Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+    | undefined
 }
 
 export function query<Args extends unknown[], Data>(opts: {
-  api: (...arg: Args) => Promise<Data>
-  queryKey: (...arg: Args) => QueryKey
-  options?: UseQueryOptions<Data, unknown, Data>
-}): (...arg: Args) => QueryDescription<Data> {
+  api: (...args: Args) => Promise<Data>
+  queryKey: (...args: Args) => QueryKey
+  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+}): (...args: Args) => QueryDescription<Data> {
   const { api, queryKey, options } = opts
   return (...args: Args) => ({
     api: () => api(...args),
@@ -45,17 +47,17 @@ export function query<Args extends unknown[], Data>(opts: {
 export function useQuery<Data>(
   queryDescription: QueryDescription<Data>,
   options?: Omit<UseQueryOptions<Data, unknown, Data>, 'queryKey' | 'queryFn'>
-): UseQueryResult<Data> {
+): UseQueryResult<Data, unknown> {
   const { api, queryKey, queryOptions } = queryDescription
   return useQueryOriginal({
-    queryKey,
     queryFn: api,
+    queryKey,
     ...queryOptions,
     ...options
   })
 }
 
-export function queryResult<T>(
+function queryResult<T>(
   data: T | undefined,
   error: unknown,
   isFetching: boolean
@@ -72,7 +74,7 @@ export function queryResult<T>(
 
 export function useQueryResult<Data>(
   queryDescription: QueryDescription<Data>,
-  options?: UseQueryOptions<Data, unknown, Data>
+  options?: Omit<UseQueryOptions<Data, unknown, Data>, 'queryFn' | 'queryKey'>
 ): Result<Data> {
   const { data, error, isFetching } = useQuery(queryDescription, options)
   return useMemo(
@@ -88,33 +90,57 @@ type Paged<T> = {
 }
 
 export interface PagedInfiniteQueryDescription<Data, Id> {
-  api: (pageArg: number) => Promise<Paged<Data>>
+  api: (pageParam: number) => Promise<Paged<Data>>
   queryKey: QueryKey
   id: (data: Data) => Id
-  queryOptions?: UseInfiniteQueryOptions<
-    Paged<Data>,
-    unknown,
-    Paged<Data>,
-    Paged<Data>
-  >
+  initialPageParam: number
+  getNextPageParam: (
+    lastPage: Paged<Data>,
+    pages: Paged<Data>[]
+  ) => number | undefined
+  queryOptions:
+    | Omit<
+        UseInfiniteQueryOptions<
+          Paged<Data>,
+          unknown,
+          InfiniteData<Paged<Data>>,
+          Paged<Data>,
+          QueryKey,
+          number
+        >,
+        'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
+      >
+    | undefined
 }
 
 export function pagedInfiniteQuery<Args extends unknown[], Data, Id>(opts: {
-  api: (...args: Args) => (pageArg: number) => Promise<Paged<Data>>
-  queryKey: (...arg: Args) => QueryKey
+  api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>
+  queryKey: (...args: Args) => QueryKey
   id: (data: Data) => Id
-  options?: UseInfiniteQueryOptions<
-    Paged<Data>,
-    unknown,
-    Paged<Data>,
-    Paged<Data>
-  >
-}): (...arg: Args) => PagedInfiniteQueryDescription<Data, Id> {
+  options?:
+    | Omit<
+        UseInfiniteQueryOptions<
+          Paged<Data>,
+          unknown,
+          InfiniteData<Paged<Data>>,
+          Paged<Data>,
+          QueryKey,
+          number
+        >,
+        'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
+      >
+    | undefined
+}): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
   const { api, queryKey, id, options } = opts
   return (...args: Args) => ({
-    api: api(...args),
+    api: (pageParam) => api(...args)(pageParam),
     queryKey: queryKey(...args),
     id,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const nextPage = pages.length + 1
+      return nextPage <= lastPage.pages ? nextPage : undefined
+    },
     queryOptions: options
   })
 }
@@ -128,29 +154,38 @@ export interface PagedInfiniteQueryResult<Data> {
 
 export function usePagedInfiniteQueryResult<Data, Id>(
   queryDescription: PagedInfiniteQueryDescription<Data, Id>,
-  options?: UseInfiniteQueryOptions<
-    Paged<Data>,
-    unknown,
-    Paged<Data>,
-    Paged<Data>
+  options?: Omit<
+    UseInfiniteQueryOptions<
+      Paged<Data>,
+      unknown,
+      InfiniteData<Paged<Data>>,
+      Paged<Data>,
+      QueryKey,
+      number
+    >,
+    'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
   >
 ): PagedInfiniteQueryResult<Data> {
-  const queryClient = useQueryClient()
-  const { queryKey, api, id, queryOptions } = queryDescription
+  const {
+    api,
+    queryKey,
+    id,
+    initialPageParam,
+    getNextPageParam,
+    queryOptions
+  } = queryDescription
   const {
     data,
     error,
     isFetching,
     isFetchingNextPage,
-    hasNextPage = false,
+    hasNextPage,
     fetchNextPage
   } = useInfiniteQueryOriginal({
+    queryFn: ({ pageParam }) => api(pageParam),
     queryKey,
-    queryFn: (context: { pageParam?: number }) => api(context.pageParam ?? 1),
-    getNextPageParam: (lastPage, pages) => {
-      const nextPage = pages.length + 1
-      return nextPage <= lastPage.pages ? nextPage : undefined
-    },
+    getNextPageParam,
+    initialPageParam,
     ...queryOptions,
     ...options
   })
@@ -176,6 +211,7 @@ export function usePagedInfiniteQueryResult<Data, Id>(
     }
   }, [isFetchingNextPage, hasNextPage, fetchNextPage])
 
+  const queryClient = useQueryClient()
   const transform = useCallback(
     (f: (data: Data) => Data) => {
       queryClient.setQueryData<InfiniteData<Paged<Data>>>(
@@ -221,7 +257,7 @@ export async function invalidateDependencies<Arg>(
   const { invalidateQueryKeys } = mutationDescription
   if (invalidateQueryKeys) {
     for (const key of invalidateQueryKeys(arg)) {
-      await queryClient.invalidateQueries(key)
+      await queryClient.invalidateQueries({ queryKey: key })
     }
   }
 }
@@ -233,7 +269,8 @@ export function useMutation<Arg, Data>(
   const { api } = mutationDescription
   const queryClient = useQueryClient()
 
-  return useMutationOriginal(api, {
+  return useMutationOriginal({
+    mutationFn: api,
     ...options,
     onSuccess: async (data, arg, context) => {
       await options?.onSuccess?.(data, arg, context)
@@ -313,8 +350,14 @@ export function queryOrDefault<T, R, D>(
 export const cancelMutation: unique symbol = Symbol('cancelMutation')
 
 export type Either<A, B> =
-  | { tag: 'first'; value: A }
-  | { tag: 'second'; value: B }
+  | {
+      tag: 'first'
+      value: A
+    }
+  | {
+      tag: 'second'
+      value: B
+    }
 
 export function first<A>(value: A): Either<A, never>
 export function first(): Either<void, never>
