@@ -73,7 +73,8 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: true,
-    sensitiveMessaging: false
+    employeeMobileGroupMessages: true,
+    sensitiveMessaging: true
   },
   prod: {
     citizenShiftCareAbsence: true,
