@@ -2414,7 +2414,6 @@ export const fi = {
       startTime: 'Saapuu',
       endTime: 'Lähtee',
       requiresBackupCare: 'Tee varasijoitus',
-      editRow: 'Muokkaa aikoja',
       openReservationModal: 'Tee toistuva varaus',
       reservationModal: {
         title: 'Tee varaus',

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,10 +6,9 @@ import classNames from 'classnames'
 import max from 'lodash/max'
 import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Success } from 'lib-common/api'
 import {
   Child,
   ChildRecordOfDay,
@@ -34,7 +33,6 @@ import {
   NameWrapper,
   DayTd,
   DayTr,
-  EditStateIndicator,
   NameTd,
   StyledTd,
   ChipWrapper
@@ -54,10 +52,11 @@ const childFilter = (
   selectedGroup: AttendanceGroupFilter
 ): boolean =>
   selectedGroup.type === 'group'
-    ? child.groupId === selectedGroup.id
+    ? child.groupId === selectedGroup.id ||
+      child.backupGroupId === selectedGroup.id
     : selectedGroup.type === 'no-group'
-    ? child.groupId === null
-    : selectedGroup.type === 'all-children'
+      ? child.groupId === null
+      : selectedGroup.type === 'all-children'
 
 export default React.memo(function ChildReservationsTable({
   days,
@@ -131,7 +130,6 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
   selectedGroup: AttendanceGroupFilter
 }) {
   const { i18n } = useTranslation()
-  const [editing, setEditing] = useState(false)
 
   const childId = childBasics.id
   const childContractDayServiceNeeds = childBasics.serviceNeeds.filter(
@@ -192,39 +190,32 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                 <ChildDayReservation
                   date={date}
                   reservationIndex={index}
-                  editing={false}
                   dateInfo={dateInfo}
                   reservation={child.reservations[index]}
                   absence={index === 0 ? child.absence : null}
                   dailyServiceTimes={child.dailyServiceTimes}
                   inOtherUnit={child.inOtherUnit}
-                  isInBackupGroup={child.isInBackupGroup}
+                  isInBackupGroup={
+                    selectedGroup.type === 'group' &&
+                    !child.inOtherUnit &&
+                    child.backupGroupId !== null &&
+                    child.backupGroupId !== selectedGroup.id
+                  }
                   scheduleType={child.scheduleType}
                   serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
                     sn.validDuring.includes(date)
                   )}
-                  deleteAbsence={() => undefined}
-                  updateReservation={() => undefined}
-                  saveReservation={() => undefined}
                 />
               )}
             </DayTd>
           ))}
           {index === 0 && (
             <StyledTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
-              {editing ? (
-                <EditStateIndicator
-                  status={Success.of()}
-                  stopEditing={() => setEditing(false)}
-                />
-              ) : (
-                <RowMenu
-                  i18n={i18n}
-                  child={childBasics}
-                  startEditing={() => setEditing(true)}
-                  openReservationModal={onMakeReservationForChild}
-                />
-              )}
+              <RowMenu
+                i18n={i18n}
+                child={childBasics}
+                openReservationModal={onMakeReservationForChild}
+              />
             </StyledTd>
           )}
         </DayTr>
@@ -248,19 +239,20 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                 <ChildDayAttendance
                   date={date}
                   attendanceIndex={index}
-                  editing={false}
                   dateInfo={dateInfo}
                   attendance={child.attendances[index]}
                   reservations={child.reservations}
                   dailyServiceTimes={child.dailyServiceTimes}
                   inOtherUnit={child.inOtherUnit}
-                  isInBackupGroup={child.isInBackupGroup}
+                  isInBackupGroup={
+                    selectedGroup.type === 'group' &&
+                    !child.inOtherUnit &&
+                    child.backupGroupId !== null &&
+                    child.backupGroupId !== selectedGroup.id
+                  }
                   serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
                     sn.validDuring.includes(date)
                   )}
-                  deleteAbsence={() => undefined}
-                  updateAttendance={() => undefined}
-                  saveAttendance={() => undefined}
                 />
               )}
             </DayTd>
@@ -274,22 +266,15 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
 const RowMenu = React.memo(function RowMenu({
   i18n,
   child,
-  startEditing,
   openReservationModal
 }: {
   i18n: Translations
   child: Child
-  startEditing: () => void
   openReservationModal: (c: Child) => void
 }) {
   return (
     <EllipsisMenu
       items={[
-        {
-          id: 'edit-row',
-          label: i18n.unit.attendanceReservations.editRow,
-          onClick: () => startEditing()
-        },
         {
           id: 'reservation-modal',
           label: i18n.unit.attendanceReservations.openReservationModal,

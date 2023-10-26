@@ -66,11 +66,11 @@ export interface Child {
 export interface ChildRecordOfDay {
   absence: Absence | null
   attendances: AttendanceTimes[]
+  backupGroupId: UUID | null
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
   inOtherUnit: boolean
-  isInBackupGroup: boolean
   reservations: Reservation[]
   scheduleType: ScheduleType
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -19,7 +19,6 @@ import {
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { reservationHasTimes, TimeRange } from 'lib-common/reservations'
@@ -34,7 +33,6 @@ import { DateCell, TimeCell, TimesRow } from './ChildDay'
 interface Props {
   date: LocalDate
   attendanceIndex: number
-  editing: boolean
   dateInfo: UnitDateInfo
   attendance: AttendanceTimes | undefined
   reservations: Reservation[]
@@ -42,15 +40,11 @@ interface Props {
   inOtherUnit: boolean
   isInBackupGroup: boolean
   serviceNeedInfo: ChildServiceNeedInfo | undefined
-  deleteAbsence: () => void
-  updateAttendance: (i: number, d: LocalDate, r: JsonOf<TimeRange>) => void
-  saveAttendance: (d: LocalDate) => void
 }
 
 export default React.memo(function ChildDay({
   date,
   attendanceIndex,
-  editing,
   dateInfo,
   attendance,
   reservations,
@@ -66,10 +60,10 @@ export default React.memo(function ChildDay({
       dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
         ? null
         : isRegular(dailyServiceTimes)
-        ? dailyServiceTimes.regularTimes
-        : isIrregular(dailyServiceTimes)
-        ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
-        : null
+          ? dailyServiceTimes.regularTimes
+          : isIrregular(dailyServiceTimes)
+            ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
+            : null
 
     return getExpectedAttendanceTimes(
       reservations,
@@ -121,16 +115,7 @@ export default React.memo(function ChildDay({
     <AttendanceDateCell>
       {!inOtherUnit && !isInBackupGroup ? (
         <TimesRow data-qa={`attendance-${date.formatIso()}-${attendanceIndex}`}>
-          {editing && date.isEqualOrBefore(LocalDate.todayInSystemTz()) ? (
-            <div>todo</div>
-          ) : /*<TimeRangeEditor
-              timeRange={editState.attendances[rowIndex][day.date.formatIso()]}
-              update={(timeRange) =>
-                updateAttendance(rowIndex, day.date, timeRange)
-              }
-              save={() => saveAttendance(day.date)}
-            />*/
-          requiresBackupCare ? (
+          {requiresBackupCare ? (
             <TimeCell data-qa="backup-care-required-warning" warning>
               {i18n.unit.attendanceReservations.requiresBackupCare}{' '}
               <FontAwesomeIcon

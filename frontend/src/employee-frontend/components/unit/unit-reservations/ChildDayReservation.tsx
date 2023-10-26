@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -20,9 +20,7 @@ import {
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { TimeRange } from 'lib-common/reservations'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Light } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -36,7 +34,6 @@ import { DateCell, TimeCell, TimesRow } from './ChildDay'
 interface Props {
   date: LocalDate
   reservationIndex: number
-  editing: boolean
   dateInfo: UnitDateInfo
   reservation: Reservation | undefined
   absence: Absence | null
@@ -45,15 +42,11 @@ interface Props {
   isInBackupGroup: boolean
   scheduleType: ScheduleType
   serviceNeedInfo: ChildServiceNeedInfo | undefined
-  deleteAbsence: () => void
-  updateReservation: (r: JsonOf<TimeRange>) => void
-  saveReservation: (d: LocalDate) => void
 }
 
 export default React.memo(function ChildDay({
   date,
   reservationIndex,
-  editing,
   dateInfo,
   reservation,
   absence,
@@ -61,8 +54,7 @@ export default React.memo(function ChildDay({
   inOtherUnit,
   isInBackupGroup,
   scheduleType,
-  serviceNeedInfo,
-  deleteAbsence
+  serviceNeedInfo
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -73,10 +65,10 @@ export default React.memo(function ChildDay({
     dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
       ? null
       : isRegular(dailyServiceTimes)
-      ? dailyServiceTimes.regularTimes
-      : isIrregular(dailyServiceTimes)
-      ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
-      : null
+        ? dailyServiceTimes.regularTimes
+        : isIrregular(dailyServiceTimes)
+          ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
+          : null
 
   const unitIsNotOpenOnReservationStart =
     reservation !== undefined &&
@@ -103,20 +95,8 @@ export default React.memo(function ChildDay({
             <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
           </TimeCell>
         ) : absence ? (
-          <AbsenceDay
-            type={absence.type}
-            onDelete={editing ? () => deleteAbsence() : undefined}
-          />
-        ) : editing ? (
-          <div>todo</div>
-        ) : /*<TimeRangeEditor
-            timeRange={editState.reservations[rowIndex][day.date.formatIso()]}
-            update={(timeRange) =>
-              updateReservation(rowIndex, day.date, timeRange)
-            }
-            save={() => saveReservation(day.date)}
-          />*/
-        reservation && reservation.type === 'TIMES' ? (
+          <AbsenceDay type={absence.type} />
+        ) : reservation && reservation.type === 'TIMES' ? (
           // a reservation exists for this day
           <>
             <ReservationTime
