@@ -44,7 +44,6 @@ export namespace CitizenMessageThread {
   */
   export interface Redacted {
     type: 'Redacted'
-    children: MessageChild[]
     hasUnreadMessages: boolean
     id: UUID
     lastMessageSentAt: HelsinkiDateTime | null
