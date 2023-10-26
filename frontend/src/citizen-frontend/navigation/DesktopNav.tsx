@@ -4,7 +4,13 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useContext, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -204,9 +210,18 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
     useUnreadChildNotifications()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
+  const dropDownRef = useRef<HTMLUListElement | null>(null)
+  useEffect(() => {
+    if (open && dropDownRef.current) {
+      const firstAnchor = dropDownRef.current.querySelector('a')
+      if (firstAnchor) {
+        firstAnchor.focus()
+      }
+    }
+  }, [open])
 
   if (childrenWithOwnPage.length === 0) {
     return null
@@ -231,7 +246,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   )
 
   return (
-    <DropDownContainer ref={dropDownRef}>
+    <DropDownContainer ref={dropDownContainerRef}>
       <DropDownButton
         className={classNames({
           active: location.pathname.startsWith('/children')
@@ -242,6 +257,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
             ? `, ${totalUnreadChildNotifications} ${t.header.notifications}`
             : ''
         }`}
+        aria-expanded={open}
+        aria-haspopup="true"
         data-qa="nav-children-desktop"
         role="menuitem"
       >
@@ -260,7 +277,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
         />
       </DropDownButton>
       {open ? (
-        <DropDown $align="left" data-qa="select-child">
+        <DropDown ref={dropDownRef} $align="left" data-qa="select-child">
           {childrenWithOwnPage.map((child) => (
             <DropDownLink
               key={child.id}
@@ -304,17 +321,33 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
   const t = useTranslation()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
   const showUserAttentionIndicator = !user.email
-  const maybeLockElem = user.authLevel !== 'STRONG' && (
+  const weakAuth = user.authLevel !== 'STRONG'
+  const maybeLockElem = weakAuth && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 
+  const dropDownRef = useRef<HTMLUListElement | null>(null)
+  useEffect(() => {
+    if (open && dropDownRef.current) {
+      const firstAnchor = dropDownRef.current.querySelector('a')
+      if (firstAnchor) {
+        firstAnchor.focus()
+      }
+    }
+  }, [open])
+
   return (
-    <DropDownContainer ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa="sub-nav-menu-desktop">
+    <DropDownContainer ref={dropDownContainerRef}>
+      <DropDownButton
+        onClick={toggleOpen}
+        data-qa="sub-nav-menu-desktop"
+        aria-expanded={open}
+        aria-haspopup="true"
+      >
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
           toggled={showUserAttentionIndicator}
@@ -325,11 +358,15 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         </AttentionIndicator>
       </DropDownButton>
       {open ? (
-        <DropDown $align="right" data-qa="user-menu">
+        <DropDown ref={dropDownRef} $align="right" data-qa="user-menu">
           <DropDownLink
             data-qa="sub-nav-menu-applications"
             to="/applications"
             onClick={() => setOpen(false)}
+            aria-label={
+              t.header.nav.applications +
+              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+            }
           >
             {t.header.nav.applications} {maybeLockElem}
           </DropDownLink>
@@ -337,6 +374,10 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             data-qa="sub-nav-menu-decisions"
             to="/decisions"
             onClick={() => setOpen(false)}
+            aria-label={
+              t.header.nav.decisions +
+              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+            }
           >
             {t.header.nav.decisions} {maybeLockElem}
             {unreadDecisions ? (
@@ -352,6 +393,10 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             data-qa="sub-nav-menu-income"
             to="/income"
             onClick={() => setOpen(false)}
+            aria-label={
+              t.header.nav.income +
+              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+            }
           >
             {t.header.nav.income} {maybeLockElem}
           </DropDownLink>
@@ -360,6 +405,10 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             data-qa="sub-nav-menu-personal-details"
             to="/personal-details"
             onClick={() => setOpen(false)}
+            aria-label={
+              t.header.nav.personalDetails +
+              (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
+            }
           >
             {t.header.nav.personalDetails}
             {showUserAttentionIndicator && (

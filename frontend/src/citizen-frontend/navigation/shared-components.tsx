@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
@@ -92,22 +92,34 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
 
+  const dropDownRef = useRef<HTMLUListElement | null>(null)
+  useEffect(() => {
+    if (open && dropDownRef.current) {
+      const firstSubItem = dropDownRef.current.querySelector('button')
+      if (firstSubItem) {
+        firstSubItem.focus()
+      }
+    }
+  }, [open])
+
   return (
-    <DropDownContainer ref={dropDownRef}>
+    <DropDownContainer ref={dropDownContainerRef}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}
         data-qa="button-select-language"
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         {useShortLanguageLabel ? lang.toUpperCase() : t.header.lang[lang]}
         <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown $align="right" data-qa="select-lang">
+        <DropDown ref={dropDownRef} $align="right" data-qa="select-lang">
           {langs.map((l: Lang) => (
             <DropDownButton
               key={l}
@@ -118,6 +130,8 @@ export const LanguageMenu = React.memo(function LanguageMenu({
               }}
               data-qa={`lang-${l}`}
               lang={l}
+              role="menuitemradio"
+              aria-checked={lang === l}
             >
               <span>{t.header.lang[l]}</span>
             </DropDownButton>
