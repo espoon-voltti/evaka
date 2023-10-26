@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
@@ -18,9 +19,9 @@ import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
-import java.time.Duration
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 class MessagePushNotifications(
@@ -35,6 +36,42 @@ class MessagePushNotifications(
 
     private val logger = KotlinLogging.logger {}
 
+    private fun getPendingPushNotifications() =
+        QuerySql.of<Any> {
+            sql(
+                """
+SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.name AS group_name
+FROM message_recipients mr
+JOIN message_account ma ON mr.recipient_id = ma.id
+JOIN daycare_group dg ON ma.daycare_group_id = dg.id
+JOIN daycare d ON d.id = dg.daycare_id
+JOIN mobile_device_push_group mdpg ON mdpg.daycare_group = dg.id
+JOIN mobile_device md ON mdpg.device = md.id
+WHERE mr.read_at IS NULL
+AND ma.type = 'GROUP'
+AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+AND 'RECEIVED_MESSAGE' = ANY(md.push_notification_categories)
+AND EXISTS (
+    SELECT FROM mobile_device_push_subscription mdps
+    WHERE mdps.device = md.id
+)
+AND CASE
+    WHEN md.employee_id IS NULL THEN TRUE
+    ELSE (
+        EXISTS (
+            SELECT FROM daycare_group_acl dgacl
+            WHERE dgacl.daycare_group_id = dg.id AND dgacl.employee_id = md.employee_id
+        ) OR
+        EXISTS (
+            SELECT FROM daycare_acl dacl
+            WHERE dacl.daycare_id = dg.daycare_id AND dacl.employee_id = md.employee_id
+        )
+    )
+END
+"""
+            )
+        }
+
     fun getAsyncJobs(
         tx: Database.Read,
         messages: Collection<MessageId>
@@ -42,17 +79,9 @@ class MessagePushNotifications(
         tx.createQuery<Any> {
                 sql(
                     """
-SELECT mr.id AS recipient, mdps.device AS device
-FROM message_recipients mr
-JOIN message_account ma ON mr.recipient_id = ma.id
-JOIN daycare_group dg ON ma.daycare_group_id = dg.id
-JOIN daycare d ON d.id = dg.daycare_id
-JOIN mobile_device md ON dg.daycare_id = md.unit_id
-JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
-WHERE mr.message_id = ANY(${bind(messages)})
-AND mr.read_at IS NULL
-AND ma.type = 'GROUP'
-AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+SELECT recipient, device
+FROM (${subquery(getPendingPushNotifications())}) notification
+WHERE notification.message = ANY(${bind(messages)})
 """
                 )
             }
@@ -67,18 +96,11 @@ AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
         createQuery<Any> {
                 sql(
                     """
-SELECT dg.name AS group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
-FROM message_recipients mr
-JOIN message_account ma ON mr.recipient_id = ma.id
-JOIN daycare_group dg ON ma.daycare_group_id = dg.id
-JOIN daycare d ON d.id = dg.daycare_id
-JOIN mobile_device md ON dg.daycare_id = md.unit_id
-JOIN mobile_device_push_subscription mdps ON md.id = mdps.device
-WHERE mr.id = ${bind(messageRecipient)}
-AND md.id = ${bind(device)}
-AND mr.read_at IS NULL
-AND ma.type = 'GROUP'
-AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+SELECT group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+FROM (${subquery(getPendingPushNotifications())}) notification
+JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
+WHERE notification.recipient = ${bind(messageRecipient)}
+AND notification.device = ${bind(device)}
 """
                 )
             }

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.webpush
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -28,6 +29,21 @@ ON CONFLICT (device) DO UPDATE SET
     expires = EXCLUDED.expires,
     auth_secret = EXCLUDED.auth_secret,
     ecdh_key = EXCLUDED.ecdh_key
+"""
+            )
+        }
+        .execute()
+
+fun Database.Transaction.upsertPushGroup(
+    now: HelsinkiDateTime,
+    device: MobileDeviceId,
+    group: GroupId
+) =
+    createUpdate<Any> {
+            sql(
+                """
+INSERT INTO mobile_device_push_group (device, daycare_group, created_at)
+VALUES (${bind(device)}, ${bind(group)}, ${bind(now)})
 """
             )
         }

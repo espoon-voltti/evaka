@@ -186,6 +186,7 @@ import fi.espoo.evaka.vasu.publishVasuDocument
 import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.webpush.PushNotificationCategory
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -2046,7 +2047,8 @@ data class DevMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
     val unitId: DaycareId,
     val name: String = "Laite",
-    val longTermToken: UUID? = null
+    val longTermToken: UUID? = null,
+    val pushNotificationCategories: Set<PushNotificationCategory> = emptySet(),
 )
 
 data class DevPersonalMobileDevice(

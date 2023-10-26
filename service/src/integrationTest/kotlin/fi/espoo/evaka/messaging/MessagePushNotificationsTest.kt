@@ -20,8 +20,10 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.webpush.MockWebPushServer
+import fi.espoo.evaka.webpush.PushNotificationCategory
 import fi.espoo.evaka.webpush.WebPushCrypto
 import fi.espoo.evaka.webpush.WebPushSubscription
+import fi.espoo.evaka.webpush.upsertPushGroup
 import fi.espoo.evaka.webpush.upsertPushSubscription
 import java.net.URI
 import java.security.SecureRandom
@@ -69,7 +71,15 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 )
             group = tx.insert(DevDaycareGroup(daycareId = unit))
             groupAccount = tx.createDaycareGroupMessageAccount(group)
-            device = tx.insert(DevMobileDevice(unitId = unit))
+            device =
+                tx.insert(
+                    DevMobileDevice(
+                        unitId = unit,
+                        pushNotificationCategories =
+                            setOf(PushNotificationCategory.RECEIVED_MESSAGE)
+                    )
+                )
+            tx.upsertPushGroup(clock.now(), device, group)
             val citizen = tx.insert(DevPerson(), DevPersonType.ADULT)
             citizenAccount = tx.getCitizenMessageAccount(citizen)
         }
