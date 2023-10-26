@@ -101,7 +101,7 @@ describe('SAML Single Logout', () => {
     const loginResponse = buildLoginResponse(nameId, sessionIndex, inResponseTo)
     await tester.login(mockUser, { SAMLResponse: loginResponse })
 
-    tester.nockScope.get(`/persondetails/uuid/${mockUser.id}`).reply(200, {
+    tester.nockScope.get(`/system/citizen/${mockUser.id}`).reply(200, {
       id: mockUser.id
     })
     // Secured endpoint should now be accessible with session cookies
@@ -155,7 +155,7 @@ describe('SAML Single Logout', () => {
     await tester.login(mockUser, { SAMLResponse: loginResponse })
 
     // Secured endpoint should now be accessible with session cookies
-    tester.nockScope.get(`/persondetails/uuid/${mockUser.id}`).reply(200, {
+    tester.nockScope.get(`/system/citizen/${mockUser.id}`).reply(200, {
       id: mockUser.id
     })
     const res = await tester.client.get(SECURED_ENDPOINT, {

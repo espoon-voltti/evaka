@@ -11,7 +11,8 @@ import { Sessions } from '../shared/session.js'
 const Profile = z.object({
   socialSecurityNumber: z.string(),
   firstName: z.string(),
-  lastName: z.string()
+  lastName: z.string(),
+  keycloakEmail: z.string()
 })
 
 export function createKeycloakCitizenSamlStrategy(
@@ -29,7 +30,8 @@ export function createKeycloakCitizenSamlStrategy(
     const person = await citizenLogin({
       socialSecurityNumber,
       firstName: asString(profile['firstName']) ?? '',
-      lastName: asString(profile['lastName']) ?? ''
+      lastName: asString(profile['lastName']) ?? '',
+      keycloakEmail: asString(profile['email']) ?? ''
     })
 
     return {

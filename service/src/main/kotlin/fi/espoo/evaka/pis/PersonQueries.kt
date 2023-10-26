@@ -53,12 +53,37 @@ val personDTOColumns =
     )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
-data class CitizenUser(val id: PersonId)
+data class CitizenUserIdentity(val id: PersonId)
 
-fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? =
+data class CitizenUserDetails(
+    val id: PersonId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val phone: String,
+    val backupPhone: String,
+    val email: String?,
+    val keycloakEmail: String?,
+)
+
+fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
+    createQuery<Any> {
+            sql(
+                """
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email
+FROM person WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull()
+
+fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? =
     createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
         .bind("ssn", ssn)
-        .exactlyOneOrNull<CitizenUser>()
+        .exactlyOneOrNull<CitizenUserIdentity>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(
@@ -469,18 +494,22 @@ private val toPersonDTO: Row.() -> PersonDTO = {
     )
 }
 
-fun Database.Transaction.markPersonLastLogin(clock: EvakaClock, id: PersonId) =
-    createUpdate(
-            """
+fun Database.Transaction.updateCitizenOnLogin(
+    clock: EvakaClock,
+    id: PersonId,
+    keycloakEmail: String?
+) =
+    createUpdate<Any> {
+            sql(
+                """
 UPDATE person 
-SET last_login = :now
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
-        .execute()
+SET last_login = ${bind(clock.now())},
+    keycloak_email = coalesce(${bind(keycloakEmail)}, keycloak_email)
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .updateExactlyOne()
 
 data class PersonReference(val table: String, val column: String)
 

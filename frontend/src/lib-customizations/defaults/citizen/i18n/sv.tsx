@@ -1867,6 +1867,10 @@ const sv: Translations = {
       emailInfo:
         'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.'
     },
+    loginDetailsSection: {
+      title: 'Inloggningsinformation',
+      keycloakEmail: 'Användarnamn'
+    },
     notificationsSection: {
       title: 'E-postmeddelanden',
       info: 'Du kan få e-postmeddelanden om följande ämnen. Du kan redigera inställningarna genom att klicka på knappen Redigera.',

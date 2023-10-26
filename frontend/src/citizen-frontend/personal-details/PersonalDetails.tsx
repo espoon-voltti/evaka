@@ -18,6 +18,7 @@ import { renderResult } from '../async-rendering'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 
+import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
 import { notificationSettingsQuery } from './queries'
@@ -48,10 +49,12 @@ export default React.memo(function PersonalDetails() {
           <HorizontalLine />
           {renderResult(user, (user) =>
             user ? (
-              <PersonalDetailsSection
-                user={user}
-                reloadUser={refreshAuthStatus}
-              />
+              <>
+                <PersonalDetailsSection
+                  user={user}
+                  reloadUser={refreshAuthStatus}
+                />
+              </>
             ) : (
               <Navigate replace to="/" />
             )
@@ -65,6 +68,20 @@ export default React.memo(function PersonalDetails() {
               />
             </>
           ))}
+          {renderResult(user, (user) =>
+            user ? (
+              <>
+                {!!user.keycloakEmail && (
+                  <>
+                    <HorizontalLine />
+                    <LoginDetailsSection user={user} />
+                  </>
+                )}
+              </>
+            ) : (
+              <Navigate replace to="/" />
+            )
+          )}
         </ContentArea>
       </Container>
       <Footer />

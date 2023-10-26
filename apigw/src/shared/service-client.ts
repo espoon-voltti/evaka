@@ -97,6 +97,7 @@ export interface CitizenLoginRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
+  keycloakEmail?: string
 }
 
 export interface CitizenUser {
@@ -137,6 +138,19 @@ export async function citizenLogin(
     person,
     {
       headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
+}
+
+export async function getCitizenDetails(
+  req: express.Request,
+  personId: string
+) {
+  const { data } = await client.get(
+    `/system/citizen/${encodeURIComponent(personId)}`,
+    {
+      headers: createServiceRequestHeaders(req, machineUser)
     }
   )
   return data
@@ -219,13 +233,6 @@ export async function authenticateMobileDevice(
       throw e
     }
   }
-}
-
-export async function getUserDetails(req: express.Request, personId: string) {
-  const { data } = await client.get(`/persondetails/uuid/${personId}`, {
-    headers: createServiceRequestHeaders(req)
-  })
-  return data
 }
 
 export interface EmployeePinLoginResponse {

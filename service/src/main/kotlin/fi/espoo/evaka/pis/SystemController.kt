@@ -17,13 +17,18 @@ import fi.espoo.evaka.pairing.updateDeviceTracking
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.AccessControlCitizen
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.CitizenFeatures
 import fi.espoo.evaka.shared.security.EmployeeFeatures
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.upsertCitizenUser
@@ -45,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController
 class SystemController(
     private val personService: PersonService,
     private val accessControl: AccessControl,
+    private val accessControlCitizen: AccessControlCitizen,
     private val webPush: WebPush?,
 ) {
     @PostMapping("/system/citizen-login")
@@ -53,7 +59,7 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @RequestBody request: CitizenLoginRequest
-    ): CitizenUser {
+    ): CitizenUserIdentity {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     val citizen =
@@ -64,9 +70,13 @@ class SystemController(
                                     user,
                                     ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
                                 )
-                                ?.let { CitizenUser(it.id) }
+                                ?.let { CitizenUserIdentity(it.id) }
                                 ?: error("No person found with ssn")
-                    tx.markPersonLastLogin(clock, citizen.id)
+                    tx.updateCitizenOnLogin(
+                        clock,
+                        citizen.id,
+                        keycloakEmail = request.keycloakEmail
+                    )
                     tx.upsertCitizenUser(citizen.id)
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     citizen
@@ -80,6 +90,25 @@ class SystemController(
                 )
             }
     }
+
+    @GetMapping("/system/citizen/{id}")
+    fun citizenUser(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @PathVariable id: PersonId
+    ): CitizenUserResponse =
+        db.connect { dbc ->
+            dbc.read { tx ->
+                    val details = tx.getCitizenUserDetails(id) ?: throw NotFound()
+                    val accessibleFeatures =
+                        accessControlCitizen.getPermittedFeatures(tx, clock, id)
+                    // TODO: remove this extra field, which is only for backwards compatibility
+                    val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
+                    CitizenUserResponse(details, accessibleFeatures, authLevel)
+                }
+                .also { Audit.CitizenUserDetailsRead.log(targetId = id) }
+        }
 
     @PostMapping("/system/employee-login")
     fun employeeLogin(
@@ -220,7 +249,7 @@ class SystemController(
                     }
                 }
             }
-            .also { Audit.EmployeeGetOrCreate.log(targetId = id) }
+            .also { Audit.EmployeeUserDetailsRead.log(targetId = id) }
     }
 
     data class MobileDeviceTracking(val userAgent: String)
@@ -290,7 +319,9 @@ class SystemController(
     data class CitizenLoginRequest(
         val socialSecurityNumber: String,
         val firstName: String,
-        val lastName: String
+        val lastName: String,
+        // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
+        val keycloakEmail: String?
     )
 
     data class EmployeeUserResponse(
@@ -301,5 +332,12 @@ class SystemController(
         val allScopedRoles: Set<UserRole> = setOf(),
         val accessibleFeatures: EmployeeFeatures,
         val permittedGlobalActions: Set<Action.Global>
+    )
+
+    data class CitizenUserResponse(
+        val details: CitizenUserDetails,
+        val accessibleFeatures: CitizenFeatures,
+        // TODO: remove this extra field, which is only for backwards compatibility
+        val authLevel: CitizenAuthLevel,
     )
 }

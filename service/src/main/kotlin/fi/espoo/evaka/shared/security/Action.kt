@@ -512,7 +512,6 @@ sealed interface Action {
             READ_VASU_SUMMARIES(IsCitizen(allowWeakLogin = false).self()),
             READ_VASU_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILD_DOCUMENTS_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
-            READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self());
