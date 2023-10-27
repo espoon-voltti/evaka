@@ -96,13 +96,10 @@ export const LanguageMenu = React.memo(function LanguageMenu({
     setOpen(false)
   )
 
-  const dropDownRef = useRef<HTMLUListElement | null>(null)
+  const firstButtonRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
-    if (open && dropDownRef.current) {
-      const firstSubItem = dropDownRef.current.querySelector('button')
-      if (firstSubItem) {
-        firstSubItem.focus()
-      }
+    if (open && firstButtonRef.current) {
+      firstButtonRef.current.focus()
     }
   }, [open])
 
@@ -119,9 +116,10 @@ export const LanguageMenu = React.memo(function LanguageMenu({
         <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
-        <DropDown ref={dropDownRef} $align="right" data-qa="select-lang">
-          {langs.map((l: Lang) => (
+        <DropDown $align="right" data-qa="select-lang">
+          {langs.map((l: Lang, index) => (
             <DropDownButton
+              ref={index === 0 ? firstButtonRef : null}
               key={l}
               className={classNames({ active: lang === l })}
               onClick={() => {

@@ -213,13 +213,11 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
   const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
-  const dropDownRef = useRef<HTMLUListElement | null>(null)
+
+  const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
   useEffect(() => {
-    if (open && dropDownRef.current) {
-      const firstAnchor = dropDownRef.current.querySelector('a')
-      if (firstAnchor) {
-        firstAnchor.focus()
-      }
+    if (open && firstAnchorRef.current) {
+      firstAnchorRef.current.focus()
     }
   }, [open])
 
@@ -277,9 +275,10 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
         />
       </DropDownButton>
       {open ? (
-        <DropDown ref={dropDownRef} $align="left" data-qa="select-child">
-          {childrenWithOwnPage.map((child) => (
+        <DropDown $align="left" data-qa="select-child">
+          {childrenWithOwnPage.map((child, index) => (
             <DropDownLink
+              ref={index === 0 ? firstAnchorRef : null}
               key={child.id}
               to={`/children/${child.id}`}
               onClick={() => {
@@ -330,13 +329,10 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
 
-  const dropDownRef = useRef<HTMLUListElement | null>(null)
+  const firstAnchorRef = useRef<HTMLAnchorElement | null>(null)
   useEffect(() => {
-    if (open && dropDownRef.current) {
-      const firstAnchor = dropDownRef.current.querySelector('a')
-      if (firstAnchor) {
-        firstAnchor.focus()
-      }
+    if (open && firstAnchorRef.current) {
+      firstAnchorRef.current.focus()
     }
   }, [open])
 
@@ -358,8 +354,9 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
         </AttentionIndicator>
       </DropDownButton>
       {open ? (
-        <DropDown ref={dropDownRef} $align="right" data-qa="user-menu">
+        <DropDown $align="right" data-qa="user-menu">
           <DropDownLink
+            ref={firstAnchorRef}
             data-qa="sub-nav-menu-applications"
             to="/applications"
             onClick={() => setOpen(false)}
