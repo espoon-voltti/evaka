@@ -113,7 +113,31 @@ const shouldSensitiveCheckboxBeEnabled = (
   }
   return senderAccountType === 'PERSONAL'
 }
+interface FlagProps {
+  urgent: boolean
+  sensitive: boolean
+}
 
+const FlagsInfoContent = React.memo(function FlagsInfoContent({
+  urgent,
+  sensitive
+}: FlagProps) {
+  const i18n = useTranslations()
+  // If only one of the flags is present
+  if (urgent !== sensitive) {
+    if (urgent) return <>{i18n.messageEditor.flags.urgent.info}</>
+    if (sensitive) return <>{i18n.messageEditor.flags.sensitive.info}</>
+    return null
+  }
+
+  // If both flags are present
+  return (
+    <UlNoMargin>
+      <li>{i18n.messageEditor.flags.urgent.info}</li>
+      <li>{i18n.messageEditor.flags.sensitive.info}</li>)
+    </UlNoMargin>
+  )
+})
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
@@ -420,27 +444,18 @@ export default React.memo(function MessageEditor({
         />
       </>
     )
-  const FlagsInfoContent = () => {
-    // If only one of the flags is present
-    if (message.urgent !== message.sensitive) {
-      if (message.urgent) return <>{i18n.messageEditor.flags.urgent.info}</>
-      if (message.sensitive)
-        return <>{i18n.messageEditor.flags.sensitive.info}</>
-      return null
-    }
-
-    // If both flags are present
-    return (
-      <UlNoMargin>
-        <li>{i18n.messageEditor.flags.urgent.info}</li>
-        <li>{i18n.messageEditor.flags.sensitive.info}</li>)
-      </UlNoMargin>
-    )
-  }
   const flagsInfo = (message.urgent || message.sensitive) && (
     <>
       <Gap size="s" />
-      <InfoBox noMargin={true} message={<FlagsInfoContent />} />
+      <InfoBox
+        noMargin={true}
+        message={
+          <FlagsInfoContent
+            urgent={message.urgent}
+            sensitive={message.sensitive}
+          />
+        }
+      />
     </>
   )
 
