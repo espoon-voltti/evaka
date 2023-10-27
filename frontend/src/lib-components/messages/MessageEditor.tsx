@@ -10,11 +10,11 @@ import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
-  DraftContent,
   AuthorizedMessageAccount,
+  DraftContent,
+  MessageReceiversResponse,
   PostMessageBody,
-  UpdatableDraftContent,
-  MessageReceiversResponse
+  UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -32,8 +32,8 @@ import { modalZIndex } from 'lib-components/layout/z-helpers'
 import {
   getSelected,
   receiversAsSelectorNode,
-  SelectorNode,
-  SelectedNode
+  SelectedNode,
+  SelectorNode
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
 import { Draft, useDraft } from 'lib-components/messages/useDraft'
@@ -113,7 +113,31 @@ const shouldSensitiveCheckboxBeEnabled = (
   }
   return senderAccountType === 'PERSONAL'
 }
+interface FlagProps {
+  urgent: boolean
+  sensitive: boolean
+}
 
+const FlagsInfoContent = React.memo(function FlagsInfoContent({
+  urgent,
+  sensitive
+}: FlagProps) {
+  const i18n = useTranslations()
+  // If only one of the flags is present
+  if (urgent !== sensitive) {
+    if (urgent) return <>{i18n.messageEditor.flags.urgent.info}</>
+    if (sensitive) return <>{i18n.messageEditor.flags.sensitive.info}</>
+    return null
+  }
+
+  // If both flags are present
+  return (
+    <UlNoMargin>
+      <li>{i18n.messageEditor.flags.urgent.info}</li>
+      <li>{i18n.messageEditor.flags.sensitive.info}</li>)
+    </UlNoMargin>
+  )
+})
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
@@ -378,7 +402,7 @@ export default React.memo(function MessageEditor({
   const sensitiveCheckbox = (
     <FixedSpaceRow spacing="xs" alignItems="center">
       <Checkbox
-        data-qa="checkbox-senstitive"
+        data-qa="checkbox-sensitive"
         label={i18n.messageEditor.flags.sensitive.label}
         checked={message.sensitive}
         disabled={!sensitiveCheckboxEnabled}
@@ -424,15 +448,13 @@ export default React.memo(function MessageEditor({
     <>
       <Gap size="s" />
       <InfoBox
-        message={
-          <UlNoMargin>
-            {message.urgent && <li>{i18n.messageEditor.flags.urgent.info}</li>}
-            {message.sensitive && (
-              <li>{i18n.messageEditor.flags.sensitive.info}</li>
-            )}
-          </UlNoMargin>
-        }
         noMargin={true}
+        message={
+          <FlagsInfoContent
+            urgent={message.urgent}
+            sensitive={message.sensitive}
+          />
+        }
       />
     </>
   )
@@ -506,16 +528,16 @@ export default React.memo(function MessageEditor({
             </Dropdowns>
             {expandedView && !simpleMode && (
               <ExpandedRightPane>
-                <HorizontalField long={true}>
+                <ExpandedHorizontalField>
                   <Bold>{i18n.messageEditor.type.label}</Bold>
                   {messageType}
-                </HorizontalField>
+                </ExpandedHorizontalField>
                 <Gap size="s" />
-                <HorizontalField long={true}>
+                <ExpandedHorizontalField>
                   <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
                   {sensitiveMessagingEnabled && sensitiveCheckbox}
-                </HorizontalField>
+                </ExpandedHorizontalField>
                 {sensitiveInfoOpen && (
                   <FixedSpaceRow fullWidth>
                     <ExpandingInfoBox
@@ -694,7 +716,7 @@ const BottomBar = styled.div`
   padding: ${defaultMargins.xs};
 `
 
-const HorizontalField = styled.div<{ long?: boolean }>`
+const HorizontalField = styled.div`
   display: flex;
   align-items: center;
 
@@ -704,7 +726,23 @@ const HorizontalField = styled.div<{ long?: boolean }>`
 
   & > :nth-child(1) {
     flex: 0 0 auto;
-    width: ${(props) => (props.long ? '200px' : '130px')};
+    width: 130px;
+  }
+`
+const ExpandedHorizontalField = styled.div`
+  display: flex;
+  align-items: center;
+
+  & > * {
+    width: 150px;
+  }
+
+  & > :first-child {
+    width: 190px;
+  }
+
+  & > :last-child {
+    width: unset;
   }
 `
 

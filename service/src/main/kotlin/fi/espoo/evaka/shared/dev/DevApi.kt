@@ -727,7 +727,7 @@ RETURNING id
                     "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING"
                 )
                 tx.execute(
-                    "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING"
+                    "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' OR role = 'SPECIAL_EDUCATION_TEACHER' ON CONFLICT DO NOTHING"
                 )
                 tx.execute(
                     "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"

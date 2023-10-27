@@ -109,7 +109,7 @@ class MessageControllerCitizen(
                     }
                     .mapTo(::PagedCitizenMessageThreads) {
                         if (user.authLevel != CitizenAuthLevel.STRONG && it.sensitive) {
-                            CitizenMessageThread.Redacted.fromMessageThread(user.id, it)
+                            CitizenMessageThread.Redacted.fromMessageThread(accountId, it)
                         } else {
                             CitizenMessageThread.Regular.fromMessageThread(it)
                         }

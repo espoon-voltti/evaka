@@ -20,6 +20,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
+import RedactedThreadView from './RedactedThreadView'
 import ThreadList from './ThreadList'
 import ThreadView from './ThreadView'
 import { receiversQuery, sendMessageMutation } from './queries'
@@ -105,12 +106,17 @@ export default React.memo(function MessagesPage() {
                 newMessageButtonEnabled={canSendNewMessage}
               />
               {selectedThread ? (
-                isRegularThread(selectedThread) && (
+                isRegularThread(selectedThread) ? (
                   <ThreadView
                     accountId={id}
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
                     onThreadDeleted={() => onSelectedThreadDeleted()}
+                  />
+                ) : (
+                  <RedactedThreadView
+                    thread={selectedThread}
+                    closeThread={() => selectThread(undefined)}
                   />
                 )
               ) : (

@@ -4035,7 +4035,8 @@ export const fi = {
       info: 'Viesti lähetetty',
       secondsLeft: (s: number) =>
         s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
-    }
+    },
+    sensitive: 'arkaluontoinen'
   },
   pinCode: {
     title: 'eVaka-mobiilin PIN-koodi',

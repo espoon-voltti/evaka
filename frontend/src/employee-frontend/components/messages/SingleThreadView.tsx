@@ -165,7 +165,7 @@ interface Props {
 export function SingleThreadView({
   accountId,
   goBack,
-  thread: { id: threadId, messages, title, type, urgent, children },
+  thread: { id: threadId, messages, title, type, urgent, sensitive, children },
   view,
   onArchived
 }: Props) {
@@ -226,7 +226,10 @@ export function SingleThreadView({
       <Gap size="xs" />
       <ScrollContainer>
         <StickyTitleRow ref={stickyTitleRowRef}>
-          <H2 noMargin>{title}</H2>
+          <H2 noMargin>
+            {title}
+            {sensitive && ` (${i18n.messages.sensitive})`}
+          </H2>
           <MessageCharacteristics type={type} urgent={urgent} />
         </StickyTitleRow>
         {messages.map((message, idx) => (

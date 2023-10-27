@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLockAlt } from 'Icons'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -31,14 +33,20 @@ function chipColor(theme: Theme, type: 'MESSAGE' | 'BULLETIN'): string {
 interface Props {
   type: MessageType
   urgent: boolean
+  sensitive?: boolean
 }
 
-export function MessageCharacteristics({ type, urgent }: Props) {
+export function MessageCharacteristics({
+  type,
+  urgent,
+  sensitive = false
+}: Props) {
   const theme = useTheme()
   const i18n = useTranslations()
   return (
     <FixedSpaceRow spacing="xs" alignItems="center">
       <ScreenReaderOnly>{i18n.messages.thread.type}:</ScreenReaderOnly>
+      {sensitive && <FontAwesomeIcon icon={faLockAlt} />}
       {urgent && (
         <RoundIcon
           data-qa="urgent"

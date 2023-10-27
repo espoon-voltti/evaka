@@ -19,7 +19,12 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  daycareGroupFixture,
+  enduserChildFixtureKaarina,
+  enduserGuardianFixture,
+  Fixture
+} from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
@@ -48,7 +53,6 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
   mockedDate,
   LocalTime.of(12, 17)
 )
-
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -206,6 +210,43 @@ describe('Sending and receiving messages', () => {
       })
     }
   )
+})
+
+describe('Sending and receiving sensitive messages', () => {
+  test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
+    staff = (
+      await Fixture.employeeSpecialEducationTeacher(fixtures.daycareFixture.id)
+        .withGroupAcl(daycareGroupFixture.id)
+        .save()
+    ).data
+    // create messaging account for newly created VEO account
+    await upsertMessageAccounts()
+
+    const sensitiveMessage = {
+      ...defaultMessage,
+      sensitive: true,
+      receiver: enduserChildFixtureKaarina.id
+    }
+
+    await initStaffPage(mockedDateAt10)
+    await staffPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(staffPage)
+    await messagesPage.sendNewMessage(sensitiveMessage)
+
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    await initCitizenPageWeak(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadIsRedacted()
+
+    const authPage = await citizenMessagesPage.openStrongAuthPage()
+    const strongAuthCitizenMessagePage = await authPage.login(
+      enduserGuardianFixture.ssn!
+    )
+
+    await strongAuthCitizenMessagePage.assertThreadContent(sensitiveMessage)
+  })
 })
 
 describe('Staff copies', () => {

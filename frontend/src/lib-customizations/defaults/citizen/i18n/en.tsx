@@ -463,7 +463,9 @@ const en: Translations = {
       confirm: 'Delete thread'
     },
     sensitive: 'Sensitive message thread',
-    strongAuthRequired: 'Reading requires strong authentication'
+    strongAuthRequired: 'Reading requires strong authentication',
+    strongAuthRequiredThread: 'Reading requires strong authentication.',
+    strongAuthLink: 'Authenticate'
   },
   applications: {
     title: 'Applications',
