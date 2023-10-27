@@ -24,6 +24,7 @@ import {
   Truncated
 } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { faTrash } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
@@ -92,6 +93,7 @@ export default React.memo(function ThreadListItem({
           <FixedSpaceRow>
             {isRegularThread(thread) && (
               <DeleteThreadButton
+                icon={faTrash}
                 aria-label={i18n.common.delete}
                 data-qa="delete-thread-btn"
                 onClick={handleDelete}

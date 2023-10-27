@@ -135,14 +135,7 @@ export type IconButtonProps = {
   disabled?: boolean
 } & ButtonProps &
   BaseProps &
-  (
-    | {
-        'aria-label': string
-      }
-    | {
-        'aria-labelledby': string
-      }
-  )
+  ({ 'aria-label': string } | { 'aria-labelledby': string })
 
 export default React.memo(function IconButton({
   disabled,
