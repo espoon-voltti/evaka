@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
@@ -92,24 +92,34 @@ export const LanguageMenu = React.memo(function LanguageMenu({
   const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+  const dropDownContainerRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
     setOpen(false)
   )
 
+  const firstButtonRef = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (open && firstButtonRef.current) {
+      firstButtonRef.current.focus()
+    }
+  }, [open])
+
   return (
-    <DropDownContainer ref={dropDownRef}>
+    <DropDownContainer ref={dropDownContainerRef}>
       <DropDownButton
         $alignRight={alignRight}
         onClick={toggleOpen}
         data-qa="button-select-language"
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         {useShortLanguageLabel ? lang.toUpperCase() : t.header.lang[lang]}
         <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
       </DropDownButton>
       {open ? (
         <DropDown $align="right" data-qa="select-lang">
-          {langs.map((l: Lang) => (
+          {langs.map((l: Lang, index) => (
             <DropDownButton
+              ref={index === 0 ? firstButtonRef : null}
               key={l}
               className={classNames({ active: lang === l })}
               onClick={() => {
@@ -118,6 +128,8 @@ export const LanguageMenu = React.memo(function LanguageMenu({
               }}
               data-qa={`lang-${l}`}
               lang={l}
+              role="menuitemradio"
+              aria-checked={lang === l}
             >
               <span>{t.header.lang[l]}</span>
             </DropDownButton>
