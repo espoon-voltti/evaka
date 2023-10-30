@@ -40,7 +40,7 @@ environment's package manager, or alternatively download binaries
 from websites provided below.
 
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on
-  Chrome's V8 JavaScript engine, version 18.17+
+  Chrome's V8 JavaScript engine, version 20.9+
   - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+. The globally installed
   yarn is only used as a launcher, and a specific yarn version included in the eVaka repository is automatically used
