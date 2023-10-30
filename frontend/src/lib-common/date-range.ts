@@ -73,6 +73,19 @@ export default class DateRange {
     return new DateRange(start, end)
   }
 
+  complement(other: DateRange): DateRange[] {
+    if (!this.overlapsWith(other)) return [new DateRange(this.start, this.end)]
+
+    return [
+      ...(this.start < other.start
+        ? [new DateRange(this.start, other.start.subDays(1))]
+        : []),
+      ...(other.end !== null && (this.end === null || this.end > other.end)
+        ? [new DateRange(other.end.addDays(1), this.end)]
+        : [])
+    ]
+  }
+
   spanningRange(other: FiniteDateRange | DateRange): DateRange {
     const start = minOf(this.start, other.start)
     const end = this.end && other.end ? maxOf(this.end, other.end) : null

@@ -372,6 +372,9 @@ const en: Translations = {
       selectedChildren: 'Selected children',
       selectChildrenInfo:
         'Only report full day absences. Part-day absences can be reported when making a reservation.',
+      lockedAbsencesWarningTitle: 'Absence for multiple days',
+      lockedAbsencesWarningText:
+        'You are marking an absence for multiple days for which the registration deadline has passed. This can be only cancelled by contacting the daycare staff.',
       dateRange: 'Absent during',
       absenceType: 'Reason for absence',
       absenceTypes: {

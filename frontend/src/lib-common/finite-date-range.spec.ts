@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from './date-range'
 import FiniteDateRange, { mergeDateRanges } from './finite-date-range'
 import LocalDate from './local-date'
 
@@ -109,6 +110,30 @@ describe('FiniteDateRange', () => {
         LocalDate.of(2019, 1, 3)
       )
       expectOverlap(c, d, y)
+    })
+  })
+
+  describe('complement', () => {
+    it('returns complement', () => {
+      const r = range(10, 20)
+      expect(r.complement(range(1, 5))).toEqual([r])
+      expect(r.complement(range(21, 30))).toEqual([r])
+      expect(r.complement(range(10, 20))).toEqual([])
+      expect(r.complement(range(5, 25))).toEqual([])
+      expect(r.complement(range(10, 15))).toEqual([range(16, 20)])
+      expect(r.complement(range(15, 20))).toEqual([range(10, 14)])
+      expect(r.complement(range(11, 19))).toEqual([
+        range(10, 10),
+        range(20, 20)
+      ])
+      expect(r.complement(new DateRange(localDate(5), null))).toEqual([])
+      expect(r.complement(new DateRange(localDate(15), null))).toEqual([
+        range(10, 14)
+      ])
+      expect(r.complement(new DateRange(localDate(20), null))).toEqual([
+        range(10, 19)
+      ])
+      expect(r.complement(new DateRange(localDate(21), null))).toEqual([r])
     })
   })
 

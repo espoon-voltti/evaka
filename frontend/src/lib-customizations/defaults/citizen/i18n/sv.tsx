@@ -368,6 +368,9 @@ const sv: Translations = {
       selectedChildren: 'Utvalda barn',
       selectChildrenInfo:
         'Anmäl endast heldagsfrånvaro. Kortare frånvaro kan anmälas genom reservationer.',
+      lockedAbsencesWarningTitle: 'Frånvaro för flera dagar',
+      lockedAbsencesWarningText:
+        'Du håller på att markera frånvaro för flera dagar, där anmälningstiden har gått ut. Detta kan endast återkallas genom att vara i kontakt med personalen.',
       dateRange: 'Frånvaromeddelande för ',
       absenceType: 'Anledning till frånvaro',
       absenceTypes: {
