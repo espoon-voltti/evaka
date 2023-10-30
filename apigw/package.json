@@ -165,5 +165,5 @@
   "engines": {
     "node": ">= 20.9.0"
   },
-  "packageManager": "yarn@3.6.1"
+  "packageManager": "yarn@4.0.1"
 }
