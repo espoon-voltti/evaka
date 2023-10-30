@@ -28,18 +28,15 @@ const DateRow = styled.div`
   margin-bottom: 1.5rem;
 `
 
-interface DateRowItemProps {
+const DateRowItem = styled.span<{
   width?: string
   strong?: boolean
-}
-
-const DateRowItem = styled.span`
+}>`
   display: flex;
   margin-top: auto;
   margin-bottom: auto;
-  width: ${(props: DateRowItemProps) => props.width};
-  font-weight: ${(props: DateRowItemProps) =>
-    props.strong ? fontWeights.semibold : fontWeights.normal};
+  width: ${(p) => p.width};
+  font-weight: ${(p) => (p.strong ? fontWeights.semibold : fontWeights.normal)};
 
   .react-datepicker-wrapper > div > div > input {
     width: 150px;

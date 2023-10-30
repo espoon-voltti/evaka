@@ -4,8 +4,6 @@
 
 import styled from 'styled-components'
 
-import { faTrash } from 'lib-icons'
-
 import IconButton from '../atoms/buttons/IconButton'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
@@ -34,9 +32,7 @@ export const Truncated = styled.span`
     margin-right: ${defaultMargins.s};
   }
 `
-export const DeleteThreadButton = styled(IconButton).attrs({
-  icon: faTrash
-})``
+export const DeleteThreadButton = styled(IconButton)``
 export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   display: block;
   border: 0;

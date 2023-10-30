@@ -42,7 +42,11 @@ export const EditStateIndicator = React.memo(function EditStateIndicator({
   )
 })
 
-const CustomTh = styled(Th)<{ shrink?: boolean }>`
+interface CustomThProps {
+  shrink?: boolean
+}
+
+const CustomTh = styled(Th)<CustomThProps>`
   vertical-align: bottom;
   font-size: 16px;
   text-transform: unset;
@@ -55,7 +59,7 @@ const CustomTh = styled(Th)<{ shrink?: boolean }>`
 `
 
 // Use min- and max-width to ensure that columns in two tables in the same layout are aligned
-const DateTh = styled(CustomTh)<{ faded: boolean }>`
+const DateTh = styled(CustomTh)<CustomThProps & { faded: boolean }>`
   min-width: 150px;
   max-width: 150px;
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
@@ -72,11 +76,13 @@ const Date = styled(LabelLike)<{ highlight: boolean }>`
     `}
 `
 
-export const StyledTd = styled(Td)<{
+interface StyledTdProps {
   partialRow: boolean
   rowIndex: number
   maxRows?: number
-}>`
+}
+
+export const StyledTd = styled(Td)<StyledTdProps>`
   border-right: 1px solid ${colors.grayscale.g15};
   vertical-align: middle;
   ${(p) =>
@@ -109,7 +115,7 @@ export const DayTr = styled(Tr)<TrProps>`
   }
 `
 
-export const NameTd = styled(StyledTd)`
+export const NameTd = styled(StyledTd)<StyledTdProps>`
   width: 350px;
   ${(p) =>
     p.partialRow &&
