@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -181,25 +182,22 @@ const SingleMessage = React.memo(
     },
     ref: React.ForwardedRef<HTMLLIElement>
   ) {
-    const childNames =
-      relatedChildren.length > 0
-        ? relatedChildren.map((child) => formatFirstName(child)).join(', ')
-        : null
-    const sender =
-      message.sender.name +
-      (message.sender.type === 'CITIZEN' ? ` (${childNames})` : '')
-    const recipients = message.recipients
-      .map((r) => r.name + (r.type === 'CITIZEN' ? ` (${childNames})` : ''))
-      .join(', ')
+    const { senderName, recipientNames } = useMemo(
+      () =>
+        formatAccountNames(message.sender, message.recipients, relatedChildren),
+      [message.recipients, message.sender, relatedChildren]
+    )
     return (
       <MessageContainer tabIndex={-1} ref={ref}>
         <TitleRow>
-          <SenderName data-qa="single-message-sender-name">{sender}</SenderName>
+          <SenderName data-qa="single-message-sender-name">
+            {senderName}
+          </SenderName>
           <InformationText>
             {message.sentAt.toLocalDate().format()}
           </InformationText>
         </TitleRow>
-        <InformationText>{recipients}</InformationText>
+        <InformationText>{recipientNames.join(', ')}</InformationText>
         <MessageContent data-qa="single-message-content">
           <Linkify text={message.content} />
         </MessageContent>
@@ -223,6 +221,26 @@ const SingleMessage = React.memo(
     )
   })
 )
+
+function formatAccountNames(
+  sender: MessageAccount,
+  recipients: MessageAccount[],
+  children: MessageChild[]
+): { senderName: string; recipientNames: string[] } {
+  const childNames =
+    children.length > 0
+      ? children.map((child) => formatFirstName(child)).join(', ')
+      : undefined
+  const childSuffix = childNames ? ` (${childNames})` : ''
+
+  const senderName =
+    sender.name + (sender.type === 'CITIZEN' ? childSuffix : '')
+  const recipientNames = recipients.map(
+    (r) => r.name + (r.type === 'CITIZEN' ? childSuffix : '')
+  )
+
+  return { senderName, recipientNames }
+}
 
 interface SentMessageViewProps {
   account: MessageAccount
