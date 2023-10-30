@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import add from 'lodash/add'
 import mergeWith from 'lodash/mergeWith'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -222,7 +223,15 @@ export default React.memo(function AssistanceNeedsAndActions() {
       date: LocalDate.todayInSystemTz()
     })
   const areasResult = useQueryResult(areaQuery())
+  const sortedAreas = useMemo(
+    () => areasResult.map((areas) => sortBy(areas, (area) => area.name)),
+    [areasResult]
+  )
   const unitsResult = useQueryResult(unitsQuery())
+  const sortedUnits = useMemo(
+    () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
+    [unitsResult]
+  )
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
   const [columnFilters, setColumnFilters] =
@@ -303,7 +312,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
-            {renderResult(areasResult, (areas) => (
+            {renderResult(sortedAreas, (areas) => (
               <Combobox
                 items={[
                   { value: '', label: i18n.common.all },
@@ -341,7 +350,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
           <Wrapper>
-            {renderResult(unitsResult, (units) => (
+            {renderResult(sortedUnits, (units) => (
               <Combobox
                 items={[
                   { value: '', label: i18n.common.all },
