@@ -34,7 +34,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     private val roundTheClockGroup =
         DevDaycareGroup(daycareId = testRoundTheClockDaycare.id, name = "Kookoskalmarit")
 
-    private lateinit var employee1Fixture: FixtureBuilder.EmployeeFixture
+    private val today = LocalDate.of(2023, 10, 27)
 
     @BeforeEach
     fun beforeEach() {
@@ -49,10 +49,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 .withName("One", "in group 1")
                 .withGroupAccess(testDaycare.id, group1.id)
                 .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd {
-                    employee1Fixture = this
-                    employee1Id = employeeId
-                }
+                .saveAnd { employee1Id = employeeId }
                 .addEmployee()
                 .withName("Two", "in group 2")
                 .withGroupAccess(testDaycare.id, group2.id)
@@ -73,7 +70,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun realtimeAttendanceQueries() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, now.minusDays(1), BigDecimal(7.0)).let {
                 tx.markStaffDeparture(it, now.minusDays(1).plusHours(8))
@@ -116,7 +113,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun externalAttendanceQueries() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markExternalStaffArrival(
                     ExternalStaffArrival(
@@ -150,7 +147,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture adds departures for yesterday's arrivals without a plan`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markStaffArrival(
                 employee1Id,
@@ -174,8 +171,8 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture adds departures for yesterday's arrivals without a plan also when arrival is after the cutoff at 8 PM`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
-        val arrival = HelsinkiDateTime.now().minusDays(1).withTime(LocalTime.of(20, 30))
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val arrival = HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(20, 30))
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
             tx.markStaffArrival(employee2Id, group1.id, now, BigDecimal(0))
@@ -194,13 +191,16 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture adds departure for today's arrival with a planned departure in the past`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().plusHours(8)
         val plannedDeparture = arrival.plusHours(8)
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -215,7 +215,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture adds departure at 2000 for JUSTIFIED_CHANGE arrival with a planned departure in the past`() {
-        val startOfToday = HelsinkiDateTime.now().atStartOfDay()
+        val startOfToday = HelsinkiDateTime.of(today, LocalTime.of(0, 0))
         val arrival = startOfToday.minusDays(1).plusHours(8) // Yesterday 0800
         val plannedDeparture = arrival.plusHours(8)
         val expectedAddedDepartureTime = startOfToday.minusDays(1).plusHours(20)
@@ -228,10 +228,11 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 )
                 .bind("id", id)
                 .execute()
-        }
 
-        db.transaction { tx ->
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, startOfToday.toLocalDate(), employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(startOfToday)
 
@@ -246,13 +247,16 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture adds a departure for overnight planned attendance`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().minusHours(4)
         val plannedDeparture = arrival.plusHours(8)
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -267,13 +271,16 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture won't add a departure for today's arrival with a planned departure in the future`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(17)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().plusHours(8)
         val plannedDeparture = arrival.plusHours(10)
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -285,7 +292,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
 
     @Test
     fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a round the clock unit`() {
-        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markStaffArrival(
                 employee1Id,
@@ -310,7 +317,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, plannedDeparture, BigDecimal(7.0))
 
-            employee1Fixture
+            FixtureBuilder.EmployeeFixture(tx, now.toLocalDate(), employee1Id)
                 .addStaffAttendancePlan()
                 .withTime(plannedArrival, plannedDeparture)
                 .save()
