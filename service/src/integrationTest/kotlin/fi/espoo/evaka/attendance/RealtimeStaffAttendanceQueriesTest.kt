@@ -34,8 +34,6 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     private val roundTheClockGroup =
         DevDaycareGroup(daycareId = testRoundTheClockDaycare.id, name = "Kookoskalmarit")
 
-    private lateinit var employee1Fixture: FixtureBuilder.EmployeeFixture
-
     private val today = LocalDate.of(2023, 10, 27)
 
     @BeforeEach
@@ -51,10 +49,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 .withName("One", "in group 1")
                 .withGroupAccess(testDaycare.id, group1.id)
                 .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd {
-                    employee1Fixture = this
-                    employee1Id = employeeId
-                }
+                .saveAnd { employee1Id = employeeId }
                 .addEmployee()
                 .withName("Two", "in group 2")
                 .withGroupAccess(testDaycare.id, group2.id)
@@ -202,7 +197,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -230,10 +228,11 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 )
                 .bind("id", id)
                 .execute()
-        }
 
-        db.transaction { tx ->
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, startOfToday.toLocalDate(), employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(startOfToday)
 
@@ -254,7 +253,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -275,7 +277,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            employee1Fixture.addStaffAttendancePlan().withTime(arrival, plannedDeparture).save()
+            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
+                .addStaffAttendancePlan()
+                .withTime(arrival, plannedDeparture)
+                .save()
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -312,7 +317,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, plannedDeparture, BigDecimal(7.0))
 
-            employee1Fixture
+            FixtureBuilder.EmployeeFixture(tx, now.toLocalDate(), employee1Id)
                 .addStaffAttendancePlan()
                 .withTime(plannedArrival, plannedDeparture)
                 .save()
