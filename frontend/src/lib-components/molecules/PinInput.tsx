@@ -7,8 +7,11 @@ import range from 'lodash/range'
 import React, { RefObject, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
+import { BoundFormState } from 'lib-common/form/hooks'
+
 import UnderRowStatusIcon from '../atoms/StatusIcon'
 import InputField, {
+  InputFieldF,
   InputFieldUnderRow,
   InputInfo,
   StyledInput,
@@ -141,6 +144,29 @@ export const PlainPinInput = React.memo(function PlainPinInput(
       inputMode="numeric"
       width="s"
       maxLength={4}
+      {...props}
+    />
+  )
+})
+
+interface PlainPinInputF
+  extends Omit<PlainPinInputProps, 'value' | 'onChange'> {
+  bind: BoundFormState<string>
+}
+
+export const PlainPinInputF = React.memo(function PlainPinInputF({
+  bind,
+  ...props
+}: PlainPinInputF) {
+  return (
+    <InputFieldF
+      autoComplete="off"
+      data-qa="pin-input"
+      type="password"
+      inputMode="numeric"
+      width="s"
+      maxLength={4}
+      bind={bind}
       {...props}
     />
   )

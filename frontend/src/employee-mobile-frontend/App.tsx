@@ -23,6 +23,7 @@ import {
 } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import RequireAuth from './RequireAuth'
 import UnitList from './UnitList'
@@ -53,6 +54,7 @@ import { SettingsPage } from './settings/SettingsPage'
 import StaffPage from './staff/StaffPage'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
+import StaffAttendanceEditPage from './staff-attendance/StaffAttendanceEditPage'
 import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
@@ -218,6 +220,9 @@ function StaffAttendanceRouter() {
         element={<ExternalStaffMemberPage />}
       />
       <Route path=":employeeId" element={<StaffMemberPage />} />
+      {featureFlags.employeeMobileStaffAttendanceEdit && (
+        <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
+      )}
       <Route
         path=":employeeId/mark-arrived"
         element={<StaffMarkArrivedPage />}

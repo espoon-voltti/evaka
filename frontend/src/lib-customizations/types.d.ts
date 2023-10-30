@@ -239,6 +239,11 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable staff attendance edit in employee mobile
+   */
+  employeeMobileStaffAttendanceEdit?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

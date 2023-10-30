@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 
 import { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
 import {
+  AsyncButton,
   Checkbox,
   Combobox,
   Element,
@@ -95,7 +97,11 @@ export default class StaffPage {
 }
 
 export class StaffAttendancePage {
-  constructor(private readonly page: Page) {}
+  editButton: Element
+
+  constructor(private readonly page: Page) {
+    this.editButton = this.page.findByDataQa('edit')
+  }
 
   #tabs = {
     present: this.page.findByDataQa('present-tab'),
@@ -216,10 +222,15 @@ export class StaffAttendancePage {
     await this.anyMemberPage.back.click()
   }
 
-  async assertEmployeeAttendanceTimes(index: number, expected: string) {
-    await this.staffMemberPage.attendanceTimes
-      .nth(index)
-      .assertTextEquals(expected)
+  async assertEmployeeAttendances(expectedArray: string[]) {
+    const attendances = this.staffMemberPage.attendanceTimes
+    await attendances.assertCount(expectedArray.length)
+    return Promise.all(
+      expectedArray.map(async (expected, index) => {
+        const attendance = attendances.nth(index)
+        await attendance.assertTextEquals(expected)
+      })
+    )
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
@@ -335,5 +346,48 @@ export class StaffAttendancePage {
       () => this.staffDeparturePage.departureTypeCheckbox(type).visible,
       visible
     )
+  }
+}
+
+export class StaffAttendanceEditPage {
+  private page: Page
+  addLink: Element
+  pinInput: TextInput
+  cancelButton: Element
+  saveButton: AsyncButton
+
+  constructor(page: Page) {
+    this.page = page
+    this.addLink = page.findByDataQa('add')
+    this.pinInput = new TextInput(page.findByDataQa('pin-input'))
+    this.cancelButton = page.findByDataQa('cancel')
+    this.saveButton = new AsyncButton(page.findByDataQa('save'))
+  }
+
+  async selectGroup(index: number, groupId: UUID) {
+    const select = new Select(this.page.findAllByDataQa('group').nth(index))
+    await select.selectOption({ value: groupId })
+  }
+
+  async selectType(index: number, type: StaffAttendanceType) {
+    const select = new Select(this.page.findAllByDataQa('type').nth(index))
+    await select.selectOption({ value: type })
+  }
+
+  async fillArrived(index: number, time: string) {
+    const field = new TextInput(this.page.findAllByDataQa('arrived').nth(index))
+    await field.fill(time)
+  }
+
+  async fillDeparted(index: number, time: string) {
+    const field = new TextInput(
+      this.page.findAllByDataQa('departed').nth(index)
+    )
+    await field.fill(time)
+  }
+
+  async remove(index: number) {
+    const icon = this.page.findAllByDataQa('remove').nth(index)
+    await icon.click()
   }
 }

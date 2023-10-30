@@ -11,13 +11,19 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupAcl
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDaycare
@@ -30,6 +36,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -954,6 +961,330 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(fourthDepartureTime, it.attendances[5].departed)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[5].type)
         }
+    }
+
+    private fun addEmployee(): EmployeeId {
+        return db.transaction { tx ->
+            val employeeId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(
+                daycareId = testDaycare.id,
+                employeeId = employeeId,
+                UserRole.STAFF
+            )
+            tx.insert(DevDaycareGroupAcl(groupId = groupId, employeeId = employeeId))
+            tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
+            employeeId
+        }
+    }
+
+    @Test
+    fun `set attendances crud works`() {
+        val employeeId = addEmployee()
+
+        val insertResponse =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = null,
+                                groupId = groupId,
+                                arrived = now,
+                                departed = null,
+                                type = StaffAttendanceType.PRESENT
+                            )
+                        )
+                )
+            )
+        assertThat(insertResponse.deleted).isEmpty()
+        assertThat(insertResponse.updated).hasSize(1)
+
+        val staffAttendanceId = insertResponse.updated.first()
+
+        val updateResponse =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = staffAttendanceId,
+                                groupId = groupId,
+                                arrived = now,
+                                departed = null,
+                                type = StaffAttendanceType.PRESENT
+                            )
+                        )
+                )
+            )
+        assertThat(updateResponse.deleted).isEmpty()
+        assertThat(updateResponse.updated).containsExactly(staffAttendanceId)
+
+        val deleteResponse =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows = emptyList()
+                )
+            )
+        assertThat(deleteResponse.deleted).containsExactly(staffAttendanceId)
+        assertThat(deleteResponse.updated).isEmpty()
+    }
+
+    @Test
+    fun `set attendances without group id works`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = null,
+                            groupId = null,
+                            arrived = now,
+                            departed = null,
+                            type = StaffAttendanceType.TRAINING
+                        )
+                    )
+            )
+
+        val response =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                body
+            )
+
+        assertThat(response.deleted).isEmpty()
+        assertThat(response.updated).hasSize(1)
+    }
+
+    @Test
+    fun `set attendances for other unit doesn't remove attendances`() {
+        val employeeId =
+            db.transaction { tx ->
+                val employeeId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(
+                    daycareId = testDaycare.id,
+                    employeeId = employeeId,
+                    UserRole.STAFF
+                )
+                tx.insert(DevDaycareGroupAcl(groupId = groupId, employeeId = employeeId))
+                tx.insertDaycareAclRow(
+                    daycareId = testDaycare2.id,
+                    employeeId = employeeId,
+                    UserRole.STAFF
+                )
+                tx.insert(DevDaycareGroupAcl(groupId = groupId2, employeeId = employeeId))
+                tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
+                employeeId
+            }
+
+        val response1 =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = null,
+                                groupId = groupId,
+                                arrived = now.minusHours(2),
+                                departed = now,
+                                type = StaffAttendanceType.PRESENT
+                            )
+                        )
+                )
+            )
+        assertThat(response1.deleted).isEmpty()
+        assertThat(response1.updated).hasSize(1)
+
+        val response2 =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser2,
+                MockEvakaClock(now),
+                testDaycare2.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = null,
+                                groupId = groupId2,
+                                arrived = now,
+                                departed = now.plusHours(2),
+                                type = StaffAttendanceType.PRESENT
+                            )
+                        )
+                )
+            )
+        assertThat(response2.deleted).isEmpty()
+        assertThat(response2.updated).hasSize(1)
+    }
+
+    @Test
+    fun `set attendances with another unit's mobile device throws forbidden`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                            groupId = groupId,
+                            arrived = now,
+                            departed = null,
+                            type = StaffAttendanceType.PRESENT
+                        )
+                    )
+            )
+
+        val exception =
+            assertThrows<Forbidden> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser2,
+                    MockEvakaClock(now),
+                    testDaycare.id,
+                    body
+                )
+            }
+        assertEquals("Permission denied", exception.message)
+    }
+
+    @Test
+    fun `set attendances with wrong pin code throws forbidden`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "3344",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                            groupId = groupId,
+                            arrived = now,
+                            departed = null,
+                            type = StaffAttendanceType.PRESENT
+                        )
+                    )
+            )
+
+        val exception =
+            assertThrows<Forbidden> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser,
+                    MockEvakaClock(now),
+                    testDaycare.id,
+                    body
+                )
+            }
+        assertEquals("Invalid pin code", exception.message)
+    }
+
+    @Test
+    fun `set attendances with attendance outside given date throws bad request`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                            groupId = groupId,
+                            arrived = now.plusDays(1),
+                            departed = null,
+                            type = StaffAttendanceType.PRESENT
+                        )
+                    )
+            )
+
+        val expection =
+            assertThrows<BadRequest> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser,
+                    MockEvakaClock(now),
+                    testDaycare.id,
+                    body
+                )
+            }
+        assertEquals("Attendances outside given date", expection.message)
+    }
+
+    @Test
+    fun `set attendances with unknown attendance id throws bad request`() {
+        val employeeId = addEmployee()
+        val body =
+            MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                employeeId = employeeId,
+                pinCode = "1122",
+                date = now.toLocalDate(),
+                rows =
+                    listOf(
+                        RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                            id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                            groupId = groupId,
+                            arrived = now,
+                            departed = null,
+                            type = StaffAttendanceType.PRESENT
+                        )
+                    )
+            )
+
+        val exception =
+            assertThrows<BadRequest> {
+                mobileRealtimeStaffAttendanceController.setAttendances(
+                    dbInstance(),
+                    mobileUser,
+                    MockEvakaClock(now),
+                    testDaycare.id,
+                    body
+                )
+            }
+        assertEquals("Unknown id was given", exception.message)
     }
 
     private fun fetchRealtimeStaffAttendances(

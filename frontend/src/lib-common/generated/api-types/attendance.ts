@@ -309,6 +309,24 @@ export const staffAttendanceTypes = [
 export type StaffAttendanceType = typeof staffAttendanceTypes[number]
 
 /**
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest
+*/
+export interface StaffAttendanceUpdateRequest {
+  date: LocalDate
+  employeeId: UUID
+  pinCode: string
+  rows: StaffAttendanceUpsert[]
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateResponse
+*/
+export interface StaffAttendanceUpdateResponse {
+  deleted: UUID[]
+  updated: UUID[]
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
 */
 export interface StaffAttendanceUpsert {

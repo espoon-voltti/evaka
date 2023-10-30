@@ -63,6 +63,7 @@ export const fi = {
     clear: 'Tyhjennä',
     edit: 'Muokkaa',
     save: 'Tallenna',
+    saveChanges: 'Tallenna muutokset',
     saving: 'Tallennetaan',
     saved: 'Tallennettu',
     search: 'Hae',
@@ -253,7 +254,18 @@ export const fi = {
       differenceReason: 'Kirjaa syy tarvittaessa',
       differenceInfo: 'Aika poikkeaa työvuorostasi',
       hasFutureAttendance:
-        'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.'
+        'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.',
+      summary: 'Yhteenveto',
+      plan: 'Työvuoro',
+      realization: 'Toteuma',
+      rows: 'Päivän kirjaukset',
+      validationErrors: {
+        required: 'Pakollinen',
+        timeFormat: 'Tarkista',
+        dateTooEarly: 'Tarkista',
+        dateTooLate: 'Tarkista'
+      },
+      add: '+ Lisää uusi kirjaus'
     },
     timeDiffTooBigNotification:
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',

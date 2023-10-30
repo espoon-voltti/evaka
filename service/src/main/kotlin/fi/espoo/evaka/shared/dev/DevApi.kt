@@ -2122,7 +2122,7 @@ data class DevUpsertStaffOccupancyCoefficient(
 data class DevStaffAttendance(
     val id: StaffAttendanceRealtimeId,
     val employeeId: EmployeeId,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,

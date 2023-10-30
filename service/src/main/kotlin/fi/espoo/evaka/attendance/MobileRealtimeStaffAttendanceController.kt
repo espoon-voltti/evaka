@@ -5,24 +5,29 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.getDaycareIdByGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.JdbiException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -191,6 +196,84 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             targetId = listOf(body.groupId, body.employeeId),
             objectId = staffAttendanceIds
         )
+    }
+
+    data class StaffAttendanceUpdateRequest(
+        val employeeId: EmployeeId,
+        val pinCode: String,
+        val date: LocalDate,
+        val rows: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>
+    )
+
+    data class StaffAttendanceUpdateResponse(
+        val deleted: List<StaffAttendanceRealtimeId>,
+        val updated: List<StaffAttendanceRealtimeId>
+    )
+
+    @PutMapping
+    fun setAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId,
+        @RequestBody body: StaffAttendanceUpdateRequest
+    ): StaffAttendanceUpdateResponse {
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                ac.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                    unitId
+                )
+                ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+
+                if (
+                    body.rows.any {
+                        !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
+                            .includes(body.date)
+                    }
+                ) {
+                    throw BadRequest("Attendances outside given date")
+                }
+                val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
+                if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }) {
+                    throw BadRequest("Group is not in unit")
+                }
+
+                val existing = tx.getEmployeeAttendancesForDate(unitId, body.employeeId, body.date)
+
+                val ids = body.rows.mapNotNull { it.id }
+                if (ids.any { id -> !existing.map { it.id }.contains(id) }) {
+                    throw BadRequest("Unknown id was given")
+                }
+
+                val deletedIds = existing.map { it.id }.filterNot { ids.contains(it) }
+                deletedIds.forEach { tx.deleteStaffAttendance(it) }
+
+                val occupancyCoefficients =
+                    groupIds.associateWith { groupId ->
+                        tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
+                            ?: occupancyCoefficientZero
+                    }
+                val updatedIds =
+                    body.rows.map { attendance ->
+                        tx.upsertStaffAttendance(
+                            attendanceId = attendance.id,
+                            employeeId = body.employeeId,
+                            groupId = attendance.groupId,
+                            arrivalTime = attendance.arrived,
+                            departureTime = attendance.departed,
+                            occupancyCoefficient = occupancyCoefficients[attendance.groupId]
+                                    ?: occupancyCoefficientZero,
+                            type = attendance.type
+                        )
+                    }
+
+                StaffAttendanceUpdateResponse(deleted = deletedIds, updated = updatedIds)
+            }
+        }
     }
 
     data class ExternalStaffArrivalRequest(

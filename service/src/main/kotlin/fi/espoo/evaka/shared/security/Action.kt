@@ -1953,7 +1953,8 @@ sealed interface Action {
         ),
         UPDATE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
+            IsMobile(requirePinLogin = false).inUnit()
         ),
         DELETE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
