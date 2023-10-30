@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate, createBrowserRouter, Outlet } from 'react-router-dom'
-import { ThemeProvider } from 'styled-components'
+import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
@@ -122,35 +123,48 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nContextProvider>
-        <ThemeProvider theme={theme}>
-          <ErrorBoundary
-            fallback={() => (
-              <ErrorPage basePath="/employee" labels={i18n.errorPage} />
-            )}
-          >
-            <UserContextProvider
-              user={authStatus.user}
-              roles={authStatus.roles}
-              refreshAuthStatus={refreshAuthStatus}
+        <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+          <ThemeProvider theme={theme}>
+            <ErrorBoundary
+              fallback={() => (
+                <ErrorPage basePath="/employee" labels={i18n.errorPage} />
+              )}
             >
-              <StateProvider>
-                <Header />
-                <Notifications apiVersion={authStatus.apiVersion} />
+              <UserContextProvider
+                user={authStatus.user}
+                roles={authStatus.roles}
+                refreshAuthStatus={refreshAuthStatus}
+              >
+                <StateProvider>
+                  <Header />
+                  <Notifications apiVersion={authStatus.apiVersion} />
 
-                {/* the matched route element will be inserted at <Outlet /> */}
-                <Outlet />
+                  {/* the matched route element will be inserted at <Outlet /> */}
+                  <Outlet />
 
-                <Footer />
-                <ErrorMessage />
-                <LoginErrorModal />
-                <PairingModal />
-              </StateProvider>
-            </UserContextProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
+                  <Footer />
+                  <ErrorMessage />
+                  <LoginErrorModal />
+                  <PairingModal />
+                </StateProvider>
+              </UserContextProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </StyleSheetManager>
       </I18nContextProvider>
     </QueryClientProvider>
   )
+}
+
+// This implements the default behavior from styled-components v5
+// TODO: Prefix all custom props with $, then remove this
+function shouldForwardProp(propName: string, target: unknown) {
+  if (typeof target === 'string') {
+    // For HTML elements, forward the prop if it is a valid HTML attribute
+    return isPropValid(propName)
+  }
+  // For other elements, forward all props
+  return true
 }
 
 export default createBrowserRouter(
