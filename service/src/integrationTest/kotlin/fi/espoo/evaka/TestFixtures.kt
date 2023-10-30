@@ -42,26 +42,20 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -512,12 +506,12 @@ val allChildren =
 val allDaycares = setOf(testDaycare, testDaycare2)
 
 fun Database.Transaction.insertGeneralTestFixtures() {
-    insertTestCareArea(testArea)
-    insertTestCareArea(testArea2)
-    insertTestCareArea(testAreaSvebi)
+    insert(testArea)
+    insert(testArea2)
+    insert(testAreaSvebi)
 
     testDecisionMaker_1.let {
-        insertTestEmployee(
+        insert(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -528,32 +522,28 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     testDecisionMaker_2.let {
-        insertTestEmployee(
-            DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName)
-        )
+        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
     }
 
     testDecisionMaker_3.let {
-        insertTestEmployee(
-            DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName)
-        )
+        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
     }
 
-    insertTestDaycare(testSvebiDaycare)
-    insertTestDaycare(testDaycare)
-    insertTestDaycare(testDaycare2)
-    insertTestDaycare(testDaycareNotInvoiced)
-    insertTestDaycare(testPurchasedDaycare)
-    insertTestDaycare(testExternalPurchasedDaycare)
-    insertTestDaycare(testVoucherDaycare)
-    insertTestDaycare(testVoucherDaycare2)
+    insert(testSvebiDaycare)
+    insert(testDaycare)
+    insert(testDaycare2)
+    insert(testDaycareNotInvoiced)
+    insert(testPurchasedDaycare)
+    insert(testExternalPurchasedDaycare)
+    insert(testVoucherDaycare)
+    insert(testVoucherDaycare2)
 
-    insertTestDaycare(testClub)
-    insertTestDaycare(testGhostUnitDaycare)
-    insertTestDaycare(testRoundTheClockDaycare)
+    insert(testClub)
+    insert(testGhostUnitDaycare)
+    insert(testRoundTheClockDaycare)
 
     unitSupervisorOfTestDaycare.let {
-        insertTestEmployee(
+        insert(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -564,17 +554,11 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         updateDaycareAcl(testDaycare.id, unitSupervisorExternalId, UserRole.UNIT_SUPERVISOR)
     }
 
-    allAdults.forEach {
-        insertTestPerson(it)
-        upsertCitizenUser(it.id)
-    }
+    allAdults.forEach { insert(it, DevPersonType.ADULT) }
 
-    allChildren.forEach {
-        insertTestPerson(it)
-        insertTestChild(DevChild(id = it.id))
-    }
+    allChildren.forEach { insert(it, DevPersonType.CHILD) }
 
-    insertTestFeeThresholds(
+    insert(
         FeeThresholds(
             validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
             minIncomeThreshold2 = 210200,

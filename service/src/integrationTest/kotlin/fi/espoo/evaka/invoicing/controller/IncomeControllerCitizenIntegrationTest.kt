@@ -16,24 +16,16 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestIncome
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.snDaycareContractDays15
 import java.time.LocalDate
@@ -74,19 +66,17 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            guardianId = tx.insertTestPerson(DevPerson(email = guardianEmail))
-            tx.upsertCitizenUser(guardianId)
+            guardianId = tx.insert(DevPerson(email = guardianEmail), DevPersonType.ADULT)
             guardianAuthenticatedUser =
                 AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.STRONG)
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            childId =
-                tx.insertTestPerson(testChild).also { tx.insertTestChild(DevChild(testChild.id)) }
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
+            val areaId = tx.insert(DevCareArea())
+            val daycareId = tx.insert(DevDaycare(areaId = areaId))
+            childId = tx.insert(testChild, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
             val placementStart = clock.today().minusMonths(2)
             val placementEnd = clock.today().plusMonths(2)
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
@@ -104,7 +94,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 confirmedBy = null,
                 confirmedAt = null
             )
-            employeeId = tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
+            employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
             employeeEvakaUserId = EvakaUserId(employeeId.raw)
         }
@@ -114,7 +104,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
     fun `expiring income date found`() {
         val expirationDate = clock.today().plusWeeks(4)
         db.transaction {
-            it.insertTestIncome(
+            it.insert(
                 DevIncome(
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,

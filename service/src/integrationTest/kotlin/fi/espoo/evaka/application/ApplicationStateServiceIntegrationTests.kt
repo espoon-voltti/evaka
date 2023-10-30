@@ -45,9 +45,7 @@ import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertFridgePartner
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -431,7 +429,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     preferredStartDate = LocalDate.of(2020, 8, 1)
                 )
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = draft.childId,
                     unitId = testDaycare2.id,
@@ -463,7 +461,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     preferredStartDate = LocalDate.of(2020, 8, 1)
                 )
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = draft.childId,
                     unitId = testDaycare2.id,
@@ -494,7 +492,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     preferredStartDate = LocalDate.of(2020, 8, 13)
                 )
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
                     childId = draft.childId,
@@ -528,7 +526,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     preferredStartDate = LocalDate.of(2020, 8, 13)
                 )
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
                     childId = draft.childId,
@@ -1492,7 +1490,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         val startDate = clock.today()
 
         db.transaction { tx ->
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
@@ -1501,7 +1499,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     startDate = startDate
                 )
             )
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 2,
@@ -1513,7 +1511,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
 
-            tx.insertTestParentship(
+            tx.insert(
                 DevParentship(
                     parentshipId,
                     testChild_1.id,

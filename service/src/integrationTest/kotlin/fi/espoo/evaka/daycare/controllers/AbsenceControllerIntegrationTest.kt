@@ -18,17 +18,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAbsence
-import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevReservation
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -58,15 +51,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare)
-            tx.insertTestDaycareGroup(testDaycareGroup)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycareGroup)
 
-            tx.insertTestEmployee(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_1)
             tx.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
 
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(id = testChild_1.id))
+            tx.insert(testChild_1, DevPersonType.CHILD)
 
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -76,8 +68,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
 
-            tx.insertTestPerson(testChild_2)
-            tx.insertTestChild(DevChild(id = testChild_2.id))
+            tx.insert(testChild_2, DevPersonType.CHILD)
 
             tx.insertTestPlacement(
                 childId = testChild_2.id,
@@ -95,14 +86,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val lastAbsenceDate = today.plusDays(1)
         db.transaction { tx ->
             FiniteDateRange(firstAbsenceDate, lastAbsenceDate).dates().forEach { date ->
-                tx.insertTestAbsence(
+                tx.insert(
                     DevAbsence(
                         childId = testChild_1.id,
                         date = date,
                         absenceCategory = AbsenceCategory.BILLABLE
                     )
                 )
-                tx.insertTestAbsence(
+                tx.insert(
                     DevAbsence(
                         childId = testChild_1.id,
                         date = date,
@@ -112,7 +103,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             }
 
             // Unrelated absence
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_2.id,
                     date = firstAbsenceDate,
@@ -185,7 +176,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 reservationDeadline = today
             )
 
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate.plusDays(1),
@@ -194,7 +185,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     createdBy = EvakaUserId(employee.id.raw)
                 )
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate.plusDays(2),
@@ -263,7 +254,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 reservationDeadline = today
             )
 
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate,
@@ -272,7 +263,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     createdBy = EvakaUserId(employee.id.raw)
                 )
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate.plusDays(1),
@@ -281,7 +272,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     createdBy = EvakaUserId(employee.id.raw)
                 )
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate.plusDays(2),
@@ -291,14 +282,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 )
             )
 
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = startDate,
                     absenceCategory = AbsenceCategory.BILLABLE
                 )
             )
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = startDate.plusDays(1),

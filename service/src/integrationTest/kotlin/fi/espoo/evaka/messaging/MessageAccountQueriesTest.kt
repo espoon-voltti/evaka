@@ -16,11 +16,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -49,46 +46,39 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 36)))
         db.transaction {
-            it.insertTestPerson(
-                DevPerson(id = personId, firstName = "Firstname", lastName = "Person")
+            it.insert(
+                DevPerson(id = personId, firstName = "Firstname", lastName = "Person"),
+                DevPersonType.ADULT
             )
-            it.createPersonMessageAccount(personId)
 
-            it.insertTestEmployee(
+            it.insert(
                 DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
             )
             it.upsertEmployeeMessageAccount(supervisorId)
 
-            it.insertTestEmployee(
+            it.insert(
                 DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1")
             )
-            it.insertTestEmployee(
+            it.insert(
                 DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee 2")
             )
 
-            val randomUuid =
-                it.insertTestEmployee(DevEmployee(firstName = "Random", lastName = "Employee"))
+            val randomUuid = it.insert(DevEmployee(firstName = "Random", lastName = "Employee"))
             it.upsertEmployeeMessageAccount(randomUuid)
 
-            val areaId = it.insertTestCareArea(DevCareArea())
+            val areaId = it.insert(DevCareArea())
             val daycareId =
-                it.insertTestDaycare(
+                it.insert(
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                     )
                 )
 
-            val groupId =
-                it.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
-                )
+            val groupId = it.insert(DevDaycareGroup(daycareId = daycareId, name = "Testiläiset"))
             it.createDaycareGroupMessageAccount(groupId)
 
-            val group2Id =
-                it.insertTestDaycareGroup(
-                    DevDaycareGroup(daycareId = daycareId, name = "Koekaniinit")
-                )
+            val group2Id = it.insert(DevDaycareGroup(daycareId = daycareId, name = "Koekaniinit"))
             it.createDaycareGroupMessageAccount(group2Id)
 
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
@@ -101,15 +91,14 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // There should be no permissions to anything about this daycare
             val daycare2Id =
-                it.insertTestDaycare(
+                it.insert(
                     DevDaycare(
                         areaId = areaId,
                         name = "Väärä päiväkoti",
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                     )
                 )
-            val group3Id =
-                it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
+            val group3Id = it.insert(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
         }
     }

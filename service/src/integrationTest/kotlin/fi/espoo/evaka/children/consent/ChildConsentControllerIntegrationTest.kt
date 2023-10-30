@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
@@ -46,7 +46,7 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
+            it.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
             it.insertGuardian(testAdult_1.id, testChild_1.id)
             it.insertGuardian(testAdult_1.id, testChild_2.id)
             it.insertTestPlacement(

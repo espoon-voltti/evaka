@@ -15,13 +15,11 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -70,7 +68,7 @@ internal class AttendanceReservationReportByChildTest :
                 endDate = endDate
             )
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = date,
@@ -103,7 +101,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -130,7 +128,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -157,7 +155,7 @@ internal class AttendanceReservationReportByChildTest :
     fun `child without placement is not included`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -182,7 +180,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -202,7 +200,7 @@ internal class AttendanceReservationReportByChildTest :
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             val groupId =
-                tx.insertTestDaycareGroup(
+                tx.insert(
                     DevDaycareGroup(daycareId = testDaycare2.id, startDate = date, endDate = date)
                 )
             tx.insertTestDaycareGroupPlacement(
@@ -223,7 +221,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -238,7 +236,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_2.id,
                     date = date,
@@ -279,7 +277,7 @@ internal class AttendanceReservationReportByChildTest :
                         startDate = date,
                         endDate = date
                     )
-                    tx.insertTestReservation(
+                    tx.insert(
                         DevReservation(
                             childId = testChild.id,
                             date = date,
@@ -311,17 +309,15 @@ internal class AttendanceReservationReportByChildTest :
         val date = LocalDate.of(2020, 5, 28)
         val group1 =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")
-                    )
-                    .let { Group(it, "Testiläiset 1") }
+                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")).let {
+                    Group(it, "Testiläiset 1")
+                }
             }
         val group2 =
             db.transaction { tx ->
-                tx.insertTestDaycareGroup(
-                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")
-                    )
-                    .let { Group(it, "Testiläiset 2") }
+                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")).let {
+                    Group(it, "Testiläiset 2")
+                }
             }
         db.transaction { tx ->
             tx.insertTestDaycareGroupPlacement(
@@ -336,7 +332,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -357,7 +353,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_2.id,
                     date = date,
@@ -378,7 +374,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_3.id,
                     date = date,
@@ -393,7 +389,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_4.id,
                     date = date,
@@ -426,7 +422,7 @@ internal class AttendanceReservationReportByChildTest :
                     endDate = date
                 )
             val groupId =
-                tx.insertTestDaycareGroup(
+                tx.insert(
                     DevDaycareGroup(daycareId = testDaycare.id, startDate = date, endDate = date)
                 )
             tx.insertTestDaycareGroupPlacement(
@@ -435,7 +431,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -462,7 +458,7 @@ internal class AttendanceReservationReportByChildTest :
                 startDate = date,
                 endDate = date
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = date,
@@ -491,7 +487,7 @@ internal class AttendanceReservationReportByChildTest :
                 endDate = endDate
             )
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = date,
@@ -555,7 +551,7 @@ internal class AttendanceReservationReportByChildTest :
             )
 
             // 8-16 every day
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(startDate, endDate)
@@ -563,7 +559,7 @@ internal class AttendanceReservationReportByChildTest :
             )
 
             // Reservation on the second day 9:00 - 15:00
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = startDate.plusDays(1),

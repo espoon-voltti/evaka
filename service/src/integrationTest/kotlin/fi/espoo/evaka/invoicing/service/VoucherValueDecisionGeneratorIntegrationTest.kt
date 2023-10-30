@@ -31,17 +31,12 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
-import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
@@ -477,12 +472,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 ssn = "010117A901W"
             )
 
-        db.transaction { tx ->
-            listOf(twin1, twin2).forEach {
-                tx.insertTestPerson(it)
-                tx.insertTestChild(DevChild(id = it.id))
-            }
-        }
+        db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
 
         val placementPeriod = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertPlacement(twin1.id, placementPeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
@@ -514,9 +504,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction {
-            it.insertTestAssistanceFactor(
-                DevAssistanceFactor(childId = testChild_2.id, capacityFactor = 3.0)
-            )
+            it.insert(DevAssistanceFactor(childId = testChild_2.id, capacityFactor = 3.0))
         }
 
         db.transaction {
@@ -1136,7 +1124,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 )
                 .bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
-            tx.insertTestFeeThresholds(
+            tx.insert(
                 FeeThresholds(
                     validDuring = subPeriod2.copy(end = null),
                     minIncomeThreshold2 = 213600,
@@ -1165,7 +1153,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     temporaryFeeSiblingPartDay = 800
                 )
             )
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = testAdult_1.id,
                     validFrom = period.start,
@@ -1511,7 +1499,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -1530,7 +1518,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestFeeAlteration(
+            tx.insert(
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId = personId,

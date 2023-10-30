@@ -17,10 +17,10 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -109,7 +109,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `restricted child address is hidden`() {
         val childId =
-            db.transaction { it.insertTestPerson(DevPerson(restrictedDetailsEnabled = true)) }
+            db.transaction {
+                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+            }
 
         val applicationId =
             db.transaction { tx ->
@@ -146,7 +148,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `restricted guardian address is hidden`() {
         val guardianId =
-            db.transaction { it.insertTestPerson(DevPerson(restrictedDetailsEnabled = true)) }
+            db.transaction {
+                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+            }
 
         val applicationId =
             db.transaction { tx ->
@@ -232,7 +236,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @Test
     fun `application attachments`() {
         db.transaction { tx ->
-            tx.insertTestEmployee(DevEmployee(testSpecialEducationTeacherId))
+            tx.insert(DevEmployee(testSpecialEducationTeacherId))
             tx.insertDaycareAclRow(
                 testDaycare.id,
                 testSpecialEducationTeacherId,

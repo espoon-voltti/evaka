@@ -16,11 +16,10 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.snDefaultDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -36,10 +35,10 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
     override fun beforeAll() {
         super.beforeAll()
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            val childId = tx.insertTestPerson(DevPerson())
-            val guardianId = tx.insertTestPerson(DevPerson())
-            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            val areaId = tx.insert(DevCareArea())
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            daycareId = tx.insert(DevDaycare(areaId = areaId))
             applicationId =
                 tx.insertTestApplication(
                     childId = childId,

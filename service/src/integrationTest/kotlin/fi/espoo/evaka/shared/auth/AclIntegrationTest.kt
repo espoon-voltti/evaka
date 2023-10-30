@@ -19,24 +19,17 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
-import fi.espoo.evaka.shared.dev.insertFridgeChild
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -74,15 +67,14 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @BeforeAll
     fun before() {
         db.transaction {
-            employeeId = it.insertTestEmployee(DevEmployee())
-            val areaId = it.insertTestCareArea(DevCareArea(name = "Test area"))
-            daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
-            groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            guardianId = it.insertTestPerson(DevPerson())
-            childId = it.insertTestPerson(DevPerson())
-            it.insertTestChild(DevChild(id = childId))
-            fridgeParentId = it.insertTestPerson(DevPerson())
-            it.insertFridgeChild(
+            employeeId = it.insert(DevEmployee())
+            val areaId = it.insert(DevCareArea(name = "Test area"))
+            daycareId = it.insert(DevDaycare(areaId = areaId))
+            groupId = it.insert(DevDaycareGroup(daycareId = daycareId))
+            guardianId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
+            childId = it.insert(DevPerson(), DevPersonType.CHILD)
+            fridgeParentId = it.insert(DevPerson(), DevPersonType.RAW_ROW)
+            it.insert(
                 DevFridgeChild(
                     childId = childId,
                     headOfChild = fridgeParentId,
@@ -115,7 +107,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2100, 1, 1)
                 )
-            mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
+            mobileId = it.insert(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi, noopTracer)
         accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)

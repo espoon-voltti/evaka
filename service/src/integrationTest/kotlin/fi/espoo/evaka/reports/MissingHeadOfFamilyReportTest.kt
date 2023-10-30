@@ -10,17 +10,13 @@ import fi.espoo.evaka.pis.deleteFosterParentRelationship
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.FosterParentId
-import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertFosterParent
-import fi.espoo.evaka.shared.dev.insertFridgeChild
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -49,7 +45,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(
                     id = employeeId,
                     firstName = "Test",
@@ -305,7 +301,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         val headIds =
             db.transaction { tx ->
                 headPeriods.map { (start, end) ->
-                    tx.insertFridgeChild(
+                    tx.insert(
                         DevFridgeChild(
                             childId = testChild_1.id,
                             headOfChild = testAdult_1.id,
@@ -318,7 +314,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         val fosterIds =
             db.transaction { tx ->
                 fosterPeriods.map { (start, end) ->
-                    tx.insertFosterParent(
+                    tx.insert(
                         DevFosterParent(
                             childId = testChild_1.id,
                             parentId = testAdult_1.id,
@@ -348,8 +344,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             getReport(startDate.minusDays(10), startDate.plusDays(10))
         )
         db.transaction { tx ->
-            headIds.forEach { tx.deleteParentship(ParentshipId(it)) }
-            fosterIds.forEach { tx.deleteFosterParentRelationship(FosterParentId(it)) }
+            headIds.forEach { tx.deleteParentship(it) }
+            fosterIds.forEach { tx.deleteFosterParentRelationship(it) }
         }
     }
 
@@ -396,7 +392,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = startDate,
                 endDate = startDate,
             )
-            it.insertFridgeChild(
+            it.insert(
                 DevFridgeChild(
                     childId = testChild_1.id,
                     startDate = startDate,

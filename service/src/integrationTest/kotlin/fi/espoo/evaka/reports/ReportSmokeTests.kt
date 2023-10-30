@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -88,7 +88,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     @Test
     fun `family-contacts report returns http 200`() {
         db.transaction {
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,

@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testChild_1
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -36,7 +36,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
+            it.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
         }
     }
 

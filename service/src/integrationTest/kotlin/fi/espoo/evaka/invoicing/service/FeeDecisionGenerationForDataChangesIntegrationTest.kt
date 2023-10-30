@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevIncome
-import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -310,7 +310,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     @Test
     fun `Incomplete income is equal to non-existing and does not cause new draft`() {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = testAdult_1.id,
                     validFrom = originalRange.start,

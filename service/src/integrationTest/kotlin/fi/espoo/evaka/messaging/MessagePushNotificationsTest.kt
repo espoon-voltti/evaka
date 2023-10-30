@@ -15,11 +15,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.webpush.MockWebPushServer
@@ -62,19 +59,19 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     fun beforeEach() {
         mockServer.clearData()
         db.transaction { tx ->
-            val area = tx.insertTestCareArea(DevCareArea())
+            val area = tx.insert(DevCareArea())
             val unit =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = area,
                         enabledPilotFeatures = setOf(PilotFeature.PUSH_NOTIFICATIONS)
                     )
                 )
-            group = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = unit))
+            group = tx.insert(DevDaycareGroup(daycareId = unit))
             groupAccount = tx.createDaycareGroupMessageAccount(group)
-            device = tx.insertTestMobileDevice(DevMobileDevice(unitId = unit))
-            val citizen = tx.insertTestPerson(DevPerson())
-            citizenAccount = tx.createPersonMessageAccount(citizen)
+            device = tx.insert(DevMobileDevice(unitId = unit))
+            val citizen = tx.insert(DevPerson(), DevPersonType.ADULT)
+            citizenAccount = tx.getCitizenMessageAccount(citizen)
         }
     }
 

@@ -13,9 +13,8 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
@@ -59,8 +58,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     protected fun createTestCitizen(authLevel: CitizenAuthLevel) =
         db.transaction { tx ->
-            val id = tx.insertTestPerson(DevPerson())
-            tx.upsertCitizenUser(id)
+            val id = tx.insert(DevPerson(), DevPersonType.ADULT)
             AuthenticatedUser.Citizen(id, authLevel)
         }
 
@@ -70,7 +68,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     ) =
         db.transaction { tx ->
             assert(globalRoles.all { it.isGlobalRole() })
-            val id = tx.insertTestEmployee(DevEmployee(roles = globalRoles))
+            val id = tx.insert(DevEmployee(roles = globalRoles))
             tx.upsertEmployeeUser(id)
             unitRoles.forEach { (daycareId, role) -> tx.insertDaycareAclRow(daycareId, id, role) }
             val globalAndUnitRoles =
@@ -80,7 +78,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     protected fun createTestMobile(daycareId: DaycareId) =
         db.transaction { tx ->
-            val mobileId = tx.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
+            val mobileId = tx.insert(DevMobileDevice(unitId = daycareId))
             AuthenticatedUser.MobileDevice(mobileId)
         }
 }

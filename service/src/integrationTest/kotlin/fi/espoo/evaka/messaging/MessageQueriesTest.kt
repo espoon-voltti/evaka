@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
@@ -27,17 +26,10 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -83,14 +75,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
         db.transaction { tx ->
-            tx.insertTestPerson(person1)
-            tx.insertTestPerson(person2)
-            tx.insertTestEmployee(employee1)
-            tx.insertTestEmployee(employee2)
+            tx.insert(person1, DevPersonType.ADULT)
+            tx.insert(person2, DevPersonType.ADULT)
+            tx.insert(employee1)
+            tx.insert(employee2)
             accounts =
                 TestAccounts(
-                    person1 = tx.createAccount(person1),
-                    person2 = tx.createAccount(person2),
+                    person1 = tx.getAccount(person1),
+                    person2 = tx.getAccount(person2),
                     employee1 = tx.createAccount(employee1),
                     employee2 = tx.createAccount(employee2)
                 )
@@ -408,9 +400,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = today.plusDays(30)
 
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
+            val areaId = tx.insert(DevCareArea())
             val daycareId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = areaId,
                         language = Language.fi,
@@ -424,15 +416,17 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             val group1 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
             val group2 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset 2")
-            listOf(group1, group2).forEach { tx.insertTestDaycareGroup(it) }
+            listOf(group1, group2).forEach { tx.insert(it) }
             group1Account = tx.createAccount(group1)
             tx.createAccount(group2)
 
             // and person1 has a child who is placed into a group
             val childId =
-                tx.insertTestPerson(DevPerson(firstName = "Firstname", lastName = "Test Child"))
-            tx.insertTestChild(DevChild(id = childId))
-            tx.insertTestParentship(
+                tx.insert(
+                    DevPerson(firstName = "Firstname", lastName = "Test Child"),
+                    DevPersonType.CHILD
+                )
+            tx.insert(
                 DevParentship(
                     childId = childId,
                     headOfChildId = person1.id,
@@ -442,7 +436,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.insertGuardian(guardianId = person1.id, childId = childId)
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
@@ -451,7 +445,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = endDate
                     )
                 )
-            tx.insertTestDaycareGroupPlacement(
+            tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     daycareGroupId = group1.id,
@@ -459,7 +453,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = endDateGroup1
                 )
             )
-            tx.insertTestDaycareGroupPlacement(
+            tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     daycareGroupId = group2.id,
@@ -481,8 +475,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val startDate = LocalDate.now().minusDays(30)
         val endDate = LocalDate.now().plusDays(30)
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testDaycare.id,
@@ -496,15 +490,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 role = UserRole.UNIT_SUPERVISOR
             )
             val group = DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset")
-            tx.insertTestDaycareGroup(group)
+            tx.insert(group)
             tx.createAccount(group)
 
             // and person1 has a child who is placed into the group
-            tx.insertTestPerson(
-                DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child")
+            tx.insert(
+                DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"),
+                DevPersonType.CHILD
             )
-            tx.insertTestChild(DevChild(id = testChild_1.id))
-            tx.insertTestParentship(
+            tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
                     headOfChildId = person1.id,
@@ -514,7 +508,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             tx.insertGuardian(guardianId = person1.id, childId = testChild_1.id)
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
@@ -523,7 +517,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = endDate
                     )
                 )
-            tx.insertTestDaycareGroupPlacement(
+            tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     daycareGroupId = group.id,
@@ -557,9 +551,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         lateinit var child2Placement: PlacementId
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 0))
         db.transaction { tx ->
-            val areaId = tx.insertTestCareArea(DevCareArea())
+            val areaId = tx.insert(DevCareArea())
             val daycareId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
@@ -567,26 +561,24 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertDaycareAclRow(daycareId, employee1.id, UserRole.UNIT_SUPERVISOR)
             val group = DevDaycareGroup(daycareId = daycareId)
-            tx.insertTestDaycareGroup(group)
+            tx.insert(group)
             groupAccount =
                 MessageAccount(
                     id = tx.createDaycareGroupMessageAccount(group.id),
                     name = group.name,
                     type = AccountType.GROUP
                 )
-            child1Id = tx.insertTestPerson(DevPerson())
-            tx.insertTestChild(DevChild(child1Id))
-            child2Id = tx.insertTestPerson(DevPerson())
-            tx.insertTestChild(DevChild(child2Id))
+            child1Id = tx.insert(DevPerson(), DevPersonType.CHILD)
+            child2Id = tx.insert(DevPerson(), DevPersonType.CHILD)
             listOf(child1Id, child2Id).forEach { childId ->
                 listOf(person1.id, person2.id).forEach { guardianId ->
-                    tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = childId))
+                    tx.insert(DevGuardian(guardianId = guardianId, childId = childId))
                 }
             }
             val startDate = now.toLocalDate()
             val endDate = startDate.plusDays(30)
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = child1Id,
                         unitId = daycareId,
@@ -601,7 +593,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = endDate
             )
             child2Placement =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = child2Id,
                         unitId = daycareId,
@@ -792,9 +784,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun unreadMessagesCount(account: MessageAccount) =
         db.read { it.getUnreadMessagesCounts(readTime, setOf(account.id)).first().unreadCount }
 
-    private fun Database.Transaction.createAccount(person: DevPerson) =
+    private fun Database.Transaction.getAccount(person: DevPerson) =
         MessageAccount(
-            id = createPersonMessageAccount(person.id),
+            id = getCitizenMessageAccount(person.id),
             name = "${person.lastName} ${person.firstName}",
             type = AccountType.CITIZEN
         )

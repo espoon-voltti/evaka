@@ -13,8 +13,8 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -106,7 +106,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
-                .forEach { tx.insertTestReservation(it) }
+                .forEach { tx.insert(it) }
         }
 
         holidayPeriodController.createHolidayPeriod(

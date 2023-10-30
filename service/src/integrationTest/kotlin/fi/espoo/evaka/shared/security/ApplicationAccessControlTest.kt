@@ -18,11 +18,10 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -47,15 +46,15 @@ class ApplicationAccessControlTest : AccessControlTest() {
     fun beforeEach() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
-            childId = tx.insertTestPerson(DevPerson())
+            childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             applicationId =
                 tx.insertTestApplication(
                     guardianId = creatorCitizen.id,
                     childId = childId,
                     type = ApplicationType.DAYCARE
                 )
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            val areaId = tx.insert(DevCareArea())
+            daycareId = tx.insert(DevDaycare(areaId = areaId))
             tx.insertTestApplicationForm(
                 applicationId,
                 DaycareFormV0(

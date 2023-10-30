@@ -18,8 +18,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestAssistanceFactor
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
@@ -43,7 +42,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
+            it.insert(DevDaycareGroup(groupId, testDaycare.id))
         }
     }
 
@@ -65,7 +64,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .withAge(2, 11)
                 .saveAnd {
                     addPlacement().toUnit(testDaycare.id).save()
-                    tx.insertTestAssistanceFactor(
+                    tx.insert(
                         DevAssistanceFactor(
                             childId = childId,
                             validDuring = date.toFiniteDateRange(),

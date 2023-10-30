@@ -13,8 +13,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -44,9 +43,9 @@ class UnitAccessControlTest : AccessControlTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            areaId = tx.insertTestCareArea(DevCareArea())
-            daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            featureDaycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
+            areaId = tx.insert(DevCareArea())
+            daycareId = tx.insert(DevDaycare(areaId = areaId))
+            featureDaycareId = tx.insert(DevDaycare(areaId = areaId))
             tx.addUnitFeatures(listOf(featureDaycareId), listOf(unitFeature))
         }
     }
@@ -136,8 +135,7 @@ class UnitAccessControlTest : AccessControlTest() {
         val action = Action.Unit.READ
         rules.add(action, IsMobile(requirePinLogin = false).inUnit())
         val unitMobile = createTestMobile(daycareId)
-        val otherDaycareId =
-            db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
+        val otherDaycareId = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
         val otherMobile = createTestMobile(otherDaycareId)
         db.read { tx ->
             assertTrue(accessControl.hasPermissionFor(tx, unitMobile, clock, action, daycareId))

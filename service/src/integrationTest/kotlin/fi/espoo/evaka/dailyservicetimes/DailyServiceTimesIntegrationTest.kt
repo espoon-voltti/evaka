@@ -22,8 +22,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -78,9 +77,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "")
-            )
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
@@ -113,7 +110,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val id = DailyServiceTimesId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     id = id,
                     childId = testChild_1.id,
@@ -140,14 +137,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val idFuture = DailyServiceTimesId(UUID.randomUUID())
         val past = DailyServiceTimesId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     id = idFuture,
                     childId = testChild_1.id,
                     validityPeriod = DateRange(now.toLocalDate(), null)
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     id = past,
                     childId = testChild_2.id,
@@ -262,7 +259,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `disallow updating so that the new validity overlaps with another entry`() {
         val id = DailyServiceTimesId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     id = id,
                     childId = testChild_1.id,
@@ -270,7 +267,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10))
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(now.toLocalDate().plusDays(11), null)

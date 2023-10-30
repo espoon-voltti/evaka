@@ -15,17 +15,12 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -198,8 +193,10 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         val childMId =
             db.transaction { tx ->
                 val childMId =
-                    tx.insertTestPerson(DevPerson(firstName = "Mark", lastName = "Multiple"))
-                tx.insertTestChild(DevChild(id = childMId))
+                    tx.insert(
+                        DevPerson(firstName = "Mark", lastName = "Multiple"),
+                        DevPersonType.CHILD
+                    )
                 tx.insertTestPlacement(
                     childId = childMId,
                     unitId = testData.daycareBId,
@@ -299,8 +296,10 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         val childPId =
             db.transaction { tx ->
                 val childPId =
-                    tx.insertTestPerson(DevPerson(firstName = "Peter", lastName = "Placer"))
-                tx.insertTestChild(DevChild(id = childPId))
+                    tx.insert(
+                        DevPerson(firstName = "Peter", lastName = "Placer"),
+                        DevPersonType.CHILD
+                    )
                 tx.insertTestPlacement(
                     childId = childPId,
                     unitId = testData.daycareBId,
@@ -401,11 +400,13 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         val childPId =
             db.transaction { tx ->
                 val childPId =
-                    tx.insertTestPerson(DevPerson(firstName = "Peter", lastName = "Placer"))
-                tx.insertTestChild(DevChild(id = childPId))
+                    tx.insert(
+                        DevPerson(firstName = "Peter", lastName = "Placer"),
+                        DevPersonType.CHILD
+                    )
 
                 val backupDaycareId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             name = "Backup Daycare",
                             areaId = testData.areaBId,
@@ -422,7 +423,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     type = PlacementType.DAYCARE,
                 )
 
-                tx.insertTestBackupCare(
+                tx.insert(
                     DevBackupCare(
                         childId = childPId,
                         unitId = backupDaycareId,
@@ -537,13 +538,13 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
 
     private fun initTestData(keyDate: LocalDate): FamilyDaycareReportTestData {
         return db.transaction { tx ->
-            tx.insertTestEmployee(admin)
-            val unitSupervisorId = tx.insertTestEmployee(unitSupervisor)
+            tx.insert(admin)
+            val unitSupervisorId = tx.insert(unitSupervisor)
 
-            val areaAId = tx.insertTestCareArea(DevCareArea(name = "Area A", shortName = "Area A"))
-            val areaBId = tx.insertTestCareArea(DevCareArea(name = "Area B", shortName = "Area B"))
+            val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
+            val areaBId = tx.insert(DevCareArea(name = "Area B", shortName = "Area B"))
             val daycareAId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         name = "Family Daycare A",
                         areaId = areaAId,
@@ -552,7 +553,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     )
                 )
             val daycareBId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         name = "Family Daycare B",
                         areaId = areaBId,
@@ -564,23 +565,23 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
             tx.insertDaycareAclRow(daycareBId, unitSupervisorId, UserRole.UNIT_SUPERVISOR)
 
             val childAId =
-                tx.insertTestPerson(
+                tx.insert(
                     DevPerson(
                         dateOfBirth = keyDate.minusYears(4),
                         firstName = "Aapo",
                         lastName = "Aarnio"
-                    )
+                    ),
+                    DevPersonType.CHILD
                 )
             val childBId =
-                tx.insertTestPerson(
+                tx.insert(
                     DevPerson(
                         dateOfBirth = keyDate.minusYears(4),
                         firstName = "Bertil",
                         lastName = "Becker"
-                    )
+                    ),
+                    DevPersonType.CHILD
                 )
-            tx.insertTestChild(DevChild(id = childAId))
-            tx.insertTestChild(DevChild(id = childBId))
             tx.insertTestPlacement(
                 childId = childAId,
                 unitId = daycareAId,

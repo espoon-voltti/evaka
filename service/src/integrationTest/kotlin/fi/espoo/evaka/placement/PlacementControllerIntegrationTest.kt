@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.testChild_1
@@ -60,7 +60,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            tx.insertTestDaycareGroup(testDaycareGroup)
+            tx.insert(testDaycareGroup)
             testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
             tx.updateDaycareAclWithEmployee(daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
         }

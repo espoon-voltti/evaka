@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertFridgePartner
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -125,7 +125,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
@@ -134,7 +134,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     startDate = startDate
                 )
             )
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 2,
@@ -170,7 +170,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
             val endDate = LocalDate.of(2010, 1, 1)
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
@@ -180,7 +180,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     endDate = endDate
                 )
             )
-            tx.insertFridgePartner(
+            tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 2,

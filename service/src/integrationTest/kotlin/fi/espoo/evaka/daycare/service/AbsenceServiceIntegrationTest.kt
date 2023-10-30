@@ -26,26 +26,18 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestBackupCare
-import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.dev.updateDaycareOperationTimes
 import fi.espoo.evaka.shared.domain.DateRange
@@ -106,8 +98,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun prepare() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.insertTestDaycareGroup(
+            it.insert(DevEmployee(id = employeeId))
+            it.insert(
                 DevDaycareGroup(
                     daycareId = testDaycare.id,
                     id = testDaycareGroup.id,
@@ -220,7 +212,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         db.transaction { tx ->
             // 5 weekdays * 5 hours = 25 hours
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     regularTimes = TimeRange(LocalTime.of(10, 0), LocalTime.of(15, 0)),
@@ -230,7 +222,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
 
             // 5 hours from daily service times replaced by a 9-hour actual reservation => +4 hours
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = firstOfMonth,
@@ -240,7 +232,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             )
             // 7 hours
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = lastOfMonth,
@@ -442,7 +434,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             FiniteDateRange(placementStart.plusWeeks(2), placementStart.plusMonths(1).minusDays(1))
 
         db.transaction { tx ->
-            tx.insertTestBackupCare(
+            tx.insert(
                 DevBackupCare(
                     childId = testChild_1.id,
                     period = backupCarePeriod,
@@ -511,7 +503,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 period = holidayPeriod,
                 reservationDeadline = placementStart // doesn't matter for group month calendar
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = holidayPeriod.end.minusDays(2),
@@ -521,7 +513,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = holidayPeriod.end.minusDays(1),
@@ -531,7 +523,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     createdBy = EvakaUserId(employeeId.raw),
                 )
             )
-            tx.insertTestAbsence(
+            tx.insert(
                 DevAbsence(
                     childId = testChild_1.id,
                     date = holidayPeriod.end,
@@ -741,14 +733,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             FiniteDateRange(placementStart.plusWeeks(2), placementStart.plusMonths(1).minusDays(1))
 
         db.transaction { tx ->
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod1.asDateRange(),
                     regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 )
             )
-            tx.insertTestDailyServiceTimes(
+            tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod2.asDateRange(),
@@ -1001,8 +993,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val childId2 = ChildId(UUID.randomUUID())
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL_DAYCARE)
         db.transaction {
-            it.insertTestPerson(DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)))
-            it.insertTestChild(DevChild(childId2))
+            it.insert(
+                DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)),
+                DevPersonType.CHILD
+            )
         }
 
         val absenceDate = placementEnd
@@ -1324,7 +1318,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `reservation sums - reservation without times are not included`() {
         insertGroupPlacement(testChild_1.id)
         db.transaction { tx ->
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = placementStart,
@@ -1333,7 +1327,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     createdBy = EvakaUserId(employeeId.raw)
                 )
             )
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = placementStart.plusDays(1),
@@ -1371,7 +1365,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         db.transaction { tx ->
             // Daily service times are used because this reservation has no times
-            tx.insertTestReservation(
+            tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
                     date = placementStart.plusDays(1),
@@ -1875,7 +1869,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     endDate = placementEnd,
                     type = PlacementType.DAYCARE
                 )
-            tx.insertTestBackupCare(
+            tx.insert(
                 DevBackupCare(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -1932,7 +1926,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         serviceNeedOptionId: ServiceNeedOptionId? = null
     ) {
         db.transaction { tx ->
-            tx.insertTestPlacement(
+            tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = testDaycare.id,
@@ -1962,8 +1956,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun createNewUnitAndGroup(): Pair<DaycareId, GroupId> {
         return db.transaction {
-            val unitId = it.insertTestDaycare(DevDaycare(areaId = testArea.id))
-            unitId to it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId))
+            val unitId = it.insert(DevDaycare(areaId = testArea.id))
+            unitId to it.insert(DevDaycareGroup(daycareId = unitId))
         }
     }
 
@@ -1974,7 +1968,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
     ) {
         db.transaction {
-            it.insertTestBackupCare(
+            it.insert(
                 DevBackupCare(
                     childId = childId,
                     unitId = unitId,
@@ -2002,7 +1996,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     }
                 }
                 .forEach { (start, end) ->
-                    tx.insertTestReservation(
+                    tx.insert(
                         DevReservation(
                             childId = childId,
                             date = start.toLocalDate(),

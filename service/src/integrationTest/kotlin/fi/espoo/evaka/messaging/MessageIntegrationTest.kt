@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -27,31 +26,22 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertEvakaUser
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -112,13 +102,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var serviceWorkerAccount: MessageAccountId
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
-        tx.insertTestPerson(
-            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName)
+        tx.insert(
+            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName),
+            DevPersonType.CHILD
         )
-        tx.insertTestChild(DevChild(id = child.id))
 
         val placementId =
-            tx.insertTestPlacement(
+            tx.insert(
                 DevPlacement(
                     childId = child.id,
                     unitId = testDaycare.id,
@@ -137,8 +127,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testDaycare.id,
@@ -146,7 +136,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
-            tx.insertTestDaycare(
+            tx.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testDaycare2.id,
@@ -156,7 +146,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             fun insertGroup(id: GroupId): MessageAccountId {
-                tx.insertTestDaycareGroup(
+                tx.insert(
                     DevDaycareGroup(id = id, daycareId = testDaycare.id, startDate = placementStart)
                 )
                 return tx.createDaycareGroupMessageAccount(id)
@@ -165,15 +155,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             group2Account = insertGroup(groupId2)
 
             fun insertPerson(person: DevPerson): MessageAccountId {
-                val id = tx.insertTestPerson(person)
-                tx.insertEvakaUser(
-                    EvakaUser(
-                        id = EvakaUserId(id.raw),
-                        type = EvakaUserType.CITIZEN,
-                        name = "${person.lastName} ${person.firstName}"
-                    )
-                )
-                return tx.createPersonMessageAccount(person.id)
+                val id = tx.insert(person, DevPersonType.ADULT)
+                return tx.getCitizenMessageAccount(id)
             }
             person1Account = insertPerson(testAdult_1)
             person2Account = insertPerson(testAdult_2)
@@ -218,20 +201,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertGuardian(person5.id, it.id)
             }
 
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
             )
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
             tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId1, groupId2))
 
-            tx.insertTestEmployee(
-                DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor")
-            )
+            tx.insert(DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor"))
             employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
 
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(id = serviceWorker.id, firstName = "Service", lastName = "Worker")
             )
             serviceWorkerAccount =

@@ -14,9 +14,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -43,9 +41,9 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            val area = tx.insertTestCareArea(DevCareArea())
-            testUnit = tx.insertTestDaycare(DevDaycare(areaId = area))
-            val employee = tx.insertTestEmployee(DevEmployee())
+            val area = tx.insert(DevCareArea())
+            testUnit = tx.insert(DevDaycare(areaId = area))
+            val employee = tx.insert(DevEmployee())
             user = AuthenticatedUser.Employee(employee, emptySet())
             tx.updateDaycareAclWithEmployee(testUnit, user.id, UserRole.UNIT_SUPERVISOR)
         }

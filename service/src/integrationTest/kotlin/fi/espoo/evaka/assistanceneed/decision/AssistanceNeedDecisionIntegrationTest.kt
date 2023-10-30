@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -432,7 +432,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `Decision maker can be changed`() {
-        db.transaction { tx -> tx.insertTestEmployee(testAdmin) }
+        db.transaction { tx -> tx.insert(testAdmin) }
 
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
@@ -519,7 +519,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun `decision maker options returns employees with given roles`() {
         val directorId =
             db.transaction { tx ->
-                tx.insertTestEmployee(
+                tx.insert(
                     DevEmployee(
                         id = EmployeeId(UUID.randomUUID()),
                         firstName = "Fia",
@@ -527,7 +527,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         roles = setOf(UserRole.FINANCE_ADMIN)
                     )
                 )
-                tx.insertTestEmployee(
+                tx.insert(
                     DevEmployee(
                         id = EmployeeId(UUID.randomUUID()),
                         firstName = "Dirk",

@@ -11,7 +11,7 @@ import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
@@ -40,10 +40,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(group1)
-            tx.insertTestDaycareGroup(group2)
-            tx.insertTestDaycareGroup(group3)
-            tx.insertTestDaycareGroup(roundTheClockGroup)
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(group3)
+            tx.insert(roundTheClockGroup)
             FixtureBuilder(tx)
                 .addEmployee()
                 .withName("One", "in group 1")

@@ -7,20 +7,13 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -38,29 +31,27 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
+            tx.insert(testArea)
             testDecisionMaker_2.let {
-                tx.insertTestEmployee(
-                    DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName)
-                )
+                tx.insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
             }
-            tx.insertTestDaycare(testDaycare)
-            tx.insertTestDaycare(testVoucherDaycare)
-            tx.insertTestDaycareGroup(
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
+            tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testDaycare.id,
                     name = "Test group 1"
                 )
             )
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testVoucherDaycare.id,
                     name = "Test voucher group 1"
                 )
             )
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testDaycare.id,
@@ -68,7 +59,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = LocalDate.of(2019, 1, 31)
                 )
             )
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testVoucherDaycare.id,
@@ -118,21 +109,19 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         restrictedDetailsEnabled = false
                     )
                 )
-            tx.insertTestPerson(testAdult_1)
-            tx.insertTestPerson(testAdult_2)
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
             children.forEachIndexed { i, it ->
-                tx.insertTestPerson(it)
-                tx.insertTestChild(DevChild(id = it.id))
-                tx.insertTestPlacement(
+                tx.insert(it, DevPersonType.CHILD)
+                tx.insert(
                     DevPlacement(
                         childId = it.id,
                         unitId = testDaycare.id,
                         endDate = LocalDate.now()
                     )
                 )
-                tx.insertTestGuardian(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
-                if (i % 2 == 1)
-                    tx.insertTestGuardian(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
+                tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = it.id))
+                if (i % 2 == 1) tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = it.id))
             }
         }
 

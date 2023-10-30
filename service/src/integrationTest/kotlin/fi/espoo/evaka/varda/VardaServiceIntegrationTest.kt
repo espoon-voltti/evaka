@@ -29,7 +29,8 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -313,12 +314,13 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val childId: ChildId = ChildId(UUID.randomUUID())
         val deletedSnId = ServiceNeedId(UUID.randomUUID())
         db.transaction {
-            it.insertTestPerson(
+            it.insert(
                 DevPerson(
                     id = childId,
                     dateOfBirth = since.plusYears(-5).toLocalDate(),
                     ssn = "260718A384E"
-                )
+                ),
+                DevPersonType.RAW_ROW
             )
 
             it.insertVardaServiceNeed(

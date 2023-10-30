@@ -50,17 +50,13 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
-import fi.espoo.evaka.shared.dev.insertTestIncome
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
@@ -1123,12 +1119,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 ssn = "010117A901W"
             )
 
-        db.transaction { tx ->
-            listOf(twin1, twin2).forEach {
-                tx.insertTestPerson(it)
-                tx.insertTestChild(DevChild(id = it.id))
-            }
-        }
+        db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
 
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val clock =
@@ -1212,7 +1203,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockEvakaClock(HelsinkiDateTime.Companion.of(placementPeriod.start, LocalTime.of(0, 0)))
         val birthday = LocalDate.of(2001, 7, 1)
         val childTurning18Id =
-            db.transaction { it.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
+            db.transaction { it.insert(DevPerson(dateOfBirth = birthday), DevPersonType.RAW_ROW) }
 
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(
@@ -1686,7 +1677,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
                 .bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
-            tx.insertTestFeeThresholds(
+            tx.insert(
                 FeeThresholds(
                     validDuring = subPeriod2.copy(end = null),
                     minIncomeThreshold2 = 213600,
@@ -3931,7 +3922,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         effect: IncomeEffect = IncomeEffect.INCOME
     ) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -3950,7 +3941,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun insertEchaIncome(adultId: PersonId, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestIncome(
+            tx.insert(
                 DevIncome(
                     personId = adultId,
                     validFrom = period.start,
@@ -3970,7 +3961,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestFeeAlteration(
+            tx.insert(
                 DevFeeAlteration(
                     id = FeeAlterationId(UUID.randomUUID()),
                     personId,

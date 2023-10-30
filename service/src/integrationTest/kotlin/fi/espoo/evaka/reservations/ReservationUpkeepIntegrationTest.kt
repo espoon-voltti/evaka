@@ -9,11 +9,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -43,10 +42,9 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 12, 31)
                 )
-                tx.upsertCitizenUser(testAdult_1.id)
 
                 // Before placement starts
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = LocalDate.of(2018, 12, 31),
@@ -56,7 +54,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
                 // After placement ends
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = LocalDate.of(2020, 1, 2),
@@ -66,7 +64,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
                 // After placement ends, has no times
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = LocalDate.of(2020, 1, 2),
@@ -76,7 +74,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     )
                 )
                 // No placement at all
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_2.id,
                         date = LocalDate.of(2019, 1, 2),
@@ -87,7 +85,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 )
 
                 // Valid - will be kept
-                tx.insertTestReservation(
+                tx.insert(
                     DevReservation(
                         childId = testChild_1.id,
                         date = LocalDate.of(2019, 1, 2),

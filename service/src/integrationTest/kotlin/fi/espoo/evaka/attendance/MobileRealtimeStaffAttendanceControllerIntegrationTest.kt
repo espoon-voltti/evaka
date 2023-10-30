@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -56,10 +56,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
-            )
-            tx.insertTestDaycareGroup(
+            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insert(
                 DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName2)
             )
 

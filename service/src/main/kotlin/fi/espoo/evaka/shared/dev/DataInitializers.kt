@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.ProductKey
+import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -36,16 +37,20 @@ import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
+import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.EmployeePinId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FamilyContactId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.FosterParentId
@@ -76,8 +81,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.varda.VardaServiceNeed
 import java.time.Instant
 import java.time.LocalDate
@@ -127,7 +132,7 @@ fun Database.Transaction.ensureDevData() {
 private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID =
     createUpdate(sql).bindKotlin(row).executeAndReturnGeneratedKeys().exactlyOne<UUID>()
 
-fun Database.Transaction.insertTestCareArea(area: DevCareArea): AreaId =
+fun Database.Transaction.insert(area: DevCareArea): AreaId =
     insertTestDataRow(
             area,
             """
@@ -138,7 +143,7 @@ RETURNING id
         )
         .let(::AreaId)
 
-fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): DaycareId =
+fun Database.Transaction.insert(daycare: DevDaycare): DaycareId =
     insertTestDataRow(
             daycare,
             """
@@ -222,7 +227,7 @@ fun Database.Transaction.createMobileDeviceToUnit(
     createUpdate(sql).bind("id", id).bind("unitId", unitId).bind("name", name).execute()
 }
 
-fun Database.Transaction.insertTestEmployee(employee: DevEmployee) =
+fun Database.Transaction.insert(employee: DevEmployee) =
     insertTestDataRow(
             employee,
             """
@@ -234,7 +239,7 @@ RETURNING id
         .let(::EmployeeId)
         .also { upsertEmployeeUser(it) }
 
-fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) =
+fun Database.Transaction.insert(device: DevMobileDevice) =
     insertTestDataRow(
             device,
             """
@@ -245,7 +250,7 @@ RETURNING id
         )
         .let(::MobileDeviceId)
 
-fun Database.Transaction.insertTestPersonalMobileDevice(device: DevPersonalMobileDevice) =
+fun Database.Transaction.insert(device: DevPersonalMobileDevice) =
     insertTestDataRow(
             device,
             """
@@ -256,7 +261,13 @@ RETURNING id
         )
         .let(::MobileDeviceId)
 
-fun Database.Transaction.insertTestPerson(person: DevPerson) =
+enum class DevPersonType {
+    CHILD,
+    ADULT,
+    RAW_ROW,
+}
+
+fun Database.Transaction.insert(person: DevPerson, type: DevPersonType) =
     insertTestDataRow(
             person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null),
             """
@@ -273,6 +284,18 @@ RETURNING id
 """
         )
         .let(::PersonId)
+        .also { id ->
+            when (type) {
+                DevPersonType.CHILD -> {
+                    insert(DevChild(id))
+                }
+                DevPersonType.ADULT -> {
+                    upsertCitizenUser(id)
+                    createPersonMessageAccount(id)
+                }
+                DevPersonType.RAW_ROW -> {}
+            }
+        }
 
 fun Database.Transaction.insertTestParentship(
     headOfChild: PersonId,
@@ -296,7 +319,7 @@ fun Database.Transaction.insertTestParentship(
     return id
 }
 
-fun Database.Transaction.insertTestParentship(parentship: DevParentship): ParentshipId =
+fun Database.Transaction.insert(parentship: DevParentship): ParentshipId =
     insertTestDataRow(
             parentship,
             """
@@ -313,7 +336,7 @@ fun Database.Transaction.insertTestPartnership(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
 ): PartnershipId {
-    insertFridgePartner(
+    insert(
         DevFridgePartner(
             partnershipId = id,
             indx = 1,
@@ -323,7 +346,7 @@ fun Database.Transaction.insertTestPartnership(
             endDate = endDate
         )
     )
-    insertFridgePartner(
+    insert(
         DevFridgePartner(
             partnershipId = id,
             indx = 2,
@@ -410,19 +433,20 @@ WHERE id = :applicationId
         .execute()
 }
 
-fun Database.Transaction.insertTestChild(child: DevChild) =
+fun Database.Transaction.insert(child: DevChild) =
     insertTestDataRow(
-        child,
-        """
+            child,
+            """
 INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details)
 VALUES (:id, :allergies, :diet, :medication, :additionalInfo, :languageAtHome, :languageAtHomeDetails)
 ON CONFLICT(id) DO UPDATE
 SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails
 RETURNING id
     """
-    )
+        )
+        .let(::ChildId)
 
-fun Database.Transaction.insertTestPlacement(placement: DevPlacement) =
+fun Database.Transaction.insert(placement: DevPlacement) =
     insertTestDataRow(
             placement,
             """
@@ -542,17 +566,15 @@ data class DevIncome(
     val updatedBy: EvakaUserId
 )
 
-fun Database.Transaction.insertTestIncome(income: DevIncome): IncomeId {
-    createUpdate(
+fun Database.Transaction.insert(income: DevIncome): IncomeId =
+    insertTestDataRow(
+            income,
             """
             INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, updated_at, updated_by)
             VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :isEntrepreneur, :worksAtEcha, :updatedAt, :updatedBy)
             """
         )
-        .bindKotlin(income)
-        .execute()
-    return income.id
-}
+        .let(::IncomeId)
 
 data class DevIncomeStatement(
     val id: IncomeStatementId,
@@ -563,16 +585,16 @@ data class DevIncomeStatement(
     val handlerId: EmployeeId? = null
 )
 
-fun Database.Transaction.insertIncomeStatement(incomeStatement: DevIncomeStatement) =
-    createUpdate(
+fun Database.Transaction.insert(incomeStatement: DevIncomeStatement) =
+    insertTestDataRow(
+            incomeStatement,
             """
 INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income, handler_id)
 VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome, :handlerId)
-    """
-                .trimIndent()
+RETURNING id
+"""
         )
-        .bindKotlin(incomeStatement)
-        .execute()
+        .let(::IncomeStatementId)
 
 data class DevFeeAlteration(
     val id: FeeAlterationId,
@@ -587,19 +609,17 @@ data class DevFeeAlteration(
     val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
-fun Database.Transaction.insertTestFeeAlteration(feeAlteration: DevFeeAlteration) {
-    createUpdate(
+fun Database.Transaction.insert(feeAlteration: DevFeeAlteration) =
+    insertTestDataRow(
+            feeAlteration,
             """
             INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
             VALUES (:id, :personId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
         """
-                .trimIndent()
         )
-        .bindKotlin(feeAlteration)
-        .execute()
-}
+        .let(::FeeAlterationId)
 
-fun Database.Transaction.insertTestFeeThresholds(feeThresholds: FeeThresholds) =
+fun Database.Transaction.insert(feeThresholds: FeeThresholds) =
     insertTestDataRow(
             feeThresholds,
             """
@@ -611,7 +631,7 @@ RETURNING id
         )
         .let(::FeeThresholdsId)
 
-fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) =
+fun Database.Transaction.insert(group: DevDaycareGroup) =
     insertTestDataRow(
             group,
             """
@@ -621,7 +641,7 @@ VALUES (:id, :daycareId, :name, :startDate, :endDate)
         )
         .let(::GroupId)
 
-fun Database.Transaction.insertTestDaycareGroupPlacement(groupPlacement: DevDaycareGroupPlacement) =
+fun Database.Transaction.insert(groupPlacement: DevDaycareGroupPlacement) =
     insertTestDataRow(
             groupPlacement,
             """
@@ -716,23 +736,20 @@ RETURNING id
         )
         .let(::DecisionId)
 
-fun Database.Transaction.insertTestAssistanceAction(
-    assistanceAction: DevAssistanceAction
-): AssistanceActionId {
-    val id =
-        insertTestDataRow(
-                assistanceAction,
-                """
+fun Database.Transaction.insert(assistanceAction: DevAssistanceAction): AssistanceActionId =
+    insertTestDataRow(
+            assistanceAction,
+            """
 INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action)
 VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction)
 RETURNING id
 """
-            )
-            .let(::AssistanceActionId)
-    val counts = insertAssistanceActionOptionRefs(id, assistanceAction.actions)
-    assert(counts.size == assistanceAction.actions.size)
-    return id
-}
+        )
+        .let(::AssistanceActionId)
+        .also {
+            val counts = insertAssistanceActionOptionRefs(it, assistanceAction.actions)
+            assert(counts.size == assistanceAction.actions.size)
+        }
 
 fun Database.Transaction.insertTestCaretakers(
     groupId: GroupId,
@@ -985,18 +1002,15 @@ data class DevStaffAttendancePlan(
     val description: String?
 )
 
-fun Database.Transaction.insertTestStaffAttendancePlan(
-    staffAttendancePlan: DevStaffAttendancePlan
-) {
-    // language=sql
-    val sql =
-        """
+fun Database.Transaction.insert(staffAttendancePlan: DevStaffAttendancePlan) =
+    insertTestDataRow(
+            staffAttendancePlan,
+            """
         INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time)
         VALUES (:id, :employeeId, :type, :startTime, :endTime)
         """
-            .trimIndent()
-    createUpdate(sql).bindKotlin(staffAttendancePlan).execute()
-}
+        )
+        .let(::StaffAttendancePlanId)
 
 fun Database.Transaction.insertTestAbsence(
     id: AbsenceId = AbsenceId(UUID.randomUUID()),
@@ -1096,23 +1110,16 @@ fun Database.Transaction.insertTestBackUpCare(
         .execute()
 }
 
-fun Database.Transaction.insertTestBackupCare(backupCare: DevBackupCare) =
-    createUpdate(
-            // language=SQL
+fun Database.Transaction.insert(backupCare: DevBackupCare) =
+    insertTestDataRow(
+            backupCare,
             """
 INSERT INTO backup_care (id, child_id, unit_id, group_id, start_date, end_date)
-VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
+VALUES (:id, :childId, :unitId, :groupId, :period.start, :period.end)
 RETURNING id
 """
         )
-        .bind("id", backupCare.id ?: BackupCareId(UUID.randomUUID()))
-        .bind("childId", backupCare.childId)
-        .bind("unitId", backupCare.unitId)
-        .bind("groupId", backupCare.groupId)
-        .bind("startDate", backupCare.period.start)
-        .bind("endDate", backupCare.period.end)
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<BackupCareId>()
+        .let(::BackupCareId)
 
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
     // language=sql
@@ -1166,15 +1173,16 @@ data class DevFamilyContact(
     val priority: Int
 )
 
-fun Database.Transaction.insertFamilyContact(contact: DevFamilyContact) =
+fun Database.Transaction.insert(contact: DevFamilyContact) =
     insertTestDataRow(
-        contact,
-        """
+            contact,
+            """
 INSERT INTO family_contact (id, child_id, contact_person_id, priority)
 VALUES (:id, :childId, :contactPersonId, :priority)
 RETURNING id
 """
-    )
+        )
+        .let(::FamilyContactId)
 
 data class DevBackupPickup(
     val id: BackupPickupId,
@@ -1183,15 +1191,16 @@ data class DevBackupPickup(
     val phone: String
 )
 
-fun Database.Transaction.insertBackupPickup(pickup: DevBackupPickup) =
+fun Database.Transaction.insert(pickup: DevBackupPickup) =
     insertTestDataRow(
-        pickup,
-        """
+            pickup,
+            """
 INSERT INTO backup_pickup (id, child_id, name, phone)
 VALUES (:id, :childId, :name, :phone)
 RETURNING id
 """
-    )
+        )
+        .let(::BackupPickupId)
 
 data class DevFridgeChild(
     val id: ParentshipId = ParentshipId(UUID.randomUUID()),
@@ -1202,15 +1211,16 @@ data class DevFridgeChild(
     val conflict: Boolean = false
 )
 
-fun Database.Transaction.insertFridgeChild(pickup: DevFridgeChild) =
+fun Database.Transaction.insert(pickup: DevFridgeChild) =
     insertTestDataRow(
-        pickup,
-        """
+            pickup,
+            """
 INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict)
 VALUES (:id, :childId, :headOfChild, :startDate, :endDate, :conflict)
 RETURNING id
 """
-    )
+        )
+        .let(::ParentshipId)
 
 data class DevFridgePartner(
     val partnershipId: PartnershipId,
@@ -1221,7 +1231,7 @@ data class DevFridgePartner(
     val endDate: LocalDate? = null
 )
 
-fun Database.Transaction.insertFridgePartner(pickup: DevFridgePartner) =
+fun Database.Transaction.insert(pickup: DevFridgePartner) =
     insertTestDataRow(
             pickup,
             """
@@ -1240,8 +1250,8 @@ data class DevFridgePartnership(
     val endDate: LocalDate? = null
 )
 
-fun Database.Transaction.insertFridgePartnership(partnership: DevFridgePartnership): PartnershipId =
-    insertFridgePartner(
+fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipId =
+    insert(
             DevFridgePartner(
                 partnership.id,
                 indx = 1,
@@ -1252,7 +1262,7 @@ fun Database.Transaction.insertFridgePartnership(partnership: DevFridgePartnersh
             )
         )
         .also {
-            insertFridgePartner(
+            insert(
                 DevFridgePartner(
                     partnership.id,
                     indx = 2,
@@ -1279,42 +1289,34 @@ data class DevFosterParent(
     val validDuring: DateRange
 )
 
-fun Database.Transaction.insertFosterParent(fixture: DevFosterParent) =
+fun Database.Transaction.insert(fixture: DevFosterParent) =
     insertTestDataRow(
-        fixture,
-        """
+            fixture,
+            """
 INSERT INTO foster_parent (id, child_id, parent_id, valid_during)
 VALUES (:id, :childId, :parentId, :validDuring)
 RETURNING id
 """
-    )
+        )
+        .let(::FosterParentId)
 
-fun Database.Transaction.insertEmployeePin(employeePin: DevEmployeePin) =
+fun Database.Transaction.insert(employeePin: DevEmployeePin) =
     insertTestDataRow(
-        employeePin,
-        """
+            employeePin,
+            """
 INSERT INTO employee_pin (id, user_id, pin, locked)
 VALUES (:id, :userId, :pin, :locked)
 RETURNING id
 """
-    )
-
-fun Database.Transaction.insertEvakaUser(evakaUser: EvakaUser) =
-    insertTestDataRow(
-        evakaUser,
-        """
-INSERT INTO evaka_user (id, type, name)
-VALUES (:id, :type, :name)
-RETURNING id
-"""
-    )
+        )
+        .let(::EmployeePinId)
 
 fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
     createQuery("SELECT id FROM employee WHERE external_id = :id")
         .bind("id", externalId)
         .exactlyOne<EmployeeId>()
 
-fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) =
+fun Database.Transaction.insert(aclRow: DevDaycareGroupAcl) {
     createUpdate(
             """
 INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
@@ -1323,6 +1325,7 @@ VALUES (:groupId, :employeeId)
         )
         .bindKotlin(aclRow)
         .execute()
+}
 
 fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) =
     insertTestDataRow(
@@ -1340,7 +1343,7 @@ data class DevPedagogicalDocument(
     val description: String
 )
 
-fun Database.Transaction.insertPedagogicalDocument(pedagogicalDocument: DevPedagogicalDocument) =
+fun Database.Transaction.insert(pedagogicalDocument: DevPedagogicalDocument) =
     insertTestDataRow(
             pedagogicalDocument,
             """
@@ -1361,7 +1364,7 @@ data class DevReservation(
     val createdBy: EvakaUserId
 )
 
-fun Database.Transaction.insertTestReservation(reservation: DevReservation) =
+fun Database.Transaction.insert(reservation: DevReservation) =
     insertTestDataRow(
             reservation,
             """
@@ -1372,13 +1375,12 @@ RETURNING id
         )
         .let(::AttendanceReservationId)
 
-fun Database.Transaction.insertTestGuardianBlocklistEntry(entry: DevGuardianBlocklistEntry) {
+fun Database.Transaction.insert(entry: DevGuardianBlocklistEntry) {
     createUpdate(
             """
 INSERT INTO guardian_blocklist (guardian_id, child_id)
 VALUES (:guardianId, :childId)
         """
-                .trimIndent()
         )
         .bindKotlin(entry)
         .execute()
@@ -1397,7 +1399,7 @@ data class DevInvoiceCorrection(
     val note: String
 )
 
-fun Database.Transaction.insertTestInvoiceCorrection(invoiceCorrection: DevInvoiceCorrection) =
+fun Database.Transaction.insert(invoiceCorrection: DevInvoiceCorrection) =
     insertTestDataRow(
             invoiceCorrection,
             """
@@ -1408,7 +1410,7 @@ RETURNING id
         )
         .let(::InvoiceCorrectionId)
 
-fun Database.Transaction.insertDevPayment(payment: DevPayment) =
+fun Database.Transaction.insert(payment: DevPayment) =
     insertTestDataRow(
             payment,
             """
@@ -1419,7 +1421,7 @@ RETURNING id
         )
         .let(::PaymentId)
 
-fun Database.Transaction.insertCalendarEvent(calendarEvent: DevCalendarEvent) =
+fun Database.Transaction.insert(calendarEvent: DevCalendarEvent) =
     insertTestDataRow(
             calendarEvent,
             """
@@ -1430,37 +1432,40 @@ RETURNING id
         )
         .let(::CalendarEventId)
 
-fun Database.Transaction.insertCalendarEventAttendee(attendee: DevCalendarEventAttendee) =
+fun Database.Transaction.insert(attendee: DevCalendarEventAttendee) =
     insertTestDataRow(
-        attendee,
-        """
+            attendee,
+            """
 INSERT INTO calendar_event_attendee (id, calendar_event_id, unit_id, group_id, child_id)
 VALUES (:id, :calendarEventId, :unitId, :groupId, :childId)
 RETURNING id
 """
-    )
+        )
+        .let(::CalendarEventAttendeeId)
 
-fun Database.Transaction.insertTestDailyServiceTimes(dailyServiceTimes: DevDailyServiceTimes) =
-    createUpdate(
+fun Database.Transaction.insert(dailyServiceTimes: DevDailyServiceTimes) =
+    insertTestDataRow(
+            dailyServiceTimes,
             """
 INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
 VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tuesdayTimes, :wednesdayTimes, :thursdayTimes, :fridayTimes, :saturdayTimes, :sundayTimes)
 """
         )
-        .bindKotlin(dailyServiceTimes)
-        .execute()
+        .let(::DailyServiceTimesId)
 
-fun Database.Transaction.insertTestGuardian(guardian: DevGuardian) =
+fun Database.Transaction.insert(guardian: DevGuardian) {
     createUpdate(
             """
-INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON CONFLICT (guardian_id, child_id) DO NOTHING
+INSERT INTO guardian (guardian_id, child_id)
+VALUES (:guardianId, :childId)
+ON CONFLICT (guardian_id, child_id) DO NOTHING
 """
-                .trimIndent()
         )
         .bindKotlin(guardian)
         .execute()
+}
 
-fun Database.Transaction.insertTestAbsence(absence: DevAbsence) =
+fun Database.Transaction.insert(absence: DevAbsence) =
     insertTestDataRow(
             absence,
             """
@@ -1470,7 +1475,7 @@ VALUES (:id, :childId, :date, :absenceType, :modifiedAt, :modifiedBy, :absenceCa
         )
         .let(::AbsenceId)
 
-fun Database.Transaction.insertTestDaycareCaretaker(row: DevDaycareCaretaker) =
+fun Database.Transaction.insert(row: DevDaycareCaretaker) =
     insertTestDataRow(
             row,
             """
@@ -1480,7 +1485,7 @@ VALUES (:id, :groupId, :amount, :startDate, :endDate)
         )
         .let(::DaycareCaretakerId)
 
-fun Database.Transaction.insertTestDocumentTemplate(row: DevDocumentTemplate) =
+fun Database.Transaction.insert(row: DevDocumentTemplate) =
     insertTestDataRow(
             row,
             """
@@ -1490,7 +1495,7 @@ VALUES (:id, :name, :type, :language, :confidential, :legalBasis, :validity, :pu
         )
         .let(::DocumentTemplateId)
 
-fun Database.Transaction.insertTestChildDocument(row: DevChildDocument) =
+fun Database.Transaction.insert(row: DevChildDocument) =
     insertTestDataRow(
             row,
             """
@@ -1511,7 +1516,7 @@ fun Database.Transaction.updateDaycareOperationTimes(
         .bind("operationTimes", opTimes)
         .execute()
 
-fun Database.Transaction.insertTestAssistanceFactor(assistanceFactor: DevAssistanceFactor) =
+fun Database.Transaction.insert(assistanceFactor: DevAssistanceFactor) =
     insertTestDataRow(
             assistanceFactor,
             """
@@ -1521,7 +1526,7 @@ VALUES (:id, :childId, :validDuring, :capacityFactor, :modified, :modifiedBy)
         )
         .let(::AssistanceFactorId)
 
-fun Database.Transaction.insertTestDaycareAssistance(daycareAssistance: DevDaycareAssistance) =
+fun Database.Transaction.insert(daycareAssistance: DevDaycareAssistance) =
     insertTestDataRow(
             daycareAssistance,
             """
@@ -1531,9 +1536,7 @@ VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
         )
         .let(::DaycareAssistanceId)
 
-fun Database.Transaction.insertTestPreschoolAssistance(
-    preschoolAssistance: DevPreschoolAssistance
-) =
+fun Database.Transaction.insert(preschoolAssistance: DevPreschoolAssistance) =
     insertTestDataRow(
             preschoolAssistance,
             """
@@ -1543,9 +1546,7 @@ VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
         )
         .let(::PreschoolAssistanceId)
 
-fun Database.Transaction.insertTestOtherAssistanceMeasure(
-    otherAssistanceMeasure: DevOtherAssistanceMeasure
-) =
+fun Database.Transaction.insert(otherAssistanceMeasure: DevOtherAssistanceMeasure) =
     insertTestDataRow(
             otherAssistanceMeasure,
             """

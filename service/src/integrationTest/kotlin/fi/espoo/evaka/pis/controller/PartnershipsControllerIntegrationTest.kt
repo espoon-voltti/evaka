@@ -19,9 +19,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -51,8 +49,8 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun init() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestEmployee(DevEmployee(unitSupervisorId))
-            it.insertTestParentship(
+            it.insert(DevEmployee(unitSupervisorId))
+            it.insert(
                 DevParentship(
                     id = ParentshipId(UUID.randomUUID()),
                     headOfChildId = person.id,
@@ -66,7 +64,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insertTestPlacement(
+            it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,

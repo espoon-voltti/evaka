@@ -11,15 +11,11 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -45,12 +41,10 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
-            tx.insertTestEmployee(admin)
-            val areaId = tx.insertTestCareArea(DevCareArea())
-            val unitId =
-                tx.insertTestDaycare(DevDaycare(areaId = areaId, openingDate = mockToday.today()))
-            val preschoolChildId = tx.insertTestPerson(DevPerson())
-            tx.insertTestChild(DevChild(id = preschoolChildId))
+            tx.insert(admin)
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId, openingDate = mockToday.today()))
+            val preschoolChildId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val preschoolPlacementId =
                 tx.insertTestPlacement(
                     childId = preschoolChildId,
@@ -71,8 +65,10 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
             )
 
             val daycareU3yChildId =
-                tx.insertTestPerson(DevPerson(dateOfBirth = mockToday.today().minusYears(2)))
-            tx.insertTestChild(DevChild(id = daycareU3yChildId))
+                tx.insert(
+                    DevPerson(dateOfBirth = mockToday.today().minusYears(2)),
+                    DevPersonType.CHILD
+                )
             val daycarePlacementId =
                 tx.insertTestPlacement(
                     childId = daycareU3yChildId,

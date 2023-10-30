@@ -9,7 +9,7 @@ import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.updateDaycareOperationTimes
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
@@ -51,13 +51,9 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         var thirdUnitId: DaycareId? = null
         db.transaction { tx ->
             secondUnitId =
-                tx.insertTestDaycare(
-                    DevDaycare(areaId = testArea.id, name = "second round the clock unit")
-                )
+                tx.insert(DevDaycare(areaId = testArea.id, name = "second round the clock unit"))
             thirdUnitId =
-                tx.insertTestDaycare(
-                    DevDaycare(areaId = testArea.id, name = "third round the clock unit")
-                )
+                tx.insert(DevDaycare(areaId = testArea.id, name = "third round the clock unit"))
             tx.updateDaycareOperationTimes(secondUnitId!!, allWeekOpTimes)
             tx.updateDaycareOperationTimes(thirdUnitId!!, allWeekOpTimes)
         }

@@ -14,8 +14,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -58,7 +58,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { it.insertGeneralTestFixtures() }
         db.transaction {
             groupId1 =
-                it.insertTestDaycareGroup(
+                it.insert(
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
@@ -66,7 +66,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 )
             groupId2 =
-                it.insertTestDaycareGroup(
+                it.insert(
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
@@ -867,8 +867,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 }
                 .first()
-        val groupId =
-            db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
@@ -932,8 +931,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 }
                 .first()
-        val groupId =
-            db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insertTestDaycareGroupPlacement(
                 groupId = groupId,

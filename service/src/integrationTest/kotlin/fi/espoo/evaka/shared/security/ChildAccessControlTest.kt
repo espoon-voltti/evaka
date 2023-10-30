@@ -9,15 +9,11 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
@@ -37,10 +33,7 @@ class ChildAccessControlTest : AccessControlTest() {
 
     @BeforeEach
     fun beforeEach() {
-        childId =
-            db.transaction { tx ->
-                tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(id = it)) }
-            }
+        childId = db.transaction { tx -> tx.insert(DevPerson(), DevPersonType.CHILD) }
     }
 
     @Test
@@ -72,9 +65,9 @@ class ChildAccessControlTest : AccessControlTest() {
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChild())
         val daycareId =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                tx.insertTestPlacement(
+                val areaId = tx.insert(DevCareArea())
+                val daycareId = tx.insert(DevDaycare(areaId = areaId))
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
@@ -101,10 +94,10 @@ class ChildAccessControlTest : AccessControlTest() {
         rules.add(action, IsMobile(requirePinLogin = false).inPlacementUnitOfChild())
         val (daycareId, otherDaycareId) =
             db.transaction { tx ->
-                val areaId = tx.insertTestCareArea(DevCareArea())
-                val daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                val otherDaycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-                tx.insertTestPlacement(
+                val areaId = tx.insert(DevCareArea())
+                val daycareId = tx.insert(DevDaycare(areaId = areaId))
+                val otherDaycareId = tx.insert(DevDaycare(areaId = areaId))
+                tx.insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,

@@ -11,9 +11,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -38,9 +36,9 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @BeforeEach
     fun insertDaycareGroup() {
         db.transaction { tx ->
-            tx.insertTestCareArea(DevCareArea(id = areaId))
-            tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
-            tx.insertTestDaycareGroup(
+            tx.insert(DevCareArea(id = areaId))
+            tx.insert(DevDaycare(areaId = areaId, id = daycareId))
+            tx.insert(
                 DevDaycareGroup(
                     daycareId = daycareId,
                     id = groupId,
@@ -48,7 +46,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                     startDate = groupStartDate
                 )
             )
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     daycareId = daycareId,
                     id = groupId2,

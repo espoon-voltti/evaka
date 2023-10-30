@@ -25,15 +25,12 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.validPreschoolApplication
@@ -64,13 +61,13 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
     fun initTestData(): ManualDuplicationReportTestData {
         return db.transaction { tx ->
             tx.insertServiceNeedOptions()
-            tx.insertTestEmployee(admin)
-            tx.insertTestPerson(testChild)
-            tx.insertTestPerson(testGuardian)
-            tx.insertTestGuardian(DevGuardian(testGuardian.id, testChild.id))
-            val areaId = tx.insertTestCareArea(DevCareArea())
+            tx.insert(admin)
+            tx.insert(testChild, DevPersonType.RAW_ROW)
+            tx.insert(testGuardian, DevPersonType.RAW_ROW)
+            tx.insert(DevGuardian(testGuardian.id, testChild.id))
+            val areaId = tx.insert(DevCareArea())
             val preschoolId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.PRESCHOOL),
@@ -78,7 +75,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     )
                 )
             val daycareId =
-                tx.insertTestDaycare(
+                tx.insert(
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.CENTRE),
@@ -178,7 +175,9 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
     @Test
     fun `Report finds duplicated case for connected daycare decision`() {
         val testData = initTestData()
-        db.transaction { tx -> tx.insertTestPerson(DevPerson(duplicateOf = testChild.id)) }
+        db.transaction { tx ->
+            tx.insert(DevPerson(duplicateOf = testChild.id), DevPersonType.RAW_ROW)
+        }
 
         val duplicatedCases =
             manualDuplicationReportController.getManualDuplicationReport(
@@ -239,7 +238,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 transferDecisionType = DecisionType.PRESCHOOL_CLUB,
             )
             // ...however the case has already been duplicated
-            tx.insertTestPerson(DevPerson(duplicateOf = testChild.id))
+            tx.insert(DevPerson(duplicateOf = testChild.id), DevPersonType.RAW_ROW)
         }
 
         val duplicatedCases =
@@ -263,7 +262,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
 
         val transferDaycareId = DaycareId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.insertTestDaycare(
+            tx.insert(
                 DevDaycare(
                     id = transferDaycareId,
                     areaId = testData.areaId,

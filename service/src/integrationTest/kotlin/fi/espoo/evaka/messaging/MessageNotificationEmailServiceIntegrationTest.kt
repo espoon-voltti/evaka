@@ -21,12 +21,10 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
@@ -76,7 +74,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.insertGeneralTestFixtures()
 
             val groupId = GroupId(UUID.randomUUID())
-            tx.insertTestDaycareGroup(
+            tx.insert(
                 DevDaycareGroup(
                     id = groupId,
                     daycareId = testDaycare.id,
@@ -85,7 +83,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
 
             val placementId =
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
@@ -101,12 +99,11 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
 
             testPersons.forEach {
-                tx.insertTestPerson(it)
+                tx.insert(it, DevPersonType.ADULT)
                 tx.insertGuardian(it.id, testChild_1.id)
-                tx.createPersonMessageAccount(it.id)
             }
 
-            tx.insertTestEmployee(DevEmployee(id = employeeId))
+            tx.insert(DevEmployee(id = employeeId))
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
@@ -163,7 +160,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         val municipalAccount =
             db.transaction { tx ->
-                tx.insertTestEmployee(DevEmployee(id = municipalEmployeeId))
+                tx.insert(DevEmployee(id = municipalEmployeeId))
                 tx.upsertEmployeeMessageAccount(municipalEmployeeId, AccountType.MUNICIPAL)
             }
 

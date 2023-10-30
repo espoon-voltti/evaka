@@ -20,8 +20,8 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -68,8 +68,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id))
+            tx.insert(DevDaycareGroup(daycareId = daycareId))
+            tx.insert(DevDaycareGroup(daycareId = daycare2Id))
             tx.insertGuardian(parent.id, child.id)
         }
     }

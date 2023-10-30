@@ -22,10 +22,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevMobileDevice
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestMobileDevice
+import fi.espoo.evaka.shared.dev.insert
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -40,8 +37,8 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        areaId = db.transaction { it.insertTestCareArea(DevCareArea()) }
-        unitId = db.transaction { it.insertTestDaycare(DevDaycare(areaId = areaId)) }
+        areaId = db.transaction { it.insert(DevCareArea()) }
+        unitId = db.transaction { it.insert(DevDaycare(areaId = areaId)) }
     }
 
     @Test
@@ -122,7 +119,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 email = null
             )
         db.transaction { tx ->
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(
                     id = employeeId,
                     externalId = externalId,
@@ -166,7 +163,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 email = null
             )
         db.transaction { tx ->
-            tx.insertTestEmployee(
+            tx.insert(
                 DevEmployee(
                     id = employeeId,
                     externalId = null,
@@ -280,9 +277,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null): MobileDeviceId {
         val id = MobileDeviceId(UUID.randomUUID())
-        insertTestMobileDevice(
-            DevMobileDevice(id = id, unitId = unitId, longTermToken = longTermToken)
-        )
+        insert(DevMobileDevice(id = id, unitId = unitId, longTermToken = longTermToken))
         return id
     }
 }

@@ -15,17 +15,11 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevChildDocument
 import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestChildDocument
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDocumentTemplate
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -79,21 +73,18 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(testDaycare.copy(language = Language.sv))
-            tx.insertTestPerson(testAdult_2)
-            tx.insertTestPerson(testChild_1)
-            tx.insertTestChild(DevChild(testChild_1.id))
-            tx.insertTestGuardian(
-                DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id)
-            )
+            tx.insert(testArea)
+            tx.insert(testDaycare.copy(language = Language.sv))
+            tx.insert(testAdult_2, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id))
             tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = clock.today(),
                 endDate = clock.today().plusDays(5)
             )
-            tx.insertTestDocumentTemplate(
+            tx.insert(
                 DevDocumentTemplate(
                     id = activeTemplateId,
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
@@ -102,7 +93,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = templateContent
                 )
             )
-            tx.insertTestDocumentTemplate(
+            tx.insert(
                 DevDocumentTemplate(
                     id = expiredTemplateId,
                     type = DocumentType.HOJKS,
@@ -118,7 +109,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `expired documents are completed and published`() {
         // given
         db.transaction { tx ->
-            tx.insertTestChildDocument(
+            tx.insert(
                 DevChildDocument(
                     id = activeDocumentId,
                     status = DocumentStatus.DRAFT,
@@ -130,7 +121,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     publishedAt = null
                 )
             )
-            tx.insertTestChildDocument(
+            tx.insert(
                 DevChildDocument(
                     id = expiredDocumentId,
                     status = DocumentStatus.DRAFT,
@@ -146,7 +137,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         )
                 )
             )
-            tx.insertTestChildDocument(
+            tx.insert(
                 DevChildDocument(
                     id = alreadyCompletedDocumentId,
                     status = DocumentStatus.COMPLETED,
@@ -189,7 +180,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `email is not sent on publish if content was already up to date`() {
         // given
         db.transaction { tx ->
-            tx.insertTestChildDocument(
+            tx.insert(
                 DevChildDocument(
                     id = expiredDocumentId,
                     status = DocumentStatus.DRAFT,

@@ -22,11 +22,8 @@ import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertFosterParent
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestGuardian
-import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -105,7 +102,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            tx.insertTestChild(
+            tx.insert(
                 DevChild(
                     id = person.id,
                     allergies = "Heinänuha",
@@ -128,8 +125,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            val guardianId = tx.insertTestPerson(DevPerson())
-            tx.insertTestGuardian(DevGuardian(guardianId = guardianId, childId = person.id))
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
         }
 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
@@ -145,8 +142,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
         db.transaction { tx ->
-            val childId = tx.insertTestPerson(DevPerson())
-            tx.insertTestGuardian(DevGuardian(guardianId = person.id, childId = childId))
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            tx.insert(DevGuardian(guardianId = person.id, childId = childId))
         }
 
         val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
@@ -161,8 +158,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            val fosterParentId = tx.insertTestPerson(DevPerson())
-            tx.insertFosterParent(
+            val fosterParentId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            tx.insert(
                 DevFosterParent(
                     parentId = fosterParentId,
                     childId = person.id,
@@ -185,8 +182,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         val fosterValidDuring = DateRange(LocalDate.of(2023, 1, 27), LocalDate.of(2023, 12, 24))
         db.transaction { tx ->
-            val childId = tx.insertTestPerson(DevPerson())
-            tx.insertFosterParent(
+            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            tx.insert(
                 DevFosterParent(
                     parentId = person.id,
                     childId = childId,
@@ -303,12 +300,13 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `Guardian blocklist prevents dependants from being added from VTJ data`() {
         val guardianId =
             db.transaction { tx ->
-                tx.insertTestPerson(
+                tx.insert(
                     DevPerson(
                         lastName = "Karhula",
                         firstName = "Johannes Olavi Antero Tapio",
                         ssn = "070644-937X"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             }
 
@@ -320,9 +318,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.createUpdate("DELETE FROM guardian WHERE child_id = :id")
                 .bind("id", blockedDependant.id)
                 .execute()
-            tx.insertTestGuardianBlocklistEntry(
-                DevGuardianBlocklistEntry(guardianId, blockedDependant.id)
-            )
+            tx.insert(DevGuardianBlocklistEntry(guardianId, blockedDependant.id))
             tx.execute(
                 "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
             )
@@ -335,12 +331,13 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `Guardian blocklist prevents guardians from being added from VTJ data`() {
         val childId =
             db.transaction { tx ->
-                tx.insertTestPerson(
+                tx.insert(
                     DevPerson(
                         lastName = "Karhula",
                         firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
                         ssn = "070714A9126"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
             }
 
@@ -352,9 +349,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.createUpdate("DELETE FROM guardian WHERE guardian_id = :id")
                 .bind("id", blockedGuardian.id)
                 .execute()
-            tx.insertTestGuardianBlocklistEntry(
-                DevGuardianBlocklistEntry(blockedGuardian.id, childId)
-            )
+            tx.insert(DevGuardianBlocklistEntry(blockedGuardian.id, childId))
             tx.execute(
                 "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
             )
@@ -366,7 +361,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
         return db.transaction { tx ->
-            tx.insertTestPerson(
+            tx.insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),
@@ -374,7 +369,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
                 .let { tx.getPersonById(it)!! }
         }

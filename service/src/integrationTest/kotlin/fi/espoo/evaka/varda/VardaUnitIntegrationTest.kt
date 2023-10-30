@@ -8,8 +8,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
@@ -35,11 +34,11 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(8, 0, 0)))
 
         db.transaction { tx ->
-            tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(
+            tx.insert(testArea)
+            tx.insert(
                 DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name)
             )
-            tx.insertTestDaycare(
+            tx.insert(
                 DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name)
             )
         }
@@ -123,7 +122,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         assertEquals(2, getVardaUnits(db).size)
 
         db.transaction {
-            it.insertTestDaycare(
+            it.insert(
                 DevDaycare(
                     areaId = testArea.id,
                     id = testPurchasedDaycare.id,

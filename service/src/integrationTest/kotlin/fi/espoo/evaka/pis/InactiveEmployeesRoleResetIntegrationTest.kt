@@ -16,10 +16,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
@@ -34,9 +31,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `global roles are not reset when last_login is now`() {
         val employeeId =
             db.transaction {
-                it.insertTestEmployee(
-                    DevEmployee(lastLogin = firstOfAugust2021, roles = setOf(UserRole.ADMIN))
-                )
+                it.insert(DevEmployee(lastLogin = firstOfAugust2021, roles = setOf(UserRole.ADMIN)))
             }
 
         val resetEmployeeIds =
@@ -51,7 +46,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `global roles are reset when last_login is over 3 months ago`() {
         val employeeId =
             db.transaction {
-                it.insertTestEmployee(
+                it.insert(
                     DevEmployee(
                         lastLogin = firstOfAugust2021.minusMonths(3).minusDays(1),
                         roles = setOf(UserRole.ADMIN)
@@ -69,9 +64,9 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `scoped roles are not reset when last_login is now`() {
         val employeeId =
             db.transaction {
-                val employeeId = it.insertTestEmployee(DevEmployee(lastLogin = firstOfAugust2021))
-                val areaId = it.insertTestCareArea(DevCareArea())
-                val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
@@ -92,11 +87,11 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         val employeeId =
             db.transaction {
                 val employeeId =
-                    it.insertTestEmployee(
+                    it.insert(
                         DevEmployee(lastLogin = firstOfAugust2021.minusMonths(3).minusDays(1))
                     )
-                val areaId = it.insertTestCareArea(DevCareArea())
-                val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
@@ -122,11 +117,9 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         val employeeId =
             db.transaction {
                 val employeeId =
-                    it.insertTestEmployee(
-                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000))
-                    )
-                val areaId = it.insertTestCareArea(DevCareArea())
-                val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+                    it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
@@ -148,12 +141,10 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         val employeeId =
             db.transaction {
                 val employeeId =
-                    it.insertTestEmployee(
-                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000))
-                    )
-                val areaId = it.insertTestCareArea(DevCareArea())
-                val unitId = it.insertTestDaycare(DevDaycare(areaId = areaId))
-                val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId))
+                    it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
+                val groupId = it.insert(DevDaycareGroup(daycareId = unitId))
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,

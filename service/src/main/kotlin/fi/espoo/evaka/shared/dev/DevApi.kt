@@ -84,7 +84,6 @@ import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.messaging.MessageType
-import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
@@ -177,8 +176,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
-import fi.espoo.evaka.user.EvakaUser
-import fi.espoo.evaka.user.EvakaUserType
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
@@ -285,15 +282,13 @@ class DevApi(
     @PostMapping("/care-areas")
     fun createCareAreas(db: Database, @RequestBody careAreas: List<DevCareArea>) {
         db.connect { dbc ->
-            dbc.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } }
+            dbc.transaction { careAreas.forEach { careArea -> it.insert(careArea) } }
         }
     }
 
     @PostMapping("/daycares")
     fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>) {
-        db.connect { dbc ->
-            dbc.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
-        }
+        db.connect { dbc -> dbc.transaction { daycares.forEach { daycare -> it.insert(daycare) } } }
     }
 
     @DeleteMapping("/daycare/{daycareId}/cost-center")
@@ -326,16 +321,12 @@ class DevApi(
 
     @PostMapping("/daycare-group-acl")
     fun createDaycareGroupAclRows(db: Database, @RequestBody rows: List<DevDaycareGroupAcl>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-groups")
     fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>) {
-        db.connect { dbc ->
-            dbc.transaction { groups.forEach { group -> it.insertTestDaycareGroup(group) } }
-        }
+        db.connect { dbc -> dbc.transaction { groups.forEach { group -> it.insert(group) } } }
     }
 
     @PostMapping("/daycare-group-placements")
@@ -383,15 +374,13 @@ class DevApi(
 
     @PostMapping("/children")
     fun createChildren(db: Database, @RequestBody children: List<DevChild>) {
-        db.connect { dbc -> dbc.transaction { tx -> children.forEach { tx.insertTestChild(it) } } }
+        db.connect { dbc -> dbc.transaction { tx -> children.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-placements")
     fun createDaycarePlacements(db: Database, @RequestBody placements: List<DevPlacement>) {
         db.connect { dbc ->
-            dbc.transaction {
-                placements.forEach { placement -> it.insertTestPlacement(placement) }
-            }
+            dbc.transaction { placements.forEach { placement -> it.insert(placement) } }
         }
     }
 
@@ -548,8 +537,7 @@ class DevApi(
     fun createFeeThresholds(
         db: Database,
         @RequestBody feeThresholds: FeeThresholds
-    ): FeeThresholdsId =
-        db.connect { dbc -> dbc.transaction { it.insertTestFeeThresholds(feeThresholds) } }
+    ): FeeThresholdsId = db.connect { dbc -> dbc.transaction { it.insert(feeThresholds) } }
 
     data class DevCreateIncomeStatements(
         val personId: PersonId,
@@ -566,7 +554,7 @@ class DevApi(
 
     @PostMapping("/income")
     fun createIncome(db: Database, @RequestBody body: DevIncome) {
-        db.connect { dbc -> dbc.transaction { it.insertTestIncome(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/income-notifications")
@@ -603,15 +591,7 @@ class DevApi(
     fun createPerson(db: Database, @RequestBody body: DevPerson): PersonId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val personId = tx.insertTestPerson(body)
-                tx.insertEvakaUser(
-                    EvakaUser(
-                        id = EvakaUserId(personId.raw),
-                        type = EvakaUserType.CITIZEN,
-                        name = "${body.lastName} ${body.firstName}"
-                    )
-                )
-                tx.createPersonMessageAccount(personId)
+                val personId = tx.insert(body, DevPersonType.ADULT)
                 val dto = body.copy(id = personId).toPersonDTO()
                 if (dto.identity is ExternalIdentifier.SSN) {
                     tx.updatePersonFromVtj(dto)
@@ -623,9 +603,7 @@ class DevApi(
 
     @PostMapping("/parentship")
     fun createParentships(db: Database, @RequestBody parentships: List<DevParentship>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> parentships.forEach { tx.insertTestParentship(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> parentships.forEach { tx.insert(it) } } }
     }
 
     @GetMapping("/employee")
@@ -635,7 +613,7 @@ class DevApi(
 
     @PostMapping("/employee")
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
-        return db.connect { dbc -> dbc.transaction { it.insertTestEmployee(body) } }
+        return db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @GetMapping("/employee/external-id/{id}")
@@ -690,31 +668,12 @@ RETURNING id
 
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> guardians.forEach { tx.insertTestGuardian(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> guardians.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/child")
     fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insertTestPerson(
-                        DevPerson(
-                            id = body.id,
-                            dateOfBirth = body.dateOfBirth,
-                            firstName = body.firstName,
-                            lastName = body.lastName,
-                            ssn = body.ssn,
-                            streetAddress = body.streetAddress,
-                            postalCode = body.postalCode,
-                            postOffice = body.postOffice,
-                            restrictedDetailsEnabled = body.restrictedDetailsEnabled
-                        )
-                    )
-                    .also { id -> it.insertTestChild(DevChild(id = id)) }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insert(body, DevPersonType.CHILD) } }
 
     @PostMapping("/message-account/upsert-all")
     fun createMessageAccounts(db: Database) {
@@ -741,9 +700,7 @@ RETURNING id
 
     @PostMapping("/backup-cares")
     fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> backupCares.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/applications")
@@ -986,12 +943,12 @@ RETURNING id
 
     @PostMapping("/mobile/devices")
     fun postMobileDevice(db: Database, @RequestBody body: DevMobileDevice) {
-        db.connect { dbc -> dbc.transaction { it.insertTestMobileDevice(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/mobile/personal-devices")
     fun postPersonalMobileDevice(db: Database, @RequestBody body: DevPersonalMobileDevice) {
-        db.connect { dbc -> dbc.transaction { it.insertTestPersonalMobileDevice(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/holiday-period/{id}")
@@ -1126,41 +1083,33 @@ RETURNING id
 
     @PostMapping("/family-contact")
     fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>) {
-        db.connect { dbc ->
-            dbc.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } }
-        }
+        db.connect { dbc -> dbc.transaction { contacts.forEach { contact -> it.insert(contact) } } }
     }
 
     @PostMapping("/backup-pickup")
     fun createBackupPickup(db: Database, @RequestBody backupPickups: List<DevBackupPickup>) {
         db.connect { dbc ->
-            dbc.transaction {
-                backupPickups.forEach { backupPickup -> it.insertBackupPickup(backupPickup) }
-            }
+            dbc.transaction { backupPickups.forEach { backupPickup -> it.insert(backupPickup) } }
         }
     }
 
     @PostMapping("/fridge-child")
     fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>) {
         db.connect { dbc ->
-            dbc.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } }
+            dbc.transaction { fridgeChildren.forEach { child -> it.insert(child) } }
         }
     }
 
     @PostMapping("/fridge-partner")
     fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>) {
         db.connect { dbc ->
-            dbc.transaction {
-                fridgePartners.forEach { partner -> it.insertFridgePartner(partner) }
-            }
+            dbc.transaction { fridgePartners.forEach { partner -> it.insert(partner) } }
         }
     }
 
     @PostMapping("/foster-parent")
     fun createFosterParent(db: Database, @RequestBody fosterParents: List<DevFosterParent>) {
-        db.connect { dbc ->
-            dbc.transaction { tx -> fosterParents.forEach { tx.insertFosterParent(it) } }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> fosterParents.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/employee-pin")
@@ -1179,7 +1128,7 @@ RETURNING id
                             )
                         }
 
-                    it.insertEmployeePin(employeePin.copy(userId = userId))
+                    it.insert(employeePin.copy(userId = userId))
                 }
             }
         }
@@ -1193,7 +1142,7 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction {
                 pedagogicalDocuments.forEach { pedagogicalDocument ->
-                    it.insertPedagogicalDocument(pedagogicalDocument)
+                    it.insert(pedagogicalDocument)
                 }
             }
         }
@@ -1303,7 +1252,7 @@ RETURNING id
         clock: EvakaClock,
         @RequestBody body: DevDocumentTemplate
     ): DocumentTemplateId {
-        return db.connect { dbc -> dbc.transaction { tx -> tx.insertTestDocumentTemplate(body) } }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
     @PostMapping("/child-documents")
@@ -1312,7 +1261,7 @@ RETURNING id
         clock: EvakaClock,
         @RequestBody body: DevChildDocument
     ): ChildDocumentId {
-        return db.connect { dbc -> dbc.transaction { tx -> tx.insertTestChildDocument(body) } }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
     @PostMapping("/service-need")
@@ -1360,11 +1309,7 @@ RETURNING id
         db: Database,
         @RequestBody assistanceFactors: List<DevAssistanceFactor>
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceFactors.forEach { tx.insertTestAssistanceFactor(it) }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> assistanceFactors.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-assistances")
@@ -1372,11 +1317,7 @@ RETURNING id
         db: Database,
         @RequestBody daycareAssistances: List<DevDaycareAssistance>
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                daycareAssistances.forEach { tx.insertTestDaycareAssistance(it) }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> daycareAssistances.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/preschool-assistances")
@@ -1385,9 +1326,7 @@ RETURNING id
         @RequestBody preschoolAssistances: List<DevPreschoolAssistance>
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                preschoolAssistances.forEach { tx.insertTestPreschoolAssistance(it) }
-            }
+            dbc.transaction { tx -> preschoolAssistances.forEach { tx.insert(it) } }
         }
     }
 
@@ -1397,9 +1336,7 @@ RETURNING id
         @RequestBody otherAssistanceMeasures: List<DevOtherAssistanceMeasure>
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                otherAssistanceMeasures.forEach { tx.insertTestOtherAssistanceMeasure(it) }
-            }
+            dbc.transaction { tx -> otherAssistanceMeasures.forEach { tx.insert(it) } }
         }
     }
 
@@ -1520,11 +1457,11 @@ RETURNING id
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
-        db.connect { dbc -> dbc.transaction { it.insertTestStaffAttendancePlan(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
-        db.connect { dbc -> dbc.transaction { it.insertTestDailyServiceTimes(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time-notification")
     fun addDailyServiceTimeNotification(
@@ -1563,19 +1500,19 @@ RETURNING id
 
     @PostMapping("/payments")
     fun addPayment(db: Database, @RequestBody body: DevPayment) =
-        db.connect { dbc -> dbc.transaction { it.insertDevPayment(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event")
     fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) =
-        db.connect { dbc -> dbc.transaction { it.insertCalendarEvent(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event-attendee")
     fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) =
-        db.connect { dbc -> dbc.transaction { it.insertCalendarEventAttendee(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/absence")
     fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
-        db.connect { dbc -> dbc.transaction { it.insertTestAbsence(body) } }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @GetMapping("/child-discussions/{childId}")
     fun getChildDiscussions(
@@ -1859,7 +1796,7 @@ data class DevCareArea(
 )
 
 data class DevBackupCare(
-    val id: BackupCareId? = null,
+    val id: BackupCareId = BackupCareId(UUID.randomUUID()),
     val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId? = null,

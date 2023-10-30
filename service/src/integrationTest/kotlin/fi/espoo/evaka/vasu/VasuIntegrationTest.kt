@@ -17,17 +17,13 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -309,7 +305,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         startDate = placementStart,
                         endDate = placementEnd
                     )
-                val groupId1 = tx.insertTestDaycareGroup(testDaycareGroup)
+                val groupId1 = tx.insert(testDaycareGroup)
                 tx.checkAndCreateGroupPlacement(
                     daycarePlacementId = placementId,
                     groupId = groupId1,
@@ -317,7 +313,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = placementStart.plusMonths(1)
                 )
 
-                val groupId2 = tx.insertTestDaycareGroup(testDaycareGroup2)
+                val groupId2 = tx.insert(testDaycareGroup2)
                 tx.checkAndCreateGroupPlacement(
                     daycarePlacementId = placementId,
                     groupId = groupId2,
@@ -326,7 +322,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
 
                 // This group placement is not shown in the document because it starts in the future
-                val groupId3 = tx.insertTestDaycareGroup(testDaycareGroup3)
+                val groupId3 = tx.insert(testDaycareGroup3)
                 tx.checkAndCreateGroupPlacement(
                     daycarePlacementId = placementId,
                     groupId = groupId3,
@@ -364,7 +360,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = placementStart,
                     endDate = placementEnd
                 )
-            val groupId1 = tx.insertTestDaycareGroup(testDaycareGroup)
+            val groupId1 = tx.insert(testDaycareGroup)
             tx.checkAndCreateGroupPlacement(
                 daycarePlacementId = placementId1,
                 groupId = groupId1,
@@ -382,7 +378,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = placementStart,
                     endDate = placementEnd
                 )
-            val groupId2 = tx.insertTestDaycareGroup(testDaycareGroup2)
+            val groupId2 = tx.insert(testDaycareGroup2)
             tx.checkAndCreateGroupPlacement(
                 daycarePlacementId = placementId2,
                 groupId = groupId2,
@@ -496,19 +492,19 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val unitSupervisor =
             db.transaction { tx ->
                 val unitId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val employeeId = tx.insertTestEmployee(DevEmployee())
+                val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = testChild_1.id,
@@ -520,9 +516,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(id = childId))
-                childId
+                tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
             }
         val documentId =
             vasuController.createDocument(
@@ -542,21 +536,21 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val unitSupervisor =
             db.transaction { tx ->
                 val unitId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val employeeId = tx.insertTestEmployee(DevEmployee())
+                val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(id = childId))
-                tx.insertTestPlacement(
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
+                tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = childId,
@@ -603,19 +597,19 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val unitSupervisor =
             db.transaction { tx ->
                 val unitId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val employeeId = tx.insertTestEmployee(DevEmployee())
+                val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                tx.insertTestPlacement(
+                tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = testChild_1.id,
@@ -627,9 +621,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         val duplicateId =
             db.transaction { tx ->
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(id = childId))
-                childId
+                tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
             }
         val documentId =
             vasuController.createDocument(
@@ -647,21 +639,21 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val unitSupervisor =
             db.transaction { tx ->
                 val unitId =
-                    tx.insertTestDaycare(
+                    tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
                             enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
                         )
                     )
-                val employeeId = tx.insertTestEmployee(DevEmployee())
+                val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
                     role = UserRole.UNIT_SUPERVISOR
                 )
-                val childId = tx.insertTestPerson(DevPerson().copy(duplicateOf = testChild_1.id))
-                tx.insertTestChild(DevChild(id = childId))
-                tx.insertTestPlacement(
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
+                tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = childId,

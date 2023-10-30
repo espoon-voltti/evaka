@@ -8,7 +8,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import java.time.LocalDate
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction { tx ->
-            tx.insertTestPerson(
+            tx.insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),
@@ -46,7 +47,8 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         lastName = "Meikäläinen",
                         email = "",
                         language = "fi"
-                    )
+                    ),
+                    DevPersonType.RAW_ROW
                 )
                 .let { tx.getPersonById(it)!! }
         }
