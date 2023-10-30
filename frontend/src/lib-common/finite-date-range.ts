@@ -118,7 +118,7 @@ export default class FiniteDateRange {
     return new FiniteDateRange(start, end)
   }
 
-  complement(other: FiniteDateRange): FiniteDateRange[] {
+  complement(other: FiniteDateRange | DateRange): FiniteDateRange[] {
     if (!this.overlaps(other))
       return [new FiniteDateRange(this.start, this.end)]
 
@@ -126,7 +126,7 @@ export default class FiniteDateRange {
       ...(this.start < other.start
         ? [new FiniteDateRange(this.start, other.start.subDays(1))]
         : []),
-      ...(this.end > other.end
+      ...(other.end !== null && this.end > other.end
         ? [new FiniteDateRange(other.end.addDays(1), this.end)]
         : [])
     ]

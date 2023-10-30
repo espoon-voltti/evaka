@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from './date-range'
 import FiniteDateRange, { mergeDateRanges } from './finite-date-range'
 import LocalDate from './local-date'
 
@@ -125,6 +126,14 @@ describe('FiniteDateRange', () => {
         range(10, 10),
         range(20, 20)
       ])
+      expect(r.complement(new DateRange(localDate(5), null))).toEqual([])
+      expect(r.complement(new DateRange(localDate(15), null))).toEqual([
+        range(10, 14)
+      ])
+      expect(r.complement(new DateRange(localDate(20), null))).toEqual([
+        range(10, 19)
+      ])
+      expect(r.complement(new DateRange(localDate(21), null))).toEqual([r])
     })
   })
 

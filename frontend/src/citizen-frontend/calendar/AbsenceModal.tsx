@@ -6,6 +6,7 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
+import DateRange from 'lib-common/date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
@@ -124,7 +125,9 @@ export default React.memo(function AbsenceModal({
     range.isValid() &&
     range
       .value()
-      .complement(reservationsResponse.reservableRange)
+      .complement(
+        new DateRange(reservationsResponse.reservableRange.start, null)
+      )
       .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
 
   return (
