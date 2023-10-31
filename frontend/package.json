@@ -154,7 +154,7 @@
     "webpack@npm:5.37.1/terser-webpack-plugin": "5.1.1"
   },
   "engines": {
-    "node": ">= 18.17.0"
+    "node": ">= 20.9.0"
   },
   "browserslist": [
     "Firefox ESR",
@@ -340,5 +340,5 @@
       }
     ]
   },
-  "packageManager": "yarn@3.6.1"
+  "packageManager": "yarn@4.0.1"
 }
