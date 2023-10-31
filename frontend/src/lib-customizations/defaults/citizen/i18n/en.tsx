@@ -1423,8 +1423,8 @@ const en: Translations = {
       <P width="800px">
         This page displays the received decisions regarding child&lsquo;s early
         childhood education, pre-primary education and clubs.
-        <br />
-        <br />
+        <br aria-hidden="true" />
+        <br aria-hidden="true" />
         Upon receiving a new decision concerning a new placement applied for a
         child, you are required to respond in two weeks, whether you accept or
         reject it.

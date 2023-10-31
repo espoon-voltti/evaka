@@ -1367,8 +1367,8 @@ export default {
       <P width="800px">
         Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen ja
         kerhoon liittyvät päätökset.
-        <br />
-        <br />
+        <br aria-hidden="true" />
+        <br aria-hidden="true" />
         Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
         <strong>sinun tulee vastata kahden viikon sisällä</strong>, hyväksytkö
         vai hylkäätkö lapselle tarjotun paikan.
