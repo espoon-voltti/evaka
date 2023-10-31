@@ -753,6 +753,21 @@ data class QuerySql<@Suppress("unused") in Tag>(
     class Builder<Tag> : SqlBuilder() {
         private var used: Boolean = false
 
+        private fun combine(separator: String, queries: Iterable<QuerySql<Tag>>): QuerySql<Tag> {
+            check(!used) { "builder has already been used" }
+            this.used = true
+            for (query in queries) {
+                bindings += query.bindings
+            }
+            return QuerySql(
+                QuerySqlString(queries.joinToString(separator) { it.sql.toString() }),
+                bindings
+            )
+        }
+
+        fun union(all: Boolean, queries: Iterable<QuerySql<Tag>>): QuerySql<Tag> =
+            combine(if (all) "\nUNION ALL\n" else "\nUNION\n", queries)
+
         fun sql(@Language("sql") sql: String): QuerySql<Tag> {
             check(!used) { "builder has already been used" }
             this.used = true

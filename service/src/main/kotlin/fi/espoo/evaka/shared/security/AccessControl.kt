@@ -266,15 +266,20 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
             for (rule in rules) {
                 when (rule) {
                     is StaticActionRule ->
-                        if (rule.evaluate(user).isPermitted()) {
-                            return@withSpan AccessControlFilter.PermitAll
+                        rule.evaluate(user).let { decision ->
+                            if (decision.isPermitted()) {
+                                return@withSpan AccessControlFilter.PermitAll
+                            } else {
+                                decision.assertIfTerminal()
+                            }
                         }
                     is DatabaseActionRule.Unscoped<*> ->
-                        when (val decision = unscopedEvaluator.evaluate(rule)) {
-                            is AccessControlDecision.Denied -> throw decision.toException()
-                            AccessControlDecision.None -> {}
-                            is AccessControlDecision.Permitted ->
+                        unscopedEvaluator.evaluate(rule).let { decision ->
+                            if (decision.isPermitted()) {
                                 return@withSpan AccessControlFilter.PermitAll
+                            } else {
+                                decision.assertIfTerminal()
+                            }
                         }
                     is DatabaseActionRule.Scoped<in T, *> ->
                         scopedEvaluator.queryWithParams(rule)?.let { filter -> filters += filter }
@@ -358,14 +363,14 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
     }
 
     private class UnscopedEvaluator(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val cache = mutableMapOf<Pair<Class<*>, *>, DatabaseActionRule.Deferred<in Any>?>()
+        private val cache = mutableMapOf<Pair<Class<*>, *>, DatabaseActionRule.Deferred<Any>>()
 
         fun <P : Any> evaluate(rule: DatabaseActionRule.Unscoped<P>): AccessControlDecision {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Unscoped.Query<Any>
             val cacheKey = Pair(query.javaClass, query.cacheKey(queryCtx.user, queryCtx.now))
             val deferred = cache.getOrPut(cacheKey) { rule.query.execute(queryCtx) }
-            return deferred?.evaluate(rule.params) ?: AccessControlDecision.None
+            return deferred.evaluate(rule.params)
         }
     }
 

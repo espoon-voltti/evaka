@@ -21,16 +21,12 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByEmployee<T> =
     QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
 
-object IsEmployee : DatabaseActionRule.Params {
+data object IsEmployee : DatabaseActionRule.Params {
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
             is AuthenticatedUser.Employee -> true
             else -> false
         }
-
-    override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
-
-    override fun hashCode(): Int = this.javaClass.hashCode()
 
     private fun <T : Id<*>> rule(
         filter: FilterByEmployee<T>
@@ -65,7 +61,9 @@ object IsEmployee : DatabaseActionRule.Params {
                         }
                         .toSet<Id<DatabaseTable>>()
                         .let { matched ->
-                            targets.filter { matched.contains(it) }.associateWith { Permitted }
+                            targets
+                                .filter { matched.contains(it) }
+                                .associateWith { DatabaseActionRule.Deferred.Permitted }
                         }
                 }
                 else -> emptyMap()
@@ -79,11 +77,6 @@ object IsEmployee : DatabaseActionRule.Params {
                 is AuthenticatedUser.Employee -> QuerySql.of { filter(ctx.user, ctx.now) }
                 else -> null
             }
-    }
-
-    private object Permitted : DatabaseActionRule.Deferred<IsEmployee> {
-        override fun evaluate(params: IsEmployee): AccessControlDecision =
-            AccessControlDecision.Permitted(params)
     }
 
     fun any() =
@@ -109,7 +102,9 @@ object IsEmployee : DatabaseActionRule.Params {
                     ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
-                                targets.filter { it == ctx.user.id }.associateWith { Permitted }
+                                targets
+                                    .filter { it == ctx.user.id }
+                                    .associateWith { DatabaseActionRule.Deferred.Permitted }
                             else -> emptyMap()
                         }
 
@@ -134,7 +129,7 @@ object IsEmployee : DatabaseActionRule.Params {
 
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee>? =
+                ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -151,8 +146,11 @@ SELECT EXISTS (
                                     )
                                 }
                                 .exactlyOne<Boolean>()
-                                .let { isPermitted -> if (isPermitted) Permitted else null }
-                        else -> null
+                                .let { isPermitted ->
+                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
+                                    else DatabaseActionRule.Deferred.None
+                                }
+                        else -> DatabaseActionRule.Deferred.None
                     }
             }
         )
@@ -280,7 +278,7 @@ AND sent_for_decision IS NOT NULL
 
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee>? =
+                ): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -298,8 +296,11 @@ SELECT EXISTS (
                                     )
                                 }
                                 .exactlyOne<Boolean>()
-                                .let { isPermitted -> if (isPermitted) Permitted else null }
-                        else -> null
+                                .let { isPermitted ->
+                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
+                                    else DatabaseActionRule.Deferred.None
+                                }
+                        else -> DatabaseActionRule.Deferred.None
                     }
             }
         )

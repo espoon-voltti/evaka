@@ -83,8 +83,17 @@ object DatabaseActionRule {
         val now: HelsinkiDateTime
     )
 
-    interface Deferred<P> {
+    interface Deferred<in P> {
         fun evaluate(params: P): AccessControlDecision
+
+        data object None : Deferred<Any> {
+            override fun evaluate(params: Any): AccessControlDecision = AccessControlDecision.None
+        }
+
+        data object Permitted : Deferred<Any> {
+            override fun evaluate(params: Any): AccessControlDecision =
+                AccessControlDecision.Permitted(params)
+        }
     }
 
     interface Params {
@@ -130,7 +139,7 @@ object DatabaseActionRule {
              */
             fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
 
-            fun execute(ctx: QueryContext): Deferred<P>?
+            fun execute(ctx: QueryContext): Deferred<P>
         }
     }
 }
@@ -144,7 +153,7 @@ internal data class RoleAndFeatures(
 )
 
 sealed interface AccessControlFilter<out T> {
-    object PermitAll : AccessControlFilter<Nothing>
+    data object PermitAll : AccessControlFilter<Nothing>
 
     data class Some<T>(val filter: QuerySql<T>) : AccessControlFilter<T>
 }

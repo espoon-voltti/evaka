@@ -6,35 +6,34 @@ package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.domain.Forbidden
 
-sealed interface AccessControlDecision {
-    /** No decision was made, so action is denied by default */
-    object None : AccessControlDecision
+interface AccessControlDecision {
+    /** Returns true if this decision permits the requested action. */
+    fun isPermitted(): Boolean
 
-    /** Action was explicitly permitted based on some rule */
-    data class Permitted(val rule: Any) : AccessControlDecision
+    /** Throws an exception if this decision does not permit the requested action. */
+    fun assert()
 
     /**
-     * Action was explicitly denied based on some rule.
-     *
-     * This is only used to customize the Forbidden exception message/errorCode
+     * Throws an exception if this decision does not permit the requested action and the whole
+     * decision checking procedure should be terminated.
      */
-    data class Denied(val rule: Any, val message: String? = null, val errorCode: String? = null) :
-        AccessControlDecision {
-        fun toException(): Forbidden =
-            Forbidden(this.message ?: "Permission denied", this.errorCode)
+    fun assertIfTerminal()
+
+    /** No decision was made, so action is denied by default */
+    data object None : AccessControlDecision {
+        override fun isPermitted(): Boolean = false
+
+        override fun assert() = throw Forbidden()
+
+        override fun assertIfTerminal() {}
     }
 
-    fun isPermitted(): Boolean =
-        when (this) {
-            is Permitted -> true
-            is Denied -> false
-            is None -> false
-        }
+    /** Action was explicitly permitted based on some rule */
+    data class Permitted(val rule: Any) : AccessControlDecision {
+        override fun isPermitted(): Boolean = true
 
-    fun assert() =
-        when (this) {
-            is Permitted -> {}
-            is None -> throw Forbidden()
-            is Denied -> throw this.toException()
-        }
+        override fun assert() {}
+
+        override fun assertIfTerminal() {}
+    }
 }
