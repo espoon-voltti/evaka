@@ -4,8 +4,10 @@
 
 package fi.espoo.evaka.webpush
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.db.DatabaseEnum
 
+@ConstList("pushNotificationCategories")
 enum class PushNotificationCategory : DatabaseEnum {
     RECEIVED_MESSAGE;
 

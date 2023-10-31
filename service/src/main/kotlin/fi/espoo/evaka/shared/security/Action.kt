@@ -1475,6 +1475,7 @@ sealed interface Action {
         MARK_EXTERNAL_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_EXTERNAL_ARRIVAL(IsMobile(requirePinLogin = false).inUnitOfGroup()),
+        RECEIVE_PUSH_NOTIFICATIONS(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup()

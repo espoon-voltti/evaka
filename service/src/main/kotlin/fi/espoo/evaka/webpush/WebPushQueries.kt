@@ -8,6 +8,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 
 fun Database.Transaction.upsertPushSubscription(
     device: MobileDeviceId,
@@ -90,4 +92,71 @@ WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKe
                 )
             }
             .exactlyOne<VapidJwt>()
+}
+
+fun Database.Read.getPushCategories(device: MobileDeviceId): Set<PushNotificationCategory> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT unnest(push_notification_categories)
+FROM mobile_device
+WHERE id = ${bind(device)}
+"""
+            )
+        }
+        .toSet<PushNotificationCategory>()
+
+fun Database.Transaction.setPushCategories(
+    device: MobileDeviceId,
+    categories: Set<PushNotificationCategory>
+) {
+    createUpdate<Any> {
+            sql(
+                """
+UPDATE mobile_device SET push_notification_categories = ${bind(categories)}
+WHERE id = ${bind(device)}
+"""
+            )
+        }
+        .execute()
+}
+
+fun Database.Read.getPushGroups(
+    filter: AccessControlFilter<GroupId>,
+    device: MobileDeviceId
+): Set<GroupId> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT mdpg.daycare_group
+FROM mobile_device_push_group mdpg
+JOIN daycare_group dg ON mdpg.daycare_group = dg.id
+WHERE device = ${bind(device)}
+AND ${predicate(filter.forTable("dg"))}
+"""
+            )
+        }
+        .toSet<GroupId>()
+
+fun Database.Transaction.setPushGroups(
+    now: HelsinkiDateTime,
+    device: MobileDeviceId,
+    groups: Set<GroupId>
+) {
+    createUpdate<Any> {
+            sql(
+                """
+WITH deleted AS (
+    DELETE FROM mobile_device_push_group mdpg
+    WHERE device = ${bind(device)}
+    AND NOT daycare_group = ANY(${bind(groups)})
+)
+INSERT INTO mobile_device_push_group (device, daycare_group, created_at)
+SELECT ${bind(device)}, daycare_group, ${bind(now)}
+FROM unnest(${bind(groups)}) AS daycare_group
+ON CONFLICT (device, daycare_group) DO NOTHING
+"""
+            )
+        }
+        .execute()
 }

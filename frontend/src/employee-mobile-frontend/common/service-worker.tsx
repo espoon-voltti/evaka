@@ -48,12 +48,16 @@ export const ServiceWorkerContextProvider = React.memo(
     )
 
     const pushNotifications = useMemo(() => {
-      if (!user?.pushApplicationServerKey) return undefined
       if (!pushManager) return undefined
-      return new PushNotifications(pushManager, {
-        userVisibleOnly: true,
-        applicationServerKey: user.pushApplicationServerKey
-      })
+      return new PushNotifications(
+        pushManager,
+        user?.pushApplicationServerKey
+          ? {
+              userVisibleOnly: true,
+              applicationServerKey: user.pushApplicationServerKey
+            }
+          : undefined
+      )
     }, [user?.pushApplicationServerKey, pushManager])
 
     useEffect(() => {
@@ -96,11 +100,17 @@ const registerServiceWorker = async () => {
 export class PushNotifications {
   constructor(
     private pushManager: PushManager,
-    private options: PushSubscriptionOptionsInit
+    private options: PushSubscriptionOptionsInit | undefined
   ) {}
 
-  get permissionState(): Promise<PermissionState> {
-    return this.pushManager.permissionState(this.options)
+  get available(): boolean {
+    return !!this.options
+  }
+
+  get permissionState(): Promise<PermissionState | undefined> {
+    return this.options
+      ? this.pushManager.permissionState(this.options)
+      : Promise.resolve(undefined)
   }
 
   async enable(): Promise<boolean> {
@@ -147,6 +157,9 @@ export class PushNotifications {
   }
 
   private async getSubscription(): Promise<PushSubscription | undefined> {
+    if (!this.options) {
+      return undefined
+    }
     const state = await this.pushManager.permissionState(this.options)
     if (state !== 'granted') {
       return undefined

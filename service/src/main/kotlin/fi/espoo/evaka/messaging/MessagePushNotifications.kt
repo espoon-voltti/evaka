@@ -4,14 +4,18 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
 import fi.espoo.evaka.webpush.WebPushEndpoint
@@ -19,13 +23,14 @@ import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import fi.espoo.evaka.webpush.deletePushSubscription
 import fi.espoo.voltti.logging.loggers.info
+import java.time.Duration
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.time.Duration
 
 @Service
 class MessagePushNotifications(
     private val webPush: WebPush?,
+    private val accessControl: AccessControl,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
@@ -40,7 +45,7 @@ class MessagePushNotifications(
         QuerySql.of<Any> {
             sql(
                 """
-SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.name AS group_name
+SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
@@ -87,7 +92,11 @@ WHERE notification.message = ANY(${bind(messages)})
             }
             .toList<AsyncJob.SendMessagePushNotification>()
 
-    data class GroupNotification(val groupName: String, val endpoint: WebPushEndpoint)
+    data class GroupNotification(
+        val groupId: GroupId,
+        val groupName: String,
+        val endpoint: WebPushEndpoint
+    )
 
     private fun Database.Read.getNotification(
         messageRecipient: MessageRecipientId,
@@ -96,7 +105,7 @@ WHERE notification.message = ANY(${bind(messages)})
         createQuery<Any> {
                 sql(
                     """
-SELECT group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM (${subquery(getPendingPushNotifications())}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.recipient = ${bind(messageRecipient)}
@@ -106,6 +115,7 @@ AND notification.device = ${bind(device)}
             }
             .exactlyOneOrNull {
                 GroupNotification(
+                    groupId = column("group_id"),
                     groupName = column("group_name"),
                     WebPushEndpoint(
                         uri = column("endpoint"),
@@ -126,9 +136,17 @@ AND notification.device = ${bind(device)}
 
         val (vapidJwt, notification) =
             dbc.transaction { tx ->
-                tx.getNotification(recipient, device)?.let {
-                    Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it)
-                }
+                tx.getNotification(recipient, device)
+                    ?.takeIf {
+                        accessControl.hasPermissionFor(
+                            tx,
+                            AuthenticatedUser.MobileDevice(device),
+                            clock,
+                            Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
+                            it.groupId
+                        )
+                    }
+                    ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
             }
                 ?: return
         dbc.close()

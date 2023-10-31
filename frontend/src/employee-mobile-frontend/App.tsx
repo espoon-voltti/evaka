@@ -49,6 +49,7 @@ import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
 import PairingWizard from './pairing/PairingWizard'
 import { queryClient, QueryClientProvider } from './query'
+import { SettingsPage } from './settings/SettingsPage'
 import StaffPage from './staff/StaffPage'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
@@ -132,6 +133,7 @@ function UnitRouter() {
   return (
     <UnitContextProvider unitId={params.unitId}>
       <Routes>
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/groups/:groupId/*" element={<GroupRouter />} />
         <Route index element={<Navigate replace to="groups/all" />} />
       </Routes>
