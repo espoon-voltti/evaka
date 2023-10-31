@@ -9,6 +9,9 @@ export interface IdleTrackerOptions {
   thresholdInMinutes: number
 }
 
+/**
+ * @deprecated Use `useQuery()` or `useQueryResult()` with `staleTime` instead
+ */
 export function idleTracker(
   client: AxiosInstance,
   onVisibleAfterIdle: () => void,

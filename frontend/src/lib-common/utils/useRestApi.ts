@@ -18,6 +18,9 @@ type APICallFn<F extends ApiFunction> = (
   ...args: Parameters<F>
 ) => Promise<Result<ApiResultOf<F>>>
 
+/**
+ * @deprecated Use `useQueryResult()` instead
+ */
 export function useRestApi<F extends ApiFunction>(
   f: F,
   setState: (result: Result<ApiResultOf<F>>) => void
@@ -65,6 +68,8 @@ export function useRestApi<F extends ApiFunction>(
  * @param f     The async function to call to fetch data
  * @param deps  The arguments to pass to the function
  * @returns [result, reload] `result` is a `Result`, and `reload` is a function to reload the same data.
+ *
+ * @deprecated Use `useQueryResult()` instead
  */
 export function useApiState<T, Deps extends DependencyList>(
   f: () => Promise<Result<T>>,
