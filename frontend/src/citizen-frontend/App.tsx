@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
 import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
-import styled, { ThemeProvider } from 'styled-components'
+import styled, { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import {
   Notifications,
@@ -55,28 +56,43 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <Localization>
-          <ErrorBoundary
-            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
-          >
-            <AuthContextProvider>
-              <OverlayContextProvider>
-                <NotificationsContextProvider>
-                  <MessageContextProvider>
-                    <Content />
-                    <GlobalDialog />
-                    <LoginErrorModal />
-                    <div id="modal-container" />
-                  </MessageContextProvider>
-                </NotificationsContextProvider>
-              </OverlayContextProvider>
-            </AuthContextProvider>
-          </ErrorBoundary>
-        </Localization>
-      </ThemeProvider>
+      <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+        <ThemeProvider theme={theme}>
+          <Localization>
+            <ErrorBoundary
+              fallback={() => (
+                <ErrorPage basePath="/" labels={i18n.errorPage} />
+              )}
+            >
+              <AuthContextProvider>
+                <OverlayContextProvider>
+                  <NotificationsContextProvider>
+                    <MessageContextProvider>
+                      <Content />
+                      <GlobalDialog />
+                      <LoginErrorModal />
+                      <div id="modal-container" />
+                    </MessageContextProvider>
+                  </NotificationsContextProvider>
+                </OverlayContextProvider>
+              </AuthContextProvider>
+            </ErrorBoundary>
+          </Localization>
+        </ThemeProvider>
+      </StyleSheetManager>
     </QueryClientProvider>
   )
+}
+
+// This implements the default behavior from styled-components v5
+// TODO: Prefix all custom props with $, then remove this
+function shouldForwardProp(propName: string, target: unknown) {
+  if (typeof target === 'string') {
+    // For HTML elements, forward the prop if it is a valid HTML attribute
+    return isPropValid(propName)
+  }
+  // For other elements, forward all props
+  return true
 }
 
 const FullPageContainer = styled.div`

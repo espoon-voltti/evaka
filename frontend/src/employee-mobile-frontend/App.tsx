@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useContext, useEffect } from 'react'
 import {
@@ -11,7 +12,7 @@ import {
   Routes,
   useNavigate
 } from 'react-router-dom'
-import { ThemeProvider } from 'styled-components'
+import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -63,50 +64,66 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nContextProvider>
-        <ThemeProvider theme={theme}>
-          <ErrorBoundary
-            fallback={() => (
-              <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
-            )}
-          >
-            <UserContextProvider>
-              <ServiceWorkerContextProvider>
-                <NotificationsContextProvider>
-                  <Notifications apiVersion={apiVersion} />
-                  <Router basename="/employee/mobile">
-                    <Routes>
-                      <Route path="/landing" element={<MobileLander />} />
-                      <Route path="/pairing" element={<PairingWizard />} />
-                      <Route
-                        path="/units"
-                        element={
-                          <RequireAuth>
-                            <UnitList />
-                          </RequireAuth>
-                        }
-                      />
-                      <Route
-                        path="/units/:unitId/*"
-                        element={
-                          <RequireAuth>
-                            <UnitRouter />
-                          </RequireAuth>
-                        }
-                      />
-                      <Route
-                        index
-                        element={<Navigate replace to="/landing" />}
-                      />
-                    </Routes>
-                  </Router>
-                </NotificationsContextProvider>
-              </ServiceWorkerContextProvider>
-            </UserContextProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
+        <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+          <ThemeProvider theme={theme}>
+            <ErrorBoundary
+              fallback={() => (
+                <ErrorPage
+                  basePath="/employee/mobile"
+                  labels={i18n.errorPage}
+                />
+              )}
+            >
+              <UserContextProvider>
+                <ServiceWorkerContextProvider>
+                  <NotificationsContextProvider>
+                    <Notifications apiVersion={apiVersion} />
+                    <Router basename="/employee/mobile">
+                      <Routes>
+                        <Route path="/landing" element={<MobileLander />} />
+                        <Route path="/pairing" element={<PairingWizard />} />
+                        <Route
+                          path="/units"
+                          element={
+                            <RequireAuth>
+                              <UnitList />
+                            </RequireAuth>
+                          }
+                        />
+                        <Route
+                          path="/units/:unitId/*"
+                          element={
+                            <RequireAuth>
+                              <UnitRouter />
+                            </RequireAuth>
+                          }
+                        />
+                        <Route
+                          index
+                          element={<Navigate replace to="/landing" />}
+                        />
+                      </Routes>
+                    </Router>
+                  </NotificationsContextProvider>
+                </ServiceWorkerContextProvider>
+              </UserContextProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </StyleSheetManager>
       </I18nContextProvider>
     </QueryClientProvider>
   )
+}
+
+// This implements the default behavior from styled-components v5
+// TODO: Prefix all custom props with $, then remove this
+function shouldForwardProp(propName: string, target: unknown) {
+  if (typeof target === 'string') {
+    // For HTML elements, forward the prop if it is a valid HTML attribute
+    return isPropValid(propName)
+  }
+  // For other elements, forward all props
+  return true
 }
 
 function UnitRouter() {
