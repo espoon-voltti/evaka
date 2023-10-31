@@ -15,7 +15,13 @@ data class EmployeeChildAclConfig(
     val backupCare: Boolean = true,
     /** Enables access via placement plans originating from applications */
     val application: Boolean = true,
-)
+) {
+    init {
+        require(placement || backupCare || application) {
+            "At least one access mechanism must be enabled"
+        }
+    }
+}
 
 fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) =
     QuerySql.of<Any> {
