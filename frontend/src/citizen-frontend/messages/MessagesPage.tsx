@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
+import { combine } from 'lib-common/api'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Main from 'lib-components/atoms/Main'
@@ -17,6 +18,8 @@ import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
+import { childrenQuery } from '../children/queries'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'
@@ -46,6 +49,8 @@ export default React.memo(function MessagesPage() {
     useContext(MessageContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
+
+  const children = useQueryResult(childrenQuery())
   const receivers = useQueryResult(receiversQuery())
 
   const user = useUser()
@@ -124,18 +129,22 @@ export default React.memo(function MessagesPage() {
               )}
             </StyledFlex>
             {editorVisible &&
-              renderResult(receivers, (receiverOptions) => (
-                <MessageEditor
-                  receiverOptions={receiverOptions}
-                  onSend={sendMessage}
-                  onSuccess={() => {
-                    changeEditorVisibility(false)
-                  }}
-                  onFailure={() => setDisplaySendError(true)}
-                  onClose={() => changeEditorVisibility(false)}
-                  displaySendError={displaySendError}
-                />
-              ))}
+              renderResult(
+                combine(children, receivers),
+                ([children, receiverOptions]) => (
+                  <MessageEditor
+                    children_={children}
+                    receiverOptions={receiverOptions}
+                    onSend={sendMessage}
+                    onSuccess={() => {
+                      changeEditorVisibility(false)
+                    }}
+                    onFailure={() => setDisplaySendError(true)}
+                    onClose={() => changeEditorVisibility(false)}
+                    displaySendError={displaySendError}
+                  />
+                )
+              )}
           </Main>
           <Footer />
         </>

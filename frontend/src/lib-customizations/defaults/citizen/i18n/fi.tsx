@@ -446,6 +446,8 @@ export default {
       newMessage: 'Uusi viesti',
       recipients: 'Vastaanottajat',
       secondaryRecipients: 'Muut vastaanottajat',
+      singleUnitRequired:
+        'Viestejä voi lähettää vain yhteen yksikköön kerrallaan',
       children: 'Viesti koskee',
       subject: 'Otsikko',
       message: 'Viesti',
@@ -453,7 +455,7 @@ export default {
       send: 'Lähetä',
       discard: 'Hylkää',
       search: 'Haku',
-      noResults: 'Ei tuloksia',
+      noResults: 'Ei tuloksia, valitse ensin lapsi tai lapsia',
       messageSendError: 'Viestin lähetys epäonnistui'
     },
     confirmDelete: {

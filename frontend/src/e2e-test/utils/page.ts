@@ -459,13 +459,17 @@ export class MultiSelect extends Element {
 
   async selectFirst() {
     await this.click()
-    await this.findAll(`[data-qa="option"]`).first().click()
+    await this.findAllByDataQa('option').first().click()
   }
 
   async fillAndSelectFirst(text: string) {
     await this.#input.fill(text)
-    await this.findAll(`[data-qa="option"]`).first().click()
+    await this.findAllByDataQa('option').first().click()
     await this.close()
+  }
+
+  async assertNoOptions() {
+    await this.findByDataQa('no-options').waitUntilVisible()
   }
 }
 

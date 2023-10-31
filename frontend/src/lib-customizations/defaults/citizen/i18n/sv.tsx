@@ -445,6 +445,8 @@ const sv: Translations = {
       newMessage: 'Nytt Meddelande',
       recipients: 'Mottagare',
       secondaryRecipients: 'Andra mottagare',
+      singleUnitRequired:
+        'Meddelanden kan endast skickas till en enhet åt gången',
       children: 'Meddelandet angår',
       subject: 'Ämne',
       message: 'Meddelande',
@@ -452,7 +454,7 @@ const sv: Translations = {
       send: 'Skicka',
       discard: 'Kassera',
       search: 'Sök',
-      noResults: 'Inga resultat',
+      noResults: 'Inga resultat, välj ett barn eller flera barn först',
       messageSendError: 'Misslyckades med att skicka meddelande'
     },
     confirmDelete: {

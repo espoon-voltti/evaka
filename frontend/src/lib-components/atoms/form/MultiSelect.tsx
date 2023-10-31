@@ -83,7 +83,9 @@ function MultiSelect<T>({
         hideSelectedOptions={false}
         backspaceRemovesValue={false}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
-        noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
+        noOptionsMessage={() => (
+          <span data-qa="no-options">{noOptionsMessage ?? 'Ei tuloksia'}</span>
+        )}
         getOptionLabel={getOptionLabel}
         getOptionValue={getOptionId}
         value={value}
