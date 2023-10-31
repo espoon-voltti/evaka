@@ -591,16 +591,14 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfChildDailyNote() =
-        rule<ChildDailyNoteId> { user, now ->
-            sql(
-                """
-SELECT cdn.id, role, acl.daycare_id AS unit_id
-FROM child_daily_note cdn
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+    fun inPlacementUnitOfChildOfChildDailyNote(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<ChildDailyNoteId>(cfg) {
+            sql("""
+SELECT child_daily_note.id, child_id
+FROM child_daily_note
+""")
         }
 
     fun inPlacementUnitOfChildOfChildStickyNote() =
