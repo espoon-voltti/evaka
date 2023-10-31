@@ -123,7 +123,6 @@ FROM ids;
         if (v2FeeDecisions) {
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
-                clock = clock,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 financeMinDate = feeDecisionMinDate,
@@ -143,12 +142,11 @@ FROM ids;
             tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).forEach { childId ->
                 generateAndInsertVoucherValueDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
                     valueDecisionCapacityFactorEnabled =
                         featureConfig.valueDecisionCapacityFactorEnabled,
-                    financeMinDate = feeDecisionMinDate,
                     childId = childId,
                     retroactiveOverride = from
                 )
@@ -193,7 +191,6 @@ FROM ids;
             adults.forEach { adult ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
@@ -207,12 +204,11 @@ FROM ids;
             children.forEach { childId ->
                 generateAndInsertVoucherValueDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
                     valueDecisionCapacityFactorEnabled =
                         featureConfig.valueDecisionCapacityFactorEnabled,
-                    financeMinDate = feeDecisionMinDate,
                     childId = childId
                 )
             }
@@ -233,7 +229,6 @@ FROM ids;
             getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
@@ -245,12 +240,11 @@ FROM ids;
         if (v2Vouchers) {
             generateAndInsertVoucherValueDecisionsV2(
                 tx = tx,
-                clock = clock,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
+                financeMinDate = feeDecisionMinDate,
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
-                financeMinDate = feeDecisionMinDate,
                 childId = childId
             )
         } else {

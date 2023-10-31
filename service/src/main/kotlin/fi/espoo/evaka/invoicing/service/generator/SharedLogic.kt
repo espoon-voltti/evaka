@@ -9,22 +9,8 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.periodsCanMerge
 import java.time.LocalDate
-
-/** New drafts fully before this date are ignored */
-fun getSoftMinDate(clock: EvakaClock, retroactiveOverride: LocalDate?): LocalDate {
-    val rollingMinDate = clock.today().minusMonths(15)
-    return if (retroactiveOverride != null) minOf(retroactiveOverride, rollingMinDate)
-    else rollingMinDate
-}
-
-/** New drafts starting before this date are set to start on this date */
-fun getHardMinDate(financeMinDate: LocalDate, retroactiveOverride: LocalDate?): LocalDate {
-    return if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-    else financeMinDate
-}
 
 fun getPlacementDetailsByChild(
     tx: Database.Read,
@@ -88,8 +74,7 @@ fun <Decision : FinanceDecision<Decision>> filterAndMergeDrafts(
     newDrafts: List<Decision>,
     activeDecisions: List<Decision>,
     ignoredDrafts: List<Decision>,
-    softMinDate: LocalDate,
-    hardMinDate: LocalDate
+    minDate: LocalDate
 ): List<Decision> {
     if (newDrafts.isEmpty()) return emptyList()
 
@@ -105,11 +90,8 @@ fun <Decision : FinanceDecision<Decision>> filterAndMergeDrafts(
         .filterNot { draft ->
             existsActiveDuplicateThatWillRemainEffective(draft, activeDecisions, newDrafts)
         }
-        .filter { draft -> draft.validDuring.overlaps(DateRange(softMinDate, null)) }
         .mapNotNull { draft ->
-            draft.validDuring.intersection(DateRange(hardMinDate, null))?.let {
-                draft.withValidity(it)
-            }
+            draft.validDuring.intersection(DateRange(minDate, null))?.let { draft.withValidity(it) }
         }
         .filter { newDraft ->
             !ignoredDrafts.any {

@@ -36,19 +36,17 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.*
 
 fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
-    clock: EvakaClock,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveOverride: LocalDate? = null // allows extending beyond normal min dates
+    retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
 ) {
     val existingDecisions =
         tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
@@ -67,8 +65,9 @@ fun generateAndInsertFeeDecisionsV2(
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
-            softMinDate = getSoftMinDate(clock, retroactiveOverride),
-            hardMinDate = getHardMinDate(financeMinDate, retroactiveOverride)
+            minDate =
+                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
+                else financeMinDate
         )
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
@@ -83,8 +82,7 @@ fun generateFeeDecisionsDrafts(
     activeDecisions: List<FeeDecision>,
     existingDrafts: List<FeeDecision>,
     ignoredDrafts: List<FeeDecision>,
-    softMinDate: LocalDate,
-    hardMinDate: LocalDate
+    minDate: LocalDate
 ): List<FeeDecision> {
     val feeBases =
         getFeeBases(
@@ -93,7 +91,7 @@ fun generateFeeDecisionsDrafts(
             incomeTypesProvider = incomeTypesProvider,
             targetAdultId = targetAdultId,
             activeDecisions = activeDecisions,
-            minDate = minOf(softMinDate, hardMinDate)
+            minDate = minDate
         )
 
     val newDrafts = feeBases.map { it.toFeeDecision() }
@@ -102,8 +100,7 @@ fun generateFeeDecisionsDrafts(
             newDrafts = newDrafts,
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
-            softMinDate = softMinDate,
-            hardMinDate = hardMinDate
+            minDate = minDate
         )
         .map { it.withCreatedDateFromExisting(existingDrafts) }
         .map {

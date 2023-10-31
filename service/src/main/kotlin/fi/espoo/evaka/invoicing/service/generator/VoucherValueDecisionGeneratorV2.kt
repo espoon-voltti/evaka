@@ -39,7 +39,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -47,13 +46,12 @@ import java.util.*
 
 fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
-    clock: EvakaClock,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
-    retroactiveOverride: LocalDate? = null // allows extending beyond normal min dates
+    retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
 ) {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
@@ -72,8 +70,9 @@ fun generateAndInsertVoucherValueDecisionsV2(
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
-            softMinDate = getSoftMinDate(clock, retroactiveOverride),
-            hardMinDate = getHardMinDate(financeMinDate, retroactiveOverride)
+            minDate =
+                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
+                else financeMinDate
         )
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })
@@ -89,8 +88,7 @@ fun generateVoucherValueDecisionsDrafts(
     activeDecisions: List<VoucherValueDecision>,
     existingDrafts: List<VoucherValueDecision>,
     ignoredDrafts: List<VoucherValueDecision>,
-    softMinDate: LocalDate,
-    hardMinDate: LocalDate
+    minDate: LocalDate
 ): List<VoucherValueDecision> {
     val voucherBases =
         getVoucherBases(
@@ -100,7 +98,7 @@ fun generateVoucherValueDecisionsDrafts(
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = targetChildId,
             activeDecisions = activeDecisions,
-            minDate = minOf(softMinDate, hardMinDate)
+            minDate = minDate
         )
 
     val newDrafts = voucherBases.map { it.toVoucherValueDecision() }
@@ -109,8 +107,7 @@ fun generateVoucherValueDecisionsDrafts(
             newDrafts = newDrafts,
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
-            softMinDate = softMinDate,
-            hardMinDate = hardMinDate
+            minDate = minDate
         )
         .map { it.withCreatedDateFromExisting(existingDrafts) }
         .map {
