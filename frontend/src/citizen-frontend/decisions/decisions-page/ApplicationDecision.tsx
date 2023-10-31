@@ -57,7 +57,15 @@ export default React.memo(function ApplicationDecision({
       open={open}
       toggleOpen={toggleOpen}
       title={
-        <H3 noMargin data-qa="title-decision-type">
+        <H3
+          noMargin
+          data-qa="title-decision-type"
+          aria-label={`${t.decisions.applicationDecisions.decision} ${
+            t.decisions.applicationDecisions.type[type]
+          } ${sentDate.format()} - ${
+            t.decisions.applicationDecisions.status[status]
+          }`}
+        >
           {`${t.decisions.applicationDecisions.decision} ${
             t.decisions.applicationDecisions.type[type]
           } ${sentDate.format()}`}

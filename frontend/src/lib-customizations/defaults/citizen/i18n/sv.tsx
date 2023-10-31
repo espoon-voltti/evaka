@@ -1381,6 +1381,8 @@ const sv: Translations = {
       </P>
     ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    noUnconfirmedDecisions: 'alla beslut bekräftade',
+    unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
     applicationDecisions: {
       decision: 'Beslut',

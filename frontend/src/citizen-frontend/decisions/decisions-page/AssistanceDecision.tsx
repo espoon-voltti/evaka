@@ -55,7 +55,16 @@ export default React.memo(function AssistanceDecision({
       open={open}
       toggleOpen={toggleOpen}
       title={
-        <H3 noMargin data-qa={`title-decision-type-${id}`}>
+        <H3
+          noMargin
+          data-qa={`title-decision-type-${id}`}
+          aria-label={
+            `${
+              t.decisions.assistanceDecisions.title
+            } ${decisionMade.format()}` +
+            (isUnread ? ' - ' + t.decisions.unreadDecision : '')
+          }
+        >
           {t.decisions.assistanceDecisions.title} {decisionMade.format()}
         </H3>
       }

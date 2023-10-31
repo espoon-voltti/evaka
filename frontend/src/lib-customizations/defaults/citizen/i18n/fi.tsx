@@ -1376,6 +1376,8 @@ export default {
     ),
     unconfirmedDecisions: (n: number) =>
       `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
+    noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
+    unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     applicationDecisions: {
       decision: 'Päätös',

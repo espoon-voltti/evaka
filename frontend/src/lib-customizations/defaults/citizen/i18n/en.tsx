@@ -1434,6 +1434,8 @@ const en: Translations = {
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'
       } waiting for confirmation`,
+    noUnconfirmedDecisions: 'all decisions confirmed',
+    unreadDecision: 'unread decision',
     pageLoadError: 'Error in fetching the requested information',
     applicationDecisions: {
       decision: 'Decision of',
