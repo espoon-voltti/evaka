@@ -22,7 +22,8 @@ const componentTranslations: ComponentTranslations = {
   messageReplyEditor: {
     ...components.messageReplyEditor,
     messagePlaceholder:
-      'Meddelandeinnehåll... Obs! Ange inte känslig information här.'
+      'Meddelandeinnehåll... Obs! Ange inte känslig information här.',
+    messagePlaceholderSensitiveThread: 'Meddelandeinnehåll...'
   }
 }
 

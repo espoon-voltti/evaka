@@ -21,7 +21,8 @@ const componentTranslations: ComponentTranslations = {
   messageReplyEditor: {
     ...components.messageReplyEditor,
     messagePlaceholder:
-      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.'
+      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
+    messagePlaceholderSensitiveThread: 'Viestin sisältö...'
   }
 }
 
