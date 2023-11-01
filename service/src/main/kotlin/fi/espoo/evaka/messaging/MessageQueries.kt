@@ -1039,7 +1039,8 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             )
             .bind("accountId", accountId)
             .bind("threadId", threadId)
-            .exactlyOne<ReceivedThread>()
+            .exactlyOneOrNull<ReceivedThread>()
+            ?: throw NotFound()
 
     val messagesByThread =
         getThreadMessages(
