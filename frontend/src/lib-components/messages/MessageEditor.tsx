@@ -157,7 +157,6 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
-  sensitiveMessagingEnabled?: boolean
 }
 
 export default React.memo(function MessageEditor({
@@ -174,8 +173,7 @@ export default React.memo(function MessageEditor({
   saveDraftRaw,
   saveMessageAttachment,
   sending,
-  defaultTitle = '',
-  sensitiveMessagingEnabled
+  defaultTitle = ''
 }: Props) {
   const i18n = useTranslations()
 
@@ -536,7 +534,7 @@ export default React.memo(function MessageEditor({
                 <ExpandedHorizontalField>
                   <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
-                  {sensitiveMessagingEnabled && sensitiveCheckbox}
+                  {sensitiveCheckbox}
                 </ExpandedHorizontalField>
                 {sensitiveInfoOpen && (
                   <FixedSpaceRow fullWidth>
@@ -571,7 +569,7 @@ export default React.memo(function MessageEditor({
                 <HalfWidthColumn>
                   <Bold>{i18n.messageEditor.flags.heading}</Bold>
                   {urgent}
-                  {sensitiveMessagingEnabled && sensitiveCheckbox}
+                  {sensitiveCheckbox}
                 </HalfWidthColumn>
               </FixedSpaceRow>
               {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
