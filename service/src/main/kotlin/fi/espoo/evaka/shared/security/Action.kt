@@ -696,7 +696,7 @@ sealed interface Action {
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
             HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true)
         ),
         SEND(
