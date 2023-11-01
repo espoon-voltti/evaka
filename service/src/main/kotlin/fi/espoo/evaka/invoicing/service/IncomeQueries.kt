@@ -72,7 +72,7 @@ FROM expiring_income_with_billable_placement_day_after_expiration expiring_incom
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
     WHERE person_id = expiring_income.person_id
-        AND (end_date IS NULL OR :dayAfterExpiration <= end_date)
+        AND created > :today - INTERVAL '1 month'
         AND handler_id IS NULL
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) " AND NOT EXISTS ($existingRecentIncomeNotificationQuery)" else ""}                
