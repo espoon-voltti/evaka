@@ -115,7 +115,7 @@ export default React.memo(function Decisions() {
                 ],
                 (decision) =>
                   'decisionMade' in decision
-                    ? decision.decisionMade?.formatIso()
+                    ? [decision.decisionMade.formatIso(), '']
                     : [decision.sentDate.formatIso(), decision.type]
               ).reverse()
               return {
