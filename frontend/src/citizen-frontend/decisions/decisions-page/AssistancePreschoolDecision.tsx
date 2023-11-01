@@ -40,7 +40,16 @@ export default React.memo(function AssistancePreschoolDecision({
       open={open}
       toggleOpen={toggleOpen}
       title={
-        <H3 noMargin data-qa={`title-decision-type-${id}`}>
+        <H3
+          noMargin
+          data-qa={`title-decision-type-${id}`}
+          aria-label={
+            `${
+              t.decisions.assistancePreschoolDecisions.title
+            } ${decisionMade.format()}` +
+            (isUnread ? ' - ' + t.decisions.unreadDecision : '')
+          }
+        >
           {t.decisions.assistancePreschoolDecisions.title}{' '}
           {decisionMade.format()}
         </H3>

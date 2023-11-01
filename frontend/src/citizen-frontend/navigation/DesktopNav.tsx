@@ -373,15 +373,15 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             onClick={() => setOpen(false)}
             aria-label={
               t.header.nav.decisions +
-              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '')
+              (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
+              (unreadDecisions
+                ? ` ${unreadDecisions} ${t.header.notifications}`
+                : '')
             }
           >
             {t.header.nav.decisions} {maybeLockElem}
             {unreadDecisions ? (
-              <CircledChar
-                aria-label={`${unreadDecisions} ${t.header.notifications}`}
-                data-qa="sub-nav-menu-decisions-notification-count"
-              >
+              <CircledChar data-qa="sub-nav-menu-decisions-notification-count">
                 {unreadDecisions}
               </CircledChar>
             ) : null}

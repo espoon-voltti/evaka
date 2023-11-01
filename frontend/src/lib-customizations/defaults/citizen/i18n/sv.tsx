@@ -1373,14 +1373,16 @@ const sv: Translations = {
       <P width="800px">
         Till denna sida kommer beslut gällande barnets ansökan till
         småbarnspedagogik, förskola och klubbverksamhet.
-        <br />
-        <br />
+        <br aria-hidden="true" />
+        <br aria-hidden="true" />
         Om beslutet rör en ansökan till en för barnet ny plats, bör du ta emot
         eller annullera platsen / platserna inom två veckor från mottagandet av
         beslutet.
       </P>
     ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    noUnconfirmedDecisions: 'alla beslut bekräftade',
+    unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
     applicationDecisions: {
       decision: 'Beslut',

@@ -1367,8 +1367,8 @@ export default {
       <P width="800px">
         Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen ja
         kerhoon liittyvät päätökset.
-        <br />
-        <br />
+        <br aria-hidden="true" />
+        <br aria-hidden="true" />
         Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
         <strong>sinun tulee vastata kahden viikon sisällä</strong>, hyväksytkö
         vai hylkäätkö lapselle tarjotun paikan.
@@ -1376,6 +1376,8 @@ export default {
     ),
     unconfirmedDecisions: (n: number) =>
       `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
+    noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
+    unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     applicationDecisions: {
       decision: 'Päätös',

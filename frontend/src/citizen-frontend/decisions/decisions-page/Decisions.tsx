@@ -7,7 +7,13 @@ import React, { Fragment, useMemo } from 'react'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
+import {
+  AssistanceNeedDecisionCitizenListItem,
+  AssistanceNeedPreschoolDecisionCitizenListItem
+} from 'lib-common/generated/api-types/assistanceneed'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -37,6 +43,29 @@ export default React.memo(function Decisions() {
   )
 
   useTitle(t, t.decisions.title)
+
+  const getAriaLabelForChild = (child: {
+    decisions: (
+      | AssistanceNeedDecisionCitizenListItem
+      | AssistanceNeedPreschoolDecisionCitizenListItem
+      | {
+          applicationId: UUID
+          resolved: LocalDate | null
+        }
+    )[]
+    firstName: string
+    lastName: string
+  }) => {
+    const unconfirmedDecisionsCount = child.decisions.filter(
+      (decision) => 'applicationId' in decision && decision.resolved === null
+    ).length
+    return (
+      `${child.firstName} ${child.lastName}` +
+      (unconfirmedDecisionsCount > 0
+        ? ' - ' + t.decisions.unconfirmedDecisions(unconfirmedDecisionsCount)
+        : ' - ' + t.decisions.noUnconfirmedDecisions)
+    )
+  }
 
   const unconfirmedDecisionsCount = useMemo(
     () =>
@@ -86,9 +115,9 @@ export default React.memo(function Decisions() {
                 ],
                 (decision) =>
                   'decisionMade' in decision
-                    ? decision.decisionMade?.formatIso()
+                    ? [decision.decisionMade.formatIso(), '']
                     : [decision.sentDate.formatIso(), decision.type]
-              )
+              ).reverse()
               return {
                 ...child,
                 decisions: childDecisions,
@@ -112,7 +141,7 @@ export default React.memo(function Decisions() {
   return (
     <Container data-qa="decisions-page">
       <Gap size="s" />
-      <ContentArea opaque paddingVertical="L">
+      <ContentArea opaque paddingVertical="L" id="main">
         <H1 noMargin>{t.decisions.title}</H1>
         <Gap size="xs" />
         {t.decisions.summary}
@@ -140,7 +169,7 @@ export default React.memo(function Decisions() {
                 paddingVertical="L"
                 data-qa={`child-decisions-${child.id}`}
               >
-                <H2 noMargin>
+                <H2 noMargin aria-label={getAriaLabelForChild(child)}>
                   {child.firstName} {child.lastName}
                 </H2>
                 {child.decisions.map((decision) => (
