@@ -100,7 +100,7 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    childDocuments: false,
+    childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: false,
