@@ -104,7 +104,7 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     feeDecisionIgnoredStatus: true,
     hojks: false,
-    sensitiveMessaging: false
+    sensitiveMessaging: true
   }
 }
 
