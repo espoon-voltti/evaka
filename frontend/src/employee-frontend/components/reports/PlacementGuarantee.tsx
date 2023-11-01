@@ -4,7 +4,8 @@
 
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import { PlacementGuaranteeReportFilters } from 'employee-frontend/api/reports'
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -58,6 +59,10 @@ const PlacementGuaranteeFilters = ({
 }) => {
   const { i18n, lang } = useTranslation()
   const unitsResult = useQueryResult(unitsQuery())
+  const sortedUnits = useMemo(
+    () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
+    [unitsResult]
+  )
   return (
     <>
       <FilterRow>
@@ -76,7 +81,7 @@ const PlacementGuaranteeFilters = ({
       </FilterRow>
       <FilterRow>
         <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
-        {unitsResult.mapAll({
+        {sortedUnits.mapAll({
           loading: () => <Loader />,
           failure: () => <ErrorSegment />,
           success: (units) => (
