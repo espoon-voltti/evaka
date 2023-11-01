@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import add from 'lodash/add'
 import mergeWith from 'lodash/mergeWith'
+import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -27,6 +28,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -70,11 +72,13 @@ const preschoolColumns = [
 interface RowFilters {
   careArea: string
   unit: string
+  showZeroRows: boolean
 }
 
 const emptyRowFilters: RowFilters = {
   careArea: '',
-  unit: ''
+  unit: '',
+  showZeroRows: true
 }
 
 interface ColumnFilters {
@@ -94,14 +98,50 @@ const Wrapper = styled.div`
 `
 
 const rowFilter =
-  (rowFilters: RowFilters) =>
+  (rowFilters: RowFilters, columnFilters: ColumnFilters) =>
   (
     row:
       | AssistanceNeedsAndActionsReportRow
       | AssistanceNeedsAndActionsReportRowByChild
   ): boolean =>
     !(rowFilters.careArea && row.careAreaName !== rowFilters.careArea) &&
-    !(rowFilters.unit && row.unitName !== rowFilters.unit)
+    !(rowFilters.unit && row.unitName !== rowFilters.unit) &&
+    (rowFilters.showZeroRows ||
+      (columnFilters.type === 'DAYCARE' &&
+        Object.entries(row.daycareAssistanceCounts)
+          .filter(
+            ([level]) =>
+              columnFilters.daycareColumns.length === 0 ||
+              columnFilters.daycareColumns.includes(
+                level as DaycareAssistanceLevel
+              )
+          )
+          .some(([_, count]) => count > 0)) ||
+      (columnFilters.type === 'PRESCHOOL' &&
+        Object.entries(row.preschoolAssistanceCounts)
+          .filter(
+            ([level]) =>
+              columnFilters.preschoolColumns.length === 0 ||
+              columnFilters.preschoolColumns.includes(
+                level as PreschoolAssistanceLevel
+              )
+          )
+          .some(([_, count]) => count > 0)) ||
+      Object.entries(row.otherAssistanceMeasureCounts)
+        .filter(
+          ([type]) =>
+            (columnFilters.type === 'DAYCARE' &&
+              (columnFilters.daycareColumns.length === 0 ||
+                columnFilters.daycareColumns.includes(
+                  type as OtherAssistanceMeasureType
+                ))) ||
+            (columnFilters.type === 'PRESCHOOL' &&
+              (columnFilters.preschoolColumns.length === 0 ||
+                columnFilters.preschoolColumns.includes(
+                  type as OtherAssistanceMeasureType
+                )))
+        )
+        .some(([_, count]) => count > 0))
 
 interface GroupingDataByGroup {
   name: string
@@ -222,7 +262,15 @@ export default React.memo(function AssistanceNeedsAndActions() {
       date: LocalDate.todayInSystemTz()
     })
   const areasResult = useQueryResult(areaQuery())
+  const sortedAreas = useMemo(
+    () => areasResult.map((areas) => sortBy(areas, (area) => area.name)),
+    [areasResult]
+  )
   const unitsResult = useQueryResult(unitsQuery())
+  const sortedUnits = useMemo(
+    () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
+    [unitsResult]
+  )
 
   const [rowFilters, setRowFilters] = useState<RowFilters>(emptyRowFilters)
   const [columnFilters, setColumnFilters] =
@@ -303,7 +351,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
-            {renderResult(areasResult, (areas) => (
+            {renderResult(sortedAreas, (areas) => (
               <Combobox
                 items={[
                   { value: '', label: i18n.common.all },
@@ -341,7 +389,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
           <Wrapper>
-            {renderResult(unitsResult, (units) => (
+            {renderResult(sortedUnits, (units) => (
               <Combobox
                 items={[
                   { value: '', label: i18n.common.all },
@@ -448,10 +496,24 @@ export default React.memo(function AssistanceNeedsAndActions() {
           </FilterRow>
         )}
 
+        <FilterRow>
+          <FilterLabel />
+          <Wrapper>
+            <Checkbox
+              label={i18n.reports.assistanceNeedsAndActions.showZeroRows}
+              checked={rowFilters.showZeroRows}
+              onChange={(showZeroRows) =>
+                setRowFilters({ ...rowFilters, showZeroRows })
+              }
+            />
+          </Wrapper>
+        </FilterRow>
+
         {!reportByChild ? (
           <ReportByGroup
             filters={filters}
             rowFilters={rowFilters}
+            columnFilters={columnFilters}
             selectedDaycareColumns={selectedDaycareColumns}
             selectedPreschoolColumns={selectedPreschoolColumns}
             selectedOtherColumns={selectedOtherColumns}
@@ -461,6 +523,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
           <ReportByChild
             filters={filters}
             rowFilters={rowFilters}
+            columnFilters={columnFilters}
             selectedDaycareColumns={selectedDaycareColumns}
             selectedPreschoolColumns={selectedPreschoolColumns}
             selectedOtherColumns={selectedOtherColumns}
@@ -477,6 +540,7 @@ const ReportByGroup = ({
 }: {
   filters: AssistanceNeedsAndActionsReportFilters
   rowFilters: RowFilters
+  columnFilters: ColumnFilters
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
@@ -501,6 +565,7 @@ const ReportByGroup = ({
 
 const ReportByGroupTable = ({
   rowFilters,
+  columnFilters,
   selectedDaycareColumns,
   selectedPreschoolColumns,
   selectedOtherColumns,
@@ -509,6 +574,7 @@ const ReportByGroupTable = ({
   filename
 }: {
   rowFilters: RowFilters
+  columnFilters: ColumnFilters
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
@@ -520,7 +586,9 @@ const ReportByGroupTable = ({
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
   const { filteredRows, groupData, groupKeyFn } = useMemo(() => {
-    const filteredRows = report.rows.filter(rowFilter(rowFilters))
+    const filteredRows = report.rows.filter(
+      rowFilter(rowFilters, columnFilters)
+    )
     const { type, groupKeyFn, groupNameFn } = resolveGroupingType(rowFilters)
     const groupData = {
       type,
@@ -566,7 +634,7 @@ const ReportByGroupTable = ({
       groupData,
       groupKeyFn
     }
-  }, [report, rowFilters])
+  }, [report, rowFilters, columnFilters])
 
   return (
     <>
@@ -865,6 +933,7 @@ const ReportByChild = ({
 }: {
   filters: AssistanceNeedsAndActionsReportFilters
   rowFilters: RowFilters
+  columnFilters: ColumnFilters
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
@@ -888,6 +957,7 @@ const ReportByChild = ({
 
 const ReportByChildTable = ({
   rowFilters,
+  columnFilters,
   selectedDaycareColumns,
   selectedPreschoolColumns,
   selectedOtherColumns,
@@ -895,6 +965,7 @@ const ReportByChildTable = ({
   filename
 }: {
   rowFilters: RowFilters
+  columnFilters: ColumnFilters
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
@@ -905,7 +976,9 @@ const ReportByChildTable = ({
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
   const { filteredRows, groupData, groupKeyFn } = useMemo(() => {
-    const filteredRows = report.rows.filter(rowFilter(rowFilters))
+    const filteredRows = report.rows.filter(
+      rowFilter(rowFilters, columnFilters)
+    )
     const { type, groupKeyFn, groupNameFn } = resolveGroupingType(rowFilters)
     const groupData = {
       type,
@@ -943,7 +1016,7 @@ const ReportByChildTable = ({
       groupData,
       groupKeyFn
     }
-  }, [report, rowFilters])
+  }, [report, rowFilters, columnFilters])
 
   return (
     <>
