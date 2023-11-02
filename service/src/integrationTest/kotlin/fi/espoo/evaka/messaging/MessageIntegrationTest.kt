@@ -11,6 +11,8 @@ import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -101,7 +103,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person5Account: MessageAccountId
     private lateinit var serviceWorkerAccount: MessageAccountId
 
-    private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
+    private fun insertChild(
+        tx: Database.Transaction,
+        child: DevPerson,
+        groupId: GroupId,
+        daycareId: DaycareId = testDaycare.id
+    ) {
         tx.insert(
             DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName),
             DevPersonType.CHILD
@@ -111,7 +118,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = child.id,
-                    unitId = testDaycare.id,
+                    unitId = daycareId,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -1066,6 +1073,72 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `citizen can send a new messages to multiple accounts if they are related to all selected children`() {
+        val groupId3 = GroupId(UUID.randomUUID())
+        val group3Account =
+            db.transaction { tx ->
+                testChild_2.let {
+                    insertChild(tx, it, groupId2)
+                    tx.insertGuardian(person2.id, it.id)
+                }
+
+                tx.insert(
+                    DevDaycareGroup(
+                        id = groupId3,
+                        daycareId = testDaycare2.id,
+                        startDate = placementStart
+                    )
+                )
+                testChild_7.let {
+                    insertChild(tx, it, groupId3, testDaycare2.id)
+                    tx.insertGuardian(person2.id, it.id)
+                }
+
+                tx.createDaycareGroupMessageAccount(groupId3)
+            }
+
+        // Both children in group 1 -> ok
+        postNewThread(
+            user = person2,
+            title = "title",
+            message = "content",
+            children = listOf(testChild_1.id, testChild_3.id),
+            recipients = listOf(group1Account)
+        )
+
+        // Child 1 in group 1, child 2 in group 2 -> ok
+        postNewThread(
+            user = person2,
+            title = "title",
+            message = "content",
+            children = listOf(testChild_1.id, testChild_2.id),
+            recipients = listOf(group1Account, group2Account)
+        )
+
+        // None of the children in group 2 -> fail
+        assertThrows<BadRequest> {
+            postNewThread(
+                user = person2,
+                title = "title",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_3.id),
+                recipients = listOf(group1Account, group2Account)
+            )
+        }
+
+        // Child 1 in group 1, child 7 in group 3, but groups in different unit -> not ok
+        assertThrows<BadRequest> {
+            postNewThread(
+                user = person2,
+                title = "title",
+                message = "content",
+                children = listOf(testChild_1.id, testChild_7.id),
+                recipients = listOf(group1Account, group3Account)
+            )
+        }
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen,
@@ -1133,6 +1206,32 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
         }
         return messageContentId
+    }
+
+    private fun postNewThread(
+        user: AuthenticatedUser.Citizen,
+        title: String,
+        message: String,
+        recipients: List<MessageAccountId>,
+        children: List<ChildId>,
+        now: HelsinkiDateTime = sendTime,
+    ): MessageThreadId {
+        val messageThreadId =
+            messageControllerCitizen.newMessage(
+                dbInstance(),
+                user,
+                MockEvakaClock(now),
+                CitizenMessageBody(
+                    recipients = recipients.toSet(),
+                    children = children.toSet(),
+                    title = title,
+                    content = message,
+                )
+            )
+        if (asyncJobRunningEnabled) {
+            asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
+        }
+        return messageThreadId
     }
 
     private fun replyToMessage(
