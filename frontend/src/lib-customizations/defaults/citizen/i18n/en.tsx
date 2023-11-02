@@ -449,6 +449,8 @@ const en: Translations = {
       newMessage: 'New message',
       recipients: 'Recipients',
       secondaryRecipients: 'Other recipients',
+      singleUnitRequired:
+        'Messages can only be sent to a single unit at a time',
       children: 'The message is regarding',
       subject: 'Subject',
       message: 'Message',
@@ -456,7 +458,7 @@ const en: Translations = {
       send: 'Send',
       discard: 'Discard',
       search: 'Search',
-      noResults: 'No results',
+      noResults: 'No results, select a child or children first',
       messageSendError: 'Failed to send the message'
     },
     confirmDelete: {

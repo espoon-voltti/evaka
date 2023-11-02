@@ -7,9 +7,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
-import { renderResult } from 'citizen-frontend/async-rendering'
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
+import { Child } from 'lib-common/generated/api-types/children'
 import {
   AccountType,
   CitizenMessageBody,
@@ -17,7 +17,6 @@ import {
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -27,6 +26,7 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -34,7 +34,6 @@ import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
-import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 
 const emptyMessage: CitizenMessageBody = {
@@ -48,6 +47,7 @@ export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
   type !== 'CITIZEN'
 
 interface Props {
+  children_: Child[]
   receiverOptions: GetReceiversResponse
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
   onSuccess: () => void
@@ -57,6 +57,7 @@ interface Props {
 }
 
 export default React.memo(function MessageEditor({
+  children_,
   receiverOptions,
   onSend,
   onSuccess,
@@ -84,20 +85,36 @@ export default React.memo(function MessageEditor({
 
   const send = useCallback(() => onSend(message), [message, onSend])
 
-  const children = useQueryResult(childrenQuery())
+  const selectedChildren = useMemo(
+    () => children_.filter((c) => message.children.includes(c.id)),
+    [children_, message.children]
+  )
+  const selectedChildrenInSameUnit = useMemo(
+    () =>
+      selectedChildren.every(
+        (c) => c.unit !== null && c.unit.id === selectedChildren[0].unit?.id
+      ),
+    [selectedChildren]
+  )
+  const duplicateChildInfo = useMemo(
+    () => getDuplicateChildInfo(children_, i18n),
+    [children_, i18n]
+  )
 
   const validAccounts = useMemo(() => {
-    const accounts = receiverOptions.messageAccounts.filter((account) =>
-      message.children.every(
-        (childId) =>
-          receiverOptions.childrenToMessageAccounts[childId]?.includes(
-            account.id
-          ) ?? false
-      )
+    const accounts = receiverOptions.messageAccounts.filter(
+      (account) =>
+        selectedChildrenInSameUnit &&
+        message.children.some(
+          (childId) =>
+            receiverOptions.childrenToMessageAccounts[childId]?.includes(
+              account.id
+            ) ?? false
+        )
     )
     const [primary, secondary] = partition(accounts, isPrimaryRecipient)
     return { primary, secondary }
-  }, [message.children, receiverOptions])
+  }, [selectedChildrenInSameUnit, message.children, receiverOptions])
 
   const recipients = useMemo(() => {
     const isMessageRecipient = (account: MessageAccount) =>
@@ -144,53 +161,45 @@ export default React.memo(function MessageEditor({
               <>
                 <label>
                   <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
-                  {renderResult(children, (children) => {
-                    const duplicateChildInfo = getDuplicateChildInfo(
-                      children,
-                      i18n
-                    )
-                    return (
-                      <FixedSpaceFlexWrap horizontalSpacing="xs">
-                        {children
-                          .filter((child) => childIds.includes(child.id))
-                          .map((child) => (
-                            <div key={child.id} data-qa="relevant-child">
-                              <SelectionChip
-                                key={child.id}
-                                text={`${formatFirstName(child)}${
-                                  duplicateChildInfo[child.id] !== undefined
-                                    ? ` ${duplicateChildInfo[child.id]}`
-                                    : ''
-                                }`}
-                                selected={message.children.includes(child.id)}
-                                onChange={(selected) => {
-                                  const children = selected
-                                    ? [...message.children, child.id]
-                                    : message.children.filter(
-                                        (id) => id !== child.id
-                                      )
-                                  const recipients = message.recipients.filter(
-                                    (accountId) =>
-                                      children.every(
-                                        (childId) =>
-                                          receiverOptions.childrenToMessageAccounts[
-                                            childId
-                                          ]?.includes(accountId) ?? false
-                                      )
+                  <FixedSpaceFlexWrap horizontalSpacing="xs">
+                    {children_
+                      .filter((child) => childIds.includes(child.id))
+                      .map((child) => (
+                        <div key={child.id} data-qa="relevant-child">
+                          <SelectionChip
+                            key={child.id}
+                            text={`${formatFirstName(child)}${
+                              duplicateChildInfo[child.id] !== undefined
+                                ? ` ${duplicateChildInfo[child.id]}`
+                                : ''
+                            }`}
+                            selected={message.children.includes(child.id)}
+                            onChange={(selected) => {
+                              const children = selected
+                                ? [...message.children, child.id]
+                                : message.children.filter(
+                                    (id) => id !== child.id
                                   )
-                                  setMessage((message) => ({
-                                    ...message,
-                                    children,
-                                    recipients
-                                  }))
-                                }}
-                                data-qa={`child-${child.id}`}
-                              />
-                            </div>
-                          ))}
-                      </FixedSpaceFlexWrap>
-                    )
-                  })}
+                              const recipients = message.recipients.filter(
+                                (accountId) =>
+                                  children.every(
+                                    (childId) =>
+                                      receiverOptions.childrenToMessageAccounts[
+                                        childId
+                                      ]?.includes(accountId) ?? false
+                                  )
+                              )
+                              setMessage((message) => ({
+                                ...message,
+                                children,
+                                recipients
+                              }))
+                            }}
+                            data-qa={`child-${child.id}`}
+                          />
+                        </div>
+                      ))}
+                  </FixedSpaceFlexWrap>
                 </label>
                 <Gap size="s" />
               </>
@@ -218,8 +227,7 @@ export default React.memo(function MessageEditor({
                     ? `${name} (${i18n.messages.staffAnnotation})`
                     : name
                 }
-                autoFocus={true}
-                data-qa="select-receiver"
+                data-qa="select-recipient"
               />
             </label>
 
@@ -261,6 +269,12 @@ export default React.memo(function MessageEditor({
                   </SecondaryRecipients>
                 </div>
               </>
+            )}
+
+            {!selectedChildrenInSameUnit && (
+              <InfoBox
+                message={i18n.messages.messageEditor.singleUnitRequired}
+              />
             )}
 
             <Gap size="s" />

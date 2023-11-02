@@ -418,7 +418,7 @@ describe('Sending and receiving messages', () => {
           '(Karhula Jari)'
         )
       })
-      test('The citizen can select the child that the message is in regards to', async () => {
+      test('The citizen must select the child that the message is in regards to', async () => {
         const daycarePlacementFixture = await Fixture.placement()
           .with({
             childId: enduserChildFixtureKaarina.id,
@@ -451,6 +451,10 @@ describe('Sending and receiving messages', () => {
           fixtures.enduserChildFixtureJari.id,
           enduserChildFixtureKaarina.id
         ])
+
+        // No recipients available before selecting a child
+        await editor.assertNoRecipients()
+
         await editor.selectChildren([enduserChildFixtureKaarina.id])
         await editor.selectRecipients(recipients)
         await editor.fillMessage(defaultTitle, defaultContent)

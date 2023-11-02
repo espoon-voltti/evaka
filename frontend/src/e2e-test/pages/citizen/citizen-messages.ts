@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilTrue } from '../../utils'
-import { Element, Page, TextInput, TreeDropdown } from '../../utils/page'
+import { Element, MultiSelect, Page, TextInput } from '../../utils/page'
 
 export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}
@@ -140,8 +140,8 @@ export default class CitizenMessagesPage {
 }
 
 export class CitizenMessageEditor extends Element {
-  readonly #receiverSelection = new TreeDropdown(
-    this.find('[data-qa="select-receiver"]')
+  readonly #recipientSelection = new MultiSelect(
+    this.findByDataQa('select-recipient')
   )
   readonly title = new TextInput(this.findByDataQa('input-title'))
   readonly content = new TextInput(this.findByDataQa('input-content'))
@@ -165,11 +165,16 @@ export class CitizenMessageEditor extends Element {
   }
 
   async selectRecipients(recipients: string[]) {
-    await this.#receiverSelection.click()
+    await this.#recipientSelection.click()
     for (const recipient of recipients) {
-      await this.#receiverSelection.findTextExact(recipient).click()
+      await this.#recipientSelection.fillAndSelectFirst(recipient)
     }
-    await this.#receiverSelection.click()
+    await this.#recipientSelection.click()
+  }
+
+  async assertNoRecipients() {
+    await this.#recipientSelection.click()
+    await this.#recipientSelection.assertNoOptions()
   }
 
   async fillMessage(title: string, content: string) {
