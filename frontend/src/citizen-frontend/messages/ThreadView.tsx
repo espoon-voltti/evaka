@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import styled, { css } from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import {
   CitizenMessageThread,
   Message,
@@ -32,7 +33,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
-import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
+import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/messages/ThreadListItem'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
@@ -47,6 +48,7 @@ import { Translations, useTranslation } from '../localization'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import { isPrimaryRecipient } from './MessageEditor'
+import { replyToThreadMutation } from './queries'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -218,14 +220,14 @@ export default React.memo(function ThreadView({
   onThreadDeleted
 }: Props) {
   const i18n = useTranslation()
-  const { sendReply, setReplyContent, getReplyContent } =
-    useContext(MessageContext)
+  const { setReplyContent, getReplyContent } = useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
-  const [replyEditorVisible, setReplyEditorVisible] = useState(false)
+  const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  useEffect(() => setReplyEditorVisible(false), [threadId])
+  const hideReplyEditor = useReplyEditorVisible.off
+  useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
 
   const autoScrollRef = useRef<HTMLSpanElement>(null)
   useEffect(() => {
@@ -246,22 +248,10 @@ export default React.memo(function ThreadView({
 
   const onDiscard = useCallback(() => {
     setReplyContent(threadId, '')
-    setReplyEditorVisible(false)
-  }, [setReplyContent, setReplyEditorVisible, threadId])
+    hideReplyEditor()
+  }, [setReplyContent, hideReplyEditor, threadId])
 
   const replyContent = getReplyContent(threadId)
-  const onSubmit = useCallback(
-    () =>
-      sendReply({
-        content: replyContent,
-        messageId: messages.slice(-1)[0].id,
-        recipientAccountIds: recipients
-          .filter((r) => r.selected)
-          .map((r) => r.id)
-      }),
-    [messages, recipients, replyContent, sendReply]
-  )
-
   const sendEnabled =
     !!replyContent &&
     recipients.some((r) => r.selected && isPrimaryRecipient(r))
@@ -308,9 +298,17 @@ export default React.memo(function ThreadView({
       {replyEditorVisible ? (
         <ReplyEditorContainer>
           <MessageReplyEditor
-            onSubmit={onSubmit}
+            mutation={replyToThreadMutation}
+            onSubmit={() => ({
+              content: replyContent,
+              messageId: messages.slice(-1)[0].id,
+              recipientAccountIds: recipients
+                .filter((r) => r.selected)
+                .map((r) => r.id)
+            })}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}
+            onSuccess={hideReplyEditor}
             recipients={recipients}
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
@@ -325,7 +323,7 @@ export default React.memo(function ThreadView({
               {messageType === 'MESSAGE' ? (
                 <ReplyToThreadButton
                   icon={faReply}
-                  onClick={() => setReplyEditorVisible(true)}
+                  onClick={useReplyEditorVisible.on}
                   data-qa="message-reply-editor-btn"
                   text={i18n.messages.thread.reply}
                 />

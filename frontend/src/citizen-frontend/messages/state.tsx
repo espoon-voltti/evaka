@@ -10,12 +10,11 @@ import React, {
   useState
 } from 'react'
 
-import { Failure, Loading, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   useMutation,
-  useMutationResult,
   usePagedInfiniteQueryResult,
   useQueryResult
 } from 'lib-common/query'
@@ -23,12 +22,10 @@ import { UUID } from 'lib-common/types'
 
 import { useUser } from '../auth/state'
 
-import { ReplyToThreadParams } from './api'
 import {
   markThreadReadMutation,
   messageAccountQuery,
-  receivedMessagesQuery,
-  replyToThreadMutation
+  receivedMessagesQuery
 } from './queries'
 
 export interface MessagePageState {
@@ -38,7 +35,6 @@ export interface MessagePageState {
   loadMoreThreads: () => void
   selectedThread: CitizenMessageThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -50,7 +46,6 @@ const defaultState: MessagePageState = {
   hasMoreThreads: false,
   selectedThread: undefined,
   setSelectedThread: () => undefined,
-  sendReply: () => Promise.resolve(Failure.of({ message: 'Not initialized' })),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -106,21 +101,6 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const { mutateAsync: sendReply } = useMutationResult(replyToThreadMutation)
-    const sendReplyAndClear = useCallback(
-      async (arg: ReplyToThreadParams) => {
-        const result = await sendReply(arg)
-        if (result.isSuccess) {
-          setReplyContents((state) => ({
-            ...state,
-            [result.value.threadId]: ''
-          }))
-        }
-        return result
-      },
-      [sendReply]
-    )
-
     const selectedThread = useMemo(
       () =>
         selectedThreadId !== undefined
@@ -160,8 +140,7 @@ export const MessageContextProvider = React.memo(
         },
         hasMoreThreads: hasNextPage !== undefined && hasNextPage,
         selectedThread,
-        setSelectedThread: setSelectedThreadId,
-        sendReply: sendReplyAndClear
+        setSelectedThread: setSelectedThreadId
       }),
       [
         accountId,
@@ -169,7 +148,6 @@ export const MessageContextProvider = React.memo(
         getReplyContent,
         hasNextPage,
         selectedThread,
-        sendReplyAndClear,
         setReplyContent,
         threads
       ]

@@ -31,7 +31,7 @@ import { CareArea, EmployeeDetail } from '../../dev-api/types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
@@ -701,7 +701,7 @@ describe('Sending and receiving messages', () => {
       await messagesPage.sendReplyButton.waitUntilVisible()
       await messagesPage.fillReplyContent(defaultContent)
       await messagesPage.sendReplyButton.click()
-      await waitUntilTrue(() => messagesPage.sendReplyButton.disabled)
+      await messagesPage.sendReplyButton.waitUntilHidden()
       await runPendingAsyncJobs(mockedDateAt12.addMinutes(1))
 
       await openCitizenPage(mockedDateAt12.addMinutes(1))

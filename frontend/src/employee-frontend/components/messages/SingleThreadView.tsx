@@ -17,7 +17,8 @@ import {
   Message,
   MessageChild,
   MessageThread,
-  MessageType
+  MessageType,
+  ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
@@ -32,7 +33,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
-import { MessageReplyEditor } from 'lib-components/messages/MessageReplyEditor'
+import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
@@ -46,6 +47,7 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
 import { archiveThread } from './api'
+import { replyToThreadMutation } from './queries'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
@@ -170,7 +172,7 @@ export function SingleThreadView({
   onArchived
 }: Props) {
   const { i18n } = useTranslation()
-  const { getReplyContent, sendReply, setReplyContent } =
+  const { getReplyContent, onReplySent, setReplyContent } =
     useContext(MessageContext)
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
@@ -195,15 +197,25 @@ export function SingleThreadView({
     scrollRefIntoView(autoScrollRef)
   }, [messages, replyEditorVisible])
 
-  const onSubmitReply = () =>
-    sendReply({
+  const onSubmitReply = useCallback(
+    () => ({
       content: replyContent,
       messageId: messages.slice(-1)[0].id,
       recipientAccountIds: recipients
         .filter((r) => r.selected)
         .map((r) => r.id),
       accountId
-    })
+    }),
+    [accountId, messages, recipients, replyContent]
+  )
+
+  const handleReplySent = useCallback(
+    (response: ThreadReply) => {
+      onReplySent(accountId, response)
+      setReplyEditorVisible(false)
+    },
+    [accountId, onReplySent]
+  )
 
   const onDiscard = useCallback(() => {
     setReplyContent(threadId, '')
@@ -255,7 +267,9 @@ export function SingleThreadView({
           (replyEditorVisible ? (
             <MessageContainer>
               <MessageReplyEditor
+                mutation={replyToThreadMutation}
                 onSubmit={onSubmitReply}
+                onSuccess={handleReplySent}
                 onDiscard={onDiscard}
                 onUpdateContent={onUpdateContent}
                 recipients={recipients}

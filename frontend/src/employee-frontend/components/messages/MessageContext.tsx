@@ -14,7 +14,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
-import { Failure, Loading, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
   DraftContent,
   Message,
@@ -56,8 +56,6 @@ import {
   getSentMessages,
   getUnreadCounts,
   markThreadRead,
-  replyToThread,
-  ReplyToThreadParams,
   getThread
 } from './api'
 import {
@@ -101,7 +99,7 @@ export interface MessagesState {
   setSelectedThread: (threadId: UUID) => void
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
-  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
+  onReplySent: (accountId: UUID, reply: ThreadReply) => void
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
   refreshMessages: (account?: UUID) => void
@@ -140,7 +138,7 @@ const defaultState: MessagesState = {
   setSelectedThread: () => undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
-  sendReply: () => Promise.resolve(Failure.of({ message: 'Not initialized' })),
+  onReplySent: () => undefined,
   getReplyContent: () => '',
   setReplyContent: () => undefined,
   refreshMessages: () => undefined,
@@ -603,38 +601,28 @@ export const MessageContextProvider = React.memo(
       [setSingleThread]
     )
 
-    const setReplyResponse = useCallback(
-      (res: Result<ThreadReply>) => {
-        if (res.isSuccess) {
-          const {
-            value: { message, threadId }
-          } = res
-          if (selectedAccount?.view === 'thread') {
-            appendMessageToSingleThread(message)
-          } else {
-            setReceivedMessages(
-              appendMessageAndMoveThreadToTopOfList(threadId, message)
-            )
-          }
-          setSelectedThread(threadId)
-          setReplyContents((state) => ({ ...state, [threadId]: '' }))
+    const onReplySent = useCallback(
+      (accountId: UUID, { message, threadId }: ThreadReply) => {
+        openMessageUndo({
+          accountId,
+          messageId: message.id,
+          sentAt: HelsinkiDateTime.now()
+        })
+        if (selectedAccount?.view === 'thread') {
+          appendMessageToSingleThread(message)
+        } else {
+          setReceivedMessages(
+            appendMessageAndMoveThreadToTopOfList(threadId, message)
+          )
         }
+        setSelectedThread(threadId)
       },
-      [selectedAccount, appendMessageToSingleThread, setSelectedThread]
-    )
-    const sendReply = useRestApi(
-      (params: ReplyToThreadParams) =>
-        replyToThread(params).then((result) => {
-          if (result.isSuccess) {
-            openMessageUndo({
-              accountId: params.accountId,
-              messageId: result.value.message.id,
-              sentAt: HelsinkiDateTime.now()
-            })
-          }
-          return result
-        }),
-      setReplyResponse
+      [
+        appendMessageToSingleThread,
+        openMessageUndo,
+        selectedAccount,
+        setSelectedThread
+      ]
     )
 
     const [replyContents, setReplyContents] = useState<RepliesByThread>({})
@@ -741,7 +729,7 @@ export const MessageContextProvider = React.memo(
         setSelectedThread,
         selectedThread,
         selectThread,
-        sendReply,
+        onReplySent,
         getReplyContent,
         setReplyContent,
         refreshMessages,
@@ -776,7 +764,7 @@ export const MessageContextProvider = React.memo(
         setSelectedThread,
         selectedThread,
         selectThread,
-        sendReply,
+        onReplySent,
         getReplyContent,
         setReplyContent,
         refreshMessages,
