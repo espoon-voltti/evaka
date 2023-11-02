@@ -16,7 +16,7 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
   justify-content: space-between;
   padding: ${defaultMargins.s};
   cursor: pointer;
-  :first-child {
+  &:first-child {
     border-top: 1px solid ${colors.grayscale.g15};
   }
   border-bottom: 1px solid ${colors.grayscale.g15};
