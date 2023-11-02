@@ -631,17 +631,17 @@ sealed interface Action {
     ) : ScopedAction<AssistanceActionId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
         );
 
@@ -653,17 +653,17 @@ sealed interface Action {
     ) : ScopedAction<AssistanceFactorId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
         ),
         READ(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
         );
 
@@ -675,37 +675,42 @@ sealed interface Action {
     ) : ScopedAction<AssistanceNeedDecisionId> {
         READ_DECISION_MAKER_OPTIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision()
+            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true)
         ),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
         ),
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
             IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
-            HasUnitRole(UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inSelectedUnitOfAssistanceNeedDecision()
         ),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
@@ -720,37 +725,37 @@ sealed interface Action {
     ) : ScopedAction<AssistanceNeedPreschoolDecisionId> {
         READ_DECISION_MAKER_OPTIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
             HasGlobalRole(DIRECTOR).andAssistanceNeedPreschoolDecisionHasBeenSent(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
             HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision()
         ),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
         ),
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
             IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
-            HasUnitRole(UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedPreschoolDecision()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inSelectedUnitOfAssistanceNeedPreschoolDecision()
         ),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
@@ -768,11 +773,13 @@ sealed interface Action {
     ) : ScopedAction<AssistanceNeedVoucherCoefficientId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement()
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -925,94 +932,104 @@ sealed interface Action {
         READ_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_ASSISTANCE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_ASSISTANCE_FACTOR(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_FACTORS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_DAYCARE_ASSISTANCE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_DAYCARE_ASSISTANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_PRESCHOOL_ASSISTANCE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_PRESCHOOL_ASSISTANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_OTHER_ASSISTANCE_MEASURE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_OTHER_ASSISTANCE_MEASURES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                    SPECIAL_EDUCATION_TEACHER
+                )
                 .inPlacementUnitOfChild()
         ),
         CREATE_ASSISTANCE_NEED_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_NEED_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
             HasGlobalRole(SERVICE_WORKER).andChildHasServiceVoucherPlacement(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildWithServiceVoucherPlacement()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildWithServiceVoucherPlacement()
         ),
         CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         ),
         CREATE_ATTENDANCE_RESERVATION(
             HasGlobalRole(ADMIN),
@@ -1283,17 +1300,17 @@ sealed interface Action {
     ) : ScopedAction<DaycareAssistanceId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
         );
 
@@ -1577,17 +1594,20 @@ sealed interface Action {
     ) : ScopedAction<OtherAssistanceMeasureId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
         ),
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
         );
@@ -1807,17 +1827,20 @@ sealed interface Action {
     ) : ScopedAction<PreschoolAssistanceId> {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(false)
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance(false),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfPreschoolAssistance(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
         );
 

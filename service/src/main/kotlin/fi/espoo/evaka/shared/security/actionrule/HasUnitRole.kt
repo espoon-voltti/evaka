@@ -274,7 +274,9 @@ ${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDele
 SELECT aa.id, role, acl.daycare_id AS unit_id
 FROM assistance_action aa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -290,8 +292,8 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND aa.end_date >= ${bind(now.toLocalDate())}" else ""}    
-            """
+AND aa.end_date >= ${bind(now.toLocalDate())}"""
+                    else ""
             )
         }
 
@@ -302,7 +304,9 @@ ${if (hidePastAssistance) "AND aa.end_date >= ${bind(now.toLocalDate())}" else "
 SELECT af.id, role, acl.daycare_id AS unit_id
 FROM assistance_factor af
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -318,8 +322,8 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
-            """
+AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
+                    else ""
             )
         }
 
@@ -330,7 +334,9 @@ ${if (hidePastAssistance) "AND NOT af.valid_during << ${bind(now.toLocalDate().t
 SELECT ad.id, role, acl.daycare_id AS unit_id
 FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -346,19 +352,21 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""} 
-            """
+AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}"""
+                    else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision() =
+    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(hidePastAssistance: Boolean) =
         rule<AssistanceNeedDecisionId> { user, now ->
             sql(
                 """
 SELECT ad.id, role, acl.daycare_id AS unit_id
 FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)} AND ad.status = 'ACCEPTED'
+WHERE employee_id = ${bind(user.id)} AND ad.status = 'ACCEPTED'""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -376,6 +384,7 @@ AND CASE
      END
 AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())} 
             """
+                    else ""
             )
         }
 
@@ -398,7 +407,9 @@ WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
 SELECT da.id, role, acl.daycare_id AS unit_id
 FROM daycare_assistance da
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -414,8 +425,8 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}    
-            """
+AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
+                    else ""
             )
         }
 
@@ -426,7 +437,9 @@ ${if (hidePastAssistance) "AND NOT da.valid_during << ${bind(now.toLocalDate().t
 SELECT oam.id, role, acl.daycare_id AS unit_id
 FROM other_assistance_measure oam
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -442,8 +455,8 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
-            """
+AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
+                    else ""
             )
         }
 
@@ -454,7 +467,9 @@ ${if (hidePastAssistance) "AND NOT oam.valid_during << ${bind(now.toLocalDate().
 SELECT pa.id, role, acl.daycare_id AS unit_id
 FROM preschool_assistance pa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE employee_id = ${bind(user.id)}""" +
+                    if (hidePastAssistance)
+                        """
 AND CASE 
         WHEN EXISTS (
             SELECT true 
@@ -470,8 +485,8 @@ AND CASE
                 AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
         ELSE TRUE 
      END
-${if (hidePastAssistance) "AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}" else ""}  
-            """
+AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
+                    else ""
             )
         }
 
