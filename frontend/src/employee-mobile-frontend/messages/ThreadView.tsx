@@ -19,7 +19,7 @@ import {
   MessageThread,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
-import { formatFirstName } from 'lib-common/names'
+import { formatAccountNames } from 'lib-common/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -221,26 +221,6 @@ const SingleMessage = React.memo(
     )
   })
 )
-
-function formatAccountNames(
-  sender: MessageAccount,
-  recipients: MessageAccount[],
-  children: MessageChild[]
-): { senderName: string; recipientNames: string[] } {
-  const childNames =
-    children.length > 0
-      ? children.map((child) => formatFirstName(child)).join(', ')
-      : undefined
-  const childSuffix = childNames ? ` (${childNames})` : ''
-
-  const senderName =
-    sender.name + (sender.type === 'CITIZEN' ? childSuffix : '')
-  const recipientNames = recipients.map(
-    (r) => r.name + (r.type === 'CITIZEN' ? childSuffix : '')
-  )
-
-  return { senderName, recipientNames }
-}
 
 interface SentMessageViewProps {
   account: MessageAccount
