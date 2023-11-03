@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.deleteVardaOrganizerChildByVardaChildId
-import fi.espoo.evaka.varda.deleteVardaServiceNeedByVardaChildId
+import fi.espoo.evaka.varda.deleteVardaServiceNeedByEvakaChildId
 import fi.espoo.evaka.varda.getServiceNeedsForVardaByChild
 import fi.espoo.evaka.varda.getVardaChildToEvakaChild
 import fi.espoo.evaka.varda.getVardaChildrenToReset
@@ -180,7 +180,7 @@ fun deleteChildDataFromVardaAndDb(
     val successfulDeletes: List<Boolean> =
         vardaChildIds.map { vardaChildId ->
             try {
-                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId)
+                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId, evakaChildId)
                 true
             } catch (e: Exception) {
                 logger.warn(
@@ -197,7 +197,8 @@ fun deleteChildDataFromVardaAndDb(
 fun deleteChildDataFromVardaAndDbByVardaId(
     db: Database.Connection,
     vardaClient: VardaClient,
-    vardaChildId: Long
+    vardaChildId: Long,
+    evakaChildId: ChildId
 ) {
     logger.info("VardaUpdate: deleting all child data from varda (child id: $vardaChildId)")
     try {
@@ -206,12 +207,14 @@ fun deleteChildDataFromVardaAndDbByVardaId(
         // MI015 = unknown child so delete can be considered being a success
         if (e.message?.contains("MI015") != true) throw e
     }
-    db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
 
-    logger.info("VardaUpdate: deleting from varda_service_need for child $vardaChildId")
-    db.transaction { it.deleteVardaServiceNeedByVardaChildId(vardaChildId) }
+    logger.info("VardaUpdate: deleting all evaka side varda data of child $vardaChildId")
+    db.transaction {
+        it.deleteVardaOrganizerChildByVardaChildId(vardaChildId)
+        it.deleteVardaServiceNeedByEvakaChildId(evakaChildId)
+    }
 
-    logger.info("VardaUpdate: successfully deleted data for child $vardaChildId")
+    logger.info("VardaUpdate: successfully deleted evaka side varda data for child $vardaChildId")
 }
 
 private fun getVardaChildIdsByEvakaChildId(
