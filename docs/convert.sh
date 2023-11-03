@@ -8,7 +8,7 @@ set -euo pipefail
 
 BASEDIR=$(dirname "$0")
 TARGETDIR="${BASEDIR}/diagrams/png"
-PLANTUML_VERSION=1.2021.8
+PLANTUML_VERSION=1.2023.12
 
 rm -rf "${TARGETDIR}"
 mkdir -p "${TARGETDIR}"
