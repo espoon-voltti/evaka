@@ -7,8 +7,6 @@ import styled from 'styled-components'
 
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
-import { useTranslation } from '../../state/i18n'
-
 interface Props {
   children: React.ReactNode
   info: string | null
@@ -19,15 +17,9 @@ const WhitespacePre = styled.div`
 `
 
 export default React.memo(function QuestionInfo({ children, info }: Props) {
-  const { i18n } = useTranslation()
   if (info) {
     return (
-      <ExpandingInfo
-        info={<WhitespacePre>{info}</WhitespacePre>}
-        ariaLabel={i18n.common.openExpandingInfo}
-        width="full"
-        closeLabel={i18n.common.close}
-      >
+      <ExpandingInfo info={<WhitespacePre>{info}</WhitespacePre>} width="full">
         {children}
       </ExpandingInfo>
     )

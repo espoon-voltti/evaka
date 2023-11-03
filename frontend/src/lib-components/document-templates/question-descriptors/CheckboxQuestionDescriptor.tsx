@@ -79,12 +79,7 @@ const View = React.memo(function View({
       <span>{answer.state ? i18n.common.yes : i18n.common.no}</span>
     </FixedSpaceColumn>
   ) : (
-    <ExpandingInfo
-      info={infoText.value()}
-      width="full"
-      ariaLabel=""
-      closeLabel={i18n.common.close}
-    >
+    <ExpandingInfo info={infoText.value()} width="full">
       <CheckboxF bind={answer} label={label.state} disabled={readOnly} />
     </ExpandingInfo>
   )

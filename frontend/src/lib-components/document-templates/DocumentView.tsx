@@ -9,8 +9,6 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
 
-import { useTranslations } from '../i18n'
-
 import {
   documentForm,
   DocumentQuestionView,
@@ -48,16 +46,11 @@ export const DocumentSectionView = React.memo(function DocumentSectionView({
   bind,
   readOnly
 }: DocumentSectionProps) {
-  const i18n = useTranslations()
   const { label, questions, infoText } = useFormFields(bind)
   const questionElems = useFormElems(questions)
   return (
     <div data-qa="document-section">
-      <ExpandingInfo
-        info={readOnly ? undefined : infoText.state}
-        closeLabel={i18n.common.close}
-        ariaLabel=""
-      >
+      <ExpandingInfo info={readOnly ? undefined : infoText.state}>
         <H2>{label.value()}</H2>
       </ExpandingInfo>
       <FixedSpaceColumn>

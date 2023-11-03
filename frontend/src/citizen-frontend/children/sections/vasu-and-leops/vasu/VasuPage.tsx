@@ -120,8 +120,6 @@ export default React.memo(function VasuPage() {
                               : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
                           </div>
                         }
-                        ariaLabel={t.common.openExpandingInfo}
-                        closeLabel={t.common.close}
                         inlineChildren
                       >
                         <span>

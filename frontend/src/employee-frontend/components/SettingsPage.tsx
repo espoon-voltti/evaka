@@ -134,8 +134,6 @@ const SettingRow = React.memo(function SettingRow({
       <Td>
         <ExpandingInfo
           info={i18n.settings.options[option].description}
-          ariaLabel={i18n.common.openExpandingInfo}
-          closeLabel={i18n.common.close}
           width="full"
         >
           {i18n.settings.options[option].title}

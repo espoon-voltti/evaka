@@ -389,13 +389,7 @@ export default React.memo(function VasuTemplateEditor() {
               <Bold>{opt.name}</Bold>
             </QuestionInfo>
           ) : (
-            <ExpandingInfo
-              info={opt.info}
-              key={opt.key}
-              ariaLabel=""
-              closeLabel=""
-              width="full"
-            >
+            <ExpandingInfo info={opt.info} key={opt.key} width="full">
               <FixedSpaceRow>
                 <Checkbox checked={false} label={opt.name} key={opt.key} />
                 {opt.date ? (

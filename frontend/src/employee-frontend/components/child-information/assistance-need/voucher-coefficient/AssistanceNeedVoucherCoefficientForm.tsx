@@ -207,12 +207,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
     <form onSubmit={submitForm}>
       {!isUpdate(props) && (
         <>
-          <ExpandingInfo
-            info={<div>{t.form.titleInfo}</div>}
-            ariaLabel={i18n.common.openExpandingInfo}
-            width="full"
-            closeLabel={i18n.common.close}
-          >
+          <ExpandingInfo info={<div>{t.form.titleInfo}</div>} width="full">
             <LabelLike>{t.form.title}</LabelLike>
           </ExpandingInfo>
           <Gap size="s" />

@@ -264,7 +264,6 @@ export default React.memo(function PersonalDetailsSection({
               <ExpandingInfoBox
                 info={t.personalDetails.detailsSection.emailInfo}
                 close={setEmailInfo.off}
-                closeLabel={t.common.close}
               />
               <Gap size="s" />
             </>

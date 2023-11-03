@@ -73,9 +73,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
                   }
                 </div>
               }
-              ariaLabel={i18n.common.openExpandingInfo}
               width="full"
-              closeLabel={i18n.common.close}
             >
               <LabelLike>
                 {

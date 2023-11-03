@@ -258,11 +258,7 @@ export default React.memo(function FeeThresholdsEditor({
         </Tbody>
       </TableWithMargin>
       <ColumnWithMargin spacing="xxs">
-        <ExpandingInfo
-          info={i18n.financeBasics.fees.thresholdIncreaseInfo}
-          ariaLabel={i18n.common.openExpandingInfo}
-          closeLabel={i18n.common.close}
-        >
+        <ExpandingInfo info={i18n.financeBasics.fees.thresholdIncreaseInfo}>
           <Label htmlFor="thresholdIncrease">
             {i18n.financeBasics.fees.thresholdIncrease}
           </Label>

@@ -19,6 +19,7 @@ import { fasInfo, faTimes } from 'lib-icons'
 import RoundIcon from '../atoms/RoundIcon'
 import IconButton from '../atoms/buttons/IconButton'
 import { desktopMin } from '../breakpoints'
+import { useTranslations } from '../i18n'
 import { defaultMargins, SpacingSize } from '../white-space'
 
 const InfoBoxContainer = styled(Container)<{
@@ -106,17 +107,14 @@ const RoundIconButton = styled.button<{ margin: SpacingSize }>`
 type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
-  ariaLabel: string
   width?: 'fixed' | 'full' | 'auto'
   margin?: SpacingSize
   'data-qa'?: string
   inlineChildren?: boolean
-  closeLabel: string
 }
 
 const ExpandingInfoToggleContext = React.createContext<
   | {
-      ariaLabel: string
       margin?: SpacingSize
       dataQa?: string
       expanded: boolean
@@ -137,13 +135,12 @@ const ExpandingInfoGroupContext = React.createContext<{
 export default React.memo(function ExpandingInfo({
   children,
   info,
-  ariaLabel,
   width = 'fixed',
   margin,
   'data-qa': dataQa,
-  inlineChildren,
-  closeLabel
+  inlineChildren
 }: ExpandingInfoProps) {
+  const i18n = useTranslations()
   const group = useContext(ExpandingInfoGroupContext)
 
   const [expanded, setExpanded] = useState<boolean>(false)
@@ -175,7 +172,7 @@ export default React.memo(function ExpandingInfo({
       {children}
       <InlineInfoButton
         onClick={toggleExpanded}
-        aria-label={ariaLabel}
+        aria-label={i18n.common.openExpandingInfo}
         margin={margin ?? 'zero'}
         data-qa={dataQa}
         open={expanded}
@@ -186,7 +183,7 @@ export default React.memo(function ExpandingInfo({
       <div>{children}</div>
       <InfoButton
         onClick={toggleExpanded}
-        aria-label={ariaLabel}
+        aria-label={i18n.common.openExpandingInfo}
         margin={margin ?? 'zero'}
         data-qa={dataQa}
         open={expanded}
@@ -198,7 +195,6 @@ export default React.memo(function ExpandingInfo({
     <ExpandingInfoToggleContext.Provider
       value={{
         toggleExpanded,
-        ariaLabel,
         margin,
         dataQa,
         hasSlot: setHasSlot,
@@ -212,7 +208,6 @@ export default React.memo(function ExpandingInfo({
             info={info}
             width={width}
             close={close}
-            closeLabel={closeLabel}
             data-qa={dataQa}
           />
         )}
@@ -223,6 +218,7 @@ export default React.memo(function ExpandingInfo({
 
 export const ExpandingInfoButtonSlot = React.memo(
   function ExpendingInfoButtonSlot() {
+    const i18n = useTranslations()
     const info = useContext(ExpandingInfoToggleContext)
 
     useEffect(() => {
@@ -243,7 +239,7 @@ export const ExpandingInfoButtonSlot = React.memo(
           ev.stopPropagation()
           info.toggleExpanded()
         }}
-        aria-label={info.ariaLabel}
+        aria-label={i18n.common.openExpandingInfo}
         margin={info.margin ?? 'zero'}
         data-qa={info.dataQa}
         open={info.expanded}
@@ -295,16 +291,15 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   close,
   width = 'fixed',
   className,
-  'data-qa': dataQa,
-  closeLabel
+  'data-qa': dataQa
 }: {
   info: ReactNode
   close: () => void
   width?: 'fixed' | 'full' | 'auto'
   className?: string
   'data-qa'?: string
-  closeLabel: string
 }) {
+  const i18n = useTranslations()
   const { colors } = useTheme()
 
   return (
@@ -319,7 +314,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
         <IconButton
           onClick={close}
           icon={faTimes}
-          aria-label={closeLabel}
+          aria-label={i18n.common.close}
           gray
         />
       </InfoBoxContentArea>

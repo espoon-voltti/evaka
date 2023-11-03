@@ -101,7 +101,6 @@ export const AssistanceFactorSection = React.memo(
           <ExpandingInfoBox
             info={t.assistanceFactor.info()}
             close={closeInfo}
-            closeLabel={i18n.common.close}
           />
         )}
         {(mode?.type || rows.length > 0) && (

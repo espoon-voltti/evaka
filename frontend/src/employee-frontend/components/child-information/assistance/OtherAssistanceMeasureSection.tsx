@@ -128,7 +128,6 @@ export const OtherAssistanceMeasureSection = React.memo(
           <ExpandingInfoBox
             info={t.otherAssistanceMeasure.info[info]()}
             close={() => setInfo(undefined)}
-            closeLabel={i18n.common.close}
           />
         )}
         {(mode?.type || rows.length > 0) && (

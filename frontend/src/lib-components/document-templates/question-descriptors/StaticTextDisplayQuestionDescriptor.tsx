@@ -80,7 +80,6 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
-  const i18n = useTranslations()
   const { template } = useFormFields(bind)
   const { label, text, infoText } = useFormFields(template)
   return (
@@ -90,8 +89,6 @@ const View = React.memo(function View({
           <ExpandingInfo
             info={readOnly ? undefined : infoText.value()}
             width="full"
-            ariaLabel=""
-            closeLabel={i18n.common.close}
           >
             <Label>{label.state}</Label>
           </ExpandingInfo>
@@ -100,8 +97,6 @@ const View = React.memo(function View({
           <ExpandingInfo
             info={readOnly || label.state ? undefined : infoText.value()}
             width="full"
-            ariaLabel=""
-            closeLabel={i18n.common.close}
           >
             <div>
               {text.state.split('\n').map((line, i) => (

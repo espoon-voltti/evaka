@@ -93,7 +93,6 @@ export default React.memo(function LoginPage() {
               <ExpandingInfoBox
                 info={i18n.loginPage.login.infoBoxText}
                 close={() => setShowInfoBoxText1(false)}
-                closeLabel={i18n.common.close}
               />
             )}
             <Gap size="s" />
@@ -119,7 +118,6 @@ export default React.memo(function LoginPage() {
               <ExpandingInfoBox
                 info={i18n.loginPage.applying.infoBoxText}
                 close={() => setShowInfoBoxText2(false)}
-                closeLabel={i18n.common.close}
               />
             )}
             <ul>
