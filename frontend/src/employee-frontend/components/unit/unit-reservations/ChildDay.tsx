@@ -326,7 +326,7 @@ const TimesRow = styled.div`
   padding: ${defaultMargins.xs};
   gap: ${defaultMargins.xs};
 
-  :nth-child(even) {
+  &:nth-child(even) {
     background: ${colors.grayscale.g4};
   }
 `
