@@ -129,16 +129,18 @@ export default React.memo(function StaffMemberPage() {
                           </span>
                         </>
                       )}
-                      <InlineIconButton
-                        icon={faEdit}
-                        onClick={() =>
-                          navigate(
-                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
-                          )
-                        }
-                        aria-label={i18n.common.edit}
-                        data-qa="edit"
-                      />
+                      {featureFlags.employeeMobileStaffAttendanceEdit && (
+                        <InlineIconButton
+                          icon={faEdit}
+                          onClick={() =>
+                            navigate(
+                              `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                            )
+                          }
+                          aria-label={i18n.common.edit}
+                          data-qa="edit"
+                        />
+                      )}
                     </TimeInfo>
                   </>
                 )
