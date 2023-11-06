@@ -94,8 +94,6 @@ export default React.memo(
         <Gap size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.outdatedIncomeInfo}
-          ariaLabel={t.common.openExpandingInfo}
-          closeLabel={t.common.close}
         >
           <CheckboxF
             bind={outdatedIncome}
@@ -132,8 +130,6 @@ export default React.memo(
         <Gap size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.documentInfo}
-          ariaLabel={t.common.openExpandingInfo}
-          closeLabel={t.common.close}
         >
           <CheckboxF
             bind={document}
@@ -145,8 +141,6 @@ export default React.memo(
         <Gap size="s" />
         <ExpandingInfo
           info={t.personalDetails.notificationsSection.informalDocumentInfo}
-          ariaLabel={t.common.openExpandingInfo}
-          closeLabel={t.common.close}
         >
           <CheckboxF
             bind={informalDocument}
@@ -161,8 +155,6 @@ export default React.memo(
             t.personalDetails.notificationsSection
               .missingAttendanceReservationInfo
           }
-          ariaLabel={t.common.openExpandingInfo}
-          closeLabel={t.common.close}
         >
           <CheckboxF
             bind={missingAttendanceReservation}

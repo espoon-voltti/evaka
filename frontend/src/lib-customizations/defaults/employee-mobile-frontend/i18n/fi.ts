@@ -86,7 +86,6 @@ export const fi = {
       dateBetween: (start: string, end: string) =>
         `Oltava välillä ${start}-${end}`
     },
-    openExpandingInfo: 'Avaa lisätietokenttä',
     nb: 'Huom',
     validity: 'Voimassaolo',
     validTo: (date: string) => `Voimassa ${date} saakka`,

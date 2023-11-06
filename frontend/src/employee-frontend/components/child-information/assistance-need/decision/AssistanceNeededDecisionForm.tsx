@@ -42,15 +42,9 @@ const FieldWithInfo = React.memo(function FieldWithInfo({
   spacing?: string
   children: React.ReactNode
 }) {
-  const { i18n } = useTranslation()
-
   return (
     <FixedSpaceColumn spacing={spacing || defaultMargins.s}>
-      <ExpandingInfo
-        info={info}
-        ariaLabel={i18n.common.openExpandingInfo}
-        closeLabel={i18n.common.close}
-      >
+      <ExpandingInfo info={info}>
         <Label>{label}</Label>
       </ExpandingInfo>
       {children}

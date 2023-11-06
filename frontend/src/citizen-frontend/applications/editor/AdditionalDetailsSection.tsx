@@ -64,8 +64,6 @@ export default React.memo(function AdditionalDetailsSection({
             <ExpandingInfo
               data-qa="diet-expanding-info"
               info={t.applications.editor.additionalDetails.dietInfo}
-              ariaLabel={t.common.openExpandingInfo}
-              closeLabel={t.common.close}
               inlineChildren
             >
               <Label>{t.applications.editor.additionalDetails.dietLabel}</Label>

@@ -81,11 +81,7 @@ export default React.memo(function TemplateSectionView({
   return (
     <Wrapper $readOnly={readOnly} data-qa="template-section">
       <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
-        <ExpandingInfo
-          info={infoText.state}
-          closeLabel={i18n.common.close}
-          ariaLabel=""
-        >
+        <ExpandingInfo info={infoText.state}>
           <H2>{label.value()}</H2>
         </ExpandingInfo>
 

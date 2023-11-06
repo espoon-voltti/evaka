@@ -248,8 +248,6 @@ export default React.memo(function PedagogicalDocumentsSection({
           <FixedSpaceColumn>
             <ExpandingInfo
               info={i18n.children.vasu.givePermissionToShareInfoVasuInfoText}
-              ariaLabel=""
-              closeLabel={i18n.common.close}
             >
               {i18n.children.vasu.givePermissionToShareInfoVasu}
             </ExpandingInfo>

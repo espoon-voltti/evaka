@@ -64,8 +64,6 @@ export default React.memo(function ChildSubSection({
       <ExpandingInfo
         data-qa="child-future-address-info"
         info={t.applications.editor.contactInfo.futureAddressInfo}
-        ariaLabel={t.common.openExpandingInfo}
-        closeLabel={t.common.close}
       >
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}

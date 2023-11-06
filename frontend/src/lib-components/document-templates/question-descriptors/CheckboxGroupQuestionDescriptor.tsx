@@ -101,7 +101,6 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
-  const i18n = useTranslations()
   const { template, answer } = useFormFields(bind)
   const { label, infoText, options } = useFormFields(template)
   const optionElems = useFormElems(options)
@@ -127,12 +126,7 @@ const View = React.memo(function View({
     </FixedSpaceColumn>
   ) : (
     <FixedSpaceColumn fullWidth>
-      <ExpandingInfo
-        info={infoText.value()}
-        width="full"
-        ariaLabel=""
-        closeLabel={i18n.common.close}
-      >
+      <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
       <GroupIndentation>

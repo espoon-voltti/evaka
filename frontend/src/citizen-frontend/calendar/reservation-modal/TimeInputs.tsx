@@ -187,7 +187,6 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
                 close={onInfoClick}
                 aria-label={i18n.calendar.absenceMarkedByEmployee}
                 info={i18n.calendar.contactStaffToEditAbsence}
-                closeLabel={i18n.common.close}
                 width="full"
               />
             </FixedSpaceRow>
@@ -229,7 +228,6 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
                 close={onInfoClick}
                 aria-label={i18n.calendar.reservationModal.reservationClosed}
                 info={i18n.calendar.reservationModal.reservationClosedInfo}
-                closeLabel={i18n.common.close}
                 width="full"
               />
             </FixedSpaceRow>

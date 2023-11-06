@@ -5,7 +5,6 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { MultiSelectQuestion, QuestionOption } from 'lib-common/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -115,8 +114,6 @@ const MultiSelectQuestionOption = React.memo(
       dateRange: { start: LocalDate; end: LocalDate } | null
     ) => void
   }) {
-    const { i18n } = useTranslation()
-
     const checked = value.includes(option.key)
     const date = dateValue?.[option.key] ?? null
     const dateRange = dateRangeValue?.[option.key] ?? null
@@ -184,12 +181,7 @@ const MultiSelectQuestionOption = React.memo(
     )
 
     return (
-      <ExpandingInfo
-        key={option.key}
-        info={option.info}
-        ariaLabel={i18n.common.openExpandingInfo}
-        closeLabel={i18n.common.close}
-      >
+      <ExpandingInfo key={option.key} info={option.info}>
         <FixedSpaceRow>
           <Checkbox
             key={option.key}

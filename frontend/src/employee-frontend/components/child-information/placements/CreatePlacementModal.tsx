@@ -223,8 +223,6 @@ function CreatePlacementModal({ childId, reload }: Props) {
                 i18n.childInformation.placements.createPlacement.placeGuarantee
                   .info
               }
-              closeLabel={i18n.common.close}
-              ariaLabel=""
               width="auto"
             >
               <Checkbox

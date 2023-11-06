@@ -73,7 +73,6 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
-  const i18n = useTranslations()
   const { template, answer } = useFormFields(bind)
   const { label, infoText, multiline } = useFormFields(template)
   return readOnly ? (
@@ -90,12 +89,7 @@ const View = React.memo(function View({
     </FixedSpaceColumn>
   ) : (
     <FixedSpaceColumn fullWidth data-qa="document-question">
-      <ExpandingInfo
-        info={infoText.value()}
-        width="full"
-        ariaLabel=""
-        closeLabel={i18n.common.close}
-      >
+      <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
       {multiline.state ? (

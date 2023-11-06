@@ -108,8 +108,6 @@ export default React.memo(function PreferredStartSubSection({
         <ExpandingInfo
           data-qa="startdate-instructions"
           info={t.applications.editor.serviceNeed.startDate.instructions[type]}
-          ariaLabel={t.common.openExpandingInfo}
-          closeLabel={t.common.close}
           inlineChildren
         >
           <Label htmlFor={labelId}>
@@ -206,8 +204,6 @@ export default React.memo(function PreferredStartSubSection({
               info={
                 t.applications.editor.serviceNeed.clubDetails.wasOnDaycareInfo
               }
-              ariaLabel={t.common.openExpandingInfo}
-              closeLabel={t.common.close}
               margin="xs"
               data-qa="wasOnDaycare-info"
             >
@@ -230,8 +226,6 @@ export default React.memo(function PreferredStartSubSection({
               info={
                 t.applications.editor.serviceNeed.clubDetails.wasOnClubCareInfo
               }
-              ariaLabel={t.common.openExpandingInfo}
-              closeLabel={t.common.close}
               margin="xs"
             >
               <Checkbox

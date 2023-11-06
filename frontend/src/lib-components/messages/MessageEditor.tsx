@@ -544,7 +544,6 @@ export default React.memo(function MessageEditor({
                       width="auto"
                       info={i18n.messageEditor.flags.sensitive.whyDisabled}
                       close={onSensitiveInfoClick}
-                      closeLabel={i18n.common.close}
                     />
                   </FixedSpaceRow>
                 )}
@@ -580,7 +579,6 @@ export default React.memo(function MessageEditor({
                   width="full"
                   info={i18n.messageEditor.flags.sensitive.whyDisabled}
                   close={onSensitiveInfoClick}
-                  closeLabel={i18n.common.close}
                 />
               )}
               {flagsInfo}

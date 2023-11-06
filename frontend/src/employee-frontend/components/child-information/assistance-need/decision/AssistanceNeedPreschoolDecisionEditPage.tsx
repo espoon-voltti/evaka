@@ -568,11 +568,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <LabeledValue>
-                <ExpandingInfo
-                  info={t.validFromInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.validFromInfo()}>
                   <Label>{t.validFrom} *</Label>
                 </ExpandingInfo>
                 <DatePickerF
@@ -593,8 +589,6 @@ const DecisionEditor = React.memo(function DecisionEditor({
                   <LabeledValue>
                     <ExpandingInfo
                       info={t.extendedCompulsoryEducationInfoInfo()}
-                      ariaLabel={i18n.common.openExpandingInfo}
-                      closeLabel={i18n.common.openExpandingInfo}
                     >
                       <Label>{t.extendedCompulsoryEducationInfo} *</Label>
                     </ExpandingInfo>
@@ -609,11 +603,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <FixedSpaceColumn>
-                <ExpandingInfo
-                  info={t.grantedAssistanceSectionInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.grantedAssistanceSectionInfo()}>
                   <Label>{t.grantedAssistanceSection}</Label>
                 </ExpandingInfo>
                 <CheckboxF
@@ -654,11 +644,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <LabeledValue>
-                <ExpandingInfo
-                  info={t.primaryGroupInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.primaryGroupInfo()}>
                   <Label>{t.primaryGroup} *</Label>
                 </ExpandingInfo>
                 <InputFieldF
@@ -670,11 +656,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <LabeledValue>
-                <ExpandingInfo
-                  info={t.decisionBasisInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.decisionBasisInfo()}>
                   <Label>{t.decisionBasis} *</Label>
                 </ExpandingInfo>
                 <WidthLimiter>
@@ -688,11 +670,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
               <FixedSpaceColumn>
                 <FixedSpaceRow alignItems="center">
-                  <ExpandingInfo
-                    info={t.documentBasisInfo()}
-                    ariaLabel={i18n.common.openExpandingInfo}
-                    closeLabel={i18n.common.openExpandingInfo}
-                  >
+                  <ExpandingInfo info={t.documentBasisInfo()}>
                     <Label>{t.documentBasis} *</Label>
                   </ExpandingInfo>
                   {displayValidation && validationErrors.documentBasis && (
@@ -788,11 +766,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </LabeledValue>
 
               <FixedSpaceColumn>
-                <ExpandingInfo
-                  info={t.heardGuardiansInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.heardGuardiansInfo()}>
                   <Label>{t.heardGuardians} *</Label>
                 </ExpandingInfo>
                 {guardians.map((guardian, i) => (
@@ -829,11 +803,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
               </FixedSpaceColumn>
 
               <LabeledValue>
-                <ExpandingInfo
-                  info={t.viewOfGuardiansInfo()}
-                  ariaLabel={i18n.common.openExpandingInfo}
-                  closeLabel={i18n.common.openExpandingInfo}
-                >
+                <ExpandingInfo info={t.viewOfGuardiansInfo()}>
                   <Label>{t.viewOfGuardians} *</Label>
                 </ExpandingInfo>
                 <WidthLimiter>

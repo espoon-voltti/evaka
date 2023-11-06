@@ -264,9 +264,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     <ExpandingInfo
                       key={option.value}
                       info={option.descriptionFi}
-                      ariaLabel=""
                       width="full"
-                      closeLabel={i18n.common.close}
                     >
                       <CheckboxRow>
                         <Checkbox

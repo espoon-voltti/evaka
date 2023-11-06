@@ -236,7 +236,6 @@ export default React.memo(function ReservationModal({
 
                 <ExpandingInfo
                   width="auto"
-                  ariaLabel={i18n.common.openExpandingInfo}
                   info={
                     dayProperties.maxDate !== undefined
                       ? i18n.calendar.reservationModal.dateRangeInfo(
@@ -245,7 +244,6 @@ export default React.memo(function ReservationModal({
                       : i18n.calendar.reservationModal.noReservableDays
                   }
                   inlineChildren
-                  closeLabel={i18n.common.close}
                 >
                   <Label>{i18n.calendar.reservationModal.dateRangeLabel}</Label>
                 </ExpandingInfo>
