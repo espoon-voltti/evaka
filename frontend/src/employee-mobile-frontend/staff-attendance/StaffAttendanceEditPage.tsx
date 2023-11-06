@@ -21,7 +21,7 @@ import {
 import {
   BoundForm,
   useForm,
-  useFormElem,
+  useFormElems,
   useFormFields
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
@@ -221,6 +221,7 @@ const StaffAttendanceEditor = ({
     i18n.attendances.staff.validationErrors
   )
   const { pinCode, rows } = useFormFields(form)
+  const boundRows = useFormElems(rows)
   const [errorCode, setErrorCode] = useState<string>()
 
   return (
@@ -250,13 +251,17 @@ const StaffAttendanceEditor = ({
           </span>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
-        {rows.state.map((_, index) => (
+        {boundRows.map((row, index) => (
           <StaffAttendanceRowEditor
             key={index}
             date={date}
-            groups={groups}
-            rows={rows}
-            index={index}
+            row={row}
+            onDelete={() =>
+              rows.update((prev) => [
+                ...prev.slice(0, index),
+                ...prev.slice(index + 1)
+              ])
+            }
           />
         ))}
         {rows.isValid() &&
@@ -352,21 +357,16 @@ const StaffAttendanceEditor = ({
 
 const StaffAttendanceRowEditor = ({
   date,
-  rows,
-  index
+  row,
+  onDelete
 }: {
   date: LocalDate
-  groups: GroupInfo[]
-  rows: BoundForm<typeof staffAttendanceRows>
-  index: number
+  row: BoundForm<typeof staffAttendanceRow>
+  onDelete: () => void
 }) => {
   const { i18n, lang } = useTranslation()
-  const form = useFormElem(rows, index)
-  if (form === undefined) {
-    throw new Error('index error')
-  }
   const { type, groupId, arrivedDate, arrivedTime, departedTime } =
-    useFormFields(form)
+    useFormFields(row)
 
   const isArrivedPastDate = arrivedDate.value().isBefore(date)
 
@@ -409,12 +409,7 @@ const StaffAttendanceRowEditor = ({
       />
       <IconButton
         icon={faTrash}
-        onClick={() =>
-          rows.update((prev) => [
-            ...prev.slice(0, index),
-            ...prev.slice(index + 1)
-          ])
-        }
+        onClick={onDelete}
         aria-label={i18n.common.remove}
         data-qa="remove"
       />
