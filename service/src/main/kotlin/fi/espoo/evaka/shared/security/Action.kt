@@ -2301,7 +2301,9 @@ sealed interface Action {
         override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
     ) : ScopedAction<VoucherValueDecisionId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+        UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        IGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        UNIGNORE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

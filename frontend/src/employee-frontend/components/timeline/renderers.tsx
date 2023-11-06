@@ -103,6 +103,8 @@ export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
         return '#c3e1e0'
       case 'ANNULLED':
         return '#aeb6b7'
+      case 'IGNORED':
+        return '#e8e8e8'
     }
   },
   linkProvider: (elem) => `/finance/value-decisions/${elem.id}`,

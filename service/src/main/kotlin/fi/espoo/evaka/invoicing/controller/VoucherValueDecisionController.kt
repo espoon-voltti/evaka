@@ -261,6 +261,61 @@ class VoucherValueDecisionController(
             .also { Audit.VoucherValueDecisionPdfRead.log(targetId = decisionId) }
     }
 
+    @PostMapping("/ignore")
+    fun ignoreDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.IGNORE,
+                    voucherValueDecisionIds
+                )
+                valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today())
+            }
+        }
+        Audit.VoucherValueDecisionIgnore.log(targetId = voucherValueDecisionIds)
+    }
+
+    @PostMapping("/unignore")
+    fun unignoreDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.UNIGNORE,
+                    voucherValueDecisionIds
+                )
+                val headsOfFamilies =
+                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds, clock.today())
+                asyncJobRunner.plan(
+                    tx,
+                    headsOfFamilies.map { personId ->
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            personId,
+                            DateRange(clock.today().minusMonths(15), null)
+                        )
+                    },
+                    runAt = clock.now()
+                )
+            }
+        }
+        Audit.VoucherValueDecisionUnignore.log(targetId = voucherValueDecisionIds)
+    }
+
     @PostMapping("/set-type/{uuid}")
     fun setType(
         db: Database,

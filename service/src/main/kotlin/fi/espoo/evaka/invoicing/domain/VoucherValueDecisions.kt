@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -51,13 +52,18 @@ data class VoucherValueDecision(
     val approvedById: EmployeeId? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
+    override val validDuring: DateRange
+        @JsonIgnore get() = DateRange(validFrom, validTo)
+
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
 
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
+
+    override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
     override fun contentEquals(decision: VoucherValueDecision): Boolean =
         VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
@@ -79,19 +85,13 @@ data class VoucherValueDecision(
             validFrom: LocalDate,
             validTo: LocalDate?,
             headOfFamilyId: PersonId,
-            status: VoucherValueDecisionStatus,
-            decisionNumber: Long? = null,
-            decisionType: VoucherValueDecisionType,
             partnerId: PersonId?,
             headOfFamilyIncome: DecisionIncome?,
             partnerIncome: DecisionIncome?,
             childIncome: DecisionIncome?,
             familySize: Int,
             feeThresholds: FeeDecisionThresholds,
-            child: ChildWithDateOfBirth,
-            baseCoPayment: Int,
-            siblingDiscount: Int,
-            baseValue: Int
+            child: ChildWithDateOfBirth
         ): VoucherValueDecision {
             val decision =
                 VoucherValueDecision(
@@ -99,9 +99,8 @@ data class VoucherValueDecision(
                     validFrom = validFrom,
                     validTo = validTo,
                     headOfFamilyId = headOfFamilyId,
-                    status = status,
-                    decisionNumber = decisionNumber,
-                    decisionType = decisionType,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    decisionType = VoucherValueDecisionType.NORMAL,
                     partnerId = partnerId,
                     headOfFamilyIncome = headOfFamilyIncome,
                     partnerIncome = partnerIncome,
@@ -111,12 +110,12 @@ data class VoucherValueDecision(
                     child = child,
                     placement = null,
                     serviceNeed = null,
-                    baseCoPayment = baseCoPayment,
-                    siblingDiscount = siblingDiscount,
+                    baseCoPayment = 0,
+                    siblingDiscount = 0,
                     coPayment = 0,
-                    feeAlterations = listOf(),
+                    feeAlterations = emptyList(),
                     finalCoPayment = 0,
-                    baseValue = baseValue,
+                    baseValue = 0,
                     assistanceNeedCoefficient = BigDecimal.ZERO,
                     voucherValue = 0,
                     difference = emptySet()
@@ -136,6 +135,7 @@ enum class VoucherValueDecisionType {
 
 enum class VoucherValueDecisionStatus {
     DRAFT,
+    IGNORED,
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,
@@ -158,8 +158,14 @@ enum class VoucherValueDecisionDifference(
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
     INCOME({ d1, d2 ->
-        setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
-            setOf(d2.headOfFamilyIncome, d2.partnerIncome) && d1.childIncome == d2.childIncome
+        setOf(
+            d1.headOfFamilyIncome?.effectiveComparable(),
+            d1.partnerIncome?.effectiveComparable()
+        ) ==
+            setOf(
+                d2.headOfFamilyIncome?.effectiveComparable(),
+                d2.partnerIncome?.effectiveComparable()
+            ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.invoicing.service
+package fi.espoo.evaka.invoicing.service.generator
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.invoicing.controller.getFeeThresholds
@@ -11,7 +11,6 @@ import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.insertFeeDecisions
-import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -23,86 +22,56 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
-import fi.espoo.evaka.pis.HasDateOfBirth
+import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
-import fi.espoo.evaka.serviceneed.getServiceNeedOptions
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.periodsCanMerge
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
-import org.jdbi.v3.core.mapper.Nested
-
-const val mergeFamilies = true
 
 fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
-    clock: EvakaClock,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveFrom: LocalDate? = null // ignores other min dates
+    retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
 ) {
-    tx.lockFeeDecisionsForHeadOfFamily(headOfFamilyId)
+    val existingDecisions =
+        tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
 
-    val minDate = retroactiveFrom ?: maxOf(financeMinDate, clock.today().minusMonths(15))
-    val activePeriod = DateRange(minDate, null)
+    val activeDecisions =
+        existingDecisions.filter { FeeDecisionStatus.effective.contains(it.status) }
+    val existingDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.DRAFT }
+    val ignoredDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.IGNORED }
+
     val newDrafts =
-        generateFeeDecisionsDrafts(tx, jsonMapper, incomeTypesProvider, headOfFamilyId, minDate)
-            .filter { draft -> draft.validDuring.overlaps(activePeriod) }
-
-    val existingDraftDecisions =
-        tx.findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId,
-            period = null,
-            status = listOf(FeeDecisionStatus.DRAFT)
+        generateFeeDecisionsDrafts(
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetAdultId = headOfFamilyId,
+            activeDecisions = activeDecisions,
+            existingDrafts = existingDrafts,
+            ignoredDrafts = ignoredDrafts,
+            minDate =
+                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
+                else financeMinDate
         )
 
-    val ignoredDrafts =
-        tx.findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId,
-            period = null,
-            status = listOf(FeeDecisionStatus.IGNORED)
-        )
-
-    tx.deleteFeeDecisions(existingDraftDecisions.map { it.id })
-
-    // insert while preserving created dates
-    newDrafts
-        .filter { newDraft ->
-            !ignoredDrafts.any {
-                it.validDuring == newDraft.validDuring && it.contentEquals(newDraft)
-            }
-        }
-        .map { newDraft ->
-            val duplicateOldDraft =
-                existingDraftDecisions.find { oldDraft ->
-                    newDraft.contentEquals(oldDraft) && newDraft.validDuring == oldDraft.validDuring
-                }
-            if (duplicateOldDraft != null) {
-                newDraft.copy(created = duplicateOldDraft.created)
-            } else {
-                newDraft
-            }
-        }
-        .let { tx.insertFeeDecisions(it) }
+    tx.deleteFeeDecisions(existingDrafts.map { it.id })
+    tx.insertFeeDecisions(newDrafts)
 }
 
 fun generateFeeDecisionsDrafts(
@@ -110,67 +79,40 @@ fun generateFeeDecisionsDrafts(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
+    activeDecisions: List<FeeDecision>,
+    existingDrafts: List<FeeDecision>,
+    ignoredDrafts: List<FeeDecision>,
     minDate: LocalDate
 ): List<FeeDecision> {
-    val existingActiveDecisions =
-        tx.findFeeDecisionsForHeadOfFamily(
-            targetAdultId,
-            period = null,
-            status =
-                listOf(
-                    FeeDecisionStatus.SENT,
-                    FeeDecisionStatus.WAITING_FOR_SENDING,
-                    FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
-                )
-        )
     val feeBases =
         getFeeBases(
-            tx,
-            jsonMapper,
-            incomeTypesProvider,
-            targetAdultId,
-            existingActiveDecisions,
-            minDate
+            tx = tx,
+            jsonMapper = jsonMapper,
+            incomeTypesProvider = incomeTypesProvider,
+            targetAdultId = targetAdultId,
+            activeDecisions = activeDecisions,
+            minDate = minDate
         )
+
     val newDrafts = feeBases.map { it.toFeeDecision() }
 
-    if (newDrafts.isEmpty()) return emptyList()
-
-    val filteredAndMergedDrafts =
-        newDrafts
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-            .filterNot { draft ->
-                // drop drafts without children unless there exists an active decision that overlaps
-                draft.children.isEmpty() &&
-                    existingActiveDecisions.none { it.validDuring.overlaps(draft.validDuring) }
-            }
-            .let(::mergeAdjacentIdenticalDrafts)
-            .filterNot { draft ->
-                existsActiveDuplicateThatWillRemainEffective(
-                    draft,
-                    existingActiveDecisions,
-                    newDrafts
-                )
-            }
-
-    val newDraftsWithDifferences =
-        filteredAndMergedDrafts.map {
+    return filterAndMergeDrafts(
+            newDrafts = newDrafts,
+            activeDecisions = activeDecisions,
+            ignoredDrafts = ignoredDrafts,
+            minDate = minDate
+        )
+        .map { it.withCreatedDateFromExisting(existingDrafts) }
+        .map {
             it.copy(
                 difference =
-                    it.getDifferences(
+                    it.getDifferencesToPrevious(
                         newDrafts = newDrafts,
-                        existingActiveDecisions = existingActiveDecisions
+                        existingActiveDecisions = activeDecisions,
+                        getDifferences = FeeDecisionDifference::getDifference
                     )
             )
         }
-
-    return newDraftsWithDifferences
 }
 
 private fun getFeeBases(
@@ -178,7 +120,7 @@ private fun getFeeBases(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     targetAdultId: PersonId,
-    existingActiveDecisions: List<FeeDecision>,
+    activeDecisions: List<FeeDecision>,
     minDate: LocalDate
 ): List<FeeBasis> {
     val familyRelations =
@@ -199,8 +141,7 @@ private fun getFeeBases(
                 }
             )
 
-    val placementDetailsByChild = getPlacementDetails(tx, allChildIds)
-
+    val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
     val feeAlterationsByChild =
         tx.getFeeAlterationsFrom(personIds = allChildIds.toList(), from = minDate)
             .groupBy(
@@ -212,7 +153,6 @@ private fun getFeeBases(
                     )
                 }
             )
-
     val allFeeThresholds =
         tx.getFeeThresholds().map { FeeThresholdsRange(it.thresholds.validDuring, it.thresholds) }
     val allServiceNeedOptionFees =
@@ -226,7 +166,7 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray()
-        ) + existingActiveDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
+        ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -267,12 +207,9 @@ private fun getFeeBases(
                     .mapNotNull { child ->
                         placementDetailsByChild[child.id]
                             ?.find { it.range.contains(range) }
-                            ?.takeIf { it.affectsSiblingDiscount() }
                             ?.let { placement -> child to placement }
                     }
-                    .mapIndexedNotNull childMapping@{ siblingIndex, (child, placement) ->
-                        if (!placement.displayOnFeeDecision()) return@childMapping null
-
+                    .mapIndexed childMapping@{ siblingIndex, (child, placement) ->
                         val serviceNeedOptionFee =
                             allServiceNeedOptionFees
                                 .find {
@@ -365,7 +302,9 @@ data class ChildFeeBasis(
         familySize: Int,
         parentIncomes: List<DecisionIncome?>
     ): FeeDecisionChild? {
-        if (!placement.displayOnFeeDecision()) return null
+        if (placement.financeDecisionType != FinanceDecisionType.FEE_DECISION) {
+            return null
+        }
 
         val siblingDiscount =
             serviceNeedOptionFee?.siblingDiscount(siblingOrdinal = siblingIndex + 1)
@@ -458,276 +397,4 @@ private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List
             }
         FamilyRelations(finiteRange = range, partner = partner, children = children)
     }
-}
-
-private data class PartnerRelation(val partnerId: PersonId, override val range: DateRange) :
-    WithRange
-
-private fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
-    return createQuery(
-            """
-            SELECT 
-                fp2.person_id as partnerId,
-                daterange(fp2.start_date, fp2.end_date, '[]') as range
-            FROM fridge_partner fp1
-            JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
-            WHERE fp1.person_id = :id AND NOT fp1.conflict AND NOT fp2.conflict
-        """
-        )
-        .bind("id", id)
-        .toList<PartnerRelation>()
-}
-
-data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
-    HasDateOfBirth
-
-private data class ChildRelation(
-    val headOfChild: PersonId,
-    override val finiteRange: FiniteDateRange,
-    @Nested("child") val child: Child
-) : WithFiniteRange
-
-private fun Database.Read.getChildRelations(
-    parentIds: Set<PersonId>
-): Map<PersonId, List<ChildRelation>> {
-    if (parentIds.isEmpty()) return emptyMap()
-
-    return createQuery(
-            """
-            SELECT 
-                fc.head_of_child, 
-                daterange(fc.start_date, fc.end_date, '[]') as finite_range,
-                p.id as child_id,
-                p.date_of_birth as child_date_of_birth,
-                p.social_security_number as child_ssn
-            FROM fridge_child fc
-            JOIN person p on fc.child_id = p.id
-            WHERE head_of_child = ANY(:ids) AND NOT conflict
-        """
-        )
-        .bind("ids", parentIds.toTypedArray())
-        .mapTo<ChildRelation>()
-        .useIterable { rows ->
-            rows
-                .mapNotNull {
-                    val under18 =
-                        FiniteDateRange(
-                            it.child.dateOfBirth,
-                            it.child.dateOfBirth.plusYears(18).minusDays(1)
-                        )
-                    it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
-                }
-                .groupBy { it.headOfChild }
-        }
-}
-
-data class PlacementDetails(
-    val childId: PersonId,
-    override val finiteRange: FiniteDateRange,
-    val placementType: PlacementType,
-    val unitId: DaycareId,
-    val invoicedUnit: Boolean,
-    val hasServiceNeed: Boolean,
-    val serviceNeedOption: ServiceNeedOption,
-) : WithFiniteRange {
-    fun displayOnFeeDecision(): Boolean {
-        if (!affectsSiblingDiscount()) return false
-
-        if (!invoicedUnit) return false
-
-        if (serviceNeedOption.feeCoefficient.compareTo(BigDecimal.ZERO) == 0) return false
-
-        return true
-    }
-
-    fun affectsSiblingDiscount(): Boolean {
-        val excludedTypes =
-            listOf(
-                PlacementType.CLUB,
-                PlacementType.TEMPORARY_DAYCARE,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                PlacementType.SCHOOL_SHIFT_CARE
-            )
-        if (excludedTypes.contains(placementType)) return false
-
-        return true
-    }
-}
-
-private data class Placement(
-    val childId: PersonId,
-    override val finiteRange: FiniteDateRange,
-    val type: PlacementType,
-    val unitId: DaycareId,
-    val invoicedUnit: Boolean
-) : WithFiniteRange
-
-private data class ServiceNeed(
-    val childId: PersonId,
-    override val finiteRange: FiniteDateRange,
-    val optionId: ServiceNeedOptionId
-) : WithFiniteRange
-
-private fun getPlacementDetails(
-    tx: Database.Read,
-    childIds: Set<PersonId>
-): Map<PersonId, List<PlacementDetails>> {
-    if (childIds.isEmpty()) return emptyMap()
-
-    val serviceNeedOptions = tx.getServiceNeedOptions()
-
-    val placements =
-        tx.createQuery(
-                """
-        SELECT 
-            child_id, 
-            daterange(pl.start_date, pl.end_date, '[]') as finite_range, 
-            pl.type,
-            pl.unit_id,
-            invoiced_by_municipality as invoiced_unit
-        FROM placement pl
-        JOIN daycare d ON pl.unit_id = d.id
-        WHERE child_id = ANY(:ids)
-    """
-            )
-            .bind("ids", childIds.toTypedArray())
-            .toList<Placement>()
-            .groupBy { it.childId }
-
-    val serviceNeeds =
-        tx.createQuery(
-                """
-        SELECT child_id, daterange(sn.start_date, sn.end_date, '[]') as finite_range, sn.option_id
-        FROM service_need sn
-        JOIN placement p ON sn.placement_id = p.id
-        WHERE child_id = ANY(:ids)
-    """
-            )
-            .bind("ids", childIds.toTypedArray())
-            .toList<ServiceNeed>()
-            .groupBy { it.childId }
-
-    val dateRanges =
-        buildFiniteDateRanges(
-            *placements.flatMap { it.value }.toTypedArray(),
-            *serviceNeeds.flatMap { it.value }.toTypedArray()
-        )
-
-    return childIds.associateWith { childId ->
-        dateRanges.mapNotNull { range ->
-            val placement =
-                placements[childId]?.firstOrNull { it.range.contains(range) }
-                    ?: return@mapNotNull null
-            val serviceNeed = serviceNeeds[childId]?.firstOrNull { it.range.contains(range) }
-            val serviceNeedOption =
-                if (serviceNeed != null) {
-                    serviceNeedOptions.find { it.id == serviceNeed.optionId }
-                        ?: throw Error("Missing service need option ${serviceNeed.optionId}")
-                } else {
-                    serviceNeedOptions.find {
-                        it.defaultOption && it.validPlacementType == placement.type
-                    }
-                        ?: throw Error("Missing default service need option for ${placement.type}")
-                }
-            PlacementDetails(
-                childId = childId,
-                finiteRange = range,
-                placementType = placement.type,
-                unitId = placement.unitId,
-                invoicedUnit = placement.invoicedUnit,
-                hasServiceNeed = serviceNeed != null,
-                serviceNeedOption = serviceNeedOption
-            )
-        }
-    }
-}
-
-private data class IncomeRange(override val range: DateRange, val income: DecisionIncome) :
-    WithRange
-
-private data class FeeThresholdsRange(
-    override val range: DateRange,
-    val thresholds: FeeThresholds
-) : WithRange
-
-private data class ServiceNeedOptionFeeRange(
-    override val range: DateRange,
-    val serviceNeedOptionFee: ServiceNeedOptionFee
-) : WithRange
-
-data class FeeAlterationRange(override val range: DateRange, val feeAlteration: FeeAlteration) :
-    WithRange
-
-fun mergeAdjacentIdenticalDrafts(decisions: List<FeeDecision>): List<FeeDecision> {
-    return decisions
-        .sortedBy { it.validFrom }
-        .fold(emptyList()) { acc, next ->
-            val prev = acc.lastOrNull()
-            if (
-                prev != null &&
-                    periodsCanMerge(prev.validDuring, next.validDuring) &&
-                    prev.contentEquals(next)
-            ) {
-                acc.dropLast(1) + prev.copy(validDuring = DateRange(prev.validFrom, next.validTo))
-            } else {
-                acc + next
-            }
-        }
-}
-
-private fun existsActiveDuplicateThatWillRemainEffective(
-    draft: FeeDecision,
-    activeDecisions: List<FeeDecision>,
-    drafts: List<FeeDecision>,
-): Boolean {
-    val activeDuplicate =
-        activeDecisions.find {
-            it.validDuring.contains(draft.validDuring) && it.contentEquals(draft)
-        }
-            ?: return false
-
-    val nonIdenticalDraftsOverlappingActive =
-        drafts.filter {
-            it.validDuring.overlaps(activeDuplicate.validDuring) &&
-                !it.contentEquals(activeDuplicate)
-        }
-
-    val activeValidUntil =
-        nonIdenticalDraftsOverlappingActive.minOfOrNull { it.validFrom.minusDays(1) }
-            ?: activeDuplicate.validTo
-
-    if (activeValidUntil != null && activeValidUntil < activeDuplicate.validFrom) {
-        return false // active decision will be annulled
-    }
-
-    val newActiveRange = DateRange(activeDuplicate.validFrom, activeValidUntil)
-
-    return newActiveRange.contains(draft.validDuring)
-}
-
-private fun FeeDecision.getDifferences(
-    newDrafts: List<FeeDecision>,
-    existingActiveDecisions: List<FeeDecision>
-): Set<FeeDecisionDifference> {
-    if (this.isEmpty()) {
-        return emptySet()
-    }
-
-    val draftDifferences =
-        newDrafts
-            .filter { other ->
-                !other.isEmpty() && periodsCanMerge(other.validDuring, this.validDuring)
-            }
-            .flatMap { other -> FeeDecisionDifference.getDifference(other, this) }
-
-    if (draftDifferences.isNotEmpty()) {
-        return draftDifferences.toSet()
-    }
-
-    val activeDifferences =
-        existingActiveDecisions
-            .filter { active -> periodsCanMerge(active.validDuring, this.validDuring) }
-            .flatMap { active -> FeeDecisionDifference.getDifference(active, this) }
-
-    return activeDifferences.toSet()
 }

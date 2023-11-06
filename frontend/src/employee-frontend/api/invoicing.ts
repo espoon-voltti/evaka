@@ -133,6 +133,24 @@ export async function unignoreFeeDecisionDrafts(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function ignoreVoucherValueDecisionDrafts(
+  voucherValueDecisionIds: UUID[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/value-decisions/ignore', voucherValueDecisionIds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function unignoreVoucherValueDecisionDrafts(
+  voucherValueDecisionIds: UUID[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/value-decisions/unignore', voucherValueDecisionIds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function createInvoices(): Promise<Result<void>> {
   return client
     .post<void>('/invoices/create-drafts')

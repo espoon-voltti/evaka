@@ -2986,7 +2986,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `fee decisions are not generated before the global fee decision min date`() {
+    fun `fee decisions are generated starting earliest on the global fee decision min date`() {
         val period = DateRange(LocalDate.of(2014, 6, 1), LocalDate.of(2015, 6, 1))
         val clock =
             MockEvakaClock(
@@ -3005,51 +3005,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(evakaEnv.feeDecisionMinDate, decision.validFrom)
             assertEquals(period.end, decision.validTo)
         }
-    }
-
-    @Test
-    fun `fee decisions are generated starting from the rolling fee decision min date`() {
-        // v2 specific
-        if (evakaEnv.feeDecisionGeneratorV1Enabled) return
-
-        val period = DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2021, 6, 1))
-        val clock =
-            MockEvakaClock(
-                HelsinkiDateTime.Companion.of(LocalDate.of(2022, 1, 1), LocalTime.of(0, 0))
-            )
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_8.id), period)
-        insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
-        db.transaction {
-            generator.generateNewDecisionsForChild(it, clock, testChild_8.id, period.start)
-        }
-
-        val decisions = getAllFeeDecisions()
-        assertEquals(1, decisions.size)
-        decisions.first().let { decision ->
-            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
-            assertEquals(clock.today().minusMonths(15), decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-        }
-    }
-
-    @Test
-    fun `fee decisions are not generated fully before rolling fee decision min date`() {
-        // v2 specific
-        if (evakaEnv.feeDecisionGeneratorV1Enabled) return
-
-        val period = DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2021, 6, 1))
-        val clock =
-            MockEvakaClock(
-                HelsinkiDateTime.Companion.of(LocalDate.of(2023, 1, 1), LocalTime.of(0, 0))
-            )
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_8.id), period)
-        insertPlacement(testChild_8.id, period, DAYCARE, testDaycare.id)
-        db.transaction {
-            generator.generateNewDecisionsForChild(it, clock, testChild_8.id, period.start)
-        }
-
-        val decisions = getAllFeeDecisions()
-        assertEquals(0, decisions.size)
     }
 
     @Test

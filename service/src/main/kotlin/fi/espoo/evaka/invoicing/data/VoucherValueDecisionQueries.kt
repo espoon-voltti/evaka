@@ -223,8 +223,9 @@ WHERE id = ANY(:ids)
 
 fun Database.Read.findValueDecisionsForChild(
     childId: ChildId,
-    period: DateRange?,
-    statuses: List<VoucherValueDecisionStatus>?
+    period: DateRange? = null,
+    statuses: List<VoucherValueDecisionStatus>? = null,
+    lockForUpdate: Boolean = false
 ): List<VoucherValueDecision> {
     // language=sql
     val sql =
@@ -272,6 +273,7 @@ FROM voucher_value_decision
 WHERE child_id = :childId
 AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
 AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))
+${if (lockForUpdate) "FOR UPDATE" else ""}
 """
 
     return createQuery(sql)
@@ -692,6 +694,20 @@ fun Database.Transaction.annulVoucherValueDecisions(
         .bind("status", VoucherValueDecisionStatus.ANNULLED)
         .bind("now", now)
         .execute()
+}
+
+fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
+    createUpdate(
+            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'"
+        )
+        .bind("id", id)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.removeVoucherValueDecisionIgnore(id: VoucherValueDecisionId) {
+    createUpdate("DELETE FROM voucher_value_decision WHERE id = :id AND status = 'IGNORED'")
+        .bind("id", id)
+        .updateExactlyOne()
 }
 
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {

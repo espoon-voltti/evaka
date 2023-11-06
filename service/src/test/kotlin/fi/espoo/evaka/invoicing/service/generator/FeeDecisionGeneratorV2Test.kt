@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.invoicing.service
+package fi.espoo.evaka.invoicing.service.generator
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -66,7 +67,7 @@ class FeeDecisionGeneratorV2Test {
     @Test
     fun `FeeBasis produces correct decision`() {
         val feeBasis = createFeeBasis()
-        val childBasis2 = feeBasis.children[2]
+        val childBasis = feeBasis.children[2]
         val decision = feeBasis.toFeeDecision()
         assertEquals(
             decision,
@@ -74,31 +75,31 @@ class FeeDecisionGeneratorV2Test {
                 id = decision.id,
                 children =
                     listOf(
-                        // child 0 with club and child 1 with voucher value are excluded
+                        // child 0 with preschool placement and child 1 with voucher value
+                        // affect sibling discount but are not invoiced
                         FeeDecisionChild(
                             child =
                                 ChildWithDateOfBirth(
-                                    id = childBasis2.child.id,
-                                    dateOfBirth = childBasis2.child.dateOfBirth
+                                    id = childBasis.child.id,
+                                    dateOfBirth = childBasis.child.dateOfBirth
                                 ),
                             placement =
                                 FeeDecisionPlacement(
-                                    unitId = childBasis2.placement.unitId,
-                                    type = childBasis2.placement.placementType
+                                    unitId = childBasis.placement.unitId,
+                                    type = childBasis.placement.placementType
                                 ),
                             serviceNeed =
                                 FeeDecisionServiceNeed(
-                                    optionId = childBasis2.placement.serviceNeedOption.id,
+                                    optionId = childBasis.placement.serviceNeedOption.id,
                                     feeCoefficient =
-                                        childBasis2.placement.serviceNeedOption.feeCoefficient,
+                                        childBasis.placement.serviceNeedOption.feeCoefficient,
                                     contractDaysPerMonth =
-                                        childBasis2.placement.serviceNeedOption
-                                            .contractDaysPerMonth,
+                                        childBasis.placement.serviceNeedOption.contractDaysPerMonth,
                                     descriptionFi =
-                                        childBasis2.placement.serviceNeedOption.feeDescriptionFi,
+                                        childBasis.placement.serviceNeedOption.feeDescriptionFi,
                                     descriptionSv =
-                                        childBasis2.placement.serviceNeedOption.feeDescriptionSv,
-                                    missing = !childBasis2.placement.hasServiceNeed
+                                        childBasis.placement.serviceNeedOption.feeDescriptionSv,
+                                    missing = !childBasis.placement.hasServiceNeed
                                 ),
                             baseFee = 28900,
                             siblingDiscount = 80,
@@ -185,16 +186,23 @@ private fun createFeeBasis(): FeeBasis {
             ),
         children =
             listOf(
-                createChildFeeBasis(placementType = PlacementType.CLUB, siblingIndex = 0),
                 createChildFeeBasis(
                     placementType = PlacementType.DAYCARE,
+                    siblingIndex = 0,
+                    invoicedUnit = false,
+                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+                ),
+                createChildFeeBasis(
+                    placementType = PlacementType.PRESCHOOL,
                     siblingIndex = 1,
-                    invoicedUnit = false
+                    invoicedUnit = false,
+                    providerType = ProviderType.MUNICIPAL
                 ),
                 createChildFeeBasis(
                     placementType = PlacementType.DAYCARE,
                     siblingIndex = 2,
-                    invoicedUnit = true
+                    invoicedUnit = true,
+                    providerType = ProviderType.MUNICIPAL
                 )
             ),
         familySize = 5,
@@ -203,7 +211,8 @@ private fun createFeeBasis(): FeeBasis {
 }
 
 private fun createChildFeeBasis(
-    placementType: PlacementType = PlacementType.DAYCARE,
+    placementType: PlacementType,
+    providerType: ProviderType,
     invoicedUnit: Boolean = true,
     siblingIndex: Int = 0
 ): ChildFeeBasis {
@@ -217,9 +226,11 @@ private fun createChildFeeBasis(
                 finiteRange = FiniteDateRange(date(1), date(31)),
                 placementType = placementType,
                 unitId = DaycareId(UUID.randomUUID()),
+                providerType = providerType,
                 invoicedUnit = invoicedUnit,
                 hasServiceNeed = true,
-                serviceNeedOption = snDaycareFullDay35
+                serviceNeedOption = snDaycareFullDay35,
+                serviceNeedVoucherValues = null
             ),
         serviceNeedOptionFee = null,
         feeAlterations = emptyList(),
@@ -227,7 +238,7 @@ private fun createChildFeeBasis(
     )
 }
 
-val snDaycareFullDay35 =
+private val snDaycareFullDay35 =
     ServiceNeedOption(
         id = ServiceNeedOptionId(UUID.randomUUID()),
         nameFi = "Kokopäiväinen, vähintään 35h",
@@ -251,7 +262,7 @@ val snDaycareFullDay35 =
         active = true
     )
 
-val feeThresholds =
+private val feeThresholds =
     FeeThresholds(
         validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
         minIncomeThreshold2 = 210200,

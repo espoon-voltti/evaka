@@ -134,6 +134,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `sent value decision validity period ends automatically when corresponding placement has its future end date lowered`() {
+        if (evakaEnv.voucherValueDecisionGeneratorV2Enabled) {
+            // v2 generator does not mutate sent decisions during draft generation
+            return
+        }
+
         val placementId = createPlacement(startDate, endDate)
         sendAllValueDecisions()
 
@@ -155,6 +160,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `sent value decision validity period ends automatically when corresponding placement has its future end date increased`() {
+        if (evakaEnv.voucherValueDecisionGeneratorV2Enabled) {
+            // v2 generator does not mutate sent decisions during draft generation
+            return
+        }
+
         val placementId = createPlacement(startDate, endDate)
         sendAllValueDecisions()
 

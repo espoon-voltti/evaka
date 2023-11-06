@@ -1026,6 +1026,7 @@ export type VoucherValueDecisionSortParam =
 */
 export type VoucherValueDecisionStatus =
   | 'DRAFT'
+  | 'IGNORED'
   | 'WAITING_FOR_SENDING'
   | 'WAITING_FOR_MANUAL_SENDING'
   | 'SENT'

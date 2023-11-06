@@ -13,6 +13,8 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
+import fi.espoo.evaka.invoicing.service.generator.generateAndInsertFeeDecisionsV2
+import fi.espoo.evaka.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
@@ -51,6 +53,7 @@ class FinanceDecisionGenerator(
     private val feeDecisionMinDate = env.feeDecisionMinDate
     final val v1FeeDecisions = env.feeDecisionGeneratorV1Enabled
     final val v2FeeDecisions = env.feeDecisionGeneratorV2Enabled
+    final val v2Vouchers = env.voucherValueDecisionGeneratorV2Enabled
 
     fun scheduleBatchGeneration(tx: Database.Transaction, clock: EvakaClock) {
         if (!v2FeeDecisions) return
@@ -66,6 +69,11 @@ WITH ids AS (
 
     SELECT head_of_family_id
     FROM fee_decision
+
+    UNION
+
+    SELECT head_of_family_id
+    FROM voucher_value_decision
 )
 INSERT INTO async_job(type, payload, retry_count, retry_interval)
 SELECT 'GenerateFinanceDecisions',
@@ -115,12 +123,11 @@ FROM ids;
         if (v2FeeDecisions) {
             generateAndInsertFeeDecisionsV2(
                 tx = tx,
-                clock = clock,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = headOfFamily,
-                retroactiveFrom = from
+                retroactiveOverride = from
             )
         }
     }
@@ -131,52 +138,84 @@ FROM ids;
         headOfFamily: PersonId,
         from: LocalDate
     ) {
-        val families =
-            tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
-                it.headOfFamily == headOfFamily
-            }
-        families
-            .flatMap { family -> family.children.map { it to family } }
-            .groupingBy { (child, _) -> child }
-            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
-            .forEach { (child, families) ->
-                tx.handleValueDecisionChanges(
-                    featureConfig,
-                    jsonMapper,
-                    incomeTypesProvider,
-                    clock,
-                    from,
-                    child,
-                    families
+        if (v2Vouchers) {
+            tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).forEach { childId ->
+                generateAndInsertVoucherValueDecisionsV2(
+                    tx = tx,
+                    jsonMapper = jsonMapper,
+                    incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
+                    valueDecisionCapacityFactorEnabled =
+                        featureConfig.valueDecisionCapacityFactorEnabled,
+                    childId = childId,
+                    retroactiveOverride = from
                 )
             }
+        } else {
+            val families =
+                tx.findFamiliesByHeadOfFamily(headOfFamily, from).filter {
+                    it.headOfFamily == headOfFamily
+                }
+            families
+                .flatMap { family -> family.children.map { it to family } }
+                .groupingBy { (child, _) -> child }
+                .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
+                    childFamilies + family
+                }
+                .forEach { (child, families) ->
+                    tx.handleValueDecisionChanges(
+                        featureConfig,
+                        jsonMapper,
+                        incomeTypesProvider,
+                        clock,
+                        from,
+                        child,
+                        families
+                    )
+                }
+        }
     }
 
     fun generateNewDecisionsForAdult(
         tx: Database.Transaction,
         clock: EvakaClock,
         personId: PersonId,
-        from: LocalDate,
+        from: LocalDate, // only used for v1
         skipPropagation: Boolean = false
     ) {
-        val fromOrMinDate = maxOf(feeDecisionMinDate, from)
-        val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
-        handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
+        val adults =
+            if (skipPropagation || (!v2FeeDecisions && !v2Vouchers)) setOf(personId)
+            else getAllPossiblyAffectedAdultsByAdult(tx, personId)
 
         if (v2FeeDecisions) {
-            val adults =
-                if (skipPropagation) setOf(personId)
-                else getAllPossiblyAffectedAdultsByAdult(tx, personId)
             adults.forEach { adult ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
                     headOfFamilyId = adult
                 )
             }
+        }
+
+        if (v2Vouchers) {
+            val children = adults.flatMap { tx.getChildrenOfHeadOfFamily(it) }.toSet()
+            children.forEach { childId ->
+                generateAndInsertVoucherValueDecisionsV2(
+                    tx = tx,
+                    jsonMapper = jsonMapper,
+                    incomeTypesProvider = incomeTypesProvider,
+                    financeMinDate = feeDecisionMinDate,
+                    valueDecisionCapacityFactorEnabled =
+                        featureConfig.valueDecisionCapacityFactorEnabled,
+                    childId = childId
+                )
+            }
+        } else {
+            val fromOrMinDate = maxOf(feeDecisionMinDate, from)
+            val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
+            handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
         }
     }
 
@@ -186,21 +225,32 @@ FROM ids;
         childId: ChildId,
         from: LocalDate
     ) {
-        val fromOrMinDate = maxOf(feeDecisionMinDate, from)
-        val families = tx.findFamiliesByChild(childId, fromOrMinDate)
-        handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
-
         if (v2FeeDecisions) {
             getAllPossiblyAffectedAdultsByChild(tx, childId).forEach { adultId ->
                 generateAndInsertFeeDecisionsV2(
                     tx = tx,
-                    clock = clock,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
                     financeMinDate = feeDecisionMinDate,
                     headOfFamilyId = adultId
                 )
             }
+        }
+
+        if (v2Vouchers) {
+            generateAndInsertVoucherValueDecisionsV2(
+                tx = tx,
+                jsonMapper = jsonMapper,
+                incomeTypesProvider = incomeTypesProvider,
+                financeMinDate = feeDecisionMinDate,
+                valueDecisionCapacityFactorEnabled =
+                    featureConfig.valueDecisionCapacityFactorEnabled,
+                childId = childId
+            )
+        } else {
+            val fromOrMinDate = maxOf(feeDecisionMinDate, from)
+            val families = tx.findFamiliesByChild(childId, fromOrMinDate)
+            handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
         }
     }
 
@@ -225,21 +275,25 @@ FROM ids;
                 }
         }
 
-        families
-            .flatMap { family -> family.children.map { it to family } }
-            .groupingBy { (child, _) -> child }
-            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
-            .forEach { (child, families) ->
-                tx.handleValueDecisionChanges(
-                    featureConfig,
-                    jsonMapper,
-                    incomeTypesProvider,
-                    clock,
-                    from,
-                    child,
-                    families
-                )
-            }
+        if (!v2Vouchers) {
+            families
+                .flatMap { family -> family.children.map { it to family } }
+                .groupingBy { (child, _) -> child }
+                .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
+                    childFamilies + family
+                }
+                .forEach { (child, families) ->
+                    tx.handleValueDecisionChanges(
+                        featureConfig,
+                        jsonMapper,
+                        incomeTypesProvider,
+                        clock,
+                        from,
+                        child,
+                        families
+                    )
+                }
+        }
     }
 }
 
@@ -590,11 +644,11 @@ internal fun getAllPossiblyAffectedAdultsByAdult(
 ): Set<PersonId> {
     val children =
         tx.getParentships(headOfChildId = adultId, childId = null).map { it.childId }.toSet() +
-            tx.getChildrenFromFeeDecisions(adultId)
+            tx.getChildrenFromFinanceDecisions(adultId)
 
     val partners =
         tx.getPartnersForPerson(adultId, false).map { it.person.id } +
-            tx.getPartnersFromFeeDecisions(adultId) +
+            tx.getPartnersFromFinanceDecisions(adultId) +
             children.flatMap { child ->
                 tx.getParentships(headOfChildId = null, childId = child).map { it.headOfChildId }
             }
@@ -609,23 +663,27 @@ internal fun getAllPossiblyAffectedAdultsByChild(
     val heads = tx.getParentships(headOfChildId = null, childId = childId).map { it.headOfChildId }
     val partners =
         heads.flatMap { head -> tx.getPartnersForPerson(head, false) }.map { it.person.id }
-    val feeDecisionParents = tx.getParentsFromFeeDecisions(childId)
+    val feeDecisionParents = tx.getParentsFromFinanceDecisions(childId)
     return (heads + partners + feeDecisionParents).toSet()
 }
 
-private fun Database.Read.getPartnersFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
         SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
         UNION ALL 
         SELECT head_of_family_id FROM fee_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
+        UNION ALL 
+        SELECT partner_id FROM voucher_value_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
+        UNION ALL 
+        SELECT head_of_family_id FROM voucher_value_decision WHERE partner_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
         .toSet<PersonId>()
 
-private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
@@ -633,6 +691,12 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
         WHERE (fd.head_of_family_id = ${bind(personId)} OR fd.partner_id = ${bind(personId)}) AND fd.status NOT IN ('DRAFT', 'IGNORED')
+        
+        UNION ALL 
+        
+        SELECT vvd.child_id 
+        FROM voucher_value_decision vvd
+        WHERE (vvd.head_of_family_id = ${bind(personId)} OR vvd.partner_id = ${bind(personId)}) AND vvd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
@@ -640,7 +704,7 @@ private fun Database.Read.getChildrenFromFeeDecisions(personId: PersonId) =
 
 private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
 
-private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
+private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) =
     createQuery<Any> {
             sql(
                 """
@@ -648,10 +712,28 @@ private fun Database.Read.getParentsFromFeeDecisions(personId: PersonId) =
         FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
         WHERE fdc.child_id = ${bind(personId)} AND fd.status NOT IN ('DRAFT', 'IGNORED')
+        
+        UNION ALL 
+        
+        SELECT vvd.head_of_family_id, vvd.partner_id
+        FROM voucher_value_decision vvd 
+        WHERE vvd.child_id = ${bind(personId)} AND vvd.status NOT IN ('DRAFT', 'IGNORED')
         """
             )
         }
-        .mapTo<FeeDecisionParents>()
-        .useIterable { rows ->
-            rows.flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }.toSet()
+        .toList<FeeDecisionParents>()
+        .flatMap { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+        .toSet()
+
+private fun Database.Read.getChildrenOfHeadOfFamily(personId: PersonId, range: DateRange? = null) =
+    createQuery<Any> {
+            sql(
+                """
+        SELECT child_id
+        FROM fridge_child
+        WHERE head_of_child = ${bind(personId)} AND NOT conflict 
+        ${if (range != null) "AND daterange(start_date, end_date, '[]') && ${bind(range)}" else ""}
+        """
+            )
         }
+        .toSet<ChildId>()
