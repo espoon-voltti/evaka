@@ -65,6 +65,8 @@ declare module 'Icons' {
   const faFileSpreadsheet: IconDefinition
   const faFileWord: IconDefinition
   const faGavel: IconDefinition
+  const faGear: IconDefinition
+  const fasGear: IconDefinition
   const faHandHolding: IconDefinition
   const faHiking: IconDefinition
   const faHome: IconDefinition

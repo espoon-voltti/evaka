@@ -243,8 +243,8 @@ fun Database.Transaction.insert(device: DevMobileDevice) =
     insertTestDataRow(
             device,
             """
-INSERT INTO mobile_device (id, unit_id, name, long_term_token)
-VALUES (:id, :unitId, :name, :longTermToken)
+INSERT INTO mobile_device (id, unit_id, name, long_term_token, push_notification_categories)
+VALUES (:id, :unitId, :name, :longTermToken, :pushNotificationCategories)
 RETURNING id
     """
         )

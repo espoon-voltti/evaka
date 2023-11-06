@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasGear } from 'Icons'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -21,6 +22,7 @@ import colors from 'lib-customizations/common'
 import {
   faChild,
   faEnvelope,
+  faGear,
   fasChild,
   fasEnvelope,
   fasUser,
@@ -36,7 +38,7 @@ import { useTranslation } from './i18n'
 import { useSelectedGroup } from './selected-group'
 import { UnitContext } from './unit'
 
-export type NavItem = 'child' | 'staff' | 'messages'
+export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
 export const bottomNavBarHeight = 60
 
@@ -179,6 +181,22 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               ).some(({ unreadCount }) => unreadCount > 0) && (
                 <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
               )}
+            </BottomText>
+          </Button>
+        ) : null}
+        {unit.features.includes('PUSH_NOTIFICATIONS') ? (
+          <Button data-qa="bottomnav-settings">
+            <BottomText
+              text={i18n.common.settings}
+              selected={selected === 'settings'}
+              onClick={() =>
+                selected !== 'settings' && navigate(`/units/${unitId}/settings`)
+              }
+            >
+              <CustomIcon
+                icon={selected === 'settings' ? fasGear : faGear}
+                selected={selected === 'settings'}
+              />
             </BottomText>
           </Button>
         ) : null}

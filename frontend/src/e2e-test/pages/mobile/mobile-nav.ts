@@ -20,6 +20,7 @@ export default class MobileNav {
   children = this.page.find('[data-qa="bottomnav-children"]')
   staff = this.page.find('[data-qa="bottomnav-staff"]')
   messages = this.page.find('[data-qa="bottomnav-messages"]')
+  settings = this.page.find('[data-qa="bottomnav-settings"]')
 
   get selectedGroupName() {
     return this.#groupSelectorButton.text

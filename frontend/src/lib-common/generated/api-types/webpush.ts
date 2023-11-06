@@ -6,6 +6,24 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { UUID } from '../../types'
+
+/**
+* Generated from fi.espoo.evaka.webpush.PushNotificationCategory
+*/
+export const pushNotificationCategories = [
+  'RECEIVED_MESSAGE'
+] as const
+
+export type PushNotificationCategory = typeof pushNotificationCategories[number]
+
+/**
+* Generated from fi.espoo.evaka.webpush.WebPushController.PushSettings
+*/
+export interface PushSettings {
+  categories: PushNotificationCategory[]
+  groups: UUID[]
+}
 
 /**
 * Generated from fi.espoo.evaka.webpush.WebPushSubscription

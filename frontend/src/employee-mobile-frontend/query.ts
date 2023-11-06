@@ -11,6 +11,7 @@ export type QueryKeyPrefix =
   | 'messages'
   | 'notes'
   | 'staffAttendance'
+  | 'settings'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

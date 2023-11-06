@@ -4,10 +4,14 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class UnitListPage {
   constructor(private readonly page: Page) {}
+
+  unit(id: string): Element {
+    return this.page.findByDataQa(`unit-${id}`)
+  }
 
   async assertStaffCount(unitId: UUID, present: number, allocated: number) {
     const staffCount = this.page

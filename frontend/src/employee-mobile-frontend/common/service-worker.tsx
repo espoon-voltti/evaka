@@ -48,12 +48,16 @@ export const ServiceWorkerContextProvider = React.memo(
     )
 
     const pushNotifications = useMemo(() => {
-      if (!user?.pushApplicationServerKey) return undefined
       if (!pushManager) return undefined
-      return new PushNotifications(pushManager, {
-        userVisibleOnly: true,
-        applicationServerKey: user.pushApplicationServerKey
-      })
+      return new PushNotifications(
+        pushManager,
+        user?.pushApplicationServerKey
+          ? {
+              userVisibleOnly: true,
+              applicationServerKey: user.pushApplicationServerKey
+            }
+          : undefined
+      )
     }, [user?.pushApplicationServerKey, pushManager])
 
     useEffect(() => {
@@ -66,7 +70,9 @@ export const ServiceWorkerContextProvider = React.memo(
 
     useEffect(() => {
       if (pushNotifications) {
-        pushNotifications.enable().catch((err) => Sentry.captureException(err))
+        pushNotifications
+          .refreshSubscription()
+          .catch((err) => Sentry.captureException(err))
       } else if (pushManager) {
         unsubscribe(pushManager).catch((err) => Sentry.captureException(err))
       }
@@ -94,15 +100,26 @@ const registerServiceWorker = async () => {
 export class PushNotifications {
   constructor(
     private pushManager: PushManager,
-    private options: PushSubscriptionOptionsInit
+    private options: PushSubscriptionOptionsInit | undefined
   ) {}
 
-  get permissionState(): Promise<PermissionState> {
-    return this.pushManager.permissionState(this.options)
+  get available(): boolean {
+    return !!this.options
+  }
+
+  get permissionState(): Promise<PermissionState | undefined> {
+    return this.options
+      ? this.pushManager.permissionState(this.options)
+      : Promise.resolve(undefined)
   }
 
   async enable(): Promise<boolean> {
-    const sub = await this.refreshSubscription()
+    if (!(await this.requestPermission())) return false
+    return await this.refreshSubscription()
+  }
+
+  async refreshSubscription(): Promise<boolean> {
+    const sub = await this.getSubscription()
     const authSecret = sub?.getKey('auth')
     const ecdhKey = sub?.getKey('p256dh')
     if (sub && authSecret && ecdhKey) {
@@ -139,10 +156,12 @@ export class PushNotifications {
     return result === 'granted'
   }
 
-  private async refreshSubscription(): Promise<PushSubscription | undefined> {
-    if (!(await this.requestPermission())) return undefined
+  private async getSubscription(): Promise<PushSubscription | undefined> {
+    if (!this.options) {
+      return undefined
+    }
     const state = await this.pushManager.permissionState(this.options)
-    if (state !== 'granted' && state !== 'prompt') {
+    if (state !== 'granted') {
       return undefined
     }
     const sub = await this.pushManager.getSubscription()

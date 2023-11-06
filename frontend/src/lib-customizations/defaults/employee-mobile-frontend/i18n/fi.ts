@@ -52,6 +52,7 @@ export const fi = {
     name: 'Nimi',
     staff: 'Henkilökunta',
     messages: 'Viestit',
+    settings: 'Asetukset',
     back: 'Takaisin',
     return: 'Palaa',
     close: 'Sulje',
@@ -423,12 +424,30 @@ export const fi = {
   settings: {
     notifications: {
       title: 'Ilmoitusasetukset',
-      label: 'Viesti-ilmoitukset',
-      enable: 'Ota käyttöön',
-      state: {
-        granted: 'käytössä',
-        prompt: 'pois käytöstä',
-        denied: 'estetty'
+      permission: {
+        label: 'Ilmoitukset',
+        enable: 'Ota käyttöön',
+        state: {
+          unsupported: 'Puhelin tai selain ei tue ilmoituksia',
+          granted: 'Käytössä',
+          prompt: 'Ei käytössä',
+          denied: 'Estetty'
+        },
+        info: {
+          unsupported:
+            'Ilmoitukset eivät toimi tällä puhelimella, tai käytössä olevalla selaimen versiolla. Ongelma saattaa korjaantua päivittämällä selain.',
+          denied:
+            'Ilmoitukset on estetty puhelimen asetuksissa. Asia voi korjaantua muuttamalla puhelimen tai selaimen ilmoitusasetuksia.'
+        }
+      },
+      categories: {
+        label: 'Aiheet, joista lähetetään ilmoitus tähän puhelimeen',
+        values: {
+          RECEIVED_MESSAGE: 'Saapuneet viestit'
+        }
+      },
+      groups: {
+        label: 'Ryhmät, joita koskevista asioista lähetetään ilmoitus'
       }
     }
   },

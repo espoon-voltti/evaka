@@ -364,3 +364,4 @@ V364__koski_model_updates.sql
 V365__employee_active.sql
 V366__message_delete_cascades.sql
 V367__person_keycloak_email.sql
+V368__mobile_device_push.sql
