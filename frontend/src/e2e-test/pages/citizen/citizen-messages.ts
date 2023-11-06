@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilTrue } from '../../utils'
 import { Element, MultiSelect, Page, TextInput } from '../../utils/page'
 
 export class MockStrongAuthPage {
@@ -111,8 +110,8 @@ export default class CitizenMessagesPage {
     await this.#openReplyEditorButton.click()
     await this.#messageReplyContent.fill(content)
     await this.#sendReplyButton.click()
-    // the content is cleared and the button is disabled once the reply has been sent
-    await waitUntilTrue(() => this.#sendReplyButton.disabled)
+    // the editor is hidden after sending the reply
+    await this.#sendReplyButton.waitUntilHidden()
   }
 
   async deleteFirstThread() {

@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { AccountType } from 'lib-common/generated/api-types/messaging'
+import { cancelMutation, MutationDescription } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { faTrash } from 'lib-icons'
 
-import AsyncButton from '../atoms/buttons/AsyncButton'
 import InlineButton from '../atoms/buttons/InlineButton'
+import MutateButton from '../atoms/buttons/MutateButton'
 import TextArea from '../atoms/form/TextArea'
 import { useTranslations } from '../i18n'
 import ButtonContainer from '../layout/ButtonContainer'
@@ -43,26 +43,37 @@ export interface SelectableAccount {
   type: AccountType
 }
 
-interface Props {
+interface Props<T, R> {
   recipients: SelectableAccount[]
   onToggleRecipient: (id: UUID, selected: boolean) => void
-  onSubmit: () => Promise<Result<unknown>>
+  mutation: MutationDescription<T, R>
+  onSubmit: () => T | typeof cancelMutation
+  onSuccess: (response: R) => void
   onDiscard: () => void
   onUpdateContent: (content: string) => void
   replyContent: string
   sendEnabled: boolean
 }
 
-export const MessageReplyEditor = React.memo(function MessageReplyEditor({
+function MessageReplyEditor<T, R>({
+  mutation,
   onSubmit,
+  onSuccess,
   onDiscard,
   onUpdateContent,
   onToggleRecipient,
   recipients,
   replyContent,
   sendEnabled
-}: Props) {
+}: Props<T, R>) {
   const i18n = useTranslations()
+  const handleSuccess = useCallback(
+    (response: R) => {
+      onUpdateContent('')
+      onSuccess(response)
+    },
+    [onUpdateContent, onSuccess]
+  )
   return (
     <>
       <EditorRow>
@@ -89,13 +100,14 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
       </EditorRow>
       <EditorRow>
         <ButtonContainer justify="space-between">
-          <AsyncButton
+          <MutateButton
+            mutation={mutation}
             text={i18n.messages.send}
             textInProgress={i18n.messages.sending}
             primary
             data-qa="message-send-btn"
             onClick={onSubmit}
-            onSuccess={() => undefined}
+            onSuccess={handleSuccess}
             disabled={!sendEnabled}
           />
           <InlineButton
@@ -108,4 +120,6 @@ export const MessageReplyEditor = React.memo(function MessageReplyEditor({
       </EditorRow>
     </>
   )
-})
+}
+
+export default React.memo(MessageReplyEditor) as typeof MessageReplyEditor

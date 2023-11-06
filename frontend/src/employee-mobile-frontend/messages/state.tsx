@@ -12,25 +12,19 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import {
-  queryOrDefault,
-  useMutationResult,
-  useQueryResult
-} from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
 import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 
-import { ReplyToThreadParams } from './api'
-import { messagingAccountsQuery, replyToThreadMutation } from './queries'
+import { messagingAccountsQuery } from './queries'
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
-  sendReply: (params: ReplyToThreadParams) => Promise<Result<unknown>>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
@@ -39,7 +33,6 @@ const defaultState: MessagesState = {
   accounts: Loading.of(),
   selectedAccount: undefined,
   groupAccounts: [],
-  sendReply: () => Promise.resolve(Loading.of()),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -107,25 +100,12 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const { mutateAsync: sendReply } = useMutationResult(replyToThreadMutation)
-    const sendReplyAndClear = useCallback(
-      async (arg: ReplyToThreadParams) => {
-        const result = await sendReply(arg)
-        if (result.isSuccess) {
-          setReplyContent(result.value.threadId, '')
-        }
-        return result
-      },
-      [sendReply, setReplyContent]
-    )
-
     const value = useMemo(
       () => ({
         accounts,
         selectedAccount,
         groupAccounts,
         getReplyContent,
-        sendReply: sendReplyAndClear,
         setReplyContent
       }),
       [
@@ -133,7 +113,6 @@ export const MessageContextProvider = React.memo(
         groupAccounts,
         selectedAccount,
         getReplyContent,
-        sendReplyAndClear,
         setReplyContent
       ]
     )

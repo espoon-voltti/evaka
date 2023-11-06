@@ -168,19 +168,19 @@ export type ReplyToThreadParams = ReplyToMessageBody & {
   messageId: UUID
   accountId: UUID
 }
+
 export async function replyToThread({
   messageId,
   content,
   accountId,
   recipientAccountIds
-}: ReplyToThreadParams): Promise<Result<ThreadReply>> {
+}: ReplyToThreadParams): Promise<ThreadReply> {
   return client
     .post<JsonOf<ThreadReply>>(`/messages/${accountId}/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(({ data }) => Success.of(deserializeReplyResponse(data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => deserializeReplyResponse(res.data))
 }
 
 export async function postMessage(
