@@ -118,16 +118,28 @@ export default React.memo(function StaffMemberPage() {
                           .format()}
                       </span>
                     </TimeInfo>
-                    {staffMember.latestCurrentDayAttendance.departed && (
-                      <TimeInfo>
-                        <Label>{i18n.attendances.departureTime}</Label>{' '}
-                        <span data-qa="departure-time">
-                          {staffMember.latestCurrentDayAttendance.departed
-                            ?.toLocalTime()
-                            .format()}
-                        </span>
-                      </TimeInfo>
-                    )}
+                    <TimeInfo>
+                      {staffMember.latestCurrentDayAttendance.departed && (
+                        <>
+                          <Label>{i18n.attendances.departureTime}</Label>{' '}
+                          <span data-qa="departure-time">
+                            {staffMember.latestCurrentDayAttendance.departed
+                              ?.toLocalTime()
+                              .format()}
+                          </span>
+                        </>
+                      )}
+                      <InlineIconButton
+                        icon={faEdit}
+                        onClick={() =>
+                          navigate(
+                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                          )
+                        }
+                        aria-label={i18n.common.edit}
+                        data-qa="edit"
+                      />
+                    </TimeInfo>
                   </>
                 )
               )}

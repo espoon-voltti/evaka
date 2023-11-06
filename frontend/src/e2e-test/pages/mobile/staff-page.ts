@@ -98,9 +98,13 @@ export default class StaffPage {
 
 export class StaffAttendancePage {
   editButton: Element
+  arrivalTime: Element
+  departureTime: Element
 
   constructor(private readonly page: Page) {
     this.editButton = this.page.findByDataQa('edit')
+    this.arrivalTime = this.page.findByDataQa('arrival-time')
+    this.departureTime = this.page.findByDataQa('departure-time')
   }
 
   #tabs = {

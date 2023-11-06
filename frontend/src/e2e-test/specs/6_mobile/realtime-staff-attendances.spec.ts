@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { FeatureFlags } from 'lib-customizations/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -97,11 +98,14 @@ beforeEach(async () => {
   employeeName = `${staffFixture.data.lastName} Kutsumanimi`
 })
 
-const initPages = async (mockedTime: Date) => {
+const initPages = async (
+  mockedTime: Date,
+  featureFlags: Partial<FeatureFlags> = {}
+) => {
   page = await Page.open({
     mockedTime,
     employeeMobileCustomizations: {
-      featureFlags: { employeeMobileStaffAttendanceEdit: true }
+      featureFlags: { ...featureFlags, employeeMobileStaffAttendanceEdit: true }
     }
   })
   nav = new MobileNav(page)
@@ -669,6 +673,44 @@ describe('Realtime staff attendance page', () => {
 })
 
 describe('Realtime staff attendance edit page', () => {
+  test('Staff member can add new attendance with attendace types disabled', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+        departed: HelsinkiDateTime.fromLocal(
+          date,
+          LocalTime.parse(departureTime)
+        )
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate(),
+      { staffAttendanceTypes: false }
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newDepartureTime = '16:00'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.addLink.click()
+    await editPage.addLink.waitUntilHidden()
+    await editPage.fillDeparted(1, newDepartureTime)
+    await editPage.addLink.waitUntilVisible()
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.arrivalTime.assertTextEquals(departureTime)
+    await staffAttendancePage.departureTime.assertTextEquals(newDepartureTime)
+  })
+
   test('Staff member can add new attendance with group', async () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
