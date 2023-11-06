@@ -346,11 +346,7 @@ const PermissionSection = React.memo(function PermissionSection(props: {
             />
           </div>
           {showInfo && (
-            <ExpandingInfoBox
-              info={t.info.unsupported}
-              close={closeInfo}
-              closeLabel={i18n.common.close}
-            />
+            <ExpandingInfoBox info={t.info.unsupported} close={closeInfo} />
           )}
         </>
       )
@@ -381,11 +377,7 @@ const PermissionSection = React.memo(function PermissionSection(props: {
             />
           </div>
           {showInfo && (
-            <ExpandingInfoBox
-              info={t.info.denied}
-              close={closeInfo}
-              closeLabel={i18n.common.close}
-            />
+            <ExpandingInfoBox info={t.info.denied} close={closeInfo} />
           )}
         </>
       )

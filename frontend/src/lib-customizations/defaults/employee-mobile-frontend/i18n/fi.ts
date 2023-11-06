@@ -91,7 +91,8 @@ export const fi = {
     validity: 'Voimassaolo',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     lastName: 'Sukunimi',
-    firstName: 'Etunimi'
+    firstName: 'Etunimi',
+    openExpandingInfo: 'Avaa lisätietokenttä'
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
