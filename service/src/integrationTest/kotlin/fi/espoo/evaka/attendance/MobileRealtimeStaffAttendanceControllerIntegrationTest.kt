@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
+import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -1004,9 +1005,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 )
             )
         assertThat(insertResponse.deleted).isEmpty()
-        assertThat(insertResponse.updated).hasSize(1)
+        assertThat(insertResponse.inserted).hasSize(1)
 
-        val staffAttendanceId = insertResponse.updated.first()
+        val staffAttendanceId = insertResponse.inserted.first()
 
         val updateResponse =
             mobileRealtimeStaffAttendanceController.setAttendances(
@@ -1030,8 +1031,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         )
                 )
             )
-        assertThat(updateResponse.deleted).isEmpty()
-        assertThat(updateResponse.updated).containsExactly(staffAttendanceId)
+        assertThat(updateResponse.deleted).containsExactly(staffAttendanceId)
+        assertThat(updateResponse.inserted).hasSize(1)
 
         val deleteResponse =
             mobileRealtimeStaffAttendanceController.setAttendances(
@@ -1046,8 +1047,74 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     rows = emptyList()
                 )
             )
-        assertThat(deleteResponse.deleted).containsExactly(staffAttendanceId)
-        assertThat(deleteResponse.updated).isEmpty()
+        assertThat(deleteResponse.deleted).hasSize(1)
+        assertThat(deleteResponse.inserted).isEmpty()
+    }
+
+    @Test
+    fun `set attendances with overlapping times`() {
+        val employeeId = addEmployee()
+        val staffAttendance1Id =
+            db.transaction { tx ->
+                tx.insert(
+                    DevStaffAttendance(
+                        id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                        employeeId = employeeId,
+                        groupId = groupId,
+                        arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                        departed = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
+                        occupancyCoefficient = occupancyCoefficientSeven,
+                        type = StaffAttendanceType.PRESENT
+                    )
+                )
+            }
+        val staffAttendance2Id =
+            db.transaction { tx ->
+                tx.insert(
+                    DevStaffAttendance(
+                        id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                        employeeId = employeeId,
+                        groupId = groupId,
+                        arrived = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
+                        departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
+                        occupancyCoefficient = occupancyCoefficientSeven,
+                        type = StaffAttendanceType.PRESENT
+                    )
+                )
+            }
+
+        val response =
+            mobileRealtimeStaffAttendanceController.setAttendances(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id,
+                MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest(
+                    employeeId = employeeId,
+                    pinCode = "1122",
+                    date = now.toLocalDate(),
+                    rows =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = staffAttendance1Id,
+                                groupId = groupId,
+                                arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                                departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
+                                type = StaffAttendanceType.PRESENT
+                            ),
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = staffAttendance2Id,
+                                groupId = groupId,
+                                arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
+                                departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
+                                type = StaffAttendanceType.PRESENT
+                            )
+                        )
+                )
+            )
+        assertThat(response.deleted)
+            .containsExactlyInAnyOrder(staffAttendance1Id, staffAttendance2Id)
+        assertThat(response.inserted).hasSize(2)
     }
 
     @Test
@@ -1080,7 +1147,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             )
 
         assertThat(response.deleted).isEmpty()
-        assertThat(response.updated).hasSize(1)
+        assertThat(response.inserted).hasSize(1)
     }
 
     @Test
@@ -1127,7 +1194,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 )
             )
         assertThat(response1.deleted).isEmpty()
-        assertThat(response1.updated).hasSize(1)
+        assertThat(response1.inserted).hasSize(1)
 
         val response2 =
             mobileRealtimeStaffAttendanceController.setAttendances(
@@ -1152,7 +1219,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 )
             )
         assertThat(response2.deleted).isEmpty()
-        assertThat(response2.updated).hasSize(1)
+        assertThat(response2.inserted).hasSize(1)
     }
 
     @Test

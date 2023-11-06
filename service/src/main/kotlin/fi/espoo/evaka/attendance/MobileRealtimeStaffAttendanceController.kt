@@ -207,7 +207,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
     data class StaffAttendanceUpdateResponse(
         val deleted: List<StaffAttendanceRealtimeId>,
-        val updated: List<StaffAttendanceRealtimeId>
+        val inserted: List<StaffAttendanceRealtimeId>
     )
 
     @PutMapping
@@ -249,7 +249,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     throw BadRequest("Unknown id was given")
                 }
 
-                val deletedIds = existing.map { it.id }.filterNot { ids.contains(it) }
+                val deletedIds = existing.map { it.id }
                 deletedIds.forEach { tx.deleteStaffAttendance(it) }
 
                 val occupancyCoefficients =
@@ -260,7 +260,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 val updatedIds =
                     body.rows.map { attendance ->
                         tx.upsertStaffAttendance(
-                            attendanceId = attendance.id,
+                            attendanceId = null,
                             employeeId = body.employeeId,
                             groupId = attendance.groupId,
                             arrivalTime = attendance.arrived,
@@ -271,7 +271,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
                     }
 
-                StaffAttendanceUpdateResponse(deleted = deletedIds, updated = updatedIds)
+                StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
             }
         }
     }

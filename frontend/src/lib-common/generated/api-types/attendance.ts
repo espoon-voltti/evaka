@@ -323,7 +323,7 @@ export interface StaffAttendanceUpdateRequest {
 */
 export interface StaffAttendanceUpdateResponse {
   deleted: UUID[]
-  updated: UUID[]
+  inserted: UUID[]
 }
 
 /**

@@ -1442,19 +1442,7 @@ RETURNING id
 
     @PostMapping("/realtime-staff-attendance")
     fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-                    INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
-                    VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
-                    """
-                            .trimIndent()
-                    )
-                    .bindKotlin(body)
-                    .execute()
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =

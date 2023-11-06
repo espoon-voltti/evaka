@@ -73,6 +73,7 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
+import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -1037,6 +1038,18 @@ fun Database.Transaction.insertTestAbsence(
         .bind("modifiedBy", modifiedBy)
         .bind("modifiedAt", modifiedAt)
         .execute()
+}
+
+fun Database.Transaction.insert(
+    staffAttendanceRealtime: DevStaffAttendance
+): StaffAttendanceRealtimeId {
+    val sql =
+        """
+INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
+VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
+RETURNING id
+    """
+    return insertTestDataRow(staffAttendanceRealtime, sql).let(::StaffAttendanceRealtimeId)
 }
 
 fun Database.Transaction.insertTestChildAttendance(
