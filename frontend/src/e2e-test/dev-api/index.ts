@@ -24,6 +24,7 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
+import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import {
   AbsenceCategory,
@@ -1241,6 +1242,23 @@ export async function upsertOccupancyCoefficient(body: {
 }): Promise<void> {
   try {
     await devClient.post('/occupancy-coefficient', body)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function getStaffRealtimeAttendances(): Promise<
+  StaffMemberAttendance[]
+> {
+  try {
+    const { data } = await devClient.get<JsonOf<StaffMemberAttendance[]>>(
+      '/realtime-staff-attendance'
+    )
+    return data.map((row) => ({
+      ...row,
+      arrived: HelsinkiDateTime.parseIso(row.arrived),
+      departed: HelsinkiDateTime.parseNullableIso(row.departed)
+    }))
   } catch (e) {
     throw new DevApiError(e)
   }

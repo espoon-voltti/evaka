@@ -30,6 +30,7 @@ import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDe
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.childdiscussion.ChildDiscussionData
 import fi.espoo.evaka.childdiscussion.getChildDiscussions
 import fi.espoo.evaka.children.consent.ChildConsentType
@@ -1439,6 +1440,10 @@ RETURNING id
             }
         }
     }
+
+    @GetMapping("/realtime-staff-attendance")
+    fun getStaffAttendances(db: Database) =
+        db.connect { dbc -> dbc.transaction { it.getRealtimeStaffAttendances() } }
 
     @PostMapping("/realtime-staff-attendance")
     fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =

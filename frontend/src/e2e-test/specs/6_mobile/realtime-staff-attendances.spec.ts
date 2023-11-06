@@ -7,7 +7,11 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
+import {
+  getStaffRealtimeAttendances,
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   EmployeeBuilder,
@@ -827,7 +831,9 @@ describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.assertEmployeeAttendances([
       `Ylityö ${newArrivalTime}–${newDepartureTime}`
     ])
-    // TODO: assert group
+    const attendances = await getStaffRealtimeAttendances()
+    expect(attendances).toHaveLength(1)
+    expect(attendances[0].groupId).toBe(daycareGroup2Fixture.id)
   })
 
   test('Staff member can remove existing attendance', async () => {
