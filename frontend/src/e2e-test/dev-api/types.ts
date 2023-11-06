@@ -627,7 +627,7 @@ export interface DevPayment {
 export interface DevRealtimeStaffAttendance {
   id: UUID
   employeeId: UUID
-  groupId: UUID
+  groupId: UUID | null
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   occupancyCoefficient: number

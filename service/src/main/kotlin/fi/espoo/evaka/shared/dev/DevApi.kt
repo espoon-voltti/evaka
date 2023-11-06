@@ -30,6 +30,7 @@ import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDe
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.childdiscussion.ChildDiscussionData
 import fi.espoo.evaka.childdiscussion.getChildDiscussions
 import fi.espoo.evaka.children.consent.ChildConsentType
@@ -1440,21 +1441,13 @@ RETURNING id
         }
     }
 
+    @GetMapping("/realtime-staff-attendance")
+    fun getStaffAttendances(db: Database) =
+        db.connect { dbc -> dbc.transaction { it.getRealtimeStaffAttendances() } }
+
     @PostMapping("/realtime-staff-attendance")
     fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-                    INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
-                    VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
-                    """
-                            .trimIndent()
-                    )
-                    .bindKotlin(body)
-                    .execute()
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
@@ -2122,7 +2115,7 @@ data class DevUpsertStaffOccupancyCoefficient(
 data class DevStaffAttendance(
     val id: StaffAttendanceRealtimeId,
     val employeeId: EmployeeId,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,

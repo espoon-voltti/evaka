@@ -347,6 +347,38 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .toList<RawAttendance>()
 
+fun Database.Read.getEmployeeAttendancesForDate(
+    unitId: DaycareId,
+    employeeId: EmployeeId,
+    date: LocalDate
+): List<RawAttendance> =
+    createQuery(
+            """
+SELECT
+    sa.id,
+    sa.employee_id,
+    sa.arrived,
+    sa.departed,
+    sa.group_id,
+    sa.occupancy_coefficient,
+    sa.type,
+    emp.first_name,
+    emp.last_name,
+    soc.coefficient AS currentOccupancyCoefficient
+FROM staff_attendance_realtime sa
+LEFT JOIN daycare_group dg on sa.group_id = dg.id
+JOIN employee emp ON sa.employee_id = emp.id
+LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
+WHERE (dg.daycare_id IS NULL OR dg.daycare_id = :unitId) AND emp.id = :employeeId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
+        """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("employeeId", employeeId)
+        .bind("start", HelsinkiDateTime.of(date, LocalTime.of(0, 0)))
+        .bind("end", HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0)))
+        .toList<RawAttendance>()
+
 fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
     employeeIds: Set<EmployeeId>

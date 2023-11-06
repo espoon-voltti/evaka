@@ -7,6 +7,7 @@ import {
   ExternalStaffArrivalRequest,
   ExternalStaffDepartureRequest,
   StaffArrivalRequest,
+  StaffAttendanceUpdateRequest,
   StaffDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -99,5 +100,14 @@ export async function postExternalStaffDeparture(
 ): Promise<void> {
   return client
     .post(`/mobile/realtime-staff-attendances/departure-external`, body)
+    .then(() => undefined)
+}
+
+export async function putStaffAttendances(
+  unitId: UUID,
+  body: StaffAttendanceUpdateRequest
+): Promise<void> {
+  return client
+    .put(`/mobile/realtime-staff-attendances`, body, { params: { unitId } })
     .then(() => undefined)
 }

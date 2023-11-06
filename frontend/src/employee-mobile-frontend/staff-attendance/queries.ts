@@ -6,7 +6,8 @@ import {
   ExternalStaffArrivalRequest,
   ExternalStaffDepartureRequest,
   StaffArrivalRequest,
-  StaffDepartureRequest
+  StaffDepartureRequest,
+  StaffAttendanceUpdateRequest
 } from 'lib-common/generated/api-types/attendance'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -18,7 +19,8 @@ import {
   postExternalStaffArrival,
   postExternalStaffDeparture,
   postStaffArrival,
-  postStaffDeparture
+  postStaffDeparture,
+  putStaffAttendances
 } from './api'
 
 const queryKeys = createQueryKeys('staffAttendance', {
@@ -55,5 +57,16 @@ export const externalStaffDepartureMutation = mutation({
     unitId: UUID
     request: ExternalStaffDepartureRequest
   }) => postExternalStaffDeparture(request),
+  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+})
+
+export const staffAttendanceMutation = mutation({
+  api: ({
+    unitId,
+    request
+  }: {
+    unitId: UUID
+    request: StaffAttendanceUpdateRequest
+  }) => putStaffAttendances(unitId, request),
   invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
 })

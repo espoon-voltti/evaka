@@ -5,20 +5,28 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { FeatureFlags } from 'lib-customizations/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
+import {
+  getStaffRealtimeAttendances,
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  daycare2Fixture,
-  daycareGroupFixture,
   EmployeeBuilder,
   Fixture,
+  daycare2Fixture,
+  daycareGroupFixture,
   fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycareGroup } from '../../dev-api/types'
 import MobileNav from '../../pages/mobile/mobile-nav'
-import { StaffAttendancePage } from '../../pages/mobile/staff-page'
+import {
+  StaffAttendanceEditPage,
+  StaffAttendancePage
+} from '../../pages/mobile/staff-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
@@ -94,9 +102,15 @@ beforeEach(async () => {
   employeeName = `${staffFixture.data.lastName} Kutsumanimi`
 })
 
-const initPages = async (mockedTime: Date) => {
+const initPages = async (
+  mockedTime: Date,
+  featureFlags: Partial<FeatureFlags> = {}
+) => {
   page = await Page.open({
-    mockedTime
+    mockedTime,
+    employeeMobileCustomizations: {
+      featureFlags: { ...featureFlags, employeeMobileStaffAttendanceEdit: true }
+    }
   })
   nav = new MobileNav(page)
 
@@ -123,10 +137,9 @@ describe('Realtime staff attendance page', () => {
       group: daycareGroupFixture
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
-    await staffAttendancePage.assertEmployeeAttendanceTimes(
-      0,
+    await staffAttendancePage.assertEmployeeAttendances([
       `Paikalla ${arrivalTime}–`
-    )
+    ])
 
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 13, 30).toSystemTzDate())
     await staffAttendancePage.assertPresentStaffCount(1)
@@ -136,10 +149,9 @@ describe('Realtime staff attendance page', () => {
 
     await staffAttendancePage.markStaffDeparted({ pin, time: departureTime })
     await staffAttendancePage.assertEmployeeStatus('Poissa')
-    await staffAttendancePage.assertEmployeeAttendanceTimes(
-      0,
+    await staffAttendancePage.assertEmployeeAttendances([
       `Paikalla ${arrivalTime}–${departureTime}`
-    )
+    ])
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
   })
@@ -158,10 +170,9 @@ describe('Realtime staff attendance page', () => {
       group: daycareGroupFixture
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
-    await staffAttendancePage.assertEmployeeAttendanceTimes(
-      0,
+    await staffAttendancePage.assertEmployeeAttendances([
       `Paikalla ${arrivalTime}–`
-    )
+    ])
     await staffAttendancePage.anyMemberPage.markDeparted.click()
     await staffAttendancePage.pinInput.locator.type(pin)
 
@@ -662,5 +673,229 @@ describe('Realtime staff attendance page', () => {
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.assertMarkNewExternalStaffDisabled()
+  })
+})
+
+describe('Realtime staff attendance edit page', () => {
+  test('Staff member can add new attendance with attendace types disabled', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+        departed: HelsinkiDateTime.fromLocal(
+          date,
+          LocalTime.parse(departureTime)
+        )
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate(),
+      { staffAttendanceTypes: false }
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newDepartureTime = '16:00'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.addLink.click()
+    await editPage.addLink.waitUntilHidden()
+    await editPage.fillDeparted(1, newDepartureTime)
+    await editPage.addLink.waitUntilVisible()
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.arrivalTime.assertTextEquals(departureTime)
+    await staffAttendancePage.departureTime.assertTextEquals(newDepartureTime)
+  })
+
+  test('Staff member can add new attendance with group', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+        departed: HelsinkiDateTime.fromLocal(
+          date,
+          LocalTime.parse(departureTime)
+        )
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newDepartureTime = '16:00'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.addLink.click()
+    await editPage.addLink.waitUntilHidden()
+    await editPage.fillDeparted(1, newDepartureTime)
+    await editPage.addLink.waitUntilVisible()
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertEmployeeAttendances([
+      `Paikalla ${arrivalTime}–${departureTime}`,
+      `Paikalla ${departureTime}–${newDepartureTime}`
+    ])
+  })
+
+  test('Staff member can add new attendance without group', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        type: 'TRAINING',
+        groupId: null,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+        departed: HelsinkiDateTime.fromLocal(
+          date,
+          LocalTime.parse(departureTime)
+        )
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newDepartureTime = '16:00'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.addLink.click()
+    await editPage.addLink.waitUntilHidden()
+    await editPage.fillDeparted(1, newDepartureTime)
+    await editPage.addLink.waitUntilVisible()
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertEmployeeAttendances([
+      `Koulutus ${arrivalTime}–${departureTime}`,
+      `Koulutus ${departureTime}–${newDepartureTime}`
+    ])
+  })
+
+  test('Staff member can edit existing attendance', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    const arrivalTime = '05:59'
+    const departureTime = '12:45'
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+        departed: HelsinkiDateTime.fromLocal(
+          date,
+          LocalTime.parse(departureTime)
+        )
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newArrivalTime = '06:00'
+    const newDepartureTime = '12:46'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.selectGroup(0, daycareGroup2Fixture.id)
+    await editPage.selectType(0, 'OVERTIME')
+    await editPage.fillArrived(0, newArrivalTime)
+    await editPage.fillDeparted(0, newDepartureTime)
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertEmployeeAttendances([
+      `Ylityö ${newArrivalTime}–${newDepartureTime}`
+    ])
+    const attendances = await getStaffRealtimeAttendances()
+    expect(attendances).toHaveLength(1)
+    expect(attendances[0].groupId).toBe(daycareGroup2Fixture.id)
+  })
+
+  test('Staff member can remove existing attendance', async () => {
+    const date = LocalDate.of(2022, 5, 5)
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(5, 59)),
+        departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(12, 45))
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.remove(0)
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertEmployeeAttendances([])
+  })
+
+  test('Staff member can edit ongoing attendance from yesterday', async () => {
+    const date = LocalDate.of(2023, 1, 24)
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.fromLocal(
+          date.subDays(1),
+          LocalTime.of(22, 0)
+        ),
+        departed: null
+      })
+      .save()
+
+    await initPages(
+      HelsinkiDateTime.fromLocal(date, LocalTime.of(2, 0)).toSystemTzDate()
+    )
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.editButton.click()
+
+    const newArrivalTime = '21:00'
+    const newDepartureTime = '02:00'
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.fillArrived(0, newArrivalTime)
+    await editPage.fillDeparted(0, newDepartureTime)
+    await editPage.pinInput.fill(pin)
+    await editPage.saveButton.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertEmployeeAttendances([
+      `Paikalla ${newArrivalTime}–${newDepartureTime}`
+    ])
   })
 })

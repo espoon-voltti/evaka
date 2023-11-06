@@ -2,18 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H4, Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { renderResult } from '../async-rendering'
@@ -77,7 +81,7 @@ export default React.memo(function StaffMemberPage() {
                   {staffMember.attendances.length > 0 &&
                     orderBy(staffMember.attendances, ({ arrived }) =>
                       arrived.formatIso()
-                    ).map(({ arrived, departed, type }) => (
+                    ).map(({ arrived, departed, type }, index, attendances) => (
                       <TimeInfo
                         key={arrived.formatIso()}
                         data-qa="attendance-time"
@@ -86,6 +90,19 @@ export default React.memo(function StaffMemberPage() {
                         <span>
                           {arrived.toLocalTime().format()}–
                           {departed?.toLocalTime().format() ?? ''}
+                          {featureFlags.employeeMobileStaffAttendanceEdit &&
+                            index === attendances.length - 1 && (
+                              <InlineIconButton
+                                icon={faEdit}
+                                onClick={() =>
+                                  navigate(
+                                    `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                                  )
+                                }
+                                aria-label={i18n.common.edit}
+                                data-qa="edit"
+                              />
+                            )}
                         </span>
                       </TimeInfo>
                     ))}
@@ -101,16 +118,30 @@ export default React.memo(function StaffMemberPage() {
                           .format()}
                       </span>
                     </TimeInfo>
-                    {staffMember.latestCurrentDayAttendance.departed && (
-                      <TimeInfo>
-                        <Label>{i18n.attendances.departureTime}</Label>{' '}
-                        <span data-qa="departure-time">
-                          {staffMember.latestCurrentDayAttendance.departed
-                            ?.toLocalTime()
-                            .format()}
-                        </span>
-                      </TimeInfo>
-                    )}
+                    <TimeInfo>
+                      {staffMember.latestCurrentDayAttendance.departed && (
+                        <>
+                          <Label>{i18n.attendances.departureTime}</Label>{' '}
+                          <span data-qa="departure-time">
+                            {staffMember.latestCurrentDayAttendance.departed
+                              ?.toLocalTime()
+                              .format()}
+                          </span>
+                        </>
+                      )}
+                      {featureFlags.employeeMobileStaffAttendanceEdit && (
+                        <InlineIconButton
+                          icon={faEdit}
+                          onClick={() =>
+                            navigate(
+                              `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                            )
+                          }
+                          aria-label={i18n.common.edit}
+                          data-qa="edit"
+                        />
+                      )}
+                    </TimeInfo>
                   </>
                 )
               )}
@@ -158,3 +189,8 @@ export default React.memo(function StaffMemberPage() {
     )
   )
 })
+
+const InlineIconButton = styled(IconButton)`
+  display: inline-flex;
+  margin-left: ${defaultMargins.xxs};
+`
