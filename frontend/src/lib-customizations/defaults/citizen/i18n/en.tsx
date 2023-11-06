@@ -27,7 +27,8 @@ const componentTranslations: ComponentTranslations = {
   messageReplyEditor: {
     ...components.messageReplyEditor,
     messagePlaceholder:
-      'Content... Note! Do not enter sensitive information here.'
+      'Content... Note! Do not enter sensitive information here.',
+    messagePlaceholderSensitiveThread: 'Content...'
   }
 }
 

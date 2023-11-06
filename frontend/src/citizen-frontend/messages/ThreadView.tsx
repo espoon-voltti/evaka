@@ -313,6 +313,7 @@ export default React.memo(function ThreadView({
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
             sendEnabled={sendEnabled}
+            messageThreadSensitive={sensitive}
           />
         </ReplyEditorContainer>
       ) : (

@@ -139,7 +139,8 @@ const components: Translations = {
   messageReplyEditor: {
     // Currently only used for Finnish frontends
     discard: '',
-    messagePlaceholder: undefined
+    messagePlaceholder: undefined,
+    messagePlaceholderSensitiveThread: undefined
   },
   notifications: {
     close: 'Close'

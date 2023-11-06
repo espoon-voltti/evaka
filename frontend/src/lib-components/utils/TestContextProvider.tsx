@@ -122,7 +122,8 @@ export const testTranslations: Translations = {
   },
   messageReplyEditor: {
     discard: '',
-    messagePlaceholder: undefined
+    messagePlaceholder: undefined,
+    messagePlaceholderSensitiveThread: undefined
   },
   notifications: {
     close: ''

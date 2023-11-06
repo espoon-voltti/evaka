@@ -239,12 +239,6 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable sending messages with sensitive flag. Sensitive messages
-   * require strong authentication from citizens in order to display the message content
-   */
-  sensitiveMessaging?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

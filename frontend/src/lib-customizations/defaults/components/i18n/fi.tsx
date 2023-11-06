@@ -137,7 +137,8 @@ const components: Translations = {
   },
   messageReplyEditor: {
     messagePlaceholder: undefined,
-    discard: 'Hylkää'
+    discard: 'Hylkää',
+    messagePlaceholderSensitiveThread: undefined
   },
   notifications: {
     close: 'Sulje'

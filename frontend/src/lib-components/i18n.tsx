@@ -118,6 +118,7 @@ export interface Translations {
   messageReplyEditor: {
     messagePlaceholder: string | undefined
     discard: string
+    messagePlaceholderSensitiveThread: string | undefined
   }
   notifications: {
     close: string

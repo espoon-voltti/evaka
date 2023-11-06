@@ -53,6 +53,7 @@ interface Props<T, R> {
   onUpdateContent: (content: string) => void
   replyContent: string
   sendEnabled: boolean
+  messageThreadSensitive?: boolean
 }
 
 function MessageReplyEditor<T, R>({
@@ -64,7 +65,8 @@ function MessageReplyEditor<T, R>({
   onToggleRecipient,
   recipients,
   replyContent,
-  sendEnabled
+  sendEnabled,
+  messageThreadSensitive = false
 }: Props<T, R>) {
   const i18n = useTranslations()
   const handleSuccess = useCallback(
@@ -91,7 +93,11 @@ function MessageReplyEditor<T, R>({
         <Label>{i18n.messages.message}</Label>
         <MultiRowTextArea
           rows={4}
-          placeholder={i18n.messageReplyEditor.messagePlaceholder}
+          placeholder={
+            messageThreadSensitive
+              ? i18n.messageReplyEditor.messagePlaceholderSensitiveThread
+              : i18n.messageReplyEditor.messagePlaceholder
+          }
           value={replyContent}
           onChange={(value) => onUpdateContent(value)}
           data-qa="message-reply-content"
