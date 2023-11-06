@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -20,7 +21,7 @@ import {
   MessageType,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
-import { formatPreferredName } from 'lib-common/names'
+import { formatAccountNames } from 'lib-common/messaging'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -101,24 +102,18 @@ function SingleMessage({
   title?: string
   index: number
 }) {
+  const { senderName, recipientNames } = useMemo(
+    () =>
+      formatAccountNames(message.sender, message.recipients, messageChildren),
+    [message.sender, message.recipients, messageChildren]
+  )
   return (
     <MessageContainer>
       <TitleRow>
-        <Bold>
-          {message.sender.name}
-          {messageChildren.length > 0
-            ? ` (${messageChildren
-                .map((ch) => `${ch.lastName} ${formatPreferredName(ch)}`)
-                .join(', ')})`
-            : ''}
-        </Bold>
+        <Bold>{senderName}</Bold>
         <InformationText>{message.sentAt.format()}</InformationText>
       </TitleRow>
-      <InformationText>
-        {(message.recipientNames || message.recipients.map((r) => r.name)).join(
-          ', '
-        )}
-      </InformationText>
+      <InformationText>{recipientNames.join(', ')}</InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
         <Linkify text={message.content} />
       </MessageContent>
