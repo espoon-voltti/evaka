@@ -119,7 +119,7 @@ private fun Database.Read.getUnits(
     createQuery(
             // language=SQL
             """
-SELECT unit.id, unit.name
+SELECT unit.id, unit.name, unit.type as care_types
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
 WHERE (:areaShortNames::text[] IS NULL OR area.short_name = ANY(:areaShortNames))

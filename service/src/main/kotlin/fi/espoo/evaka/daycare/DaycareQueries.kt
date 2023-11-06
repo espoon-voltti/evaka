@@ -181,7 +181,7 @@ fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery(
             // language=SQL
             """
-SELECT id, name
+SELECT id, name, type as care_types
 FROM daycare
 WHERE id = :daycareId
 """
