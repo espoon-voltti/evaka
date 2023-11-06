@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.children.getChildrenByParent
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
@@ -13,8 +14,8 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -184,16 +185,21 @@ class MessageControllerCitizen(
 
         return db.connect { dbc ->
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                val validReceivers =
+                val validRecipients =
                     dbc.read { it.getCitizenReceivers(today, senderId) }
                         .mapValues { entry -> entry.value.map { it.id }.toSet() }
-                val allReceiversValid =
+                val allRecipientsValid =
                     body.recipients.all { recipient ->
-                        body.children.all { child ->
-                            validReceivers[child]?.contains(recipient) ?: false
+                        body.children.any { child ->
+                            validRecipients[child]?.contains(recipient) ?: false
                         }
                     }
-                if (allReceiversValid) {
+                val selectedChildren =
+                    dbc.read { it.getChildrenByParent(user.id, today) }
+                        .filter { body.children.contains(it.id) }
+                val selectedChildrenInSameUnit =
+                    selectedChildren.asSequence().map { it.unit?.id }.toSet().size == 1
+                if (allRecipientsValid && selectedChildrenInSameUnit) {
                     dbc.transaction { tx ->
                         messageService.sendMessageAsCitizen(
                             tx,
@@ -210,7 +216,7 @@ class MessageControllerCitizen(
                         )
                     }
                 } else {
-                    throw Forbidden("Permission denied.")
+                    throw BadRequest("Invalid recipients")
                 }
             }
             .also { messageThreadId ->
