@@ -80,7 +80,7 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecision',
     decisionId
   ],
-  units: () => ['preschoolUnits'],
+  units: () => ['units'],
   decisionMakerOptions: (decisionId: UUID, unitId: UUID | null) => [
     'decisionMakerOptions',
     decisionId,
