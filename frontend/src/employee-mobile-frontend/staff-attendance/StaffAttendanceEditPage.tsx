@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -40,13 +39,11 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import StatusIcon from 'lib-components/atoms/StatusIcon'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
-import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -375,22 +372,10 @@ const StaffAttendanceRowEditor = ({
       {featureFlags.staffAttendanceTypes && (
         <div>
           <SelectF bind={type} data-qa="type" />
-          {type.validationError() && (
-            <InputFieldUnderRow className={classNames('warning')}>
-              {type.inputInfo()?.text}
-              <StatusIcon status="warning" />
-            </InputFieldUnderRow>
-          )}
         </div>
       )}
       <div>
         <SelectF bind={groupId} data-qa="group" />
-        {groupId.validationError() && (
-          <InputFieldUnderRow className={classNames('warning')}>
-            {groupId.inputInfo()?.text}
-            <StatusIcon status="warning" />
-          </InputFieldUnderRow>
-        )}
       </div>
       {isArrivedPastDate && (
         <>{arrivedDate.value().format('EEEEEE d.M.', lang)}</>
