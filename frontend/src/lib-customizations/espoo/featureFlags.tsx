@@ -75,7 +75,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
-    voucherValueDecisionIgnoredStatus: false
+    voucherValueDecisionIgnoredStatus: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -107,7 +107,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: false,
     employeeMobileStaffAttendanceEdit: false,
-    voucherValueDecisionIgnoredStatus: false
+    voucherValueDecisionIgnoredStatus: true
   }
 }
 
