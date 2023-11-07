@@ -381,7 +381,11 @@ export default {
         PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
       },
       contractDayAbsenceTypeWarning:
-        'Vain osalla lapsista on sopimuspäivät käytössä, joten sopimuspäivien poissaoloa ei voida tallentaa kaikille lapsille samaan aikaan.'
+        'Vain osalla lapsista on sopimuspäivät käytössä, joten sopimuspäivien poissaoloa ei voida tallentaa kaikille lapsille samaan aikaan.',
+      attendanceAlreadyExistsErrorTitle:
+        'Valituille päiville on jo läsnäolomerkintöjä',
+      attendanceAlreadyExistsErrorDescription:
+        'Et voi lisätä poissaolomerkintää päivälle jolle lapsella on jo läsnäolomerkintä.'
     },
     holidayModal: {
       additionalInformation: 'Lisätietoja',

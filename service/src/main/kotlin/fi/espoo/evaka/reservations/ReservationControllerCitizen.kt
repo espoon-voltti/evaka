@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
@@ -245,6 +246,9 @@ class ReservationControllerCitizen(
                         Action.Citizen.Child.CREATE_ABSENCE,
                         body.childIds
                     )
+                    if (tx.childrenHaveAttendanceInRange(body.childIds, body.dateRange)) {
+                        throw BadRequest("Attendance already exists for given dates", "ATTENDANCE_ALREADY_EXISTS")
+                    }
 
                     val reservableRange =
                         getReservableRange(

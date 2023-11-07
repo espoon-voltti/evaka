@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -419,4 +420,15 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
         .bind("dateRange", dateRange)
         .executeAndReturnGeneratedKeys()
         .toList<AbsenceId>()
+}
+
+fun Database.Read.childrenHaveAttendanceInRange(
+        childIds: Set<PersonId>,
+        range: FiniteDateRange
+): Boolean {
+    return createQuery<Any> {
+        sql("""
+            SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND ${bind(range)} @> date)
+            """)
+    }.exactlyOne()
 }

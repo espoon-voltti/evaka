@@ -384,7 +384,11 @@ const en: Translations = {
         PLANNED_ABSENCE: 'Shift work absence'
       },
       contractDayAbsenceTypeWarning:
-        'Only some of the children have contract days in use, so the absence of contract days cannot be recorded for all children at the same time'
+        'Only some of the children have contract days in use, so the absence of contract days cannot be recorded for all children at the same time',
+      attendanceAlreadyExistsErrorTitle:
+        'There is already attendance record for the selected days',
+      attendanceAlreadyExistsErrorDescription:
+        'It is not possible to add an absence for a child on a day that already has an attendance record.'
     },
     holidayModal: {
       additionalInformation: 'Read more',

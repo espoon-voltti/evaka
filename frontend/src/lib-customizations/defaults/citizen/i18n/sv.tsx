@@ -380,7 +380,11 @@ const sv: Translations = {
         PLANNED_ABSENCE: 'Skiftarbete frånvaro'
       },
       contractDayAbsenceTypeWarning:
-        'Endast några av barnen har avtalsdagar i bruk, så frånvaron av avtalsdagar kan inte registreras för alla barn samtidigt'
+        'Endast några av barnen har avtalsdagar i bruk, så frånvaron av avtalsdagar kan inte registreras för alla barn samtidigt',
+      attendanceAlreadyExistsErrorTitle:
+        'De valda dagarna har redan anteckningar för närvaro',
+      attendanceAlreadyExistsErrorDescription:
+        'Det är inte möjligt att tillägga en frånvaro för barnet på en dag som redan har en anteckning om närvaro.'
     },
     holidayModal: {
       additionalInformation: 'Läs mera',
