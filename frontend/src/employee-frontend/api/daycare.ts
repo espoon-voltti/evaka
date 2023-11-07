@@ -7,6 +7,7 @@ import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import {
   DaycareCareArea,
   PublicUnit,
+  UnitStub,
   UnitTypeFilter
 } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -24,9 +25,9 @@ export async function getUnitsRaw(
   areas: string[],
   type: UnitTypeFilter,
   from?: LocalDate
-): Promise<Unit[]> {
+): Promise<UnitStub[]> {
   return client
-    .get<JsonOf<Unit[]>>('/filters/units', {
+    .get<JsonOf<UnitStub[]>>('/filters/units', {
       params: {
         type,
         ...(areas.length > 0 ? { area: areas.join(',') } : {}),
@@ -46,7 +47,7 @@ export async function getUnits(
   areas: string[],
   type: UnitTypeFilter,
   from?: LocalDate
-): Promise<Result<Unit[]>> {
+): Promise<Result<UnitStub[]>> {
   return getUnitsRaw(areas, type, from)
     .then((res) => Success.of(res))
     .catch((e) => Failure.fromError(e))

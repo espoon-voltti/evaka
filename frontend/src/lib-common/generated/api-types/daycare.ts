@@ -619,6 +619,7 @@ export interface UnitStaffAttendance {
 * Generated from fi.espoo.evaka.daycare.UnitStub
 */
 export interface UnitStub {
+  careTypes: CareType[]
   id: UUID
   name: string
 }

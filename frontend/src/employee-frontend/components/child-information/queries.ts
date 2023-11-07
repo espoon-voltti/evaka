@@ -80,7 +80,7 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecision',
     decisionId
   ],
-  preschoolUnits: () => ['preschoolUnits'],
+  units: () => ['units'],
   decisionMakerOptions: (decisionId: UUID, unitId: UUID | null) => [
     'decisionMakerOptions',
     decisionId,
@@ -313,7 +313,7 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
   ]
 })
 
-export const preschoolUnitsQuery = query({
-  api: () => getUnitsRaw([], 'PRESCHOOL'),
-  queryKey: queryKeys.preschoolUnits
+export const unitsQuery = query({
+  api: () => getUnitsRaw([], 'ALL'),
+  queryKey: queryKeys.units
 })

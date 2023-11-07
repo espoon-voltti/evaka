@@ -32,6 +32,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionType
 } from 'lib-common/generated/api-types/assistanceneed'
+import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -63,14 +64,13 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { featureFlags, translations } from 'lib-customizations/employee'
 
-import { Unit } from '../../../../api/daycare'
 import { getEmployees } from '../../../../api/employees'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionMakerOptionsQuery,
   assistanceNeedPreschoolDecisionQuery,
-  preschoolUnitsQuery,
+  unitsQuery,
   queryKeys,
   updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
@@ -235,7 +235,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   employees
 }: {
   decision: AssistanceNeedPreschoolDecision
-  units: Unit[]
+  units: UnitStub[]
   employees: Employee[]
 }) {
   const { i18n, lang: uiLang } = useTranslation()
@@ -1001,7 +1001,9 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
-  const unitsResult = useQueryResult(preschoolUnitsQuery())
+  const unitsResult = useQueryResult(unitsQuery()).map((units) =>
+    units.filter((u) => u.careTypes.some((type) => type !== 'CLUB'))
+  )
   const [employeesResult] = useApiState(() => getEmployees(), [])
 
   // invalidate cached decision on onmount
