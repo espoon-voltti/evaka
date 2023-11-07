@@ -259,9 +259,13 @@ export const fi = {
       plan: 'Työvuoro',
       realization: 'Toteuma',
       rows: 'Päivän kirjaukset',
+      noRows: 'Ei kirjauksia',
+      open: 'Avoin',
       validationErrors: {
         required: 'Pakollinen',
         timeFormat: 'Tarkista',
+        future: 'Tulevaisuudessa',
+        overlap: 'Päällekkäisiä merkintöjä',
         dateTooEarly: 'Tarkista',
         dateTooLate: 'Tarkista'
       },

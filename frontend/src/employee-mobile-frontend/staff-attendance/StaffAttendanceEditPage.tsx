@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { localDate, localTime, string } from 'lib-common/form/fields'
+import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   array,
   mapped,
@@ -24,7 +26,6 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonBlank } from 'lib-common/form/validators'
 import {
   GroupInfo,
   StaffAttendanceType,
@@ -33,22 +34,25 @@ import {
   StaffMemberAttendance,
   staffAttendanceTypes
 } from 'lib-common/generated/api-types/attendance'
-import { PinLoginStatus } from 'lib-common/generated/api-types/pairing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
+import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { PlainPinInputF } from 'lib-components/molecules/PinInput'
+import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
@@ -64,13 +68,15 @@ import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 const typesWithoutGroup: StaffAttendanceType[] = ['TRAINING', 'OTHER_WORK']
+const emptyGroupIdDomValue = ''
 
-const staffAttendanceRow = mapped(
+const staffAttendanceForm = mapped(
   validated(
     object({
       id: value<UUID | null>(),
       type: required(oneOf<StaffAttendanceType>()),
-      groupId: oneOf<UUID | null>(),
+      groupEditMode: required(boolean()),
+      groupId: required(oneOf<UUID | null>()),
       arrivedDate: required(localDate()),
       arrivedTime: required(localTime()),
       departedDate: required(localDate()),
@@ -80,16 +86,21 @@ const staffAttendanceRow = mapped(
       if (!typesWithoutGroup.includes(output.type) && output.groupId === null) {
         return { groupId: 'required' }
       }
-      if (
-        output.departedTime !== undefined &&
-        HelsinkiDateTime.fromLocal(
+      if (output.departedTime !== undefined) {
+        const departed = HelsinkiDateTime.fromLocal(
           output.departedDate,
           output.departedTime
-        ).isEqualOrBefore(
-          HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime)
         )
-      ) {
-        return { departedTime: 'timeFormat' }
+        const arrived = HelsinkiDateTime.fromLocal(
+          output.arrivedDate,
+          output.arrivedTime
+        )
+        if (departed.isEqualOrBefore(arrived)) {
+          return { departedTime: 'timeFormat' }
+        }
+        if (departed.isAfter(HelsinkiDateTime.now())) {
+          return { departedTime: 'future' }
+        }
       }
       return undefined
     }
@@ -97,7 +108,7 @@ const staffAttendanceRow = mapped(
   (output): StaffAttendanceUpsert => ({
     id: output.id,
     type: output.type,
-    groupId: output.groupId ?? null,
+    groupId: output.groupId,
     arrived: HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime),
     departed:
       output.departedTime !== undefined
@@ -106,11 +117,27 @@ const staffAttendanceRow = mapped(
   })
 )
 
-const staffAttendanceRows = array(staffAttendanceRow)
-
 const staffAttendancesForm = object({
-  pinCode: validated(string(), nonBlank),
-  rows: staffAttendanceRows
+  rows: validated(array(staffAttendanceForm), (output) =>
+    output.some((row, index, array) =>
+      array.some(
+        (other, otherIndex) =>
+          index !== otherIndex &&
+          (row.departed === null ||
+            !row.departed.isEqualOrBefore(other.arrived)) &&
+          (other.departed === null ||
+            !other.departed.isEqualOrBefore(row.arrived))
+      )
+    )
+      ? 'overlap'
+      : undefined
+  )
+})
+
+const pinForm = object({
+  pinCode: validated(array(string()), (output) =>
+    output.join('').trim().length < 4 ? 'required' : undefined
+  )
 })
 
 const initialFormState = (
@@ -119,7 +146,6 @@ const initialFormState = (
   groups: GroupInfo[],
   attendances: StaffMemberAttendance[]
 ): StateOf<typeof staffAttendancesForm> => ({
-  pinCode: '',
   rows: sortBy(attendances, (attendance) => attendance.arrived).map(
     (attendance) => initialRowState(i18n, date, groups, attendance)
   )
@@ -130,7 +156,7 @@ const initialRowState = (
   date: LocalDate,
   groups: GroupInfo[],
   attendance: StaffMemberAttendance | StaffAttendanceUpsert
-): StateOf<typeof staffAttendanceRow> => ({
+): StateOf<typeof staffAttendanceForm> => ({
   id: attendance.id,
   type: {
     domValue: attendance.type,
@@ -140,10 +166,15 @@ const initialRowState = (
       label: i18n.attendances.staffTypes[type]
     }))
   },
+  groupEditMode: false,
   groupId: {
-    domValue: attendance.groupId || '',
+    domValue: attendance.groupId || emptyGroupIdDomValue,
     options: [
-      { domValue: '', value: null, label: i18n.attendances.noGroup },
+      {
+        domValue: emptyGroupIdDomValue,
+        value: null,
+        label: i18n.attendances.noGroup
+      },
       ...groups.map((group) => ({
         domValue: group.id,
         value: group.id,
@@ -155,6 +186,10 @@ const initialRowState = (
   arrivedTime: attendance.arrived.toLocalTime().format(),
   departedDate: localDate.fromDate(attendance.departed?.toLocalDate() ?? date),
   departedTime: attendance.departed?.toLocalTime().format() ?? ''
+})
+
+const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
+  pinCode: EMPTY_PIN
 })
 
 export default React.memo(function StaffAttendanceEditPage() {
@@ -186,7 +221,7 @@ export default React.memo(function StaffAttendanceEditPage() {
       ) : staff.pinLocked ? (
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
-        <StaffAttendanceEditor
+        <StaffAttendancesEditor
           unitId={unitId}
           employeeId={employeeId}
           groups={groups}
@@ -197,7 +232,7 @@ export default React.memo(function StaffAttendanceEditPage() {
   ))
 })
 
-const StaffAttendanceEditor = ({
+const StaffAttendancesEditor = ({
   unitId,
   employeeId,
   groups,
@@ -212,14 +247,77 @@ const StaffAttendanceEditor = ({
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
   const [date] = useState(LocalDate.todayInHelsinkiTz())
+  const [mode, setMode] = useState<'editor' | 'pin'>('editor')
   const form = useForm(
     staffAttendancesForm,
     () => initialFormState(i18n, date, groups, staffMember.attendances),
     i18n.attendances.staff.validationErrors
   )
-  const { pinCode, rows } = useFormFields(form)
+  const { rows } = useFormFields(form)
   const boundRows = useFormElems(rows)
+  const pinCodeForm = useForm(
+    pinForm,
+    initialPinCodeForm,
+    i18n.attendances.staff.validationErrors
+  )
+  const { pinCode } = useFormFields(pinCodeForm)
   const [errorCode, setErrorCode] = useState<string>()
+
+  const rowsInputInfo = rows.inputInfo()
+
+  if (mode === 'pin') {
+    return (
+      <>
+        <ContentArea opaque paddingHorizontal="s">
+          <Title centered noMargin>
+            {i18n.pin.pinCode}
+          </Title>
+          <PinInputF bind={pinCode} invalid={errorCode === 'WRONG_PIN'} />
+        </ContentArea>
+        <ContentArea opaque paddingHorizontal="s">
+          <FixedSpaceRow justifyContent="space-between">
+            <Button
+              data-qa="cancel"
+              onClick={() => {
+                pinCode.update(() => EMPTY_PIN)
+                setErrorCode(undefined)
+                setMode('editor')
+              }}
+            >
+              {i18n.common.cancel}
+            </Button>
+            <MutateButton
+              primary
+              data-qa="confirm"
+              text={i18n.common.confirm}
+              mutation={staffAttendanceMutation}
+              onClick={() => ({
+                unitId,
+                request: {
+                  employeeId,
+                  pinCode: pinCode.value().join(''),
+                  date,
+                  rows: rows.value()
+                }
+              })}
+              onSuccess={() =>
+                navigate(
+                  `${groupRoute}/staff-attendance/${staffMember.employeeId}`
+                )
+              }
+              onFailure={({ errorCode }) => {
+                setErrorCode(errorCode)
+                if (errorCode === 'WRONG_PIN') {
+                  pinCode.update(() => EMPTY_PIN)
+                }
+              }}
+              disabled={!pinCode.isValid()}
+            />
+          </FixedSpaceRow>
+        </ContentArea>
+      </>
+    )
+  }
 
   return (
     <>
@@ -248,19 +346,35 @@ const StaffAttendanceEditor = ({
           </span>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
-        {boundRows.map((row, index) => (
-          <StaffAttendanceRowEditor
-            key={index}
-            date={date}
-            row={row}
-            onDelete={() =>
-              rows.update((prev) => [
-                ...prev.slice(0, index),
-                ...prev.slice(index + 1)
-              ])
-            }
-          />
-        ))}
+        {boundRows.length > 0 ? (
+          boundRows.map((row, index) => (
+            <React.Fragment key={index}>
+              <StaffAttendanceEditor
+                date={date}
+                groups={groups}
+                form={row}
+                onDelete={() =>
+                  rows.update((prev) => [
+                    ...prev.slice(0, index),
+                    ...prev.slice(index + 1)
+                  ])
+                }
+              />
+              <Gap size="m" />
+            </React.Fragment>
+          ))
+        ) : (
+          <>
+            <div>{i18n.attendances.staff.noRows}</div>
+            <Gap size="s" />
+          </>
+        )}
+        {rowsInputInfo && (
+          <InputFieldUnderRow className={classNames(rowsInputInfo.status)}>
+            <span>{rowsInputInfo.text}</span>
+            <UnderRowStatusIcon status={rowsInputInfo.status} />
+          </InputFieldUnderRow>
+        )}
         {rows.isValid() &&
           rows.state.every((attendance) => attendance.departedTime !== '') && (
             <ButtonLink
@@ -304,100 +418,120 @@ const StaffAttendanceEditor = ({
           >
             {i18n.common.cancel}
           </Button>
-          <div>
-            <Label>{i18n.pin.pinCode}</Label>
-            <PlainPinInputF
-              bind={pinCode}
-              info={
-                errorCode !== undefined && errorCode in i18n.pin.status
-                  ? {
-                      text: i18n.pin.status[errorCode as PinLoginStatus],
-                      status: 'warning'
-                    }
-                  : undefined
-              }
-            />
-            <Gap size="s" />
-            <MutateButton
-              primary
-              data-qa="save"
-              text={i18n.common.saveChanges}
-              mutation={staffAttendanceMutation}
-              onClick={() => ({
-                unitId,
-                request: {
-                  employeeId,
-                  pinCode: pinCode.value(),
-                  date,
-                  rows: rows.value()
-                }
-              })}
-              onSuccess={() =>
-                navigate(
-                  `${groupRoute}/staff-attendance/${staffMember.employeeId}`
-                )
-              }
-              onFailure={({ errorCode }) => {
-                setErrorCode(errorCode)
-                if (errorCode === 'WRONG_PIN') {
-                  pinCode.update(() => '')
-                }
-              }}
-              disabled={!form.isValid()}
-            />
-          </div>
+          <Button
+            primary
+            data-qa="save"
+            text={i18n.common.saveChanges}
+            onClick={() => setMode('pin')}
+            disabled={!form.isValid()}
+          />
         </FixedSpaceRow>
       </ContentArea>
     </>
   )
 }
 
-const StaffAttendanceRowEditor = ({
+const StaffAttendanceEditor = ({
   date,
-  row,
+  groups,
+  form,
   onDelete
 }: {
   date: LocalDate
-  row: BoundForm<typeof staffAttendanceRow>
+  groups: GroupInfo[]
+  form: BoundForm<typeof staffAttendanceForm>
   onDelete: () => void
 }) => {
-  const { i18n, lang } = useTranslation()
-  const { type, groupId, arrivedDate, arrivedTime, departedTime } =
-    useFormFields(row)
+  const { i18n } = useTranslation()
+  const {
+    type,
+    groupEditMode,
+    groupId,
+    arrivedDate,
+    arrivedTime,
+    departedDate,
+    departedTime
+  } = useFormFields(form)
 
-  const isArrivedPastDate = arrivedDate.value().isBefore(date)
+  const groupIdDomValue = groupId.state.domValue
+  const groupIdInputInfo = groupId.inputInfo()
+  const arrivedDateValue = arrivedDate.value()
+  const departedDateValue = departedDate.value()
+  const dateLabelVisible = !arrivedDateValue.isEqual(departedDateValue)
 
   return (
-    <FixedSpaceRow alignItems="baseline" flexWrap="wrap">
-      {featureFlags.staffAttendanceTypes && (
-        <div>
-          <SelectF bind={type} data-qa="type" />
-        </div>
-      )}
-      <div>
-        <SelectF bind={groupId} data-qa="group" />
-      </div>
-      {isArrivedPastDate && (
-        <>{arrivedDate.value().format('EEEEEE d.M.', lang)}</>
-      )}
-      <TimeInputF bind={arrivedTime} data-qa="arrived" />
-      <span>–</span>
-      {isArrivedPastDate && <>{date.format('EEEEEE d.M.', lang)}</>}
-      <TimeInputF
-        bind={departedTime}
-        info={
-          departedTime.state === ''
-            ? { text: 'Avoin', status: 'warning' }
-            : departedTime.inputInfo()
-        }
-        data-qa="departed"
-      />
-      <IconButton
-        icon={faTrash}
-        onClick={onDelete}
-        aria-label={i18n.common.remove}
-        data-qa="remove"
-      />
-    </FixedSpaceRow>
+    <>
+      <FixedSpaceRow alignItems="baseline" data-qa="group">
+        {groupEditMode.value() ? (
+          <SelectF bind={groupId} data-qa="group-selector" />
+        ) : (
+          <>
+            <InlineButton
+              text={
+                groupIdDomValue !== emptyGroupIdDomValue
+                  ? groups.find((group) => group.id === groupIdDomValue)
+                      ?.name ?? '-'
+                  : i18n.attendances.noGroup
+              }
+              onClick={() => groupEditMode.update(() => true)}
+              data-qa="group-name"
+            />
+            {groupIdInputInfo && (
+              <InputFieldUnderRow
+                className={classNames(groupIdInputInfo.status)}
+              >
+                <span>{groupIdInputInfo.text}</span>
+                <UnderRowStatusIcon status={groupIdInputInfo.status} />
+              </InputFieldUnderRow>
+            )}
+          </>
+        )}
+      </FixedSpaceRow>
+      <FixedSpaceRow alignItems="end" flexWrap="wrap">
+        {featureFlags.staffAttendanceTypes && (
+          <div>
+            <SelectF bind={type} data-qa="type" />
+          </div>
+        )}
+        <FixedSpaceRow alignItems="end">
+          <div>
+            {dateLabelVisible && (
+              <DateLabel>{arrivedDate.value().format('d.M.')}</DateLabel>
+            )}
+            <TimeInputF
+              bind={arrivedTime}
+              readonly={!arrivedDateValue.isEqual(date)}
+              data-qa="arrived"
+            />
+          </div>
+          <span>–</span>
+          <div>
+            {dateLabelVisible && (
+              <DateLabel>{departedDate.value().format('d.M.')}</DateLabel>
+            )}
+            <TimeInputF
+              bind={departedTime}
+              readonly={!departedDateValue.isEqual(date)}
+              info={
+                departedTime.state === ''
+                  ? { text: i18n.attendances.staff.open, status: 'warning' }
+                  : departedTime.inputInfo()
+              }
+              data-qa="departed"
+            />
+          </div>
+        </FixedSpaceRow>
+        <IconButton
+          icon={faTrash}
+          onClick={onDelete}
+          aria-label={i18n.common.remove}
+          data-qa="remove"
+        />
+      </FixedSpaceRow>
+    </>
   )
 }
+
+const DateLabel = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+`

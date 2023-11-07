@@ -13,6 +13,7 @@ import {
   Combobox,
   Element,
   Page,
+  PinInput,
   Select,
   TextInput
 } from '../../utils/page'
@@ -356,20 +357,21 @@ export class StaffAttendancePage {
 export class StaffAttendanceEditPage {
   private page: Page
   addLink: Element
-  pinInput: TextInput
   cancelButton: Element
-  saveButton: AsyncButton
 
   constructor(page: Page) {
     this.page = page
     this.addLink = page.findByDataQa('add')
-    this.pinInput = new TextInput(page.findByDataQa('pin-input'))
     this.cancelButton = page.findByDataQa('cancel')
-    this.saveButton = new AsyncButton(page.findByDataQa('save'))
   }
 
   async selectGroup(index: number, groupId: UUID) {
-    const select = new Select(this.page.findAllByDataQa('group').nth(index))
+    const editor = new Element(this.page.findAllByDataQa('group').nth(index))
+    const name = editor.findByDataQa('group-name')
+    if (await name.visible) {
+      await name.click()
+    }
+    const select = new Select(editor.findByDataQa('group-selector'))
     await select.selectOption({ value: groupId })
   }
 
@@ -393,5 +395,11 @@ export class StaffAttendanceEditPage {
   async remove(index: number) {
     const icon = this.page.findAllByDataQa('remove').nth(index)
     await icon.click()
+  }
+
+  async submit(pinCode: string) {
+    await this.page.findByDataQa('save').click()
+    await new PinInput(this.page.findByDataQa('pin-input')).fill(pinCode)
+    await new AsyncButton(this.page.findByDataQa('confirm')).click()
   }
 }
