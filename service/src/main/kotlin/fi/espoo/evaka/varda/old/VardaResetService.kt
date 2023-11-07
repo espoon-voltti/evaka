@@ -15,15 +15,12 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.deleteVardaOrganizerChildByVardaChildId
-import fi.espoo.evaka.varda.deleteVardaServiceNeedByVardaChildId
+import fi.espoo.evaka.varda.deleteVardaServiceNeedByEvakaChildId
 import fi.espoo.evaka.varda.getServiceNeedsForVardaByChild
-import fi.espoo.evaka.varda.getVardaChildToEvakaChild
 import fi.espoo.evaka.varda.getVardaChildrenToReset
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
-import fi.espoo.evaka.varda.setToBeReset
 import fi.espoo.evaka.varda.setVardaResetChildResetTimestamp
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -46,7 +43,6 @@ class VardaResetService(
 
     init {
         asyncJobRunner.registerHandler(::oldResetVardaChildByAsyncJob)
-        asyncJobRunner.registerHandler(::oldDeleteVardaChildByAsyncJob)
     }
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
@@ -81,52 +77,6 @@ class VardaResetService(
     ) {
         logger.info("VardaUpdate (old): starting to reset child ${msg.childId}")
         resetVardaChild(db, clock, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
-    }
-
-    fun oldDeleteVardaChildByAsyncJob(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.DeleteVardaChildOld
-    ) {
-        logger.info("VardaUpdate (old): starting to delete child ${msg.vardaChildId}")
-        deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
-    }
-
-    fun planResetByVardaChildrenErrorReport(
-        db: Database.Connection,
-        clock: EvakaClock,
-        organizerId: Long,
-        limit: Int
-    ) {
-        try {
-            val errorReport = client.getVardaChildrenErrorReport(organizerId)
-            logger.info(
-                "VardaUpdate: found ${errorReport.size} rows from error report, will limit to $limit rows"
-            )
-
-            val mapper = db.read { it.getVardaChildToEvakaChild() }
-            val (childrenWithId, childrenWithoutId) =
-                errorReport.take(limit).map { it.lapsi_id }.partition { mapper[it] != null }
-
-            logger.info("VardaUpdate: setting ${childrenWithId.size} children to be reset")
-            db.transaction { tx -> tx.setToBeReset(childrenWithId.map { mapper[it]!! }) }
-
-            logger.info("VardaUpdate: scheduling ${childrenWithoutId.size} children to be deleted")
-            db.transaction { tx ->
-                asyncJobRunner.plan(
-                    tx,
-                    childrenWithoutId.map { AsyncJob.DeleteVardaChildOld(it) },
-                    retryCount = 2,
-                    retryInterval = Duration.ofMinutes(1),
-                    runAt = clock.now()
-                )
-            }
-        } catch (e: Exception) {
-            logger.info(
-                "VardaUpdate: failed to nuke varda children by report data: ${e.localizedMessage}",
-                e
-            )
-        }
     }
 }
 
@@ -180,7 +130,7 @@ fun deleteChildDataFromVardaAndDb(
     val successfulDeletes: List<Boolean> =
         vardaChildIds.map { vardaChildId ->
             try {
-                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId)
+                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId, evakaChildId)
                 true
             } catch (e: Exception) {
                 logger.warn(
@@ -197,7 +147,8 @@ fun deleteChildDataFromVardaAndDb(
 fun deleteChildDataFromVardaAndDbByVardaId(
     db: Database.Connection,
     vardaClient: VardaClient,
-    vardaChildId: Long
+    vardaChildId: Long,
+    evakaChildId: ChildId
 ) {
     logger.info("VardaUpdate: deleting all child data from varda (child id: $vardaChildId)")
     try {
@@ -206,12 +157,14 @@ fun deleteChildDataFromVardaAndDbByVardaId(
         // MI015 = unknown child so delete can be considered being a success
         if (e.message?.contains("MI015") != true) throw e
     }
-    db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
 
-    logger.info("VardaUpdate: deleting from varda_service_need for child $vardaChildId")
-    db.transaction { it.deleteVardaServiceNeedByVardaChildId(vardaChildId) }
+    logger.info("VardaUpdate: deleting all evaka side varda data of child $vardaChildId")
+    db.transaction {
+        it.deleteVardaOrganizerChildByVardaChildId(vardaChildId)
+        it.deleteVardaServiceNeedByEvakaChildId(evakaChildId)
+    }
 
-    logger.info("VardaUpdate: successfully deleted data for child $vardaChildId")
+    logger.info("VardaUpdate: successfully deleted evaka side varda data for child $vardaChildId")
 }
 
 private fun getVardaChildIdsByEvakaChildId(

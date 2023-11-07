@@ -102,6 +102,16 @@ WHERE varda_child_id = :vardaChildId
         .bind("vardaChildId", vardaChildId)
         .execute()
 
+fun Database.Transaction.deleteVardaServiceNeedByEvakaChildId(evakaChildId: ChildId) =
+    createUpdate(
+            """
+DELETE FROM varda_service_need
+WHERE evaka_child_id = :evakaChildId
+        """
+        )
+        .bind("evakaChildId", evakaChildId)
+        .execute()
+
 fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) =
     createUpdate(
             """
