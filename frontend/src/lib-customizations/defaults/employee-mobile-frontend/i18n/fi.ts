@@ -391,6 +391,8 @@ export const fi = {
       sending: 'Lähetetään'
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
+    noSentMessages: 'Ei lähetettyjä viestejä',
+    noDrafts: 'Ei luonnoksia',
     unreadMessages: 'Uudet viestit',
     openPinLock: 'Avaa lukitus',
     pinLockInfo:
