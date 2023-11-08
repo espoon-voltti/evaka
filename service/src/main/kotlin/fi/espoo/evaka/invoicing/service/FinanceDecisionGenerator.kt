@@ -93,7 +93,7 @@ SELECT 'GenerateFinanceDecisions',
 FROM ids;
         """
                 )
-                .bind("from", clock.today().minusMonths(15))
+                .bind("from", feeDecisionMinDate)
                 .execute()
 
         logger.info { "Scheduled GenerateFinanceDecisions for $inserted people" }
