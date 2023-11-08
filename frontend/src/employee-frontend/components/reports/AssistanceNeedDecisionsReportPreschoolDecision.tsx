@@ -10,7 +10,7 @@ import styled from 'styled-components'
 import { string } from 'lib-common/form/fields'
 import { object, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionResponse
@@ -62,7 +62,7 @@ const DangerButton = styled(Button)`
 `
 
 const annulForm = object({
-  reason: validated(string(), nonEmpty)
+  reason: validated(string(), nonBlank)
 })
 
 const AnnulModal = React.memo(function AnnulModal({

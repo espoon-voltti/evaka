@@ -16,7 +16,7 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
   Question,
@@ -42,13 +42,13 @@ const questionType: QuestionType = 'RADIO_BUTTON_GROUP'
 type ApiQuestion = Question.RadioButtonGroupQuestion
 
 const optionForm = object({
-  id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty)
+  id: validated(string(), nonBlank),
+  label: validated(string(), nonBlank)
 })
 
 const templateForm = object({
-  id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty),
+  id: validated(string(), nonBlank),
+  label: validated(string(), nonBlank),
   options: validated(array(optionForm), (arr) =>
     arr.length > 0 ? undefined : 'required'
   ),

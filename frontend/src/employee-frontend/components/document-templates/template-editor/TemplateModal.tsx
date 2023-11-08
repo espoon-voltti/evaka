@@ -12,7 +12,7 @@ import {
 } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   DocumentLanguage,
   DocumentType,
@@ -34,7 +34,7 @@ import {
 } from '../queries'
 
 const documentTemplateForm = object({
-  name: validated(string(), nonEmpty),
+  name: validated(string(), nonBlank),
   type: required(oneOf<DocumentType>()),
   language: required(oneOf<DocumentLanguage>()),
   confidential: boolean(),

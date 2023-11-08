@@ -25,7 +25,7 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   GroupInfo,
   StaffAttendanceType,
@@ -112,7 +112,7 @@ const staffAttendanceRow = mapped(
 const staffAttendanceRows = array(staffAttendanceRow)
 
 const staffAttendancesForm = object({
-  pinCode: validated(string(), nonEmpty),
+  pinCode: validated(string(), nonBlank),
   rows: staffAttendanceRows
 })
 

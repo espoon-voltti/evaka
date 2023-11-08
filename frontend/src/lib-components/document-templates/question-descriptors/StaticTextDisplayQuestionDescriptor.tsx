@@ -10,7 +10,7 @@ import { string } from 'lib-common/form/fields'
 import { mapped, object, validated, value } from 'lib-common/form/form'
 import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
   Question,
@@ -32,7 +32,7 @@ const questionType: QuestionType = 'STATIC_TEXT_DISPLAY'
 type ApiQuestion = Question.StaticTextDisplayQuestion
 
 const templateForm = object({
-  id: validated(string(), nonEmpty),
+  id: validated(string(), nonBlank),
   label: string(),
   text: string(),
   infoText: string()
