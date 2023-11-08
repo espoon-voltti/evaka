@@ -8,14 +8,14 @@ export class HolidayPeriodsPage {
   constructor(private readonly page: Page) {}
 
   get visiblePeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('holiday-period').allInnerTexts()
+    return this.page.findAllByDataQa('holiday-period').allTexts()
   }
 
   #periodRows = this.page.findAllByDataQa('holiday-period-row')
   #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
 
   get visibleQuestionnaires(): Promise<string[]> {
-    return this.#questionnaireRows.allInnerTexts()
+    return this.#questionnaireRows.allTexts()
   }
 
   async assertQuestionnaireContainsText(nth: number, texts: string[]) {

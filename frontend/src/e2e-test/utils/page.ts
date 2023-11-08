@@ -116,7 +116,7 @@ export class ElementCollection {
     return this.locator.count()
   }
 
-  async allInnerTexts(): Promise<string[]> {
+  async allTexts(): Promise<string[]> {
     return this.locator.allInnerTexts()
   }
 
@@ -418,7 +418,7 @@ export class Select extends Element {
   }
 
   get allOptions(): Promise<string[]> {
-    return this.#input.findAll('option').allInnerTexts()
+    return this.#input.findAll('option').allTexts()
   }
 }
 

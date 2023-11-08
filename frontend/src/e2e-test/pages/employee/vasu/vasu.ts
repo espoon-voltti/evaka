@@ -190,7 +190,7 @@ export class VasuPage extends VasuPageCommon {
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
   #valueForLabel = (label: string): Promise<string> =>
     this.#vasuEventListLabels
-      .allInnerTexts()
+      .allTexts()
       .then((labels) =>
         labels.reduce(
           async (acc, l, ix) =>

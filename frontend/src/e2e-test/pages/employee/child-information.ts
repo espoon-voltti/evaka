@@ -374,7 +374,7 @@ export class PedagogicalDocumentsSection extends Section {
     )
     await waitUntilTrue(async () =>
       (
-        await page.findAll('[data-qa="file-download-button"]').allInnerTexts()
+        await page.findAll('[data-qa="file-download-button"]').allTexts()
       ).includes(testfileName)
     )
   }
@@ -1210,9 +1210,7 @@ export class FeeAlterationsSection extends Section {
 
   async assertAttachmentExists(name: string) {
     await waitUntilTrue(async () =>
-      (await this.page.findAllByDataQa('attachment').allInnerTexts()).includes(
-        name
-      )
+      (await this.page.findAllByDataQa('attachment').allTexts()).includes(name)
     )
   }
 }
