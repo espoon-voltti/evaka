@@ -20,7 +20,10 @@ export default class MobileMessageEditor extends Element {
   title = new TextInput(this.findByDataQa('input-title'))
   content = new TextInput(this.findByDataQa('input-content'))
   urgent = new Checkbox(this.findByDataQa('checkbox-urgent'))
+
   send = this.findByDataQa('send-message-btn')
+  discard = this.findByDataQa('discard-message-btn')
+  close = this.find('[aria-label="Sulje"]')
 
   async fillMessage(message: {
     title: string

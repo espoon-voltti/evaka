@@ -158,6 +158,10 @@ export class ElementCollection {
       await this.nth(count).waitUntilHidden()
     }
   }
+
+  async assertTextsEqual(values: string[]) {
+    await waitUntilEqual(() => this.allTexts(), values)
+  }
 }
 
 export class Element {
@@ -505,6 +509,8 @@ export class Modal extends Element {
 }
 
 export class TreeDropdown extends Element {
+  values = this.findByDataQa('selected-values').findAllByDataQa('value')
+
   private async expanded(): Promise<boolean> {
     return (
       (await this.findByDataQa('tree-dropdown').getAttribute(

@@ -40,7 +40,7 @@ export default React.memo(function SentMessagesList({
   )
 
   return renderResult(sentMessages, (messages) => (
-    <div>
+    <div data-qa="sent-list">
       {messages.length > 0 ? (
         messages.map((message) => (
           <SentMessagePreview

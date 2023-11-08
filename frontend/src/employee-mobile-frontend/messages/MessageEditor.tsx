@@ -253,6 +253,7 @@ export default React.memo(function MessageEditor({
               return cancelMutation
             }}
             onSuccess={onClose}
+            data-qa="discard-message-btn"
           />
           <span />
           <MutateButton

@@ -39,7 +39,7 @@ export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
   )
 
   return renderResult(draftMessages, (messages) => (
-    <div>
+    <div data-qa="draft-list">
       {messages.length > 0 ? (
         messages.map((message) => (
           <DraftMessagePreview
@@ -72,7 +72,7 @@ const DraftMessagePreview = React.memo(function DraftMessagePreview({
     <Container
       isRead={true}
       active={false}
-      data-qa="sent-message-preview"
+      data-qa="draft-message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>

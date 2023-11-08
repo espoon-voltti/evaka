@@ -30,6 +30,7 @@ import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MessageEditor from '../../pages/mobile/message-editor'
+import MobileMessageEditor from '../../pages/mobile/message-editor'
 import MessageEditorPage from '../../pages/mobile/message-editor-page'
 import MobileMessagesPage from '../../pages/mobile/messages'
 import MobileNav from '../../pages/mobile/mobile-nav'
@@ -243,33 +244,7 @@ describe('Message editor in child page', () => {
   })
 })
 
-describe('Sending a new message', () => {
-  test('Employee sends a message to a group', async () => {
-    await staffStartsNewMessage()
-
-    await messageEditor.senderName.assertTextEquals(
-      `${daycareFixture.name} - ${daycareGroup.name}`
-    )
-
-    // The user has access to all groups, but only the one whose messages are viewed should be available in the
-    // message editor
-    await messageEditor.recipients.open()
-    await messageEditor.recipients.option(daycareGroup.id).click()
-    await messageEditor.recipients.option(daycareGroup2.id).waitUntilHidden()
-    await messageEditor.recipients.option(daycareGroup3.id).waitUntilHidden()
-
-    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
-    await messageEditor.fillMessage(message)
-    await messageEditor.send.click()
-    await messageEditor.waitUntilHidden()
-    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
-
-    // Check that citizen received the message
-    await citizenSeesMessage(message)
-  })
-})
-
-describe('Child message thread', () => {
+describe('Messages page', () => {
   test('Employee sees unread counts and pin login button', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
@@ -338,6 +313,98 @@ describe('Child message thread', () => {
     await threadView.discardReplyButton.click()
     await threadView.replyButton.click()
     await waitUntilEqual(() => threadView.replyContent.inputValue, '')
+  })
+
+  test('Employee sends a message to a group', async () => {
+    await staffStartsNewMessage()
+
+    await messageEditor.senderName.assertTextEquals(
+      `${daycareFixture.name} - ${daycareGroup.name}`
+    )
+
+    // Required fields not filled -> send button is disabled
+    await messageEditor.send.assertDisabled(true)
+
+    // The user has access to all groups, but only the one whose messages are viewed should be available in the
+    // message editor
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    await messageEditor.recipients.option(daycareGroup2.id).waitUntilHidden()
+    await messageEditor.recipients.option(daycareGroup3.id).waitUntilHidden()
+
+    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
+    await messageEditor.fillMessage(message)
+    await messageEditor.send.click()
+    await messageEditor.waitUntilHidden()
+    await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
+
+    // Check that citizen received the message
+    await citizenSeesMessage(message)
+  })
+
+  test('Employee sees sent messages', async () => {
+    await staffStartsNewMessage()
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
+    await messageEditor.fillMessage(message)
+    await messageEditor.send.click()
+    await messageEditor.waitUntilHidden()
+
+    const sentTab = await messagesPage.openSentTab()
+    const first = sentTab.message(0)
+    await first.title.assertTextEquals(message.title)
+
+    const firstMessage = await first.openMessage()
+    await firstMessage.topBarTitle.assertTextEquals(message.title)
+    await firstMessage.content.assertTextEquals(message.content)
+  })
+
+  test('Employee sees a draft message and can send it', async () => {
+    let messageEditor = await staffStartsNewMessage()
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
+    await messageEditor.fillMessage(message)
+    await messageEditor.close.click()
+
+    const draftsTab = await messagesPage.openDraftsTab()
+    const firstDraft = draftsTab.message(0)
+    await firstDraft.title.assertTextEquals(message.title)
+
+    messageEditor = await firstDraft.editDraft()
+
+    // TODO: recipients have to be reselected because the TreeView doesn't restore them correctly
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+
+    await messageEditor.recipients.values.assertTextsEqual([daycareGroup.name])
+    await messageEditor.title.assertValueEquals(message.title)
+    await messageEditor.content.assertValueEquals(message.content)
+    await messageEditor.send.click()
+
+    await draftsTab.list.waitUntilVisible()
+    await draftsTab.message(0).waitUntilHidden()
+  })
+
+  test('Employee can discard a draft message', async () => {
+    let messageEditor = await staffStartsNewMessage()
+    await messageEditor.recipients.open()
+    await messageEditor.recipients.option(daycareGroup.id).click()
+    const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
+    await messageEditor.fillMessage(message)
+    await messageEditor.close.click()
+
+    const draftsTab = await messagesPage.openDraftsTab()
+    const firstDraft = draftsTab.message(0)
+    await firstDraft.title.assertTextEquals(message.title)
+
+    messageEditor = await firstDraft.editDraft()
+    await messageEditor.discard.click()
+
+    await draftsTab.list.waitUntilVisible()
+    await draftsTab.message(0).waitUntilHidden()
   })
 
   test('Message button goes to unread messages if user has no pin session', async () => {
@@ -496,10 +563,11 @@ async function employeeLoginsToMessagesPageThroughGroup() {
   await employeeNavigatesToMessagesSelectingGroup()
 }
 
-async function staffStartsNewMessage() {
+async function staffStartsNewMessage(): Promise<MobileMessageEditor> {
   await page.goto(config.mobileUrl)
   await nav.messages.click()
   await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
   await pinLoginPage.login(staffName, pin)
   await messagesPage.newMessage.click()
+  return new MobileMessageEditor(page)
 }
