@@ -171,6 +171,7 @@ export default React.memo(function MessageEditor({
       <TopBar
         invertedColors
         title={i18n.messages.messageEditor.newMessage}
+        closeDisabled={isSavingDraft}
         onClose={() => {
           saveDraftImmediately()
           onClose()
