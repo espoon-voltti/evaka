@@ -337,10 +337,12 @@ const StaffAttendancesEditor = ({
         <div>
           <Label>{i18n.attendances.staff.realization}</Label>{' '}
           <span>
-            {form.state.rows
+            {staffMember.attendances
               .map(
-                ({ arrivedTime, departedTime }) =>
-                  `${arrivedTime}–${departedTime}`
+                ({ arrived, departed }) =>
+                  `${arrived.toLocalTime().format()}–${
+                    departed !== null ? departed.toLocalTime().format() : ''
+                  }`
               )
               .join(', ')}
           </span>
