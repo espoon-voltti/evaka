@@ -38,7 +38,7 @@ import PinLoginPage from '../../pages/mobile/pin-login-page'
 import ThreadViewPage from '../../pages/mobile/thread-view'
 import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
 import { waitUntilEqual } from '../../utils'
-import { pairMobileDevice } from '../../utils/mobile'
+import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -65,6 +65,7 @@ let daycareGroup3: DaycareGroup
 let child: PersonDetail
 let child2: PersonDetail
 
+const employeeId = uuidv4()
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
 const employeeName = `${empLastName} ${empFirstName}`
@@ -120,6 +121,7 @@ beforeEach(async () => {
   const employee = (
     await Fixture.employee()
       .with({
+        id: employeeId,
         firstName: empFirstName,
         lastName: empLastName,
         email: 'yy@example.com',
@@ -208,9 +210,6 @@ beforeEach(async () => {
   messagesPage = new MobileMessagesPage(page)
   threadView = new ThreadViewPage(page)
   nav = new MobileNav(page)
-
-  const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
-  await page.goto(mobileSignupUrl)
 })
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
@@ -219,6 +218,11 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
 }
 
 describe('Message editor in child page', () => {
+  beforeEach(async () => {
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+  })
+
   test('Employee can open editor and send message', async () => {
     await listPage.selectChild(child.id)
     await childPage.messageEditorLink.click()
@@ -245,6 +249,11 @@ describe('Message editor in child page', () => {
 })
 
 describe('Messages page', () => {
+  beforeEach(async () => {
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+  })
+
   test('Employee sees unread counts and pin login button', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
@@ -485,6 +494,23 @@ describe('Messages page', () => {
     await childPage.messageEditorLink.click()
     await pinLoginPage.login(employeeName, pin)
     await messageEditorPage.noReceiversInfo.waitUntilVisible()
+  })
+})
+
+describe('Personal mobile device', () => {
+  beforeEach(async () => {
+    const mobileSignupUrl = await pairPersonalMobileDevice(employeeId)
+    await page.goto(mobileSignupUrl)
+  })
+
+  test('Supervisor can access messages', async () => {
+    await nav.messages.click()
+    await unreadMessageCountsPage.pinLoginButton.click()
+    await pinLoginPage.personalDeviceLogin(pin)
+
+    await messagesPage.receivedTab.waitUntilVisible()
+    await messagesPage.sentTab.waitUntilVisible()
+    await messagesPage.draftsTab.waitUntilVisible()
   })
 })
 

@@ -22,6 +22,11 @@ export default class PinLoginPage {
     await this.submitPin(pin)
   }
 
+  async personalDeviceLogin(pin: string) {
+    // The staff member is not asked on personal mobile device
+    await this.submitPin(pin)
+  }
+
   async assertWrongPinError() {
     await this.#pinInfo.assertTextEquals('Väärä PIN-koodi')
   }
