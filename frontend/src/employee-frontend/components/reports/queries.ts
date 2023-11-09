@@ -12,6 +12,7 @@ import {
   getOccupanciesReport,
   getPlacementGuaranteeReport,
   getPreschoolGroupsReport,
+  getUnitsReport,
   getVardaErrorsReport,
   getVoucherServiceProvidersReport,
   MissingHeadOfFamilyReportFilters,
@@ -39,7 +40,8 @@ const queryKeys = createQueryKeys('reports', {
   ],
   vardaErrors: () => ['vardaErrors'],
   futurePreschoolers: () => ['futurePreschoolers'],
-  preschoolGroups: () => ['preschoolGroups']
+  preschoolGroups: () => ['preschoolGroups'],
+  units: () => ['units']
 })
 
 export const familyContactsReportQuery = query({
@@ -88,4 +90,9 @@ export const futurePreschoolersQuery = query({
 export const preschoolGroupsQuery = query({
   api: (municipal: boolean) => getPreschoolGroupsReport(municipal),
   queryKey: queryKeys.preschoolGroups
+})
+
+export const unitsReportQuery = query({
+  api: getUnitsReport,
+  queryKey: queryKeys.units
 })

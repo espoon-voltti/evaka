@@ -171,6 +171,15 @@ export default React.memo(function Reports() {
                 i18n={i18n.reports.childrenInDifferentAddress}
               />
             )}
+            {reports.has('UNITS') && (
+              <Report
+                path="/reports/units"
+                color={colors.main.m2}
+                icon={faHome}
+                i18n={i18n.reports.units}
+                data-qa="report-units"
+              />
+            )}
             {reports.has('APPLICATIONS') && (
               <Report
                 path="/reports/applications"

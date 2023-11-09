@@ -93,6 +93,7 @@ import ReportRaw from './components/reports/Raw'
 import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportSextet from './components/reports/Sextet'
 import ReportStartingPlacements from './components/reports/StartingPlacements'
+import ReportUnits from './components/reports/Units'
 import VardaErrors from './components/reports/VardaErrors'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
@@ -702,6 +703,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <PlacementGuarantee />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/units',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportUnits />
             </EmployeeRoute>
           )
         },

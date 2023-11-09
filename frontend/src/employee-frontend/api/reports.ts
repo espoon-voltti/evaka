@@ -44,6 +44,7 @@ import {
   ServiceVoucherUnitReport,
   SextetReportRow,
   StartingPlacementsRow,
+  UnitsReportRow,
   VardaErrorReportRow
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -761,5 +762,11 @@ export async function getPreschoolGroupsReport(
       '/reports/future-preschoolers/groups',
       { params: { municipal: municipal } }
     )
+    .then((res) => res.data)
+}
+
+export async function getUnitsReport(): Promise<UnitsReportRow[]> {
+  return client
+    .get<JsonOf<UnitsReportRow[]>>('/reports/units')
     .then((res) => res.data)
 }
