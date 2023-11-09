@@ -383,11 +383,6 @@ describe('Messages page', () => {
 
     messageEditor = await firstDraft.editDraft()
 
-    // TODO: recipients have to be reselected because the TreeView doesn't restore them correctly
-    await messageEditor.recipients.open()
-    await messageEditor.recipients.option(daycareGroup.id).click()
-    await messageEditor.recipients.option(daycareGroup.id).click()
-
     await messageEditor.recipients.values.assertTextsEqual([daycareGroup.name])
     await messageEditor.title.assertValueEquals(message.title)
     await messageEditor.content.assertValueEquals(message.content)

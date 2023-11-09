@@ -113,6 +113,7 @@ const shouldSensitiveCheckboxBeEnabled = (
   }
   return senderAccountType === 'PERSONAL'
 }
+
 interface FlagProps {
   urgent: boolean
   sensitive: boolean
@@ -138,6 +139,7 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
     </UlNoMargin>
   )
 })
+
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
@@ -178,7 +180,11 @@ export default React.memo(function MessageEditor({
   const i18n = useTranslations()
 
   const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
-    receiversAsSelectorNode(defaultSender.value, availableReceivers)
+    receiversAsSelectorNode(
+      defaultSender.value,
+      availableReceivers,
+      draftContent?.recipientIds
+    )
   )
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender, defaultTitle)
@@ -270,14 +276,16 @@ export default React.memo(function MessageEditor({
         senderAccountType
       )
 
-      setMessage((old) => ({
-        ...old,
+      const updatedMessage = {
+        ...message,
         recipientIds: selected.map((s) => s.key),
         recipientNames: selected.map((s) => s.text),
-        sensitive: shouldResetSensitivity ? false : old.sensitive
-      }))
+        sensitive: shouldResetSensitivity ? false : message.sensitive
+      }
+      setMessage(updatedMessage)
+      setDraft(messageToUpdatableDraftWithAccount(updatedMessage, selected))
     },
-    [message.type, senderAccountType]
+    [message, senderAccountType, setDraft]
   )
 
   const [expandedView, setExpandedView] = useState(false)

@@ -49,15 +49,22 @@ export const receiversAsSelectorNode = (
 }
 
 function checkSelected(selectedIds: UUID[], node: SelectorNode): SelectorNode {
-  const children = node.children.map((child) =>
-    checkSelected(selectedIds, child)
-  )
-  return {
-    ...node,
-    checked:
-      selectedIds.includes(node.key) || children.some((child) => child.checked),
-    children
+  if (selectedIds.includes(node.key)) {
+    return checkAll(node)
+  } else {
+    const children = node.children.map((child) =>
+      checkSelected(selectedIds, child)
+    )
+    return {
+      ...node,
+      checked: children.some((child) => child.checked),
+      children
+    }
   }
+}
+
+function checkAll(node: SelectorNode): SelectorNode {
+  return { ...node, checked: true, children: node.children.map(checkAll) }
 }
 
 const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
