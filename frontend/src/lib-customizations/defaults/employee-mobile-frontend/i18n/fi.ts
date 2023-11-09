@@ -358,6 +358,7 @@ export const fi = {
       reply: 'Vastaa viestiin'
     },
     draft: 'Luonnos',
+    draftReply: '- Luonnos -',
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {

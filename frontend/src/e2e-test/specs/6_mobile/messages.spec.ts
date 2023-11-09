@@ -283,6 +283,26 @@ describe('Messages page', () => {
     await messagesPage.assertThreadsExist()
   })
 
+  test('Draft replies are indicated in the thread list', async () => {
+    await initCitizenPage(mockedDateAt10)
+    await citizenSendsMessageToGroup()
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+    await userSeesNewMessagesIndicator()
+    await employeeLoginsToMessagesPage()
+
+    await nav.selectGroup(daycareGroupId)
+
+    await messagesPage.thread(0).click()
+    await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
+    const replyContent = 'Testivastauksen sisältö'
+    await threadView.replyButton.click()
+    await threadView.replyContent.fill(replyContent)
+
+    await threadView.goBack.click()
+
+    await messagesPage.thread(0).draftIndicator.waitUntilVisible()
+  })
+
   test('Employee replies as a group to message sent to group', async () => {
     await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
@@ -292,7 +312,7 @@ describe('Messages page', () => {
 
     await nav.selectGroup(daycareGroupId)
 
-    await messagesPage.openFirstThread()
+    await messagesPage.thread(0).click()
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
     const replyContent = 'Testivastauksen sisältö'
     await threadView.replyButton.click()
@@ -315,7 +335,7 @@ describe('Messages page', () => {
 
     await nav.selectGroup(daycareGroupId)
 
-    await messagesPage.openFirstThread()
+    await messagesPage.thread(0).click()
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
     await threadView.replyButton.click()
     await threadView.replyContent.fill('foo bar baz')
@@ -433,7 +453,7 @@ describe('Messages page', () => {
 
     await nav.selectGroup(daycareGroup.id)
     await messagesPage.assertThreadsExist()
-    await messagesPage.openFirstThread()
+    await messagesPage.thread(0).click()
 
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
     await waitUntilEqual(

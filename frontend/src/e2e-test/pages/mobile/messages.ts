@@ -29,8 +29,8 @@ export default class MobileMessagesPage {
     await waitUntilTrue(async () => (await this.threads.count()) > 0)
   }
 
-  async openFirstThread() {
-    await this.threads.first().click()
+  thread(nth: number) {
+    return new ReceivedThreadPreview(this.threads.nth(nth))
   }
 
   async openSentTab() {
@@ -42,6 +42,10 @@ export default class MobileMessagesPage {
     await this.draftsTab.click()
     return new DraftsTab(this.page)
   }
+}
+
+export class ReceivedThreadPreview extends Element {
+  draftIndicator = this.findByDataQa('draft-indicator')
 }
 
 export class SentTab {
