@@ -674,6 +674,7 @@ export type Report =
   | 'SERVICE_VOUCHER_VALUE'
   | 'SEXTET'
   | 'STARTING_PLACEMENTS'
+  | 'UNITS'
   | 'VARDA_ERRORS'
   | 'FUTURE_PRESCHOOLERS'
 
@@ -788,6 +789,31 @@ export type UnitType =
   | 'FAMILY'
   | 'GROUP_FAMILY'
   | 'CLUB'
+
+/**
+* Generated from fi.espoo.evaka.reports.UnitsReportRow
+*/
+export interface UnitsReportRow {
+  careAreaName: string
+  careTypeCentre: boolean
+  careTypeClub: boolean
+  careTypeFamily: boolean
+  careTypeGroupFamily: boolean
+  careTypePreparatoryEducation: boolean
+  careTypePreschool: boolean
+  clubApply: boolean
+  costCenter: string
+  daycareApply: boolean
+  id: UUID
+  invoicedByMunicipality: boolean
+  name: string
+  preschoolApply: boolean
+  providerType: ProviderType
+  unitManagerName: string
+  uploadChildrenToVarda: boolean
+  uploadToKoski: boolean
+  uploadToVarda: boolean
+}
 
 /**
 * Generated from fi.espoo.evaka.reports.VardaErrorReportRow

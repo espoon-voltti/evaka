@@ -3592,6 +3592,33 @@ export const fi = {
       missingServiceNeed: 'palveluntarve puuttuu',
       total: 'lapsia yhteensä'
     },
+    units: {
+      title: 'Yksiköt',
+      description: 'Yhteenveto yksiköiden tiedoista.',
+      name: 'Nimi',
+      careAreaName: 'Palvelualue',
+      careTypeCentre: 'Päiväkoti',
+      careTypeFamily: <span>Perhe&shy;päivä&shy;hoito</span>,
+      careTypeFamilyStr: 'Perhepäivähoito',
+      careTypeGroupFamily: <span>Ryhmä&shy;perhe&shy;päivä&shy;hoito</span>,
+      careTypeGroupFamilyStr: 'Ryhmäperhepäivähoito',
+      careTypeClub: 'Kerho',
+      careTypePreschool: 'Esiopetus',
+      careTypePreparatoryEducation: 'Valmistava',
+      clubApply: <span>Kerho&shy;haku</span>,
+      clubApplyStr: 'Kerhohaku',
+      daycareApply: <span>Päiväkoti&shy;haku</span>,
+      daycareApplyStr: 'Päiväkotihaku',
+      preschoolApply: <span>Esiopetus&shy;haku</span>,
+      preschoolApplyStr: 'Esiopetushaku',
+      providerType: 'Järjestämismuoto',
+      uploadToVarda: 'Varda',
+      uploadChildrenToVarda: 'Varda (lapset)',
+      uploadToKoski: 'Koski',
+      invoicedByMunicipality: 'Laskutetaan eVakasta',
+      costCenter: 'Kustannuspaikka',
+      unitManagerName: 'Yksikön johtaja'
+    },
     childrenInDifferentAddress: {
       title: 'Lapsi eri osoitteessa',
       description:
