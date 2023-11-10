@@ -239,8 +239,9 @@ class SfiMessagesSoapClient(
             }
         } else if (
             response.code == SfiResponseCode.ValidationError &&
-                response.text ==
+                response.text.startsWith(
                     "Asian tietosisällössä virheitä. Viranomaistunnisteella löytyy jo asia, joka on tallennettu asiakkaan tilille Viestit-palveluun"
+                )
         ) {
             logger.info {
                 "SFI message delivery failed with ${response.code}: ${response.text}. Skipping duplicate message"
