@@ -39,7 +39,43 @@ export default React.memo(function MissingHeadOfFamily() {
         {renderResult(rows, (rows) => (
           <>
             <ReportDownload
-              data={rows}
+              data={rows.map((r) => ({
+                ...r,
+                providerType: i18n.common.providerType[r.providerType],
+                careTypeCentre: r.careTypeCentre
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                careTypeFamily: r.careTypeFamily
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                careTypeGroupFamily: r.careTypeGroupFamily
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                careTypeClub: r.careTypeClub ? i18n.common.yes : i18n.common.no,
+                careTypePreschool: r.careTypePreschool
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                careTypePreparatoryEducation: r.careTypePreparatoryEducation
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                clubApply: r.clubApply ? i18n.common.yes : i18n.common.no,
+                daycareApply: r.daycareApply ? i18n.common.yes : i18n.common.no,
+                preschoolApply: r.preschoolApply
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                uploadToVarda: r.uploadToVarda
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                uploadChildrenToVarda: r.uploadChildrenToVarda
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                uploadToKoski: r.uploadToKoski
+                  ? i18n.common.yes
+                  : i18n.common.no,
+                invoicedByMunicipality: r.invoicedByMunicipality
+                  ? i18n.common.yes
+                  : i18n.common.no
+              }))}
               headers={[
                 { label: i18n.reports.units.name, key: 'name' },
                 { label: i18n.reports.units.careAreaName, key: 'careAreaName' },
@@ -92,8 +128,16 @@ export default React.memo(function MissingHeadOfFamily() {
                 },
                 { label: i18n.reports.units.costCenter, key: 'costCenter' },
                 {
+                  label: i18n.reports.units.address,
+                  key: 'address'
+                },
+                {
                   label: i18n.reports.units.unitManagerName,
                   key: 'unitManagerName'
+                },
+                {
+                  label: i18n.reports.units.unitManagerPhone,
+                  key: 'unitManagerPhone'
                 }
               ]}
               filename="Yksiköt.csv"
@@ -128,7 +172,9 @@ export default React.memo(function MissingHeadOfFamily() {
                     {i18n.reports.units.invoicedByMunicipality}
                   </CheckboxTh>
                   <Th>{i18n.reports.units.costCenter}</Th>
+                  <Th>{i18n.reports.units.address}</Th>
                   <Th>{i18n.reports.units.unitManagerName}</Th>
+                  <Th>{i18n.reports.units.unitManagerPhone}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -181,7 +227,9 @@ export default React.memo(function MissingHeadOfFamily() {
                       <StaticCheckBox checked={row.invoicedByMunicipality} />
                     </Td>
                     <Td>{row.costCenter}</Td>
+                    <Td>{row.address}</Td>
                     <Td>{row.unitManagerName}</Td>
+                    <Td>{row.unitManagerPhone}</Td>
                   </Tr>
                 ))}
               </Tbody>

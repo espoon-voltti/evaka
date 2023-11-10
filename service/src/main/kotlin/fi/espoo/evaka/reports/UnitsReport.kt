@@ -62,7 +62,9 @@ private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
                 u.upload_to_koski,
                 u.invoiced_by_municipality,
                 coalesce(u.cost_center, '') AS cost_center,
-                u.unit_manager_name
+                (u.street_address || ', ' || u.postal_code || ', ' || u.post_office) as address,
+                u.unit_manager_name,
+                u.unit_manager_phone
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
         """
@@ -90,5 +92,7 @@ data class UnitsReportRow(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String,
-    val unitManagerName: String
+    val address: String,
+    val unitManagerName: String,
+    val unitManagerPhone: String
 )
