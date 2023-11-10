@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -39,6 +40,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mapper: JsonMapper
 
     @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
+    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private fun assertEqualEnough(expected: List<Income>, actual: List<Income>) {
         val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
@@ -59,20 +61,30 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
-    private fun testIncome() =
-        Income(
+    private fun testIncome(): Income {
+        val data = mapOf(
+            "MAIN_INCOME" to
+                    IncomeValue(
+                        500000,
+                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(500000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                    )
+        )
+        return Income(
             id = IncomeId(UUID.randomUUID()),
             personId = testAdult_1.id,
             effect = IncomeEffect.INCOME,
-            data =
-                mapOf(
-                    "MAIN_INCOME" to
-                        IncomeValue(500000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
-                ),
+            data = data,
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
-            notes = ""
+            notes = "",
+            totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
+            totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
+            total = calculateIncomeTotal(data, coefficientMultiplierProvider)
+
         )
+    }
 
     private val financeUser =
         AuthenticatedUser.Employee(
@@ -183,7 +195,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, testAdult_1.id)
+                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testAdult_1.id)
             }
 
         assertEquals(2, result.size)
@@ -266,7 +278,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(income.copy(data = emptyMap(), updatedBy = financeUserName)),
+            listOf(income.copy(data = emptyMap(), updatedBy = financeUserName, totalIncome = 0, totalExpenses = 0, total = 0)),
             deserializeResult(result.get())
         )
     }
@@ -276,13 +288,21 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val testIncome = testIncome()
         db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
 
+        val newIncomeData = mapOf(
+            "MAIN_INCOME" to
+                    IncomeValue(
+                        1000,
+                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(1000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                    )
+        )
         val updated =
             testIncome.copy(
-                data =
-                    mapOf(
-                        "MAIN_INCOME" to
-                            IncomeValue(1000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
-                    )
+                data = newIncomeData,
+                totalIncome = calculateTotalIncome(newIncomeData, coefficientMultiplierProvider),
+                totalExpenses = calculateTotalExpense(newIncomeData, coefficientMultiplierProvider),
+                total = calculateIncomeTotal(newIncomeData, coefficientMultiplierProvider)
             )
         val (_, putResponse, _) =
             http
@@ -363,7 +383,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(data = emptyMap(), updatedBy = financeUserName)),
+            listOf(updated.copy(data = emptyMap(), updatedBy = financeUserName, totalIncome = 0, totalExpenses = 0, total = 0)),
             deserializeResult(result.get())
         )
     }
@@ -423,7 +443,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val resultBeforeDelete =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, testIncome.personId)
+                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testIncome.personId)
             }
 
         assertEquals(2, resultBeforeDelete.size)
@@ -435,7 +455,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val resultAfterDelete =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, testIncome.personId)
+                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testIncome.personId)
             }
 
         assertEquals(1, resultAfterDelete.size)

@@ -6,9 +6,14 @@ package fi.espoo.evaka.invoicing.data
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.invoicing.calculateIncomeTotal
+import fi.espoo.evaka.invoicing.calculateMonthlyAmount
+import fi.espoo.evaka.invoicing.calculateTotalExpense
+import fi.espoo.evaka.invoicing.calculateTotalIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
@@ -94,6 +99,7 @@ fun Database.Transaction.upsertIncome(
 fun Database.Read.getIncome(
     mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId
 ): Income? {
     return createQuery(
@@ -116,12 +122,13 @@ fun Database.Read.getIncome(
                 .trimIndent()
         )
         .bind("id", id)
-        .exactlyOneOrNull { toIncome(mapper, incomeTypesProvider.get()) }
+        .exactlyOneOrNull { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesForPerson(
     mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personId: PersonId,
     validAt: LocalDate? = null
 ): List<Income> {
@@ -147,13 +154,14 @@ fun Database.Read.getIncomesForPerson(
             .trimIndent()
 
     return createQuery(sql).bind("personId", personId).bind("validAt", validAt).toList {
-        toIncome(mapper, incomeTypesProvider.get())
+        toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
     }
 }
 
 fun Database.Read.getIncomesFrom(
     mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personIds: List<PersonId>,
     from: LocalDate
 ): List<Income> {
@@ -170,7 +178,7 @@ fun Database.Read.getIncomesFrom(
         """
 
     return createQuery(sql).bind("personIds", personIds).bind("from", from).toList {
-        toIncome(mapper, incomeTypesProvider.get())
+        toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
     }
 }
 
@@ -200,12 +208,13 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun Row.toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) =
-    Income(
+fun Row.toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): Income {
+    val data = parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
+    return Income(
         id = column<IncomeId>("id"),
         personId = column("person_id"),
         effect = column("effect"),
-        data = parseIncomeDataJson(column("data"), mapper, incomeTypes),
+        data = data,
         isEntrepreneur = column("is_entrepreneur"),
         worksAtECHA = column("works_at_echa"),
         validFrom = column("valid_from"),
@@ -214,15 +223,23 @@ fun Row.toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>) =
         updatedAt = column("updated_at"),
         updatedBy = column("updated_by_name"),
         applicationId = column("application_id"),
-        attachments = jsonColumn("attachments")
+        attachments = jsonColumn("attachments"),
+        totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
+        totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
+        total = calculateIncomeTotal(data, coefficientMultiplierProvider)
     )
+}
 
 fun parseIncomeDataJson(
     json: String,
     jsonMapper: JsonMapper,
-    incomeTypes: Map<String, IncomeType>
+    incomeTypes: Map<String, IncomeType>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ): Map<String, IncomeValue> {
     return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
-        value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
+        value.copy(
+            multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"),
+            monthlyAmount = calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient))
+        )
     }
 }

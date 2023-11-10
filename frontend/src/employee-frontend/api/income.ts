@@ -19,6 +19,7 @@ import {
 } from '../types/income'
 
 import { client } from './client'
+import { IncomeCoefficient } from 'lib-common/api-types/income'
 
 export async function getIncomes(
   personId: UUID
@@ -98,6 +99,14 @@ interface IncomeType {
   multiplier: number
   withCoefficient: boolean
   isSubType: boolean
+}
+
+export type IncomeCoefficientMultipliers = Record<IncomeCoefficient, number>
+
+export async function getIncomeCoefficientMultipliers(): Promise<IncomeCoefficientMultipliers> {
+  return client
+    .get<IncomeCoefficientMultipliers>(`/incomes/multipliers`)
+    .then((res) => res.data)
 }
 
 export async function getIncomeNotifications(

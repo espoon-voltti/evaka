@@ -37,6 +37,7 @@ import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getVoucherValues
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.mapIncomeToDecisionIncome
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -57,6 +58,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     featureConfig: FeatureConfig,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     clock: EvakaClock,
     from: LocalDate,
     child: PersonBasic,
@@ -66,7 +68,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
-    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
+    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider, adults + child.id, from)
     val assistanceNeedCoefficients =
         if (featureConfig.valueDecisionCapacityFactorEnabled) {
             getCapacityFactorsByChild(child.id).map {
@@ -114,7 +116,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             incomes,
             assistanceNeedCoefficients,
             feeAlterations,
-            serviceVoucherUnits
+            serviceVoucherUnits,
+            coefficientMultiplierProvider
         )
     val newDrafts =
         newDraftsWithoutDifference.map { draft ->
@@ -170,7 +173,8 @@ private fun generateNewValueDecisions(
     incomes: List<Income>,
     assistanceNeedCoefficients: List<AssistanceNeedCoefficient>,
     feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<DaycareId>
+    serviceVoucherUnits: List<DaycareId>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ): List<VoucherValueDecision> {
     val periods =
         families.map { it.period } +
@@ -206,7 +210,8 @@ private fun generateNewValueDecisions(
                         family.headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    ?.toDecisionIncome()
+                    //?.toDecisionIncome()
+                    ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
 
             val childIncome =
                 incomes
@@ -215,7 +220,8 @@ private fun generateNewValueDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                             it.effect == IncomeEffect.INCOME
                     }
-                    ?.toDecisionIncome()
+                    //?.toDecisionIncome()
+                    ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)}
 
             val partnerIncome =
                 family.partner?.let { partner ->
@@ -224,7 +230,8 @@ private fun generateNewValueDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        ?.toDecisionIncome()
+                        //?.toDecisionIncome()
+                        ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)}
                 }
 
             val assistanceNeedCoefficient =
@@ -254,7 +261,7 @@ private fun generateNewValueDecisions(
                 val voucherValue =
                     if (
                         placement == null ||
-                            serviceVoucherUnits.none { unit -> unit == placement.unitId }
+                        serviceVoucherUnits.none { unit -> unit == placement.unitId }
                     ) {
                         null
                     } else {
@@ -289,8 +296,8 @@ private fun generateNewValueDecisions(
                         .sortedWith(
                             compareByDescending<Pair<PersonBasic, PlacementWithServiceNeed>> {
                                     (child, _) ->
-                                    child.dateOfBirth
-                                }
+                                child.dateOfBirth
+                            }
                                 .thenByDescending { (child, _) -> child.ssn }
                                 .thenBy { (child, _) -> child.id }
                         )

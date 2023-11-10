@@ -188,7 +188,10 @@ val testIncome =
         validTo = null,
         effect = IncomeEffect.INCOME,
         data = mapOf(),
-        notes = ""
+        notes = "",
+        totalIncome = 0,
+        totalExpenses = 0,
+        total = 0
     )
 
 val testDecisionIncome =

@@ -33,6 +33,7 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.mapIncomeToDecisionIncome
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
@@ -56,6 +57,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     clock: EvakaClock,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     from: LocalDate,
     headOfFamily: PersonId,
     families: List<FridgeFamily>
@@ -67,7 +69,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val childIds = children.map { it.id }
 
     val allIncomes =
-        getIncomesFrom(jsonMapper, incomeTypesProvider, partnerIds + headOfFamily + childIds, from)
+        getIncomesFrom(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider, partnerIds + headOfFamily + childIds, from)
 
     val adultIncomes = allIncomes.filter { (partnerIds + headOfFamily).contains(it.personId) }
     val childIncomes =
@@ -110,7 +112,8 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
             adultIncomes,
             childIncomes,
             feeAlterations,
-            invoicedUnits
+            invoicedUnits,
+            coefficientMultiplierProvider
         )
     val newDrafts =
         newDraftsWithoutDifference.map { draft ->
@@ -227,7 +230,8 @@ private fun generateFeeDecisions(
     incomes: List<Income>,
     childIncomes: Map<ChildId, List<Income>>,
     feeAlterations: List<FeeAlteration>,
-    invoicedUnits: List<DaycareId>
+    invoicedUnits: List<DaycareId>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ): List<FeeDecision> {
     val periods =
         families.map { it.period } +
@@ -254,7 +258,8 @@ private fun generateFeeDecisions(
                         headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    ?.toDecisionIncome()
+                    //?.toDecisionIncome()
+                    ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
 
             val partnerIncome =
                 family.partner?.let { partner ->
@@ -263,7 +268,8 @@ private fun generateFeeDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        ?.toDecisionIncome()
+                        //?.toDecisionIncome()
+                        ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
                 }
 
             val childPeriodIncome =
@@ -273,7 +279,8 @@ private fun generateFeeDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                                 it.effect == IncomeEffect.INCOME
                         }
-                        ?.toDecisionIncome()
+                        //?.toDecisionIncome()
+                        ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
                 }
 
             val validPlacements =

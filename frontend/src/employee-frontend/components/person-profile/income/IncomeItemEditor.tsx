@@ -40,7 +40,10 @@ import {
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
-import { IncomeTypeOptions } from '../../../api/income'
+import {
+  IncomeCoefficientMultipliers,
+  IncomeTypeOptions
+} from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -82,30 +85,34 @@ const emptyIncome: IncomeForm = {
   attachments: []
 }
 
-export const coefficientMultipliers: Record<IncomeCoefficient, number> = {
-  MONTHLY_WITH_HOLIDAY_BONUS: 1.0417,
-  MONTHLY_NO_HOLIDAY_BONUS: 1,
-  BI_WEEKLY_WITH_HOLIDAY_BONUS: 2.2323,
-  BI_WEEKLY_NO_HOLIDAY_BONUS: 2.1429,
-  DAILY_ALLOWANCE_21_5: 21.5,
-  DAILY_ALLOWANCE_25: 25,
-  YEARLY: 0.0833
-}
+// export const coefficientMultipliers: Record<IncomeCoefficient, number> = {
+//   MONTHLY_WITH_HOLIDAY_BONUS: 1.0417,
+//   MONTHLY_NO_HOLIDAY_BONUS: 1,
+//   BI_WEEKLY_WITH_HOLIDAY_BONUS: 2.2323,
+//   BI_WEEKLY_NO_HOLIDAY_BONUS: 2.1429,
+//   DAILY_ALLOWANCE_21_5: 21.5,
+//   DAILY_ALLOWANCE_25: 25,
+//   YEARLY: 0.0833
+// }
 
 const calculateAmounts = (
   amount: string,
-  coefficient: IncomeCoefficient
+  coefficient: IncomeCoefficient,
+  multiplier: number
 ): IncomeValue | undefined => {
   const parsed = parseCents(amount)
   if (parsed === undefined) return undefined
   return {
     amount: parsed,
     coefficient,
-    monthlyAmount: Math.round(parsed * coefficientMultipliers[coefficient])
+    monthlyAmount: Math.round(parsed * multiplier) //coefficientMultipliers[coefficient])
   }
 }
 
-function updateIncomeData(data: IncomeTableData): [IncomeTableData, boolean] {
+function updateIncomeData(
+  data: IncomeTableData,
+  coefficientMultipliers: IncomeCoefficientMultipliers
+): [IncomeTableData, boolean] {
   let allValid = true
   const result: IncomeTableData = {}
 
@@ -113,7 +120,11 @@ function updateIncomeData(data: IncomeTableData): [IncomeTableData, boolean] {
     if (!value) continue
     const { amount, coefficient } = value
 
-    const item = calculateAmounts(amount, coefficient)
+    const item = calculateAmounts(
+      amount,
+      coefficient,
+      coefficientMultipliers[coefficient]
+    )
     if (!item && amount !== '') allValid = false
 
     result[key] = {
@@ -126,7 +137,10 @@ function updateIncomeData(data: IncomeTableData): [IncomeTableData, boolean] {
   return [result, allValid]
 }
 
-function formToIncomeBody(form: IncomeForm): IncomeBody | undefined {
+function formToIncomeBody(
+  form: IncomeForm,
+  coefficientMultipliers: IncomeCoefficientMultipliers
+): IncomeBody | undefined {
   const result: IncomeFields = {}
 
   for (const [key, value] of Object.entries(form.data)) {
@@ -136,7 +150,11 @@ function formToIncomeBody(form: IncomeForm): IncomeBody | undefined {
       // Blank amount => delete the field
       result[key] = undefined
     } else {
-      const item = calculateAmounts(amount, coefficient)
+      const item = calculateAmounts(
+        amount,
+        coefficient,
+        coefficientMultipliers[coefficient]
+      )
       if (!item) {
         // Invalid amount, should not happen because the form has been validated
         return undefined
@@ -151,6 +169,7 @@ function formToIncomeBody(form: IncomeForm): IncomeBody | undefined {
 interface Props {
   baseIncome?: Income
   incomeTypeOptions: IncomeTypeOptions
+  coefficientMultipliers: IncomeCoefficientMultipliers
   cancel: () => void
   update: (income: Income) => Promise<Result<unknown>> | void
   create: (income: IncomeBody) => Promise<Result<unknown>>
@@ -161,6 +180,7 @@ interface Props {
 const IncomeItemEditor = React.memo(function IncomeItemEditor({
   baseIncome,
   incomeTypeOptions,
+  coefficientMultipliers,
   cancel,
   update,
   create,
@@ -208,7 +228,10 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
   )
 
   const setIncomeData = useCallback((data: IncomeTableData) => {
-    const [updatedData, isValid] = updateIncomeData(data)
+    const [updatedData, isValid] = updateIncomeData(
+      data,
+      coefficientMultipliers
+    )
     setEditedIncome((prev) => ({ ...prev, data: updatedData }))
     setValidationErrors((prev) => ({ ...prev, data: !isValid }))
   }, [])
@@ -361,7 +384,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
             (retroactive && !confirmedRetroactive)
           }
           onClick={(): Promise<Result<unknown>> | void => {
-            const body = formToIncomeBody(editedIncome)
+            const body = formToIncomeBody(editedIncome, coefficientMultipliers)
             if (!body) return
             return !baseIncome
               ? create(body)

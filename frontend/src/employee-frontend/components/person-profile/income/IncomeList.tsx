@@ -12,7 +12,10 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import { IncomeTypeOptions } from '../../../api/income'
+import {
+  IncomeCoefficientMultipliers,
+  IncomeTypeOptions
+} from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
 import {
   Income,
@@ -29,6 +32,7 @@ import { IncomeNotifications } from './IncomeNotifications'
 interface Props {
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
+  coefficientMultipliers: IncomeCoefficientMultipliers
   incomeNotifications: IncomeNotification[]
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void
@@ -46,6 +50,7 @@ interface Props {
 const IncomeList = React.memo(function IncomeList({
   incomes,
   incomeTypeOptions,
+  coefficientMultipliers,
   incomeNotifications,
   isRowOpen,
   toggleRow,
@@ -119,6 +124,7 @@ const IncomeList = React.memo(function IncomeList({
           <Gap size="m" />
           <IncomeItemEditor
             incomeTypeOptions={incomeTypeOptions}
+            coefficientMultipliers={coefficientMultipliers}
             cancel={() => setEditing(undefined)}
             create={createIncome}
             update={() => undefined}
@@ -155,6 +161,7 @@ const IncomeList = React.memo(function IncomeList({
                 <IncomeItemEditor
                   baseIncome={item}
                   incomeTypeOptions={incomeTypeOptions}
+                  coefficientMultipliers={coefficientMultipliers}
                   cancel={onSuccessfulUpdate}
                   create={createIncome}
                   update={(income) => updateIncome(item.id, income)}

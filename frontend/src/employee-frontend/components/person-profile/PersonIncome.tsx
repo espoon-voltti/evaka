@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { combine, Failure, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
@@ -38,6 +39,7 @@ import { renderResult } from '../async-rendering'
 import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
+import { incomeCoefficientMultipliersQuery } from './queries'
 
 interface Props {
   id: UUID
@@ -181,6 +183,9 @@ export const Incomes = React.memo(function Incomes({
   }, [i18n, incomes, childPlacementPeriods, setErrorMessage])
 
   const incomeTypeOptions = useIncomeTypeOptions()
+  const coefficientMultipliers = useQueryResult(
+    incomeCoefficientMultipliersQuery()
+  )
 
   const [editing, setEditing] = useState<string>()
   const [deleting, setDeleting] = useState<string>()
@@ -209,8 +214,18 @@ export const Incomes = React.memo(function Incomes({
   return (
     <>
       {renderResult(
-        combine(incomes, incomeTypeOptions, incomeNotifications),
-        ([incomes, incomeTypeOptions, incomeNotifications]) => (
+        combine(
+          incomes,
+          incomeTypeOptions,
+          incomeNotifications,
+          coefficientMultipliers
+        ),
+        ([
+          incomes,
+          incomeTypeOptions,
+          incomeNotifications,
+          coefficientMultipliers
+        ]) => (
           <>
             {permittedActions.has('CREATE_INCOME') && (
               <AddButtonRow
@@ -227,6 +242,7 @@ export const Incomes = React.memo(function Incomes({
             <IncomeList
               incomes={incomes}
               incomeTypeOptions={incomeTypeOptions}
+              coefficientMultipliers={coefficientMultipliers}
               incomeNotifications={incomeNotifications}
               isRowOpen={isIncomeRowOpen}
               toggleRow={toggleIncomeRow}

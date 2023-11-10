@@ -47,6 +47,7 @@ private val logger = KotlinLogging.logger {}
 class FinanceDecisionGenerator(
     private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
+    private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     env: EvakaEnv,
     private val featureConfig: FeatureConfig
 ) {
@@ -114,6 +115,7 @@ FROM ids;
                 clock,
                 jsonMapper,
                 incomeTypesProvider,
+                coefficientMultiplierProvider,
                 from, // intentionally does not care about feeDecisionMinDate
                 headOfFamily,
                 families
@@ -125,6 +127,7 @@ FROM ids;
                 tx = tx,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
+                coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
                 headOfFamilyId = headOfFamily,
                 retroactiveOverride = from
@@ -144,6 +147,7 @@ FROM ids;
                     tx = tx,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    coefficientMultiplierProvider = coefficientMultiplierProvider,
                     financeMinDate = feeDecisionMinDate,
                     valueDecisionCapacityFactorEnabled =
                         featureConfig.valueDecisionCapacityFactorEnabled,
@@ -167,6 +171,7 @@ FROM ids;
                         featureConfig,
                         jsonMapper,
                         incomeTypesProvider,
+                        coefficientMultiplierProvider,
                         clock,
                         from,
                         child,
@@ -193,6 +198,7 @@ FROM ids;
                     tx = tx,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    coefficientMultiplierProvider = coefficientMultiplierProvider,
                     financeMinDate = feeDecisionMinDate,
                     headOfFamilyId = adult
                 )
@@ -206,6 +212,7 @@ FROM ids;
                     tx = tx,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    coefficientMultiplierProvider = coefficientMultiplierProvider,
                     financeMinDate = feeDecisionMinDate,
                     valueDecisionCapacityFactorEnabled =
                         featureConfig.valueDecisionCapacityFactorEnabled,
@@ -231,6 +238,7 @@ FROM ids;
                     tx = tx,
                     jsonMapper = jsonMapper,
                     incomeTypesProvider = incomeTypesProvider,
+                    coefficientMultiplierProvider = coefficientMultiplierProvider,
                     financeMinDate = feeDecisionMinDate,
                     headOfFamilyId = adultId
                 )
@@ -242,6 +250,7 @@ FROM ids;
                 tx = tx,
                 jsonMapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
+                coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
@@ -268,6 +277,7 @@ FROM ids;
                         clock,
                         jsonMapper,
                         incomeTypesProvider,
+                        coefficientMultiplierProvider,
                         from,
                         headOfFamily,
                         families
@@ -287,6 +297,7 @@ FROM ids;
                         featureConfig,
                         jsonMapper,
                         incomeTypesProvider,
+                        coefficientMultiplierProvider,
                         clock,
                         from,
                         child,
