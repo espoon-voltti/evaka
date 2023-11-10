@@ -61,7 +61,7 @@ private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
                 u.upload_children_to_varda,
                 u.upload_to_koski,
                 u.invoiced_by_municipality,
-                u.cost_center,
+                coalesce(u.cost_center, '') AS cost_center,
                 u.unit_manager_name
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
