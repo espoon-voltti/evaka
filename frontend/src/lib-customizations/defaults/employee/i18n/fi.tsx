@@ -3813,17 +3813,17 @@ export const fi = {
     },
     vardaErrors: {
       title: 'Varda-virheet',
-      vardaResetButton: 'Käynnistä lasten resetointi',
+      vardaUpdateButton: 'Käynnistä Vardapäivitys',
       description:
-        'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
-      updated: 'Muokattu',
+        'Vardapäivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
+      updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',
       child: 'Lapsi',
       serviceNeed: 'Palveluntarve',
       error: 'Virhe',
-      childLastReset: 'Resetoitu viimeksi',
+      childLastReset: 'Uudelleenviety viimeksi',
       childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
-      resetChild: 'Resetoi',
+      resetChild: 'Uudelleenvie',
       updating: 'Päivittää'
     },
     sextet: {
