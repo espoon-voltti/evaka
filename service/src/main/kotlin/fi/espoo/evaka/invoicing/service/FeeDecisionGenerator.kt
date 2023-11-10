@@ -264,7 +264,6 @@ private fun generateFeeDecisions(
                         headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    // ?.toDecisionIncome()
                     ?.let { income ->
                         mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
                     }
@@ -276,7 +275,6 @@ private fun generateFeeDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        // ?.toDecisionIncome()
                         ?.let { income ->
                             mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
                         }
@@ -289,7 +287,6 @@ private fun generateFeeDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                                 it.effect == IncomeEffect.INCOME
                         }
-                        // ?.toDecisionIncome()
                         ?.let { income ->
                             mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
                         }

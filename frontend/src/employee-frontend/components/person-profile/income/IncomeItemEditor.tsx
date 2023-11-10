@@ -95,7 +95,7 @@ const calculateAmounts = (
   return {
     amount: parsed,
     coefficient,
-    monthlyAmount: Math.round(parsed * multiplier) //coefficientMultipliers[coefficient])
+    monthlyAmount: Math.round(parsed * multiplier)
   }
 }
 

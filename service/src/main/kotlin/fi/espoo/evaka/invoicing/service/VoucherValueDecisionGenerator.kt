@@ -217,7 +217,6 @@ private fun generateNewValueDecisions(
                         family.headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    // ?.toDecisionIncome()
                     ?.let { inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
 
             val childIncome =
@@ -227,7 +226,6 @@ private fun generateNewValueDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                             it.effect == IncomeEffect.INCOME
                     }
-                    // ?.toDecisionIncome()
                     ?.let { inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
 
             val partnerIncome =
@@ -237,7 +235,6 @@ private fun generateNewValueDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        // ?.toDecisionIncome()
                         ?.let { inc ->
                             mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)
                         }
