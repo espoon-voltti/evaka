@@ -229,8 +229,7 @@ private fun getFeeBases(
                         val feeAlterations =
                             feeAlterationsByChild[child.id]
                                 ?.filter { it.range.contains(range) }
-                                ?.map { it.feeAlteration }
-                                ?: emptyList()
+                                ?.map { it.feeAlteration } ?: emptyList()
 
                         val echaAlteration =
                             getECHAIncrease(child.id, range).takeIf {
@@ -383,8 +382,7 @@ private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List
                 ?.filter { it.key == partner }
                 ?.flatMap { it.value }
                 ?.filter { it.range.contains(range) }
-                ?.map { it.child }
-                ?: emptyList()
+                ?.map { it.child } ?: emptyList()
         val isHeadOfFamily =
             determineHeadOfFamily(targetAdultId to ownChildren, partner to partnersChildren)
                 .first == targetAdultId

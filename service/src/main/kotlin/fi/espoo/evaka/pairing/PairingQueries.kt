@@ -53,8 +53,7 @@ fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: Strin
         .bind("response", generatePairingKey())
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .exactlyOneOrNull<Pairing>()
-        ?: throw NotFound("Valid pairing not found")
+        .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Transaction.respondPairingChallengeCreateDevice(
@@ -93,8 +92,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
         .bind("name", defaultDeviceName)
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
-        .exactlyOneOrNull<Pairing>()
-        ?: throw NotFound("Valid pairing not found")
+        .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Transaction.validatePairing(
@@ -123,8 +121,7 @@ RETURNING id, long_term_token
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .bind("longTermToken", UUID.randomUUID())
-        .exactlyOneOrNull<MobileDeviceIdentity>()
-        ?: throw NotFound("Valid pairing not found")
+        .exactlyOneOrNull<MobileDeviceIdentity>() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, EmployeeId?> {
@@ -148,8 +145,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
         .bind("now", clock.now())
         .bind("maxAttempts", maxAttempts)
         .toList<PairingStatus>()
-        .firstOrNull()
-        ?: throw NotFound("Valid pairing not found")
+        .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) {

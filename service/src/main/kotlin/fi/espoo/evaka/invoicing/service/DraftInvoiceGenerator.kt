@@ -364,7 +364,7 @@ class DraftInvoiceGenerator(
                     val dailyFeeDivisor =
                         contractDaysPerMonth
                             ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
-                                ?: operationalDays.generalCase.size
+                            ?: operationalDays.generalCase.size
 
                     val attendanceDates =
                         getAttendanceDates(
@@ -462,8 +462,7 @@ class DraftInvoiceGenerator(
         fun hasSickleave(childId: ChildId, date: LocalDate): Boolean {
             return absences[childId]?.any { absence ->
                 absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE
-            }
-                ?: false
+            } ?: false
         }
 
         return getOperationalDaysForChildsUnits(placements, operationalDays)
@@ -880,9 +879,8 @@ class DraftInvoiceGenerator(
                     accumulatedInvoiceRowSum + totalAddition > maxPrice ->
                         1 to (maxPrice - accumulatedInvoiceRowSum)
                     // total attendances days is over the max contract day surplus threshold
-                    featureConfig.maxContractDaySurplusThreshold
-                        ?: Int.MAX_VALUE < attendanceDays ->
-                        1 to (maxPrice - accumulatedInvoiceRowSum)
+                    featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE <
+                        attendanceDays -> 1 to (maxPrice - accumulatedInvoiceRowSum)
                     else -> surplusAttendanceDays to surplusDailyPrice
                 }
             // it is possible that the max fee is not over the already accumulated invoice total so

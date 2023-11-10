@@ -178,8 +178,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                         registration.handlerFor(job.jobType).run(Database(jdbi, tracer), clock, msg)
                         tx.completeJob(job, clock.now())
                         true
-                    }
-                        ?: false
+                    } ?: false
                 }
             if (completed) {
                 logger.info(logMeta) { "Completed async job $job" }

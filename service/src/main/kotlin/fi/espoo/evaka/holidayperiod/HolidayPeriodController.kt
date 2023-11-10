@@ -65,8 +65,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         Action.Global.READ_HOLIDAY_PERIOD
                     )
                     it.getHolidayPeriod(id)
-                }
-                    ?: throw NotFound()
+                } ?: throw NotFound()
             }
             .also { Audit.HolidayPeriodRead.log(targetId = id) }
     }

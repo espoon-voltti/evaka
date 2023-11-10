@@ -440,14 +440,12 @@ RETURNING locked
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .exactlyOneOrNull<Boolean>()
-        ?: false
+        .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
-        .exactlyOneOrNull<Boolean>()
-        ?: false
+        .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
     return createQuery(

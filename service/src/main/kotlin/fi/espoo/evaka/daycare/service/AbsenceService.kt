@@ -113,8 +113,7 @@ fun getGroupMonthCalendar(
                     attendanceTotalHours =
                         attendances[child.id]
                             ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                            ?.let { sumOfHours(it, placementDateRanges, range) }
-                            ?: 0,
+                            ?.let { sumOfHours(it, placementDateRanges, range) } ?: 0,
                 )
             }
             .sortedWith(compareBy({ it.lastName }, { it.firstName }))

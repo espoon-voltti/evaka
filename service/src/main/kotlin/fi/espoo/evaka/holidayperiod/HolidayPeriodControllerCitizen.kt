@@ -127,8 +127,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     tx.getFixedPeriodQuestionnaire(id)?.also {
                         if (!it.active.includes(clock.today()))
                             throw BadRequest("Questionnaire is not open")
-                    }
-                        ?: throw BadRequest("Questionnaire not found")
+                    } ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren =
                         tx.getChildrenWithContinuousPlacement(
@@ -161,8 +160,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                                 absenceType = questionnaire.absenceType,
                                 questionnaireId = questionnaire.id
                             )
-                        }
-                            ?: emptySequence()
+                        } ?: emptySequence()
                     }
 
                 absences

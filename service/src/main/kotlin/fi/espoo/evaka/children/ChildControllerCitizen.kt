@@ -144,8 +144,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             placement.period.intersection(range)?.let { range ->
                                 val unitDates = operationalDays.forUnit(placement.unitId)
                                 dates.plus(unitDates.filter { date -> range.includes(date) })
-                            }
-                                ?: dates
+                            } ?: dates
                         }
                     AttendanceSummary(
                         attendanceDays = operationalDates.count() - plannedAbsences.count()

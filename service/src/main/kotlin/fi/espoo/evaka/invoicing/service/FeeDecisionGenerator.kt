@@ -450,9 +450,10 @@ FROM service_need_option WHERE default_option
                             PlacementWithServiceNeed(
                                 unitId = placement.unitId,
                                 type = placement.type,
-                                serviceNeed = serviceNeed?.second
+                                serviceNeed =
+                                    serviceNeed?.second
                                         ?: defaultServiceNeeds[placement.type]
-                                            ?: error(
+                                        ?: error(
                                             "No default service need found for type ${placement.type}"
                                         ),
                                 missingServiceNeed = serviceNeed == null

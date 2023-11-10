@@ -74,8 +74,7 @@ data class ClubFormV0(
                                     city = it.postOffice,
                                     editable = false
                                 )
-                            }
-                                ?: Address(),
+                            } ?: Address(),
                         nationality = form.child.nationality,
                         language = form.child.language,
                         hasCorrectingAddress = form.child.futureAddress != null,
@@ -87,8 +86,7 @@ data class ClubFormV0(
                                     city = it.postOffice,
                                     editable = true
                                 )
-                            }
-                                ?: Address(editable = true),
+                            } ?: Address(editable = true),
                         childMovingDate = form.child.futureAddress?.movingDate,
                         restricted = childRestricted
                     ),
@@ -105,8 +103,7 @@ data class ClubFormV0(
                                     city = it.postOffice,
                                     editable = false
                                 )
-                            }
-                                ?: Address(),
+                            } ?: Address(),
                         phoneNumber = form.guardian.phoneNumber,
                         email = form.guardian.email,
                         hasCorrectingAddress = form.guardian.futureAddress != null,
@@ -118,8 +115,7 @@ data class ClubFormV0(
                                     city = it.postOffice,
                                     editable = true
                                 )
-                            }
-                                ?: Address(editable = true),
+                            } ?: Address(editable = true),
                         guardianMovingDate = form.guardian.futureAddress?.movingDate,
                         restricted = guardianRestricted
                     ),

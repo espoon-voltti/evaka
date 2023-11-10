@@ -141,8 +141,7 @@ class PartnershipsController(
                         partnershipId
                     )
                     it.getPartnership(partnershipId)
-                }
-                    ?: throw NotFound()
+                } ?: throw NotFound()
             }
             .also { Audit.PartnerShipsRead.log(targetId = partnershipId) }
     }

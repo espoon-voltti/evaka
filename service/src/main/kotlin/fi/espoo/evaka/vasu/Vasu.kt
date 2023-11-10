@@ -341,8 +341,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
             val dateRangesAreDateRangeOptions =
                 this.dateRangeValue?.keys?.all { key ->
                     options.find { it.key == key }?.dateRange == true
-                }
-                    ?: true
+                } ?: true
             return selectedOptionsExist && datesAreDateOptions && dateRangesAreDateRangeOptions
         }
     }

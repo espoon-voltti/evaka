@@ -81,8 +81,8 @@ RETURNING origin, public_key, jwt, expires_at
             }
             .exactlyOneOrNull<VapidJwt?>()
     return savedNewToken
-    // We didn't save anything -> there must be a valid token in the db
-    ?: createQuery<Any> {
+        // We didn't save anything -> there must be a valid token in the db
+        ?: createQuery<Any> {
                 sql(
                     """
 SELECT origin, public_key, jwt, expires_at

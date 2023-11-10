@@ -93,8 +93,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 dbc.read {
                     accessControl.requirePermissionFor(it, user, clock, Action.Employee.READ, id)
                     it.getEmployee(id)
-                }
-                    ?: throw NotFound()
+                } ?: throw NotFound()
             }
             .also { Audit.EmployeeRead.log(targetId = id) }
     }
@@ -170,8 +169,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                         id
                     )
                     it.getEmployeeWithRoles(id)
-                }
-                    ?: throw NotFound("employee $id not found")
+                } ?: throw NotFound("employee $id not found")
             }
             .also { Audit.EmployeeRead.log(targetId = id) }
     }

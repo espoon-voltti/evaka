@@ -137,8 +137,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                                     PinLoginStatus.SUCCESS,
                                     Employee(it.preferredFirstName ?: it.firstName, it.lastName)
                                 )
-                            }
-                                ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                            } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                         }
                     }
                 }

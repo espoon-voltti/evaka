@@ -83,7 +83,7 @@ class ParentshipController(
         val personId =
             headOfChildId
                 ?: childId
-                    ?: error(
+                ?: error(
                     "One of parameters headOfChildId and childId should be validated not to be null"
                 )
 
@@ -133,8 +133,7 @@ class ParentshipController(
                 dbc.read {
                     accessControl.requirePermissionFor(it, user, clock, Action.Parentship.READ, id)
                     it.getParentship(id)
-                }
-                    ?: throw NotFound()
+                } ?: throw NotFound()
             }
             .also { Audit.ParentShipsRead.log(targetId = id) }
     }

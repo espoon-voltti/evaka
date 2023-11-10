@@ -97,8 +97,7 @@ class PersonController(
                             accessControl.getPermittedActions(tx, user, clock, personId)
                         )
                     }
-                }
-                    ?: throw NotFound("Person $personId not found")
+                } ?: throw NotFound("Person $personId not found")
             }
             .also { Audit.PersonDetailsRead.log(targetId = personId) }
     }
@@ -213,8 +212,7 @@ class PersonController(
                         )
                         personService.getPersonWithChildren(it, user, personId)
                     }
-                    ?.children
-                    ?: throw NotFound()
+                    ?.children ?: throw NotFound()
             }
             .also {
                 Audit.PersonDependantRead.log(targetId = personId, meta = mapOf("count" to it.size))
@@ -425,8 +423,7 @@ class PersonController(
                         )
 
                         it.getPersonById(personId)
-                    }
-                        ?: throw NotFound("Person with id $personId not found")
+                    } ?: throw NotFound("Person with id $personId not found")
 
                 if (person.ssnAddingDisabled) {
                     dbc.read {
@@ -516,8 +513,7 @@ class PersonController(
                         ExternalIdentifier.SSN.getInstance(body.ssn),
                         body.readonly
                     )
-                }
-                    ?: throw NotFound()
+                } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }
             .also { Audit.PersonDetailsRead.log(targetId = it.id) }

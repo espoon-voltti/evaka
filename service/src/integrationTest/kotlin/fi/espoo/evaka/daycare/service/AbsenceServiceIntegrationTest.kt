@@ -829,8 +829,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             result.days
                 .find { it.date == absenceDate }
                 ?.children
-                ?.find { it.childId == testChild_1.id }
-                ?: error("Day or child not found")
+                ?.find { it.childId == testChild_1.id } ?: error("Day or child not found")
 
         assertEquals(
             listOf(
@@ -882,8 +881,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             result.days
                 .find { it.date == absenceDate }
                 ?.children
-                ?.find { it.childId == testChild_1.id }
-                ?: error("Day or child not found")
+                ?.find { it.childId == testChild_1.id } ?: error("Day or child not found")
 
         assertEquals(1, child.absences.size)
     }
@@ -918,8 +916,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             result.days
                 .find { it.date == absenceDate }
                 ?.children
-                ?.find { it.childId == testChild_1.id }
-                ?: error("Day or child not found")
+                ?.find { it.childId == testChild_1.id } ?: error("Day or child not found")
         var absence = child.absences.single()
 
         val newAbsenceType = AbsenceType.UNKNOWN_ABSENCE
@@ -947,8 +944,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             result.days
                 .find { it.date == absenceDate }
                 ?.children
-                ?.find { it.childId == testChild_1.id }
-                ?: error("Day or child not found")
+                ?.find { it.childId == testChild_1.id } ?: error("Day or child not found")
         absence = child.absences.single()
 
         assertEquals(newAbsenceType, absence.absenceType)
@@ -1633,7 +1629,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertEquals(
             listOf(
                 2 + // reservation
-                6 * 8 + // first regular times (8 h), excluding the reservation
+                    6 * 8 + // first regular times (8 h), excluding the reservation
                     6 * 10 + // second regular times (10 h)
                     7 +
                     7 +

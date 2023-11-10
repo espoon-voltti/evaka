@@ -425,16 +425,14 @@ private fun getChildFamilyRelations(
         val headOfChildChildren =
             childRelationsByParent[headOfChild]
                 ?.filter { it.range.contains(range) }
-                ?.map { it.child }
-                ?: emptyList()
+                ?.map { it.child } ?: emptyList()
 
         val partnersChildren =
             childRelationsByParent
                 .takeIf { partner != null }
                 ?.get(partner)
                 ?.filter { it.range.contains(range) }
-                ?.map { it.child }
-                ?: emptyList()
+                ?.map { it.child } ?: emptyList()
 
         val isHeadOfFamily =
             determineHeadOfFamily(headOfChild to headOfChildChildren, partner to partnersChildren)

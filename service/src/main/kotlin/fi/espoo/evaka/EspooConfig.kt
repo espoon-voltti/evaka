@@ -221,8 +221,7 @@ data class EspooEnv(
                     env.lookup(
                         "espoo.integration.invoice.enabled",
                         "fi.espoo.integration.invoice.enabled"
-                    )
-                        ?: true,
+                    ) ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
                 biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
             )

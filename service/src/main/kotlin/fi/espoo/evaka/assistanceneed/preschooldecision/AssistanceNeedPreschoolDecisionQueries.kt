@@ -304,8 +304,7 @@ private fun fillInValidToForDecisionResults(
                 )
                 .takeWhile { it.id != decision.id }
                 .lastOrNull()
-                ?.validFrom
-                ?: return@map decision
+                ?.validFrom ?: return@map decision
 
         decision.copy(validTo = maxOf(decision.validFrom, followingStart.minusDays(1)))
     }

@@ -107,8 +107,7 @@ class VasuController(
                         tx.getVasuDocumentSummaries(childId) +
                             (tx.getPersonDuplicateOf(childId)?.let { duplicateId ->
                                 tx.getVasuDocumentSummaries(duplicateId)
-                            }
-                                ?: emptyList()) +
+                            } ?: emptyList()) +
                             tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
                                 tx.getVasuDocumentSummaries(duplicate.id)
                             }

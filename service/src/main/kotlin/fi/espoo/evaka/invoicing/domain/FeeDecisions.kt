@@ -350,8 +350,8 @@ fun getTotalIncome(
 ): Int? =
     when {
         headIncomeEffect == IncomeEffect.INCOME &&
-            (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) -> (headIncomeTotal
-                ?: 0) + (partnerIncomeTotal ?: 0)
+            (!hasPartner || partnerIncomeEffect == IncomeEffect.INCOME) ->
+            (headIncomeTotal ?: 0) + (partnerIncomeTotal ?: 0)
         else -> null
     }
 

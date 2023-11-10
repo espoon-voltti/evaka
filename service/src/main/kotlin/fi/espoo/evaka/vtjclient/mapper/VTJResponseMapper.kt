@@ -37,8 +37,7 @@ data class VTJResponse(
             // possible content: any of AsiakasInfo, Paluukoodi, Hakuperusteet and Henkilo
             henkiloSanoma.asiakasinfoOrPaluukoodiOrHakuperusteet
                 ?.mapNotNull { it as? VTJHenkiloVastaussanoma.Henkilo }
-                ?.firstOrNull()
-                ?: error("VTJ response did not contain results for a person")
+                ?.firstOrNull() ?: error("VTJ response did not contain results for a person")
         }
 }
 

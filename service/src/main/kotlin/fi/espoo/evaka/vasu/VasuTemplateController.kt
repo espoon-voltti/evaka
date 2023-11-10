@@ -154,8 +154,7 @@ class VasuTemplateController(private val accessControl: AccessControl) {
                         id
                     )
                     tx.getVasuTemplate(id)
-                }
-                    ?: throw NotFound("template $id not found")
+                } ?: throw NotFound("template $id not found")
             }
             .also { Audit.VasuTemplateRead.log(targetId = id) }
     }

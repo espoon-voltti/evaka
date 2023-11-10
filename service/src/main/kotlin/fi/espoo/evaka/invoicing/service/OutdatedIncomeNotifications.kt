@@ -133,8 +133,7 @@ class OutdatedIncomeNotifications(
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
-            }
-                ?: return
+            } ?: return
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
 

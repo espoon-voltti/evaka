@@ -1039,8 +1039,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             )
             .bind("accountId", accountId)
             .bind("threadId", threadId)
-            .exactlyOneOrNull<ReceivedThread>()
-            ?: throw NotFound()
+            .exactlyOneOrNull<ReceivedThread>() ?: throw NotFound()
 
     val messagesByThread =
         getThreadMessages(
@@ -1055,8 +1054,7 @@ WHERE t.id = :threadId AND tp.participant_id = :accountId
             messagesByThread
         )
         .data
-        .firstOrNull()
-        ?: throw NotFound("Thread $threadId not found")
+        .firstOrNull() ?: throw NotFound("Thread $threadId not found")
 }
 
 fun Database.Read.getMessageThreadByApplicationId(
@@ -1487,8 +1485,7 @@ fun Database.Transaction.undoNewMessages(
                     "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
                 )
             }
-        }
-        ?: throw BadRequest("No messages found with contentId $contentId")
+        } ?: throw BadRequest("No messages found with contentId $contentId")
 
     val draftContent =
         this.createQuery(

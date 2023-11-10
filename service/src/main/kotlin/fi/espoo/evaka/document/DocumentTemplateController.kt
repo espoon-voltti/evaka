@@ -164,8 +164,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.getTemplate(templateId)?.also {
                         if (it.published)
                             throw BadRequest("Cannot update contents of published template")
-                    }
-                        ?: throw NotFound("Template $templateId not found")
+                    } ?: throw NotFound("Template $templateId not found")
                     assertUniqueIds(body)
 
                     tx.updateDraftTemplateContent(templateId, body)
@@ -237,8 +236,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     )
                     tx.getTemplate(templateId)?.also {
                         if (it.published) throw BadRequest("Cannot delete published template")
-                    }
-                        ?: throw NotFound("Template $templateId not found")
+                    } ?: throw NotFound("Template $templateId not found")
 
                     tx.deleteDraftTemplate(templateId)
                 }

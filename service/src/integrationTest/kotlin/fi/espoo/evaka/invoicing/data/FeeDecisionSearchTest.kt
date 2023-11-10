@@ -409,7 +409,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             dateOfBirth = child.dateOfBirth,
             placementUnitId = placementUnit,
             placementType = PlacementType.DAYCARE,
-            serviceNeed = serviceNeed?.toFeeDecisionServiceNeed()
+            serviceNeed =
+                serviceNeed?.toFeeDecisionServiceNeed()
                     ?: FeeDecisionServiceNeed(
                         optionId = serviceNeed?.id,
                         feeCoefficient = BigDecimal.ONE,

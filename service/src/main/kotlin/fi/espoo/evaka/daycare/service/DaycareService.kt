@@ -52,8 +52,7 @@ class DaycareService {
                         "Cannot delete group which is still referred to from other data",
                         cause = e
                     )
-                }
-                ?: e
+                } ?: e
         }
 
     fun getDaycareGroups(

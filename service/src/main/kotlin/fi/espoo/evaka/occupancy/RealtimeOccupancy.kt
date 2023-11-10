@@ -82,10 +82,10 @@ data class RealtimeOccupancy(
         times.map { time ->
             OccupancyPoint(
                 time = time,
-                childCapacity = childCapacitySumSeries.lastOrNull { it.time <= time }?.capacity
-                        ?: 0.0,
-                staffCapacity = staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity
-                        ?: 0.0
+                childCapacity =
+                    childCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0,
+                staffCapacity =
+                    staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0
             )
         }
     }

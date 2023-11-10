@@ -582,8 +582,7 @@ fun Row.toInvoice() =
                         correctionId = column("correction_id")
                     )
                 )
-            }
-                ?: listOf(),
+            } ?: listOf(),
         headOfFamily = column("head_of_family"),
         codebtor = column("codebtor"),
         sentBy = column("sent_by"),
@@ -635,8 +634,7 @@ fun Row.toDetailedInvoice() =
                         note = column("correction_note")
                     )
                 )
-            }
-                ?: listOf(),
+            } ?: listOf(),
         headOfFamily =
             PersonDetailed(
                 id = column("head_of_family"),
@@ -700,8 +698,7 @@ fun Row.toInvoiceSummary() =
                         unitPrice = column("unit_price")
                     )
                 )
-            }
-                ?: listOf(),
+            } ?: listOf(),
         headOfFamily =
             PersonDetailed(
                 id = column("head_of_family"),

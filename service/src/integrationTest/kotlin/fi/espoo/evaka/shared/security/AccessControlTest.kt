@@ -52,8 +52,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
         ): Sequence<ScopedActionRule<in T>> =
             scopedRules[action as Action.ScopedAction<Any>]?.asSequence()?.let {
                 it as Sequence<ScopedActionRule<in T>>
-            }
-                ?: emptySequence()
+            } ?: emptySequence()
     }
 
     protected fun createTestCitizen(authLevel: CitizenAuthLevel) =

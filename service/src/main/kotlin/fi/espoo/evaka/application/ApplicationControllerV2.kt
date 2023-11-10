@@ -252,16 +252,16 @@ class ApplicationControllerV2(
                         sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
                         sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
                         areas = body.area?.split(",") ?: listOf(),
-                        units = body.units?.split(",")?.map { DaycareId(parseUUID(it)) }
-                                ?: listOf(),
-                        basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) }
+                        units =
+                            body.units?.split(",")?.map { DaycareId(parseUUID(it)) } ?: listOf(),
+                        basis =
+                            body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) }
                                 ?: listOf(),
                         type = body.type,
                         preschoolType =
                             body.preschoolType?.split(",")?.map {
                                 ApplicationPreschoolTypeToggle.valueOf(it)
-                            }
-                                ?: listOf(),
+                            } ?: listOf(),
                         statuses =
                             body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) }
                                 ?: listOf(),
@@ -271,13 +271,12 @@ class ApplicationControllerV2(
                         distinctions =
                             body.distinctions?.split(",")?.map {
                                 ApplicationDistinctions.valueOf(it)
-                            }
-                                ?: listOf(),
+                            } ?: listOf(),
                         periodStart = body.periodStart,
                         periodEnd = body.periodEnd,
                         searchTerms = body.searchTerms ?: "",
-                        transferApplications = body.transferApplications
-                                ?: TransferApplicationFilter.ALL,
+                        transferApplications =
+                            body.transferApplications ?: TransferApplicationFilter.ALL,
                         voucherApplications = body.voucherApplications,
                         authorizedUnitsForApplicationsWithoutAssistanceNeed =
                             authorizedUnitsForApplicationsWithoutAssistanceNeed,

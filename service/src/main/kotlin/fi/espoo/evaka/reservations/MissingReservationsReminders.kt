@@ -87,8 +87,7 @@ LIMIT 1
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
-            }
-                ?: return
+            } ?: return
 
         Email.create(
                 dbc = db,

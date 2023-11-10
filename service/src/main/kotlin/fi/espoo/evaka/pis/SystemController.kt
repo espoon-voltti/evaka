@@ -71,7 +71,7 @@ class SystemController(
                                     ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
-                                ?: error("No person found with ssn")
+                            ?: error("No person found with ssn")
                     tx.updateCitizenOnLogin(
                         clock,
                         citizen.id,

@@ -118,8 +118,7 @@ class FeeDecisionService(
                                 DateRange(it.validFrom, it.validTo),
                                 listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                             )
-                        }
-                            ?: listOf()
+                        } ?: listOf()
                     ownDecisions + partnerDecisions
                 }
                 .distinctBy { it.id }
@@ -237,8 +236,7 @@ class FeeDecisionService(
                         it.validDuring
                     )
                 it.copy(partnerIsCodebtor = partnerIsCodebtor)
-            }
-                ?: throw NotFound("No fee decision found with ID ($id)")
+            } ?: throw NotFound("No fee decision found with ID ($id)")
 
         if (!decision.documentKey.isNullOrBlank()) {
             throw Conflict("Fee decision $id has document key already!")

@@ -115,7 +115,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                         val placementType =
                                             backup?.placementType
                                                 ?: originalPlacement?.placementType
-                                                    ?: throw Error(
+                                                ?: throw Error(
                                                     "Should not happen: each child either has a placement or backup care"
                                                 )
                                         listOfNotNull(
@@ -182,8 +182,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                                     clubTerms,
                                     preschoolTerms
                                 )
-                            }
-                                ?: emptyList(),
+                            } ?: emptyList(),
                         unitServiceNeedInfo = unitServiceNeedInfo
                     )
                 }

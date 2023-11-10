@@ -443,8 +443,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         tx.getOccupancyCoefficientForEmployeeInUnit(
                             employeeId = employeeId,
                             unitId = unitId
-                        )
-                            ?: BigDecimal.ZERO
+                        ) ?: BigDecimal.ZERO
                     val pinCode = tx.getPinCode(employee.id)
                     TemporaryEmployee(
                         firstName = employee.firstName,
