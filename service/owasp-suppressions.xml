@@ -33,4 +33,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        <packageUrl regex="true">^pkg:maven/com\.pinterest\.ktlint/ktlint\-cli\-reporter\-checkstyle@.*$</packageUrl>
        <cpe>cpe:/a:checkstyle:checkstyle</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification: flyway-database-postgresql != postgresql
+       ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.flywaydb/flyway\-database\-postgresql@.*$</packageUrl>
+        <cpe>cpe:/a:postgresql:postgresql</cpe>
+    </suppress>
 </suppressions>

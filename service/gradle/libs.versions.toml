@@ -5,7 +5,7 @@
 [versions]
 bouncycastle = "1.76"
 flyingsaucer = "9.3.1"
-flyway = "9.22.1"
+flyway = "10.0.0"
 fuel = "2.3.1"
 java = "17"
 kotlin = "1.9.10"
@@ -24,6 +24,7 @@ bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref 
 flyingsaucer-core = { module = "org.xhtmlrenderer:flying-saucer-core", version.ref = "flyingsaucer" }
 flyingsaucer-pdf-openpdf = { module = "org.xhtmlrenderer:flying-saucer-pdf-openpdf", version.ref = "flyingsaucer" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 fuel = { module = "com.github.kittinunf.fuel:fuel", version.ref = "fuel" }
 fuel-jackson = { module = "com.github.kittinunf.fuel:fuel-jackson", version.ref = "fuel" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }

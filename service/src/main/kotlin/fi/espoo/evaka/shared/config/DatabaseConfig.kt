@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.db.configureJdbi
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import org.flywaydb.core.Flyway
-import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
+import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

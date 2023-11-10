@@ -38,7 +38,7 @@ import fi.espoo.voltti.auth.loadPublicKeys
 import io.opentracing.noop.NoopTracerFactory
 import javax.sql.DataSource
 import org.flywaydb.core.Flyway
-import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
+import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.test.context.TestConfiguration

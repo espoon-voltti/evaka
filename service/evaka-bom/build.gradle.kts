@@ -40,6 +40,7 @@ dependencies {
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)
         api(libs.flyway.core)
+        api(libs.flyway.database.postgresql)
         api("org.glassfish.jaxb:jaxb-runtime:4.0.1")
         api("org.jetbrains:annotations:24.0.1")
         api("org.jsoup:jsoup:1.16.1")
