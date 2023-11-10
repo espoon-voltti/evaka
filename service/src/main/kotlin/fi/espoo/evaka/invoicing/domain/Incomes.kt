@@ -36,7 +36,7 @@ data class Income(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int
-) {}
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
@@ -62,7 +62,7 @@ data class IncomeValue(
     val coefficient: IncomeCoefficient,
     val multiplier: Int,
     val monthlyAmount: Int
-) {}
+)
 
 enum class IncomeEffect {
     MAX_FEE_ACCEPTED,
