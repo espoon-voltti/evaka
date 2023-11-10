@@ -19,7 +19,8 @@ abstract class RangeBasedMap<
     T,
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedMap<T, Point, Range, This>>(protected val entries: List<Pair<Range, T>>) {
+    This : RangeBasedMap<T, Point, Range, This>
+>(protected val entries: List<Pair<Range, T>>) {
     /**
      * Returns a sequence of all ranges in the map, sorted in ascending order.
      *

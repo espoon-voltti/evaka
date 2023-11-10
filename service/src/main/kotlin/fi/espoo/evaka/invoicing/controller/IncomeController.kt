@@ -180,8 +180,7 @@ class IncomeController(
                             minOf(it.validFrom, income.validFrom),
                             maxEndDate(it.validTo, income.validTo)
                         )
-                    }
-                        ?: DateRange(income.validFrom, income.validTo)
+                    } ?: DateRange(income.validFrom, income.validTo)
 
                 asyncJobRunner.plan(
                     tx,

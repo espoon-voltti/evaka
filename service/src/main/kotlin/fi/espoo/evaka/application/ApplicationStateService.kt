@@ -915,8 +915,7 @@ class ApplicationStateService(
         return createQuery("SELECT 1 FROM preschool_term WHERE application_period @> :date")
             .bind("date", sentDate)
             .toList<Boolean>()
-            .firstOrNull()
-            ?: false
+            .firstOrNull() ?: false
     }
 
     private fun Database.Transaction.updateApplicationContents(

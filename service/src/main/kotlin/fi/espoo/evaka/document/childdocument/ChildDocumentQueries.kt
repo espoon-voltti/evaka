@@ -101,8 +101,7 @@ fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boole
     """
         )
         .bind("id", id)
-        .exactlyOneOrNull<Boolean>()
-        ?: throw NotFound("Document $id not found")
+        .exactlyOneOrNull<Boolean>() ?: throw NotFound("Document $id not found")
 }
 
 fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {

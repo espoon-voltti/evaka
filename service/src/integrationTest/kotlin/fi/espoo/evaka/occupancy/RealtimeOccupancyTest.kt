@@ -161,8 +161,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(7, 0)) }
             ?.also { assertEquals(0.0, it.childCapacity) }
             ?.also { assertEquals(7.0, it.staffCapacity) }
-            ?.also { assertEquals(0.0, it.occupancyRatio) }
-            ?: error("data point missing")
+            ?.also { assertEquals(0.0, it.occupancyRatio) } ?: error("data point missing")
 
         // 7:45, child 1 arrives
         occupancies
@@ -184,8 +183,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     (child1Capacity + child2Capacity + child3Capacity) / (7 * 1),
                     it.occupancyRatio
                 )
-            }
-            ?: error("data point missing")
+            } ?: error("data point missing")
 
         // 8:30, child 4 arrives
         occupancies
@@ -202,8 +200,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / (7 * 1),
                     it.occupancyRatio
                 )
-            }
-            ?: error("data point missing")
+            } ?: error("data point missing")
 
         // 10:00, staff 2 arrives
         occupancies
@@ -220,8 +217,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
-            }
-            ?: error("data point missing")
+            } ?: error("data point missing")
 
         // 11:00, staff 3 with zero coefficient arrives, does not affect capacities
         occupancies
@@ -238,8 +234,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
-            }
-            ?: error("data point missing")
+            } ?: error("data point missing")
 
         // 15:00, staff 3 with zero coefficient departs, does not affect capacities
         occupancies
@@ -256,8 +251,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
                     it.occupancyRatio
                 )
-            }
-            ?: error("data point missing")
+            } ?: error("data point missing")
 
         // 16:30, children 1, 2 and 4 depart
         occupancies
@@ -280,8 +274,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             .find { it.time == HelsinkiDateTime.of(date, LocalTime.of(18, 0)) }
             ?.also { assertEquals(child3Capacity, it.childCapacity) }
             ?.also { assertEquals(0.0, it.staffCapacity) }
-            ?.also { assertNull(it.occupancyRatio) }
-            ?: error("data point missing")
+            ?.also { assertNull(it.occupancyRatio) } ?: error("data point missing")
     }
 
     @Test

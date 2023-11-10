@@ -535,9 +535,7 @@ WHERE sn.placement_id = ANY(:placementIds)
                         )
                     }
                     ?: defaultServiceNeedCoefficients[placement.type]
-                        ?: error(
-                        "No occupancy coefficients found for placement type ${placement.type}"
-                    )
+                    ?: error("No occupancy coefficients found for placement type ${placement.type}")
 
             when (type) {
                 OccupancyType.REALIZED ->

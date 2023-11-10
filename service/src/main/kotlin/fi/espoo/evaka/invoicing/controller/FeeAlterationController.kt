@@ -158,8 +158,7 @@ class FeeAlterationController(
                             minOf(it.validFrom, feeAlteration.validFrom),
                             maxEndDate(it.validTo, feeAlteration.validTo)
                         )
-                    }
-                        ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                    } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
                 asyncJobRunner.plan(
                     tx,

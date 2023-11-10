@@ -265,7 +265,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             groupId = attendance.groupId,
                             arrivalTime = attendance.arrived,
                             departureTime = attendance.departed,
-                            occupancyCoefficient = occupancyCoefficients[attendance.groupId]
+                            occupancyCoefficient =
+                                occupancyCoefficients[attendance.groupId]
                                     ?: occupancyCoefficientZero,
                             type = attendance.type
                         )

@@ -118,8 +118,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         incomeStatementId,
                         includeEmployeeContent = true
                     )
-                }
-                    ?: throw NotFound("No such income statement")
+                } ?: throw NotFound("No such income statement")
             }
             .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
     }

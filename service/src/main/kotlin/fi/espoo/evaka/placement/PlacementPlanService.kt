@@ -226,8 +226,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                         } else {
                             listOf(period to type)
                         }
-                    }
-                        ?: emptyList())
+                    } ?: emptyList())
             }
             else -> {
                 check(extent is PlacementPlanExtent.FullSingle) {

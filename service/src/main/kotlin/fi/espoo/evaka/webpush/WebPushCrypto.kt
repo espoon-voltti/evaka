@@ -68,8 +68,7 @@ data class VapidJwt(
                 this.publicKey.contentEquals(it.publicKey) &&
                 this.jwt == it.jwt &&
                 this.expiresAt == it.expiresAt
-        }
-            ?: false
+        } ?: false
 
     override fun hashCode(): Int = Objects.hash(origin, publicKey.contentHashCode(), jwt, expiresAt)
 

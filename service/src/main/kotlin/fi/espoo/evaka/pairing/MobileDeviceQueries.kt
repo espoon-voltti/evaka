@@ -30,8 +30,7 @@ GROUP BY md.id, md.name, md.employee_id
 """
         )
         .bind("id", id)
-        .exactlyOneOrNull<MobileDeviceDetails>()
-        ?: throw NotFound("Device $id not found")
+        .exactlyOneOrNull<MobileDeviceDetails>() ?: throw NotFound("Device $id not found")
 }
 
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =

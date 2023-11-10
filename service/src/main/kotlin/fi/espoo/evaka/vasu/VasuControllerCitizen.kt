@@ -128,8 +128,7 @@ class VasuControllerCitizen(
                         guardianHasGivenPermissionToShare =
                             doc.basics.guardians
                                 .find { it.id.raw == user.rawId() }
-                                ?.hasGivenPermissionToShare
-                                ?: false
+                                ?.hasGivenPermissionToShare ?: false
                     )
                 }
             }

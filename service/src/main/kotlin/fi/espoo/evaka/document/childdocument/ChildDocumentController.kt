@@ -56,8 +56,7 @@ class ChildDocumentController(
                             if (!it.published || !it.validity.includes(clock.today())) {
                                 throw BadRequest("Invalid template")
                             }
-                        }
-                            ?: throw NotFound()
+                        } ?: throw NotFound()
 
                     val sameTypeAlreadyStarted =
                         tx.getChildDocuments(body.childId).any {

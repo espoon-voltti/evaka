@@ -74,8 +74,7 @@ class FamilyController(
                             totalIncome = null
                         )
                     }
-                }
-                    ?: throw NotFound("No family overview found for person $id")
+                } ?: throw NotFound("No family overview found for person $id")
             }
             .also { Audit.PisFamilyRead.log(targetId = id) }
     }

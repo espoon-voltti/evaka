@@ -90,8 +90,8 @@ class FixtureBuilder(
             person?.id
                 ?: tx.insert(
                     DevPerson(
-                        dateOfBirth = dateOfBirth
-                                ?: throw IllegalStateException("date of birth not set")
+                        dateOfBirth =
+                            dateOfBirth ?: throw IllegalStateException("date of birth not set")
                     ),
                     DevPersonType.CHILD
                 )
@@ -141,8 +141,7 @@ class FixtureBuilder(
                     absenceType = type ?: throw IllegalStateException("absence type not set"),
                     category = category
                 )
-            }
-                ?: throw IllegalStateException("care types not set")
+            } ?: throw IllegalStateException("care types not set")
 
             return childFixture
         }
@@ -376,8 +375,10 @@ class FixtureBuilder(
             tx.insertTestServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
                 placementId = placementFixture.placementId,
-                optionId = optionId
-                        ?: serviceNeedOption?.id ?: throw IllegalStateException("option not set"),
+                optionId =
+                    optionId
+                        ?: serviceNeedOption?.id
+                        ?: throw IllegalStateException("option not set"),
                 period =
                     FiniteDateRange(
                         from ?: placementFixture.placementPeriod.start,

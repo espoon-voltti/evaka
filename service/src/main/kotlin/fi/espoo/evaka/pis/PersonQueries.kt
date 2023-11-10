@@ -102,8 +102,7 @@ WHERE id = :id
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
-        .exactlyOneOrNull<Boolean>()
-        ?: false
+        .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
     createQuery(
@@ -463,8 +462,7 @@ private val toPersonDTO: Row.() -> PersonDTO = {
         identity =
             column<String?>("social_security_number")?.let { ssn ->
                 ExternalIdentifier.SSN.getInstance(ssn)
-            }
-                ?: ExternalIdentifier.NoID,
+            } ?: ExternalIdentifier.NoID,
         ssnAddingDisabled = column("ssn_adding_disabled"),
         firstName = column("first_name"),
         lastName = column("last_name"),

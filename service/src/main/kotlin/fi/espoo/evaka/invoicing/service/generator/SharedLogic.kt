@@ -45,8 +45,7 @@ fun getPlacementDetailsByChild(
                 } else {
                     serviceNeedOptions.find {
                         it.defaultOption && it.validPlacementType == placement.type
-                    }
-                        ?: throw Error("Missing default service need option for ${placement.type}")
+                    } ?: throw Error("Missing default service need option for ${placement.type}")
                 }
 
             val serviceNeedVoucherValues =
@@ -108,8 +107,7 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
     val activeDuplicate =
         activeDecisions.find {
             it.validDuring.contains(draft.validDuring) && it.contentEquals(draft)
-        }
-            ?: return false
+        } ?: return false
 
     val nonIdenticalDraftsOverlappingActive =
         drafts.filter {

@@ -117,7 +117,8 @@ class SealedSubclassSimpleName : TypeIdResolverBase() {
         private fun KClass<*>.locateRelevantSealedClass(): KClass<*> =
             when {
                 this.isRelevantSealedJsonClass() -> this
-                else -> superclasses.singleOrNull { it.isRelevantSealedJsonClass() }
+                else ->
+                    superclasses.singleOrNull { it.isRelevantSealedJsonClass() }
                         ?: error("No valid sealed superclass found for $this")
             }
 

@@ -172,8 +172,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                         incomeStatementId,
                         includeEmployeeContent = false
-                    )
-                        ?: throw NotFound("No such income statement")
+                    ) ?: throw NotFound("No such income statement")
                 }
             }
             .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
@@ -200,8 +199,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         PersonId(childId.raw),
                         incomeStatementId,
                         includeEmployeeContent = false
-                    )
-                        ?: throw NotFound("No such child income statement")
+                    ) ?: throw NotFound("No such child income statement")
                 }
             }
             .also { Audit.IncomeStatementReadOfChild.log(targetId = incomeStatementId) }

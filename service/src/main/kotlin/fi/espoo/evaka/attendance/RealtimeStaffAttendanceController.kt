@@ -88,8 +88,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                 groups = attendanceEmployeeToGroups[employeeId] ?: listOf(),
                                 firstName = data[0].firstName,
                                 lastName = data[0].lastName,
-                                currentOccupancyCoefficient = data[0].currentOccupancyCoefficient
-                                        ?: BigDecimal.ZERO,
+                                currentOccupancyCoefficient =
+                                    data[0].currentOccupancyCoefficient ?: BigDecimal.ZERO,
                                 attendances =
                                     (data + (attendancesNotInGroups[employeeId] ?: emptyList()))
                                         .map { att ->
@@ -114,8 +114,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     groups = noAttendanceEmployeeToGroups[emp.id] ?: listOf(),
                                     firstName = emp.firstName,
                                     lastName = emp.lastName,
-                                    currentOccupancyCoefficient = emp.currentOccupancyCoefficient
-                                            ?: BigDecimal.ZERO,
+                                    currentOccupancyCoefficient =
+                                        emp.currentOccupancyCoefficient ?: BigDecimal.ZERO,
                                     attendances =
                                         (attendancesNotInGroups[emp.id] ?: emptyList()).map { att ->
                                             Attendance(
@@ -222,8 +222,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             attendance.employeeId,
                                             attendance.groupId
                                         )
-                                    }
-                                        ?: BigDecimal.ZERO
+                                    } ?: BigDecimal.ZERO
                                 )
                             }
                         val staffAttendanceIds =
@@ -309,8 +308,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             .associateWith { groupId ->
                                 groupId?.let {
                                     tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
-                                }
-                                    ?: BigDecimal.ZERO
+                                } ?: BigDecimal.ZERO
                             }
                     val wholeDay =
                         HelsinkiDateTimeRange(

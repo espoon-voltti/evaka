@@ -133,8 +133,7 @@ class VoucherValueDecisionController(
                     )
                     it.getVoucherValueDecision(id)
                 }
-            }
-                ?: throw NotFound("No voucher value decision found with given ID ($id)")
+            } ?: throw NotFound("No voucher value decision found with given ID ($id)")
         Audit.VoucherValueDecisionRead.log(targetId = id)
         return Wrapper(res)
     }

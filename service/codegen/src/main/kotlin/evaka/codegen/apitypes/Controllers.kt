@@ -125,8 +125,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         val name =
                             param.getParameterAnnotation(PathVariable::class.java)?.name?.takeIf {
                                 it.isNotBlank()
-                            }
-                                ?: kotlinParam.name!!
+                            } ?: kotlinParam.name!!
                         NamedParameter(name = name, type = kotlinParam.type)
                     }
             val requestParameters =
@@ -137,8 +136,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         val name =
                             param.getParameterAnnotation(RequestParam::class.java)?.name?.takeIf {
                                 it.isNotBlank()
-                            }
-                                ?: kotlinParam.name!!
+                            } ?: kotlinParam.name!!
                         NamedParameter(name = name, type = kotlinParam.type)
                     }
             val requestBodyType =

@@ -83,8 +83,8 @@ enum class PlacementType : DatabaseEnum {
         preschoolTerms: List<PreschoolTerm>,
     ): ScheduleType =
         when (this) {
-            CLUB -> clubTerms.firstNotNullOfOrNull { it.scheduleType(date) }
-                    ?: ScheduleType.TERM_BREAK
+            CLUB ->
+                clubTerms.firstNotNullOfOrNull { it.scheduleType(date) } ?: ScheduleType.TERM_BREAK
             DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             DAYCARE_PART_TIME -> ScheduleType.RESERVATION_REQUIRED
             DAYCARE_FIVE_YEAR_OLDS -> ScheduleType.RESERVATION_REQUIRED
@@ -92,9 +92,11 @@ enum class PlacementType : DatabaseEnum {
             // Fall back to FIXED_SCHEDULE outside preschool terms for situations where placement's
             // start/end is outside the term. This might happen in Espoo if swedish terms differ
             // from finnish terms, for example.
-            PRESCHOOL -> preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
+            PRESCHOOL ->
+                preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
                     ?: ScheduleType.FIXED_SCHEDULE
-            PREPARATORY -> preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
+            PREPARATORY ->
+                preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
                     ?: ScheduleType.FIXED_SCHEDULE
             PRESCHOOL_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             PRESCHOOL_CLUB -> ScheduleType.RESERVATION_REQUIRED

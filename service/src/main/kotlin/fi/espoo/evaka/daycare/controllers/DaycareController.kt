@@ -166,8 +166,7 @@ class DaycareController(
                             accessControl.getPermittedActions(tx, user, clock, daycareId)
                         )
                     }
-                }
-                    ?: throw NotFound("daycare $daycareId not found")
+                } ?: throw NotFound("daycare $daycareId not found")
             }
             .also { Audit.UnitRead.log(targetId = daycareId) }
     }

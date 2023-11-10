@@ -174,7 +174,8 @@ data class EvakaServiceNeedInfoForVarda(
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement =
         VardaPlacement(
             varhaiskasvatuspaatos = vardaDecisionUrl,
-            toimipaikka_oid = this.ophUnitOid
+            toimipaikka_oid =
+                this.ophUnitOid
                     ?: error(
                         "VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"
                     ),

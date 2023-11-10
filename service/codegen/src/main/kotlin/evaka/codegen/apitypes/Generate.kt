@@ -182,7 +182,7 @@ private fun isIgnored(prop: KProperty1<out Any, *>): Boolean {
     val jsonIgnore =
         prop.findAnnotation<JsonIgnore>()
             ?: prop.javaField?.getAnnotation(JsonIgnore::class.java)
-                ?: prop.getter.findAnnotation<JsonIgnore>()
+            ?: prop.getter.findAnnotation<JsonIgnore>()
     return jsonIgnore != null
 }
 

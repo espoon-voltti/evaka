@@ -249,7 +249,8 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
         DailyServiceTimesType.REGULAR ->
             DailyServiceTimesValue.RegularTimes(
                     validityPeriod = row.validityPeriod,
-                    regularTimes = row.regularTimes
+                    regularTimes =
+                        row.regularTimes
                             ?: throw IllegalStateException(
                                 "Regular daily service times must have regular times"
                             )

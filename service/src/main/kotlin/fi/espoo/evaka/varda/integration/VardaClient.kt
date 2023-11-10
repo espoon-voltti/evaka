@@ -479,8 +479,7 @@ class VardaClient(
                             when {
                                 jsonMapper.readTree(r.third.error.errorData).get("errors")?.any {
                                     it.get("error_code").asText() == "PE007"
-                                }
-                                    ?: false -> {
+                                } ?: false -> {
                                     logger.info(
                                         "Varda API token invalid. Refreshing token and retrying original request."
                                     )

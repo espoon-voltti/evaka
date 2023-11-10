@@ -394,9 +394,11 @@ private fun getAttendanceReservationReport(
                     daycare.type.any {
                         listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
                     } -> familyUnitPlacementCoefficient.toDouble()
-                    childAgeYears < 3 -> serviceNeed?.occupancyCoefficientUnder
+                    childAgeYears < 3 ->
+                        serviceNeed?.occupancyCoefficientUnder
                             ?: placementInfo.occupancyCoefficientUnder
-                    else -> serviceNeed?.occupancyCoefficientOver
+                    else ->
+                        serviceNeed?.occupancyCoefficientOver
                             ?: placementInfo.occupancyCoefficientOver
                 }
             val assistanceNeedFactor =

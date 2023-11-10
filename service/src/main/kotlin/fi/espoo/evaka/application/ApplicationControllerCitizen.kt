@@ -525,8 +525,7 @@ class ApplicationControllerCitizen(
                             id
                         )
                         tx.getSentDecision(id)
-                    }
-                        ?: throw NotFound("Decision $id does not exist")
+                    } ?: throw NotFound("Decision $id does not exist")
                 decisionService.getDecisionPdf(dbc, decision)
             }
             .also { Audit.DecisionDownloadPdf.log(targetId = id) }

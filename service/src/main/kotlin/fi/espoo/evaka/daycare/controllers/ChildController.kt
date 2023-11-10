@@ -61,8 +61,7 @@ class ChildController(
                                         Action.Person.READ_OPH_OID,
                                         childId
                                     )
-                            )
-                            ?: throw NotFound("Child $childId not found")
+                            ) ?: throw NotFound("Child $childId not found")
                     ChildResponse(
                         person = PersonJSON.from(child),
                         permittedActions =

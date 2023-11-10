@@ -192,8 +192,7 @@ class VoucherValueDecisionService(
                         DateRange(it.validFrom, it.validTo)
                     )
             )
-        }
-            ?: error("No voucher value decision found with ID ($decisionId)")
+        } ?: error("No voucher value decision found with ID ($decisionId)")
 
     private fun generatePdf(
         decision: VoucherValueDecisionDetailed,

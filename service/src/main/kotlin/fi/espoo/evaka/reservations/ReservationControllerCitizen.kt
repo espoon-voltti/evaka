@@ -148,10 +148,10 @@ class ReservationControllerCitizen(
                                                                 placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
                                                             absence = absences[key],
-                                                            reservations = reservations[key]
-                                                                    ?: listOf(),
-                                                            attendances = attendances[key]
-                                                                    ?: listOf(),
+                                                            reservations =
+                                                                reservations[key] ?: listOf(),
+                                                            attendances =
+                                                                attendances[key] ?: listOf(),
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange
                                                         )
@@ -254,8 +254,7 @@ class ReservationControllerCitizen(
                     val childContractDays =
                         body.dateRange.intersection(reservableRange)?.let { range ->
                             tx.getReservationContractDayRanges(body.childIds, range)
-                        }
-                            ?: emptyMap()
+                        } ?: emptyMap()
 
                     val deleted =
                         tx.clearOldCitizenEditableAbsences(

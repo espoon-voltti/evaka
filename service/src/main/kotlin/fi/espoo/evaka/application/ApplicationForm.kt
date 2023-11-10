@@ -163,8 +163,7 @@ data class ApplicationForm(
                                         lastName = it.lastName,
                                         socialSecurityNumber = it.socialSecurityNumber
                                     )
-                                }
-                                ?: emptyList(),
+                                } ?: emptyList(),
                         preferences =
                             Preferences(
                                 preferredUnits =
@@ -182,13 +181,11 @@ data class ApplicationForm(
                                             startTime =
                                                 v0.serviceStart?.format(
                                                     DateTimeFormatter.ofPattern("HH:mm")
-                                                )
-                                                    ?: "",
+                                                ) ?: "",
                                             endTime =
                                                 v0.serviceEnd?.format(
                                                     DateTimeFormatter.ofPattern("HH:mm")
-                                                )
-                                                    ?: "",
+                                                ) ?: "",
                                             shiftCare = v0.extendedCare,
                                             partTime = v0.partTime,
                                             serviceNeedOption =

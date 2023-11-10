@@ -18,7 +18,8 @@ package fi.espoo.evaka.shared.data
 abstract class RangeBasedSet<
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedSet<Point, Range, This>>(protected val ranges: List<Range>) {
+    This : RangeBasedSet<Point, Range, This>
+>(protected val ranges: List<Range>) {
     /** Returns a sequence of all non-adjacent ranges in the set, sorted in ascending order */
     fun ranges(): Sequence<Range> = this.ranges.asSequence()
 

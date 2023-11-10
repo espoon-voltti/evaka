@@ -98,8 +98,7 @@ class ScheduledJobRunner(
         val definition =
             schedules.firstNotNullOfOrNull { schedule ->
                 schedule.jobs.find { it.job.name == msg.job }
-            }
-                ?: error("Can't run unknown job ${msg.job}")
+            } ?: error("Can't run unknown job ${msg.job}")
         val logMeta = mapOf("jobName" to msg.job)
         logger.info(logMeta) { "Running scheduled job ${msg.job}" }
         tracer.withSpan("scheduledjob ${msg.job}") { definition.jobFn(db, clock) }

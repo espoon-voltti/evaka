@@ -147,8 +147,7 @@ AND notification.device = ${bind(device)}
                         )
                     }
                     ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
-            }
-                ?: return
+            } ?: return
         dbc.close()
 
         logger.info(mapOf("endpoint" to notification.endpoint.uri)) {

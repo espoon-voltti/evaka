@@ -110,8 +110,7 @@ class MessageNotificationEmailService(
                 } else {
                     tx.getMessageThreadStub(msg.threadId)
                 }
-            }
-                ?: return
+            } ?: return
 
         Email.create(
                 dbc = db,

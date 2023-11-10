@@ -293,8 +293,7 @@ class FeeDecisionController(
                     )
                     it.getFeeDecision(uuid)
                 }
-            }
-                ?: throw NotFound("No fee decision found with given ID ($uuid)")
+            } ?: throw NotFound("No fee decision found with given ID ($uuid)")
         Audit.FeeDecisionRead.log(targetId = uuid)
         return Wrapper(res)
     }

@@ -602,7 +602,6 @@ class MessageController(
                     )
                 it.getEmployeeMessageAccountIds(filter)
             }
-            .find { it == accountId }
-            ?: throw Forbidden("Message account not found for user")
+            .find { it == accountId } ?: throw Forbidden("Message account not found for user")
     }
 }

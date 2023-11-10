@@ -403,8 +403,7 @@ private fun generateDecisionPages(
                     DecisionType.PREPARATORY_EDUCATION ->
                         decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
                     else -> null
-                }
-                    ?: decision.unit.name
+                } ?: decision.unit.name
             )
             setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
             setVariable("decisionMakerTitle", settings[SettingType.DECISION_MAKER_TITLE])
