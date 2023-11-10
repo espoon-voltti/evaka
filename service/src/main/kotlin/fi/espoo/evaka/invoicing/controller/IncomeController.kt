@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
 import java.util.UUID
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -47,7 +48,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/incomes")
@@ -80,7 +80,13 @@ class IncomeController(
                         personId
                     )
 
-                    val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, personId)
+                    val incomes =
+                        tx.getIncomesForPerson(
+                            mapper,
+                            incomeTypesProvider,
+                            coefficientMultiplierProvider,
+                            personId
+                        )
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
                             tx,
@@ -171,7 +177,13 @@ class IncomeController(
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
-                val existing = tx.getIncome(mapper, incomeTypesProvider, coefficientMultiplierProvider, incomeId)
+                val existing =
+                    tx.getIncome(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        incomeId
+                    )
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome =
                     validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
@@ -222,8 +234,12 @@ class IncomeController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
 
                 val existing =
-                    tx.getIncome(mapper, incomeTypesProvider, coefficientMultiplierProvider, incomeId)
-                        ?: throw BadRequest("Income not found")
+                    tx.getIncome(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        incomeId
+                    ) ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
 
                 existing.attachments.map {
@@ -269,10 +285,17 @@ class IncomeController(
     ): Map<IncomeCoefficient, BigDecimal> {
         db.connect { dbc ->
             dbc.read {
-                accessControl.requirePermissionFor(it, user, clock, Action.Global.READ_INCOME_COEFFICIENT_MULTIPLIERS)
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.READ_INCOME_COEFFICIENT_MULTIPLIERS
+                )
             }
         }
-        return IncomeCoefficient.values().associateWith { coefficientMultiplierProvider.multiplier(it) }
+        return IncomeCoefficient.values().associateWith {
+            coefficientMultiplierProvider.multiplier(it)
+        }
     }
 
     @GetMapping("/notifications")

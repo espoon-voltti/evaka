@@ -62,15 +62,21 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun testIncome(): Income {
-        val data = mapOf(
-            "MAIN_INCOME" to
+        val data =
+            mapOf(
+                "MAIN_INCOME" to
                     IncomeValue(
                         500000,
                         IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                         1,
-                        calculateMonthlyAmount(500000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                        calculateMonthlyAmount(
+                            500000,
+                            coefficientMultiplierProvider.multiplier(
+                                IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                            )
+                        )
                     )
-        )
+            )
         return Income(
             id = IncomeId(UUID.randomUUID()),
             personId = testAdult_1.id,
@@ -82,7 +88,6 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
             totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
             total = calculateIncomeTotal(data, coefficientMultiplierProvider)
-
         )
     }
 
@@ -195,7 +200,12 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testAdult_1.id)
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    testAdult_1.id
+                )
             }
 
         assertEquals(2, result.size)
@@ -278,7 +288,15 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(income.copy(data = emptyMap(), updatedBy = financeUserName, totalIncome = 0, totalExpenses = 0, total = 0)),
+            listOf(
+                income.copy(
+                    data = emptyMap(),
+                    updatedBy = financeUserName,
+                    totalIncome = 0,
+                    totalExpenses = 0,
+                    total = 0
+                )
+            ),
             deserializeResult(result.get())
         )
     }
@@ -288,15 +306,21 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val testIncome = testIncome()
         db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
 
-        val newIncomeData = mapOf(
-            "MAIN_INCOME" to
+        val newIncomeData =
+            mapOf(
+                "MAIN_INCOME" to
                     IncomeValue(
                         1000,
                         IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                         1,
-                        calculateMonthlyAmount(1000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                        calculateMonthlyAmount(
+                            1000,
+                            coefficientMultiplierProvider.multiplier(
+                                IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                            )
+                        )
                     )
-        )
+            )
         val updated =
             testIncome.copy(
                 data = newIncomeData,
@@ -383,7 +407,15 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            listOf(updated.copy(data = emptyMap(), updatedBy = financeUserName, totalIncome = 0, totalExpenses = 0, total = 0)),
+            listOf(
+                updated.copy(
+                    data = emptyMap(),
+                    updatedBy = financeUserName,
+                    totalIncome = 0,
+                    totalExpenses = 0,
+                    total = 0
+                )
+            ),
             deserializeResult(result.get())
         )
     }
@@ -443,7 +475,12 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val resultBeforeDelete =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testIncome.personId)
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    testIncome.personId
+                )
             }
 
         assertEquals(2, resultBeforeDelete.size)
@@ -455,7 +492,12 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val resultAfterDelete =
             db.transaction { tx ->
-                tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, testIncome.personId)
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    testIncome.personId
+                )
             }
 
         assertEquals(1, resultAfterDelete.size)

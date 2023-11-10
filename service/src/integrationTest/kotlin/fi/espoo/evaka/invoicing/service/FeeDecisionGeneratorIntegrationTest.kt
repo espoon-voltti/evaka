@@ -114,7 +114,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired private lateinit var parentshipController: ParentshipController
     @Autowired private lateinit var partnershipsController: PartnershipsController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    @Autowired
+    private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     @BeforeEach
     fun beforeEach() {
@@ -3892,7 +3893,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     amount,
                                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                     1,
-                                    calculateMonthlyAmount(amount, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS)))
+                                    calculateMonthlyAmount(
+                                        amount,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
+                                )
                         ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )

@@ -25,34 +25,71 @@ fun validateFinanceDecisionHandler(tx: Database.Read, decisionHandlerId: Employe
             ?: throw NotFound("Decision handler $decisionHandlerId not found")
     if (
         employee.globalRoles.isEmpty() ||
-        employee.globalRoles.all { role -> !FINANCE_DECISION_HANDLER_ROLES.contains(role) }
+            employee.globalRoles.all { role -> !FINANCE_DECISION_HANDLER_ROLES.contains(role) }
     ) {
         throw BadRequest("Decision handler $decisionHandlerId is not finance admin")
     }
 }
 
-fun mapIncomeToDecisionIncome(income: Income, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): DecisionIncome =
+fun mapIncomeToDecisionIncome(
+    income: Income,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+): DecisionIncome =
     DecisionIncome(
         effect = income.effect,
-        data = income.data.mapValues { (_, value) -> calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient)) },
+        data =
+            income.data.mapValues { (_, value) ->
+                calculateMonthlyAmount(
+                    value.amount,
+                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                )
+            },
         totalIncome = calculateTotalIncome(income.data, coefficientMultiplierProvider),
         totalExpenses = calculateTotalExpense(income.data, coefficientMultiplierProvider),
         total = calculateIncomeTotal(income.data, coefficientMultiplierProvider),
         worksAtECHA = income.worksAtECHA
     )
 
-fun calculateIncomeTotal(data: Map<String, IncomeValue>, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): Int =
-    data.entries.sumOf { (_, value) -> value.multiplier * calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient)) }
+fun calculateIncomeTotal(
+    data: Map<String, IncomeValue>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+): Int =
+    data.entries.sumOf { (_, value) ->
+        value.multiplier *
+            calculateMonthlyAmount(
+                value.amount,
+                coefficientMultiplierProvider.multiplier(value.coefficient)
+            )
+    }
 
-fun calculateTotalIncome(data: Map<String, IncomeValue>, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): Int =
+fun calculateTotalIncome(
+    data: Map<String, IncomeValue>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+): Int =
     data.entries
         .filter { (_, value) -> value.multiplier > 0 }
-        .sumOf { (_, value) -> value.multiplier * calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient)) }
+        .sumOf { (_, value) ->
+            value.multiplier *
+                calculateMonthlyAmount(
+                    value.amount,
+                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                )
+        }
 
-fun calculateTotalExpense(data: Map<String, IncomeValue>, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): Int =
+fun calculateTotalExpense(
+    data: Map<String, IncomeValue>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+): Int =
     data.entries
         .filter { (_, value) -> value.multiplier < 0 }
-        .sumOf { (_, value) -> -1 * value.multiplier * calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient)) }
+        .sumOf { (_, value) ->
+            -1 *
+                value.multiplier *
+                calculateMonthlyAmount(
+                    value.amount,
+                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                )
+        }
 
 fun calculateMonthlyAmount(amount: Int, multiplier: BigDecimal): Int =
     (BigDecimal(amount) * multiplier).setScale(0, RoundingMode.HALF_UP).toInt()

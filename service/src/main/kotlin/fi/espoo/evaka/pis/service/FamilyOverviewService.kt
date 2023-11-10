@@ -88,7 +88,13 @@ ORDER BY date_of_birth ASC
             tx.createQuery(sql)
                 .bind("today", clock.today())
                 .bind("id", adultId)
-                .map { toFamilyOverviewPerson(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider) }
+                .map {
+                    toFamilyOverviewPerson(
+                        jsonMapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider
+                    )
+                }
                 .useIterable { rows -> rows.partition { it.headOfChild == null } }
 
         if (adults.isEmpty()) {
@@ -176,7 +182,15 @@ fun Row.toFamilyOverviewPerson(
                 effect = column("income_effect"),
                 total =
                     column<String?>("income_data")?.let {
-                        calculateIncomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get(), coefficientMultiplierProvider), coefficientMultiplierProvider)
+                        calculateIncomeTotal(
+                            parseIncomeDataJson(
+                                it,
+                                jsonMapper,
+                                incomeTypesProvider.get(),
+                                coefficientMultiplierProvider
+                            ),
+                            coefficientMultiplierProvider
+                        )
                     }
             )
     )

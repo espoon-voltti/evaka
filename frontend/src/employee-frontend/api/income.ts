@@ -5,6 +5,7 @@
 import partition from 'lodash/partition'
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
+import { IncomeCoefficient } from 'lib-common/api-types/income'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -19,7 +20,6 @@ import {
 } from '../types/income'
 
 import { client } from './client'
-import { IncomeCoefficient } from 'lib-common/api-types/income'
 
 export async function getIncomes(
   personId: UUID

@@ -13,8 +13,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 
@@ -38,9 +36,7 @@ data class Income(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int
-) {
-
-}
+) {}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DecisionIncome(
@@ -66,8 +62,7 @@ data class IncomeValue(
     val coefficient: IncomeCoefficient,
     val multiplier: Int,
     val monthlyAmount: Int
-) {
-}
+) {}
 
 enum class IncomeEffect {
     MAX_FEE_ACCEPTED,

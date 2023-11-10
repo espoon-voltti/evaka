@@ -328,7 +328,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, guardianId) }.size
+            db.read {
+                    it.getIncomesForPerson(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        guardianId
+                    )
+                }
+                .size
         )
 
         assertEquals(0, getEmails().size)
@@ -373,7 +381,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, guardianId) }.size
+            db.read {
+                    it.getIncomesForPerson(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        guardianId
+                    )
+                }
+                .size
         )
     }
 
@@ -449,7 +465,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
         assertEquals(0, getEmails().size)
 
-        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, guardianId) }
+        val incomes =
+            db.read {
+                it.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    guardianId
+                )
+            }
         assertEquals(2, incomes.size)
         assertEquals(IncomeEffect.INCOMPLETE, incomes[0].effect)
         val firstDayAfterExpiration = clock.today().plusDays(1)

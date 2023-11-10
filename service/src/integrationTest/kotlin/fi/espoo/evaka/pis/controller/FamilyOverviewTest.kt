@@ -184,7 +184,12 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                     incomeTotal,
                                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                     1,
-                                    calculateMonthlyAmount(incomeTotal, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                                    calculateMonthlyAmount(
+                                        incomeTotal,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
                                 )
                         ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)

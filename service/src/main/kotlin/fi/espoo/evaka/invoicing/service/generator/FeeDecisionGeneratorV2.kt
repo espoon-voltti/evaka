@@ -137,7 +137,13 @@ private fun getFeeBases(
     val allPersonIds = listOf(targetAdultId) + allPartnerIds + allChildIds
 
     val incomesByPerson =
-        tx.getIncomesFrom(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider, allPersonIds, minDate)
+        tx.getIncomesFrom(
+                jsonMapper,
+                incomeTypesProvider,
+                coefficientMultiplierProvider,
+                allPersonIds,
+                minDate
+            )
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {

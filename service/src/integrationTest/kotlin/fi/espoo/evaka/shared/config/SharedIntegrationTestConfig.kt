@@ -187,7 +187,9 @@ class SharedIntegrationTestConfig {
 
     @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
-    @Bean fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
+    @Bean
+    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
+        EspooIncomeCoefficientMultiplierProvider()
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 

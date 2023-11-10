@@ -7,7 +7,7 @@ fun interface IncomeCoefficientMultiplierProvider {
     fun multiplier(coefficient: IncomeCoefficient): BigDecimal
 }
 
-class EspooIncomeCoefficientMultiplierProvider: IncomeCoefficientMultiplierProvider {
+class EspooIncomeCoefficientMultiplierProvider : IncomeCoefficientMultiplierProvider {
 
     override fun multiplier(coefficient: IncomeCoefficient): BigDecimal =
         when (coefficient) {

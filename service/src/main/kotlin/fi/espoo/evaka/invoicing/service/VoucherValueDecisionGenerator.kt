@@ -68,7 +68,14 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val prices = getFeeThresholds(from)
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
-    val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider, adults + child.id, from)
+    val incomes =
+        getIncomesFrom(
+            jsonMapper,
+            incomeTypesProvider,
+            coefficientMultiplierProvider,
+            adults + child.id,
+            from
+        )
     val assistanceNeedCoefficients =
         if (featureConfig.valueDecisionCapacityFactorEnabled) {
             getCapacityFactorsByChild(child.id).map {
@@ -210,8 +217,8 @@ private fun generateNewValueDecisions(
                         family.headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    //?.toDecisionIncome()
-                    ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
+                    // ?.toDecisionIncome()
+                    ?.let { inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
 
             val childIncome =
                 incomes
@@ -220,8 +227,8 @@ private fun generateNewValueDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                             it.effect == IncomeEffect.INCOME
                     }
-                    //?.toDecisionIncome()
-                    ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)}
+                    // ?.toDecisionIncome()
+                    ?.let { inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider) }
 
             val partnerIncome =
                 family.partner?.let { partner ->
@@ -230,8 +237,10 @@ private fun generateNewValueDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        //?.toDecisionIncome()
-                        ?.let{inc -> mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)}
+                        // ?.toDecisionIncome()
+                        ?.let { inc ->
+                            mapIncomeToDecisionIncome(inc, coefficientMultiplierProvider)
+                        }
                 }
 
             val assistanceNeedCoefficient =
@@ -261,7 +270,7 @@ private fun generateNewValueDecisions(
                 val voucherValue =
                     if (
                         placement == null ||
-                        serviceVoucherUnits.none { unit -> unit == placement.unitId }
+                            serviceVoucherUnits.none { unit -> unit == placement.unitId }
                     ) {
                         null
                     } else {
@@ -296,8 +305,8 @@ private fun generateNewValueDecisions(
                         .sortedWith(
                             compareByDescending<Pair<PersonBasic, PlacementWithServiceNeed>> {
                                     (child, _) ->
-                                child.dateOfBirth
-                            }
+                                    child.dateOfBirth
+                                }
                                 .thenByDescending { (child, _) -> child.ssn }
                                 .thenBy { (child, _) -> child.id }
                         )

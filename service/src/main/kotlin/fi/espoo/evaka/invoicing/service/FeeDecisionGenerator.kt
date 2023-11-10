@@ -69,7 +69,13 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val childIds = children.map { it.id }
 
     val allIncomes =
-        getIncomesFrom(jsonMapper, incomeTypesProvider, coefficientMultiplierProvider, partnerIds + headOfFamily + childIds, from)
+        getIncomesFrom(
+            jsonMapper,
+            incomeTypesProvider,
+            coefficientMultiplierProvider,
+            partnerIds + headOfFamily + childIds,
+            from
+        )
 
     val adultIncomes = allIncomes.filter { (partnerIds + headOfFamily).contains(it.personId) }
     val childIncomes =
@@ -258,8 +264,10 @@ private fun generateFeeDecisions(
                         headOfFamily == it.personId &&
                             DateRange(it.validFrom, it.validTo).contains(period)
                     }
-                    //?.toDecisionIncome()
-                    ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
+                    // ?.toDecisionIncome()
+                    ?.let { income ->
+                        mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
+                    }
 
             val partnerIncome =
                 family.partner?.let { partner ->
@@ -268,8 +276,10 @@ private fun generateFeeDecisions(
                             partner == it.personId &&
                                 DateRange(it.validFrom, it.validTo).contains(period)
                         }
-                        //?.toDecisionIncome()
-                        ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
+                        // ?.toDecisionIncome()
+                        ?.let { income ->
+                            mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
+                        }
                 }
 
             val childPeriodIncome =
@@ -279,8 +289,10 @@ private fun generateFeeDecisions(
                             DateRange(it.validFrom, it.validTo).contains(period) &&
                                 it.effect == IncomeEffect.INCOME
                         }
-                        //?.toDecisionIncome()
-                        ?.let{income -> mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)}
+                        // ?.toDecisionIncome()
+                        ?.let { income ->
+                            mapIncomeToDecisionIncome(income, coefficientMultiplierProvider)
+                        }
                 }
 
             val validPlacements =

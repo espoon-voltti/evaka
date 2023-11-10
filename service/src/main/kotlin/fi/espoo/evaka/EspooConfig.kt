@@ -145,7 +145,9 @@ class EspooConfig {
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
-    @Bean fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
+    @Bean
+    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
+        EspooIncomeCoefficientMultiplierProvider()
 
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 

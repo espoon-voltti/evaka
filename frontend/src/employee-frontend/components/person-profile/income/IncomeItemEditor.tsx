@@ -227,14 +227,17 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
     [prevValidFrom]
   )
 
-  const setIncomeData = useCallback((data: IncomeTableData) => {
-    const [updatedData, isValid] = updateIncomeData(
-      data,
-      coefficientMultipliers
-    )
-    setEditedIncome((prev) => ({ ...prev, data: updatedData }))
-    setValidationErrors((prev) => ({ ...prev, data: !isValid }))
-  }, [])
+  const setIncomeData = useCallback(
+    (data: IncomeTableData) => {
+      const [updatedData, isValid] = updateIncomeData(
+        data,
+        coefficientMultipliers
+      )
+      setEditedIncome((prev) => ({ ...prev, data: updatedData }))
+      setValidationErrors((prev) => ({ ...prev, data: !isValid }))
+    },
+    [coefficientMultipliers]
+  )
 
   const setValidationResult = useCallback(
     (isValid: boolean) =>

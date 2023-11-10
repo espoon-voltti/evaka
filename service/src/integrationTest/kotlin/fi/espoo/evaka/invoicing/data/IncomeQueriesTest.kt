@@ -7,9 +7,9 @@ package fi.espoo.evaka.invoicing.data
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
-import fi.espoo.evaka.invoicing.calculateTotalIncome
-import fi.espoo.evaka.invoicing.calculateTotalExpense
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
+import fi.espoo.evaka.invoicing.calculateTotalExpense
+import fi.espoo.evaka.invoicing.calculateTotalIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -45,14 +45,21 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val personId = testAdult_1.id
     private val user = AuthenticatedUser.SystemInternalUser
-    private val testIncomeData = mapOf(
-        "MAIN_INCOME" to
+    private val testIncomeData =
+        mapOf(
+            "MAIN_INCOME" to
                 IncomeValue(
                     500000,
                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                     1,
-                    calculateMonthlyAmount(500000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS)))
-    )
+                    calculateMonthlyAmount(
+                        500000,
+                        coefficientMultiplierProvider.multiplier(
+                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                        )
+                    )
+                )
+        )
     private val testIncome =
         Income(
             id = IncomeId(UUID.randomUUID()),
@@ -141,7 +148,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `getIncome with no income`() {
         db.transaction { tx ->
-            val result = tx.getIncome(mapper, incomeTypesProvider, coefficientMultiplierProvider, IncomeId(UUID.randomUUID()))
+            val result =
+                tx.getIncome(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    IncomeId(UUID.randomUUID())
+                )
 
             assertNull(result)
         }
@@ -152,7 +165,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.getIncome(mapper, incomeTypesProvider, coefficientMultiplierProvider, testIncome.id!!)
+            val result =
+                tx.getIncome(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    testIncome.id!!
+                )
 
             assertNotNull(result)
         }
@@ -163,7 +182,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, personId)
+            val result =
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    personId
+                )
 
             assertEquals(1, result.size)
         }
@@ -198,7 +223,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
 
-            val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, personId)
+            val result =
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    personId
+                )
 
             assertEquals(3, result.size)
         }
@@ -214,17 +245,28 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     data =
                         mapOf(
                             "MAIN_INCOME" to
-                                    IncomeValue(
+                                IncomeValue(
+                                    1000,
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    1,
+                                    calculateMonthlyAmount(
                                         1000,
-                                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                                        1,
-                                        calculateMonthlyAmount(1000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
                                     )
+                                )
                         )
                 )
             tx.upsertIncome(clock, mapper, updated, user.evakaUserId)
 
-            val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, personId)
+            val result =
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    personId
+                )
 
             assertEquals(1, result.size)
             assertEquals(1000, result.first().total)
@@ -289,15 +331,21 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.upsertIncome(clock, mapper, secondIncome, user.evakaUserId)
             tx.upsertIncome(clock, mapper, thirdIncome, user.evakaUserId)
 
-            val newData = mapOf(
-                "MAIN_INCOME" to
+            val newData =
+                mapOf(
+                    "MAIN_INCOME" to
                         IncomeValue(
                             10000,
                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                             1,
-                            calculateMonthlyAmount(10000, coefficientMultiplierProvider.multiplier(IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS))
+                            calculateMonthlyAmount(
+                                10000,
+                                coefficientMultiplierProvider.multiplier(
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                )
+                            )
                         )
-            )
+                )
             val updated =
                 testIncome.copy(
                     data = newData,
@@ -305,7 +353,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.upsertIncome(clock, mapper, updated, user.evakaUserId)
 
-            val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, coefficientMultiplierProvider, personId)
+            val result =
+                tx.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    personId
+                )
 
             assertEquals(thirdIncome.total, result[0].total)
             assertEquals(secondIncome.total, result[1].total)

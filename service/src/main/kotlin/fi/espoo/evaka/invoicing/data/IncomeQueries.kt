@@ -122,7 +122,9 @@ fun Database.Read.getIncome(
                 .trimIndent()
         )
         .bind("id", id)
-        .exactlyOneOrNull { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        .exactlyOneOrNull {
+            toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
+        }
 }
 
 fun Database.Read.getIncomesForPerson(
@@ -208,8 +210,13 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
     handlingExceptions { update.execute() }
 }
 
-fun Row.toIncome(mapper: JsonMapper, incomeTypes: Map<String, IncomeType>, coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider): Income {
-    val data = parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
+fun Row.toIncome(
+    mapper: JsonMapper,
+    incomeTypes: Map<String, IncomeType>,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+): Income {
+    val data =
+        parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
     return Income(
         id = column<IncomeId>("id"),
         personId = column("person_id"),
@@ -239,7 +246,11 @@ fun parseIncomeDataJson(
     return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
         value.copy(
             multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"),
-            monthlyAmount = calculateMonthlyAmount(value.amount, coefficientMultiplierProvider.multiplier(value.coefficient))
+            monthlyAmount =
+                calculateMonthlyAmount(
+                    value.amount,
+                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                )
         )
     }
 }
