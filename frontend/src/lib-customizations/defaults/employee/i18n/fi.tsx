@@ -3617,7 +3617,9 @@ export const fi = {
       uploadToKoski: 'Koski',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       costCenter: 'Kustannuspaikka',
-      unitManagerName: 'Yksikön johtaja'
+      address: 'Käyntiosoite',
+      unitManagerName: 'Yksikön johtaja',
+      unitManagerPhone: 'Johtajan puh.'
     },
     childrenInDifferentAddress: {
       title: 'Lapsi eri osoitteessa',

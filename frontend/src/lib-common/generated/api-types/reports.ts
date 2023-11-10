@@ -794,6 +794,7 @@ export type UnitType =
 * Generated from fi.espoo.evaka.reports.UnitsReportRow
 */
 export interface UnitsReportRow {
+  address: string
   careAreaName: string
   careTypeCentre: boolean
   careTypeClub: boolean
@@ -810,6 +811,7 @@ export interface UnitsReportRow {
   preschoolApply: boolean
   providerType: ProviderType
   unitManagerName: string
+  unitManagerPhone: string
   uploadChildrenToVarda: boolean
   uploadToKoski: boolean
   uploadToVarda: boolean
