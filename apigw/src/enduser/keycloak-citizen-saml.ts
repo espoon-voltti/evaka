@@ -12,7 +12,7 @@ const Profile = z.object({
   socialSecurityNumber: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-  keycloakEmail: z.string()
+  email: z.string()
 })
 
 export function createKeycloakCitizenSamlStrategy(
