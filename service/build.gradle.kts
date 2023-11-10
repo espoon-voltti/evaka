@@ -83,6 +83,7 @@ dependencies {
     // Database-related dependencies
     implementation("com.zaxxer:HikariCP")
     implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.postgresql:postgresql")
 
     // JDBI
