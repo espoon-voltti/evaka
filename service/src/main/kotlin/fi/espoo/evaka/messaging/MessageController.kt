@@ -80,7 +80,7 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMyAccountsRead.log(meta = mapOf("count" to it.size)) }
+            .also { Audit.MessagingMyAccountsRead.log(targetId = it) }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -113,12 +113,7 @@ class MessageController(
                     } else listOf()
                 }
             }
-            .also {
-                Audit.MessagingMyAccountsRead.log(
-                    targetId = unitId,
-                    meta = mapOf("count" to it.size)
-                )
-            }
+            .also { Audit.MessagingMyAccountsRead.log(targetId = unitId, objectId = it) }
     }
 
     @GetMapping("/{accountId}/received")
@@ -199,7 +194,7 @@ class MessageController(
                 dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
             }
             .also {
-                Audit.MessagingReceivedMessagesRead.log(
+                Audit.MessagingReceivedMessageCopiesRead.log(
                     targetId = accountId,
                     meta = mapOf("total" to it.total)
                 )
@@ -246,7 +241,7 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(accountId, threadId)) }
+            .also { Audit.MessagingMessageThreadRead.log(targetId = listOf(accountId, threadId)) }
     }
 
     @GetMapping("/application/{applicationId}")
@@ -261,16 +256,24 @@ class MessageController(
                     dbc.read { it.getServiceWorkerAccountId() }
                         ?: throw NotFound("No account found")
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read {
-                    it.getMessageThreadByApplicationId(
-                        accountId,
-                        applicationId,
-                        featureConfig.municipalMessageAccountName,
-                        featureConfig.serviceWorkerMessageAccountName
-                    )
-                }
+                val response =
+                    dbc.read {
+                        it.getMessageThreadByApplicationId(
+                            accountId,
+                            applicationId,
+                            featureConfig.municipalMessageAccountName,
+                            featureConfig.serviceWorkerMessageAccountName
+                        )
+                    }
+                accountId to response
             }
-            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(applicationId, it?.id)) }
+            .let { (accountId, response) ->
+                Audit.MessagingMessageThreadRead.log(
+                    targetId = listOf(accountId, response?.id),
+                    objectId = applicationId
+                )
+                response
+            }
     }
 
     @GetMapping("/unread")
@@ -291,7 +294,9 @@ class MessageController(
                     tx.getUnreadMessagesCounts(filter)
                 }
             }
-            .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it.size)) }
+            .also { response ->
+                Audit.MessagingUnreadMessagesRead.log(targetId = response.map { it.accountId })
+            }
     }
 
     @GetMapping("/unread/{unitId}")
@@ -313,10 +318,10 @@ class MessageController(
                     tx.getUnreadMessagesCountsByDaycare(unitId)
                 }
             }
-            .also {
+            .also { response ->
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = unitId,
-                    meta = mapOf("count" to it.size)
+                    objectId = response.map { it.accountId }
                 )
             }
     }
@@ -518,7 +523,10 @@ class MessageController(
                 )
             }
             .also {
-                Audit.MessagingReplyToMessageWrite.log(targetId = accountId, objectId = messageId)
+                Audit.MessagingReplyToMessageWrite.log(
+                    targetId = listOf(accountId, messageId),
+                    objectId = listOf(it.threadId, it.message.id)
+                )
             }
     }
 
@@ -534,7 +542,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
-        Audit.MessagingMarkMessagesReadWrite.log(targetId = accountId, objectId = threadId)
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = listOf(accountId, threadId))
     }
 
     @PutMapping("/{accountId}/threads/{threadId}/archive")
@@ -549,7 +557,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.archiveThread(accountId, threadId) }
         }
-        Audit.MessagingArchiveMessageWrite.log(targetId = accountId, objectId = threadId)
+        Audit.MessagingArchiveMessageWrite.log(targetId = listOf(accountId, threadId))
     }
 
     @GetMapping("/receivers")
@@ -570,7 +578,9 @@ class MessageController(
                     it.getReceiversForNewMessage(filter, clock.today())
                 }
             }
-            .also { Audit.MessagingMessageReceiversRead.log(meta = mapOf("count" to it.size)) }
+            .also { response ->
+                Audit.MessagingMessageReceiversRead.log(targetId = response.map { it.accountId })
+            }
     }
 
     @PostMapping("/{accountId}/undo-message")
@@ -585,7 +595,7 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { it.undoNewMessages(clock.now(), accountId, contentId) }
             }
-            .also { Audit.MessagingUndoMessage.log(targetId = contentId) }
+            .also { Audit.MessagingUndoMessage.log(targetId = listOf(accountId, contentId)) }
     }
 
     @PostMapping("/{accountId}/undo-reply")
@@ -600,7 +610,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
         }
-        Audit.MessagingUndoMessageReply.log(targetId = messageId)
+        Audit.MessagingUndoMessageReply.log(targetId = listOf(accountId, messageId))
     }
 
     private fun requireMessageAccountAccess(
