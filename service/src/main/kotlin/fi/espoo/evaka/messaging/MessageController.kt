@@ -63,7 +63,7 @@ class MessageController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Set<AuthorizedMessageAccount> {
+    ): List<AuthorizedMessageAccount> {
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -89,28 +89,36 @@ class MessageController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): Set<AuthorizedMessageAccount> {
-        val result =
-            db.connect { dbc ->
-                dbc.read {
+    ): List<AuthorizedMessageAccount> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
                     if (user.employeeId != null) {
                         val filter =
                             accessControl.requireAuthorizationFilter(
-                                it,
+                                tx,
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS
                             )
-                        it.getAuthorizedMessageAccountsForEmployee(
-                            filter,
-                            featureConfig.municipalMessageAccountName,
-                            featureConfig.serviceWorkerMessageAccountName
-                        )
-                    } else setOf()
+                        tx.getAuthorizedMessageAccountsForEmployee(
+                                filter,
+                                featureConfig.municipalMessageAccountName,
+                                featureConfig.serviceWorkerMessageAccountName
+                            )
+                            // Only return group accounts of the requested unit
+                            .filter {
+                                it.account.type == AccountType.GROUP &&
+                                    it.daycareGroup?.unitId == unitId
+                            }
+                    } else listOf()
                 }
             }
-        Audit.MessagingMyAccountsRead.log(targetId = unitId, meta = mapOf("count" to result.size))
-        return result
+            .also {
+                Audit.MessagingMyAccountsRead.log(
+                    targetId = unitId,
+                    meta = mapOf("count" to it.size)
+                )
+            }
     }
 
     @GetMapping("/{accountId}/received")

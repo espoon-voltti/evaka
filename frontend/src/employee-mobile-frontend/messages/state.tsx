@@ -10,9 +10,8 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
@@ -22,7 +21,6 @@ import { UnitContext } from '../common/unit'
 import { messagingAccountsQuery } from './queries'
 
 export interface MessagesState {
-  accounts: Result<AuthorizedMessageAccount[]>
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
   setReplyContent: (threadId: UUID, content: string) => void
@@ -30,9 +28,8 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  accounts: Loading.of(),
-  selectedAccount: undefined,
   groupAccounts: [],
+  selectedAccount: undefined,
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -58,7 +55,7 @@ export const MessageContextProvider = React.memo(
 
     const { selectedGroupId } = useSelectedGroup()
 
-    const accounts = useQueryResult(
+    const { data: groupAccounts = [] } = useQuery(
       queryOrDefault(
         messagingAccountsQuery,
         []
@@ -67,19 +64,6 @@ export const MessageContextProvider = React.memo(
           ? { unitId, employeeId: pinLoggedEmployeeId }
           : undefined
       )
-    )
-
-    const groupAccounts: AuthorizedMessageAccount[] = useMemo(
-      () =>
-        accounts
-          .map((acc) =>
-            acc.filter(
-              ({ account, daycareGroup }) =>
-                account.type === 'GROUP' && daycareGroup?.unitId === unitId
-            )
-          )
-          .getOrElse([]),
-      [accounts, unitId]
     )
 
     const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
@@ -104,19 +88,12 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        accounts,
         selectedAccount,
         groupAccounts,
         getReplyContent,
         setReplyContent
       }),
-      [
-        accounts,
-        groupAccounts,
-        selectedAccount,
-        getReplyContent,
-        setReplyContent
-      ]
+      [groupAccounts, selectedAccount, getReplyContent, setReplyContent]
     )
 
     return (
