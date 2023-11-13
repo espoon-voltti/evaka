@@ -20,5 +20,5 @@ export const requiredPhoneNumber = regexp(PHONE_REGEXP, 'phone')
 export const optionalEmail = regexpOrBlank(EMAIL_REGEXP, 'email')
 export const requiredEmail = regexp(EMAIL_REGEXP, 'email')
 
-export const nonEmpty = (s: string) =>
+export const nonBlank = (s: string) =>
   s.trim() === '' ? 'required' : undefined

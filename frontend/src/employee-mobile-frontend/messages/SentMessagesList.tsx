@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
+import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { SentMessage } from 'lib-common/generated/api-types/messaging'
@@ -15,8 +16,10 @@ import {
   TitleAndDate,
   Truncated
 } from 'lib-components/messages/ThreadListItem'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { renderResult } from '../async-rendering'
+import { useTranslation } from '../common/i18n'
 
 import { sentMessagesQuery } from './queries'
 import { MessageContext } from './state'
@@ -28,6 +31,7 @@ interface Props {
 export default React.memo(function SentMessagesList({
   onSelectMessage
 }: Props) {
+  const { i18n } = useTranslation()
   const { selectedAccount } = useContext(MessageContext)
 
   const { data: sentMessages } = usePagedInfiniteQueryResult(
@@ -36,17 +40,26 @@ export default React.memo(function SentMessagesList({
   )
 
   return renderResult(sentMessages, (messages) => (
-    <div>
-      {messages.map((message) => (
-        <SentMessagePreview
-          key={message.contentId}
-          message={message}
-          onClick={() => onSelectMessage(message)}
-        />
-      ))}
+    <div data-qa="sent-list">
+      {messages.length > 0 ? (
+        messages.map((message) => (
+          <SentMessagePreview
+            key={message.contentId}
+            message={message}
+            onClick={() => onSelectMessage(message)}
+          />
+        ))
+      ) : (
+        <NoSentMessages>{i18n.messages.noSentMessages}</NoSentMessages>
+      )}
     </div>
   ))
 })
+
+const NoSentMessages = styled.div`
+  padding: ${defaultMargins.s};
+  text-align: center;
+`
 
 const SentMessagePreview = React.memo(function SentMessagePreview({
   message,

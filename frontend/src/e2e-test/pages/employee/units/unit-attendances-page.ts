@@ -231,7 +231,7 @@ export class UnitStaffAttendancesTable extends Element {
   }
 
   get allNames(): Promise<string[]> {
-    return this.findAllByDataQa('staff-attendance-name').allInnerTexts()
+    return this.findAllByDataQa('staff-attendance-name').allTexts()
   }
 
   get rowCount(): Promise<number> {

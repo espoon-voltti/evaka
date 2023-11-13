@@ -333,7 +333,7 @@ function TreeDropdown<N extends TreeNode>({
       .map((node) =>
         hasUncheckedChildren(node) ? (
           formEntries(node.children).map(({ child, key }) => (
-            <ValueChip key={JSON.stringify([...node.key, key])}>
+            <ValueChip key={JSON.stringify([...node.key, key])} data-qa="value">
               {tree.length !== 1 ? (
                 // do not show unnecessary top-level node text if it's the only top-level node
                 <>{node.text}/</>
@@ -342,7 +342,9 @@ function TreeDropdown<N extends TreeNode>({
             </ValueChip>
           ))
         ) : (
-          <ValueChip key={node.key}>{node.text}</ValueChip>
+          <ValueChip key={node.key} data-qa="value">
+            {node.text}
+          </ValueChip>
         )
       )
   }, [tree])
@@ -362,7 +364,7 @@ function TreeDropdown<N extends TreeNode>({
         data-qa="tree-dropdown"
         data-qa-expanded={active}
       >
-        <DropdownContainerContent>
+        <DropdownContainerContent data-qa="selected-values">
           {treeValue.length === 0 ? placeholder : treeValue}
         </DropdownContainerContent>
         <IconButton icon={faChevronDown} aria-label={i18n.expandDropdown} />

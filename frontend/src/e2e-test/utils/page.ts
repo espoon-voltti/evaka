@@ -116,7 +116,7 @@ export class ElementCollection {
     return this.locator.count()
   }
 
-  async allInnerTexts(): Promise<string[]> {
+  async allTexts(): Promise<string[]> {
     return this.locator.allInnerTexts()
   }
 
@@ -157,6 +157,10 @@ export class ElementCollection {
       await this.nth(count - 1).waitUntilVisible()
       await this.nth(count).waitUntilHidden()
     }
+  }
+
+  async assertTextsEqual(values: string[]) {
+    await waitUntilEqual(() => this.allTexts(), values)
   }
 }
 
@@ -418,7 +422,7 @@ export class Select extends Element {
   }
 
   get allOptions(): Promise<string[]> {
-    return this.#input.findAll('option').allInnerTexts()
+    return this.#input.findAll('option').allTexts()
   }
 }
 
@@ -505,6 +509,8 @@ export class Modal extends Element {
 }
 
 export class TreeDropdown extends Element {
+  values = this.findByDataQa('selected-values').findAllByDataQa('value')
+
   private async expanded(): Promise<boolean> {
     return (
       (await this.findByDataQa('tree-dropdown').getAttribute(

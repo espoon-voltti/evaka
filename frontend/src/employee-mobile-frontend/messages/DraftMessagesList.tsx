@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
+import styled from 'styled-components'
 
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
@@ -14,6 +15,7 @@ import {
   TitleAndDate,
   Truncated
 } from 'lib-components/messages/ThreadListItem'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
@@ -27,6 +29,7 @@ interface Props {
 }
 
 export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
+  const { i18n } = useTranslation()
   const { selectedAccount } = useContext(MessageContext)
   const draftMessages = useQueryResult(
     queryOrDefault(
@@ -36,17 +39,26 @@ export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
   )
 
   return renderResult(draftMessages, (messages) => (
-    <div>
-      {messages.map((message) => (
-        <DraftMessagePreview
-          key={message.id}
-          message={message}
-          onClick={() => onSelectDraft(message)}
-        />
-      ))}
+    <div data-qa="draft-list">
+      {messages.length > 0 ? (
+        messages.map((message) => (
+          <DraftMessagePreview
+            key={message.id}
+            message={message}
+            onClick={() => onSelectDraft(message)}
+          />
+        ))
+      ) : (
+        <NoDrafts>{i18n.messages.noDrafts}</NoDrafts>
+      )}
     </div>
   ))
 })
+
+const NoDrafts = styled.div`
+  padding: ${defaultMargins.s};
+  text-align: center;
+`
 
 const DraftMessagePreview = React.memo(function DraftMessagePreview({
   message,
@@ -60,7 +72,7 @@ const DraftMessagePreview = React.memo(function DraftMessagePreview({
     <Container
       isRead={true}
       active={false}
-      data-qa="sent-message-preview"
+      data-qa="draft-message-preview"
       onClick={onClick}
     >
       <FixedSpaceColumn>

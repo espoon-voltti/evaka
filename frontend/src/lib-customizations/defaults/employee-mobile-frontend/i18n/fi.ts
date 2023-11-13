@@ -358,6 +358,7 @@ export const fi = {
       reply: 'Vastaa viestiin'
     },
     draft: 'Luonnos',
+    draftReply: '- Luonnos -',
     messageEditor: {
       newMessage: 'Uusi viesti',
       to: {
@@ -391,6 +392,8 @@ export const fi = {
       sending: 'Lähetetään'
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
+    noSentMessages: 'Ei lähetettyjä viestejä',
+    noDrafts: 'Ei luonnoksia',
     unreadMessages: 'Uudet viestit',
     openPinLock: 'Avaa lukitus',
     pinLockInfo:

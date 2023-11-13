@@ -119,7 +119,7 @@ export default class MobileChildPage {
     await waitUntilEqual(
       () =>
         this.attendance.arrivalTimes
-          .allInnerTexts()
+          .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
           ),
@@ -131,7 +131,7 @@ export default class MobileChildPage {
     await waitUntilEqual(
       () =>
         this.attendance.departureTimes
-          .allInnerTexts()
+          .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
           ),

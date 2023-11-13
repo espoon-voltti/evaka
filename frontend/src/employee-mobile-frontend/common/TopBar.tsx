@@ -52,6 +52,7 @@ interface Props {
   title: string
   onBack?: () => void
   onClose?: () => void
+  closeDisabled?: boolean
   invertedColors?: boolean
 }
 
@@ -59,6 +60,7 @@ export default React.memo(function TopBar({
   title,
   onBack,
   onClose,
+  closeDisabled = false,
   invertedColors
 }: Props) {
   const { i18n } = useTranslation()
@@ -89,6 +91,7 @@ export default React.memo(function TopBar({
           <IconButton
             icon={faTimes}
             white
+            disabled={closeDisabled}
             onClick={onClose}
             aria-label={i18n.common.close}
           />

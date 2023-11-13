@@ -73,14 +73,19 @@ const messageForm = mapped(
       sensitive: false
     }
     return {
-      messageContent: (draftId: UUID | null): PostMessageBody => ({
-        ...commonContent,
-        recipients: selectedRecipients.map((r) => r.messageRecipient),
-        recipientNames: selectedRecipients.map((r) => r.text),
-        attachmentIds: [],
-        draftId,
-        relatedApplicationId: null
-      }),
+      messageContent: (draftId: UUID | null): PostMessageBody | undefined =>
+        selectedRecipients.length === 0 ||
+        output.title === '' ||
+        output.content === ''
+          ? undefined // required fields missing
+          : {
+              ...commonContent,
+              recipients: selectedRecipients.map((r) => r.messageRecipient),
+              recipientNames: selectedRecipients.map((r) => r.text),
+              attachmentIds: [],
+              draftId,
+              relatedApplicationId: null
+            },
       draftContent: (): UpdatableDraftContent => ({
         ...commonContent,
         recipientIds: selectedRecipients.map((r) => r.messageRecipient.id),
@@ -166,6 +171,7 @@ export default React.memo(function MessageEditor({
       <TopBar
         invertedColors
         title={i18n.messages.messageEditor.newMessage}
+        closeDisabled={isSavingDraft}
         onClose={() => {
           saveDraftImmediately()
           onClose()
@@ -247,19 +253,23 @@ export default React.memo(function MessageEditor({
               return cancelMutation
             }}
             onSuccess={onClose}
+            data-qa="discard-message-btn"
           />
           <span />
           <MutateButton
             mutation={sendMessageMutation}
             primary
             text={i18n.messages.messageEditor.send}
-            disabled={!form.isValid()}
+            disabled={
+              !form.isValid() ||
+              form.value().messageContent(draftId) === undefined
+            }
             onClick={() => {
               cancelSaveDraft()
-              return {
-                accountId: account.id,
-                body: form.value().messageContent(draftId)
-              }
+              const messageContent = form.value().messageContent(draftId)
+              return messageContent !== undefined
+                ? { accountId: account.id, body: messageContent }
+                : cancelMutation
             }}
             onSuccess={onClose}
             data-qa="send-message-btn"

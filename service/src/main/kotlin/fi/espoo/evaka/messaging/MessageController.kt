@@ -334,6 +334,15 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody
     ): MessageContentId? {
+        if (body.recipients.isEmpty()) {
+            throw BadRequest("Message must have at least one recipient")
+        }
+        if (body.content.isBlank()) {
+            throw BadRequest("Message content cannot be empty")
+        }
+        if (body.title.isBlank()) {
+            throw BadRequest("Message title cannot be empty")
+        }
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { tx ->

@@ -177,7 +177,7 @@ export class StaffAttendancePage {
     await waitUntilEqual(
       () =>
         this.staffMemberPage.attendanceTimeTexts
-          .allInnerTexts()
+          .allTexts()
           .then((texts) => texts.join(',')),
       expectedText
     )

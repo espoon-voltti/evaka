@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext } from 'react'
+import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -125,6 +126,10 @@ const MessagePreview = React.memo(function MessagePreview({
   hasUnreadMessages: boolean
   onClick: () => void
 }) {
+  const { i18n } = useTranslation()
+  const { getReplyContent } = useContext(MessageContext)
+  const hasDraftReply = getReplyContent(thread.id) !== ''
+
   const lastMessage = thread.messages[thread.messages.length - 1]
   const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
   return (
@@ -150,7 +155,16 @@ const MessagePreview = React.memo(function MessagePreview({
             .substring(0, 200)
             .replace(new RegExp('\\n', 'g'), ' ')}
         </Truncated>
+        {hasDraftReply ? (
+          <DraftIndicator data-qa="draft-indicator">
+            {i18n.messages.draftReply}
+          </DraftIndicator>
+        ) : null}
       </FixedSpaceColumn>
     </Container>
   )
 })
+
+const DraftIndicator = styled.div`
+  color: ${(p) => p.theme.colors.accents.a2orangeDark};
+`

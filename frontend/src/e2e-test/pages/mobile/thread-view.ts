@@ -7,6 +7,7 @@ import { Page, TextInput } from '../../utils/page'
 export default class ThreadViewPage {
   constructor(private readonly page: Page) {}
 
+  goBack = this.page.findByDataQa('go-back')
   replyButton = this.page.findByDataQa('message-reply-editor-btn')
   replyContent = new TextInput(this.page.findByDataQa('message-reply-content'))
   sendReplyButton = this.page.findByDataQa('message-send-btn')

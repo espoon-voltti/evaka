@@ -597,7 +597,7 @@ class AclSection extends Element {
       )
       .waitUntilVisible()
     await waitUntilEqual(
-      () => row.find('[data-qa="groups"] > div').findAll('div').allInnerTexts(),
+      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
       fields.groups
     )
   }

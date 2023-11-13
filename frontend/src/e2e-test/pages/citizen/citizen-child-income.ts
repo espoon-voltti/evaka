@@ -22,9 +22,7 @@ export class CitizenChildIncomeStatementViewPage {
   async assertAttachmentExists(name: string) {
     await waitUntilTrue(async () =>
       (
-        await this.page
-          .findAllByDataQa('attachment-download-button')
-          .allInnerTexts()
+        await this.page.findAllByDataQa('attachment-download-button').allTexts()
       ).includes(name)
     )
   }

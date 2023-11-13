@@ -8,7 +8,7 @@ import { string } from 'lib-common/form/fields'
 import { array, mapped, object, union, validated } from 'lib-common/form/form'
 import { BoundForm, useFormUnion } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   DocumentTemplateContent,
   Question,
@@ -60,8 +60,8 @@ export const templateQuestionForm = mapped(
 )
 
 export const templateSectionForm = object({
-  id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty),
+  id: validated(string(), nonBlank),
+  label: validated(string(), nonBlank),
   questions: array(templateQuestionForm),
   infoText: string()
 })

@@ -16,7 +16,7 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { nonEmpty } from 'lib-common/form/validators'
+import { nonBlank } from 'lib-common/form/validators'
 import {
   AnsweredQuestion,
   CheckboxGroupAnswerContent,
@@ -43,14 +43,14 @@ const questionType: QuestionType = 'CHECKBOX_GROUP'
 type ApiQuestion = Question.CheckboxGroupQuestion
 
 const optionForm = object({
-  id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty),
+  id: validated(string(), nonBlank),
+  label: validated(string(), nonBlank),
   withText: boolean()
 })
 
 const templateForm = object({
-  id: validated(string(), nonEmpty),
-  label: validated(string(), nonEmpty),
+  id: validated(string(), nonBlank),
+  label: validated(string(), nonBlank),
   options: validated(array(optionForm), (arr) =>
     arr.length > 0 ? undefined : 'required'
   ),

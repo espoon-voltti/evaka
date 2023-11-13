@@ -124,7 +124,7 @@ export class CitizenChildPage {
   }
 
   getTerminatedPlacements(): Promise<string[]> {
-    return this.#terminatedPlacements.allInnerTexts()
+    return this.#terminatedPlacements.allTexts()
   }
 
   async togglePlacement(label: string) {
@@ -145,13 +145,11 @@ export class CitizenChildPage {
   }
 
   getTerminatablePlacements(): Promise<string[]> {
-    return this.#placements.allInnerTexts()
+    return this.#placements.allTexts()
   }
 
   getNonTerminatablePlacements(): Promise<string[]> {
-    return this.page
-      .findAllByDataQa('non-terminatable-placement')
-      .allInnerTexts()
+    return this.page.findAllByDataQa('non-terminatable-placement').allTexts()
   }
 
   getToggledPlacements(): Promise<string[]> {

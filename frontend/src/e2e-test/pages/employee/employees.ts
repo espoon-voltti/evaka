@@ -12,6 +12,6 @@ export class EmployeesPage {
   )
 
   get visibleUsers(): Promise<string[]> {
-    return this.page.findAllByDataQa('employee-name').allInnerTexts()
+    return this.page.findAllByDataQa('employee-name').allTexts()
   }
 }
