@@ -423,12 +423,15 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
 }
 
 fun Database.Read.childrenHaveAttendanceInRange(
-        childIds: Set<PersonId>,
-        range: FiniteDateRange
+    childIds: Set<PersonId>,
+    range: FiniteDateRange
 ): Boolean {
     return createQuery<Any> {
-        sql("""
+            sql(
+                """
             SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND ${bind(range)} @> date)
-            """)
-    }.exactlyOne()
+            """
+            )
+        }
+        .exactlyOne()
 }

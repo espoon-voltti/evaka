@@ -247,7 +247,10 @@ class ReservationControllerCitizen(
                         body.childIds
                     )
                     if (tx.childrenHaveAttendanceInRange(body.childIds, body.dateRange)) {
-                        throw BadRequest("Attendance already exists for given dates", "ATTENDANCE_ALREADY_EXISTS")
+                        throw BadRequest(
+                            "Attendance already exists for given dates",
+                            "ATTENDANCE_ALREADY_EXISTS"
+                        )
                     }
 
                     val reservableRange =
