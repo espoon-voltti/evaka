@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -1009,6 +1010,27 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         }
 
         assertAbsenceCounts(testChild_2.id, listOf(monday to 1, tuesday to 1))
+    }
+
+    @Test
+    fun `cannot add absences to day which already contains attendance`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = testDaycare.id,
+                childId = testChild_1.id,
+                arrived = HelsinkiDateTime.of(mockToday, LocalTime.of(9, 0, 0)),
+                departed = HelsinkiDateTime.of(mockToday, LocalTime.of(11, 0, 0)),
+            )
+        }
+        assertThrows<BadRequest> {
+            postAbsences(
+                AbsenceRequest(
+                    childIds = setOf(testChild_1.id, testChild_2.id),
+                    dateRange = FiniteDateRange(mockToday, mockToday),
+                    absenceType = AbsenceType.SICKLEAVE
+                )
+            )
+        }
     }
 
     private fun dayChild(

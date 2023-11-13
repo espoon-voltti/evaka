@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
+import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDateRange } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
@@ -130,6 +131,9 @@ export default React.memo(function AbsenceModal({
       )
       .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
 
+  const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
+    useState(false)
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto">
@@ -204,6 +208,18 @@ export default React.memo(function AbsenceModal({
                     }
                   />
                 )}
+                {attendanceAlreadyExistsError && (
+                  <AlertBox
+                    title={
+                      i18n.calendar.absenceModal
+                        .attendanceAlreadyExistsErrorTitle
+                    }
+                    message={
+                      i18n.calendar.absenceModal
+                        .attendanceAlreadyExistsErrorDescription
+                    }
+                  />
+                )}
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
@@ -273,6 +289,11 @@ export default React.memo(function AbsenceModal({
                 }}
                 onSuccess={close}
                 data-qa="modal-okBtn"
+                onFailure={(failure: Failure<unknown>) => {
+                  setAttendanceAlreadyExistsError(
+                    failure.errorCode === 'ATTENDANCE_ALREADY_EXISTS'
+                  )
+                }}
               />
             </CalendarModalButtons>
           </BottomFooterContainer>
