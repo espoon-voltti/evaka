@@ -31,8 +31,9 @@ const Shadow = styled.div`
 `
 
 export function StaffMemberPageContainer({
+  back,
   children
-}: React.PropsWithChildren) {
+}: React.PropsWithChildren & { back?: string }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -44,7 +45,7 @@ export function StaffMemberPageContainer({
       shadow
     >
       <BackButtonMargin
-        onClick={() => navigate(-1)}
+        onClick={() => (back !== undefined ? navigate(back) : navigate(-1))}
         icon={faArrowLeft}
         data-qa="back-btn"
         aria-label={i18n.common.close}

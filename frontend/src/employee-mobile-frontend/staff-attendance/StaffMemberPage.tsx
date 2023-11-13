@@ -58,7 +58,7 @@ export default React.memo(function StaffMemberPage() {
   return renderResult(
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
-      <StaffMemberPageContainer>
+      <StaffMemberPageContainer back={`${groupRoute}/staff-attendance/present`}>
         {staffMember === undefined ? (
           <ErrorSegment
             title={i18n.attendances.staff.errors.employeeNotFound}
