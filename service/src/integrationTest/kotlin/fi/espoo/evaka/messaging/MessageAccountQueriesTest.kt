@@ -273,14 +273,11 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val counts =
             db.read {
                 it.getUnreadMessagesCounts(
-                    now,
-                    it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            AuthenticatedUser.Employee(supervisorId, emptySet()),
-                            clock,
-                            Action.MessageAccount.ACCESS
-                        )
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        AuthenticatedUser.Employee(supervisorId, emptySet()),
+                        clock,
+                        Action.MessageAccount.ACCESS
                     )
                 )
             }
@@ -317,24 +314,27 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             3,
-            db.read {
-                it.getUnreadMessagesCounts(now, counts.map { counts -> counts.accountId }.toSet())
-                    .map { it.unreadCount }
-                    .sum()
+            db.read { tx ->
+                tx.getUnreadMessagesCounts(
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            AuthenticatedUser.Employee(supervisorId, emptySet()),
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                    .sumOf { it.unreadCount }
             }
         )
         assertEquals(
             1,
             db.read {
                     it.getUnreadMessagesCounts(
-                        now,
-                        it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                AuthenticatedUser.Employee(supervisorId, emptySet()),
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Employee(supervisorId, emptySet()),
+                            clock,
+                            Action.MessageAccount.ACCESS
                         )
                     )
                 }

@@ -288,7 +288,7 @@ class MessageController(
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    tx.getUnreadMessagesCounts(clock.now(), tx.getEmployeeMessageAccountIds(filter))
+                    tx.getUnreadMessagesCounts(filter)
                 }
             }
             .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it.size)) }

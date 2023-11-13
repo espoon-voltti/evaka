@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,6 +38,7 @@ data class CitizenMessageBody(
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
     private val featureConfig: FeatureConfig,
+    private val accessControl: AccessControl,
     private val messageService: MessageService
 ) {
 
@@ -49,9 +52,16 @@ class MessageControllerCitizen(
     fun getUnreadMessages(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): Int {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    val accountId = tx.getCitizenMessageAccount(user.id)
-                    val counts = tx.getUnreadMessagesCounts(clock.now(), setOf(accountId))
-                    counts.firstOrNull()?.unreadCount ?: 0
+                    tx.getUnreadMessagesCounts(
+                            accessControl.requireAuthorizationFilter(
+                                tx,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .firstOrNull()
+                        ?.unreadCount ?: 0
                 }
             }
             .also {
