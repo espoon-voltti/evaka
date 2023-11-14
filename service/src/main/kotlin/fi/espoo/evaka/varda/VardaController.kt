@@ -9,6 +9,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.varda.old.VardaResetService
+import fi.espoo.evaka.varda.old.VardaUpdateService
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,12 +19,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/varda")
 class VardaController(
-    private val vardaService: VardaService,
+    private val vardaService: VardaUpdateService,
+    private val vardaResetService: VardaResetService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/start-update")
     fun runFullVardaUpdate(db: Database, clock: EvakaClock) {
         db.connect { dbc -> vardaService.startVardaUpdate(dbc, clock) }
+    }
+
+    @PostMapping("/start-reset")
+    fun runFullVardaReset(db: Database, clock: EvakaClock) {
+        db.connect { dbc -> vardaResetService.planVardaReset(dbc, clock, true) }
     }
 
     @PostMapping("/child/reset/{childId}")

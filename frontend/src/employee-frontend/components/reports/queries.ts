@@ -19,6 +19,7 @@ import {
   OccupancyReportFilters,
   PlacementGuaranteeReportFilters,
   resetVardaChild,
+  startVardaReset,
   startVardaUpdate,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
@@ -80,6 +81,11 @@ export const vardaErrorsQuery = query({
 
 export const startVardaUpdateMutation = mutation({
   api: () => startVardaUpdate(),
+  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+})
+
+export const startVardaResetMutation = mutation({
+  api: () => startVardaReset(),
   invalidateQueryKeys: () => [queryKeys.vardaErrors()]
 })
 

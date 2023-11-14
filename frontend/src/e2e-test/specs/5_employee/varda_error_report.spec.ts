@@ -11,7 +11,8 @@ import {
   addVardaServiceNeed,
   insertDaycareGroupFixtures,
   insertDefaultServiceNeedOptions,
-  resetDatabase
+  resetDatabase,
+  runPendingAsyncJobs
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -95,5 +96,8 @@ describe('Varda error report', () => {
 
     await vardaErrorsReportPage.assertErrorRowCount(1)
     await vardaErrorsReportPage.assertErrorsContains(childId, 'test error')
+    await vardaErrorsReportPage.resetChild(childId)
+    await runPendingAsyncJobs(HelsinkiDateTime.now())
+    await vardaErrorsReportPage.assertErrorRowCount(0)
   })
 })

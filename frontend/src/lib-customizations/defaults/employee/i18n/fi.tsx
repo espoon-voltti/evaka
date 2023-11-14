@@ -3813,7 +3813,13 @@ export const fi = {
     },
     vardaErrors: {
       title: 'Varda-virheet',
-      vardaUpdateButton: 'Käynnistä Vardapäivitys',
+      vardaInfo:
+        'Aloita päivitys-nappi käynnistää VardaUpdate-eräajon, joka vie kaikkien Vardaan vietäväksi ' +
+        'merkittyjen yksiköiden ja lapsien muuttuneet tiedot Vardaan. Aloita uudelleenvienti-nappi käynnistää ' +
+        'VardaReset-eräajon, joka poistaa ja vie uudelleen kaikkien uudelleenvietäviksi merkittyjen lasten ' +
+        'kaikki vardatiedot. Raportin Uudelleenvie-nappi käynnistää vain kyseiselle lapselle VardaReset-eräajon.',
+      vardaUpdateButton: 'Aloita päivitys',
+      vardaResetButton: 'Aloita uudelleenvienti',
       description:
         'Vardapäivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
       updated: 'Päivitetty viimeksi',
