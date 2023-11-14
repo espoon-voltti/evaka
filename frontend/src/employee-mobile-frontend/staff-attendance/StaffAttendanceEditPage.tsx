@@ -54,7 +54,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faTrash } from 'lib-icons'
 
@@ -522,13 +522,15 @@ const StaffAttendanceEditor = ({
               data-qa="departed"
             />
           </div>
+          <IconContainer>
+            <IconButton
+              icon={faTrash}
+              onClick={onDelete}
+              aria-label={i18n.common.remove}
+              data-qa="remove"
+            />
+          </IconContainer>
         </FixedSpaceRow>
-        <IconButton
-          icon={faTrash}
-          onClick={onDelete}
-          aria-label={i18n.common.remove}
-          data-qa="remove"
-        />
       </FixedSpaceRow>
     </>
   )
@@ -536,4 +538,8 @@ const StaffAttendanceEditor = ({
 
 const DateLabel = styled.div`
   color: ${(p) => p.theme.colors.grayscale.g70};
+`
+
+const IconContainer = styled.div`
+  margin-left: ${defaultMargins.X3L};
 `
