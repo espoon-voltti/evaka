@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
@@ -56,7 +57,7 @@ import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
-import { faTrash } from 'lib-icons'
+import { faLockAlt, faTrash } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { Translations, useTranslation } from '../common/i18n'
@@ -423,10 +424,11 @@ const StaffAttendancesEditor = ({
           <Button
             primary
             data-qa="save"
-            text={i18n.common.saveChanges}
             onClick={() => setMode('pin')}
             disabled={!form.isValid()}
-          />
+          >
+            <FontAwesomeIcon icon={faLockAlt} /> {i18n.common.saveChanges}
+          </Button>
         </FixedSpaceRow>
       </ContentArea>
     </>
