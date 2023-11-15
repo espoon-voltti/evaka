@@ -522,7 +522,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
             join pg_attribute attr on attr.attrelid = source.oid and attr.attnum = ANY(const.conkey)
         where const.contype = 'f' 
             and target.relname in ('person', 'child') 
-            and source.relname not in ('person', 'child', 'guardian', 'guardian_blocklist', 'message_account')
+            and source.relname not in ('person', 'child', 'child_images', 'guardian', 'guardian_blocklist', 'message_account')
             and source.relname not like 'old_%'
         order by source.relname, attr.attname
     """

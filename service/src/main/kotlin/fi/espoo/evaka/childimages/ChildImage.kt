@@ -50,13 +50,11 @@ fun replaceImage(
 }
 
 fun removeImage(
-    db: Database.Connection,
+    tx: Database.Transaction,
     documentClient: DocumentService,
     bucket: String,
     childId: ChildId
 ): ChildImageId? =
-    db.transaction { tx ->
-        tx.deleteChildImage(childId)?.also { imageId ->
-            documentClient.delete(bucket, "$childImagesBucketPrefix$imageId")
-        }
+    tx.deleteChildImage(childId)?.also { imageId ->
+        documentClient.delete(bucket, "$childImagesBucketPrefix$imageId")
     }

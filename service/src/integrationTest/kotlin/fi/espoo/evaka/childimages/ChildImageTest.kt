@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.utils.decodeHex
 import fi.espoo.evaka.testChild_1
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -139,8 +140,4 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
         val (_, _, data) = http.get(fuelResponseToS3URL(response)).response()
         return data.get()
     }
-}
-
-private fun String.decodeHex(): ByteArray {
-    return filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }
