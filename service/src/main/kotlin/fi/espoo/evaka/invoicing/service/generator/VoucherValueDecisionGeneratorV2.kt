@@ -241,8 +241,7 @@ private fun getVoucherBases(
                     placementDetailsByChild[child.id]?.any { it.range.contains(range) } ?: false
                 }
                 .indexOfFirst { it.id == targetChildId }
-                .takeIf { it >= 0 }
-                ?: 0
+                .takeIf { it >= 0 } ?: 0
 
         VoucherBasis(
             range = range,
