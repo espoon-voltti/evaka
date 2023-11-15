@@ -25,7 +25,11 @@ data class OperationalDays(
 
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val range = FiniteDateRange.ofMonth(year, month)
-    val daysOfMonth = range.dates()
+    return operationalDays(range)
+}
+
+fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
+    val rangeDates = range.dates()
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays =
@@ -40,18 +44,17 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val holidays = getHolidays(range)
 
     val generalCase =
-        daysOfMonth
+        rangeDates
             .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
             .filterNot { holidays.contains(it) }
             .toList()
 
     val specialCases =
         specialUnitOperationalDays.associate { (unitId, operationalDays) ->
-            unitId to
-                daysOfMonth.filter { it.isOperationalDate(operationalDays, holidays) }.toList()
+            unitId to rangeDates.filter { it.isOperationalDate(operationalDays, holidays) }.toList()
         }
 
-    return OperationalDays(daysOfMonth.toList(), generalCase, specialCases)
+    return OperationalDays(rangeDates.toList(), generalCase, specialCases)
 }
 
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =

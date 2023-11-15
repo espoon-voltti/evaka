@@ -43,6 +43,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
+    employeeMobileChildAttendanceReservationEdit: true,
     voucherValueDecisionIgnoredStatus: true
   },
   staging: {
@@ -75,6 +76,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
+    employeeMobileChildAttendanceReservationEdit: true,
     voucherValueDecisionIgnoredStatus: true
   },
   prod: {
@@ -107,6 +109,7 @@ const features: Features = {
     feeDecisionIgnoredStatus: true,
     hojks: false,
     employeeMobileStaffAttendanceEdit: false,
+    employeeMobileChildAttendanceReservationEdit: false,
     voucherValueDecisionIgnoredStatus: true
   }
 }

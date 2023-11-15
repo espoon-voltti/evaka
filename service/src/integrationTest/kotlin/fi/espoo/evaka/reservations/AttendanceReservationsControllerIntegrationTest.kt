@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -33,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -50,6 +52,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class AttendanceReservationsControllerIntegrationTest :
@@ -730,6 +733,120 @@ class AttendanceReservationsControllerIntegrationTest :
                 }
                 .toList(),
             result.operationalDays,
+        )
+    }
+
+    @Test
+    fun `get non-reservable reservations returns correct data`() {
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = mon,
+                    endDate = fri
+                )
+                tx.insert(DevMobileDevice(unitId = testDaycare.id))
+            }
+        val reservations =
+            attendanceReservationController.getNonReservableReservations(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id
+            )
+        assertEquals(
+            listOf(
+                NonReservableReservation(
+                    date = tue,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null
+                ),
+                NonReservableReservation(
+                    date = wed,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null
+                ),
+                NonReservableReservation(
+                    date = thu,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null
+                ),
+                NonReservableReservation(
+                    date = fri,
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null
+                ),
+            ),
+            reservations
+        )
+    }
+
+    @Test
+    fun `get non-reservable reservations throws forbidden when child doesn't have placement`() {
+        val mobileDeviceId =
+            db.transaction { tx -> tx.insert(DevMobileDevice(unitId = testDaycare.id)) }
+        assertThrows<Forbidden> {
+            attendanceReservationController.getNonReservableReservations(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id
+            )
+        }
+    }
+
+    @Test
+    fun `get non-reservable reservations throws forbidden when child has placement to other unit`() {
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = mon,
+                    endDate = fri
+                )
+                tx.insert(DevMobileDevice(unitId = testDaycare.id))
+            }
+        assertThrows<Forbidden> {
+            attendanceReservationController.getNonReservableReservations(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                testChild_1.id
+            )
+        }
+    }
+
+    @Test
+    fun `set non-reservable reservations updates correct data`() {
+        val mobileDeviceId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = mon,
+                    endDate = fri
+                )
+                tx.insert(DevMobileDevice(unitId = testDaycare.id))
+            }
+        attendanceReservationController.setNonReservableReservations(
+            dbInstance(),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+            clock,
+            testChild_1.id,
+            listOf(
+                NonReservableReservation(
+                    clock.today().plusDays(1),
+                    reservations = emptyList(),
+                    absenceType = null,
+                    dailyServiceTimes = null
+                )
+            )
         )
     }
 

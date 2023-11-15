@@ -41,7 +41,11 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open()
+  page = await Page.open({
+    employeeMobileCustomizations: {
+      featureFlags: { employeeMobileChildAttendanceReservationEdit: false }
+    }
+  })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   absencesPage = new MobileAbsencesPage(page)

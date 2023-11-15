@@ -6,7 +6,9 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.Daycare
@@ -16,22 +18,27 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.lang.Integer.max
@@ -41,7 +48,9 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -49,7 +58,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/attendance-reservations")
-class AttendanceReservationController(private val ac: AccessControl) {
+class AttendanceReservationController(
+    private val ac: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping
     fun getAttendanceReservations(
         db: Database,
@@ -232,6 +244,113 @@ class AttendanceReservationController(private val ac: AccessControl) {
                 )
         )
     }
+
+    @GetMapping("/by-child/{childId}/non-reservable")
+    fun getNonReservableReservations(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId
+    ): List<NonReservableReservation> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_NON_RESERVABLE_RESERVATIONS,
+                        childId
+                    )
+                    val range = getNonReservableReservationRange(clock)
+                    val operationalDays = tx.operationalDays(range)
+                    val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
+                    val reservations = tx.getReservationsForChildInRange(childId, range)
+                    val absences = tx.getAbsencesOfChildByRange(childId, range.asDateRange())
+                    val dailyServiceTimes = tx.getChildDailyServiceTimes(childId)
+                    range
+                        .dates()
+                        .mapNotNull { date ->
+                            val placement =
+                                placements.firstOrNull {
+                                    FiniteDateRange(it.startDate, it.endDate).includes(date)
+                                } ?: return@mapNotNull null
+                            if (!operationalDays.forUnit(placement.unitId).contains(date)) {
+                                return@mapNotNull null
+                            }
+                            val reservationTimes = reservations[date] ?: emptyList()
+                            val absence = absences.firstOrNull { it.date == date }
+                            val dailyServiceTime =
+                                dailyServiceTimes.firstOrNull {
+                                    it.times.validityPeriod.includes(date)
+                                }
+                            NonReservableReservation(
+                                date = date,
+                                reservations = reservationTimes,
+                                absenceType = absence?.absenceType,
+                                dailyServiceTimes = dailyServiceTime?.times
+                            )
+                        }
+                        .toList()
+                }
+            }
+            .also { Audit.ChildNonReservableReservationsRead.log(targetId = childId) }
+    }
+
+    @PutMapping("/by-child/{childId}/non-reservable")
+    fun setNonReservableReservations(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: List<NonReservableReservation>
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPDATE_NON_RESERVABLE_RESERVATIONS,
+                        childId
+                    )
+
+                    val range = getNonReservableReservationRange(clock)
+                    if (!body.all { range.includes(it.date) }) {
+                        throw BadRequest("Request contains reservable day")
+                    }
+
+                    body
+                        .filter { it.absenceType == null }
+                        .forEach { tx.deleteAbsencesByDate(childId, it.date) }
+                    // no insert or update
+
+                    body
+                        .map { DateRange(it.date, it.date) }
+                        .forEach { tx.clearReservationsForRangeExceptInHolidayPeriod(childId, it) }
+                    tx.insertValidReservations(
+                        user.evakaUserId,
+                        body.flatMap {
+                            it.reservations.map { reservation ->
+                                ReservationInsert(
+                                    childId = childId,
+                                    date = it.date,
+                                    reservation.asTimeRange()
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+            .also { Audit.ChildNonReservableReservationsUpdate.log(targetId = childId) }
+    }
+
+    private fun getNonReservableReservationRange(clock: EvakaClock): FiniteDateRange {
+        val startDate = clock.today().plusDays(1)
+        val endDate =
+            getNextReservableMonday(clock.now(), featureConfig.citizenReservationThresholdHours)
+                .minusDays(1)
+        return FiniteDateRange(startDate, endDate)
+    }
 }
 
 @ExcludeCodeGen
@@ -302,6 +421,13 @@ data class UnitAttendanceReservations(
         val childInfos: List<ChildServiceNeedInfo>
     )
 }
+
+data class NonReservableReservation(
+    val date: LocalDate,
+    val reservations: List<Reservation>,
+    val absenceType: AbsenceType?,
+    val dailyServiceTimes: DailyServiceTimesValue?
+)
 
 private fun getUnitOperationalDayData(
     period: FiniteDateRange,

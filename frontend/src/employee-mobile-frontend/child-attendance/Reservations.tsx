@@ -10,10 +10,12 @@ import { Reservation } from 'lib-common/generated/api-types/reservations'
 import { useTranslation } from '../common/i18n'
 
 interface Props {
+  hideLabel?: boolean
   reservations: Reservation.Times[]
 }
 
 export const Reservations = React.memo(function Reservations({
+  hideLabel,
   reservations
 }: Props) {
   const { i18n } = useTranslation()
@@ -29,7 +31,7 @@ export const Reservations = React.memo(function Reservations({
 
   return (
     <>
-      <span>{label}:</span>
+      {!hideLabel && <span>{label}:</span>}
       <Whitespace />
       {reservations.map(({ startTime, endTime }, index) => (
         <Fragment key={startTime.formatIso()}>

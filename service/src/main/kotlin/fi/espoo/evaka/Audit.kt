@@ -158,6 +158,8 @@ enum class Audit(
     ChildImageDelete,
     ChildImageDownload,
     ChildImageUpload,
+    ChildNonReservableReservationsRead,
+    ChildNonReservableReservationsUpdate,
     ChildSensitiveInfoRead,
     ChildStickyNoteCreate,
     ChildStickyNoteUpdate,

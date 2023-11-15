@@ -33,6 +33,7 @@ import MarkAbsent from './child-attendance/actions/MarkAbsent'
 import MarkAbsentBeforehand from './child-attendance/actions/MarkAbsentBeforehand'
 import MarkDeparted from './child-attendance/actions/MarkDeparted'
 import MarkPresent from './child-attendance/actions/MarkPresent'
+import MarkReservations from './child-attendance/actions/MarkReservations'
 import {
   attendanceStatusesQuery,
   childrenQuery
@@ -174,6 +175,12 @@ function ChildAttendanceRouter() {
       <Route path=":childId" element={<AttendanceChildPage />} />
       <Route path=":childId/mark-present" element={<MarkPresent />} />
       <Route path=":childId/mark-absent" element={<MarkAbsent />} />
+      {featureFlags.employeeMobileChildAttendanceReservationEdit && (
+        <Route
+          path=":childId/mark-reservations"
+          element={<MarkReservations />}
+        />
+      )}
       <Route
         path=":childId/mark-absent-beforehand"
         element={<MarkAbsentBeforehand />}

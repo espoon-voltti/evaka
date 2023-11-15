@@ -9,6 +9,7 @@ import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { AbsenceType } from './daycare'
+import { DailyServiceTimesValue } from './dailyservicetimes'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
 import { TimeRange } from './shared'
@@ -76,6 +77,16 @@ export namespace DailyReservationRequest {
 */
 export type DailyReservationRequest = DailyReservationRequest.Absent | DailyReservationRequest.Nothing | DailyReservationRequest.Present | DailyReservationRequest.Reservations
 
+
+/**
+* Generated from fi.espoo.evaka.reservations.NonReservableReservation
+*/
+export interface NonReservableReservation {
+  absenceType: AbsenceType | null
+  dailyServiceTimes: DailyServiceTimesValue | null
+  date: LocalDate
+  reservations: Reservation[]
+}
 
 /**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange

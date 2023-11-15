@@ -13,11 +13,13 @@ import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
 
 interface Props {
+  hideLabel?: boolean
   times: DailyServiceTimesValue | null
   reservations: Reservation[]
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({
+  hideLabel,
   times,
   reservations
 }: Props) {
@@ -34,7 +36,10 @@ export default React.memo(function AttendanceDailyServiceTimes({
   return (
     <ServiceTime>
       {reservationsWithTimes.length > 0 ? (
-        <Reservations reservations={reservationsWithTimes} />
+        <Reservations
+          hideLabel={hideLabel}
+          reservations={reservationsWithTimes}
+        />
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (

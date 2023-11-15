@@ -19,6 +19,7 @@ export default class MobileChildPage {
 
   modalOkButton = this.page.findByDataQa('modal-okBtn')
 
+  markReservationsLink = this.page.findByDataQa('mark-reservations')
   markAbsentBeforehandLink = this.page.findByDataQa('mark-absent-beforehand')
   sensitiveInfoLink = this.page.findByDataQa('link-child-sensitive-info')
 

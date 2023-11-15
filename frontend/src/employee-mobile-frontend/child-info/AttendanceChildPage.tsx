@@ -20,6 +20,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -257,19 +258,38 @@ export default React.memo(function AttendanceChildPage() {
                   </FlexColumn>
                 </Shadow>
                 <BottomButtonWrapper>
-                  <LinkButtonWithIcon
-                    data-qa="mark-absent-beforehand"
-                    to={`${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`}
-                  >
-                    <RoundIcon
-                      size="L"
-                      content={faCalendarTimes}
-                      color={colors.main.m2}
-                    />
-                    <LinkButtonText>
-                      {i18n.attendances.actions.markAbsentBeforehand}
-                    </LinkButtonText>
-                  </LinkButtonWithIcon>
+                  {featureFlags.employeeMobileChildAttendanceReservationEdit &&
+                  unitInfoResponse
+                    .map((unit) => unit.features.includes('RESERVATIONS'))
+                    .getOrElse(false) ? (
+                    <LinkButtonWithIcon
+                      data-qa="mark-reservations"
+                      to={`${groupRoute}/child-attendance/${childId}/mark-reservations`}
+                    >
+                      <RoundIcon
+                        size="L"
+                        content={faCalendarTimes}
+                        color={colors.main.m2}
+                      />
+                      <LinkButtonText>
+                        {i18n.attendances.actions.markReservations}
+                      </LinkButtonText>
+                    </LinkButtonWithIcon>
+                  ) : (
+                    <LinkButtonWithIcon
+                      data-qa="mark-absent-beforehand"
+                      to={`${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`}
+                    >
+                      <RoundIcon
+                        size="L"
+                        content={faCalendarTimes}
+                        color={colors.main.m2}
+                      />
+                      <LinkButtonText>
+                        {i18n.attendances.actions.markAbsentBeforehand}
+                      </LinkButtonText>
+                    </LinkButtonWithIcon>
+                  )}
                 </BottomButtonWrapper>
               </>
             )

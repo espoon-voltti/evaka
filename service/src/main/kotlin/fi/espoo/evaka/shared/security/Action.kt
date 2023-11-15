@@ -910,6 +910,12 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
+        READ_NON_RESERVABLE_RESERVATIONS(
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+        ),
+        UPDATE_NON_RESERVABLE_RESERVATIONS(
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+        ),
         DELETE_HOLIDAY_RESERVATIONS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
