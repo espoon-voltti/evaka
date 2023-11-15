@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.YEARLY
-import fi.espoo.evaka.invoicing.service.EspooIncomeCoefficientMultiplierProvider
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
