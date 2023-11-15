@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -30,21 +31,33 @@ class VardaController(
     @PostMapping("/start-update")
     fun runFullVardaUpdate(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(it, user, clock, Action.Global.VARDA_OPERATIONS)
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.VARDA_OPERATIONS
+                    )
+                }
+                vardaService.startVardaUpdate(dbc, clock)
             }
-            vardaService.startVardaUpdate(dbc, clock)
-        }
+            .also { Audit.VardaReportOperations.log() }
     }
 
     @PostMapping("/start-reset")
     fun runFullVardaReset(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(it, user, clock, Action.Global.VARDA_OPERATIONS)
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.VARDA_OPERATIONS
+                    )
+                }
+                vardaResetService.planVardaReset(dbc, clock, true)
             }
-            vardaResetService.planVardaReset(dbc, clock, true)
-        }
+            .also { Audit.VardaReportOperations.log() }
     }
 
     @PostMapping("/child/reset/{childId}")
@@ -55,16 +68,22 @@ class VardaController(
         @PathVariable childId: ChildId
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Global.VARDA_OPERATIONS)
-                it.resetChildResetTimestamp(childId)
-                asyncJobRunner.plan(
-                    it,
-                    listOf(AsyncJob.ResetVardaChildOld(childId)),
-                    retryCount = 1,
-                    runAt = clock.now()
-                )
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.VARDA_OPERATIONS
+                    )
+                    it.resetChildResetTimestamp(childId)
+                    asyncJobRunner.plan(
+                        it,
+                        listOf(AsyncJob.ResetVardaChildOld(childId)),
+                        retryCount = 1,
+                        runAt = clock.now()
+                    )
+                }
             }
-        }
+            .also { Audit.VardaReportOperations.log(targetId = childId) }
     }
 }
