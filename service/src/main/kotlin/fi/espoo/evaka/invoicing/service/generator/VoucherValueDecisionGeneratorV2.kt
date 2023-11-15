@@ -241,6 +241,7 @@ private fun getVoucherBases(
                     placementDetailsByChild[child.id]?.any { it.range.contains(range) } ?: false
                 }
                 .indexOfFirst { it.id == targetChildId }
+                .takeIf { it >= 0 } ?: 0
 
         VoucherBasis(
             range = range,
@@ -434,21 +435,15 @@ private fun getChildFamilyRelations(
                 ?.filter { it.range.contains(range) }
                 ?.map { it.child } ?: emptyList()
 
-        val isHeadOfFamily =
+        val (realHeadOfFamily, realPartner) =
             determineHeadOfFamily(headOfChild to headOfChildChildren, partner to partnersChildren)
-                .first == headOfChild
 
-        val children =
-            if (mergeFamilies) {
-                if (isHeadOfFamily) headOfChildChildren + partnersChildren else emptyList()
-            } else {
-                headOfChildChildren
-            }
+        val children = headOfChildChildren + partnersChildren
 
         ChildFamilyRelations(
             finiteRange = range,
-            headOfChild = headOfChild,
-            partner = partner,
+            headOfChild = realHeadOfFamily,
+            partner = realPartner,
             childrenInFamily = children
         )
     }

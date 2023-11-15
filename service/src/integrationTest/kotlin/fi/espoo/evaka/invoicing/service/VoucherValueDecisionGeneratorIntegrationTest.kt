@@ -120,6 +120,82 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `siblings in broken family`() {
+        val dad = testAdult_1
+        val mom = testAdult_2
+        val youngerChild = testChild_1
+        val olderChild = testChild_2
+        val partnershipPeriod = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31))
+        insertPartnership(dad.id, mom.id, partnershipPeriod)
+        insertFamilyRelations(
+            dad.id,
+            listOf(youngerChild.id),
+            DateRange(LocalDate.of(2021, 1, 1), youngerChild.dateOfBirth.plusYears(18))
+        )
+        insertFamilyRelations(
+            mom.id,
+            listOf(olderChild.id),
+            DateRange(LocalDate.of(2021, 1, 1), olderChild.dateOfBirth.plusYears(18))
+        )
+        val placementPeriod = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 10, 31))
+        insertPlacement(
+            childId = olderChild.id,
+            period = placementPeriod,
+            type = PlacementType.DAYCARE,
+            daycareId = testVoucherDaycare.id
+        )
+        insertPlacement(
+            childId = youngerChild.id,
+            period = placementPeriod,
+            type = PlacementType.DAYCARE,
+            daycareId = testVoucherDaycare.id
+        )
+
+        db.transaction {
+            generator.generateNewDecisionsForAdult(it, clock, dad.id, LocalDate.of(2020, 1, 1))
+            generator.generateNewDecisionsForAdult(it, clock, mom.id, LocalDate.of(2020, 1, 1))
+        }
+
+        val voucherValueDecisions =
+            getAllVoucherValueDecisions()
+                .sortedWith(
+                    compareBy<VoucherValueDecision> { it.validFrom }
+                        .thenByDescending { it.child.dateOfBirth }
+                )
+        assertEquals(4, voucherValueDecisions.size)
+        voucherValueDecisions[0].also { decision ->
+            assertEquals(placementPeriod.intersection(partnershipPeriod), decision.validDuring)
+            assertEquals(dad.id, decision.headOfFamilyId)
+            assertEquals(mom.id, decision.partnerId)
+            assertEquals(youngerChild.id, decision.child.id)
+            assertEquals(4, decision.familySize)
+        }
+        voucherValueDecisions[1].also { decision ->
+            assertEquals(placementPeriod.intersection(partnershipPeriod), decision.validDuring)
+            assertEquals(dad.id, decision.headOfFamilyId)
+            assertEquals(mom.id, decision.partnerId)
+            assertEquals(olderChild.id, decision.child.id)
+            assertEquals(4, decision.familySize)
+        }
+        val placementAfterSeparation =
+            placementPeriod.copy(start = partnershipPeriod.end!!.plusDays(1))
+        voucherValueDecisions[2].also { decision ->
+            assertEquals(placementAfterSeparation, decision.validDuring)
+            assertEquals(dad.id, decision.headOfFamilyId)
+            assertEquals(null, decision.partnerId)
+            assertEquals(youngerChild.id, decision.child.id)
+            assertEquals(2, decision.familySize)
+        }
+        voucherValueDecisions[3].also { decision ->
+            assertEquals(placementAfterSeparation, decision.validDuring)
+            assertEquals(mom.id, decision.headOfFamilyId)
+            assertEquals(null, decision.partnerId)
+            assertEquals(olderChild.id, decision.child.id)
+            assertEquals(2, decision.familySize)
+        }
+    }
+
+    @Test
     fun `voucher value decisions works as expected with fee alterations`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1367,7 +1443,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 adultId1,
                 adultId2,
                 startDate = period.start,
-                endDate = period.end!!
+                endDate = period.end
             )
         }
     }
