@@ -7,9 +7,11 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.pis.controllers.FamilyController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
@@ -38,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var familyController: FamilyController
+    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private val clock = RealEvakaClock()
     private val financeUser =
@@ -180,7 +183,13 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 IncomeValue(
                                     incomeTotal,
                                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                                    1
+                                    1,
+                                    calculateMonthlyAmount(
+                                        incomeTotal,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
                                 )
                         ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)

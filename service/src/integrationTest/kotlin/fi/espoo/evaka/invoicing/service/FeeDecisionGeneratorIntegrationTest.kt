@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
@@ -113,6 +114,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired private lateinit var parentshipController: ParentshipController
     @Autowired private lateinit var partnershipsController: PartnershipsController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired
+    private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     @BeforeEach
     fun beforeEach() {
@@ -3886,7 +3889,17 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     data =
                         mapOf(
                             "MAIN_INCOME" to
-                                IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                                IncomeValue(
+                                    amount,
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    1,
+                                    calculateMonthlyAmount(
+                                        amount,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
+                                )
                         ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )

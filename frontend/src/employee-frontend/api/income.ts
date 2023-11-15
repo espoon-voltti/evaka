@@ -5,6 +5,7 @@
 import partition from 'lodash/partition'
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
+import { IncomeCoefficient } from 'lib-common/api-types/income'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -98,6 +99,14 @@ interface IncomeType {
   multiplier: number
   withCoefficient: boolean
   isSubType: boolean
+}
+
+export type IncomeCoefficientMultipliers = Record<IncomeCoefficient, number>
+
+export async function getIncomeCoefficientMultipliers(): Promise<IncomeCoefficientMultipliers> {
+  return client
+    .get<IncomeCoefficientMultipliers>(`/incomes/multipliers`)
+    .then((res) => res.data)
 }
 
 export async function getIncomeNotifications(

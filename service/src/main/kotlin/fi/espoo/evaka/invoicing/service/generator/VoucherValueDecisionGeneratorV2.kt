@@ -30,7 +30,9 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.mapIncomeToDecisionIncome
 import fi.espoo.evaka.invoicing.service.AssistanceNeedCoefficient
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionFees
@@ -48,6 +50,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
@@ -65,6 +68,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            coefficientMultiplierProvider = coefficientMultiplierProvider,
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = childId,
             activeDecisions = activeDecisions,
@@ -83,6 +87,7 @@ fun generateVoucherValueDecisionsDrafts(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     valueDecisionCapacityFactorEnabled: Boolean,
     targetChildId: ChildId,
     activeDecisions: List<VoucherValueDecision>,
@@ -95,6 +100,7 @@ fun generateVoucherValueDecisionsDrafts(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            coefficientMultiplierProvider = coefficientMultiplierProvider,
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = targetChildId,
             activeDecisions = activeDecisions,
@@ -126,6 +132,7 @@ private fun getVoucherBases(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     valueDecisionCapacityFactorEnabled: Boolean,
     targetChildId: ChildId,
     activeDecisions: List<VoucherValueDecision>,
@@ -145,6 +152,7 @@ private fun getVoucherBases(
         tx.getIncomesFrom(
                 mapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
+                coefficientMultiplierProvider = coefficientMultiplierProvider,
                 personIds = (allHeadOfChildIds + allPartnerIds + targetChildId).toList(),
                 from = minDate
             )
@@ -153,7 +161,7 @@ private fun getVoucherBases(
                 valueTransform = {
                     IncomeRange(
                         range = DateRange(it.validFrom, it.validTo),
-                        income = it.toDecisionIncome()
+                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider)
                     )
                 }
             )

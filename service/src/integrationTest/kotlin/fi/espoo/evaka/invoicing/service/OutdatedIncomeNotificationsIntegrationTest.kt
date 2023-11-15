@@ -58,6 +58,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var mapper: JsonMapper
     @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
+    @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
@@ -327,7 +328,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }.size
+            db.read {
+                    it.getIncomesForPerson(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        guardianId
+                    )
+                }
+                .size
         )
 
         assertEquals(0, getEmails().size)
@@ -372,7 +381,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }.size
+            db.read {
+                    it.getIncomesForPerson(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        guardianId
+                    )
+                }
+                .size
         )
     }
 
@@ -448,7 +465,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
 
         assertEquals(0, getEmails().size)
 
-        val incomes = db.read { it.getIncomesForPerson(mapper, incomeTypesProvider, guardianId) }
+        val incomes =
+            db.read {
+                it.getIncomesForPerson(
+                    mapper,
+                    incomeTypesProvider,
+                    coefficientMultiplierProvider,
+                    guardianId
+                )
+            }
         assertEquals(2, incomes.size)
         assertEquals(IncomeEffect.INCOMPLETE, incomes[0].effect)
         val firstDayAfterExpiration = clock.today().plusDays(1)

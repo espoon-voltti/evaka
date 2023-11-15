@@ -28,6 +28,8 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.invoicing.mapIncomeToDecisionIncome
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
@@ -44,6 +46,7 @@ fun generateAndInsertFeeDecisionsV2(
     tx: Database.Transaction,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
     retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
@@ -61,6 +64,7 @@ fun generateAndInsertFeeDecisionsV2(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = headOfFamilyId,
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
@@ -78,6 +82,7 @@ fun generateFeeDecisionsDrafts(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
     activeDecisions: List<FeeDecision>,
     existingDrafts: List<FeeDecision>,
@@ -89,6 +94,7 @@ fun generateFeeDecisionsDrafts(
             tx = tx,
             jsonMapper = jsonMapper,
             incomeTypesProvider = incomeTypesProvider,
+            coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = targetAdultId,
             activeDecisions = activeDecisions,
             minDate = minDate
@@ -119,6 +125,7 @@ private fun getFeeBases(
     tx: Database.Read,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
     activeDecisions: List<FeeDecision>,
     minDate: LocalDate
@@ -130,13 +137,19 @@ private fun getFeeBases(
     val allPersonIds = listOf(targetAdultId) + allPartnerIds + allChildIds
 
     val incomesByPerson =
-        tx.getIncomesFrom(jsonMapper, incomeTypesProvider, allPersonIds, minDate)
+        tx.getIncomesFrom(
+                jsonMapper,
+                incomeTypesProvider,
+                coefficientMultiplierProvider,
+                allPersonIds,
+                minDate
+            )
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
                     IncomeRange(
                         range = DateRange(it.validFrom, it.validTo),
-                        income = it.toDecisionIncome()
+                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider)
                     )
                 }
             )

@@ -4,73 +4,138 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.invoicing.calculateIncomeTotal
+import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.YEARLY
-import fi.espoo.evaka.invoicing.testIncome
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class IncomesTest {
+
+    private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
+
     @Test
     fun `Income total with empty data`() {
-        val income = testIncome.copy(data = mapOf())
-
-        assertEquals(0, income.total())
+        val total = calculateIncomeTotal(mapOf(), coefficientMultiplierProvider)
+        assertEquals(0, total)
     }
 
     @Test
     fun `Income total with only MAIN_INCOME`() {
-        val income =
-            testIncome.copy(
-                data = mapOf("MAIN_INCOME" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, 1))
-            )
-
-        assertEquals(50000, income.total())
+        val incomeData = mapOf("MAIN_INCOME" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, 1, 0))
+        val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
+        assertEquals(50000, total)
     }
 
     @Test
     fun `Income total with multiple incomes`() {
-        val income =
-            testIncome.copy(
-                data =
-                    mapOf(
-                        "MAIN_INCOME" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, 1),
-                        "SECONDARY_INCOME" to IncomeValue(100000, MONTHLY_NO_HOLIDAY_BONUS, 1),
-                        "PARENTAL_ALLOWANCE" to IncomeValue(20000, MONTHLY_NO_HOLIDAY_BONUS, 1)
+        val incomeData =
+            mapOf(
+                "MAIN_INCOME" to
+                    IncomeValue(
+                        50000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(
+                            50000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
+                    ),
+                "SECONDARY_INCOME" to
+                    IncomeValue(
+                        100000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(
+                            100000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
+                    ),
+                "PARENTAL_ALLOWANCE" to
+                    IncomeValue(
+                        20000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(
+                            20000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
                     )
             )
 
-        assertEquals(170000, income.total())
+        val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
+        assertEquals(170000, total)
     }
 
     @Test
     fun `Income total with expenses`() {
-        val income =
-            testIncome.copy(
-                data = mapOf("ALL_EXPENSES" to IncomeValue(10000, MONTHLY_NO_HOLIDAY_BONUS, -1))
+        val incomeData =
+            mapOf(
+                "ALL_EXPENSES" to
+                    IncomeValue(
+                        10000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        -1,
+                        calculateMonthlyAmount(
+                            10000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
+                    )
             )
 
-        assertEquals(-10000, income.total())
+        val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
+        assertEquals(-10000, total)
     }
 
     @Test
     fun `Income total with income and expenses`() {
-        val income =
-            testIncome.copy(
-                data =
-                    mapOf(
-                        "MAIN_INCOME" to IncomeValue(500000, MONTHLY_NO_HOLIDAY_BONUS, 1),
-                        "ALL_EXPENSES" to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS, -1)
+        val incomeData =
+            mapOf(
+                "MAIN_INCOME" to
+                    IncomeValue(
+                        500000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        1,
+                        calculateMonthlyAmount(
+                            500000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
+                    ),
+                "ALL_EXPENSES" to
+                    IncomeValue(
+                        50000,
+                        MONTHLY_NO_HOLIDAY_BONUS,
+                        -1,
+                        calculateMonthlyAmount(
+                            50000,
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
+                        )
                     )
             )
 
-        assertEquals(450000, income.total())
+        val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
+        assertEquals(450000, total)
     }
 
     @Test
     fun `Income total with YEARLY coefficient`() {
-        val income = testIncome.copy(data = mapOf("MAIN_INCOME" to IncomeValue(100000, YEARLY, 1)))
+        val incomeData =
+            mapOf(
+                "MAIN_INCOME" to
+                    IncomeValue(
+                        100000,
+                        YEARLY,
+                        1,
+                        calculateMonthlyAmount(
+                            100000,
+                            coefficientMultiplierProvider.multiplier(YEARLY)
+                        )
+                    )
+            )
 
-        assertEquals(8330, income.total())
+        val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
+        assertEquals(8330, total)
     }
 }

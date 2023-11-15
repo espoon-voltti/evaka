@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.getIncomeNotifications
@@ -36,6 +37,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
 import java.util.UUID
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -52,6 +54,7 @@ import org.springframework.web.bind.annotation.RestController
 class IncomeController(
     private val documentClient: DocumentService,
     private val incomeTypesProvider: IncomeTypesProvider,
+    private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     private val mapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl,
@@ -77,7 +80,13 @@ class IncomeController(
                         personId
                     )
 
-                    val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
+                    val incomes =
+                        tx.getIncomesForPerson(
+                            mapper,
+                            incomeTypesProvider,
+                            coefficientMultiplierProvider,
+                            personId
+                        )
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
                             tx,
@@ -168,7 +177,13 @@ class IncomeController(
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
-                val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
+                val existing =
+                    tx.getIncome(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        incomeId
+                    )
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome =
                     validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
@@ -219,8 +234,12 @@ class IncomeController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
 
                 val existing =
-                    tx.getIncome(mapper, incomeTypesProvider, incomeId)
-                        ?: throw BadRequest("Income not found")
+                    tx.getIncome(
+                        mapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider,
+                        incomeId
+                    ) ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
 
                 existing.attachments.map {
@@ -256,6 +275,27 @@ class IncomeController(
             }
         }
         return incomeTypesProvider.get()
+    }
+
+    @GetMapping("/multipliers")
+    fun getMultipliers(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): Map<IncomeCoefficient, BigDecimal> {
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.READ_INCOME_COEFFICIENT_MULTIPLIERS
+                )
+            }
+        }
+        return IncomeCoefficient.values().associateWith {
+            coefficientMultiplierProvider.multiplier(it)
+        }
     }
 
     @GetMapping("/notifications")

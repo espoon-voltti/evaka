@@ -15,6 +15,7 @@ export type QueryKeyPrefix =
   | 'timeline'
   | 'unit'
   | 'vasu'
+  | 'personProfile'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

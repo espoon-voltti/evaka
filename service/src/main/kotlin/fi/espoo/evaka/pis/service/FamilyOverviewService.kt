@@ -6,11 +6,12 @@ package fi.espoo.evaka.pis.service
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.json.JsonMapper
+import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.data.parseIncomeDataJson
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
-import fi.espoo.evaka.invoicing.domain.incomeTotal
+import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.pis.determineHeadOfFamily
@@ -25,7 +26,8 @@ import org.springframework.stereotype.Service
 @Service
 class FamilyOverviewService(
     private val jsonMapper: JsonMapper,
-    private val incomeTypesProvider: IncomeTypesProvider
+    private val incomeTypesProvider: IncomeTypesProvider,
+    private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ) {
     fun getFamilyByAdult(tx: Database.Read, clock: EvakaClock, adultId: PersonId): FamilyOverview? {
         val sql =
@@ -86,7 +88,13 @@ ORDER BY date_of_birth ASC
             tx.createQuery(sql)
                 .bind("today", clock.today())
                 .bind("id", adultId)
-                .map { toFamilyOverviewPerson(jsonMapper, incomeTypesProvider) }
+                .map {
+                    toFamilyOverviewPerson(
+                        jsonMapper,
+                        incomeTypesProvider,
+                        coefficientMultiplierProvider
+                    )
+                }
                 .useIterable { rows -> rows.partition { it.headOfChild == null } }
 
         if (adults.isEmpty()) {
@@ -156,7 +164,8 @@ data class FamilyOverviewIncome(
 
 fun Row.toFamilyOverviewPerson(
     jsonMapper: JsonMapper,
-    incomeTypesProvider: IncomeTypesProvider
+    incomeTypesProvider: IncomeTypesProvider,
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(
         personId = column("id"),
@@ -173,7 +182,15 @@ fun Row.toFamilyOverviewPerson(
                 effect = column("income_effect"),
                 total =
                     column<String?>("income_data")?.let {
-                        incomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get()))
+                        calculateIncomeTotal(
+                            parseIncomeDataJson(
+                                it,
+                                jsonMapper,
+                                incomeTypesProvider.get(),
+                                coefficientMultiplierProvider
+                            ),
+                            coefficientMultiplierProvider
+                        )
                     }
             )
     )

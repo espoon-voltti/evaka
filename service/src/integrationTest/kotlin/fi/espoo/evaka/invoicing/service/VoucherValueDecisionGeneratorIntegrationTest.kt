@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
@@ -77,6 +78,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     @Autowired private lateinit var generator: FinanceDecisionGenerator
     @Autowired private lateinit var voucherValueDecisionController: VoucherValueDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired
+    private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     val clock = MockEvakaClock(2021, 1, 1, 15, 0)
 
@@ -1159,7 +1162,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                 IncomeValue(
                                     amount = 0,
                                     coefficient = IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                                    multiplier = 1
+                                    multiplier = 1,
+                                    monthlyAmount = 0
                                 )
                         ),
                     effect = IncomeEffect.INCOME,
@@ -1495,7 +1499,17 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     data =
                         mapOf(
                             "MAIN_INCOME" to
-                                IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                                IncomeValue(
+                                    amount,
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    1,
+                                    calculateMonthlyAmount(
+                                        amount,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
+                                )
                         ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
