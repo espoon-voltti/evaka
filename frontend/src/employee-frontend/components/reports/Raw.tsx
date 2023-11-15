@@ -92,6 +92,7 @@ export default React.memo(function Raw() {
                 ...row,
                 day: row.day.format(),
                 childLink: `${window.location.protocol}//${window.location.host}/employee/child-information/${row.childId}`,
+                hasSocialSecurityNumber: mapYesNo(row.hasSocialSecurityNumber),
                 dateOfBirth: row.dateOfBirth?.format(),
                 placementType: i18n.placement.type[row.placementType],
                 unitType:
@@ -121,6 +122,7 @@ export default React.memo(function Raw() {
                 { label: 'Linkki lapseen', key: 'childLink' },
                 { label: 'Sukunimi', key: 'lastName' },
                 { label: 'Etunimi', key: 'firstName' },
+                { label: 'Hetu', key: 'hasSocialSecurityNumber' },
                 { label: 'Syntymäaika', key: 'dateOfBirth' },
                 { label: 'Ikä', key: 'age' },
                 { label: 'Kieli', key: 'language' },
