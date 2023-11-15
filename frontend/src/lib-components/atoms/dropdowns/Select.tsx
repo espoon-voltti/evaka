@@ -16,6 +16,9 @@ import { OneOf } from 'lib-common/form/form'
 import { BoundForm } from 'lib-common/form/hooks'
 import { faChevronDown } from 'lib-icons'
 
+import UnderRowStatusIcon from '../StatusIcon'
+import { InputFieldUnderRow } from '../form/InputField'
+
 import { borderStyles, DropdownProps, Root } from './shared'
 
 type SelectProps<T> = DropdownProps<T, HTMLSelectElement> &
@@ -163,7 +166,10 @@ interface SelectFProps<T> {
   'data-qa'?: string
 }
 
-function SelectFC<T>({ bind: { state, update }, ...props }: SelectFProps<T>) {
+function SelectFC<T>({
+  bind: { state, update, inputInfo },
+  ...props
+}: SelectFProps<T>) {
   const { domValue, options } = state
   const rawOptions = useMemo(
     () =>
@@ -181,13 +187,29 @@ function SelectFC<T>({ bind: { state, update }, ...props }: SelectFProps<T>) {
     [update]
   )
 
+  const info = inputInfo()
+  const infoText = info?.text
+  const infoStatus = info?.status
+
   return (
-    <RawSelect
-      {...props}
-      options={rawOptions}
-      value={domValue}
-      onChange={onChange}
-    />
+    <>
+      <RawSelect
+        {...props}
+        options={rawOptions}
+        value={domValue}
+        onChange={onChange}
+      />
+      {!!infoText && (
+        <InputFieldUnderRow className={classNames(infoStatus)}>
+          <span
+            data-qa={props['data-qa'] ? `${props['data-qa']}-info` : undefined}
+          >
+            {infoText}
+          </span>
+          <UnderRowStatusIcon status={info?.status} />
+        </InputFieldUnderRow>
+      )}
+    </>
   )
 }
 

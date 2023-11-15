@@ -219,62 +219,70 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestBody body: StaffAttendanceUpdateRequest
     ): StaffAttendanceUpdateResponse {
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                ac.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                    unitId
-                )
-                ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                        unitId
+                    )
+                    ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
 
-                if (
-                    body.rows.any {
-                        !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
-                            .includes(body.date)
+                    if (
+                        body.rows.any {
+                            !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
+                                .includes(body.date)
+                        }
+                    ) {
+                        throw BadRequest("Attendances outside given date")
                     }
-                ) {
-                    throw BadRequest("Attendances outside given date")
-                }
-                val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
-                if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }) {
-                    throw BadRequest("Group is not in unit")
-                }
-
-                val existing = tx.getEmployeeAttendancesForDate(unitId, body.employeeId, body.date)
-
-                val ids = body.rows.mapNotNull { it.id }
-                if (ids.any { id -> !existing.map { it.id }.contains(id) }) {
-                    throw BadRequest("Unknown id was given")
-                }
-
-                val deletedIds = existing.map { it.id }
-                deletedIds.forEach { tx.deleteStaffAttendance(it) }
-
-                val occupancyCoefficients =
-                    groupIds.associateWith { groupId ->
-                        tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
-                            ?: occupancyCoefficientZero
-                    }
-                val updatedIds =
-                    body.rows.map { attendance ->
-                        tx.upsertStaffAttendance(
-                            attendanceId = null,
-                            employeeId = body.employeeId,
-                            groupId = attendance.groupId,
-                            arrivalTime = attendance.arrived,
-                            departureTime = attendance.departed,
-                            occupancyCoefficient =
-                                occupancyCoefficients[attendance.groupId]
-                                    ?: occupancyCoefficientZero,
-                            type = attendance.type
-                        )
+                    val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
+                    if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }) {
+                        throw BadRequest("Group is not in unit")
                     }
 
-                StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
+                    val existing =
+                        tx.getEmployeeAttendancesForDate(unitId, body.employeeId, body.date)
+
+                    val ids = body.rows.mapNotNull { it.id }
+                    if (ids.any { id -> !existing.map { it.id }.contains(id) }) {
+                        throw BadRequest("Unknown id was given")
+                    }
+
+                    val deletedIds = existing.map { it.id }
+                    deletedIds.forEach { tx.deleteStaffAttendance(it) }
+
+                    val occupancyCoefficients =
+                        groupIds.associateWith { groupId ->
+                            tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
+                                ?: occupancyCoefficientZero
+                        }
+                    val updatedIds =
+                        body.rows.map { attendance ->
+                            tx.upsertStaffAttendance(
+                                attendanceId = null,
+                                employeeId = body.employeeId,
+                                groupId = attendance.groupId,
+                                arrivalTime = attendance.arrived,
+                                departureTime = attendance.departed,
+                                occupancyCoefficient =
+                                    occupancyCoefficients[attendance.groupId]
+                                        ?: occupancyCoefficientZero,
+                                type = attendance.type
+                            )
+                        }
+
+                    StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
+                }
             }
-        }
+            .also {
+                Audit.StaffAttendanceUpdate.log(
+                    targetId = body.employeeId,
+                    objectId = mapOf("inserted" to it.inserted, "deleted" to it.deleted),
+                    meta = mapOf("date" to body.date)
+                )
+            }
     }
 
     data class ExternalStaffArrivalRequest(

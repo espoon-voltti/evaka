@@ -20,6 +20,7 @@ export interface TimeInputProps
     | 'id'
     | 'name'
     | 'required'
+    | 'readonly'
     | 'inputRef'
     | 'aria-describedby'
     | 'data-qa'

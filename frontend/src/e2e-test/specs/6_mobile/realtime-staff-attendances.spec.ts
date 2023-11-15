@@ -707,8 +707,7 @@ describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await editPage.addLink.waitUntilVisible()
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.arrivalTime.assertTextEquals(departureTime)
@@ -744,8 +743,7 @@ describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await editPage.addLink.waitUntilVisible()
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -784,8 +782,7 @@ describe('Realtime staff attendance edit page', () => {
     await editPage.addLink.waitUntilHidden()
     await editPage.fillDeparted(1, newDepartureTime)
     await editPage.addLink.waitUntilVisible()
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -824,8 +821,7 @@ describe('Realtime staff attendance edit page', () => {
     await editPage.selectType(0, 'OVERTIME')
     await editPage.fillArrived(0, newArrivalTime)
     await editPage.fillDeparted(0, newDepartureTime)
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -856,8 +852,7 @@ describe('Realtime staff attendance edit page', () => {
 
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.remove(0)
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([])
@@ -865,13 +860,14 @@ describe('Realtime staff attendance edit page', () => {
 
   test('Staff member can edit ongoing attendance from yesterday', async () => {
     const date = LocalDate.of(2023, 1, 24)
+    const arrivalTime = '22:00'
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.data.id,
         groupId: daycareGroupFixture.id,
         arrived: HelsinkiDateTime.fromLocal(
           date.subDays(1),
-          LocalTime.of(22, 0)
+          LocalTime.parse(arrivalTime)
         ),
         departed: null
       })
@@ -885,17 +881,14 @@ describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
 
-    const newArrivalTime = '21:00'
     const newDepartureTime = '02:00'
     const editPage = new StaffAttendanceEditPage(page)
-    await editPage.fillArrived(0, newArrivalTime)
     await editPage.fillDeparted(0, newDepartureTime)
-    await editPage.pinInput.fill(pin)
-    await editPage.saveButton.click()
+    await editPage.submit(pin)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertEmployeeAttendances([
-      `Paikalla ${newArrivalTime}–${newDepartureTime}`
+      `Paikalla ${arrivalTime}–${newDepartureTime}`
     ])
   })
 })

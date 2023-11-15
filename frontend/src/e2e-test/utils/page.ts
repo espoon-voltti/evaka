@@ -296,6 +296,12 @@ export class TextInput extends Element {
   }
 }
 
+export class PinInput extends Element {
+  async fill(pinCode: string): Promise<void> {
+    await this.locator.pressSequentially(pinCode)
+  }
+}
+
 export class DatePicker extends Element {
   #input = new TextInput(this)
 

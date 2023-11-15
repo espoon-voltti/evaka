@@ -128,6 +128,17 @@ export const PinInput = React.memo(function PinInput({
   )
 })
 
+interface PinInputF extends Omit<Props, 'pin' | 'onPinChange'> {
+  bind: BoundFormState<string[]>
+}
+
+export const PinInputF = React.memo(function PinInputF({
+  bind: { state, set },
+  ...props
+}: PinInputF) {
+  return <PinInput {...props} pin={state} onPinChange={set} />
+})
+
 type PlainPinInputProps = Pick<
   TextInputProps,
   'id' | 'info' | 'onChange' | 'value'
