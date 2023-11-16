@@ -39,7 +39,7 @@ const Wrapper = styled.div`
 
 const monthOptions = range(1, 13)
 const yearOptions = range(
-  LocalDate.todayInSystemTz().year,
+  LocalDate.todayInSystemTz().year + 1,
   LocalDate.todayInSystemTz().year - 4,
   -1
 )
