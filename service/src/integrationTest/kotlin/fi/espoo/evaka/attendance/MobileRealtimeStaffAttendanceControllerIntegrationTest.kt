@@ -1275,17 +1275,26 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     )
             )
 
-        val exception =
-            assertThrows<Forbidden> {
-                mobileRealtimeStaffAttendanceController.setAttendances(
-                    dbInstance(),
-                    mobileUser,
-                    MockEvakaClock(now),
-                    testDaycare.id,
-                    body
-                )
+        (0..5).forEach { attempt ->
+            val exception =
+                assertThrows<Forbidden> {
+                    mobileRealtimeStaffAttendanceController.setAttendances(
+                        dbInstance(),
+                        mobileUser,
+                        MockEvakaClock(now),
+                        testDaycare.id,
+                        body
+                    )
+                }
+            assertEquals("Invalid pin code", exception.message)
+
+            // Pin is locked after 5 attempts
+            if (attempt < 5) {
+                assertEquals("WRONG_PIN", exception.errorCode)
+            } else {
+                assertEquals("PIN_LOCKED", exception.errorCode)
             }
-        assertEquals("Invalid pin code", exception.message)
+        }
     }
 
     @Test

@@ -424,12 +424,12 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
     }
 
     fun verifyPinCodeAndThrow(
-        tx: Database.Transaction,
+        dbc: Database.Connection,
         employeeId: EmployeeId,
         pinCode: String,
         clock: EvakaClock
     ) {
-        val errorCode = verifyPinCode(tx, employeeId, pinCode, clock)
+        val errorCode = dbc.transaction { verifyPinCode(it, employeeId, pinCode, clock) }
         if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }
