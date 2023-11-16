@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { fi } from 'date-fns/locale'
+import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -23,7 +23,7 @@ import {
   PlacementsReportFilters
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { Lang, Translations, useTranslation } from '../../state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
@@ -33,38 +33,16 @@ const StyledTd = styled(Td)`
   white-space: nowrap;
 `
 
-const locales = {
-  fi: fi,
-  sv: fi
-}
-
 const Wrapper = styled.div`
   width: 100%;
 `
 
-function monthOptions(lang: Lang) {
-  const locale = locales[lang]
-  const monthOptions = []
-  for (let i = 1; i <= 12; i++) {
-    monthOptions.push({
-      value: i.toString(),
-      label: String(locale.localize?.month(i - 1))
-    })
-  }
-  return monthOptions
-}
-
-function yearOptions() {
-  const currentYear = LocalDate.todayInSystemTz().year
-  const yearOptions = []
-  for (let year = currentYear; year > currentYear - 5; year--) {
-    yearOptions.push({
-      value: year.toString(),
-      label: year.toString()
-    })
-  }
-  return yearOptions
-}
+const monthOptions = range(1, 13)
+const yearOptions = range(
+  LocalDate.todayInSystemTz().year,
+  LocalDate.todayInSystemTz().year - 4,
+  -1
+)
 
 function getFilename(i18n: Translations, year: number, month: number) {
   const time = LocalDate.of(year, month, 1).formatExotic('yyyy-MM')
@@ -80,7 +58,7 @@ const emptyDisplayFilters: DisplayFilters = {
 }
 
 export default React.memo(function StartingPlacements() {
-  const { i18n, lang } = useTranslation()
+  const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(
     Success.of([])
   )
@@ -121,38 +99,27 @@ export default React.memo(function StartingPlacements() {
           <FlexRow>
             <Wrapper>
               <Combobox
-                items={monthOptions(lang)}
-                selectedItem={
-                  monthOptions(lang).find(
-                    ({ value }) => Number(value) === filters.month
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const month = parseInt(value.value)
+                items={monthOptions}
+                selectedItem={filters.month}
+                onChange={(month) => {
+                  if (month !== null) {
                     setFilters({ ...filters, month })
                   }
                 }}
                 placeholder={i18n.common.month}
-                getItemLabel={(item) => item.label}
+                getItemLabel={(month) => i18n.datePicker.months[month - 1]}
               />
             </Wrapper>
             <Wrapper>
               <Combobox
-                items={yearOptions()}
-                selectedItem={
-                  yearOptions().find(
-                    ({ value }) => Number(value) === filters.year
-                  ) ?? null
-                }
-                onChange={(value) => {
-                  if (value) {
-                    const year = parseInt(value.value)
+                items={yearOptions}
+                selectedItem={filters.year}
+                onChange={(year) => {
+                  if (year !== null) {
                     setFilters({ ...filters, year })
                   }
                 }}
                 placeholder={i18n.common.year}
-                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>
