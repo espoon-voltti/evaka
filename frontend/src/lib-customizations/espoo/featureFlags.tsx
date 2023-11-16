@@ -39,11 +39,9 @@ const features: Features = {
     noAbsenceType: false,
     childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
-    feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
-    employeeMobileChildAttendanceReservationEdit: true,
-    voucherValueDecisionIgnoredStatus: true
+    employeeMobileChildAttendanceReservationEdit: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -71,11 +69,9 @@ const features: Features = {
     noAbsenceType: false,
     childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
-    feeDecisionIgnoredStatus: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
-    employeeMobileChildAttendanceReservationEdit: true,
-    voucherValueDecisionIgnoredStatus: true
+    employeeMobileChildAttendanceReservationEdit: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -103,11 +99,9 @@ const features: Features = {
     noAbsenceType: false,
     childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
-    feeDecisionIgnoredStatus: true,
     hojks: false,
     employeeMobileStaffAttendanceEdit: false,
-    employeeMobileChildAttendanceReservationEdit: false,
-    voucherValueDecisionIgnoredStatus: true
+    employeeMobileChildAttendanceReservationEdit: false
   }
 }
 

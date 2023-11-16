@@ -265,7 +265,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun generateFinanceDecisions(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { financeDecisionGenerator.scheduleBatchGeneration(it, clock) }
+        db.transaction { financeDecisionGenerator.scheduleBatchGeneration(it) }
     }
 
     fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {

@@ -159,11 +159,7 @@ class VoucherValueDecisionService(
             .forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(
-        tx: Database.Transaction,
-        ids: List<VoucherValueDecisionId>,
-        today: LocalDate
-    ): Set<PersonId> {
+    fun unignoreDrafts(tx: Database.Transaction, ids: List<VoucherValueDecisionId>): Set<PersonId> {
         return tx.getValueDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.IGNORED) {

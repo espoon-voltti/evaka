@@ -118,14 +118,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
     }
 
     private fun generate() {
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(
-                tx,
-                now,
-                testAdult_1.id,
-                originalRange.start.minusYears(5)
-            )
-        }
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
     }
 
     private fun sendAllFeeDecisions() {

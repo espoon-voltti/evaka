@@ -133,58 +133,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `sent value decision validity period ends automatically when corresponding placement has its future end date lowered`() {
-        if (evakaEnv.voucherValueDecisionGeneratorV2Enabled) {
-            // v2 generator does not mutate sent decisions during draft generation
-            return
-        }
-
-        val placementId = createPlacement(startDate, endDate)
-        sendAllValueDecisions()
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(endDate, decisions.first().validTo)
-        }
-
-        val newEndDate = endDate.minusDays(7)
-        updatePlacement(placementId, startDate, newEndDate)
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(newEndDate, decisions.first().validTo)
-        }
-    }
-
-    @Test
-    fun `sent value decision validity period ends automatically when corresponding placement has its future end date increased`() {
-        if (evakaEnv.voucherValueDecisionGeneratorV2Enabled) {
-            // v2 generator does not mutate sent decisions during draft generation
-            return
-        }
-
-        val placementId = createPlacement(startDate, endDate)
-        sendAllValueDecisions()
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(endDate, decisions.first().validTo)
-        }
-
-        val newEndDate = endDate.plusDays(7)
-        updatePlacement(placementId, startDate, newEndDate)
-
-        getAllValueDecisions().let { decisions ->
-            assertEquals(1, decisions.size)
-            assertEquals(VoucherValueDecisionStatus.SENT, decisions.first().status)
-            assertEquals(newEndDate, decisions.first().validTo)
-        }
-    }
-
-    @Test
     fun `sent value decision validity period ends after cleanup when corresponding placement has its past end date updated`() {
         val placementId = createPlacement(startDate, endDate)
         sendAllValueDecisions()

@@ -196,7 +196,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UNIGNORE,
                     feeDecisionIds
                 )
-                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds, clock.today())
+                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -344,7 +344,7 @@ class FeeDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
                     id
                 )
-                generator.createRetroactiveFeeDecisions(it, clock, id, body.from)
+                generator.createRetroactiveFeeDecisions(it, id, body.from)
             }
         }
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)

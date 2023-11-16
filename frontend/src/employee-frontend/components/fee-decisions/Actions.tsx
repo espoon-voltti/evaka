@@ -74,14 +74,12 @@ const Actions = React.memo(function Actions({
                 {i18n.feeDecisions.buttons.checked(checkedIds.length)}
               </CheckedRowsInfo>
             ) : null}
-            {featureFlags.feeDecisionIgnoredStatus && (
-              <Button
-                text={i18n.feeDecisions.buttons.ignoreDraft}
-                disabled={checkedIds.length !== 1}
-                onClick={() => setShowIgnoreModal(true)}
-                data-qa="open-ignore-draft-modal"
-              />
-            )}
+            <Button
+              text={i18n.feeDecisions.buttons.ignoreDraft}
+              disabled={checkedIds.length !== 1}
+              onClick={() => setShowIgnoreModal(true)}
+              data-qa="open-ignore-draft-modal"
+            />
             {featureFlags.financeDecisionHandlerSelect ? (
               <Button
                 primary
