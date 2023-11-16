@@ -23,7 +23,6 @@ import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -171,13 +170,6 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun emailMessageProvider(env: EvakaEnv): IEmailMessageProvider = EvakaEmailMessageProvider(env)
-
-    @Bean
-    fun documentService(
-        s3Client: S3Client,
-        s3Presigner: S3Presigner,
-        env: BucketEnv
-    ): DocumentService = DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
