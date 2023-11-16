@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
+import java.util.UUID
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
     // language=SQL
@@ -151,6 +152,7 @@ internal val aliasedPersonColumns: (String) -> String = { table ->
 private val personColumns =
     listOf(
         "id",
+        "duplicate_of",
         "social_security_number",
         "ssn_adding_disabled",
         "first_name",
@@ -190,6 +192,7 @@ private val toParentship: (String, String) -> Row.() -> Parentship = { childAlia
 internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
     PersonJSON(
         id = PersonId(column("${table}_id")),
+        duplicateOf = column<UUID?>("${table}_duplicate_of")?.let { PersonId(it) },
         socialSecurityNumber = column("${table}_social_security_number"),
         ssnAddingDisabled = column("${table}_ssn_adding_disabled"),
         firstName = column("${table}_first_name"),

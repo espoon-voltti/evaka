@@ -1990,6 +1990,7 @@ data class DevPerson(
     fun toPersonDTO() =
         PersonDTO(
             id = this.id,
+            duplicateOf = this.duplicateOf,
             identity =
                 this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) } ?: ExternalIdentifier.NoID,
             ssnAddingDisabled = this.ssnAddingDisabled ?: false,

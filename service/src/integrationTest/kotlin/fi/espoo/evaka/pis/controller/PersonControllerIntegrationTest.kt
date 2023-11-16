@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevVardaOrganizerChild
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -68,6 +69,22 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `duplicate throws bad request when person is duplicate`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val person = createPerson(testPerson.copy(id = PersonId(UUID.randomUUID())))
+        val duplicate =
+            createPerson(
+                testPerson.copy(
+                    id = PersonId(UUID.randomUUID()),
+                    ssn = null,
+                    duplicateOf = person.id
+                )
+            )
+
+        assertThrows<BadRequest> { controller.duplicate(dbInstance(), user, clock, duplicate.id) }
+    }
+
+    @Test
     fun `duplicate person data`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val person = createPerson()
@@ -81,9 +98,11 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .returns(null) { it.person.socialSecurityNumber }
             .returns(null) { it.person.updatedFromVtj }
             .returns(true) { it.person.ssnAddingDisabled }
+            .returns(person.id) { it.person.duplicateOf }
             .usingRecursiveComparison()
             .ignoringFields(
                 "person.id",
+                "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled"
@@ -120,9 +139,11 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .returns(null) { it.person.socialSecurityNumber }
             .returns(null) { it.person.updatedFromVtj }
             .returns(true) { it.person.ssnAddingDisabled }
+            .returns(person.id) { it.person.duplicateOf }
             .usingRecursiveComparison()
             .ignoringFields(
                 "person.id",
+                "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled"
@@ -153,10 +174,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .returns(null) { it.person.socialSecurityNumber }
             .returns(null) { it.person.updatedFromVtj }
             .returns(true) { it.person.ssnAddingDisabled }
+            .returns(person.id) { it.person.duplicateOf }
             .returns(vardaPersonOid) { it.person.ophPersonOid }
             .usingRecursiveComparison()
             .ignoringFields(
                 "person.id",
+                "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",
@@ -190,9 +213,11 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .returns(null) { it.person.updatedFromVtj }
             .returns(true) { it.person.ssnAddingDisabled }
             .returns("$vardaPersonOid1,$vardaPersonOid2") { it.person.ophPersonOid }
+            .returns(person.id) { it.person.duplicateOf }
             .usingRecursiveComparison()
             .ignoringFields(
                 "person.id",
+                "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",

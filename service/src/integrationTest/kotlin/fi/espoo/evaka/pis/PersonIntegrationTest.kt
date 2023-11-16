@@ -31,6 +31,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it,
                     PersonDTO(
                         id = PersonId(UUID.randomUUID()),
+                        duplicateOf = null,
                         identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
                         ssnAddingDisabled = false,
                         dateOfBirth = LocalDate.of(2012, 5, 8),

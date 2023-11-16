@@ -16,6 +16,7 @@ import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.duplicatePerson
 import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
@@ -120,6 +121,10 @@ class PersonController(
                         Action.Person.DUPLICATE,
                         personId
                     )
+
+                    if (tx.getPersonDuplicateOf(personId) != null) {
+                        throw BadRequest("Person $personId is duplicate")
+                    }
 
                     val duplicateId =
                         tx.duplicatePerson(personId) ?: throw NotFound("Person $personId not found")

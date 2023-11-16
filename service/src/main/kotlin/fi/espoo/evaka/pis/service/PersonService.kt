@@ -268,6 +268,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
         PersonDTO(
             id = PersonId(person.id),
+            duplicateOf = null,
             identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
             ssnAddingDisabled = false,
             firstName = person.firstName,
@@ -296,6 +297,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     ): PersonWithChildrenDTO =
         PersonWithChildrenDTO(
             id = PersonId(person.id),
+            duplicateOf = null,
             socialSecurityNumber = person.socialSecurityNumber,
             firstName = person.firstName,
             lastName = person.lastName,
@@ -337,6 +339,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
         PersonWithChildrenDTO(
             id = person.id,
+            duplicateOf = person.duplicateOf,
             socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.toString(),
             firstName = person.firstName,
             lastName = person.lastName,
@@ -369,6 +372,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
 
 data class PersonDTO(
     val id: PersonId,
+    val duplicateOf: PersonId?,
     val identity: ExternalIdentifier,
     val ssnAddingDisabled: Boolean,
     val firstName: String,
@@ -470,6 +474,7 @@ fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, include
 
 data class PersonJSON(
     val id: PersonId,
+    val duplicateOf: PersonId?,
     val socialSecurityNumber: String? = null,
     val ssnAddingDisabled: Boolean,
     val firstName: String = "",
@@ -497,6 +502,7 @@ data class PersonJSON(
         fun from(p: PersonDTO): PersonJSON =
             PersonJSON(
                 id = p.id,
+                duplicateOf = p.duplicateOf,
                 socialSecurityNumber = (p.identity as? ExternalIdentifier.SSN)?.ssn,
                 ssnAddingDisabled = p.ssnAddingDisabled,
                 firstName = p.firstName,
@@ -543,6 +549,7 @@ data class PersonPatch(
 
 data class PersonWithChildrenDTO(
     val id: PersonId,
+    val duplicateOf: PersonId?,
     val socialSecurityNumber: String?,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate?,
@@ -562,6 +569,7 @@ data class PersonWithChildrenDTO(
     fun toPersonDTO() =
         PersonDTO(
             id = id,
+            duplicateOf = duplicateOf,
             identity =
                 when (socialSecurityNumber) {
                     is String -> ExternalIdentifier.SSN.getInstance(socialSecurityNumber)
@@ -671,6 +679,7 @@ private fun createOrReplaceChildRelationships(
 private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
     PersonDTO(
         id = PersonId(inputPerson.id), // This will be overwritten
+        duplicateOf = null,
         identity = ExternalIdentifier.SSN.getInstance(inputPerson.socialSecurityNumber),
         ssnAddingDisabled = false,
         firstName = inputPerson.firstName,
