@@ -56,6 +56,7 @@ data class DaycareGroupRole(
 data class EmployeeWithDaycareRoles(
     val id: EmployeeId,
     val externalId: String?,
+    val employeeNumber: String?,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
     val lastLogin: HelsinkiDateTime?,
@@ -225,6 +226,7 @@ fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles
 SELECT
     employee.id,
     employee.external_id,
+    employee.employee_number,
     employee.created,
     employee.updated,
     employee.last_login,
@@ -318,6 +320,7 @@ fun getEmployeesPaged(
 SELECT
     employee.id,
     employee.external_id,
+    employee.employee_number,
     employee.created,
     employee.updated,
     employee.last_login,

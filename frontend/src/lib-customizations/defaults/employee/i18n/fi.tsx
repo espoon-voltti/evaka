@@ -4096,6 +4096,7 @@ export const fi = {
     name: 'Nimi',
     rights: 'Oikeudet',
     lastLogin: 'Kirjautunut viimeksi',
+    employeeNumber: 'Henkilönumero',
     temporary: 'Tilapäinen sijainen',
     findByName: 'Etsi nimellä',
     activate: 'Aktivoi',

@@ -65,6 +65,7 @@ export function EmployeeList({ employees, onUpdate }: Props) {
         lastName,
         lastLogin,
         externalId,
+        employeeNumber,
         temporaryUnitName,
         active
       }) => (
@@ -75,6 +76,11 @@ export function EmployeeList({ employees, onUpdate }: Props) {
             </Name>
             <Email>{email}</Email>
             {!!externalId && <Details>{externalId}</Details>}
+            {!!employeeNumber && (
+              <Details>
+                {i18n.employees.employeeNumber}: {employeeNumber}
+              </Details>
+            )}
             {!!temporaryUnitName && (
               <Details>
                 {i18n.employees.temporary}: {temporaryUnitName}
