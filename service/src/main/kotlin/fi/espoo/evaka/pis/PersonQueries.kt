@@ -569,3 +569,10 @@ fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String
         .bind("preferredName", preferredName)
         .execute()
 }
+
+fun Database.Transaction.updateOphPersonOid(id: PersonId, ophPersonOid: String) {
+    createUpdate("UPDATE person SET oph_person_oid = :ophPersonOid WHERE id = :id")
+        .bind("id", id)
+        .bind("ophPersonOid", ophPersonOid)
+        .updateExactlyOne()
+}

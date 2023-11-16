@@ -195,6 +195,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -2283,4 +2284,13 @@ data class DevOtherAssistanceMeasure(
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+)
+
+data class DevVardaOrganizerChild(
+    val evakaPersonId: ChildId,
+    val vardaPersonOid: String = "vardaPersonOid123",
+    val vardaChildId: Long = Random.nextLong(),
+    val organizerOid: String = "organizerOid123",
+    val uploadedAt: HelsinkiDateTime? = null,
+    val vardaPersonId: Long = Random.nextLong()
 )

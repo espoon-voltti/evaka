@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -482,6 +483,13 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
                 .trimIndent()
         )
         .toMap { columnPair("varda_child_id", "evaka_child_id") }
+
+fun Database.Read.getDistinctVardaPersonOidsByEvakaPersonId(id: PersonId) =
+    createQuery(
+            "SELECT DISTINCT varda_person_oid FROM varda_organizer_child WHERE evaka_person_id = :id"
+        )
+        .bind("id", id)
+        .toList<String>()
 
 fun Database.Transaction.getVardaChildrenToReset(
     limit: Int,
