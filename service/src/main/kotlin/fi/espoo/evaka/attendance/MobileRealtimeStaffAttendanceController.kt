@@ -96,9 +96,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             Action.Group.MARK_ARRIVAL,
                             body.groupId
                         )
-                        ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
-                        // todo: check that employee has access to a unit related to the group?
+                    }
+                    ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
 
+                    // todo: check that employee has access to a unit related to the group?
+                    dbc.transaction { tx ->
                         val plannedAttendances =
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
@@ -162,8 +164,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         Action.Group.MARK_DEPARTURE,
                         body.groupId
                     )
-                    ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+                }
+                ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
 
+                dbc.transaction { tx ->
                     val plannedAttendances =
                         tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                     val ongoingAttendance =
@@ -227,16 +231,19 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
                         unitId
                     )
-                    ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+                }
+                ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
 
-                    if (
-                        body.rows.any {
-                            !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
-                                .includes(body.date)
-                        }
-                    ) {
-                        throw BadRequest("Attendances outside given date")
+                if (
+                    body.rows.any {
+                        !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
+                            .includes(body.date)
                     }
+                ) {
+                    throw BadRequest("Attendances outside given date")
+                }
+
+                dbc.transaction { tx ->
                     val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
                     if (!groupIds.all { groupId -> tx.getDaycareIdByGroup(groupId) == unitId }) {
                         throw BadRequest("Group is not in unit")
