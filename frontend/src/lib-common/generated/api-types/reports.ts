@@ -615,6 +615,7 @@ export interface RawReportRow {
   groupName: string | null
   hasAssistanceNeed: boolean
   hasServiceNeed: boolean
+  hasSocialSecurityNumber: boolean
   hoursPerWeek: number
   isHoliday: boolean
   isWeekday: boolean
