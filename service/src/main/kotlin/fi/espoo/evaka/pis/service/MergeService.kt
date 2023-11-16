@@ -4,7 +4,11 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.childimages.removeImage
 import fi.espoo.evaka.pis.getTransferablePersonReferences
+import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -18,8 +22,13 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class MergeService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val documentClient: DocumentService,
+    private val env: BucketEnv
+) {
     private val logger = KotlinLogging.logger {}
+    private val imageBucket = env.data
 
     fun mergePeople(
         tx: Database.Transaction,
@@ -78,6 +87,10 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 UPDATE $table SET $column = :id_master WHERE $column = :id_duplicate;
             """
             }}
+            
+            UPDATE child_images SET child_id = :id_master WHERE child_id = :id_duplicate AND NOT EXISTS (
+                SELECT FROM child_images WHERE child_id = :id_master
+            );
             
             UPDATE message SET sender_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE sender_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
@@ -151,6 +164,10 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         if (referenceCount > 0) {
             throw Conflict("Person is still referenced from somewhere and cannot be deleted")
         }
+
+        // Does nothing if there is no image (also if the image was assigned from duplicate to
+        // master in merge)
+        removeImage(tx, documentClient, imageBucket, ChildId(id.raw))
 
         // language=sql
         val sql2 =

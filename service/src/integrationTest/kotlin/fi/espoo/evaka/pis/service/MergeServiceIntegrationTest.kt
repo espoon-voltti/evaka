@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.childimages.ChildImageController
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.NewMessageStub
@@ -15,6 +17,7 @@ import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.getReceivedThreads
 import fi.espoo.evaka.messaging.getThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -22,6 +25,8 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -34,6 +39,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.utils.decodeHex
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -50,10 +56,14 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 
 class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var messageService: MessageService
+    @Autowired private lateinit var documentClient: DocumentService
+    @Autowired private lateinit var bucketEnv: BucketEnv
+    @Autowired private lateinit var childImageController: ChildImageController
 
     private lateinit var mergeService: MergeService
     private lateinit var mergeServiceAsyncJobRunnerMock: AsyncJobRunner<AsyncJob>
@@ -61,7 +71,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @BeforeEach
     fun setUp() {
         mergeServiceAsyncJobRunnerMock = mock {}
-        mergeService = MergeService(mergeServiceAsyncJobRunnerMock)
+        mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
@@ -454,6 +464,48 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
     }
 
+    @Test
+    fun `merging a child moves the image`() {
+        val childId = ChildId(UUID.randomUUID())
+        val childIdDuplicate = ChildId(UUID.randomUUID())
+        db.transaction {
+            it.insert(DevPerson(id = childId), DevPersonType.CHILD)
+            it.insert(DevPerson(id = childIdDuplicate), DevPersonType.CHILD)
+        }
+
+        setChildImage(childIdDuplicate)
+        assertEquals(0, childImageCount(childId))
+        assertEquals(1, childImageCount(childIdDuplicate))
+
+        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+
+        assertEquals(1, childImageCount(childId))
+        assertEquals(0, childImageCount(childIdDuplicate))
+    }
+
+    @Test
+    fun `merging a child works if both master and duplicate have images`() {
+        val childId = ChildId(UUID.randomUUID())
+        val childIdDuplicate = ChildId(UUID.randomUUID())
+        db.transaction {
+            it.insert(DevPerson(id = childId), DevPersonType.CHILD)
+            it.insert(DevPerson(id = childIdDuplicate), DevPersonType.CHILD)
+        }
+
+        setChildImage(childId)
+        setChildImage(childIdDuplicate)
+        assertEquals(1, childImageCount(childId))
+        assertEquals(1, childImageCount(childIdDuplicate))
+
+        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+
+        assertEquals(1, childImageCount(childId))
+        assertEquals(1, childImageCount(childIdDuplicate))
+
+        db.transaction { mergeService.deleteEmptyPerson(it, childIdDuplicate) }
+        assertEquals(0, childImageCount(childIdDuplicate))
+    }
+
     private val dummyMessage =
         NewMessageStub(
             title = "Juhannus",
@@ -461,4 +513,34 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             urgent = false,
             sensitive = false,
         )
+
+    private fun setChildImage(childId: ChildId) =
+        childImageController.putImage(
+            dbInstance(),
+            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            RealEvakaClock(),
+            childId,
+            MockMultipartFile("file", imageName, "image/jpeg", imageData)
+        )
+
+    private fun childImageCount(childId: ChildId): Int =
+        db.read {
+            it.createQuery<Any> {
+                    sql("SELECT COUNT(*) FROM child_images WHERE child_id = ${bind(childId)}")
+                }
+                .exactlyOne()
+        }
+
+    private val imageName = "test1.jpg"
+    private val imageData =
+        """
+FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
+FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
+11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
+"""
+            .decodeHex()
 }
