@@ -29,6 +29,7 @@ import Combobox, {
 } from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faCommentAlt, fasCommentAltLines, faTrash } from 'lib-icons'
@@ -115,7 +116,8 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <InputField
+          <TextArea
+            maxLength={53}
             placeholder={i18n.invoice.form.rows.description}
             type="text"
             value={description}
