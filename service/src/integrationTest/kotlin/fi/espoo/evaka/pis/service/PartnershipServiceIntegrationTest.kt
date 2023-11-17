@@ -11,6 +11,8 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var partnershipService: PartnershipService
+    private val clock = MockEvakaClock(HelsinkiDateTime.now())
 
     @Test
     fun `creating an overlapping partnership throws conflict`() {
@@ -28,11 +31,27 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val endDate = startDate.plusDays(300)
 
         db.transaction {
-            partnershipService.createPartnership(it, person1.id, person2.id, startDate, endDate)
+            partnershipService.createPartnership(
+                it,
+                person1.id,
+                person2.id,
+                startDate,
+                endDate,
+                null,
+                clock.now()
+            )
         }
         assertThrows<Conflict> {
             db.transaction {
-                partnershipService.createPartnership(it, person1.id, person3.id, startDate, endDate)
+                partnershipService.createPartnership(
+                    it,
+                    person1.id,
+                    person3.id,
+                    startDate,
+                    endDate,
+                    null,
+                    clock.now()
+                )
             }
         }
     }

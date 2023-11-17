@@ -62,7 +62,15 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         db.transaction {
-            it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
+            it.createPartnership(
+                adult1.id,
+                adult2.id,
+                mockToday.today(),
+                null,
+                false,
+                null,
+                mockToday.now()
+            )
         }
 
         fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
@@ -92,7 +100,15 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         db.transaction {
-            it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
+            it.createPartnership(
+                adult1.id,
+                adult2.id,
+                mockToday.today(),
+                null,
+                false,
+                null,
+                mockToday.now()
+            )
         }
 
         fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)

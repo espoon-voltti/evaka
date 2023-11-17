@@ -13,12 +13,16 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 
 class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val clock = MockEvakaClock(HelsinkiDateTime.now())
+
     @Test
     fun `test creating partnership`() {
         val person1 = testPerson1()
@@ -27,7 +31,15 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = startDate.plusDays(100)
         val partnership =
             db.transaction { tx ->
-                tx.createPartnership(person1.id, person2.id, startDate, endDate)
+                tx.createPartnership(
+                    person1.id,
+                    person2.id,
+                    startDate,
+                    endDate,
+                    false,
+                    null,
+                    clock.now()
+                )
             }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
@@ -47,7 +59,10 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     person1.id,
                     person2.id,
                     LocalDate.now(),
-                    LocalDate.now().plusDays(200)
+                    LocalDate.now().plusDays(200),
+                    false,
+                    null,
+                    clock.now()
                 )
             }
         val partnership2 =
@@ -56,7 +71,10 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     person2.id,
                     person3.id,
                     LocalDate.now().plusDays(300),
-                    LocalDate.now().plusDays(400)
+                    LocalDate.now().plusDays(400),
+                    false,
+                    null,
+                    clock.now()
                 )
             }
 
@@ -80,7 +98,15 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val startDate = LocalDate.now()
         val partnership =
             db.transaction {
-                it.createPartnership(person1.id, person2.id, startDate, endDate = null)
+                it.createPartnership(
+                    person1.id,
+                    person2.id,
+                    startDate,
+                    endDate = null,
+                    false,
+                    null,
+                    clock.now()
+                )
             }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)

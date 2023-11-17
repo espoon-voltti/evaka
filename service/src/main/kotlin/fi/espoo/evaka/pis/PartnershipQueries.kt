@@ -6,11 +6,13 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -98,16 +100,19 @@ fun Database.Transaction.createPartnership(
     personId2: PersonId,
     startDate: LocalDate,
     endDate: LocalDate?,
-    conflict: Boolean = false
+    conflict: Boolean = false,
+    creatorId: EvakaUserId?,
+    createDate: HelsinkiDateTime
 ): Partnership {
-    // language=SQL
-    val sql =
-        """
+    val partnershipId = UUID.randomUUID()
+    return createQuery<Any> {
+            sql(
+                """
         WITH new_fridge_partner AS (
-            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at)
             VALUES
-                (:partnershipId, 1, 2, :person1, :startDate, :endDate, :conflict),
-                (:partnershipId, 2, 1, :person2, :startDate, :endDate, :conflict)
+                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}),
+                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)})
             RETURNING *
         )
         SELECT
@@ -122,45 +127,49 @@ fun Database.Transaction.createPartnership(
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
         """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("partnershipId", UUID.randomUUID())
-        .bind("person1", personId1)
-        .bind("person2", personId2)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("conflict", conflict)
+            )
+        }
         .exactlyOne(toPartnership("p1", "p2"))
 }
 
 fun Database.Transaction.updatePartnershipDuration(
     id: PartnershipId,
     startDate: LocalDate,
-    endDate: LocalDate?
+    endDate: LocalDate?,
+    modifiedById: EvakaUserId?,
+    modificationDate: HelsinkiDateTime
 ): Boolean {
-    // language=SQL
-    val sql =
-        """
-        UPDATE fridge_partner SET start_date = :startDate, end_date = :endDate
-        WHERE partnership_id = :id
+
+    return createQuery<Any> {
+            sql(
+                """
+        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+        WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+            )
+        }
         .mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
 }
 
-fun Database.Transaction.retryPartnership(id: PartnershipId) {
-    // language=SQL
-    val sql = "UPDATE fridge_partner SET conflict = false WHERE partnership_id = :id"
+fun Database.Transaction.retryPartnership(
+    id: PartnershipId,
+    modifiedById: EvakaUserId?,
+    modificationDate: HelsinkiDateTime
+) {
 
-    createUpdate(sql).bind("id", id).execute()
+    createUpdate<Any> {
+            sql(
+                """
+        |UPDATE fridge_partner SET conflict = false
+        |WHERE partnership_id = ${bind(id)}, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+        |
+    """
+                    .trimMargin()
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {

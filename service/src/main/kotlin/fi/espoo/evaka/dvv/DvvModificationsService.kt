@@ -135,7 +135,7 @@ class DvvModificationsService(
                 logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
 
-                endFamilyRelations(tx, person.id, dateOfDeath)
+                endFamilyRelations(tx, person.id, dateOfDeath, clock)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -163,14 +163,23 @@ class DvvModificationsService(
     private fun endFamilyRelations(
         tx: Database.Transaction,
         personId: PersonId,
-        dateOfDeath: LocalDate
+        dateOfDeath: LocalDate,
+        clock: EvakaClock
     ) {
         tx.getPartnersForPerson(
                 personId,
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
             )
-            .forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }
+            .forEach {
+                tx.updatePartnershipDuration(
+                    it.partnershipId,
+                    it.startDate,
+                    dateOfDeath,
+                    null,
+                    clock.now()
+                )
+            }
 
         tx.getParentships(
                 headOfChildId = personId,

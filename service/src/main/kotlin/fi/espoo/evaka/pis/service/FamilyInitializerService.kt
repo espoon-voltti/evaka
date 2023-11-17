@@ -298,7 +298,9 @@ class FamilyInitializerService(
                         personId2 = personId2,
                         startDate = startDate,
                         endDate = null,
-                        conflict = false
+                        conflict = false,
+                        null,
+                        evakaClock.now()
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
@@ -314,7 +316,9 @@ class FamilyInitializerService(
                             personId2 = personId2,
                             startDate = startDate,
                             endDate = null,
-                            conflict = true
+                            conflict = true,
+                            null,
+                            evakaClock.now()
                         )
                     }
                     else -> throw e
