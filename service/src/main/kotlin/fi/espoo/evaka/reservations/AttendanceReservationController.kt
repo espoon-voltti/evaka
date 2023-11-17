@@ -461,7 +461,7 @@ class AttendanceReservationController(
                                     }
 
                                     val res =
-                                        reservationRows.map {
+                                        reservationRows.sortedBy { it.reservationStartTime }.map {
                                             if (
                                                 it.reservationStartTime != null &&
                                                     it.reservationEndTime != null

@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -46,14 +47,15 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 
 class AttendanceReservationsControllerIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
@@ -850,6 +852,218 @@ class AttendanceReservationsControllerIntegrationTest :
         )
     }
 
+    @Test
+    fun `daily confirmed reservations for unit`() {
+        db.transaction {
+            val child1PlacementId =
+                it.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = mon,
+                    endDate = fri
+                )
+            it.insertServiceNeed(
+                placementId = child1PlacementId,
+                startDate = mon,
+                endDate = fri,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = ShiftCareType.NONE,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+            it.insertTestDaycareGroupPlacement(
+                daycarePlacementId = child1PlacementId,
+                groupId = testGroup1.id,
+                startDate = mon,
+                endDate = fri
+            )
+            it.insert(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = mon,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(12, 0),
+                    createdBy = EvakaUserId(employeeId.raw)
+                )
+            )
+            it.insert(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = mon,
+                    startTime = LocalTime.of(13, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(employeeId.raw)
+                )
+            )
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = tue,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = EvakaUserId(employeeId.raw)
+            )
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = testDaycare2.id,
+                startDate = wed,
+                endDate = wed
+            )
+            it.insertTestBackUpCare(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = thu,
+                endDate = thu,
+                groupId = testGroup2.id
+            )
+            it.insert(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(fri, fri),
+                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0))
+                )
+            )
+        }
+
+        val expectation =
+            AttendanceReservationController.UnitReservationConfirmedDaysResult(
+                children =
+                    listOf(
+                            AttendanceReservationController.ReservationChildInfo(
+                                id = testChild_1.id,
+                                firstName = testChild_1.firstName,
+                                lastName = testChild_1.lastName,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                preferredName = testChild_1.preferredName
+                            )
+                        )
+                        .associateBy { it.id },
+                dailyReservations =
+                    listOf(
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = LocalDate.of(2021, 2, 24),
+                            reservationInfos = emptyList()
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = LocalDate.of(2021, 2, 25),
+                            reservationInfos = emptyList()
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = LocalDate.of(2021, 2, 26),
+                            reservationInfos = emptyList()
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = mon,
+                            reservationInfos =
+                                listOf(
+                                    AttendanceReservationController.ChildDailyReservationInfo(
+                                        childId = testChild_1.id,
+                                        reservations =
+                                            listOf(
+                                                Reservation.Times(
+                                                    startTime = LocalTime.of(8, 0),
+                                                    endTime = LocalTime.of(12, 0)
+                                                ),
+                                                Reservation.Times(
+                                                    startTime = LocalTime.of(13, 0),
+                                                    endTime = LocalTime.of(16, 0)
+                                                )
+                                            ),
+                                        groupId = testGroup1.id,
+                                        absent = false,
+                                        outOnBackupPlacement = false,
+                                        dailyServiceTimes = null,
+                                        occupancyCoefficient = BigDecimal("1.0000")
+                                    )
+                                )
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = tue,
+                            reservationInfos =
+                                listOf(
+                                    AttendanceReservationController.ChildDailyReservationInfo(
+                                        childId = testChild_1.id,
+                                        reservations = listOf(Reservation.NoTimes),
+                                        groupId = testGroup1.id,
+                                        absent = true,
+                                        outOnBackupPlacement = false,
+                                        dailyServiceTimes = null,
+                                        occupancyCoefficient = BigDecimal("1.0000")
+                                    )
+                                )
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = wed,
+                            reservationInfos =
+                                listOf(
+                                    AttendanceReservationController.ChildDailyReservationInfo(
+                                        childId = testChild_1.id,
+                                        reservations = listOf(Reservation.NoTimes),
+                                        groupId = testGroup1.id,
+                                        absent = false,
+                                        outOnBackupPlacement = true,
+                                        dailyServiceTimes = null,
+                                        occupancyCoefficient = BigDecimal("1.0000")
+                                    )
+                                )
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = thu,
+                            reservationInfos =
+                                listOf(
+                                    AttendanceReservationController.ChildDailyReservationInfo(
+                                        childId = testChild_1.id,
+                                        reservations = listOf(Reservation.NoTimes),
+                                        groupId = testGroup2.id,
+                                        absent = false,
+                                        outOnBackupPlacement = false,
+                                        dailyServiceTimes = null,
+                                        occupancyCoefficient = BigDecimal("1.0000")
+                                    )
+                                )
+                        ),
+                        AttendanceReservationController.UnitDailyReservationInfo(
+                            date = fri,
+                            reservationInfos =
+                                listOf(
+                                    AttendanceReservationController.ChildDailyReservationInfo(
+                                        childId = testChild_1.id,
+                                        reservations = listOf(Reservation.NoTimes),
+                                        groupId = testGroup1.id,
+                                        absent = false,
+                                        outOnBackupPlacement = false,
+                                        dailyServiceTimes =
+                                            DailyServiceTimesValue.RegularTimes(
+                                                validityPeriod =
+                                                    DateRange(
+                                                        start = LocalDate.of(2021, 3, 5),
+                                                        end = LocalDate.of(2021, 3, 5)
+                                                    ),
+                                                regularTimes =
+                                                    TimeRange(
+                                                        start = LocalTime.of(8, 0),
+                                                        end = LocalTime.of(15, 0)
+                                                    )
+                                            ),
+                                        occupancyCoefficient =
+                                            BigDecimal(
+                                                "1.0000",
+                                            )
+                                    )
+                                )
+                        ),
+                    )
+            )
+
+        val result =
+            getConfirmedDailyReservations(
+                clock = MockEvakaClock(HelsinkiDateTime.of(tue.minusWeeks(1), LocalTime.of(10, 0)))
+            )
+        assertEquals(
+            expectation,
+            result,
+        )
+    }
+
     private fun emptyChildRecords(
         period: FiniteDateRange
     ): Map<LocalDate, UnitAttendanceReservations.ChildRecordOfDay> =
@@ -880,5 +1094,15 @@ class AttendanceReservationsControllerIntegrationTest :
             from = mon,
             to = fri,
             includeNonOperationalDays = false
+        )
+
+    private fun getConfirmedDailyReservations(
+        clock: EvakaClock = this.clock
+    ): AttendanceReservationController.UnitReservationConfirmedDaysResult =
+        attendanceReservationController.getChildReservationsForConfirmedDays(
+            dbInstance(),
+            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            clock,
+            testDaycare.id,
         )
 }
