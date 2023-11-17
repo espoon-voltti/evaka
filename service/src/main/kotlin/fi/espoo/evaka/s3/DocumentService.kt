@@ -5,6 +5,7 @@
 package fi.espoo.evaka.s3
 
 import com.github.kittinunf.fuel.core.Response
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.shared.domain.NotFound
 import java.net.URL
 import java.nio.charset.StandardCharsets
@@ -12,6 +13,7 @@ import java.time.Duration
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
@@ -26,10 +28,11 @@ data class DocumentLocation(val bucket: String, val key: String)
 
 const val INTERNAL_REDIRECT_PREFIX = "/internal_redirect/"
 
+@Service
 class DocumentService(
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
-    private val proxyThroughNginx: Boolean
+    private val env: BucketEnv
 ) {
     fun get(bucketName: String, key: String): Document {
         val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
@@ -83,7 +86,7 @@ class DocumentService(
         val contentDispositionHeader = getContentDispositionHeader(contentDispositionType, fileName)
         val presignedUrl = presignedGetUrl(bucketName, key)
 
-        return if (proxyThroughNginx) {
+        return if (env.proxyThroughNginx) {
             val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
             ResponseEntity.ok()
                 .header("X-Accel-Redirect", url)
