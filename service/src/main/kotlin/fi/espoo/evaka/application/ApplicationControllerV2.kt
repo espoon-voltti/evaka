@@ -436,11 +436,10 @@ class ApplicationControllerV2(
                 applicationStateService.updateApplicationContentsServiceWorker(
                     it,
                     user,
+                    clock.now(),
                     applicationId,
                     application,
-                    user.evakaUserId,
-                    clock.today(),
-                    clock.now()
+                    user.evakaUserId
                 )
             }
         }

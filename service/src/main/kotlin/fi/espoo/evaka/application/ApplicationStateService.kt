@@ -809,11 +809,10 @@ class ApplicationStateService(
     fun updateOwnApplicationContentsCitizen(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
+        now: HelsinkiDateTime,
         applicationId: ApplicationId,
         update: CitizenApplicationUpdate,
-        currentDate: LocalDate,
-        asDraft: Boolean = false,
-        now: HelsinkiDateTime
+        asDraft: Boolean = false
     ): ApplicationDetails {
         val original =
             tx.fetchApplicationDetails(applicationId)?.takeIf { it.guardianId == user.id }
@@ -845,7 +844,7 @@ class ApplicationStateService(
             if (original.status != CREATED)
                 throw BadRequest("Cannot save as draft, application already sent")
         } else {
-            validateApplication(tx, original.type, updatedForm, currentDate, strict = true)
+            validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = true)
 
             if (listOf(SENT).contains(original.status)) {
                 original.form.preferences.preferredStartDate?.let { previousStartDate ->
@@ -862,25 +861,24 @@ class ApplicationStateService(
         }
 
         tx.updateApplicationAllowOtherGuardianAccess(applicationId, update.allowOtherGuardianAccess)
-        tx.updateApplicationContents(currentDate, now, original, updatedForm)
+        tx.updateApplicationContents(now, original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
     fun updateApplicationContentsServiceWorker(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         applicationId: ApplicationId,
         update: ApplicationUpdate,
-        userId: EvakaUserId,
-        currentDate: LocalDate,
-        now: HelsinkiDateTime
+        userId: EvakaUserId
     ) {
         val original =
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
-        validateApplication(tx, original.type, updatedForm, currentDate, strict = false)
+        validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = false)
 
         if (!updatedForm.preferences.urgent) {
             val deleted =
@@ -903,7 +901,6 @@ class ApplicationStateService(
         }
 
         tx.updateApplicationContents(
-            currentDate,
             now,
             original,
             updatedForm,
@@ -919,7 +916,6 @@ class ApplicationStateService(
     }
 
     private fun Database.Transaction.updateApplicationContents(
-        today: LocalDate,
         now: HelsinkiDateTime,
         original: ApplicationDetails,
         updatedForm: ApplicationForm,
@@ -940,12 +936,17 @@ class ApplicationStateService(
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
             null ->
-                calculateAndUpdateDueDate(
-                    today,
-                    original,
-                    updatedForm.preferences.preferredStartDate,
-                    updatedForm.preferences.urgent
-                )
+                // We don't want to calculate the due date for applications in the CREATED state.
+                // Whether this is a transfer application affects the calculation of the due date,
+                // but it's only determined when the application is sent.
+                if (original.status == SENT) {
+                    calculateAndUpdateDueDate(
+                        now.toLocalDate(),
+                        original,
+                        updatedForm.preferences.preferredStartDate,
+                        updatedForm.preferences.urgent
+                    )
+                }
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
         }
     }

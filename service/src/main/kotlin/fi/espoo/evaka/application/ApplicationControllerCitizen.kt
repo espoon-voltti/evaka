@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2018-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -308,10 +308,9 @@ class ApplicationControllerCitizen(
                 applicationStateService.updateOwnApplicationContentsCitizen(
                     it,
                     user,
+                    clock.now(),
                     applicationId,
-                    update,
-                    clock.today(),
-                    now = clock.now()
+                    update
                 )
             }
         }
@@ -338,11 +337,10 @@ class ApplicationControllerCitizen(
                 applicationStateService.updateOwnApplicationContentsCitizen(
                     it,
                     user,
+                    clock.now(),
                     applicationId,
                     CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
-                    clock.today(),
-                    asDraft = true,
-                    now = clock.now()
+                    asDraft = true
                 )
             }
         }
