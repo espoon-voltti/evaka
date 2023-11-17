@@ -445,7 +445,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   const guardians = useFormElems(guardianInfo)
 
   const debouncedValue = useDebounce(bind.isValid() ? bind.value() : null, 1000)
-  const [savedValue, setSavedValue] = useState(bind.value())
+  const [savedValue, setSavedValue] = useState(() => bind.value())
   const [lastSavedAt, setLastSavedAt] = useState(HelsinkiDateTime.now())
   const {
     mutateAsync: updateAssistanceNeedPreschoolDecision,
