@@ -936,12 +936,17 @@ class ApplicationStateService(
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
             null ->
-                calculateAndUpdateDueDate(
-                    now.toLocalDate(),
-                    original,
-                    updatedForm.preferences.preferredStartDate,
-                    updatedForm.preferences.urgent
-                )
+                // We don't want to calculate the due date for applications in the CREATED state.
+                // Whether this is a transfer application affects the calculation of the due date,
+                // but it's only determined when the application is sent.
+                if (original.status == SENT) {
+                    calculateAndUpdateDueDate(
+                        now.toLocalDate(),
+                        original,
+                        updatedForm.preferences.preferredStartDate,
+                        updatedForm.preferences.urgent
+                    )
+                }
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
         }
     }

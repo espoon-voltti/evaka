@@ -5,6 +5,8 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationStatus.CREATED
+import fi.espoo.evaka.application.ApplicationStatus.SENT
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -42,11 +44,40 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `due date is not set when CREATED application with a sent date is updated`() {
+        // paper applications have sent date already in the CREATED state
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val application = insertApplication(CREATED, sentDate, null, false)
+
+        // when (just some irrelevant update)
+        val updatedApplication =
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                preferredStartDate = sentDate.plusDays(1)
+                            )
+                    )
+            )
+        applicationControllerV2.updateApplication(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            application.id,
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+        )
+
+        assertNull(db.transaction { it.fetchApplicationDetails(application.id) }!!.dueDate)
+    }
+
+    @Test
     fun `when application update sets urgent to false, the new due date is calculated from sent date`() {
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 1, 15)
-        val application = insertSentApplication(sentDate, originalDueDate, true)
+        val application = insertApplication(SENT, sentDate, originalDueDate, true)
 
         // when
         val updatedApplication =
@@ -73,7 +104,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, false)
+        val application = insertApplication(SENT, sentDate, originalDueDate, false)
 
         // when
         val updatedApplication =
@@ -108,7 +139,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 1, 15)
-        val application = insertSentApplication(sentDate, originalDueDate, true)
+        val application = insertApplication(SENT, sentDate, originalDueDate, true)
 
         uploadAttachment(applicationId = application.id, serviceWorker)
         db.transaction { tx ->
@@ -139,7 +170,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, false)
+        val application = insertApplication(SENT, sentDate, originalDueDate, false)
         val manuallySetDueDate = HelsinkiDateTime.now().plusMonths(4).toLocalDate()
 
         // when
@@ -180,7 +211,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, true, shiftCare = true)
+        val application = insertApplication(SENT, sentDate, originalDueDate, true, shiftCare = true)
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
@@ -232,7 +263,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application =
-            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+            insertApplication(SENT, sentDate, originalDueDate, urgent = true, shiftCare = true)
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
@@ -283,7 +314,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application =
-            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+            insertApplication(SENT, sentDate, originalDueDate, urgent = true, shiftCare = true)
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
@@ -342,7 +373,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application =
-            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+            insertApplication(SENT, sentDate, originalDueDate, urgent = true, shiftCare = true)
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
@@ -395,16 +426,17 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun insertSentApplication(
+    private fun insertApplication(
+        status: ApplicationStatus,
         sentDate: LocalDate,
-        dueDate: LocalDate,
+        dueDate: LocalDate?,
         urgent: Boolean,
         shiftCare: Boolean = false
     ): ApplicationDetails =
         db.transaction { tx ->
             val applicationId =
                 tx.insertTestApplication(
-                    status = ApplicationStatus.SENT,
+                    status = status,
                     sentDate = sentDate,
                     dueDate = dueDate,
                     childId = testChild_1.id,
