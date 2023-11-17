@@ -80,11 +80,9 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.fillTime(mockedTomorrow, 0, '08:00', '16:00')
     await reservationsPage.addTime(mockedTomorrow)
     await reservationsPage.fillTime(mockedTomorrow, 1, '16:00', '18:00')
-    await reservationsPage.addTime(mockedTomorrow)
-    await reservationsPage.fillTime(mockedTomorrow, 2, '20:05', '21:59')
     await reservationsPage.confirmButton.click()
     await reservationsPage.assertReservations([
-      { date: mockedTomorrow, text: '08:00–16:00,16:00–18:00,20:05–21:59' }
+      { date: mockedTomorrow, text: '08:00–16:00,16:00–18:00' }
     ])
   })
 

@@ -56,6 +56,7 @@ import {
 import { useChild } from '../utils'
 
 type Mode = 'view' | 'edit'
+const MAX_RESERVATIONS_PER_DAY = 2
 
 const reservationTimeForm = validated(
   object({
@@ -420,6 +421,7 @@ const ReservationEdit = ({
   const formInputInfo = form.inputInfo()
   const addButtonLocation =
     form.isValid() &&
+    form.state.times.length < MAX_RESERVATIONS_PER_DAY &&
     form.state.times.every(
       (reservation) =>
         reservation.startTime !== '' && reservation.endTime !== ''
