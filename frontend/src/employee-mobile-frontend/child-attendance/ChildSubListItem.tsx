@@ -90,17 +90,19 @@ const ReservationText = styled.span`
 `
 
 interface ChildSubListItemProps {
-  reservationData: CategorizedReservationInfo
+  reservationData: CategorizedReservationInfo,
+  date: LocalDate
 }
 
+const timeFormat = 'HH:mm'
+
 export default React.memo(function ChildSubListItem({
-  reservationData
+  reservationData,
+  date
 }: ChildSubListItemProps) {
   const { i18n } = useTranslation()
 
-  const timeFormat = 'HH:mm'
-  const today = LocalDate.todayInSystemTz()
-  const childAge = today.differenceInYears(reservationData.dateOfBirth)
+  const childAge = date.differenceInYears(reservationData.dateOfBirth)
 
   const reservationTextContent = useMemo(() => {
     if (reservationData.absent) return [i18n.attendances.status.ABSENT]
@@ -169,7 +171,7 @@ export default React.memo(function ChildSubListItem({
         >
           {reservationTextContent.length > 1 ? (
             reservationTextContent.map((res, index) => (
-              <ReservationText
+              <ReservationText data-qa={`reservation-content-${index}`}
                 key={`${reservationData.childId}-${res}-${index}`}
               >
                 {res}
@@ -177,7 +179,7 @@ export default React.memo(function ChildSubListItem({
             ))
           ) : (
             <>
-              <ReservationText>{reservationTextContent[0]}</ReservationText>
+              <ReservationText data-qa={`reservation-content-0`}>{reservationTextContent[0]}</ReservationText>
               <Placeholder />
             </>
           )}

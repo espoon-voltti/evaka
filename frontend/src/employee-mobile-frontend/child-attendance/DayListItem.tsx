@@ -132,22 +132,22 @@ export default React.memo(function DayListItem({
 
   return (
     <>
-      <DayBox>
+      <DayBox data-qa={`day-item-${dailyReservationData.date.formatIso()}`}>
         <DayBoxInfo>
           <DateBox>
             {dailyReservationData.date.isEqual(tomorrow) && (
               <span>{i18n.attendances.confirmedDays.tomorrow}</span>
             )}
-            <span>{dailyReservationData.date.format('EEEEEE d.M.', lang)}</span>
+            <span data-qa="date">{dailyReservationData.date.format('EEEEEE d.M.', lang)}</span>
           </DateBox>
           <CountBox spacing="xxs" alignItems="center">
-            <span>{presentTotal}</span>
-            <span>{`(${presentCalc})`}</span>
+            <span data-qa="present-total">{presentTotal}</span>
+            <span data-qa="present-calc">{`(${presentCalc.toLocaleString(lang)})`}</span>
           </CountBox>
           <CountBox spacing="xxs" alignItems="center">
-            <span>{absentTotal}</span>
+            <span data-qa="absent-total">{absentTotal}</span>
           </CountBox>
-          <ChevronBox onClick={() => setOpen(!isOpen)}>
+          <ChevronBox data-qa="open-day-button" onClick={() => setOpen(!isOpen)}>
             <span>
               <AccordionIcon
                 icon={isOpen ? faChevronUp : faChevronDown}
@@ -161,11 +161,12 @@ export default React.memo(function DayListItem({
         {sortedReservations.map(
           (childReservation) =>
             isOpen && (
-              <ChildSubListItem
+              <ChildSubListItem data-qa={`child-item-${childReservation.childId}`}
                 key={`${dailyReservationData.date.format()}-${
                   childReservation.childId
                 }`}
                 reservationData={childReservation}
+                date={dailyReservationData.date}
               />
             )
         )}

@@ -83,7 +83,7 @@ export default React.memo(function AttendancePageWrapper() {
         label: i18n.attendances.views.TODAY
       },
       {
-        id: 'confirmeddays',
+        id: 'confirmed-days',
         link: `${url}/daylist`,
         label: i18n.attendances.views.NEXT_DAYS
       }
