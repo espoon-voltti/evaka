@@ -20,7 +20,10 @@ import {
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
+import {
+  NonReservableReservation,
+  Reservation
+} from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
@@ -139,7 +142,7 @@ const initialFormState = (
       date: reservation.date,
       times:
         reservation.reservations.length > 0
-          ? reservation.reservations.map((res) =>
+          ? sortBy(reservation.reservations, reservationStartTime).map((res) =>
               res.type === 'TIMES'
                 ? {
                     startTime: res.startTime.format(),
@@ -336,7 +339,7 @@ const ReservationView = ({
         <AttendanceDailyServiceTimes
           hideLabel={true}
           times={reservation.dailyServiceTimes}
-          reservations={reservation.reservations}
+          reservations={sortBy(reservation.reservations, reservationStartTime)}
         />
       )}
     </div>
@@ -540,3 +543,6 @@ const getMinDatesByWeek = (items: { date: LocalDate }[]) =>
       [week]: minDate === undefined || date.isBefore(minDate) ? date : minDate
     }
   }, {})
+
+const reservationStartTime = (reservation: Reservation): LocalTime =>
+  reservation.type === 'TIMES' ? reservation.startTime : LocalTime.MIN
