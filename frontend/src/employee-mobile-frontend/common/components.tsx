@@ -91,7 +91,7 @@ export const Actions = styled.div`
   display: flex;
 
   * > button {
-    width: 50%;
+    flex-grow: 1;
   }
 `
 

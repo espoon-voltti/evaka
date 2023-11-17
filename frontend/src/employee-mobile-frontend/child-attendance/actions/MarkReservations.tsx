@@ -42,7 +42,7 @@ import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
@@ -300,7 +300,12 @@ const ReservationsView = ({
       ) : null}
       <HorizontalLine slim />
       <Actions>
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow
+          fullWidth
+          flexWrap="wrap"
+          spacing={defaultMargins.zero}
+          gap={defaultMargins.s}
+        >
           <Button
             text={
               i18n.attendances.actions.nonReservableReservations
@@ -393,7 +398,12 @@ const ReservationsEdit = ({
       ))}
       <HorizontalLine slim />
       <Actions>
-        <FixedSpaceRow fullWidth>
+        <FixedSpaceRow
+          fullWidth
+          flexWrap="wrap"
+          spacing={defaultMargins.zero}
+          gap={defaultMargins.s}
+        >
           <Button text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
             primary
