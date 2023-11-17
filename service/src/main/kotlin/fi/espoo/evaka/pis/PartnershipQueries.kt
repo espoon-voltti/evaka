@@ -26,7 +26,11 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modified_at,
+            fp1.modified_by
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -51,7 +55,11 @@ fun Database.Read.getPartnershipsForPerson(
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modified_at,
+            fp1.modified_by
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -121,7 +129,11 @@ fun Database.Transaction.createPartnership(
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modified_at,
+            fp1.modified_by
         FROM new_fridge_partner fp1
         JOIN new_fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -189,7 +201,11 @@ private val toPartnership: (String, String) -> Row.() -> Partnership =
                 partners = setOf(toPersonJSON(partner1Alias), toPersonJSON(partner2Alias)),
                 startDate = column("start_date"),
                 endDate = column("end_date"),
-                conflict = column("conflict")
+                conflict = column("conflict"),
+                createdAt = column("created_at"),
+                createdBy = column("created_by"),
+                modifiedAt = column("modified_at"),
+                modifiedBy = column("modified_by")
             )
         }
     }

@@ -94,7 +94,11 @@ data class Partnership(
     val partners: Set<PersonJSON>,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUserId?,
+    val modifiedAt: HelsinkiDateTime,
+    val modifiedBy: EvakaUserId?
 )
 
 data class Partner(

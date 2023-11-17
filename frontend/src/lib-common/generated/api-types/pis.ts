@@ -405,8 +405,12 @@ export interface ParentshipWithPermittedActions {
 */
 export interface Partnership {
   conflict: boolean
+  createdAt: HelsinkiDateTime
+  createdBy: UUID | null
   endDate: LocalDate | null
   id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID | null
   partners: PersonJSON[]
   startDate: LocalDate
 }
