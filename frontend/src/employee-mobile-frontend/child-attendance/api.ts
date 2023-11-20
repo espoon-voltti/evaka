@@ -13,6 +13,7 @@ import {
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -117,9 +118,41 @@ export async function postAbsenceRange(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getFutureAbsencesByChild(
+export async function getNonReservableReservations(
   childId: UUID
-): Promise<Result<Absence[]>> {
+): Promise<NonReservableReservation[]> {
+  return client
+    .get<JsonOf<NonReservableReservation[]>>(
+      `/attendance-reservations/by-child/${childId}/non-reservable`
+    )
+    .then((res) =>
+      res.data.map((row) => ({
+        ...row,
+        date: LocalDate.parseIso(row.date),
+        reservations: row.reservations.map((reservation) =>
+          parseReservation(reservation)
+        ),
+        dailyServiceTimes:
+          row.dailyServiceTimes !== null
+            ? parseDailyServiceTimes(row.dailyServiceTimes)
+            : null
+      }))
+    )
+}
+
+export async function putNonReservableReservationservations(
+  childId: UUID,
+  body: NonReservableReservation[]
+): Promise<void> {
+  return client.put(
+    `/attendance-reservations/by-child/${childId}/non-reservable`,
+    body
+  )
+}
+
+export async function getFutureAbsencesByChildPlain(
+  childId: UUID
+): Promise<Absence[]> {
   return client
     .get<JsonOf<Absence[]>>(`/absences/by-child/${childId}/future`)
     .then((res) =>
@@ -128,6 +161,12 @@ export async function getFutureAbsencesByChild(
         date: LocalDate.parseIso(absence.date)
       }))
     )
+}
+
+export async function getFutureAbsencesByChild(
+  childId: UUID
+): Promise<Result<Absence[]>> {
+  return getFutureAbsencesByChildPlain(childId)
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

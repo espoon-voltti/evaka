@@ -88,6 +88,12 @@ sealed class Reservation : Comparable<Reservation> {
         }
     }
 
+    fun asTimeRange(): TimeRange? =
+        when (this) {
+            is NoTimes -> null
+            is Times -> TimeRange(startTime, endTime)
+        }
+
     override fun compareTo(other: Reservation): Int {
         return when {
             this is Times && other is Times -> this.startTime.compareTo(other.startTime)

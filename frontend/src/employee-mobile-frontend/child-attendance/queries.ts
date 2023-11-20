@@ -2,26 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { createQueryKeys } from '../query'
 
 import {
-  createFullDayAbsence,
+  createArrival,
   createDeparture,
+  createFullDayAbsence,
+  deleteChildImage,
+  getChildDeparture,
+  getFutureAbsencesByChildPlain,
+  getNonReservableReservations,
   getUnitAttendanceStatuses,
   getUnitChildren,
-  createArrival,
-  returnToPresent,
+  putNonReservableReservationservations,
   returnToComing,
-  deleteChildImage,
-  uploadChildImage,
-  getChildDeparture
+  returnToPresent,
+  uploadChildImage
 } from './api'
 
 const queryKeys = createQueryKeys('childAttendance', {
   children: (unitId: string) => ['children', unitId],
+  nonReservableReservations: (childId: string) => [
+    'nonReservableReservations',
+    childId
+  ],
+  futureAbsencesByChild: (childId: string) => [
+    'futureAbsencesByChild',
+    childId
+  ],
   attendanceStatuses: (unitId: string) => ['attendanceStatuses', unitId],
   childDeparture: ({ unitId, childId }: { unitId: UUID; childId: UUID }) => [
     'childDeparture',
@@ -50,6 +62,30 @@ export const childDepartureQuery = query({
   api: getChildDeparture,
   queryKey: ({ unitId, childId }) =>
     queryKeys.childDeparture({ unitId, childId })
+})
+
+export const getNonReservableReservationsQuery = query({
+  api: getNonReservableReservations,
+  queryKey: queryKeys.nonReservableReservations
+})
+
+export const setNonReservableReservationsMutation = mutation({
+  api: ({
+    childId,
+    body
+  }: {
+    childId: UUID
+    body: NonReservableReservation[]
+  }) => putNonReservableReservationservations(childId, body),
+  invalidateQueryKeys: ({ childId }) => [
+    queryKeys.nonReservableReservations(childId),
+    queryKeys.futureAbsencesByChild(childId)
+  ]
+})
+
+export const getFutureAbsencesByChildQuery = query({
+  api: getFutureAbsencesByChildPlain,
+  queryKey: queryKeys.futureAbsencesByChild
 })
 
 export const createFullDayAbsenceMutation = mutation({

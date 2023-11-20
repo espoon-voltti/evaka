@@ -15,6 +15,7 @@ interface FixedSpaceRowProps {
   fullWidth?: boolean
   maxWidth?: string
   flexWrap?: Property.FlexWrap
+  gap?: string
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
@@ -23,6 +24,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.fullWidth ? `width: 100%;` : '')}
   ${(p) => (p.flexWrap ? `flex-wrap: ${p.flexWrap};` : '')}
+  ${(p) => (p.gap ? `gap: ${p.gap};` : '')}
 
   >* {
     margin-right: ${(p) =>

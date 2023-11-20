@@ -249,6 +249,11 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable staff attendance edit in employee mobile
    */
   employeeMobileStaffAttendanceEdit?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable child attendance reservation edit in employee mobile
+   */
+  employeeMobileChildAttendanceReservationEdit?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

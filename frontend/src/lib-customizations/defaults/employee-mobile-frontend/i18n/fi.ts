@@ -9,6 +9,7 @@ export const fi = {
     yesIDo: 'Kyllä',
     noIDoNot: 'En',
     loadingFailed: 'Tietojen haku epäonnistui',
+    add: 'Lisää',
     cancel: 'Peruuta',
     confirm: 'Vahvista',
     all: 'Kaikki',
@@ -76,6 +77,7 @@ export const fi = {
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
     minuteShort: 'min',
+    week: 'Viikko',
     yearsShort: 'v',
     errors: {
       minutes: 'Korkeintaan 59 minuuttia'
@@ -128,7 +130,8 @@ export const fi = {
     reason: 'Poissaolon syy',
     fullDayHint: 'Poissaolomerkintä tehdään koko päivälle',
     confirmDelete: 'Haluatko poistaa tämän poissaolon?',
-    futureAbsence: 'Tulevat poissaolot'
+    futureAbsence: 'Tulevat poissaolot',
+    laterAbsence: 'Myöhemmät poissaolot'
   },
   attendances: {
     types: {
@@ -160,7 +163,17 @@ export const fi = {
       or: 'tai',
       returnToPresentNoTimeNeeded:
         'Palauta läsnäolevaksi ilman uutta saapumisaikaa',
-      markAbsentBeforehand: 'Tulevat poissaolot'
+      markAbsentBeforehand: 'Tulevat poissaolot',
+      markReservations: 'Tulevat varaukset ja poissaolot',
+      nonReservableReservations: {
+        markReservations: 'Muokkaa varauksia',
+        markAbsentBeforehand: 'Merkitse poissaolo'
+      }
+    },
+    validationErrors: {
+      required: 'Pakollinen',
+      timeFormat: 'Tarkista',
+      overlap: 'Päällekkäisiä merkintöjä'
     },
     timeLabel: 'Merkintä',
     termBreak: 'Ei toimintaa tänään',
@@ -170,6 +183,7 @@ export const fi = {
     chooseGroupInfo: 'Lapsia: Läsnä nyt/Ryhmässä yhteensä',
     searchPlaceholder: 'Etsi lapsen nimellä',
     noAbsences: 'Ei poissaoloja',
+    removeAbsence: 'Peru poissaolo',
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
     missingFromPlural: 'Poissa seuraavista toimintamuodoista',
     timeError: 'Virheellinen aika',
