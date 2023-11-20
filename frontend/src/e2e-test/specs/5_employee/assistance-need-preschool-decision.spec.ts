@@ -327,9 +327,8 @@ describe('Decision visibility for role', () => {
     test('Only accepted decisions can be seen by staff', async () => {
       await page.goto(config.employeeUrl + '/child-information/' + childId)
       const childInformationPage = new ChildInformationPage(page)
-      const assistance = await childInformationPage.openCollapsible(
-        'assistance'
-      )
+      const assistance =
+        await childInformationPage.openCollapsible('assistance')
 
       await assistance.assertAssistanceNeedDecisionCount(1)
       const decision = await assistance.assistanceNeedDecisions(0)

@@ -41,8 +41,8 @@ function ServiceNeedReadRow({
               serviceNeed.shiftCare
             ]
           : serviceNeed.shiftCare === 'FULL'
-          ? i18n.common.yes
-          : i18n.common.no}
+            ? i18n.common.yes
+            : i18n.common.no}
       </Td>
       <Td>
         <Tooltip tooltip={<span>{serviceNeed.confirmed?.name}</span>}>

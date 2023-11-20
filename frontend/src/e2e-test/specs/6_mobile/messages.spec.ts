@@ -495,9 +495,8 @@ describe('Messages page', () => {
     const childInformationPage = new ChildInformationPage(adminPage)
     await childInformationPage.waitUntilLoaded()
 
-    const blocklistSection = await childInformationPage.openCollapsible(
-      'messageBlocklist'
-    )
+    const blocklistSection =
+      await childInformationPage.openCollapsible('messageBlocklist')
     await blocklistSection.addParentToBlockList(
       fixtures.enduserGuardianFixture.id
     )

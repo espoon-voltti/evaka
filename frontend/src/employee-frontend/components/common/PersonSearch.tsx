@@ -97,8 +97,8 @@ function PersonSearch({
         ? onlyChildren
           ? getAge(person.dateOfBirth) < CHILD_AGE
           : onlyAdults
-          ? getAge(person.dateOfBirth) >= CHILD_AGE
-          : true
+            ? getAge(person.dateOfBirth) >= CHILD_AGE
+            : true
         : true
     )
 

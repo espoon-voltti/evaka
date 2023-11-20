@@ -134,24 +134,24 @@ function CreateApplicationModal({
               guardianId: guardian?.id ?? ''
             })
         : personType === 'DB_SEARCH'
-        ? () =>
-            createPaperApplication({
-              ...commonBody,
-              guardianId: personId ?? ''
-            })
-        : personType === 'VTJ'
-        ? () =>
-            createPaperApplication({
-              ...commonBody,
-              guardianSsn: newVtjPersonSsn
-            })
-        : personType === 'NEW_NO_SSN'
-        ? () =>
-            createPaperApplication({
-              ...commonBody,
-              guardianToBeCreated: createPersonBody as CreatePersonBody
-            })
-        : null
+          ? () =>
+              createPaperApplication({
+                ...commonBody,
+                guardianId: personId ?? ''
+              })
+          : personType === 'VTJ'
+            ? () =>
+                createPaperApplication({
+                  ...commonBody,
+                  guardianSsn: newVtjPersonSsn
+                })
+            : personType === 'NEW_NO_SSN'
+              ? () =>
+                  createPaperApplication({
+                    ...commonBody,
+                    guardianToBeCreated: createPersonBody as CreatePersonBody
+                  })
+              : null
 
     if (apiCall) {
       setIsSubmitting(true)

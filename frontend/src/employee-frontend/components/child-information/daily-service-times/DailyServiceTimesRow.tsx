@@ -106,10 +106,10 @@ export default React.memo(function DailyServiceTimesRow({
                 )
                   ? 'UPCOMING'
                   : times.validityPeriod.end?.isBefore(
-                      LocalDate.todayInHelsinkiTz()
-                    )
-                  ? 'ENDED'
-                  : 'ACTIVE'
+                        LocalDate.todayInHelsinkiTz()
+                      )
+                    ? 'ENDED'
+                    : 'ACTIVE'
               }
               data-qa="status"
             />

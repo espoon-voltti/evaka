@@ -83,10 +83,10 @@ export default React.memo(function OccupancyCard({
     type == 'confirmed'
       ? colors.main.m1
       : type == 'planned'
-      ? colors.accents.a6turquoise
-      : type == 'realized'
-      ? colors.status.success
-      : colors.grayscale.g15
+        ? colors.accents.a6turquoise
+        : type == 'realized'
+          ? colors.status.success
+          : colors.grayscale.g15
 
   return (
     <Card color={color} active={active} onClick={() => onClick()}>

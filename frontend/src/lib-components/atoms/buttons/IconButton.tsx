@@ -75,10 +75,10 @@ const StyledButton = styled.button<ButtonProps>`
     p.color
       ? p.color
       : p.gray
-      ? p.theme.colors.grayscale.g70
-      : p.white
-      ? p.theme.colors.grayscale.g0
-      : p.theme.colors.main.m2};
+        ? p.theme.colors.grayscale.g70
+        : p.white
+          ? p.theme.colors.grayscale.g0
+          : p.theme.colors.main.m2};
   border: none;
   border-radius: 100%;
   background: none;
@@ -104,10 +104,10 @@ const StyledButton = styled.button<ButtonProps>`
       p.color
         ? p.color
         : p.gray
-        ? p.theme.colors.grayscale.g70
-        : p.white
-        ? p.theme.colors.grayscale.g0
-        : p.theme.colors.main.m2Hover};
+          ? p.theme.colors.grayscale.g70
+          : p.white
+            ? p.theme.colors.grayscale.g0
+            : p.theme.colors.main.m2Hover};
   }
 
   &:active .icon-wrapper {
@@ -115,8 +115,8 @@ const StyledButton = styled.button<ButtonProps>`
       p.color
         ? p.color
         : p.gray
-        ? p.theme.colors.grayscale.g100
-        : p.theme.colors.main.m2Active};
+          ? p.theme.colors.grayscale.g100
+          : p.theme.colors.main.m2Active};
   }
 
   &.disabled,

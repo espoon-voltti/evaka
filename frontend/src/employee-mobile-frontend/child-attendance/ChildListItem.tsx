@@ -232,13 +232,13 @@ function ChildReservationInfo(props: { child: AttendanceChild }) {
       {todaysServiceTime === 'not_set'
         ? i18n.attendances.serviceTime.notSetShort
         : todaysServiceTime === 'not_today'
-        ? i18n.attendances.serviceTime.noServiceTodayShort
-        : todaysServiceTime === 'variable_times'
-        ? i18n.attendances.serviceTime.variableTimesShort
-        : i18n.attendances.serviceTime.serviceTodayShort(
-            todaysServiceTime.start.format(),
-            todaysServiceTime.end.format()
-          )}
+          ? i18n.attendances.serviceTime.noServiceTodayShort
+          : todaysServiceTime === 'variable_times'
+            ? i18n.attendances.serviceTime.variableTimesShort
+            : i18n.attendances.serviceTime.serviceTodayShort(
+                todaysServiceTime.start.format(),
+                todaysServiceTime.end.format()
+              )}
     </em>
   )
 }

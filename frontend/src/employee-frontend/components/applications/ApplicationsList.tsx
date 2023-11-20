@@ -259,10 +259,10 @@ const ApplicationsList = React.memo(function Applications({
           ? application.startDate
           : application.dueDate
         : application.startDate
-        ? application.startDate
-        : application.dueDate
-        ? application.dueDate
-        : null
+          ? application.startDate
+          : application.dueDate
+            ? application.dueDate
+            : null
 
     return (
       application.dateOfBirth &&

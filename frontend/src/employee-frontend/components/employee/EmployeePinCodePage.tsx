@@ -73,11 +73,11 @@ export default React.memo(function EmployeePinCodePage() {
           status: 'warning'
         }
       : pinLocked && !pin
-      ? {
-          text: i18n.pinCode.locked,
-          status: 'warning'
-        }
-      : undefined
+        ? {
+            text: i18n.pinCode.locked,
+            status: 'warning'
+          }
+        : undefined
   }
 
   useWarnOnUnsavedChanges(dirty, i18n.pinCode.unsavedDataWarning)

@@ -259,8 +259,8 @@ export async function getPersonGuardiansAndBlockedGuardians(
         guardians.isFailure
           ? guardians
           : blockedGuardians.isFailure
-          ? blockedGuardians
-          : Failure.of({ message: 'Fetching guardians failed' })
+            ? blockedGuardians
+            : Failure.of({ message: 'Fetching guardians failed' })
       )
 }
 

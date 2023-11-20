@@ -38,8 +38,8 @@ export const ChartTooltip = React.memo(function ChartTooltip({
     position.xAlign !== 'center'
       ? position.xAlign
       : position.yAlign !== 'center'
-      ? position.yAlign
-      : 'left'
+        ? position.yAlign
+        : 'left'
   const pos =
     align === 'left'
       ? {
@@ -47,20 +47,20 @@ export const ChartTooltip = React.memo(function ChartTooltip({
           y: position.y
         }
       : align === 'right'
-      ? {
-          x: position.caretX - caretSize - tooltipWidth,
-          y: position.y
-        }
-      : align === 'bottom'
-      ? {
-          x: position.x,
-          y: position.caretY - caretSize - tooltipHeight
-        }
-      : {
-          // top
-          x: position.x - tooltipWidth / 2,
-          y: position.caretY + caretSize
-        }
+        ? {
+            x: position.caretX - caretSize - tooltipWidth,
+            y: position.y
+          }
+        : align === 'bottom'
+          ? {
+              x: position.x,
+              y: position.caretY - caretSize - tooltipHeight
+            }
+          : {
+              // top
+              x: position.x - tooltipWidth / 2,
+              y: position.caretY + caretSize
+            }
 
   const caretPos = {
     x: position.caretX - caretSize,

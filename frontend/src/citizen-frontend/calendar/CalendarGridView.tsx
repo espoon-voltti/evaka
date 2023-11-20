@@ -376,8 +376,8 @@ const Day = React.memo(function Day({
       day.children.every((c) => c.absence && !c.absence.editable)
         ? 'nonEditableAbsence'
         : holidayPeriods.some((p) => p.includes(day.date))
-        ? 'holidayPeriod'
-        : undefined,
+          ? 'holidayPeriod'
+          : undefined,
     [day.children, day.date, holidayPeriods]
   )
   const onClick = useCallback(
@@ -518,8 +518,8 @@ const DayCell = styled.button<{
     p.$highlight === 'nonEditableAbsence'
       ? p.theme.colors.grayscale.g15
       : p.$highlight === 'holidayPeriod'
-      ? p.theme.colors.accents.a10powder
-      : p.theme.colors.grayscale.g0};
+        ? p.theme.colors.accents.a10powder
+        : p.theme.colors.grayscale.g0};
   border: none;
   outline: 1px solid ${colors.grayscale.g15};
   cursor: pointer;
@@ -562,8 +562,8 @@ const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
     p.inactive
       ? colors.grayscale.g70
       : p.holiday
-      ? colors.accents.a2orangeDark
-      : colors.main.m1};
+        ? colors.accents.a2orangeDark
+        : colors.main.m1};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `

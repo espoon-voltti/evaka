@@ -190,8 +190,8 @@ const labelMixin = css<LabelProps>`
     p.primary
       ? p.theme.colors.main.m1
       : p.white
-      ? p.theme.colors.grayscale.g0
-      : p.theme.colors.grayscale.g100};
+        ? p.theme.colors.grayscale.g0
+        : p.theme.colors.grayscale.g100};
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 

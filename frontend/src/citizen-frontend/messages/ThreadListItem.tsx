@@ -59,8 +59,8 @@ export default React.memo(function ThreadListItem({
         ', '
       )
     : thread.sender
-    ? formatSenderName(thread.sender)
-    : ''
+      ? formatSenderName(thread.sender)
+      : ''
 
   const handleDelete = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {

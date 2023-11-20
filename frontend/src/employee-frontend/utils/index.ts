@@ -17,8 +17,8 @@ export const formatName = (
       ? `${lastName} ${firstName}`
       : `${firstName} ${lastName}`
     : lastName
-    ? lastName
-    : firstName
+      ? lastName
+      : firstName
 }
 
 export const formatPersonName = (

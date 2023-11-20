@@ -193,8 +193,8 @@ const CalendarContent = React.memo(function CalendarContent({
     modeParam && ['month', 'week'].includes(modeParam)
       ? (modeParam as CalendarMode)
       : realtimeStaffAttendanceEnabled && hasPermissionToReadAttendances
-      ? 'week'
-      : 'month'
+        ? 'week'
+        : 'month'
   )
 
   const [mode, availableModes]: [CalendarMode, CalendarMode[]] =

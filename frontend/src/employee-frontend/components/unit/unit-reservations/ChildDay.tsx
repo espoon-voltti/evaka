@@ -45,8 +45,8 @@ function getExpectedAttendanceTime(
         endTime: reservation.endTime
       }
     : serviceTimeOfDay
-    ? { startTime: serviceTimeOfDay.start, endTime: serviceTimeOfDay.end }
-    : undefined
+      ? { startTime: serviceTimeOfDay.start, endTime: serviceTimeOfDay.end }
+      : undefined
 }
 
 interface Props {
@@ -129,10 +129,10 @@ export default React.memo(function ChildDay({
     dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
       ? null
       : isRegular(dailyServiceTimes)
-      ? dailyServiceTimes.regularTimes
-      : isIrregular(dailyServiceTimes)
-      ? getTimesOnWeekday(dailyServiceTimes, day.date.getIsoDayOfWeek())
-      : null
+        ? dailyServiceTimes.regularTimes
+        : isIrregular(dailyServiceTimes)
+          ? getTimesOnWeekday(dailyServiceTimes, day.date.getIsoDayOfWeek())
+          : null
 
   const absence = editState
     ? editState.absences[rowIndex][day.date.formatIso()]

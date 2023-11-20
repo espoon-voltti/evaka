@@ -96,9 +96,8 @@ describe('Employee - Child documents', () => {
       `${config.employeeUrl}/child-information/${childFixture.id}`
     )
     let childInformationPage = new ChildInformationPage(page)
-    let childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    let childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createDocumentButton.click()
     await childDocumentsSection.createModalTemplateSelect.assertTextEquals(
       'HOJKS 2022-2023'
@@ -117,9 +116,8 @@ describe('Employee - Child documents', () => {
     await childDocument.returnButton.click()
 
     // Assert status draft and unpublished, open the document again
-    childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
     let row = childDocumentsSection.childDocuments(0)
     await row.status.assertTextEquals('Luonnos')
@@ -138,9 +136,8 @@ describe('Employee - Child documents', () => {
 
     // Assert status and publish time
     await childDocument.returnButton.click()
-    childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
     row = childDocumentsSection.childDocuments(0)
     await row.status.assertTextEquals('Luonnos')
@@ -161,9 +158,8 @@ describe('Employee - Child documents', () => {
     // Assert status and new publish time
     await childDocument.returnButton.click()
     childInformationPage = new ChildInformationPage(page)
-    childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
     row = childDocumentsSection.childDocuments(0)
     await row.status.assertTextEquals('Valmis')
@@ -185,9 +181,8 @@ describe('Employee - Child documents', () => {
       `${config.employeeUrl}/child-information/${childFixture.id}`
     )
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.createDocumentButton.click()
     await childDocumentsSection.modalOk.click()
 

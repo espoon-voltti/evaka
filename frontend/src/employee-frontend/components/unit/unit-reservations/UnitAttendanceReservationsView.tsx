@@ -162,12 +162,12 @@ export default React.memo(function UnitAttendanceReservationsView({
                       .flatMap(({ children }) => children)
                       .concat(childData.ungrouped)
                   : selectedGroup.type === 'no-group'
-                  ? childData.ungrouped
-                  : selectedGroup.type === 'group'
-                  ? childData.groups.find(
-                      (g) => g.group.id === selectedGroup.id
-                    )?.children ?? []
-                  : []
+                    ? childData.ungrouped
+                    : selectedGroup.type === 'group'
+                      ? childData.groups.find(
+                          (g) => g.group.id === selectedGroup.id
+                        )?.children ?? []
+                      : []
               }
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}
@@ -177,12 +177,12 @@ export default React.memo(function UnitAttendanceReservationsView({
                       .flatMap(({ childInfos }) => childInfos)
                       .concat(childData.unitServiceNeedInfo.ungrouped)
                   : selectedGroup.type === 'no-group'
-                  ? childData.unitServiceNeedInfo.ungrouped
-                  : selectedGroup.type === 'group'
-                  ? childData.unitServiceNeedInfo.groups.find(
-                      (g) => g.groupId === selectedGroup.id
-                    )?.childInfos ?? []
-                  : []
+                    ? childData.unitServiceNeedInfo.ungrouped
+                    : selectedGroup.type === 'group'
+                      ? childData.unitServiceNeedInfo.groups.find(
+                          (g) => g.groupId === selectedGroup.id
+                        )?.childInfos ?? []
+                      : []
               }
             />
           </>

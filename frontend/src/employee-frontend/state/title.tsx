@@ -41,8 +41,8 @@ export const TitleContextProvider = React.memo(function TitleContextProvider({
       return firstName && lastName
         ? `${lastName} ${firstName}`
         : lastName
-        ? lastName
-        : firstName
+          ? lastName
+          : firstName
     },
     [i18n]
   )

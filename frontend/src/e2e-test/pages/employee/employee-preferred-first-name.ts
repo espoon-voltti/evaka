@@ -28,8 +28,8 @@ export class EmployeePreferredFirstNamePage {
   async assertPreferredFirstNameOptions(
     expectedPreferredFirstNameOptions: string[]
   ) {
-    const preferredFirstNameOptions = await this.preferredFirstNameSelect
-      .allOptions
+    const preferredFirstNameOptions =
+      await this.preferredFirstNameSelect.allOptions
     expectedPreferredFirstNameOptions.forEach((expected) =>
       assert(preferredFirstNameOptions.includes(expected))
     )

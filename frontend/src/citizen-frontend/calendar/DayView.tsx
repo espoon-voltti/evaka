@@ -428,8 +428,8 @@ const DayModal = React.memo(function DayModal({
                                   {event.currentAttending.type === 'unit'
                                     ? event.currentAttending.unitName
                                     : event.currentAttending.type === 'group'
-                                    ? event.currentAttending.groupName
-                                    : row.firstName}
+                                      ? event.currentAttending.groupName
+                                      : row.firstName}
                                 </LabelLike>
                                 <P noMargin data-qa="event-description">
                                   {event.description}
@@ -666,9 +666,9 @@ const Absence = React.memo(function Absence({
         {absence.type === 'SICKLEAVE'
           ? i18n.calendar.absences.SICKLEAVE
           : featureFlags.citizenAttendanceSummary &&
-            absence.type === 'PLANNED_ABSENCE'
-          ? i18n.calendar.absences.PLANNED_ABSENCE
-          : i18n.calendar.absent}
+              absence.type === 'PLANNED_ABSENCE'
+            ? i18n.calendar.absences.PLANNED_ABSENCE
+            : i18n.calendar.absent}
       </span>
     )
   }

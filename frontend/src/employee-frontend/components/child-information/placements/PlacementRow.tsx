@@ -157,8 +157,8 @@ export default React.memo(function PlacementRow({
         res.statusCode === 403
           ? i18n.common.error.forbidden
           : res?.statusCode === 409
-          ? i18n.childInformation.placements.error.conflict.title
-          : i18n.common.error.unknown
+            ? i18n.childInformation.placements.error.conflict.title
+            : i18n.common.error.unknown
       const text =
         res?.statusCode === 409
           ? i18n.childInformation.placements.error.conflict.text

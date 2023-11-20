@@ -240,9 +240,8 @@ describe('Citizen daycare applications', () => {
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)
     await applications.assertApplicationExists(applicationId)
-    const applicationReadView = await applications.viewApplication(
-      applicationId
-    )
+    const applicationReadView =
+      await applications.viewApplication(applicationId)
 
     await applicationReadView.unitPreferenceSection.waitUntilVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()

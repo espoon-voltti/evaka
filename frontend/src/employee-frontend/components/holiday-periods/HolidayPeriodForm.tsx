@@ -42,10 +42,10 @@ function makeHolidayPeriodForm(mode: 'create' | 'update') {
         ? output.start.isBefore(minStartDate)
           ? 'tooSoon'
           : output.end.toSystemTzDate().valueOf() -
-              output.start.toSystemTzDate().valueOf() >
-            maxPeriod
-          ? 'tooLong'
-          : undefined
+                output.start.toSystemTzDate().valueOf() >
+              maxPeriod
+            ? 'tooLong'
+            : undefined
         : undefined
     ),
     reservationDeadline: required(localDate()),

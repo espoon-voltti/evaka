@@ -517,14 +517,14 @@ export function resetDay(
       (holidayPeriodState === undefined && reservationNotRequired)
       ? { branch: 'reservationNoTimes', state: 'absent' }
       : holidayPeriodState === 'closed'
-      ? { branch: 'readOnly', state: 'reservationClosed' }
-      : {
-          branch: 'reservation',
-          state: {
-            validTimeRange,
-            reservation: { branch: 'absent', state: true }
+        ? { branch: 'readOnly', state: 'reservationClosed' }
+        : {
+            branch: 'reservation',
+            state: {
+              validTimeRange,
+              reservation: { branch: 'absent', state: true }
+            }
           }
-        }
   }
 
   if (hasReservationsForEveryChild(calendarDays, selectedChildren)) {

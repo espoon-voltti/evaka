@@ -101,9 +101,8 @@ describe('Citizen application decisions', () => {
       'Vahvistettavana huoltajalla'
     )
 
-    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
-      applicationId
-    )
+    const responsePage =
+      await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
     await responsePage.assertUnresolvedDecisionsCount(2)
 
     // preschool daycare decision cannot be accepted before accepting preschool
@@ -176,9 +175,8 @@ describe('Citizen application decisions', () => {
     await header.selectTab('decisions')
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
-    const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
-      applicationId
-    )
+    const responsePage =
+      await citizenDecisionsPage.navigateToDecisionResponse(applicationId)
     await responsePage.rejectDecision(preschoolDecisionId)
     await responsePage.confirmRejectCascade()
 

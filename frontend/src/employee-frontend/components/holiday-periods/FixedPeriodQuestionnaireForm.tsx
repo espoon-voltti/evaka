@@ -224,13 +224,13 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
       start: !parsedStart
         ? 'validDate'
         : parsedEnd && parsedStart.isAfter(parsedEnd)
-        ? 'dateTooLate'
-        : undefined,
+          ? 'dateTooLate'
+          : undefined,
       end: !parsedEnd
         ? 'validDate'
         : parsedStart && parsedEnd.isBefore(parsedStart)
-        ? 'dateTooEarly'
-        : undefined,
+          ? 'dateTooEarly'
+          : undefined,
       periodOptionLabelFi: validate(form.periodOptionLabelFi, required),
       periodOptionLabelSv: undefined,
       periodOptionLabelEn: undefined,
@@ -243,25 +243,25 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
         !form.conditionContinuousPlacementEnd
           ? undefined
           : !parsedConditionContinuousPlacementStart
-          ? 'validDate'
-          : parsedConditionContinuousPlacementEnd &&
-            parsedConditionContinuousPlacementStart.isAfter(
-              parsedConditionContinuousPlacementEnd
-            )
-          ? 'dateTooLate'
-          : undefined,
+            ? 'validDate'
+            : parsedConditionContinuousPlacementEnd &&
+                parsedConditionContinuousPlacementStart.isAfter(
+                  parsedConditionContinuousPlacementEnd
+                )
+              ? 'dateTooLate'
+              : undefined,
       conditionContinuousPlacementEnd:
         !form.conditionContinuousPlacementStart &&
         !form.conditionContinuousPlacementEnd
           ? undefined
           : !parsedConditionContinuousPlacementEnd
-          ? 'validDate'
-          : parsedConditionContinuousPlacementStart &&
-            parsedConditionContinuousPlacementEnd.isBefore(
-              parsedConditionContinuousPlacementStart
-            )
-          ? 'dateTooEarly'
-          : undefined
+            ? 'validDate'
+            : parsedConditionContinuousPlacementStart &&
+                parsedConditionContinuousPlacementEnd.isBefore(
+                  parsedConditionContinuousPlacementStart
+                )
+              ? 'dateTooEarly'
+              : undefined
     }
     const isValid = Object.values(errors).every((err) => !err)
     return [

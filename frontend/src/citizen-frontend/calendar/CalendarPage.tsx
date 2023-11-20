@@ -338,12 +338,12 @@ function parseQueryString(qs: string): URLModalState | undefined {
   return modalParam === 'reservations'
     ? { type: 'reservations', initialRange: range }
     : modalParam === 'holidays'
-    ? { type: 'holidays' }
-    : modalParam === 'absences'
-    ? { type: 'absences', initialDate: date }
-    : date
-    ? { type: 'day', date }
-    : undefined
+      ? { type: 'holidays' }
+      : modalParam === 'absences'
+        ? { type: 'absences', initialDate: date }
+        : date
+          ? { type: 'day', date }
+          : undefined
 }
 
 function buildQueryString(modal: URLModalState): string {

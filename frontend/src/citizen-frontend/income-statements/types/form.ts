@@ -132,12 +132,12 @@ export function fromIncomeStatement(
           attachments: incomeStatement.attachments
         }
       : incomeStatement.type === 'CHILD_INCOME'
-      ? {
-          childIncome: true,
-          otherInfo: incomeStatement.otherInfo,
-          attachments: incomeStatement.attachments
-        }
-      : undefined)
+        ? {
+            childIncome: true,
+            otherInfo: incomeStatement.otherInfo,
+            attachments: incomeStatement.attachments
+          }
+        : undefined)
   }
 }
 

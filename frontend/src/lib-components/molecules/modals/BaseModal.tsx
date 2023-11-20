@@ -145,8 +145,8 @@ const ModalContainer = styled.div<{
       p.width === 'extra-wide'
         ? '1280px'
         : p.width === 'wide'
-        ? '720px'
-        : '500px'},
+          ? '720px'
+          : '500px'},
     calc(100vw - 2 * ${defaultMargins.xxs})
   );
   max-height: calc(100vh - 2 * ${defaultMargins.s});

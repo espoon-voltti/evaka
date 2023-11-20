@@ -37,9 +37,8 @@ beforeEach(async () => {
     fixtures.enduserChildFixtureJari.id
   )
 
-  const applications = await childInformationPage.openCollapsible(
-    'applications'
-  )
+  const applications =
+    await childInformationPage.openCollapsible('applications')
   createApplicationModal = await applications.openCreateApplicationModal()
 })
 

@@ -31,9 +31,8 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl + '/child-information/' + personId)
 
   const childInformationPage = new ChildInformationPage(page)
-  feeAlterationSection = await childInformationPage.openCollapsible(
-    'feeAlterations'
-  )
+  feeAlterationSection =
+    await childInformationPage.openCollapsible('feeAlterations')
 })
 
 describe('Child fee alteration', () => {

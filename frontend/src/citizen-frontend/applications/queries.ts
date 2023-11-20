@@ -70,10 +70,10 @@ export const applicationUnitsQuery = query({
       applicationType === 'CLUB'
         ? 'CLUB'
         : applicationType === 'DAYCARE'
-        ? 'DAYCARE'
-        : preparatory
-        ? 'PREPARATORY'
-        : 'PRESCHOOL'
+          ? 'DAYCARE'
+          : preparatory
+            ? 'PREPARATORY'
+            : 'PRESCHOOL'
     return preferredStartDate
       ? getApplicationUnits(unitType, preferredStartDate, shiftCare)
       : Promise.resolve([])
