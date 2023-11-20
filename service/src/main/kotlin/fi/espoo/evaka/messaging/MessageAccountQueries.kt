@@ -44,16 +44,15 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String,
     serviceWorkerAccountName: String
-): Set<AuthorizedMessageAccount> {
-    val accountIds = getEmployeeMessageAccountIds(idFilter)
-
-    val sql =
-        """
-SELECT
+): List<AuthorizedMessageAccount> {
+    return createQuery<Any> {
+            sql(
+                """
+SELECT DISTINCT ON (acc.id)
     acc.id AS account_id,
     (CASE
-        WHEN acc.type = 'MUNICIPAL'::message_account_type THEN :municipalAccountName
-        WHEN acc.type = 'SERVICE_WORKER'::message_account_type THEN :serviceWorkerAccountName
+        WHEN acc.type = 'MUNICIPAL'::message_account_type THEN ${bind(municipalAccountName)}
+        WHEN acc.type = 'SERVICE_WORKER'::message_account_type THEN ${bind(serviceWorkerAccountName)}
         ELSE name_view.name
     END) AS account_name,
     acc.type AS account_type,
@@ -67,7 +66,7 @@ FROM message_account acc
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND (acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER' OR acl.role = 'EARLY_CHILDHOOD_EDUCATION_SECRETARY')
     LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
-WHERE acc.id = ANY(:accountIds)
+WHERE ${predicate(idFilter.forTable("acc"))}
 AND (
     'MESSAGING' = ANY(dc.enabled_pilot_features)
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
@@ -75,11 +74,9 @@ AND (
     OR acc.type = 'SERVICE_WORKER'
 )
 """
-    return this.createQuery(sql)
-        .bind("accountIds", accountIds)
-        .bind("municipalAccountName", municipalAccountName)
-        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
-        .toSet<AuthorizedMessageAccount>()
+            )
+        }
+        .toList()
 }
 
 fun Database.Read.getAccountNames(

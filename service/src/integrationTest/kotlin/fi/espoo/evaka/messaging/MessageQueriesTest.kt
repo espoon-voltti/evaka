@@ -14,6 +14,8 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.config.testFeatureConfig
@@ -33,18 +35,18 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -53,6 +55,8 @@ import org.junit.jupiter.api.Test
  * reflect reality: it's controllers' and MessageService's job but these tests don't invoke them
  */
 class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
+
     private val person1 = DevPerson(firstName = "Firstname", lastName = "Person")
     private val person2 = DevPerson(firstName = "Firstname", lastName = "Person Two")
     private val employee1 = DevEmployee(firstName = "Firstname", lastName = "Employee")
@@ -60,7 +64,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private lateinit var clock: EvakaClock
     private val sendTime = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
-    private val readTime = sendTime.plusSeconds(30)
 
     private data class TestAccounts(
         val person1: MessageAccount,
@@ -174,7 +177,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("Newest thread", thread.title)
 
         // when the thread is marked read for person 1
-        db.transaction { it.markThreadRead(RealEvakaClock(), accounts.person1.id, thread1Id) }
+        db.transaction { it.markThreadRead(clock, accounts.person1.id, thread1Id) }
 
         // then the message has correct readAt
         val person1Threads =
@@ -182,7 +185,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
         assertEquals(1, readMessages.size)
-        assertTrue(HelsinkiDateTime.now().durationSince(readMessages[0]) < Duration.ofSeconds(5))
+        assertEquals(clock.now(), readMessages[0])
 
         // then person 2 threads are not affected
         assertEquals(
@@ -628,11 +631,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val title = "Hello"
         val threadId = createThread(title, content, accounts.employee1, listOf(accounts.person1))
 
-        assertEquals(1, unreadMessagesCount(accounts.person1))
+        assertEquals(1, unreadMessagesCount(person1.id))
 
         db.transaction { tx -> tx.archiveThread(accounts.person1.id, threadId) }
 
-        assertEquals(0, unreadMessagesCount(accounts.person1))
+        assertEquals(0, unreadMessagesCount(person1.id))
 
         assertEquals(
             1,
@@ -781,8 +784,19 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.upsertReceiverThreadParticipants(contentId, now)
         }
 
-    private fun unreadMessagesCount(account: MessageAccount) =
-        db.read { it.getUnreadMessagesCounts(readTime, setOf(account.id)).first().unreadCount }
+    private fun unreadMessagesCount(personId: PersonId) =
+        db.read { tx ->
+            tx.getUnreadMessagesCounts(
+                    accessControl.requireAuthorizationFilter(
+                        tx,
+                        AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
+                        clock,
+                        Action.MessageAccount.ACCESS
+                    )
+                )
+                .first()
+                .unreadCount
+        }
 
     private fun Database.Transaction.getAccount(person: DevPerson) =
         MessageAccount(

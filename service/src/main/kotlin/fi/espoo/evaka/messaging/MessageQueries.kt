@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PagedFactory
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -28,6 +27,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.jdbi.v3.json.Json
@@ -37,12 +37,11 @@ private val logger = KotlinLogging.logger {}
 const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 
 fun Database.Read.getUnreadMessagesCounts(
-    now: HelsinkiDateTime,
-    accountIds: Set<MessageAccountId>
+    idFilter: AccessControlFilter<MessageAccountId>,
 ): Set<UnreadCountByAccount> {
-    // language=SQL
-    val sql =
-        """
+    return createQuery<Any> {
+            sql(
+                """
         SELECT 
             acc.id as account_id,
             SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
@@ -52,15 +51,12 @@ fun Database.Read.getUnreadMessagesCounts(
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE acc.id = ANY(:accountIds) AND (m.id IS NULL OR m.sent_at IS NOT NULL)
+        WHERE ${predicate(idFilter.forTable("acc"))} AND (m.id IS NULL OR m.sent_at IS NOT NULL)
         GROUP BY acc.id
-    """
-            .trimIndent()
-
-    return this.createQuery(sql)
-        .bind("accountIds", accountIds)
-        .bind("now", now)
-        .toSet<UnreadCountByAccount>()
+        """
+            )
+        }
+        .toSet()
 }
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
@@ -1133,29 +1129,23 @@ data class MunicipalMessageReceiversResult(
     val unitName: String
 )
 
-data class ServiceWorkerMessageReceiversResult(
-    val accountId: MessageAccountId,
-    val personId: PersonId,
-    val firstName: String,
-    val lastName: String
-)
-
 fun Database.Read.getReceiversForNewMessage(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate
 ): List<MessageReceiversResponse> {
-    val accountIds = getEmployeeMessageAccountIds(idFilter)
-
     val unitReceivers =
-        createQuery(
-                """
+        createQuery<Any> {
+                sql(
+                    """
         WITH accounts AS (
-            SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
-            WHERE id = ANY(:accountIds) AND type = ANY('{PERSONAL,GROUP}'::message_account_type[])
+            SELECT id, employee_id, daycare_group_id FROM message_account
+            WHERE
+                ${predicate(idFilter.forTable("message_account"))} AND
+                type = ANY('{PERSONAL,GROUP}'::message_account_type[])
         ), children AS (
             SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name
             FROM accounts a
-            JOIN realized_placement_all(:date) p ON a.daycare_group_id = p.group_id
+            JOIN realized_placement_all(${bind(today)}) p ON a.daycare_group_id = p.group_id
             JOIN daycare d ON p.unit_id = d.id
             JOIN daycare_group g ON p.group_id = g.id
             WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
@@ -1167,7 +1157,7 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
             JOIN daycare d ON acl.daycare_id = d.id
             JOIN daycare_group g ON d.id = g.daycare_id
-            JOIN realized_placement_all(:date) p ON g.id = p.group_id
+            JOIN realized_placement_all(${bind(today)}) p ON g.id = p.group_id
             WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
         )
         SELECT DISTINCT
@@ -1192,14 +1182,12 @@ fun Database.Read.getReceiversForNewMessage(
             SELECT 1
             FROM foster_parent fp
             LEFT JOIN messaging_blocklist bl ON fp.parent_id = bl.blocked_recipient AND fp.child_id = bl.child_id
-            WHERE fp.child_id = c.child_id AND fp.valid_during @> :date AND bl.id IS NULL
+            WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} AND bl.id IS NULL
         )
         ORDER BY c.unit_name, c.group_name
         """
-                    .trimIndent()
-            )
-            .bind("accountIds", accountIds)
-            .bind("date", today)
+                )
+            }
             .toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
@@ -1221,11 +1209,12 @@ fun Database.Read.getReceiversForNewMessage(
             }
 
     val municipalReceivers =
-        createQuery(
-                """
+        createQuery<Any> {
+                sql(
+                    """
         WITH accounts AS (
             SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
-            WHERE id = ANY(:accountIds) AND type = 'MUNICIPAL'::message_account_type
+            WHERE ${predicate(idFilter.forTable("message_account"))} AND type = 'MUNICIPAL'::message_account_type
         )
         SELECT acc.id AS account_id, a.id AS area_id, a.name AS area_name, d.id AS unit_id, d.name AS unit_name
         FROM accounts acc, care_area a
@@ -1233,10 +1222,8 @@ fun Database.Read.getReceiversForNewMessage(
         WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
         ORDER BY area_name
         """
-                    .trimIndent()
-            )
-            .bind("accountIds", accountIds)
-            .bind("date", today)
+                )
+            }
             .toList<MunicipalMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
