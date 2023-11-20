@@ -1399,7 +1399,7 @@ export const fi = {
       terminated: 'Irtisanottu',
       area: 'Alue',
       daycareUnit: 'Toimipaikka',
-      daycareGroup: 'Nykyinen ryhmä',
+      daycareGroups: 'Ryhmä',
       daycareGroupMissing: 'Ei ryhmitetty',
       type: 'Toimintamuoto',
       providerType: 'Järjestämismuoto',

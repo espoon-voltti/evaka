@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -11,9 +12,14 @@ import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import {
+  DaycareGroupPlacement,
+  DaycarePlacementWithDetails
+} from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -74,8 +80,9 @@ const DataLabel = styled.div`
   font-weight: ${fontWeights.semibold};
 `
 
-const DataValue = styled.div`
+const DataValue = styled.div<{ marginBottom?: string }>`
   display: flex;
+  ${(p) => (p.marginBottom ? `margin-bottom: ${p.marginBottom};` : '')}
 `
 
 const ActionRow = styled.div`
@@ -261,10 +268,6 @@ export default React.memo(function PlacementRow({
     }
   }
 
-  const currentGroupPlacement = placement.groupPlacements.find((gp) =>
-    FiniteDateRange.from(gp).includes(LocalDate.todayInSystemTz())
-  )
-
   return placement.isRestrictedFromUser ? (
     <RestrictedToolbar
       title={placement.daycare.name}
@@ -418,19 +421,26 @@ export default React.memo(function PlacementRow({
         ) && (
           <DataRow>
             <DataLabel>
-              {i18n.childInformation.placements.daycareGroup}
+              {i18n.childInformation.placements.daycareGroups}
             </DataLabel>
-            <DataValue data-qa="placement-details-unit">
-              {currentGroupPlacement?.groupId &&
-              currentGroupPlacement?.groupName ? (
-                <Link
-                  to={`/units/${placement.daycare.id}/groups?open_groups=${currentGroupPlacement.groupId}`}
-                >
-                  {currentGroupPlacement.groupName}
-                </Link>
-              ) : (
-                i18n.childInformation.placements.daycareGroupMissing
-              )}
+            <DataValue
+              data-qa="placement-details-unit"
+              marginBottom={defaultMargins.s}
+            >
+              <UnorderedList>
+                {orderBy(
+                  placement.groupPlacements,
+                  (groupPlacement) => groupPlacement.startDate,
+                  'desc'
+                ).map((groupPlacement) => (
+                  <li key={groupPlacement.startDate.formatIso()}>
+                    <GroupPlacement
+                      unitId={placement.daycare.id}
+                      groupPlacement={groupPlacement}
+                    />
+                  </li>
+                ))}
+              </UnorderedList>
             </DataValue>
           </DataRow>
         )}
@@ -516,3 +526,34 @@ const DatepickerContainer = styled.div`
 const WarningContainer = styled.div`
   margin: 5px 0;
 `
+
+const GroupPlacement = ({
+  unitId,
+  groupPlacement
+}: {
+  unitId: UUID
+  groupPlacement: DaycareGroupPlacement
+}) => {
+  const { i18n } = useTranslation()
+
+  const range = groupPlacement.startDate.isEqual(groupPlacement.endDate)
+    ? groupPlacement.startDate.format()
+    : `${groupPlacement.startDate.format()} – ${groupPlacement.endDate.format()}`
+
+  if (groupPlacement.groupId === null) {
+    return (
+      <>
+        {i18n.childInformation.placements.daycareGroupMissing}, {range}
+      </>
+    )
+  }
+
+  return (
+    <Link
+      key={groupPlacement.startDate.formatIso()}
+      to={`/units/${unitId}/groups?open_groups=${groupPlacement.groupId}`}
+    >
+      {groupPlacement.groupName}, {range}
+    </Link>
+  )
+}
