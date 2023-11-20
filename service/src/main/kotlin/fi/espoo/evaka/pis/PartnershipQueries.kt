@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -110,6 +111,7 @@ fun Database.Transaction.createPartnership(
     endDate: LocalDate?,
     conflict: Boolean = false,
     creatorId: EvakaUserId?,
+    applicationId: ApplicationId?,
     createDate: HelsinkiDateTime
 ): Partnership {
     val partnershipId = UUID.randomUUID()
@@ -117,10 +119,10 @@ fun Database.Transaction.createPartnership(
             sql(
                 """
         WITH new_fridge_partner AS (
-            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at, created_from_application)
             VALUES
-                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}),
-                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)})
+                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)}),
+                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)})
             RETURNING *
         )
         SELECT
@@ -133,7 +135,8 @@ fun Database.Transaction.createPartnership(
             fp1.created_at,
             fp1.created_by,
             fp1.modified_at,
-            fp1.modified_by
+            fp1.modified_by,
+            fp1.created_from_application
         FROM new_fridge_partner fp1
         JOIN new_fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -145,17 +148,17 @@ fun Database.Transaction.createPartnership(
 }
 
 fun Database.Transaction.updatePartnershipDuration(
-    id: PartnershipId,
-    startDate: LocalDate,
-    endDate: LocalDate?,
-    modifiedById: EvakaUserId?,
-    modificationDate: HelsinkiDateTime
+        id: PartnershipId,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+        modifiedBy: EvakaUserId?, // TODO add support for tagging modification to be originating from a DVV synch
+        modificationDate: HelsinkiDateTime
 ): Boolean {
 
     return createQuery<Any> {
             sql(
                 """
-        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_by = ${bind(modifiedBy)}, modified_at = ${bind(modificationDate)}
         WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
@@ -201,11 +204,7 @@ private val toPartnership: (String, String) -> Row.() -> Partnership =
                 partners = setOf(toPersonJSON(partner1Alias), toPersonJSON(partner2Alias)),
                 startDate = column("start_date"),
                 endDate = column("end_date"),
-                conflict = column("conflict"),
-                createdAt = column("created_at"),
-                createdBy = column("created_by"),
-                modifiedAt = column("modified_at"),
-                modifiedBy = column("modified_by")
+                conflict = column("conflict")
             )
         }
     }
@@ -221,7 +220,8 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
             createdAt = column("created_at"),
             createdBy = column("created_by"),
             modifiedAt = column("modified_at"),
-            modifiedBy = column("modified_by")
+            modifiedBy = column("modified_by"),
+            createdFromApplication = column("created_from_application")
         )
     }
 }

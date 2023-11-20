@@ -81,14 +81,14 @@ export interface TimelineIncome {
 */
 export interface TimelinePartnerDetailed {
   children: TimelineChildDetailed[]
-  createdAt: HelsinkiDateTime
+  createdAt: HelsinkiDateTime | null
   createdBy: UUID | null
   feeDecisions: TimelineFeeDecision[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
-  modifiedAt: HelsinkiDateTime
+  modifiedAt: HelsinkiDateTime | null
   modifiedBy: UUID | null
   partnerId: UUID
   range: DateRange

@@ -39,6 +39,7 @@ class PartnershipService {
                 endDate,
                 false,
                 createdBy,
+                    null,
                 createdAt
             )
         } catch (e: UnableToExecuteStatementException) {
@@ -94,11 +95,7 @@ data class Partnership(
     val partners: Set<PersonJSON>,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val conflict: Boolean = false,
-    val createdAt: HelsinkiDateTime?,
-    val createdBy: EvakaUserId?,
-    val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUserId?
+    val conflict: Boolean = false
 )
 
 data class Partner(

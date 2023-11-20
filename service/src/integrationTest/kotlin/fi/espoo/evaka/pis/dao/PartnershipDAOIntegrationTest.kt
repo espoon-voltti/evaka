@@ -38,6 +38,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate,
                     false,
                     null,
+                        null,
                     clock.now()
                 )
             }
@@ -62,6 +63,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(200),
                     false,
                     null,
+                        null,
                     clock.now()
                 )
             }
@@ -74,6 +76,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(400),
                     false,
                     null,
+                        null,
                     clock.now()
                 )
             }
@@ -105,6 +108,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = null,
                     false,
                     null,
+                        null,
                     clock.now()
                 )
             }

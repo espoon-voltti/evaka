@@ -19,3 +19,9 @@ ALTER TABLE fridge_partner DROP COLUMN IF EXISTS modified_by;
 ALTER TABLE fridge_partner ADD COLUMN modified_by uuid default null;
 ALTER TABLE fridge_partner
     add foreign key (modified_by) references evaka_user;
+
+-- TODO remove next line once ready for review
+ALTER TABLE fridge_partner DROP COLUMN IF EXISTS created_from_application;
+ALTER TABLE fridge_partner ADD COLUMN created_from_application uuid default null;
+ALTER TABLE fridge_partner
+    add foreign key (created_from_application) references application;

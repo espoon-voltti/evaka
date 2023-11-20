@@ -1951,7 +1951,15 @@ export const fi = {
     feeDecision: 'Maksupäätös',
     valueDecision: 'Arvopäätös',
     partner: 'Puoliso',
-    child: 'Lapsi'
+    child: 'Lapsi',
+    createdAtTitle: 'Luontiaika',
+    createdByTitle: 'Luoja',
+    modifiedAtTitle: 'Muokattu viimeksi',
+    modifiedByTitle: 'Viimeisin muokkaaja',
+    user: 'Käyttäjä',
+    application: 'Hakemus',
+    dvvSync: 'Väestötietojärjestelmä',
+    notAvailable: 'N/A'
   },
   incomeStatement: {
     startDate: 'Voimassa alkaen',

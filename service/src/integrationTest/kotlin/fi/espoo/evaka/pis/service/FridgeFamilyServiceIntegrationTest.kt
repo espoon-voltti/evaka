@@ -69,6 +69,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 null,
                 false,
                 null,
+                    null,
                 mockToday.now()
             )
         }
@@ -106,6 +107,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 mockToday.today(),
                 null,
                 false,
+                null,
                 null,
                 mockToday.now()
             )

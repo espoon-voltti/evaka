@@ -159,21 +159,46 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
       </span>
     </FixedSpaceColumn>
   ),
-  NestedContent: ({ elem, timelineRange, zoom }) => {
-    const nestedRange = getNestedRange(elem.range, timelineRange)
-    if (nestedRange === null) return null
+  NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
+    const { i18n } = useTranslation()
+    const metadata = (
+      <div>
+        <strong>{i18n.timeline.createdAtTitle}:</strong>{' '}
+        {partnerDetails.createdAt
+          ? partnerDetails.createdAt.format()
+          : i18n.timeline.notAvailable}
+        <br />
+        <strong>{i18n.timeline.createdByTitle}:</strong>{' '}
+        {partnerDetails.createdBy
+          ? `${i18n.timeline.user} ${partnerDetails.createdBy}`
+          : i18n.timeline.notAvailable}
+        <br />
+        <strong>{i18n.timeline.modifiedAtTitle}:</strong>{' '}
+        {partnerDetails.modifiedAt
+          ? partnerDetails.modifiedAt.format()
+          : i18n.timeline.notAvailable}
+        <br />
+        <strong>{i18n.timeline.modifiedByTitle}:</strong>{' '}
+        {partnerDetails.modifiedBy
+          ? `${i18n.timeline.user} ${partnerDetails.modifiedBy}`
+          : i18n.timeline.notAvailable}
+      </div>
+    )
+    const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
+    if (nestedRange === null) return metadata
 
     return (
       <TlNestedContainer>
+        {metadata}
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'SENT')}
+          data={partnerDetails.feeDecisions.filter((d) => d.status === 'SENT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) =>
+          data={partnerDetails.feeDecisions.filter((d) =>
             ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
               d.status
             )
@@ -183,19 +208,23 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'DRAFT')}
+          data={partnerDetails.feeDecisions.filter((d) => d.status === 'DRAFT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          data={partnerDetails.feeDecisions.filter(
+            (d) => d.status === 'ANNULLED'
+          )}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'IGNORED')}
+          data={partnerDetails.feeDecisions.filter(
+            (d) => d.status === 'IGNORED'
+          )}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -205,13 +234,15 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
         {/*Value decisions grouped by statuses*/}
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'SENT')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'SENT'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) =>
+          data={partnerDetails.valueDecisions.filter((d) =>
             ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
               d.status
             )
@@ -221,13 +252,17 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'DRAFT')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'DRAFT'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'ANNULLED')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'ANNULLED'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -236,7 +271,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={elem.incomes}
+          data={partnerDetails.incomes}
           renderer={incomeRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -245,7 +280,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={elem.children}
+          data={partnerDetails.children}
           renderer={childRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
