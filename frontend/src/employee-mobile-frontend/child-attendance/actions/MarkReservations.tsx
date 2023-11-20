@@ -442,8 +442,8 @@ const ReservationEdit = ({
       ? boundTimes.length === 1
         ? 'same-row'
         : boundTimes.length > 1
-        ? 'next-row'
-        : undefined
+          ? 'next-row'
+          : undefined
       : undefined
 
   return (
