@@ -6871,7 +6871,7 @@ __metadata:
     react-image-crop: "npm:^10.1.5"
     react-leaflet: "npm:^4.2.1"
     react-router-dom: "npm:^6.19.0"
-    react-select: "npm:^5.7.3"
+    react-select: "npm:^5.8.0"
     seamless-scroll-polyfill: "npm:2.3.4"
     style-loader: "npm:^3.3.3"
     styled-components: "npm:6.1.0"
@@ -11036,9 +11036,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-select@npm:^5.7.3":
-  version: 5.7.3
-  resolution: "react-select@npm:5.7.3"
+"react-select@npm:^5.8.0":
+  version: 5.8.0
+  resolution: "react-select@npm:5.8.0"
   dependencies:
     "@babel/runtime": "npm:^7.12.0"
     "@emotion/cache": "npm:^11.4.0"
@@ -11052,7 +11052,7 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: bdb2fa258dbc46b2b227d4a7b15ce8c60e1c30572f52d11a8f358216953ab90d371193134ea294c2f2cf1b463597edce006c15e5622bd4f4fa642f7607cb6f35
+  checksum: 04d3639ea1872a9e4d9080ece1947432fc595403c0a740f671a1b7f7dd2639288cb133ec7a2b1ac20fad69fd303d696c2f924763405e0e1d93b847e54df9e966
   languageName: node
   linkType: hard
 

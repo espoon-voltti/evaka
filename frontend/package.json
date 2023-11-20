@@ -64,7 +64,7 @@
     "react-image-crop": "^10.1.5",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.19.0",
-    "react-select": "^5.7.3",
+    "react-select": "^5.8.0",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.1.0",
     "tslib": "^2.6.0",
