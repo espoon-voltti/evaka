@@ -28,8 +28,8 @@ class PartnershipService {
         personId2: PersonId,
         startDate: LocalDate,
         endDate: LocalDate?,
-        creatorId: EvakaUserId?,
-        createDate: HelsinkiDateTime
+        createdBy: EvakaUserId?,
+        createdAt: HelsinkiDateTime
     ): Partnership {
         return try {
             tx.createPartnership(
@@ -38,8 +38,8 @@ class PartnershipService {
                 startDate,
                 endDate,
                 false,
-                creatorId,
-                createDate
+                createdBy,
+                createdAt
             )
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
@@ -51,8 +51,8 @@ class PartnershipService {
         partnershipId: PartnershipId,
         startDate: LocalDate,
         endDate: LocalDate?,
-        modifiedById: EvakaUserId?,
-        modificationDate: HelsinkiDateTime
+        modifiedBy: EvakaUserId?,
+        modifiedAt: HelsinkiDateTime
     ) {
         try {
             val success =
@@ -60,8 +60,8 @@ class PartnershipService {
                     partnershipId,
                     startDate,
                     endDate,
-                    modifiedById,
-                    modificationDate
+                    modifiedBy,
+                    modifiedAt
                 )
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
@@ -95,9 +95,9 @@ data class Partnership(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val conflict: Boolean = false,
-    val createdAt: HelsinkiDateTime,
+    val createdAt: HelsinkiDateTime?,
     val createdBy: EvakaUserId?,
-    val modifiedAt: HelsinkiDateTime,
+    val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUserId?
 )
 
@@ -106,5 +106,9 @@ data class Partner(
     val person: PersonJSON,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?
 )

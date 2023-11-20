@@ -25,12 +25,14 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -106,7 +108,11 @@ class TimelineController(private val accessControl: AccessControl) {
                                                 feeAlterations =
                                                     tx.getFeeAlterations(child.childId, childRange)
                                             )
-                                        }
+                                        },
+                                    createdAt = partner.createdAt,
+                                    createdBy = partner.createdBy,
+                                    modifiedAt = partner.modifiedAt,
+                                    modifiedBy = partner.modifiedBy
                                 )
                             },
                         children =
@@ -209,7 +215,11 @@ data class TimelinePartner(
     override val range: DateRange,
     val partnerId: PersonId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val createdBy: EvakaUserId?,
+    val createdAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
+    val modifiedAt: HelsinkiDateTime?
 ) : WithRange
 
 data class TimelinePartnerDetailed(
@@ -221,7 +231,11 @@ data class TimelinePartnerDetailed(
     val feeDecisions: List<TimelineFeeDecision>,
     val valueDecisions: List<TimelineValueDecision>,
     val incomes: List<TimelineIncome>,
-    val children: List<TimelineChildDetailed>
+    val children: List<TimelineChildDetailed>,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?
 ) : WithRange
 
 private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
@@ -236,7 +250,11 @@ private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange
                 range = DateRange(it.startDate, it.endDate),
                 partnerId = it.person.id,
                 firstName = it.person.firstName,
-                lastName = it.person.lastName
+                lastName = it.person.lastName,
+                createdAt = it.createdAt,
+                createdBy = it.createdBy,
+                modifiedAt = it.modifiedAt,
+                modifiedBy = it.modifiedBy
             )
         }
         .sortedBy { it.range.start }

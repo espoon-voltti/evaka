@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import DateRange from '../../date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { FeeAlterationType } from './invoicing'
 import { FeeDecisionStatus } from './invoicing'
@@ -80,11 +81,15 @@ export interface TimelineIncome {
 */
 export interface TimelinePartnerDetailed {
   children: TimelineChildDetailed[]
+  createdAt: HelsinkiDateTime
+  createdBy: UUID | null
   feeDecisions: TimelineFeeDecision[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID | null
   partnerId: UUID
   range: DateRange
   valueDecisions: TimelineValueDecision[]

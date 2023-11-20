@@ -217,7 +217,11 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
             person = toPersonJSON(tableAlias),
             startDate = column("start_date"),
             endDate = column("end_date"),
-            conflict = column("conflict")
+            conflict = column("conflict"),
+            createdAt = column("created_at"),
+            createdBy = column("created_by"),
+            modifiedAt = column("modified_at"),
+            modifiedBy = column("modified_by")
         )
     }
 }
