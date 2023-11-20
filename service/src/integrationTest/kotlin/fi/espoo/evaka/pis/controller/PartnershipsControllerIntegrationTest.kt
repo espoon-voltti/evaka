@@ -81,10 +81,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `service worker can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(
-                    serviceWorkerId,
-                setOf(UserRole.SERVICE_WORKER)
-            )
+            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
         )
     }
 
@@ -169,10 +166,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `service worker can update partnerships`() {
         canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(
-                    serviceWorkerId,
-                setOf(UserRole.SERVICE_WORKER)
-            )
+            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
         )
     }
 
