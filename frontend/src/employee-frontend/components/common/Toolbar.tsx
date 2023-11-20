@@ -145,8 +145,8 @@ function Toolbar({
               conflict
                 ? 'conflict'
                 : guarantee
-                ? 'guarantee'
-                : getStatusLabelByDateRange(dateRange)
+                  ? 'guarantee'
+                  : getStatusLabelByDateRange(dateRange)
             }
           />
         </ToolbarStatus>

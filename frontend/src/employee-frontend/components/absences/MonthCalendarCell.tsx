@@ -60,8 +60,8 @@ function partColor(
     absenceType !== undefined
       ? absenceColors[absenceType]
       : isWeekend
-      ? colors.grayscale.g15
-      : absenceColors.NO_ABSENCE
+        ? colors.grayscale.g15
+        : absenceColors.NO_ABSENCE
   return `border-${pos}-color: ${color}`
 }
 

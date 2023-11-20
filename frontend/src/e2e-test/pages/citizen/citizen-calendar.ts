@@ -124,8 +124,8 @@ export default class CitizenCalendarPage {
       state === 'holidayPeriod'
         ? this.holidayPeriodBackground
         : state === 'nonEditableAbsence'
-        ? this.nonEditableAbsenceBackground
-        : null
+          ? this.nonEditableAbsenceBackground
+          : null
     if (expectedBackground !== null) {
       await waitUntilEqual(
         () => this.getDayBackgroundColor(date),

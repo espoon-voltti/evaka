@@ -33,15 +33,15 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
         'close' in props
           ? props.close
           : props.reject
-          ? props.reject.action
-          : props.resolve.action
+            ? props.reject.action
+            : props.resolve.action
       }
       closeLabel={
         'close' in props
           ? props.closeLabel
           : props.reject
-          ? props.reject.label
-          : props.resolve.label
+            ? props.reject.label
+            : props.resolve.label
       }
       mobileFullScreen={false}
     >

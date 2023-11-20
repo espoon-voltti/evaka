@@ -605,10 +605,10 @@ function toFormData(unit: Unit | undefined): FormData {
     daycareType: type?.includes('FAMILY')
       ? 'FAMILY'
       : type?.includes('GROUP_FAMILY')
-      ? 'GROUP_FAMILY'
-      : type?.includes('CENTRE')
-      ? 'CENTRE'
-      : undefined,
+        ? 'GROUP_FAMILY'
+        : type?.includes('CENTRE')
+          ? 'CENTRE'
+          : undefined,
     daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
     preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
     clubApplyPeriod: unit?.clubApplyPeriod ?? null,

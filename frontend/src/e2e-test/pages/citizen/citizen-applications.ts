@@ -51,10 +51,10 @@ export default class CitizenApplicationsPage {
       type === 'DAYCARE'
         ? 'Varhaiskasvatus- ja palvelusetelihakemus'
         : type === 'PRESCHOOL'
-        ? 'Ilmoittautuminen esiopetukseen'
-        : type === 'CLUB'
-        ? 'Kerhohakemus'
-        : ''
+          ? 'Ilmoittautuminen esiopetukseen'
+          : type === 'CLUB'
+            ? 'Kerhohakemus'
+            : ''
     await this.#applicationTitle.assertTextEquals(title)
 
     return new CitizenApplicationEditor(this.page)

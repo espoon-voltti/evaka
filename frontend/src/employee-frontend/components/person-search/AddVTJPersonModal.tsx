@@ -101,8 +101,8 @@ export default React.memo(function VTJModal({
               {person.statusCode === 400
                 ? i18n.personSearch.addPersonFromVTJ.badRequest
                 : person.statusCode === 404
-                ? i18n.personSearch.addPersonFromVTJ.notFound
-                : i18n.personSearch.addPersonFromVTJ.unexpectedError}
+                  ? i18n.personSearch.addPersonFromVTJ.notFound
+                  : i18n.personSearch.addPersonFromVTJ.unexpectedError}
             </div>
           ) : null}
           {saveError ? (

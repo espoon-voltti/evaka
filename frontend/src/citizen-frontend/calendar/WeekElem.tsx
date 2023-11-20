@@ -136,8 +136,8 @@ const DayElem = React.memo(function DayElem({
       calendarDay.children.every((c) => c.absence && !c.absence.editable)
         ? 'nonEditableAbsence'
         : isHolidayPeriod
-        ? 'holidayPeriod'
-        : undefined,
+          ? 'holidayPeriod'
+          : undefined,
     [calendarDay.children, isHolidayPeriod]
   )
 
@@ -246,8 +246,8 @@ const Day = styled.button<{
     p.$highlight === 'nonEditableAbsence'
       ? `background-color: ${colors.grayscale.g15}`
       : p.$highlight === 'holidayPeriod'
-      ? `background-color: ${colors.accents.a10powder}`
-      : undefined};
+        ? `background-color: ${colors.accents.a10powder}`
+        : undefined};
 
   :focus {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
@@ -263,8 +263,8 @@ const DayColumn = styled(FixedSpaceColumn)<{
     p.inactive
       ? colors.grayscale.g70
       : p.holiday
-      ? colors.accents.a2orangeDark
-      : colors.main.m1};
+        ? colors.accents.a2orangeDark
+        : colors.main.m1};
   font-weight: ${fontWeights.semibold};
   font-size: 1.25rem;
 `

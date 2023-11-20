@@ -145,10 +145,10 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
               )
                 ? 'UPCOMING'
                 : voucherCoefficient.validityPeriod.end.isBefore(
-                    LocalDate.todayInHelsinkiTz()
-                  )
-                ? 'ENDED'
-                : 'ACTIVE'
+                      LocalDate.todayInHelsinkiTz()
+                    )
+                  ? 'ENDED'
+                  : 'ACTIVE'
             }
             data-qa="assistance-need-voucher-coefficient-status"
           />

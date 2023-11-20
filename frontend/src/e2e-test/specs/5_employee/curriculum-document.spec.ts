@@ -116,9 +116,8 @@ describe('curriculum document with person duplicate', () => {
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertCurriculumDocuments([
       { id: preschoolDocumentId }
     ])
@@ -164,9 +163,8 @@ describe('curriculum document with person duplicate', () => {
       `${config.employeeUrl}/child-information/${duplicate.data.id}`
     )
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertCurriculumDocuments([
       { id: daycareDocumentId }
     ])
@@ -199,9 +197,8 @@ describe('curriculum document with person duplicate', () => {
     await employeeLogin(page, admin.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertCurriculumDocuments([
       { id: preschoolDocumentId },
       { id: daycareDocumentId }

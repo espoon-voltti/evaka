@@ -122,8 +122,8 @@ export default React.memo(function GroupPlacementModal({
       form.groupId === null
         ? cancelMutation
         : !missingPlacement.backup
-        ? first(form.groupId)
-        : second(form.groupId),
+          ? first(form.groupId)
+          : second(form.groupId),
     [
       createGroupPlacementMutation,
       (groupId) => ({

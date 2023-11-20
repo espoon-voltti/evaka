@@ -18,8 +18,8 @@ export function isQuestionnaireAvailable(
       !val || !user
         ? false
         : val.questionnaire.requiresStrongAuth && user.authLevel !== 'STRONG'
-        ? 'with-strong-auth'
-        : true
+          ? 'with-strong-auth'
+          : true
     )
     .getOrElse(false)
 }

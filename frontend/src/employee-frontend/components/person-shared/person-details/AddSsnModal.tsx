@@ -80,10 +80,10 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
         {error === 'invalid'
           ? i18n.personProfile.ssnInvalid
           : error === 'conflict'
-          ? i18n.personProfile.ssnConflict
-          : error === 'unknown'
-          ? i18n.common.error.unknown
-          : ''}
+            ? i18n.personProfile.ssnConflict
+            : error === 'unknown'
+              ? i18n.common.error.unknown
+              : ''}
       </Error>
     </FormModal>
   )

@@ -138,9 +138,8 @@ describe('child document with person duplicate', () => {
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertChildDocuments([
       { id: hojksDocument.data.id }
     ])
@@ -191,9 +190,8 @@ describe('child document with person duplicate', () => {
     await employeeLogin(page, admin.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
-    const childDocumentsSection = await childInformationPage.openCollapsible(
-      'childDocuments'
-    )
+    const childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
     await childDocumentsSection.assertChildDocuments([
       { id: hojksDocument.data.id },
       { id: pedagogicalReportDocument.data.id },

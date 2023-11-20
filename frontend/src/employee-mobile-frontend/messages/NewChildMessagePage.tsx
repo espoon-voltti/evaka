@@ -55,8 +55,8 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
       receiver.type === 'CHILD' && receiver.id === child.id
         ? [receiver]
         : 'receivers' in receiver
-        ? receiver.receivers.flatMap(findChildReceivers)
-        : []
+          ? receiver.receivers.flatMap(findChildReceivers)
+          : []
 
     return messageReceivers.map((accounts) =>
       accounts

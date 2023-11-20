@@ -169,11 +169,11 @@ export default React.memo(function MarkAbsentBeforehand() {
                               status: 'warning'
                             }
                           : isBefore(new Date(endDate), new Date(startDate))
-                          ? {
-                              text: i18n.absences.startBeforeEnd,
-                              status: 'warning'
-                            }
-                          : undefined
+                            ? {
+                                text: i18n.absences.startBeforeEnd,
+                                status: 'warning'
+                              }
+                            : undefined
                       }
                     />
                   </TimeInputWrapper>

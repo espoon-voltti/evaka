@@ -1899,14 +1899,14 @@ describe('resetTimes', () => {
                 day.date.getIsoDayOfWeek() === 4
                   ? [{ type: 'NO_TIMES' }]
                   : day.date.getIsoDayOfWeek() === 5
-                  ? [
-                      {
-                        type: 'TIMES',
-                        startTime: LocalTime.of(8, 0),
-                        endTime: LocalTime.of(16, 0)
-                      }
-                    ]
-                  : [],
+                    ? [
+                        {
+                          type: 'TIMES',
+                          startTime: LocalTime.of(8, 0),
+                          endTime: LocalTime.of(16, 0)
+                        }
+                      ]
+                    : [],
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: true }

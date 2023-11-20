@@ -132,18 +132,18 @@ export default React.memo(
                 entrepreneur: { ...prev.entrepreneur, selected: false }
               }
             : incomeType === 'gross'
-            ? {
-                ...prev,
-                gross: { ...prev.gross, selected: value }
-              }
-            : incomeType === 'entrepreneur'
-            ? {
-                ...prev,
-                entrepreneur: { ...prev.entrepreneur, selected: value }
-              }
-            : (() => {
-                throw new Error('not reached')
-              })()
+              ? {
+                  ...prev,
+                  gross: { ...prev.gross, selected: value }
+                }
+              : incomeType === 'entrepreneur'
+                ? {
+                    ...prev,
+                    entrepreneur: { ...prev.entrepreneur, selected: value }
+                  }
+                : (() => {
+                    throw new Error('not reached')
+                  })()
         ),
       [onChange]
     )

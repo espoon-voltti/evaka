@@ -89,6 +89,6 @@ const ErrorRow = styled.div<{ $status: InfoStatus | undefined }>`
     p.$status === 'success'
       ? p.theme.colors.accents.a1greenDark
       : p.$status === 'warning'
-      ? p.theme.colors.accents.a2orangeDark
-      : p.theme.colors.grayscale.g70};
+        ? p.theme.colors.accents.a2orangeDark
+        : p.theme.colors.grayscale.g70};
 `

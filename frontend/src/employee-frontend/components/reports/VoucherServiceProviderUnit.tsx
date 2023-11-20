@@ -101,10 +101,10 @@ const TypeIndicator = styled.div<{ type: VoucherReportRowType | 'NEW' }>`
     p.type === 'REFUND'
       ? colors.status.warning
       : p.type === 'CORRECTION'
-      ? colors.accents.a5orangeLight
-      : p.type === 'NEW'
-      ? colors.main.m2
-      : colors.grayscale.g0};
+        ? colors.accents.a5orangeLight
+        : p.type === 'NEW'
+          ? colors.main.m2
+          : colors.grayscale.g0};
 `
 
 const StyledTh = styled(Th)`
@@ -251,8 +251,8 @@ export default React.memo(function VoucherServiceProviderUnit() {
                       r.type === 'REFUND'
                         ? 'Hyvitys'
                         : r.type === 'CORRECTION'
-                        ? 'Korjaus'
-                        : '',
+                          ? 'Korjaus'
+                          : '',
                     serviceNeedDescription: r.serviceNeedDescription,
                     assistanceNeedCapacityFactor: formatDecimal(
                       r.assistanceNeedCoefficient

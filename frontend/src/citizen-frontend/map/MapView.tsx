@@ -173,11 +173,11 @@ const filterAndSortUnits = (
           u.type.includes('FAMILY') ||
           u.type.includes('GROUP_FAMILY')
         : careType === 'CLUB'
-        ? u.type.includes('CLUB')
-        : careType === 'PRESCHOOL'
-        ? u.type.includes('PRESCHOOL') ||
-          u.type.includes('PREPARATORY_EDUCATION')
-        : false
+          ? u.type.includes('CLUB')
+          : careType === 'PRESCHOOL'
+            ? u.type.includes('PRESCHOOL') ||
+              u.type.includes('PREPARATORY_EDUCATION')
+            : false
     )
     .filter(
       (u) =>

@@ -101,9 +101,8 @@ describe('Employee - Guardian Information', () => {
       enduserChildFixtureJari.id
     )
 
-    const applicationsSection = await guardianPage.openCollapsible(
-      'applications'
-    )
+    const applicationsSection =
+      await guardianPage.openCollapsible('applications')
     await applicationsSection.assertApplicationCount(1)
     await applicationsSection.assertApplicationSummary(
       0,
@@ -161,9 +160,8 @@ describe('Employee - Guardian Information', () => {
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
 
-    const invoiceCorrectionsSection = await guardianPage.openCollapsible(
-      'invoiceCorrections'
-    )
+    const invoiceCorrectionsSection =
+      await guardianPage.openCollapsible('invoiceCorrections')
     const newRow = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await newRow.productSelect.selectOption('DAYCARE_DISCOUNT')
     await newRow.description.fill('Virheen korjaus')
@@ -208,9 +206,8 @@ describe('Employee - Guardian Information', () => {
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
 
-    const invoiceCorrectionsSection = await guardianPage.openCollapsible(
-      'invoiceCorrections'
-    )
+    const invoiceCorrectionsSection =
+      await guardianPage.openCollapsible('invoiceCorrections')
     await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
     let row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await row.clickAndAssertUnitVisibility(daycareFixture.name, true)

@@ -34,8 +34,8 @@ const EuroInput = React.memo(function EuroInput({
             ? { text: invalidText, status: 'warning' }
             : undefined
           : !value || !isValidCents(value)
-          ? { text: invalidText, status: 'warning' }
-          : undefined
+            ? { text: invalidText, status: 'warning' }
+            : undefined
       }
       align="right"
       data-qa={dataQa}

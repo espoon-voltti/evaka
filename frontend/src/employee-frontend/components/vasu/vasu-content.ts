@@ -114,43 +114,43 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
             value: LocalDate.parseNullableIso(question.value)
           }
         : isFollowupJson(question)
-        ? {
-            ...question,
-            value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
-              ...entry,
-              date: LocalDate.parseIso(entry.date),
-              edited: entry.edited && {
-                ...entry.edited,
-                editedAt: LocalDate.parseIso(entry.edited.editedAt)
-              },
-              createdDate:
-                typeof entry.createdDate === 'string'
-                  ? HelsinkiDateTime.parseIso(entry.createdDate)
-                  : undefined
-            }))
-          }
-        : isRadioGroupQuestionJson(question)
-        ? {
-            ...question,
-            dateRange: question.dateRange && {
-              start: LocalDate.parseIso(question.dateRange.start),
-              end: LocalDate.parseIso(question.dateRange.end)
-            }
-          }
-        : isMultiSelectQuestionJson(question)
-        ? {
-            ...question,
-            dateValue:
-              question.dateValue &&
-              mapValues(question.dateValue, (v) => LocalDate.parseIso(v)),
-            dateRangeValue:
-              question.dateRangeValue &&
-              mapValues(question.dateRangeValue, (v) => ({
-                start: LocalDate.parseIso(v.start),
-                end: LocalDate.parseIso(v.end)
+          ? {
+              ...question,
+              value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
+                ...entry,
+                date: LocalDate.parseIso(entry.date),
+                edited: entry.edited && {
+                  ...entry.edited,
+                  editedAt: LocalDate.parseIso(entry.edited.editedAt)
+                },
+                createdDate:
+                  typeof entry.createdDate === 'string'
+                    ? HelsinkiDateTime.parseIso(entry.createdDate)
+                    : undefined
               }))
-          }
-        : question
+            }
+          : isRadioGroupQuestionJson(question)
+            ? {
+                ...question,
+                dateRange: question.dateRange && {
+                  start: LocalDate.parseIso(question.dateRange.start),
+                  end: LocalDate.parseIso(question.dateRange.end)
+                }
+              }
+            : isMultiSelectQuestionJson(question)
+              ? {
+                  ...question,
+                  dateValue:
+                    question.dateValue &&
+                    mapValues(question.dateValue, (v) => LocalDate.parseIso(v)),
+                  dateRangeValue:
+                    question.dateRangeValue &&
+                    mapValues(question.dateRangeValue, (v) => ({
+                      start: LocalDate.parseIso(v.start),
+                      end: LocalDate.parseIso(v.end)
+                    }))
+                }
+              : question
     )
   }))
 })

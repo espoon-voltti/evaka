@@ -251,8 +251,8 @@ function calculateAverages(
           usedValues === 'headcount'
             ? 1
             : typeof row.occupancies[dateKey]?.percentage === 'number'
-            ? 1
-            : 0
+              ? 1
+              : 0
 
         dateData[areaKey] = dateData[areaKey] ?? {}
         dateData[areaKey][dateKey] = dateData[areaKey][dateKey] ?? {

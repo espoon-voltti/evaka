@@ -116,9 +116,8 @@ describe('Employee - Head of family details', () => {
 
     await children.verifyChildAge(0)
 
-    const familyOverview = await guardianInformation.openCollapsible(
-      'familyOverview'
-    )
+    const familyOverview =
+      await guardianInformation.openCollapsible('familyOverview')
     await familyOverview.assertPerson({
       personId: childZeroYo.id,
       age: 0
@@ -143,9 +142,8 @@ describe('Employee - Head of family details', () => {
     )
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
-    const feeDecisions = await guardianInformation.openCollapsible(
-      'feeDecisions'
-    )
+    const feeDecisions =
+      await guardianInformation.openCollapsible('feeDecisions')
     await feeDecisions.assertFeeDecision(0, {
       startDate: '01.03.2020',
       endDate: '31.07.2020',
@@ -162,14 +160,12 @@ describe('Employee - Head of family details', () => {
 
   test('Added partner is shown in family overview', async () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
-    const partnersSection = await guardianInformation.openCollapsible(
-      'partners'
-    )
+    const partnersSection =
+      await guardianInformation.openCollapsible('partners')
     await partnersSection.addPartner(fridgePartner.firstName, '01.01.2020')
 
-    const familyOverview = await guardianInformation.openCollapsible(
-      'familyOverview'
-    )
+    const familyOverview =
+      await guardianInformation.openCollapsible('familyOverview')
     await familyOverview.assertPerson({ personId: fridgePartner.id })
   })
 
@@ -223,9 +219,8 @@ describe('Employee - Head of family details', () => {
       .save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
-    const familyOverview = await guardianInformation.openCollapsible(
-      'familyOverview'
-    )
+    const familyOverview =
+      await guardianInformation.openCollapsible('familyOverview')
     await familyOverview.assertPerson({
       personId: regularPerson.id,
       incomeCents: totalIncome

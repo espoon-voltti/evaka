@@ -111,8 +111,8 @@ export function useAutosave<T, F extends ApiFunction>({
           prev.state === 'loading'
             ? 'loading-dirty'
             : prev.state === 'saving'
-            ? 'saving-dirty'
-            : 'dirty'
+              ? 'saving-dirty'
+              : 'dirty'
         return { ...prev, state }
       }),
     []

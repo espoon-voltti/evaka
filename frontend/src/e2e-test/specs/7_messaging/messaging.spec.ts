@@ -354,9 +354,8 @@ describe('Sending and receiving messages', () => {
         )
 
         const childInformationPage = new ChildInformationPage(adminPage)
-        const blocklistSection = await childInformationPage.openCollapsible(
-          'messageBlocklist'
-        )
+        const blocklistSection =
+          await childInformationPage.openCollapsible('messageBlocklist')
         await blocklistSection.addParentToBlockList(
           fixtures.enduserGuardianFixture.id
         )

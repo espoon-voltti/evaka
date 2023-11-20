@@ -71,8 +71,8 @@ export default React.memo(function Presences() {
                   row.present === true
                     ? 'kyllä'
                     : row.present === false
-                    ? 'ei'
-                    : null
+                      ? 'ei'
+                      : null
               }))}
               headers={[
                 {

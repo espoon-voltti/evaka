@@ -131,8 +131,8 @@ export const TextAreaF = React.memo(function TextAreaF({
         'info' in props
           ? props.info
           : props.readonly
-          ? undefined
-          : bind.inputInfo()
+            ? undefined
+            : bind.inputInfo()
       }
     />
   )

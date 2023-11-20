@@ -1704,8 +1704,8 @@ export const fi = {
         status === 'DRAFT'
           ? 'Seuraavalla luonnoksella'
           : status
-          ? 'Laskulla osittain'
-          : 'Ei vielä laskulla'
+            ? 'Laskulla osittain'
+            : 'Ei vielä laskulla'
     },
     voucherValueDecisions: {
       title: 'Päämiehen arvopäätökset',

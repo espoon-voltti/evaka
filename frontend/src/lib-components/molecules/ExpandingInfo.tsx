@@ -29,8 +29,8 @@ const InfoBoxContainer = styled(Container)<{
     width === 'auto'
       ? 'width: auto'
       : width === 'full'
-      ? 'width: 100%'
-      : undefined};
+        ? 'width: 100%'
+        : undefined};
 
   @keyframes open {
     from {

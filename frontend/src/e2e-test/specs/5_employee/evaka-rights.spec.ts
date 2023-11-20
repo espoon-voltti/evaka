@@ -36,15 +36,13 @@ test('adding and removing evaka rights from guardians works', async () => {
   const child = fixtures.enduserChildFixtureJari
   const blockedGuardian = fixtures.enduserGuardianFixture
   await childInformation.navigateToChild(child.id)
-  const childGuardiansSection = await childInformation.openCollapsible(
-    'guardians'
-  )
+  const childGuardiansSection =
+    await childInformation.openCollapsible('guardians')
   await childGuardiansSection.removeGuardianEvakaRights(blockedGuardian.id)
   await childGuardiansSection.assertGuardianStatusDenied(blockedGuardian.id)
   await guardianInformation.navigateToGuardian(blockedGuardian.id)
-  const guardianDependantsSection = await guardianInformation.openCollapsible(
-    'dependants'
-  )
+  const guardianDependantsSection =
+    await guardianInformation.openCollapsible('dependants')
   await guardianDependantsSection.assertDoesNotContainDependantChild(child.id)
 
   await childInformation.navigateToChild(child.id)

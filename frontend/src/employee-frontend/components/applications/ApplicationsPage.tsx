@@ -65,8 +65,8 @@ export default React.memo(function ApplicationsPage() {
       area: debouncedApplicationSearchFilters.area.includes('All')
         ? undefined
         : debouncedApplicationSearchFilters.area.length > 0
-        ? debouncedApplicationSearchFilters.area.join(',')
-        : undefined,
+          ? debouncedApplicationSearchFilters.area.join(',')
+          : undefined,
       units:
         debouncedApplicationSearchFilters.units.length > 0
           ? debouncedApplicationSearchFilters.units.join(',')

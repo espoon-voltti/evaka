@@ -180,9 +180,9 @@ const groupChildren = (
               child.absence.type === 'FREE_ABSENCE'
                 ? 'absent-free'
                 : featureFlags.citizenAttendanceSummary &&
-                  child.absence.type === 'PLANNED_ABSENCE'
-                ? 'absent-planned'
-                : 'absent'
+                    child.absence.type === 'PLANNED_ABSENCE'
+                  ? 'absent-planned'
+                  : 'absent'
           }
         }
 
