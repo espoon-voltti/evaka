@@ -529,7 +529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:^4.0.0":
+"@datadog/native-appsec@npm:4.0.0":
   version: 4.0.0
   resolution: "@datadog/native-appsec@npm:4.0.0"
   dependencies:
@@ -549,13 +549,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:1.6.3":
-  version: 1.6.3
-  resolution: "@datadog/native-iast-taint-tracking@npm:1.6.3"
+"@datadog/native-iast-taint-tracking@npm:1.6.4":
+  version: 1.6.4
+  resolution: "@datadog/native-iast-taint-tracking@npm:1.6.4"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 83b8f5e974888b739ce8221bf3ff59d9ae1c9a302e99f992639a10cccbe6b5e9c0ff360dec9c6a71f5a133a5573c899437ef9f3246b0c7757288b6c56940224e
+  checksum: a6af6fb529cf7ee44207da95e59de351af0628cce538ff4571a96ea87d286ba52c161557eaa82625e4c0e9e093ae6971eb5458eb40bfc70cb8f657752606102c
   languageName: node
   linkType: hard
 
@@ -2754,20 +2754,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.18.0":
-  version: 4.18.0
-  resolution: "dd-trace@npm:4.18.0"
+"dc-polyfill@npm:^0.1.2":
+  version: 0.1.3
+  resolution: "dc-polyfill@npm:0.1.3"
+  checksum: d28c209bcb8563412c18ceb89303838cec098c14e9afb7af80af702d8b14c4f66db2723f55de443e2ee6dd64a8ce50a18d64c310390926deb9ac7c5c82ae6e4a
+  languageName: node
+  linkType: hard
+
+"dd-trace@npm:^4.19.0":
+  version: 4.19.0
+  resolution: "dd-trace@npm:4.19.0"
   dependencies:
-    "@datadog/native-appsec": "npm:^4.0.0"
+    "@datadog/native-appsec": "npm:4.0.0"
     "@datadog/native-iast-rewriter": "npm:2.2.1"
-    "@datadog/native-iast-taint-tracking": "npm:1.6.3"
+    "@datadog/native-iast-taint-tracking": "npm:1.6.4"
     "@datadog/native-metrics": "npm:^2.0.0"
     "@datadog/pprof": "npm:4.0.1"
     "@datadog/sketches-js": "npm:^2.1.0"
     "@opentelemetry/api": "npm:^1.0.0"
     "@opentelemetry/core": "npm:^1.14.0"
     crypto-randomuuid: "npm:^1.0.0"
-    diagnostics_channel: "npm:^1.1.0"
+    dc-polyfill: "npm:^0.1.2"
     ignore: "npm:^5.2.4"
     import-in-the-middle: "npm:^1.4.2"
     int64-buffer: "npm:^0.1.9"
@@ -2787,10 +2794,11 @@ __metadata:
     node-abort-controller: "npm:^3.1.1"
     opentracing: "npm:>=0.12.1"
     path-to-regexp: "npm:^0.1.2"
+    pprof-format: "npm:^2.0.7"
     protobufjs: "npm:^7.2.4"
     retry: "npm:^0.13.1"
     semver: "npm:^7.5.4"
-  checksum: ced9223572d7ab9934d804cac38c00a7de4624d69dada5702ce4a548f57225ac35072b6557331e4e43f3ab40a2c956e03240e5d66f36e9a4fb3eaed8e1654feb
+  checksum: 182d4ce8a5a93ea7a5726cd91dcba6dc78c0e4659432598a72993ef0e1f3a36034e114e5e5377e1fce714cea7d8cbde1055dcde4f6421ecac43a18a1f4d253fa
   languageName: node
   linkType: hard
 
@@ -2927,13 +2935,6 @@ __metadata:
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
   checksum: ae6cd429c41ad01b164c59ea36f264a2c479598e61cba7c99da24175a7ab80ddf066420f2bec9a1c57a6bead411b4655ff15ad7d281c000a89791f48cbe939e7
-  languageName: node
-  linkType: hard
-
-"diagnostics_channel@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "diagnostics_channel@npm:1.1.0"
-  checksum: e8c6da0646d61e50a0764d69e00506efec661c9024b8ef6915a78c12e069365f1196ea51a58e69af305447d91db995d919edebded8c6807dfd8cf397a8379c95
   languageName: node
   linkType: hard
 
@@ -3287,7 +3288,7 @@ __metadata:
     cookie-parser: "npm:^1.4.6"
     csurf: "npm:^1.11.0"
     date-fns: "npm:^2.30.0"
-    dd-trace: "npm:^4.18.0"
+    dd-trace: "npm:^4.19.0"
     eslint: "npm:^8.54.0"
     eslint-config-prettier: "npm:^9.0.0"
     eslint-plugin-prettier: "npm:^5.0.0"
