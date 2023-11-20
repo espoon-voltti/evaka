@@ -303,7 +303,8 @@ sealed interface Action {
         ),
         SEARCH_EMPLOYEES(HasGlobalRole(ADMIN)),
         SUBMIT_PATU_REPORT,
-        READ_FUTURE_PRESCHOOLERS(HasGlobalRole(ADMIN));
+        READ_FUTURE_PRESCHOOLERS(HasGlobalRole(ADMIN)),
+        VARDA_OPERATIONS(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

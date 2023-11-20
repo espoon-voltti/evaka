@@ -18,6 +18,8 @@ import {
   MissingHeadOfFamilyReportFilters,
   OccupancyReportFilters,
   PlacementGuaranteeReportFilters,
+  resetVardaChild,
+  startVardaReset,
   startVardaUpdate,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
@@ -79,7 +81,17 @@ export const vardaErrorsQuery = query({
 
 export const startVardaUpdateMutation = mutation({
   api: () => startVardaUpdate(),
-  invalidateQueryKeys: () => []
+  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+})
+
+export const startVardaResetMutation = mutation({
+  api: () => startVardaReset(),
+  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+})
+
+export const resetVardaChildMutation = mutation({
+  api: (arg: { childId: UUID }) => resetVardaChild(arg.childId),
+  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
 })
 
 export const futurePreschoolersQuery = query({

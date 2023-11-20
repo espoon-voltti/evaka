@@ -3813,17 +3813,23 @@ export const fi = {
     },
     vardaErrors: {
       title: 'Varda-virheet',
-      vardaResetButton: 'Käynnistä lasten resetointi',
+      vardaInfo:
+        'Aloita päivitys-nappi käynnistää VardaUpdate-eräajon, joka vie kaikkien Vardaan vietäväksi ' +
+        'merkittyjen yksiköiden ja lapsien muuttuneet tiedot Vardaan. Aloita uudelleenvienti-nappi käynnistää ' +
+        'VardaReset-eräajon, joka poistaa ja vie uudelleen kaikkien uudelleenvietäviksi merkittyjen lasten ' +
+        'kaikki vardatiedot. Raportin Uudelleenvie-nappi käynnistää vain kyseiselle lapselle VardaReset-eräajon.',
+      vardaUpdateButton: 'Aloita päivitys',
+      vardaResetButton: 'Aloita uudelleenvienti',
       description:
-        'Varda-päivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
-      updated: 'Muokattu',
+        'Vardapäivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
+      updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',
       child: 'Lapsi',
       serviceNeed: 'Palveluntarve',
       error: 'Virhe',
-      childLastReset: 'Resetoitu viimeksi',
+      childLastReset: 'Uudelleenviety viimeksi',
       childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
-      resetChild: 'Resetoi',
+      resetChild: 'Uudelleenvie',
       updating: 'Päivittää'
     },
     sextet: {

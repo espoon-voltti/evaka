@@ -584,6 +584,14 @@ export async function startVardaUpdate(): Promise<void> {
   await client.post(`/varda/start-update`)
 }
 
+export async function startVardaReset(): Promise<void> {
+  await client.post(`/varda/start-reset`)
+}
+
+export async function resetVardaChild(childId: UUID): Promise<void> {
+  await client.post(`/varda/child/reset/${childId}`)
+}
+
 export async function sendPatuReport(
   filters: PeriodFilters
 ): Promise<Result<void>> {
