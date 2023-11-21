@@ -175,7 +175,10 @@ const emptyGroupingDataByGroup = (
   otherAssistanceMeasureCounts: {
     ACCULTURATION_SUPPORT: 0,
     ANOMALOUS_EDUCATION_START: 0,
-    TRANSPORT_BENEFIT: 0
+    TRANSPORT_BENEFIT: 0,
+    CHILD_DISCUSSION_OFFERED: 0,
+    CHILD_DISCUSSION_HELD: 0,
+    CHILD_DISCUSSION_COUNSELING: 0
   },
   actionCounts: actions.reduce(
     (data, action) => ({
@@ -214,7 +217,10 @@ const emptyGroupingDataByChild = (name: string): GroupingDataByChild => ({
   otherAssistanceMeasureCounts: {
     ACCULTURATION_SUPPORT: 0,
     ANOMALOUS_EDUCATION_START: 0,
-    TRANSPORT_BENEFIT: 0
+    TRANSPORT_BENEFIT: 0,
+    CHILD_DISCUSSION_OFFERED: 0,
+    CHILD_DISCUSSION_HELD: 0,
+    CHILD_DISCUSSION_COUNSELING: 0
   }
 })
 

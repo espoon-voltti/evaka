@@ -116,7 +116,10 @@ export interface OtherAssistanceMeasureResponse {
 export const otherAssistanceMeasureTypes = [
   'TRANSPORT_BENEFIT',
   'ACCULTURATION_SUPPORT',
-  'ANOMALOUS_EDUCATION_START'
+  'ANOMALOUS_EDUCATION_START',
+  'CHILD_DISCUSSION_OFFERED',
+  'CHILD_DISCUSSION_HELD',
+  'CHILD_DISCUSSION_COUNSELING'
 ] as const
 
 export type OtherAssistanceMeasureType = typeof otherAssistanceMeasureTypes[number]
