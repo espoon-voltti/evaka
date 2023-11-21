@@ -596,7 +596,7 @@ class PersonController(
                         personId
                     )
                 }
-                fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, clock, personId)
+                fridgeFamilyService.updateGuardianOrChildFromVtj(dbc, user, clock, personId)
             }
             .also { Audit.PersonVtjFamilyUpdate.log(targetId = personId) }
     }

@@ -9,9 +9,8 @@ import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -21,15 +20,12 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDateTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val admin =
-        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
     private val mockToday = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     lateinit var adult1: PersonDTO
@@ -69,7 +65,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
         }
 
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult1.id)
+        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
 
         db.read {
             assertEquals(
@@ -99,7 +95,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
         }
 
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult1.id)
+        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
 
         db.read {
             assertEquals(
@@ -121,7 +117,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         // detect that her partner already has a fridge family and add the child to that one instead
         // of
         // creating a new fridge family for this other adult2
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult2.id)
+        fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(adult1.id), mockToday)
 
         db.read {
             assertEquals(
@@ -135,6 +131,31 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     .size
             )
         }
+    }
+
+    @Test
+    fun `guardians are added to child`() {
+        MockPersonDetailsService.addPerson(
+            child1VtjPerson.copy(guardians = listOf(adult1VtjPerson, adult2VtjPerson))
+        )
+        MockPersonDetailsService.addPerson(
+            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson))
+        )
+        MockPersonDetailsService.addPerson(
+            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson))
+        )
+
+        fridgeFamilyService.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            child1.id
+        )
+
+        assertEquals(
+            setOf(adult1.id, adult2.id),
+            db.read { tx -> tx.getChildGuardians(child1.id) }.toSet()
+        )
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
