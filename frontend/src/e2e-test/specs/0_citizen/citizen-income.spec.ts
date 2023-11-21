@@ -126,6 +126,15 @@ describe.each(e)('Citizen income (%s)', (env) => {
       })
       .save()
 
+    await Fixture.fridgeChild()
+      .with({
+        childId: child.id,
+        headOfChild: guardian.data.id,
+        startDate: placementStart,
+        endDate: placementEnd
+      })
+      .save()
+
     await enduserLogin(page)
     const header = new CitizenHeader(page, env)
     await header.selectTab('calendar')

@@ -34,14 +34,14 @@ enum class IncomeNotificationType {
     EXPIRED_EMAIL
 }
 
-data class GuardianIncomeExpirationDate(val guardianId: PersonId, val expirationDate: LocalDate)
+data class PersonIncomeExpirationDate(val personId: PersonId, val expirationDate: LocalDate)
 
 fun Database.Read.expiringIncomes(
     today: LocalDate,
     checkForExpirationRange: FiniteDateRange,
     checkForExistingRecentIncomeNotificationType: IncomeNotificationType? = null,
-    guardianId: PersonId? = null
-): List<GuardianIncomeExpirationDate> {
+    aPersonId: PersonId? = null
+): List<PersonIncomeExpirationDate> {
     val existingRecentIncomeNotificationQuery =
         """
     SELECT 1 FROM income_notification 
@@ -62,12 +62,25 @@ WITH latest_income AS (
     FROM placement pl
     JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :dayAfterExpiration
     JOIN service_need_option sno ON sn.option_id = sno.id AND sno.fee_coefficient > 0
-    JOIN guardian g ON g.child_id = pl.child_id
-    JOIN latest_income i ON i.person_id = g.guardian_id
+    
+    -- head of child
+    JOIN fridge_child fc_head ON (
+        fc_head.child_id = pl.child_id AND
+        :today BETWEEN fc_head.start_date AND fc_head.end_date AND fc_head.conflict = false
+    )
+
+    -- spouse of the head of child
+    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND :today BETWEEN fp.start_date AND fp.end_date AND fp.conflict = false
+    LEFT JOIN fridge_partner fp_spouse ON (
+        fp_spouse.partnership_id = fp.partnership_id AND
+        fp_spouse.person_id <> fc_head.head_of_child AND
+        :today BETWEEN fp_spouse.start_date AND fp_spouse.end_date AND fp_spouse.conflict = false
+    )
+    JOIN latest_income i ON i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id
     WHERE :checkForExpirationRange @> i.valid_to
      AND daterange(pl.start_date, pl.end_date, '[]') @> (i.valid_to + INTERVAL '1 day')::date
 )
-SELECT person_id AS guardian_id, valid_to AS expiration_date
+SELECT person_id, valid_to AS expiration_date
 FROM expiring_income_with_billable_placement_day_after_expiration expiring_income 
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
@@ -76,7 +89,7 @@ WHERE NOT EXISTS (
         AND handler_id IS NULL
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) " AND NOT EXISTS ($existingRecentIncomeNotificationQuery)" else ""}                
-${if (guardianId != null) " AND person_id = :guardianId" else ""}
+${if (aPersonId != null) " AND person_id = :aPersonId" else ""}
     """
                 .trimIndent()
         )
@@ -87,8 +100,8 @@ ${if (guardianId != null) " AND person_id = :guardianId" else ""}
         .applyIf(checkForExistingRecentIncomeNotificationType != null) {
             this.bind("notificationType", checkForExistingRecentIncomeNotificationType)
         }
-        .applyIf(guardianId != null) { this.bind("guardianId", guardianId) }
-        .toList<GuardianIncomeExpirationDate>()
+        .applyIf(aPersonId != null) { this.bind("aPersonId", aPersonId) }
+        .toList<PersonIncomeExpirationDate>()
 }
 
 data class IncomeNotification(
