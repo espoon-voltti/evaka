@@ -101,7 +101,7 @@ class HttpFilterConfig {
             response: HttpServletResponse,
             chain: FilterChain
         ) {
-            MdcKey.METHOD.set(request.method)
+            MdcKey.HTTP_METHOD.set(request.method)
             MdcKey.PATH.set(request.requestURI)
             MdcKey.QUERY_STRING.set(request.queryString ?: "")
             val (traceId, spanId) =
@@ -119,7 +119,7 @@ class HttpFilterConfig {
                 MdcKey.TRACE_ID.unset()
                 MdcKey.QUERY_STRING.unset()
                 MdcKey.PATH.unset()
-                MdcKey.METHOD.unset()
+                MdcKey.HTTP_METHOD.unset()
             }
         }
     }
