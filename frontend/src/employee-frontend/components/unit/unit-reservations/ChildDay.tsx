@@ -236,17 +236,21 @@ export default React.memo(function ChildDay({
             {i18n.unit.attendanceReservations.termBreak}
           </ReservationTime>
         ) : serviceTimeOfDay ? (
-          // daily service times
-          <>
-            <ReservationTime data-qa="reservation-start">
-              {serviceTimeOfDay.start.format()}{' '}
-              {i18n.unit.attendanceReservations.serviceTimeIndicator}
-            </ReservationTime>
-            <ReservationTime data-qa="reservation-end">
-              {serviceTimeOfDay.end.format()}{' '}
-              {i18n.unit.attendanceReservations.serviceTimeIndicator}
-            </ReservationTime>
-          </>
+          rowIndex === 0 ? (
+            // daily service times
+            <>
+              <ReservationTime data-qa="reservation-start">
+                {serviceTimeOfDay.start.format()}{' '}
+                {i18n.unit.attendanceReservations.serviceTimeIndicator}
+              </ReservationTime>
+              <ReservationTime data-qa="reservation-end">
+                {serviceTimeOfDay.end.format()}{' '}
+                {i18n.unit.attendanceReservations.serviceTimeIndicator}
+              </ReservationTime>
+            </>
+          ) : (
+            <ReservationTime />
+          )
         ) : scheduleType === 'FIXED_SCHEDULE' ? (
           <ReservationTime data-qa="fixed-schedule">
             {i18n.unit.attendanceReservations.fixedSchedule}
@@ -340,6 +344,7 @@ const TimeCell = styled.div<{ warning?: boolean }>`
     css`
       color: ${colors.accents.a2orangeDark};
     `};
+  min-height: 1.3em;
 `
 
 const AttendanceTime = styled(TimeCell)`
