@@ -52,7 +52,7 @@ Sanitized default appender logback configuration provided for import
             "appName": "${appName}",
             "env": "${VOLTTI_ENV}",
             "hostIp": "${HOST_IP}",
-            "httpMethod": "%mdc{method}",
+            "httpMethod": "%mdc{httpMethod}",
             "path": "%mdc{path}",
             "queryString": "%mdc{queryString}",
             "userIdHash": "%mdc{userIdHash}",
