@@ -130,8 +130,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
                 pl.group_id,
                 SUM(COALESCE(an.capacity_factor, 1) * CASE
                     WHEN dc.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-                    WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
-                    ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
+                    WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
+                    ELSE coalesce(sno.realized_occupancy_coefficient, default_sno.realized_occupancy_coefficient)
                 END) AS capacity
             FROM child_attendance ca
                 JOIN daycare dc ON dc.id = ca.unit_id
@@ -276,8 +276,8 @@ WITH present_children AS (
         ca.unit_id,
         SUM(COALESCE(an.capacity_factor, 1) * CASE 
             WHEN dc.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-            WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
-            ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
+            WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
+            ELSE coalesce(sno.realized_occupancy_coefficient, default_sno.realized_occupancy_coefficient)
         END) AS capacity,
         count(*) as count
     FROM child_attendance ca
