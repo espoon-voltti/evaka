@@ -713,7 +713,10 @@ export const fi = {
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu',
           ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
-          ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta'
+          ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta',
+          CHILD_DISCUSSION_OFFERED: 'Lapset puheeksi tarjottu',
+          CHILD_DISCUSSION_HELD: 'Lapset puheeksi pidetty',
+          CHILD_DISCUSSION_COUNSELING: 'Lapset puheeksi neuvonpito'
         }
       },
       assistanceFactor: {
@@ -740,7 +743,10 @@ export const fi = {
         info: {
           TRANSPORT_BENEFIT: (): React.ReactNode => undefined,
           ACCULTURATION_SUPPORT: (): React.ReactNode => undefined,
-          ANOMALOUS_EDUCATION_START: (): React.ReactNode => undefined
+          ANOMALOUS_EDUCATION_START: (): React.ReactNode => undefined,
+          CHILD_DISCUSSION_OFFERED: (): React.ReactNode => undefined,
+          CHILD_DISCUSSION_HELD: (): React.ReactNode => undefined,
+          CHILD_DISCUSSION_COUNSELING: (): React.ReactNode => undefined
         }
       }
     },

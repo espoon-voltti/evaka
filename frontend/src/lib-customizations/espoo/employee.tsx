@@ -6,7 +6,6 @@ import React from 'react'
 
 import {
   daycareAssistanceLevels,
-  otherAssistanceMeasureTypes,
   preschoolAssistanceLevels
 } from 'lib-common/generated/api-types/assistance'
 import type { EmployeeCustomizations } from 'lib-customizations/types'
@@ -66,7 +65,11 @@ const customizations: EmployeeCustomizations = {
     'FORCE_MAJEURE'
   ],
   daycareAssistanceLevels: [...daycareAssistanceLevels],
-  otherAssistanceMeasureTypes: [...otherAssistanceMeasureTypes],
+  otherAssistanceMeasureTypes: [
+    'TRANSPORT_BENEFIT',
+    'ACCULTURATION_SUPPORT',
+    'ANOMALOUS_EDUCATION_START'
+  ],
   placementPlanRejectReasons: ['REASON_1', 'REASON_2', 'OTHER'],
   preschoolAssistanceLevels: [...preschoolAssistanceLevels],
   unitProviderTypes: [

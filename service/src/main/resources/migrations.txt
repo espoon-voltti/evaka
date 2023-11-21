@@ -366,3 +366,4 @@ V366__message_delete_cascades.sql
 V367__person_keycloak_email.sql
 V368__mobile_device_push.sql
 V369__voucher_value_decision_ignored_drafts.sql
+V370__alter_child_discussion_assistance_measure_types.sql
