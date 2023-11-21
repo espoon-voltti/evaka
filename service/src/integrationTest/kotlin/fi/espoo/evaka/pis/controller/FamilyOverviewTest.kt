@@ -150,7 +150,16 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.createParentship(testChild_1.id, testAdult_1.id, from, to)
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
-            it.createPartnership(testAdult_1.id, testAdult_2.id, from, to, false, null, clock.now())
+            it.createPartnership(
+                testAdult_1.id,
+                testAdult_2.id,
+                from,
+                to,
+                false,
+                null,
+                null,
+                clock.now()
+            )
         }
     }
 

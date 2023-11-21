@@ -73,6 +73,9 @@ const deserializePartner = (
   modifiedAt: json.modifiedAt
     ? HelsinkiDateTime.parseIso(json.modifiedAt)
     : null,
+  createdFromApplicationCreated: json.createdFromApplicationCreated
+    ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated)
+    : null,
   range: DateRange.parseJson(json.range),
   feeDecisions: json.feeDecisions.map(deserializeFeeDecision),
   valueDecisions: json.valueDecisions.map(deserializeValueDecision),

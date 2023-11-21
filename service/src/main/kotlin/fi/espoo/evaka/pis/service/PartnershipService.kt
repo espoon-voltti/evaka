@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.deletePartnership
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -39,7 +41,7 @@ class PartnershipService {
                 endDate,
                 false,
                 createdBy,
-                    null,
+                null,
                 createdAt
             )
         } catch (e: UnableToExecuteStatementException) {
@@ -61,8 +63,9 @@ class PartnershipService {
                     partnershipId,
                     startDate,
                     endDate,
-                    modifiedBy,
-                    modifiedAt
+                    ModifyType.USER,
+                    modifiedAt,
+                    modifiedBy
                 )
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
@@ -74,12 +77,12 @@ class PartnershipService {
         tx: Database.Transaction,
         partnershipId: PartnershipId,
         modifiedById: EvakaUserId?,
-        modificationDate: HelsinkiDateTime
+        modifiedAt: HelsinkiDateTime
     ): Partnership? {
         return try {
             tx.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
-                ?.also { tx.retryPartnership(partnershipId, modifiedById, modificationDate) }
+                ?.also { tx.retryPartnership(partnershipId, modifiedById, modifiedAt) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
@@ -104,8 +107,15 @@ data class Partner(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val conflict: Boolean = false,
+    val createType: CreateType?,
     val createdAt: HelsinkiDateTime?,
     val createdBy: EvakaUserId?,
+    val createdByName: String?,
+    val modifyType: ModifyType?,
     val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUserId?
+    val modifiedBy: EvakaUserId?,
+    val modifiedByName: String?,
+    val createdFromApplication: ApplicationId?,
+    val createdFromApplicationType: ApplicationType?,
+    val createdFromApplicationCreated: HelsinkiDateTime?
 )

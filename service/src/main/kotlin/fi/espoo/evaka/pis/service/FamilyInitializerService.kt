@@ -51,13 +51,14 @@ class FamilyInitializerService(
 
         val members =
             db.transaction { parseFridgeFamilyMembersFromApplication(it, clock, user, application) }
-        db.transaction { initFamilyFromApplication(it, clock, members,msg.applicationId) }
+        db.transaction { initFamilyFromApplication(it, clock, members, msg.applicationId) }
     }
 
     private fun initFamilyFromApplication(
         tx: Database.Transaction,
         evakaClock: EvakaClock,
-        familyFromApplication: FridgeFamilyMembers,applicationId: ApplicationId
+        familyFromApplication: FridgeFamilyMembers,
+        applicationId: ApplicationId
     ) {
         // If head of family already has a family today, use it OR
         // if application has other partner in same address, and she has a family, use it OR
@@ -279,7 +280,8 @@ class FamilyInitializerService(
         tx: Database.Transaction,
         evakaClock: EvakaClock,
         personId1: PersonId,
-        personId2: PersonId,applicationId: ApplicationId
+        personId2: PersonId,
+        applicationId: ApplicationId
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
@@ -321,7 +323,7 @@ class FamilyInitializerService(
                             endDate = null,
                             conflict = true,
                             null,
-                                applicationId,
+                            applicationId,
                             evakaClock.now()
                         )
                     }

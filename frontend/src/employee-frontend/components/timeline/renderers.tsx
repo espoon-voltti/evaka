@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
@@ -17,6 +18,7 @@ import {
   TimelineServiceNeed,
   TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { maxOf, minOf } from 'lib-common/ordered'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -143,7 +145,80 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
     )
   }
 }
+interface PartnershipMetadataProps {
+  partnerDetails: TimelinePartnerDetailed
+}
 
+const PartnershipMetadata = React.memo(function PartnershipMetadata({
+  partnerDetails: {
+    createdAt,
+    createdBy,
+    createdByName,
+    createType,
+    createdFromApplication,
+    createdFromApplicationType,
+    createdFromApplicationCreated,
+    modifyType,
+    modifiedAt,
+    modifiedByName
+  }
+}: PartnershipMetadataProps) {
+  const { i18n } = useTranslation()
+  const formatDate = (date: HelsinkiDateTime | null) =>
+    date ? date.format() : i18n.timeline.notAvailable
+  const createInfo = (() => {
+    if (createType === 'USER') {
+      return createdBy
+        ? `${i18n.timeline.user} ${createdByName} ${formatDate(createdAt)}`
+        : i18n.timeline.notAvailable
+    } else if (createType === 'APPLICATION') {
+      if (
+        createdFromApplication &&
+        createdFromApplicationType &&
+        createdFromApplicationCreated
+      ) {
+        return (
+          <Link to={`/applications/${createdFromApplication}`}>
+            {`${i18n.timeline.application}: ${
+              i18n.common.types[createdFromApplicationType]
+            }, ${createdFromApplicationCreated.format()}`}
+          </Link>
+        )
+      } else {
+        return i18n.timeline.notAvailable
+      }
+    } else {
+      return i18n.timeline.unknownSource
+    }
+  })()
+  const modifyInfo = (() => {
+    if (modifyType === 'USER') {
+      return (
+        <>
+          <strong>{i18n.timeline.modifiedByTitle}:</strong>{' '}
+          {modifiedByName
+            ? `${i18n.timeline.user} ${modifiedByName}`
+            : i18n.timeline.notAvailable}
+        </>
+      )
+    } else if (modifyType === 'DVV') {
+      return i18n.timeline.DVV
+    } else {
+      return i18n.timeline.unknownModification
+    }
+  })()
+  return (
+    <div>
+      <strong>{i18n.timeline.createdAtTitle}:</strong> {formatDate(createdAt)}
+      <br />
+      {createInfo}
+      <br />
+      <strong>{i18n.timeline.modifiedAtTitle}:</strong> {formatDate(modifiedAt)}
+      <br />
+      {modifyInfo}
+    </div>
+  )
+})
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   color: () => '#f4bcff',
   linkProvider: (elem) => `/profile/${elem.partnerId}`,
@@ -160,36 +235,13 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     </FixedSpaceColumn>
   ),
   NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
-    const { i18n } = useTranslation()
-    const metadata = (
-      <div>
-        <strong>{i18n.timeline.createdAtTitle}:</strong>{' '}
-        {partnerDetails.createdAt
-          ? partnerDetails.createdAt.format()
-          : i18n.timeline.notAvailable}
-        <br />
-        <strong>{i18n.timeline.createdByTitle}:</strong>{' '}
-        {partnerDetails.createdBy
-          ? `${i18n.timeline.user} ${partnerDetails.createdBy}`
-          : i18n.timeline.notAvailable}
-        <br />
-        <strong>{i18n.timeline.modifiedAtTitle}:</strong>{' '}
-        {partnerDetails.modifiedAt
-          ? partnerDetails.modifiedAt.format()
-          : i18n.timeline.notAvailable}
-        <br />
-        <strong>{i18n.timeline.modifiedByTitle}:</strong>{' '}
-        {partnerDetails.modifiedBy
-          ? `${i18n.timeline.user} ${partnerDetails.modifiedBy}`
-          : i18n.timeline.notAvailable}
-      </div>
-    )
     const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
-    if (nestedRange === null) return metadata
+    if (nestedRange === null)
+      return <PartnershipMetadata partnerDetails={partnerDetails} />
 
     return (
       <TlNestedContainer>
-        {metadata}
+        <PartnershipMetadata partnerDetails={partnerDetails} />
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
           data={partnerDetails.feeDecisions.filter((d) => d.status === 'SENT')}

@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.ModifyType
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
@@ -176,8 +177,9 @@ class DvvModificationsService(
                     it.partnershipId,
                     it.startDate,
                     dateOfDeath,
-                    null,
-                    clock.now()
+                    ModifyType.DVV,
+                    clock.now(),
+                    null
                 )
             }
 

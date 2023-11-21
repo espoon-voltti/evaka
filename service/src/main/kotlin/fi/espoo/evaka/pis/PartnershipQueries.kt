@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.pis.service.CreateType
+import fi.espoo.evaka.pis.service.ModifyType
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.ApplicationId
@@ -86,10 +88,15 @@ fun Database.Read.getPartnersForPerson(
         """
         SELECT
             fp.*,
-            ${aliasedPersonColumns("p")}
+            ${aliasedPersonColumns("p")},
+            (SELECT name FROM evaka_user WHERE id = fp.created_by) AS created_by_name,
+            (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS modified_by_name,
+            a.type AS created_from_application_type,
+            a.created AS created_from_application_created
         FROM fridge_partner fp
         JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
         JOIN person p ON partner.person_id = p.id
+        LEFT JOIN application a ON fp.created_from_application = a.id
         WHERE fp.person_id = :personId
         AND daterange(fp.start_date, fp.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:includeConflicts OR fp.conflict = false)
@@ -114,15 +121,18 @@ fun Database.Transaction.createPartnership(
     applicationId: ApplicationId?,
     createDate: HelsinkiDateTime
 ): Partnership {
+    val createType =
+        if (creatorId != null) CreateType.USER
+        else if (applicationId != null) CreateType.APPLICATION else null
     val partnershipId = UUID.randomUUID()
     return createQuery<Any> {
             sql(
                 """
         WITH new_fridge_partner AS (
-            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at, created_from_application)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at, created_from_application, create_type)
             VALUES
-                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)}),
-                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)})
+                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createType)}),
+                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId?.raw)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createType)})
             RETURNING *
         )
         SELECT
@@ -132,8 +142,10 @@ fun Database.Transaction.createPartnership(
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
             ${aliasedPersonColumns("p2")},
+            fp1.create_type,
             fp1.created_at,
             fp1.created_by,
+            fp1.modify_type,
             fp1.modified_at,
             fp1.modified_by,
             fp1.created_from_application
@@ -148,17 +160,17 @@ fun Database.Transaction.createPartnership(
 }
 
 fun Database.Transaction.updatePartnershipDuration(
-        id: PartnershipId,
-        startDate: LocalDate,
-        endDate: LocalDate?,
-        modifiedBy: EvakaUserId?, // TODO add support for tagging modification to be originating from a DVV synch
-        modificationDate: HelsinkiDateTime
+    id: PartnershipId,
+    startDate: LocalDate,
+    endDate: LocalDate?,
+    modifyType: ModifyType,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId?
 ): Boolean {
-
     return createQuery<Any> {
             sql(
                 """
-        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_by = ${bind(modifiedBy)}, modified_at = ${bind(modificationDate)}
+        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_type = ${bind(modifyType)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
         WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
@@ -217,11 +229,17 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
             startDate = column("start_date"),
             endDate = column("end_date"),
             conflict = column("conflict"),
+            createType = column("create_type"),
             createdAt = column("created_at"),
             createdBy = column("created_by"),
+            createdByName = column("created_by_name"),
+            modifyType = column("modify_type"),
             modifiedAt = column("modified_at"),
             modifiedBy = column("modified_by"),
-            createdFromApplication = column("created_from_application")
+            modifiedByName = column("modified_by_name"),
+            createdFromApplication = column("created_from_application"),
+            createdFromApplicationType = column("created_from_application_type"),
+            createdFromApplicationCreated = column("created_from_application_created")
         )
     }
 }

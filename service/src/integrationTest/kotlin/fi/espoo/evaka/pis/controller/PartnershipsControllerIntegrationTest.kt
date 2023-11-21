@@ -154,7 +154,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(300),
                             false,
                             null,
-                                null,
+                            null,
                             clock.now()
                         )
                         assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
@@ -207,7 +207,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(700),
                             false,
                             null,
-                                null,
+                            null,
                             clock.now()
                         )
                     }
@@ -251,7 +251,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(700),
                             false,
                             null,
-                                null,
+                            null,
                             clock.now()
                         )
                     }
@@ -276,7 +276,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 LocalDate.now().plusDays(200),
                 false,
                 null,
-                    null,
+                null,
                 clock.now()
             )
         }
@@ -307,7 +307,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     LocalDate.now().plusDays(200),
                     false,
                     null,
-                        null,
+                    null,
                     clock.now()
                 )
             }
@@ -334,7 +334,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     LocalDate.now().plusDays(200),
                     false,
                     null,
-                        null,
+                    null,
                     clock.now()
                 )
             }

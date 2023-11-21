@@ -1959,7 +1959,10 @@ export const fi = {
     user: 'Käyttäjä',
     application: 'Hakemus',
     dvvSync: 'Väestötietojärjestelmä',
-    notAvailable: 'N/A'
+    notAvailable: 'Ei tiedossa',
+    unknownSource: 'Luontilähde ei tiedossa',
+    unknownModification: 'Muokkauksen tekijä ei tiedossa',
+    DVV: 'Väestötietojärjestelmä synkronointi'
   },
   incomeStatement: {
     startDate: 'Voimassa alkaen',
