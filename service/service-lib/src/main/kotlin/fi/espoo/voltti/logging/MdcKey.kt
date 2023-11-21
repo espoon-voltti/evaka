@@ -9,6 +9,9 @@ import org.slf4j.MDC
 enum class MdcKey(val key: String) {
     SPAN_ID("spanId"),
     REQ_IP("userIp"),
+    METHOD("method"),
+    PATH("path"),
+    QUERY_STRING("queryString"),
     TRACE_ID("traceId"),
     USER_ID("userId"),
     USER_ID_HASH("userIdHash");
