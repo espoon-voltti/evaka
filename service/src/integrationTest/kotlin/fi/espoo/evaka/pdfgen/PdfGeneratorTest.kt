@@ -84,6 +84,7 @@ private val settings = mapOf<SettingType, String>()
 private val child =
     PersonDTO(
         testChild_1.id,
+        null,
         ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
         false,
         "Kullervo Kyöstinpoika",
@@ -103,6 +104,7 @@ private val child =
 private val guardian =
     PersonDTO(
         testAdult_1.id,
+        null,
         ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
         false,
         "Kyösti Taavetinpoika",

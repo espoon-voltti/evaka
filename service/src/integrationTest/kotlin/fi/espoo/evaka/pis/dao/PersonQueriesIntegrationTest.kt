@@ -300,6 +300,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun testPerson(validSSN: String): PersonDTO {
         return PersonDTO(
             id = PersonId(UUID.randomUUID()),
+            duplicateOf = null,
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
             ssnAddingDisabled = false,
             dateOfBirth = getDobFromSsn(validSSN),

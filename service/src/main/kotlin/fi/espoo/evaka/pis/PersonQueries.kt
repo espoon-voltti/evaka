@@ -18,10 +18,12 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
+import java.util.UUID
 
 val personDTOColumns =
     listOf(
         "id",
+        "duplicate_of",
         "social_security_number",
         "ssn_adding_disabled",
         "first_name",
@@ -459,6 +461,7 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
 private val toPersonDTO: Row.() -> PersonDTO = {
     PersonDTO(
         id = PersonId(column("id")),
+        duplicateOf = column<UUID?>("duplicate_of")?.let { PersonId(it) },
         identity =
             column<String?>("social_security_number")?.let { ssn ->
                 ExternalIdentifier.SSN.getInstance(ssn)
@@ -568,4 +571,11 @@ fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String
         .bind("id", id)
         .bind("preferredName", preferredName)
         .execute()
+}
+
+fun Database.Transaction.updateOphPersonOid(id: PersonId, ophPersonOid: String) {
+    createUpdate("UPDATE person SET oph_person_oid = :ophPersonOid WHERE id = :id")
+        .bind("id", id)
+        .bind("ophPersonOid", ophPersonOid)
+        .updateExactlyOne()
 }

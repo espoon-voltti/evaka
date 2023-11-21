@@ -463,6 +463,7 @@ export interface PersonJSON {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
+  duplicateOf: UUID | null
   email: string | null
   firstName: string
   forceManualFeeDecisions: boolean
@@ -537,6 +538,7 @@ export interface PersonWithChildrenDTO {
   children: PersonWithChildrenDTO[]
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
+  duplicateOf: UUID | null
   email: string | null
   firstName: string
   id: UUID

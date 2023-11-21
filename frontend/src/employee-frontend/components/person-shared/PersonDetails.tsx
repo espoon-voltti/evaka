@@ -237,6 +237,7 @@ export default React.memo(function PersonDetails({
       <RightAlignedRow>
         {featureFlags.personDuplicate &&
         permittedActions.has('DUPLICATE') &&
+        person.duplicateOf === null &&
         isChild &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>

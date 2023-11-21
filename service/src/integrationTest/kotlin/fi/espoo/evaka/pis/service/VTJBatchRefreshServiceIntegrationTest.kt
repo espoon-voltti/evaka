@@ -57,6 +57,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun getDto(person: DevPerson) =
         PersonWithChildrenDTO(
             id = person.id,
+            duplicateOf = person.duplicateOf,
             socialSecurityNumber = person.ssn,
             dateOfBirth = person.dateOfBirth,
             dateOfDeath = person.dateOfDeath,

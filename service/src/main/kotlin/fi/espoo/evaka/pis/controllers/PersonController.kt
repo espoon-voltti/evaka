@@ -16,6 +16,7 @@ import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.duplicatePerson
 import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.MergeService
@@ -30,6 +31,7 @@ import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
+import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -40,6 +42,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.varda.getDistinctVardaPersonOidsByEvakaPersonId
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -119,6 +122,10 @@ class PersonController(
                         personId
                     )
 
+                    if (tx.getPersonDuplicateOf(personId) != null) {
+                        throw BadRequest("Person $personId is duplicate")
+                    }
+
                     val duplicateId =
                         tx.duplicatePerson(personId) ?: throw NotFound("Person $personId not found")
                     tx.getChild(personId)?.let { child ->
@@ -145,6 +152,16 @@ class PersonController(
                             }
                     parentRelationships.forEach { relationship ->
                         tx.createFosterParentRelationship(relationship)
+                    }
+
+                    if (tx.getPersonById(duplicateId)!!.ophPersonOid.isNullOrBlank()) {
+                        val vardaPersonOids = tx.getDistinctVardaPersonOidsByEvakaPersonId(personId)
+                        if (vardaPersonOids.isNotEmpty()) {
+                            tx.updateOphPersonOid(
+                                duplicateId,
+                                vardaPersonOids.sorted().joinToString(",")
+                            )
+                        }
                     }
 
                     duplicateId

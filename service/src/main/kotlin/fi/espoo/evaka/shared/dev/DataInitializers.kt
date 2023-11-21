@@ -1340,6 +1340,15 @@ VALUES (:groupId, :employeeId)
         .execute()
 }
 
+fun Database.Transaction.insert(vardaOrganizerChild: DevVardaOrganizerChild) =
+    insertTestDataRow(
+        vardaOrganizerChild,
+        """
+INSERT INTO varda_organizer_child (evaka_person_id, varda_person_oid, varda_child_id, organizer_oid, uploaded_at, varda_person_id)
+VALUES (:evakaPersonId, :vardaPersonOid, :vardaChildId, :organizerOid, :uploadedAt, :vardaPersonId)
+RETURNING evaka_person_id"""
+    )
+
 fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) =
     insertTestDataRow(
         vardaServiceNeed,
