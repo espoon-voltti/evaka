@@ -241,7 +241,7 @@ export default React.memo(function StaffMarkArrivedPage() {
             const timeBeforeLastDeparture =
               latestCurrentDayDepartureTime !== undefined &&
               time !== undefined &&
-              latestCurrentDayDepartureTime.isEqualOrAfter(time)
+              latestCurrentDayDepartureTime.isAfter(time)
                 ? latestCurrentDayDepartureTime
                 : undefined
 

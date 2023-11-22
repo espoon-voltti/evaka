@@ -212,17 +212,46 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.staffMemberPage.markArrivedBtn.click()
     await staffAttendancePage.pinInput.locator.type(pin)
 
-    for (const arrivalTime of ['07:54', '07:55']) {
-      await staffAttendancePage.anyArrivalPage.arrivedInput.fill(arrivalTime)
-      await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
-        daycareGroupFixture.id
-      )
-      await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.waitUntilVisible()
-      await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
-        (text) => text.endsWith(departureTime)
-      )
-      await staffAttendancePage.anyArrivalPage.markArrived.assertDisabled(true)
-    }
+    await staffAttendancePage.anyArrivalPage.arrivedInput.fill('07:54')
+    await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
+      daycareGroupFixture.id
+    )
+    await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.waitUntilVisible()
+    await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
+      (text) => text.endsWith(departureTime)
+    )
+    await staffAttendancePage.anyArrivalPage.markArrived.assertDisabled(true)
+  })
+
+  test('Staff member can use arrival time that is equal to last departure time', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0).toSystemTzDate())
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+
+    const arrivalTime = '07:30'
+    const departureTime = '07:55'
+    await staffAttendancePage.markStaffArrived({
+      pin,
+      time: arrivalTime,
+      group: daycareGroupFixture
+    })
+    await staffAttendancePage.markStaffDeparted({
+      pin,
+      time: departureTime
+    })
+
+    await staffAttendancePage.markStaffArrived({
+      pin,
+      time: departureTime,
+      group: daycareGroupFixture
+    })
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.assertEmployeeAttendances([
+      `Paikalla ${arrivalTime}–${departureTime}`,
+      `Paikalla ${departureTime}–`
+    ])
   })
 
   test('Staff member cannot be marked as arrived on a non-operational day', async () => {
