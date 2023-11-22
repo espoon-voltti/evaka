@@ -257,12 +257,12 @@ WHERE employee_id = ${bind(ctx.user.id)}
         rule<ApplicationId> { user, _ ->
             sql(
                 """
-SELECT av.id, role, acl.daycare_id AS unit_id
-FROM application_view av
-JOIN placement_plan pp ON pp.application_id = av.id
+SELECT a.id, role, acl.daycare_id AS unit_id
+FROM application a
+JOIN placement_plan pp ON pp.application_id = a.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
-WHERE employee_id = ${bind(user.id)} AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
-${if (onlyAllowDeletedForTypes != null) "AND (av.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
+WHERE employee_id = ${bind(user.id)} AND a.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+${if (onlyAllowDeletedForTypes != null) "AND (a.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
             """
             )
         }
