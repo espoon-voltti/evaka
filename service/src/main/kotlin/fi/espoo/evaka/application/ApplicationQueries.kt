@@ -636,6 +636,11 @@ fun Database.Read.fetchApplicationSummariesForCitizen(
     citizenId: PersonId
 ): List<CitizenApplicationSummary> =
     createQuery<Any> {
+            val useDecisionDateAsStartDate =
+                listOf(
+                    ApplicationStatus.ACTIVE,
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                )
             sql(
                 """
 SELECT
@@ -654,12 +659,11 @@ SELECT
         JOIN daycare d ON d.id = pu::uuid
     ), '{}'::text[]) AS all_preferred_unit_names,
     COALESCE(
-        (
+        CASE WHEN a.status = ANY(${bind(useDecisionDateAsStartDate)}::application_status_type[]) THEN (
             SELECT min(coalesce(d.requested_start_date, d.start_date))
             FROM decision d
             WHERE d.application_id = a.id AND d.status != 'REJECTED'
-        ),
-        pp.start_date,
+        ) END,
         (a.document ->> 'preferredStartDate')::date
     ) AS start_date,
     a.sentDate,
@@ -668,7 +672,6 @@ SELECT
     a.form_modified AS modified_date,
     a.transferapplication
 FROM application a
-LEFT JOIN placement_plan pp ON pp.application_id = a.id
 WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
     SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = ${bind(citizenId)}
 ))
