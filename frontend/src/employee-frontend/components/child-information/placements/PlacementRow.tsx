@@ -416,34 +416,30 @@ export default React.memo(function PlacementRow({
             </Link>
           </DataValue>
         </DataRow>
-        {FiniteDateRange.from(placement).includes(
-          LocalDate.todayInSystemTz()
-        ) && (
-          <DataRow>
-            <DataLabel>
-              {i18n.childInformation.placements.daycareGroups}
-            </DataLabel>
-            <DataValue
-              data-qa="placement-details-unit"
-              marginBottom={defaultMargins.s}
-            >
-              <UnorderedList>
-                {orderBy(
-                  placement.groupPlacements,
-                  (groupPlacement) => groupPlacement.startDate,
-                  'desc'
-                ).map((groupPlacement) => (
-                  <li key={groupPlacement.startDate.formatIso()}>
-                    <GroupPlacement
-                      unitId={placement.daycare.id}
-                      groupPlacement={groupPlacement}
-                    />
-                  </li>
-                ))}
-              </UnorderedList>
-            </DataValue>
-          </DataRow>
-        )}
+        <DataRow>
+          <DataLabel>
+            {i18n.childInformation.placements.daycareGroups}
+          </DataLabel>
+          <DataValue
+            data-qa="placement-details-unit"
+            marginBottom={defaultMargins.s}
+          >
+            <UnorderedList>
+              {orderBy(
+                placement.groupPlacements,
+                (groupPlacement) => groupPlacement.startDate,
+                'desc'
+              ).map((groupPlacement) => (
+                <li key={groupPlacement.startDate.formatIso()}>
+                  <GroupPlacement
+                    unitId={placement.daycare.id}
+                    groupPlacement={groupPlacement}
+                  />
+                </li>
+              ))}
+            </UnorderedList>
+          </DataValue>
+        </DataRow>
         <DataRow>
           <DataLabel>{i18n.childInformation.placements.type}</DataLabel>
           <DataValue data-qa="placement-details-type">
