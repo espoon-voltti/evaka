@@ -579,9 +579,9 @@ export default {
             <>
               <P>
                 Esiopetukseen osallistutaan oppivelvollisuuden alkamista
-                edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden 2023–2024
-                esiopetukseen ilmoittaudutaan 10.–20.1.2023. Suomen- ja
-                ruotsinkielinen esiopetus alkaa 10.8.2023.
+                edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden 2024–2025
+                esiopetukseen ilmoittaudutaan 9.–19.1.2024. Suomen- ja
+                ruotsinkielinen esiopetus alkaa 8.8.2024.
               </P>
               <P>
                 Päätökset tulevat{' '}
@@ -835,7 +835,7 @@ export default {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Suomen- ja ruotsinkielinen esiopetus alkaa 10.8.2023. Jos tarvitsette varhaiskasvatusta 1.8.2023 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+              'Suomen- ja ruotsinkielinen esiopetus alkaa 8.8.2024. Jos tarvitsette varhaiskasvatusta 1.8.2024 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
             ],
             CLUB: [
               'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
@@ -930,7 +930,7 @@ export default {
                 aukioloaikojen mukaisesti.
               </P>
               <P>
-                Jos tarvitset varhaiskasvatusta 1.8.2023 lähtien ennen
+                Jos tarvitset varhaiskasvatusta 1.8.2024 lähtien ennen
                 esiopetuksen alkua huomioi tämä toivotun aloituspäivämäärän
                 valinnassa.
               </P>
@@ -1000,10 +1000,10 @@ export default {
         assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
         assistanceNeedInstructions: {
           DAYCARE:
-            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee tukea kehitykselleen, oppimiselleen tai hyvinvoinnilleen. Tukea toteutetaan lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Jos lapsellanne on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa osoitettaessa.',
+            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee tukea kehitykselleen, oppimiselleen tai hyvinvoinnilleen. Tukea toteutetaan lapsen arjessa osana varhaiskasvatuksen toimintaa. Jos lapsellanne on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa osoitettaessa.',
           CLUB: 'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee tukea kehitykselleen, oppimiselleen tai hyvinvoinnilleen. Tukea toteutetaan lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Jos lapsellanne on tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa osoitettaessa.',
           PRESCHOOL:
-            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen muuta toimintaa. Jos lapsellanne on kasvun ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.'
+            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen toimintaa. Valitse tämä kohta myös, jos lapsella on muu erityinen syy, jolla on suoranaista vaikutusta esiopetuksen järjestämiseen ja siihen, missä yksikössä lapsen esiopetus tulee järjestää. Jos lapsella on kasvun ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.'
         },
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
