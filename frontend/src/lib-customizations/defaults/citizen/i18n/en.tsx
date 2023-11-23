@@ -587,10 +587,9 @@ const en: Translations = {
                 Children attend pre-primary education in the year preceding the
                 start of their compulsory education. Pre-primary education is
                 free of charge. Enrolment for pre-primary education in the
-                2023–2024 school year takes place on 10–20 January 2023. Finnish
-                and swedish pre-primary education begins on{' '}
-                <strong>10 August 2023</strong>. The decisions will be sent to
-                the{' '}
+                2024–2025 school year takes place on 9–19 January 2024. Finnish
+                and swedish pre-primary education begins on 8 August 2024. The
+                decisions will be sent to the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
                   target="_blank"
@@ -876,7 +875,7 @@ const en: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Finnish and Swedish-language pre-primary education starts on 10 August 2023.'
+              'Finnish and Swedish-language pre-primary education starts on 8 August 2024.'
             ],
             CLUB: [
               'Clubs follow pre-primary education work and vacation times.'
@@ -968,7 +967,7 @@ const en: Translations = {
               </P>
               <P>
                 If your child needs early childhood education as of 1 August
-                2023 before pre-primary education starts, please take this into
+                2024 before pre-primary education starts, please take this into
                 account when selecting the desired starting date.
               </P>
               <P>
@@ -1050,7 +1049,7 @@ const en: Translations = {
             'Select this section on the application if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education activities. If your child needs support, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           CLUB: 'Select this section on the application if your child needs support for their development, learning or wellbeing. Support is provided as part of early childhood education activities. If your child needs support, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
-            'Check this item on the application if your child needs support for his or her development and/or learning during the pre-primary education year. The support will be implemented in the child’s daily life as part of the other activities of pre-primary and early childhood education. If your child has developmental and/or learning support needs, the early childhood special education teacher will contact you so that your child’s needs can be taken into account when allocating a place for pre-primary education.'
+            'Select this section on the application if your child needs support for their development and/or learning during the pre-primary education year. Support is provided as part of pre-primary education and early childhood education activities. Select this section also if your child has another special reason that directly affects the organisation of pre-primary education or in which unit their pre-primary education should be organised. If your child needs support for development and/or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in pre-primary education.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',

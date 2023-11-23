@@ -582,9 +582,8 @@ const sv: Translations = {
               <P>
                 Barn deltar i förskoleundervisning året innan läroplikten
                 inleds. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                till förskoleundervisningen 2023–2024 är 10.–20.1.2023.
-                Förskolan börjar i <strong>10.8.2023</strong>. Beslutet delges
-                inom mars i{' '}
+                till förskoleundervisningen 2024–2025 är 9.–19.1.2024. Förskolan
+                börjar i 8.8.2024. Beslutet delges inom mars i{' '}
                 <a
                   href="https://www.suomi.fi/meddelanden"
                   target="_blank"
@@ -856,7 +855,7 @@ const sv: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 10 augusti 2023.'
+              'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 8 augusti 2024.'
             ],
             CLUB: [
               'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
@@ -941,7 +940,7 @@ const sv: Translations = {
                 för enheten för förskoleundervisning.
               </P>
               <P>
-                Om du behöver småbarnspedagogik från och med den 1 augusti 2023
+                Om du behöver småbarnspedagogik från och med den 1 augusti 2024
                 innan förskolan börjar, beakta detta när du väljer önskat
                 startdatum.
               </P>
@@ -1006,10 +1005,10 @@ const sv: Translations = {
           'Berätta om barnets behov av stöd för utveckling och lärande',
         assistanceNeedInstructions: {
           DAYCARE:
-            'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stödet genomförs i barnets vardag som en del av den övriga verksamheten inom småbarnspedagogiken. Om ditt barn behöver stöd, kontaktar specialläraren inom småbarnspedagogik dig, så att vi kan beakta barnets behov när vi beviljar platser inom småbarnspedagogik.',
+            'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stödet genomförs i barnets vardag som en del av verksamheten inom småbarnspedagogiken. Om ditt barn behöver stöd, kontaktar specialläraren inom småbarnspedagogik dig, så att vi kan beakta barnets behov när vi beviljar platser inom småbarnspedagogik.',
           CLUB: 'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling, sitt lärande eller sitt välbefinnande. Stödet genomförs i barnets vardag som en del av den övriga verksamheten inom småbarnspedagogiken. Om ditt barn behöver stöd, kontaktar specialläraren inom småbarnspedagogik dig, så att vi kan beakta barnets behov när vi beviljar platser inom småbarnspedagogik.',
           PRESCHOOL:
-            'Välj denna punkt i ansökan om barnet behöver stöd för växande och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av förskoleundervisningens och småbarnspedagogikens övriga verksamhet. Om ditt barn behöver stöd för växande och/eller lärande, kontaktar en speciallärare inom småbarnspedagogiken den sökande för att barnets behov kan beaktas när förskoleplatsen anvisas.'
+            'Välj denna punkt i ansökan, om barnet behöver stöd för sin utveckling och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av verksamheten inom förskoleundervisningen och småbarnspedagogiken. Välj denna punkt också om det finns någon annan särskild orsak som direkt påverkar ordnandet av förskoleundervisningen och till vilken enhet barnet ska beviljas förskoleplats. Om barnet behöver stöd för sin utveckling och/eller sitt lärande, kontaktar en speciallärare inom småbarnspedagogik dig, så att vi kan beakta barnets behov vid beviljandet av förskoleplats.'
         },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
