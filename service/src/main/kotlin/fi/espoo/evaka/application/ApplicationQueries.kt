@@ -97,27 +97,24 @@ fun Database.Read.duplicateApplicationExists(
     childId: ChildId,
     guardianId: PersonId,
     type: ApplicationType
-): Boolean {
-    // language=sql
-    val sql =
-        """
-            SELECT 1
-            FROM application_view
-            WHERE 
-                childid = :childId AND 
-                guardianid = :guardianId AND
-                type = :type AND 
-                hidefromguardian = false AND
-                status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
-        """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("guardianId", guardianId)
-        .bind("type", type)
-        .toList<Int>()
-        .isNotEmpty()
-}
+): Boolean =
+    createQuery<Any> {
+            sql(
+                """
+SELECT EXISTS(
+    SELECT
+    FROM application
+    WHERE
+        child_id = ${bind(childId)} AND
+        guardian_id = ${bind(guardianId)} AND
+        type = ${bind(type)} AND
+        hidefromguardian = false AND
+        status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
+)
+                """
+            )
+        }
+        .exactlyOne()
 
 fun Database.Read.activePlacementExists(
     childId: ChildId,
@@ -637,35 +634,53 @@ fun Database.Read.fetchApplicationSummariesForChild(
 
 fun Database.Read.fetchApplicationSummariesForCitizen(
     citizenId: PersonId
-): List<CitizenApplicationSummary> {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            a.id AS application_id, 
-            a.type,
-            a.childId, a.childName, 
-            d.name AS preferred_unit_name,
-            COALESCE((SELECT array_agg(name) as other_preferred_units
-             FROM daycare JOIN (SELECT unnest(preferredUnits) 
-                                FROM application WHERE application.id = a.id) pu ON daycare.id = pu.unnest), '{}'::text[]) AS all_preferred_unit_names,
-            a.startDate, a.sentDate, 
-            a.status AS application_status,
-            a.created AS created_date,
-            a.formmodified AS modified_date,
-            a.transferapplication
-        FROM application_view a
-        LEFT JOIN daycare d ON a.preferredUnit = d.id
-        WHERE (guardianId = :guardianId OR EXISTS (
-            SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = :guardianId
-        ))
-        AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
-        ORDER BY sentDate DESC
-        """
-            .trimIndent()
-
-    return createQuery(sql).bind("guardianId", citizenId).toList<CitizenApplicationSummary>()
-}
+): List<CitizenApplicationSummary> =
+    createQuery<Any> {
+            val useDecisionDateAsStartDate =
+                listOf(
+                    ApplicationStatus.ACTIVE,
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                )
+            sql(
+                """
+SELECT
+    a.id AS application_id,
+    a.type,
+    a.child_id,
+    (a.document -> 'child' ->> 'lastName') || ' ' || (a.document -> 'child' ->> 'firstName') AS child_name,
+    (
+        SELECT name
+        FROM daycare d
+        WHERE d.id = (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
+    ) AS preferred_unit_name,
+    COALESCE((
+        SELECT array_agg(d.name)
+        FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') pu
+        JOIN daycare d ON d.id = pu::uuid
+    ), '{}'::text[]) AS all_preferred_unit_names,
+    COALESCE(
+        CASE WHEN a.status = ANY(${bind(useDecisionDateAsStartDate)}::application_status_type[]) THEN (
+            SELECT min(coalesce(d.requested_start_date, d.start_date))
+            FROM decision d
+            WHERE d.application_id = a.id AND d.status != 'REJECTED'
+        ) END,
+        (a.document ->> 'preferredStartDate')::date
+    ) AS start_date,
+    a.sentDate,
+    a.status AS application_status,
+    a.created AS created_date,
+    a.form_modified AS modified_date,
+    a.transferapplication
+FROM application a
+WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
+    SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = ${bind(citizenId)}
+))
+AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
+ORDER BY sentDate DESC
+                """
+            )
+        }
+        .toList()
 
 data class CitizenChildren(
     val id: ChildId,
@@ -1262,25 +1277,24 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .toList<ApplicationId>()
 
-fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int {
-    // language=SQL
-    val sql =
-        """
-        SELECT COUNT(*)
-        FROM application_view a
-        WHERE guardianId = :guardianId
-        AND NOT a.hidefromguardian
-        AND NOT EXISTS (
-            SELECT 1 FROM guardian_blocklist
-            WHERE child_id = a.childId
-            AND guardian_id = :guardianId
-        )
-        AND a.status = 'WAITING_CONFIRMATION'
-        """
-            .trimIndent()
-
-    return createQuery(sql).bind("guardianId", citizenId).exactlyOne<Int>()
-}
+fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int =
+    createQuery<Any> {
+            sql(
+                """
+SELECT COUNT(*)
+FROM application a
+WHERE guardian_id = ${bind(citizenId)}
+AND NOT a.hidefromguardian
+AND NOT EXISTS (
+    SELECT 1 FROM guardian_blocklist bl
+    WHERE bl.child_id = a.child_id
+    AND bl.guardian_id = ${bind(citizenId)}
+)
+AND a.status = 'WAITING_CONFIRMATION'
+                """
+            )
+        }
+        .exactlyOne()
 
 fun Database.Read.personHasSentApplicationWithId(
     citizenId: PersonId,
