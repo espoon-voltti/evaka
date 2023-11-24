@@ -61,7 +61,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Nothing
   */
@@ -70,7 +70,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Present
   */
@@ -79,7 +79,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
   */
@@ -97,16 +97,6 @@ export namespace DailyReservationRequest {
 */
 export type DailyReservationRequest = DailyReservationRequest.Absent | DailyReservationRequest.Nothing | DailyReservationRequest.Present | DailyReservationRequest.Reservations
 
-
-/**
-* Generated from fi.espoo.evaka.reservations.NonReservableReservation
-*/
-export interface NonReservableReservation {
-  absenceType: AbsenceType | null
-  dailyServiceTimes: DailyServiceTimesValue | null
-  date: LocalDate
-  reservations: Reservation[]
-}
 
 /**
 * Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DayReservationStatisticsResult
@@ -127,6 +117,16 @@ export interface GroupReservationStatisticResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.NonReservableReservation
+*/
+export interface NonReservableReservation {
+  absenceType: AbsenceType | null
+  dailyServiceTimes: DailyServiceTimesValue | null
+  date: LocalDate
+  reservations: Reservation[]
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange
 */
 export interface OpenTimeRange {
@@ -142,7 +142,7 @@ export namespace ReservableTimeRange {
     type: 'INTERMITTENT_SHIFT_CARE'
     placementUnitOperationTime: TimeRange | null
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.Normal
   */
@@ -165,7 +165,7 @@ export namespace Reservation {
   export interface NoTimes {
     type: 'NO_TIMES'
   }
-
+  
   /**
   * Generated from fi.espoo.evaka.reservations.Reservation.Times
   */
