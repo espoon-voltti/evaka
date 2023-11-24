@@ -74,7 +74,7 @@ export const TabLinks = React.memo(function TabLinks({
   tabs,
   id
 }: TabLinksProps) {
-  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
+  const maxWidth = mobile ? `${100 / tabs.length}%` : undefined
   return (
     <Container>
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>

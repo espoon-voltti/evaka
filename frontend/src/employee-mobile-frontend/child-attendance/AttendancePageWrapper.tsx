@@ -37,6 +37,11 @@ import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
+export interface TabItem {
+  id: string
+  label: string
+  link: string
+}
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, attendanceStatus } = useNonNullableParams<{
     unitId: string

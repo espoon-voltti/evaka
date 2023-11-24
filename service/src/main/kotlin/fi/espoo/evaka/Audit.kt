@@ -435,6 +435,7 @@ enum class Audit(
     UnitCreate,
     UnitCounters,
     UnitRead,
+    UnitDailyReservationStatistics,
     UnitSearch,
     UnitUpdate,
     UnitView,

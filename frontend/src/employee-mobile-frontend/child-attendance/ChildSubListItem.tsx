@@ -16,7 +16,7 @@ import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
 
-import { CategorizedReservationInfo } from './DayListItem'
+import { CategorizedReservationInfo } from './ChildReservationList'
 
 const ChildBoxInfo = styled.div`
   margin-left: 24px;
@@ -90,7 +90,7 @@ const ReservationText = styled.span`
 `
 
 interface ChildSubListItemProps {
-  reservationData: CategorizedReservationInfo,
+  reservationData: CategorizedReservationInfo
   date: LocalDate
 }
 
@@ -126,12 +126,12 @@ export default React.memo(function ChildSubListItem({
       todaysServiceTime === 'not_set'
         ? i18n.attendances.serviceTime.notSetShort
         : todaysServiceTime === 'not_today'
-        ? i18n.attendances.serviceTime.noServiceTodayShort
-        : todaysServiceTime === 'variable_times'
-        ? i18n.attendances.serviceTime.variableTimesShort
-        : `${todaysServiceTime.start.format(
-            timeFormat
-          )} - ${todaysServiceTime.end.format(timeFormat)} (s)`
+          ? i18n.attendances.serviceTime.noServiceTodayShort
+          : todaysServiceTime === 'variable_times'
+            ? i18n.attendances.serviceTime.variableTimesShort
+            : `${todaysServiceTime.start.format(
+                timeFormat
+              )} - ${todaysServiceTime.end.format(timeFormat)} (s)`
     ]
   }, [reservationData, i18n])
 
@@ -148,8 +148,8 @@ export default React.memo(function ChildSubListItem({
               ? colors.grayscale.g35
               : colors.accents.a6turquoise
             : reservationData.sortCategory > 3
-            ? colors.grayscale.g70
-            : colors.main.m1
+              ? colors.grayscale.g70
+              : colors.main.m1
         }
         size="m"
       />
@@ -171,7 +171,8 @@ export default React.memo(function ChildSubListItem({
         >
           {reservationTextContent.length > 1 ? (
             reservationTextContent.map((res, index) => (
-              <ReservationText data-qa={`reservation-content-${index}`}
+              <ReservationText
+                data-qa={`reservation-content-${index}`}
                 key={`${reservationData.childId}-${res}-${index}`}
               >
                 {res}
@@ -179,7 +180,9 @@ export default React.memo(function ChildSubListItem({
             ))
           ) : (
             <>
-              <ReservationText data-qa={`reservation-content-0`}>{reservationTextContent[0]}</ReservationText>
+              <ReservationText data-qa="reservation-content-0">
+                {reservationTextContent[0]}
+              </ReservationText>
               <Placeholder />
             </>
           )}

@@ -1,14 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
 
-import {
-  ReservationChildInfo,
-  UnitDailyReservationInfo
-} from 'lib-common/generated/api-types/reservations'
-import { UUID } from 'lib-common/types'
+import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import { ContentArea } from 'lib-components/layout/Container'
 
 import { useSelectedGroup } from '../common/selected-group'
@@ -16,27 +12,25 @@ import { useSelectedGroup } from '../common/selected-group'
 import DayList from './DayList'
 
 interface Props {
-  dailyReservations: UnitDailyReservationInfo[]
-  childMap: Record<UUID, ReservationChildInfo>
+  dailyStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function ConfirmedDaysReservationList({
-  dailyReservations,
-  childMap
+  dailyStatistics
 }: Props) {
   const { selectedGroupId } = useSelectedGroup()
 
   const groupReservations = useMemo(
     () =>
       selectedGroupId.type === 'all'
-        ? dailyReservations
-        : dailyReservations.map((day) => ({
+        ? dailyStatistics
+        : dailyStatistics.map((day) => ({
             ...day,
-            reservationInfos: day.reservationInfos.filter(
+            groupStatistics: day.groupStatistics.filter(
               (i) => i.groupId === selectedGroupId.id
             )
           })),
-    [selectedGroupId, dailyReservations]
+    [selectedGroupId, dailyStatistics]
   )
 
   return (
@@ -46,7 +40,7 @@ export default React.memo(function ConfirmedDaysReservationList({
         paddingVertical="zero"
         paddingHorizontal="zero"
       >
-        <DayList reservationDays={groupReservations} childMap={childMap} />
+        <DayList reservationStatistics={groupReservations} />
       </ContentArea>
     </>
   )

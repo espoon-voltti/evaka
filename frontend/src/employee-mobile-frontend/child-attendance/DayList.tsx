@@ -2,18 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import orderBy from 'lodash/orderBy'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import {
   AttendanceStatus,
   AttendanceChild
 } from 'lib-common/generated/api-types/attendance'
-import {
-  ReservationChildInfo,
-  UnitDailyReservationInfo
-} from 'lib-common/generated/api-types/reservations'
-import { UUID } from 'lib-common/types'
+import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
@@ -25,16 +22,16 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  reservationDays: UnitDailyReservationInfo[]
-  childMap: Record<UUID, ReservationChildInfo>
+  reservationStatistics: DayReservationStatisticsResult[]
 }
 
-export default React.memo(function DayList({
-  reservationDays,
-  childMap
-}: Props) {
+export default React.memo(function DayList({ reservationStatistics }: Props) {
   const { i18n } = useTranslation()
 
+  const sortedDays = useMemo(
+    () => orderBy(reservationStatistics, ['date']),
+    [reservationStatistics]
+  )
   return (
     <>
       <HeaderBox>
@@ -44,13 +41,9 @@ export default React.memo(function DayList({
         <ChevronBox />
       </HeaderBox>
       <NoMarginList>
-        {reservationDays.map((dr) => (
+        {sortedDays.map((dr) => (
           <Li key={`${dr.date.format()}-li`}>
-            <DayListItem
-              key={`${dr.date.format()}-dli`}
-              dailyReservationData={dr}
-              childMap={childMap}
-            />
+            <DayListItem key={`${dr.date.format()}-dli`} dayStats={dr} />
           </Li>
         ))}
       </NoMarginList>

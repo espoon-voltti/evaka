@@ -9,25 +9,19 @@ import { useQueryResult } from 'lib-common/query'
 
 import { useAttendanceContext } from './AttendancePageWrapper'
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
-import { confirmedDaysReservationsQuery } from './queries'
+import { confirmedDaysReservationsStatisticsQuery } from './queries'
 
 export default React.memo(function ConfirmedReservationsDaysWrapper() {
   const { unitId } = useAttendanceContext()
-  const confirmedDaysReservationsResult = useQueryResult(
-    confirmedDaysReservationsQuery(unitId)
+  const statisticsResult = useQueryResult(
+    confirmedDaysReservationsStatisticsQuery(unitId)
   )
 
   return (
     <>
-      {renderResult(
-        confirmedDaysReservationsResult,
-        (dailyReservationResult) => (
-          <ConfirmedDaysReservationList
-            dailyReservations={dailyReservationResult.dailyReservations}
-            childMap={dailyReservationResult.children}
-          />
-        )
-      )}
+      {renderResult(statisticsResult, (dayStatistics) => (
+        <ConfirmedDaysReservationList dailyStatistics={dayStatistics} />
+      ))}
     </>
   )
 })

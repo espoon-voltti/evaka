@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
@@ -18,12 +20,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
-import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
-import FiniteDateRange from 'lib-common/finite-date-range'
 
 let page: Page
 let confirmedReservationPage: ConfirmedDayReservationPage
@@ -57,7 +57,12 @@ beforeEach(async () => {
   await Fixture.person().with(familyWithTwoGuardians.children[0]).save()
   await Fixture.child(familyWithTwoGuardians.children[0].id).save()
 
-  await Fixture.person().with({ ...enduserChildFixturePorriHatterRestricted, dateOfBirth: LocalDate.of(2021, 4, 1) }).save()
+  await Fixture.person()
+    .with({
+      ...enduserChildFixturePorriHatterRestricted,
+      dateOfBirth: LocalDate.of(2021, 4, 1)
+    })
+    .save()
   await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
 
   await Fixture.employee()
@@ -69,42 +74,50 @@ beforeEach(async () => {
     daycareGroupFixture.id
   )
 
-  await createPlacements(
-    enduserChildFixtureJari.id,
-    daycareGroupFixture.id
-  )
+  await createPlacements(enduserChildFixtureJari.id, daycareGroupFixture.id)
 
-  await createPlacements(
-    enduserChildFixtureKaarina.id,
-    daycareGroupFixture.id
-  )
+  await createPlacements(enduserChildFixtureKaarina.id, daycareGroupFixture.id)
 
-  await Fixture.absence().with({ childId: enduserChildFixtureKaarina.id, date: LocalDate.of(2022, 5, 19) }).save()
-  await Fixture.assistanceFactor().with({
-    childId: enduserChildFixtureKaarina.id,
-    capacityFactor: 1.5,
-    validDuring: new FiniteDateRange(LocalDate.of(2022, 5, 27), LocalDate.of(2022, 5, 27))
-  }).save()
+  await Fixture.absence()
+    .with({
+      childId: enduserChildFixtureKaarina.id,
+      date: LocalDate.of(2022, 5, 19)
+    })
+    .save()
+  await Fixture.assistanceFactor()
+    .with({
+      childId: enduserChildFixtureKaarina.id,
+      capacityFactor: 1.5,
+      validDuring: new FiniteDateRange(
+        LocalDate.of(2022, 5, 27),
+        LocalDate.of(2022, 5, 27)
+      )
+    })
+    .save()
 
-  await Fixture.backupCare().with({
-    childId: enduserChildFixtureJari.id,
-    unitId: daycare2Fixture.id,
-    period: {
-      start: LocalDate.of(2022, 5, 26),
-      end: LocalDate.of(2022, 5, 26)
-    },
-    groupId: undefined,
-  }).save()
+  await Fixture.backupCare()
+    .with({
+      childId: enduserChildFixtureJari.id,
+      unitId: daycare2Fixture.id,
+      period: {
+        start: LocalDate.of(2022, 5, 26),
+        end: LocalDate.of(2022, 5, 26)
+      },
+      groupId: undefined
+    })
+    .save()
 
-  await Fixture.backupCare().with({
-    childId: enduserChildFixtureJari.id,
-    unitId: daycareFixture.id,
-    period: {
-      start: LocalDate.of(2022, 5, 27),
-      end: LocalDate.of(2022, 5, 27)
-    },
-    groupId: group2.id
-  }).save()
+  await Fixture.backupCare()
+    .with({
+      childId: enduserChildFixtureJari.id,
+      unitId: daycareFixture.id,
+      period: {
+        start: LocalDate.of(2022, 5, 27),
+        end: LocalDate.of(2022, 5, 27)
+      },
+      groupId: group2.id
+    })
+    .save()
 
   const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
   page = await Page.open({ mockedTime: now.toSystemTzDate() })
@@ -118,7 +131,6 @@ beforeEach(async () => {
 })
 
 describe('Child confirmed reservations', () => {
-
   test('Confirmed days are present', async () => {
     const confirmedDaysOnTestDate = [
       LocalDate.of(2022, 5, 18),
@@ -128,7 +140,8 @@ describe('Child confirmed reservations', () => {
       LocalDate.of(2022, 5, 24),
       LocalDate.of(2022, 5, 25),
       LocalDate.of(2022, 5, 26),
-      LocalDate.of(2022, 5, 27)]
+      LocalDate.of(2022, 5, 27)
+    ]
 
     for (const day of confirmedDaysOnTestDate) {
       await confirmedReservationPage.assertDayExists(day)
@@ -136,30 +149,73 @@ describe('Child confirmed reservations', () => {
 
     const nonConfirmedDaysOnTestDate = [
       LocalDate.of(2022, 5, 17),
-      LocalDate.of(2022, 5, 28),
+      LocalDate.of(2022, 5, 28)
     ]
 
     for (const day of nonConfirmedDaysOnTestDate) {
       await confirmedReservationPage.assertDayDoesNotExist(day)
     }
-
   })
 
   test('Daily counts are correct', async () => {
     const dayCounts = [
-      {date: LocalDate.of(2022,5,18), presentCount: "3", presentCalc: "3,75", absentCount: "0"},
-      {date: LocalDate.of(2022,5,19), presentCount: "2", presentCalc: "2,75", absentCount: "1"},
-      {date: LocalDate.of(2022,5,20), presentCount: "3", presentCalc: "3,75", absentCount: "0"},
-      {date: LocalDate.of(2022,5,23), presentCount: "3", presentCalc: "3,75", absentCount: "0"},
-      {date: LocalDate.of(2022,5,24), presentCount: "3", presentCalc: "3,75", absentCount: "0"},
-      {date: LocalDate.of(2022,5,25), presentCount: "3", presentCalc: "3,75", absentCount: "0"},
-      {date: LocalDate.of(2022,5,26), presentCount: "2", presentCalc: "2,75", absentCount: "1"},
-      {date: LocalDate.of(2022,5,27), presentCount: "3", presentCalc: "4,25", absentCount: "0"},
+      {
+        date: LocalDate.of(2022, 5, 18),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 19),
+        presentCount: '2',
+        presentCalc: '2,75',
+        absentCount: '1'
+      },
+      {
+        date: LocalDate.of(2022, 5, 20),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 23),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 24),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 25),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 26),
+        presentCount: '2',
+        presentCalc: '2,75',
+        absentCount: '1'
+      },
+      {
+        date: LocalDate.of(2022, 5, 27),
+        presentCount: '3',
+        presentCalc: '4,25',
+        absentCount: '0'
+      }
     ]
     for (const day of dayCounts) {
-      await confirmedReservationPage.assertDailyCounts(day.date, day.presentCount, day.presentCalc, day.absentCount)
+      await confirmedReservationPage.assertDailyCounts(
+        day.date,
+        day.presentCount,
+        day.presentCalc,
+        day.absentCount
+      )
     }
-
   })
 })
 
