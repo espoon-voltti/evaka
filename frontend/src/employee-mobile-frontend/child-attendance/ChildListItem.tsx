@@ -255,7 +255,7 @@ const AgeRoundIcon = styled(RoundIcon)`
     font-size: 14px;
   }
 
-  position: fixed;
+  position: absolute;
   margin-left: -15px;
   margin-top: 35px;
 `
