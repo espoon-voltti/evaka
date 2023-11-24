@@ -71,6 +71,11 @@ export default function TlEvent<T extends WithRange>({
         </Header>
         {open && renderer.NestedContent && (
           <ExpandedContent>
+            {!!renderer.Metadata && (
+              <StickyHeaderPositioner>
+                <renderer.Metadata elem={event} />
+              </StickyHeaderPositioner>
+            )}
             <renderer.NestedContent
               elem={event}
               timelineRange={timelineRange}

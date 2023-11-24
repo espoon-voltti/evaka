@@ -35,12 +35,16 @@ type SummaryRenderer<T extends WithRange> = (props: {
 type TooltipRenderer<T extends WithRange> = (props: {
   elem: T
 }) => React.ReactNode
+type MetadataRenderer<T extends WithRange> = (props: {
+  elem: T
+}) => React.ReactNode
 type NestedContentRenderer<T extends WithRange> = (props: {
   elem: T
   timelineRange: FiniteDateRange
   zoom: number
 }) => React.ReactNode
 export interface EventRenderer<T extends WithRange> {
+  Metadata?: MetadataRenderer<T>
   color: (elem: T) => string
   linkProvider?: (elem: T) => string
   Summary: SummaryRenderer<T>
@@ -169,7 +173,7 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
   const createInfo = (() => {
     if (createType === 'USER') {
       return createdBy
-        ? `${i18n.timeline.user} ${createdByName} ${formatDate(createdAt)}`
+        ? `${i18n.timeline.user} ${createdByName}`
         : i18n.timeline.notAvailable
     } else if (createType === 'APPLICATION') {
       if (
@@ -193,14 +197,9 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
   })()
   const modifyInfo = (() => {
     if (modifyType === 'USER') {
-      return (
-        <>
-          <strong>{i18n.timeline.modifiedByTitle}:</strong>{' '}
-          {modifiedByName
-            ? `${i18n.timeline.user} ${modifiedByName}`
-            : i18n.timeline.notAvailable}
-        </>
-      )
+      return modifiedByName
+        ? `${i18n.timeline.user} ${modifiedByName}`
+        : i18n.timeline.notAvailable
     } else if (modifyType === 'DVV') {
       return i18n.timeline.DVV
     } else {
@@ -209,12 +208,10 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
   })()
   return (
     <div>
-      <strong>{i18n.timeline.createdAtTitle}:</strong> {formatDate(createdAt)}
-      <br />
+      <strong>{i18n.timeline.createdAtTitle}</strong> {formatDate(createdAt)}{' '}
       {createInfo}
       <br />
-      <strong>{i18n.timeline.modifiedAtTitle}:</strong> {formatDate(modifiedAt)}
-      <br />
+      <strong>{i18n.timeline.modifiedAtTitle}</strong> {formatDate(modifiedAt)}{' '}
       {modifyInfo}
     </div>
   )
@@ -226,13 +223,16 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     const { i18n } = useTranslation()
     return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
   },
-  Tooltip: ({ elem }) => (
+  Tooltip: ({ elem: partnerDetails }) => (
     <FixedSpaceColumn spacing="xxs">
-      <span>{elem.range.format()}</span>
+      <span>{partnerDetails.range.format()}</span>
       <span>
-        {elem.firstName} {elem.lastName}
+        {partnerDetails.firstName} {partnerDetails.lastName}
       </span>
     </FixedSpaceColumn>
+  ),
+  Metadata: ({ elem: partnerDetails }) => (
+    <PartnershipMetadata partnerDetails={partnerDetails} />
   ),
   NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
     const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
@@ -241,7 +241,6 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
     return (
       <TlNestedContainer>
-        <PartnershipMetadata partnerDetails={partnerDetails} />
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
           data={partnerDetails.feeDecisions.filter((d) => d.status === 'SENT')}
