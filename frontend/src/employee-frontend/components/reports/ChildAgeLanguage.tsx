@@ -254,23 +254,23 @@ export default React.memo(function ChildAgeLanguage() {
                   <Td />
                   <Td />
                   <Td />
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_2y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_3y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_4y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_5y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_6y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_7y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_0y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_1y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_2y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_3y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_4y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_5y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_6y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.fi_7y)}</Td>
                   <Td />
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_2y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_3y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_4y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_5y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_6y)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other_7y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_0y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_1y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_2y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_3y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_4y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_5y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_6y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.sv_7y)}</Td>
                   <Td />
                   <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
                   <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
