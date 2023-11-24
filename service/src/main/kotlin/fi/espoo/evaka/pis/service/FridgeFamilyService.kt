@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.getDependantGuardians
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -12,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
+import java.time.Period
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -22,12 +25,41 @@ class FridgeFamilyService(
     private val personService: PersonService,
     private val parentshipService: ParentshipService
 ) {
-
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh, clock: EvakaClock) {
-        updatePersonAndFamilyFromVtj(db, AuthenticatedUser.SystemInternalUser, clock, msg.personId)
+        updateGuardianAndFamilyFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            clock,
+            msg.personId
+        )
     }
 
-    fun updatePersonAndFamilyFromVtj(
+    fun updateGuardianOrChildFromVtj(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        personId: PersonId
+    ) {
+        val person = db.read { tx -> tx.getPersonById(personId) } ?: return
+        val age = Period.between(person.dateOfBirth, clock.today()).years
+        if (age >= 18) {
+            updateGuardianAndFamilyFromVtj(db, user, clock, personId)
+        } else {
+            val currentGuardians =
+                db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
+            val updatedGuardians =
+                db.transaction { tx ->
+                        personService.getGuardians(tx, user, personId, forceRefresh = true)
+                    }
+                    .map { it.id }
+                    .toSet()
+            (currentGuardians + updatedGuardians).forEach { guardianId ->
+                updateGuardianAndFamilyFromVtj(db, user, clock, guardianId)
+            }
+        }
+    }
+
+    private fun updateGuardianAndFamilyFromVtj(
         db: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
