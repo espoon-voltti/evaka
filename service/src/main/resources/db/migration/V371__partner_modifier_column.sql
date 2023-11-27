@@ -1,19 +1,3 @@
--- TODO rename this file into V###__xxx.sql and add to migrations.txt
-
--- TODO remove this once ready for review
-ALTER TABLE fridge_partner
-    DROP COLUMN IF EXISTS create_type,
-    DROP COLUMN IF EXISTS created_at,
-    DROP COLUMN IF EXISTS created_by,
-    DROP COLUMN IF EXISTS modify_type,
-    DROP COLUMN IF EXISTS modified_at,
-    DROP COLUMN IF EXISTS modified_by,
-    DROP COLUMN IF EXISTS created_from_application;
--- TODO remove next line once ready for review
-DROP TYPE IF EXISTS create_type;
--- TODO remove next line once ready for review
-DROP TYPE IF EXISTS modify_type;
-
 CREATE TYPE create_type AS ENUM ('USER', 'APPLICATION');
 CREATE TYPE modify_type AS ENUM ('USER', 'DVV');
 
