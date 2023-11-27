@@ -48,7 +48,7 @@ dependencies {
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
         api("org.mockito.kotlin:mockito-kotlin:5.1.0")
-        api("org.postgresql:postgresql:42.6.0")
+        api("org.postgresql:postgresql:42.7.0")
         api("org.skyscreamer:jsonassert:1.5.1")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
         api("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
