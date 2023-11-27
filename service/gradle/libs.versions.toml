@@ -5,7 +5,7 @@
 [versions]
 bouncycastle = "1.77"
 flyingsaucer = "9.3.1"
-flyway = "10.0.0"
+flyway = "10.1.0"
 fuel = "2.3.1"
 java = "17"
 kotlin = "1.9.10"
