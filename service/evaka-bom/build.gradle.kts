@@ -44,7 +44,7 @@ dependencies {
         api(libs.flyway.database.postgresql)
         api("org.glassfish.jaxb:jaxb-runtime:4.0.1")
         api("org.jetbrains:annotations:24.1.0")
-        api("org.jsoup:jsoup:1.16.1")
+        api("org.jsoup:jsoup:1.17.1")
         api(libs.mockito.core)
         api(libs.mockito.junit.jupiter)
         api("org.mockito.kotlin:mockito-kotlin:5.1.0")
