@@ -185,7 +185,6 @@ fun Database.Transaction.retryPartnership(
     modifiedById: EvakaUserId?,
     modificationDate: HelsinkiDateTime
 ) {
-
     createUpdate<Any> {
             sql(
                 """
