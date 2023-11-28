@@ -84,7 +84,7 @@ export default React.memo(function AttendancePageWrapper() {
     return [
       {
         id: 'today',
-        link: `${url}/list/coming`,
+        link: `${url}/list`,
         label: i18n.attendances.views.TODAY
       },
       {
@@ -140,7 +140,7 @@ export default React.memo(function AttendancePageWrapper() {
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       >
-        <TabLinks tabs={tabs} mobile />
+        <TabLinks tabs={tabs} mobile sticky />
         {renderResult(
           combine(unitChildren, attendanceStatuses),
           ([children, attendanceStatuses]) => (

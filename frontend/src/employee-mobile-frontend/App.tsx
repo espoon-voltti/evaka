@@ -180,6 +180,7 @@ function ChildAttendanceRouter() {
           id="daylist"
           element={<ConfimedReservationDaysWrapper />}
         />
+        <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 
       <Route path=":childId" element={<AttendanceChildPage />} />
