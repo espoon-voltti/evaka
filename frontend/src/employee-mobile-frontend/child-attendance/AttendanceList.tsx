@@ -11,6 +11,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
@@ -123,7 +124,14 @@ export default React.memo(function AttendanceList({
 
   return (
     <>
-      <TabLinks tabs={tabs} mobile sticky topOffset={64} />
+      <TabLinks
+        tabs={tabs}
+        mobile
+        sticky
+        topOffset={
+          featureFlags.employeeMobileConfirmedDaysReservations ? 64 : 0
+        }
+      />
       <ContentArea
         opaque={false}
         paddingVertical="zero"

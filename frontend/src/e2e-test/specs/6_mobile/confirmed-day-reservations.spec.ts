@@ -120,7 +120,12 @@ beforeEach(async () => {
     .save()
 
   const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({
+    employeeMobileCustomizations: {
+      featureFlags: { employeeMobileConfirmedDaysReservations: true }
+    },
+    mockedTime: now.toSystemTzDate()
+  })
 
   await page.goto(mobileSignupUrl)
 

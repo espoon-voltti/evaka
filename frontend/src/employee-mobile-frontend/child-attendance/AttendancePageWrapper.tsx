@@ -22,6 +22,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
@@ -140,7 +141,9 @@ export default React.memo(function AttendancePageWrapper() {
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       >
-        <TabLinks tabs={tabs} mobile sticky />
+        {featureFlags.employeeMobileConfirmedDaysReservations && (
+          <TabLinks tabs={tabs} mobile sticky />
+        )}
         {renderResult(
           combine(unitChildren, attendanceStatuses),
           ([children, attendanceStatuses]) => (

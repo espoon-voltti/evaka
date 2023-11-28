@@ -175,11 +175,13 @@ function ChildAttendanceRouter() {
           path="list/:attendanceStatus"
           element={<AttendanceTodayWrapper />}
         />
-        <Route
-          path="daylist"
-          id="daylist"
-          element={<ConfimedReservationDaysWrapper />}
-        />
+        {featureFlags.employeeMobileConfirmedDaysReservations && (
+          <Route
+            path="daylist"
+            id="daylist"
+            element={<ConfimedReservationDaysWrapper />}
+          />
+        )}
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 

@@ -239,6 +239,11 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable child attendance reservation edit in employee mobile
    */
   employeeMobileChildAttendanceReservationEdit?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable confirmed days reservation view and navlinks
+   */
+  employeeMobileConfirmedDaysReservations?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
