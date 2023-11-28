@@ -368,4 +368,4 @@ V368__mobile_device_push.sql
 V369__voucher_value_decision_ignored_drafts.sql
 V370__alter_child_discussion_assistance_measure_types.sql
 V371__drop_child_discussion_table.sql
-V372__z_partner_modifier_column.sql
+V372__partner_modifier_column.sql

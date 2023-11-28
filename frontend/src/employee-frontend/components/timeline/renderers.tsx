@@ -50,6 +50,7 @@ export interface EventRenderer<T extends WithRange> {
   Summary: SummaryRenderer<T>
   Tooltip?: TooltipRenderer<T>
   NestedContent?: NestedContentRenderer<T>
+  eventType: string
 }
 
 const TlNestedContainer = styled.div`
@@ -61,7 +62,8 @@ const TlNestedContainer = styled.div`
 
 export const monthRenderer: EventRenderer<WithRange> = {
   color: () => '#ffffff',
-  Summary: ({ elem }) => elem.range.start.format('MM/yyyy')
+  Summary: ({ elem }) => elem.range.start.format('MM/yyyy'),
+  eventType: 'month'
 }
 
 export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
@@ -95,7 +97,8 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         <span>{formatCents(elem.totalFee)} €</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'fee-decision'
 }
 
 export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
@@ -128,7 +131,8 @@ export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
         <span>{i18n.valueDecision.status[elem.status]}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'value-decision'
 }
 
 export const incomeRenderer: EventRenderer<TimelineIncome> = {
@@ -147,7 +151,8 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
         </span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'income'
 }
 interface PartnershipMetadataProps {
   partnerDetails: TimelinePartnerDetailed
@@ -208,10 +213,12 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
   })()
   return (
     <div>
-      <strong>{i18n.timeline.createdAtTitle}</strong> {formatDate(createdAt)}{' '}
+      <strong>{i18n.timeline.createdAtTitle}:</strong> {formatDate(createdAt)}
+      {' - '}
       {createInfo}
       <br />
-      <strong>{i18n.timeline.modifiedAtTitle}</strong> {formatDate(modifiedAt)}{' '}
+      <strong>{i18n.timeline.modifiedAtTitle}:</strong> {formatDate(modifiedAt)}
+      {' - '}
       {modifyInfo}
     </div>
   )
@@ -338,7 +345,8 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         />
       </TlNestedContainer>
     )
-  }
+  },
+  eventType: 'partner'
 }
 
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
@@ -398,7 +406,8 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
         />
       </TlNestedContainer>
     )
-  }
+  },
+  eventType: 'child'
 }
 
 export const placementRenderer: EventRenderer<TimelinePlacement> = {
@@ -416,7 +425,8 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
         <span>{elem.unit.name}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'placement'
 }
 
 export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
@@ -427,7 +437,8 @@ export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
       <span>{elem.range.format()}</span>
       <span>{elem.name}</span>
     </FixedSpaceColumn>
-  )
+  ),
+  eventType: 'service-need'
 }
 
 const getNestedRange = (range: DateRange, parentRange: FiniteDateRange) => {
@@ -460,5 +471,6 @@ export const feeAlterationRenderer: EventRenderer<TimelineFeeAlteration> = {
         <span>{elem.notes}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'fee-alteration'
 }
