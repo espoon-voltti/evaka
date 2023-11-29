@@ -662,9 +662,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
 internal data class TransactionHooks(val afterCommit: LinkedHashSet<() -> Unit> = LinkedHashSet())
 
-internal data class ThreadId(val id: Long = Thread.currentThread().id) {
+internal data class ThreadId(val id: Long = Thread.currentThread().threadId()) {
     fun assertCurrentThread() =
-        assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
+        assert(Thread.currentThread().threadId() == id) {
+            "Database accessed from the wrong thread"
+        }
 }
 
 data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>) {
