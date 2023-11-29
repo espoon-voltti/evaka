@@ -358,6 +358,7 @@ LEFT JOIN LATERAL (
     WHERE
         a.child_id = c.child_id AND
         a.date = t::date
+    ORDER BY a.category DESC
     LIMIT 1
 ) a ON true
 GROUP BY date

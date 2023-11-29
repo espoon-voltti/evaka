@@ -10,6 +10,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -35,6 +36,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -55,6 +57,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1013,6 +1017,92 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
+    fun `citizen can override billable planned absence with sick leave before threshold`() {
+        db.transaction { tx ->
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+        }
+
+        postAbsences(
+            AbsenceRequest(
+                childIds = setOf(testChild_1.id),
+                dateRange = FiniteDateRange(monday, tuesday),
+                absenceType = AbsenceType.SICKLEAVE
+            ),
+            clock =
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(15, 0)))
+        )
+
+        assertThat(
+                db.read { tx ->
+                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
+                }
+            )
+            .extracting({ it.date }, { it.absenceType }, { it.category })
+            .containsExactlyInAnyOrder(
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
+            )
+    }
+
+    @Test
+    fun `citizen cannot override billable planned absence with sick leave after threshold`() {
+        db.transaction { tx ->
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+        }
+
+        postAbsences(
+            AbsenceRequest(
+                childIds = setOf(testChild_1.id),
+                dateRange = FiniteDateRange(monday, tuesday),
+                absenceType = AbsenceType.SICKLEAVE
+            ),
+            clock =
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+        )
+
+        assertThat(
+                db.read { tx ->
+                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
+                }
+            )
+            .extracting({ it.date }, { it.absenceType }, { it.category })
+            .containsExactlyInAnyOrder(
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
+            )
+    }
+
+    @Test
     fun `cannot add absences to day which already contains attendance`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
@@ -1061,11 +1151,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         )
     }
 
-    private fun postAbsences(request: AbsenceRequest) {
+    private fun postAbsences(
+        request: AbsenceRequest,
+        clock: EvakaClock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0)))
+    ) {
         reservationControllerCitizen.postAbsences(
             dbInstance(),
             AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
+            clock,
             request,
         )
     }

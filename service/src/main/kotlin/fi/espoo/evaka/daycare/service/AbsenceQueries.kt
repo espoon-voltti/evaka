@@ -195,7 +195,8 @@ RETURNING id
  * - other than FREE_ABSENCE
  */
 fun Database.Transaction.clearOldCitizenEditableAbsences(
-    childDatePairs: List<Pair<ChildId, LocalDate>>
+    childDatePairs: List<Pair<ChildId, LocalDate>>,
+    reservableRange: FiniteDateRange? = null
 ): List<AbsenceId> {
     val batch =
         prepareBatch(
@@ -204,13 +205,18 @@ DELETE FROM absence
 WHERE child_id = :childId
 AND date = :date
 AND absence_type <> 'FREE_ABSENCE'::absence_type
+${if (reservableRange != null) "AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE')" else ""}
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """
         )
 
     childDatePairs.forEach { (childId, date) ->
-        batch.bind("childId", childId).bind("date", date).add()
+        batch
+            .bind("childId", childId)
+            .bind("date", date)
+            .bind("reservableRange", reservableRange)
+            .add()
     }
 
     return batch.executeAndReturn().toList<AbsenceId>()

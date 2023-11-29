@@ -267,7 +267,8 @@ class ReservationControllerCitizen(
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { childId to it }
-                            }
+                            },
+                            reservableRange = reservableRange
                         )
                     val inserted =
                         tx.insertAbsences(
