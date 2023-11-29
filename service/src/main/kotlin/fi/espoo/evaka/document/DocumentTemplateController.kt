@@ -5,7 +5,6 @@
 package fi.espoo.evaka.document
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.placement.getChildPlacementUnitLanguage
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -90,7 +89,8 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.getTemplateSummaries().filter {
                         it.published &&
                             it.validity.includes(clock.today()) &&
-                            (placementLanguage != Language.sv || it.language == DocumentLanguage.SV)
+                            (placementLanguage == null ||
+                                it.language.name.uppercase() == placementLanguage.name.uppercase())
                     }
                 }
             }
