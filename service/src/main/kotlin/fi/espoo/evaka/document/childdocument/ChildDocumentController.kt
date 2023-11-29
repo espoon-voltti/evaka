@@ -58,12 +58,12 @@ class ChildDocumentController(
                             }
                         } ?: throw NotFound()
 
-                    val sameTypeAlreadyStarted =
+                    val sameTemplateAlreadyStarted =
                         tx.getChildDocuments(body.childId).any {
-                            it.type == template.type && it.status != DocumentStatus.COMPLETED
+                            it.templateId == template.id && it.status != DocumentStatus.COMPLETED
                         }
-                    if (sameTypeAlreadyStarted) {
-                        throw Conflict("Child already has incomplete document of same type")
+                    if (sameTemplateAlreadyStarted) {
+                        throw Conflict("Child already has incomplete document of the same template")
                     }
 
                     tx.insertChildDocument(body, clock.now())

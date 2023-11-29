@@ -102,6 +102,7 @@ data class ChildDocumentSummary(
     val id: ChildDocumentId,
     val status: DocumentStatus,
     val type: DocumentType,
+    val templateId: DocumentTemplateId,
     val templateName: String,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?
