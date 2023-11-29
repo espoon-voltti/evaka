@@ -42,6 +42,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
+        In Spring Framework versions 6.0.0 - 6.0.13, it is possible for a user to provide specially crafted HTTP requests that may cause a denial-of-service (DoS) condition
+       ]]></notes>
+        <cve>CVE-2023-34053</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
         In Spring Boot versions 2.7.0 - 2.7.17, 3.0.0-3.0.12 and 3.1.0-3.1.5, it is possible for a user to provide specially crafted HTTP requests that may cause a denial-of-service (DoS) condition. Specifically, an application is vulnerable when all of the following are true: the application uses Spring MVC or Spring WebFlux
        ]]></notes>
         <cve>CVE-2023-34055</cve>
