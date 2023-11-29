@@ -7,6 +7,7 @@ package fi.espoo.evaka.children
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
@@ -130,6 +131,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                                     placement.period.includes(absence.date)
                                 }
                             placement != null &&
+                                absence.category == AbsenceCategory.BILLABLE &&
                                 operationalDays.forUnit(placement.unitId).contains(absence.date) &&
                                 setOf(
                                         AbsenceType.PLANNED_ABSENCE,
