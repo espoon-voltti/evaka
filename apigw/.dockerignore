@@ -14,3 +14,4 @@
 !.yarn/plugins
 !.yarnrc.yml
 !tsconfig.json
+!tsconfig.test.json
