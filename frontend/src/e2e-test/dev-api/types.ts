@@ -171,6 +171,7 @@ export interface PersonDetail {
   nationalities?: string[]
   restrictedDetailsEnabled?: boolean
   restrictedDetailsEndDate?: LocalDate | null
+  ophPersonOid?: string | null
   duplicateOf?: string | null
 }
 

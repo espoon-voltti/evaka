@@ -32,6 +32,11 @@ export default class ReportsPage {
     return new ApplicationsReport(this.page)
   }
 
+  async openNonSsnChildrenReport() {
+    await this.page.find('[data-qa="report-non-ssn-children"]').click()
+    return new NonSsnChildrenReport(this.page)
+  }
+
   async openPlacementGuaranteeReport() {
     await this.page.find('[data-qa="report-placement-guarantee"]').click()
     return new PlacementGuaranteeReport(this.page)
@@ -81,6 +86,35 @@ export class MissingHeadOfFamilyReport {
       await row
         .findByDataQa('ranges-without-head')
         .assertTextEquals(data.rangesWithoutHead)
+    }
+  }
+}
+
+export class NonSsnChildrenReport {
+  constructor(private page: Page) {}
+
+  #nameHeader = this.page.find(`[data-qa="child-name-header"]`)
+
+  async changeSortOrder() {
+    await this.#nameHeader.click()
+  }
+
+  async assertRows(
+    expected: {
+      childName: string
+      dateOfBirth: string
+      personOid: string
+      vardaOid: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('non-ssn-child-row')
+    await rows.assertCount(expected.length)
+    for (const [index, data] of expected.entries()) {
+      const row = rows.nth(index)
+      await row.findByDataQa('child-name').assertTextEquals(data.childName)
+      await row.findByDataQa('date-of-birth').assertTextEquals(data.dateOfBirth)
+      await row.findByDataQa('person-oid').assertTextEquals(data.personOid)
+      await row.findByDataQa('varda-oid').assertTextEquals(data.vardaOid)
     }
   }
 }

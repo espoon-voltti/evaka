@@ -29,6 +29,7 @@ enum class Report {
     MANUAL_DUPLICATION,
     MISSING_HEAD_OF_FAMILY,
     MISSING_SERVICE_NEED,
+    NON_SSN_CHILDREN,
     OCCUPANCY,
     PARTNERS_IN_DIFFERENT_ADDRESS,
     PLACEMENT_COUNT,
@@ -132,6 +133,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_MISSING_SERVICE_NEED_REPORT
                         )
+                    },
+                    Report.NON_SSN_CHILDREN.takeIf {
+                        permittedGlobalActions.contains(Action.Global.READ_NON_SSN_CHILDREN_REPORT)
                     },
                     Report.OCCUPANCY.takeIf {
                         permittedActionsForSomeUnit.contains(Action.Unit.READ_OCCUPANCY_REPORT)

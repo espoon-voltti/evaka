@@ -332,6 +332,15 @@ export default React.memo(function Reports() {
                 data-qa="report-manual-duplication"
               />
             )}
+            {reports.has('NON_SSN_CHILDREN') && (
+              <Report
+                path="/reports/non-ssn-children"
+                color={colors.main.m2}
+                icon={faChild}
+                i18n={i18n.reports.nonSsnChildren}
+                data-qa="report-non-ssn-children"
+              />
+            )}
             {reports.has('PLACEMENT_COUNT') && (
               <Report
                 path="/reports/placement-count"

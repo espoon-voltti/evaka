@@ -29,6 +29,7 @@ import {
   ManualDuplicationReportViewMode,
   MissingHeadOfFamilyReportRow,
   MissingServiceNeedReportRow,
+  NonSsnChildrenReportRow,
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow,
   PartnersInDifferentAddressReportRow,
@@ -163,6 +164,19 @@ export async function getMissingHeadOfFamilyReport(
         rangesWithoutHead: row.rangesWithoutHead.map((range) =>
           FiniteDateRange.parseJson(range)
         )
+      }))
+    )
+}
+
+export async function getNonSsnChildrenReport(): Promise<
+  NonSsnChildrenReportRow[]
+> {
+  return client
+    .get<JsonOf<NonSsnChildrenReportRow[]>>('/reports/non-ssn-children')
+    .then((res) =>
+      res.data.map((row) => ({
+        ...row,
+        dateOfBirth: LocalDate.parseIso(row.dateOfBirth)
       }))
     )
 }
