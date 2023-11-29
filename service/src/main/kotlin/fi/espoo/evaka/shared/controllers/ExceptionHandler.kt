@@ -68,15 +68,6 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
-    @ExceptionHandler(value = [MaxUploadSizeExceededException::class])
-    fun maxUploadSizeExceeded(
-        req: HttpServletRequest,
-        ex: MaxUploadSizeExceededException
-    ): ResponseEntity<ErrorResponse> {
-        logger.warn("Max upload size exceeded (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
-    }
-
     // We don't want alerts from ClientAbortExceptions or return any http responses to them
     @ExceptionHandler(value = [IOException::class])
     fun IOExceptions(req: HttpServletRequest, ex: IOException): ResponseEntity<ErrorResponse>? {
@@ -86,6 +77,16 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         }
         logger.error("IOException", ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse())
+    }
+
+    override fun handleMaxUploadSizeExceededException(
+        ex: MaxUploadSizeExceededException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        logger.warn("Max upload size exceeded (${ex.message})", ex)
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
     }
 
     override fun handleExceptionInternal(
