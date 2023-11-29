@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildDailyNoteId
-import fi.espoo.evaka.shared.ChildDiscussionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -1217,14 +1216,6 @@ sealed interface Action {
         UPSERT_CHILD_CONSENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(STAFF, SPECIAL_EDUCATION_TEACHER, UNIT_SUPERVISOR).inPlacementUnitOfChild()
-        ),
-        CREATE_CHILD_DISCUSSION(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
-        ),
-        READ_CHILD_DISCUSSION(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -2136,23 +2127,6 @@ sealed interface Action {
         READ_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         UPDATE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         DELETE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit());
-
-        override fun toString(): String = "${javaClass.name}.$name"
-    }
-
-    enum class ChildDiscussion(
-        override vararg val defaultRules: ScopedActionRule<in ChildDiscussionId>
-    ) : ScopedAction<ChildDiscussionId> {
-        UPDATE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfChildDiscussion()
-        ),
-        DELETE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfChildDiscussion()
-        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

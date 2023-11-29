@@ -55,8 +55,7 @@ export const fi = {
     vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
     childDocument: 'Lapsen pedagoginen lomake',
-    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
-    childDiscussion: 'Lapset puheeksi'
+    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
   },
   common: {
     yes: 'Kyllä',
@@ -1524,13 +1523,6 @@ export const fi = {
         noTemplates: 'Yhtään pohjaa ei löytynyt',
         error: 'Suunnitelman luonti epäonnistui'
       }
-    },
-    childDiscussion: {
-      title: 'Lapset puheeksi -keskustelu',
-      addNew: 'Lisää uusi',
-      offered: 'Tarjottu',
-      held: 'Pidetty',
-      counseling: 'Neuvonpito'
     },
     pedagogicalDocument: {
       title: 'Pedagoginen dokumentointi',

@@ -161,11 +161,6 @@ interface BaseFeatureFlags {
   financeDecisionHandlerSelect: boolean
 
   /**
-   * Enable section for child discussion related data (Lapset puheeksi) in child documents section
-   */
-  childDiscussion: boolean
-
-  /**
    * Enable support for filtering fee decisions by preschool club placement type
    */
   feeDecisionPreschoolClubFilter: boolean

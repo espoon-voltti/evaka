@@ -31,8 +31,6 @@ import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
-import fi.espoo.evaka.childdiscussion.ChildDiscussionData
-import fi.espoo.evaka.childdiscussion.getChildDiscussions
 import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
@@ -1508,14 +1506,6 @@ RETURNING id
     @PostMapping("/absence")
     fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
-
-    @GetMapping("/child-discussions/{childId}")
-    fun getChildDiscussions(
-        db: Database,
-        @PathVariable childId: ChildId
-    ): List<ChildDiscussionData> {
-        return db.connect { dbc -> dbc.read { tx -> tx.getChildDiscussions(childId) } }
-    }
 
     @PostMapping("/club-term")
     fun createClubTerm(db: Database, @RequestBody body: ClubTerm) {

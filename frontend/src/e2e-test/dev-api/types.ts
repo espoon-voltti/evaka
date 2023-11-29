@@ -16,7 +16,6 @@ import {
   AssistanceNeedPreschoolDecisionForm
 } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import { ChildDiscussionData } from 'lib-common/generated/api-types/childdiscussion'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import {
   AbsenceCategory,
@@ -672,27 +671,6 @@ export interface DevAbsence {
 export interface DevHoliday {
   date: LocalDate
   description: string
-}
-
-export interface DevChildDiscussion {
-  id: UUID
-  childId: UUID
-  offeredDate?: LocalDate | null
-  heldDate?: LocalDate | null
-  counselingDate?: LocalDate | null
-}
-
-export function deserializeDiscussionData(
-  data: JsonOf<ChildDiscussionData>
-): DevChildDiscussion {
-  return {
-    ...data,
-    offeredDate: data.offeredDate ? LocalDate.parseIso(data.offeredDate) : null,
-    heldDate: data.heldDate ? LocalDate.parseIso(data.heldDate) : null,
-    counselingDate: data.counselingDate
-      ? LocalDate.parseIso(data.counselingDate)
-      : null
-  }
 }
 
 export interface DevDocumentTemplate {

@@ -70,7 +70,6 @@ import {
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
-  childDiscussions: (childId: UUID) => ['childDiscussions', childId],
   assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
