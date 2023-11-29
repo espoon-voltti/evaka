@@ -17,7 +17,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <groupId>com.espoo.keycloak</groupId>
     <version>22.0.4</version>
     <properties>
-        <keycloak.version>22.0.4</keycloak.version>
+        <keycloak.version>23.0.1</keycloak.version>
         <jboss.logging.version>3.4.1.Final</jboss.logging.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
