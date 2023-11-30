@@ -452,55 +452,6 @@ export class ChildDocumentsSection extends Section {
       published: row.findByDataQa('document-published-at')
     }
   }
-
-  /* Child discussion -section */
-  readonly #createChildDiscussion = this.find('[data-qa="create-discussion"]')
-  addOfferedDateInput = new TextInput(
-    this.find('[data-qa="add-discussion-offered-date-input"]')
-  )
-  addHeldDateInput = new TextInput(
-    this.find('[data-qa="add-discussion-held-date-input"]')
-  )
-  addCounselingDateInput = new TextInput(
-    this.find('[data-qa="add-discussion-counseling-date-input"]')
-  )
-  readonly #confirmEditedBtn = (id: string) =>
-    this.find(`[data-qa="confirm-edited-discussion-button-${id}"]`)
-  readonly #editDiscussionBtn = (id: string) =>
-    this.find(`[data-qa="edit-discussion-button-${id}"]`)
-  readonly #deleteDiscussionBtn = (id: string) =>
-    this.find(`[data-qa="delete-discussion-button-${id}"]`)
-  offeredDateText = (id: string) =>
-    this.find(`[data-qa="discussion-offered-date-${id}"]`)
-
-  heldDateText = (id: string) =>
-    this.find(`[data-qa="discussion-held-date-${id}"]`)
-  counselingDateText = (id: string) =>
-    this.find(`[data-qa="discussion-counseling-date-${id}"]`)
-  offeredDateInput = (id: string) =>
-    new TextInput(this.find(`[data-qa="discussion-offered-date-input-${id}"]`))
-  heldDateInput = (id: string) =>
-    new TextInput(this.find(`[data-qa="discussion-held-date-input-${id}"]`))
-  counselingDateInput = (id: string) =>
-    new TextInput(
-      this.find(`[data-qa="discussion-counseling-date-input-${id}"]`)
-    )
-
-  async addChildDiscussion() {
-    return this.#createChildDiscussion.click()
-  }
-
-  async editChildDiscussion(id: string) {
-    return this.#editDiscussionBtn(id).click()
-  }
-
-  async deleteChildDiscussion(id: string) {
-    return this.#deleteDiscussionBtn(id).click()
-  }
-
-  async confirmEdited(id: string) {
-    return this.#confirmEditedBtn(id).click()
-  }
 }
 
 export class BackupCaresSection extends Section {
