@@ -12,18 +12,25 @@ import {
   getApplicationNotifications,
   getDecisions,
   getDecisionsOfApplication,
+  getFinanceDecisionsForCitizen,
   rejectDecision
 } from './api'
 
 const queryKeys = createQueryKeys('applicationDecisions', {
   all: () => ['all'],
   byApplication: (applicationId: UUID) => ['decisions', applicationId],
-  notifications: () => ['notifications']
+  notifications: () => ['notifications'],
+  financeDecisions: () => ['financeDecisions']
 })
 
 export const decisionsQuery = query({
   api: getDecisions,
   queryKey: queryKeys.all
+})
+
+export const financeDecisionsQuery = query({
+  api: getFinanceDecisionsForCitizen,
+  queryKey: queryKeys.financeDecisions
 })
 
 export const decisionsOfApplicationQuery = query({

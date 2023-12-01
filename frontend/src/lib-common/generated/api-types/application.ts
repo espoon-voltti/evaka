@@ -16,6 +16,7 @@ import { DecisionDraft } from './decision'
 import { DecisionStatus } from './decision'
 import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
+import { FinanceDecisionType } from './invoicing'
 import { PersonJSON } from './pis'
 import { PlacementPlanConfirmationStatus } from './placement'
 import { PlacementPlanDetails } from './placement'
@@ -421,6 +422,28 @@ export interface DecisionWithValidStartDatePeriod {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.FinanceDecisionChildInfo
+*/
+export interface FinanceDecisionChildInfo {
+  firstName: string
+  id: UUID
+  lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.application.FinanceDecisionCitizenInfo
+*/
+export interface FinanceDecisionCitizenInfo {
+  coDebtors: LiableCitizenInfo[]
+  decisionChildren: FinanceDecisionChildInfo[]
+  id: UUID
+  sentAt: HelsinkiDateTime
+  type: FinanceDecisionType
+  validFrom: LocalDate
+  validTo: LocalDate | null
+}
+
+/**
 * Generated from fi.espoo.evaka.application.FutureAddress
 */
 export interface FutureAddress {
@@ -459,6 +482,15 @@ export interface GuardianUpdate {
   email: string
   futureAddress: FutureAddress | null
   phoneNumber: string
+}
+
+/**
+* Generated from fi.espoo.evaka.application.LiableCitizenInfo
+*/
+export interface LiableCitizenInfo {
+  firstName: string
+  id: UUID
+  lastName: string
 }
 
 /**

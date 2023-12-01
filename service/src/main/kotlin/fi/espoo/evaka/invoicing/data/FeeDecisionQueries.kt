@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
@@ -861,3 +862,32 @@ FROM partner_children, partner_fridge_children
             .bind("childIds", childIds)
             .bind("dateRange", dateRange)
             .exactlyOne<Boolean>()
+
+fun Database.Read.getFeeDecisionByLiableCitizen(
+    citizenId: PersonId
+): List<FeeDecisionCitizenInfoRow> {
+    return createQuery(
+            """
+SELECT fd.id,
+       fd.valid_during,
+       fd.sent_at,
+       fd.head_of_family_id,
+       fd.partner_id
+FROM fee_decision fd
+WHERE fd.status in ('SENT')
+AND (head_of_family_id = :citizenId
+    OR partner_id = :citizenId)
+    """
+                .trimIndent()
+        )
+        .bind("citizenId", citizenId)
+        .toList<FeeDecisionCitizenInfoRow>()
+}
+
+data class FeeDecisionCitizenInfoRow(
+    val id: FeeDecisionId,
+    val validDuring: FiniteDateRange,
+    val sentAt: HelsinkiDateTime?,
+    val headOfFamilyId: PersonId,
+    val partnerId: PersonId?
+)

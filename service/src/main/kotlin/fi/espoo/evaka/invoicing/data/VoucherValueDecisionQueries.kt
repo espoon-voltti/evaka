@@ -608,6 +608,39 @@ fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId)
     return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
+fun Database.Read.getVoucherValueDecisionByLiableCitizen(
+    citizenId: PersonId
+): List<VoucherValueDecisionCitizenInfoRow> {
+    return createQuery(
+            """
+SELECT vvd.id,
+       vvd.valid_from,
+       vvd.valid_to,
+       vvd.sent_at,
+       vvd.head_of_family_id,
+       vvd.partner_id,
+       vvd.child_id
+FROM voucher_value_decision vvd
+WHERE vvd.status IN ('SENT')
+AND (vvd.head_of_family_id = :citizenId
+    OR vvd.partner_id = :citizenId)
+    """
+                .trimIndent()
+        )
+        .bind("citizenId", citizenId)
+        .toList<VoucherValueDecisionCitizenInfoRow>()
+}
+
+data class VoucherValueDecisionCitizenInfoRow(
+    val id: VoucherValueDecisionId,
+    val validFrom: LocalDate?,
+    val validTo: LocalDate?,
+    val sentAt: HelsinkiDateTime?,
+    val headOfFamilyId: PersonId,
+    val partnerId: PersonId?,
+    val childId: PersonId
+)
+
 fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     id: VoucherValueDecisionId,
     documentKey: String

@@ -1375,9 +1375,10 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
+    childhoodEducationTitle: 'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
     summary: (
       <P width="800px">
-        Till denna sida kommer beslut gällande barnets ansökan till
+        Till denna sida kommer beslut gällande betalningar och barnets ansökan till
         småbarnspedagogik, förskola och klubbverksamhet.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
@@ -1390,6 +1391,18 @@ const sv: Translations = {
     noUnconfirmedDecisions: 'alla beslut bekräftade',
     unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
+    financeDecisions: {
+      type: {
+        FEE_DECISION: 'Betalningsbeslut',
+        VOUCHER_VALUE_DECISION: 'Beslut om värdet på servicesedlar'
+      },
+      title: 'Beslut gällande betalningar',
+      liableCitizens: 'Betalningsskyldiga',
+      validityPeriod: 'Beslut giltig',
+      sentAt: 'Beslut skickat',
+      voucherValueChild: 'Barnet som berörs av beslutet',
+      loadDecisionPDF: 'Visa beslut'
+    },
     applicationDecisions: {
       decision: 'Beslut',
       type: {

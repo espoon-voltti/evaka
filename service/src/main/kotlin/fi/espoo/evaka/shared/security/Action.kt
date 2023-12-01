@@ -369,6 +369,20 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
 
+        enum class FeeDecision(
+            override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>
+        ) : ScopedAction<FeeDecisionId> {
+            READ(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
+        }
+
+        enum class VoucherValueDecision(
+            override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
+        ) : ScopedAction<VoucherValueDecisionId> {
+            READ(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
+        }
+
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
             ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
@@ -505,6 +519,7 @@ sealed interface Action {
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
+            READ_FINANCE_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
