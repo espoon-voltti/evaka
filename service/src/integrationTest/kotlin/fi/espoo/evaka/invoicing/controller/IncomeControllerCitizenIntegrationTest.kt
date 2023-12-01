@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -110,6 +111,14 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(6),
                     validTo = expirationDate
+                )
+            )
+            it.insert(
+                DevFridgeChild(
+                    headOfChild = guardianId,
+                    childId = childId,
+                    startDate = clock.today().minusMonths(6),
+                    endDate = expirationDate.plusMonths(6)
                 )
             )
         }

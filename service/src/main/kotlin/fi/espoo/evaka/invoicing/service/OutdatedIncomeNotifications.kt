@@ -53,7 +53,7 @@ class OutdatedIncomeNotifications(
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                     IncomeNotificationType.INITIAL_EMAIL
                 )
-                .map { it.guardianId }
+                .map { it.personId }
 
         val guardiansForReminderNotification =
             tx.expiringIncomes(
@@ -61,8 +61,8 @@ class OutdatedIncomeNotifications(
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(2)),
                     IncomeNotificationType.REMINDER_EMAIL
                 )
-                .filter { !guardiansForInitialNotification.contains(it.guardianId) }
-                .map { it.guardianId }
+                .filter { !guardiansForInitialNotification.contains(it.personId) }
+                .map { it.personId }
 
         val guardiansForExpirationNotification =
             tx.expiringIncomes(
@@ -70,9 +70,9 @@ class OutdatedIncomeNotifications(
                     FiniteDateRange(clock.today(), clock.today()),
                     IncomeNotificationType.EXPIRED_EMAIL
                 )
-                .filter { !guardiansForInitialNotification.contains(it.guardianId) }
-                .filter { !guardiansForReminderNotification.contains(it.guardianId) }
-                .map { it.guardianId }
+                .filter { !guardiansForInitialNotification.contains(it.personId) }
+                .filter { !guardiansForReminderNotification.contains(it.personId) }
+                .map { it.personId }
 
         asyncJobRunner.plan(
             tx,
