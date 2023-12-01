@@ -83,6 +83,7 @@ import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
+import ReportNonSsnChildren from './components/reports/NonSsnChildren'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
 import PlacementCount from './components/reports/PlacementCount'
@@ -471,6 +472,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <ReportMissingServiceNeed />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/non-ssn-children',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportNonSsnChildren />
             </EmployeeRoute>
           )
         },

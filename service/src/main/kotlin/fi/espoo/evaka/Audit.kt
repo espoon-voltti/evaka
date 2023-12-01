@@ -304,6 +304,7 @@ enum class Audit(
     MobileDevicesRead,
     MobileDevicesRename,
     MobileDevicesDelete,
+    NonSsnChildrenReport,
     NoteCreate,
     NoteDelete,
     NoteRead,

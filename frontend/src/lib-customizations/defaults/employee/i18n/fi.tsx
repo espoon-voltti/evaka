@@ -3759,6 +3759,16 @@ export const fi = {
         }
       }
     },
+    nonSsnChildren: {
+      title: 'Hetuttomat lapset',
+      description:
+        'Raportti hetuttomista sijoitetuista lapsista OID-tietojen tarkistamiseen',
+      childName: 'Lapsen nimi',
+      dateOfBirth: 'Syntymäpäivä',
+      vardaOid: 'Varda-tietojen OID',
+      personOid: 'Lapsen tietojen OID',
+      total: 'Yhteensä'
+    },
     placementCount: {
       title: 'Sijoitusten määrä',
       description:

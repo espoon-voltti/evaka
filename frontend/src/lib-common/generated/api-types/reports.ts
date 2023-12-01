@@ -440,6 +440,18 @@ export interface MissingServiceNeedReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.NonSsnChildrenReportRow
+*/
+export interface NonSsnChildrenReportRow {
+  childId: UUID
+  dateOfBirth: LocalDate
+  existingPersonOid: string | null
+  firstName: string
+  lastName: string
+  vardaOid: string | null
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.OccupancyGroupReportResultRow
 */
 export interface OccupancyGroupReportResultRow {
@@ -664,6 +676,7 @@ export type Report =
   | 'MANUAL_DUPLICATION'
   | 'MISSING_HEAD_OF_FAMILY'
   | 'MISSING_SERVICE_NEED'
+  | 'NON_SSN_CHILDREN'
   | 'OCCUPANCY'
   | 'PARTNERS_IN_DIFFERENT_ADDRESS'
   | 'PLACEMENT_COUNT'

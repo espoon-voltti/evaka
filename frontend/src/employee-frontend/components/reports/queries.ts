@@ -9,6 +9,7 @@ import {
   getFamilyContactsReport,
   getFuturePreschoolersReport,
   getMissingHeadOfFamilyReport,
+  getNonSsnChildrenReport,
   getOccupanciesReport,
   getPlacementGuaranteeReport,
   getPreschoolGroupsReport,
@@ -54,6 +55,11 @@ export const familyContactsReportQuery = query({
 export const missingHeadOfFamilyReportQuery = query({
   api: getMissingHeadOfFamilyReport,
   queryKey: queryKeys.missingHeadOfFamily
+})
+
+export const nonSsnChildrenReportQuery = query({
+  api: getNonSsnChildrenReport,
+  queryKey: () => []
 })
 
 export const occupanciesReportQuery = query({

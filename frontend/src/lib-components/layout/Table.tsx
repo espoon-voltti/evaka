@@ -160,6 +160,7 @@ interface SortableProps {
   sorted?: 'ASC' | 'DESC'
   sticky?: boolean
   top?: string
+  'data-qa'?: string
 }
 
 const CustomButton = styled.button`
@@ -181,14 +182,15 @@ export const SortableTh = React.memo(function SortableTh({
   onClick,
   sorted,
   sticky,
-  top
+  top,
+  'data-qa': dataQa
 }: SortableProps) {
   const {
     colors: { grayscale }
   } = useTheme()
   return (
     <Th sticky={sticky} top={top}>
-      <CustomButton onClick={onClick}>
+      <CustomButton onClick={onClick} data-qa={dataQa}>
         <span>{children}</span>
         <Gap horizontal size="xs" />
         <SortableIconContainer>

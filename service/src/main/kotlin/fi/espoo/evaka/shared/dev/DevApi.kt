@@ -1973,7 +1973,7 @@ data class DevPerson(
     val dependants: List<DevPerson> = emptyList(),
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
-    val ophPersonOid: String = "",
+    val ophPersonOid: String? = "",
     val duplicateOf: PersonId? = null,
     val enabledEmailTypes: List<EmailMessageType>? = null,
 ) {
