@@ -141,16 +141,16 @@ data class Parentship(
     val conflict: Boolean = false
 )
 
-enum class CreateType : DatabaseEnum {
+enum class CreateSource : DatabaseEnum {
     USER,
     APPLICATION;
 
-    override val sqlType = "create_type"
+    override val sqlType = "create_source"
 }
 
-enum class ModifyType : DatabaseEnum {
+enum class ModifySource : DatabaseEnum {
     USER,
     DVV;
 
-    override val sqlType = "modify_type"
+    override val sqlType = "modify_source"
 }

@@ -6,15 +6,19 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -22,6 +26,9 @@ import org.junit.jupiter.api.Test
 
 class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.now())
+    private val partnershipCreator =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+            .evakaUserId
 
     @Test
     fun `test creating partnership`() {
@@ -37,8 +44,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate,
                     endDate,
                     false,
-                    null,
-                    null,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
                     clock.now()
                 )
             }
@@ -62,8 +68,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now(),
                     LocalDate.now().plusDays(200),
                     false,
-                    null,
-                    null,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
                     clock.now()
                 )
             }
@@ -75,8 +80,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(300),
                     LocalDate.now().plusDays(400),
                     false,
-                    null,
-                    null,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
                     clock.now()
                 )
             }
@@ -107,8 +111,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate,
                     endDate = null,
                     false,
-                    null,
-                    null,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
                     clock.now()
                 )
             }

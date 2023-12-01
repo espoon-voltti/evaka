@@ -15,8 +15,8 @@ import fi.espoo.evaka.invoicing.service.generator.WithRange
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.CreateType
-import fi.espoo.evaka.pis.service.ModifyType
+import fi.espoo.evaka.pis.service.CreateSource
+import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
@@ -115,11 +115,11 @@ class TimelineController(private val accessControl: AccessControl) {
                                         },
                                     createdAt = partner.createdAt,
                                     createdBy = partner.createdBy,
-                                    createType = partner.createType,
+                                    createSource = partner.createSource,
                                     createdByName = partner.createdByName,
                                     modifiedAt = partner.modifiedAt,
                                     modifiedBy = partner.modifiedBy,
-                                    modifyType = partner.modifyType,
+                                    modifySource = partner.modifySource,
                                     modifiedByName = partner.modifiedByName,
                                     createdFromApplication = partner.createdFromApplication,
                                     createdFromApplicationType = partner.createdFromApplicationType,
@@ -231,11 +231,11 @@ data class TimelinePartner(
     val createdAt: HelsinkiDateTime?,
     val createdBy: EvakaUserId?,
     val createdByName: String?,
-    val createType: CreateType?,
+    val createSource: CreateSource?,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUserId?,
     val modifiedByName: String?,
-    val modifyType: ModifyType?,
+    val modifySource: ModifySource?,
     val createdFromApplication: ApplicationId?,
     val createdFromApplicationType: ApplicationType?,
     val createdFromApplicationCreated: HelsinkiDateTime?
@@ -254,11 +254,11 @@ data class TimelinePartnerDetailed(
     val createdAt: HelsinkiDateTime?,
     val createdBy: EvakaUserId?,
     val createdByName: String?,
-    val createType: CreateType?,
+    val createSource: CreateSource?,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUserId?,
     val modifiedByName: String?,
-    val modifyType: ModifyType?,
+    val modifySource: ModifySource?,
     val createdFromApplication: ApplicationId?,
     val createdFromApplicationType: ApplicationType?,
     val createdFromApplicationCreated: HelsinkiDateTime?
@@ -277,11 +277,11 @@ private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange
                 partnerId = it.person.id,
                 firstName = it.person.firstName,
                 lastName = it.person.lastName,
-                createType = it.createType,
+                createSource = it.createSource,
                 createdAt = it.createdAt,
                 createdBy = it.createdBy,
                 createdByName = it.createdByName,
-                modifyType = it.modifyType,
+                modifySource = it.modifySource,
                 modifiedAt = it.modifiedAt,
                 modifiedBy = it.modifiedBy,
                 modifiedByName = it.modifiedByName,

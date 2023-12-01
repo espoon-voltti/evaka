@@ -7,12 +7,15 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired
 class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var partnershipService: PartnershipService
     private val clock = MockEvakaClock(HelsinkiDateTime.now())
+    private val partnershipCreator =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+            .evakaUserId
 
     @Test
     fun `creating an overlapping partnership throws conflict`() {
@@ -37,7 +43,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 person2.id,
                 startDate,
                 endDate,
-                null,
+                partnershipCreator,
                 clock.now()
             )
         }
@@ -49,7 +55,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     person3.id,
                     startDate,
                     endDate,
-                    null,
+                    partnershipCreator,
                     clock.now()
                 )
             }

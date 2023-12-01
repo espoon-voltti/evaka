@@ -6,17 +6,20 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDateTime
@@ -36,6 +39,9 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     lateinit var adult2VtjPerson: VtjPerson
     lateinit var child1VtjPerson: VtjPerson
     lateinit var child2VtjPerson: VtjPerson
+    private val partnershipCreator =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+            .evakaUserId
 
     @BeforeEach
     fun setup() {
@@ -68,8 +74,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 mockToday.today(),
                 null,
                 false,
-                null,
-                null,
+                CreatorOrApplicationId.Creator(partnershipCreator),
                 mockToday.now()
             )
         }
@@ -107,8 +112,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 mockToday.today(),
                 null,
                 false,
-                null,
-                null,
+                CreatorOrApplicationId.Creator(partnershipCreator),
                 mockToday.now()
             )
         }

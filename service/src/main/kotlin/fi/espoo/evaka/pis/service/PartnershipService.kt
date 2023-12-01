@@ -5,11 +5,7 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.deletePartnership
-import fi.espoo.evaka.pis.getPartnership
-import fi.espoo.evaka.pis.retryPartnership
-import fi.espoo.evaka.pis.updatePartnershipDuration
+import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
@@ -30,7 +26,7 @@ class PartnershipService {
         personId2: PersonId,
         startDate: LocalDate,
         endDate: LocalDate?,
-        createdBy: EvakaUserId?,
+        createdBy: EvakaUserId,
         createdAt: HelsinkiDateTime
     ): Partnership {
         return try {
@@ -40,8 +36,7 @@ class PartnershipService {
                 startDate,
                 endDate,
                 false,
-                createdBy,
-                null,
+                CreatorOrApplicationId.Creator(createdBy),
                 createdAt
             )
         } catch (e: UnableToExecuteStatementException) {
@@ -54,7 +49,7 @@ class PartnershipService {
         partnershipId: PartnershipId,
         startDate: LocalDate,
         endDate: LocalDate?,
-        modifiedBy: EvakaUserId?,
+        modifiedBy: EvakaUserId,
         modifiedAt: HelsinkiDateTime
     ) {
         try {
@@ -63,7 +58,7 @@ class PartnershipService {
                     partnershipId,
                     startDate,
                     endDate,
-                    ModifyType.USER,
+                    ModifySource.USER,
                     modifiedAt,
                     modifiedBy
                 )
@@ -76,7 +71,7 @@ class PartnershipService {
     fun retryPartnership(
         tx: Database.Transaction,
         partnershipId: PartnershipId,
-        modifiedById: EvakaUserId?,
+        modifiedById: EvakaUserId,
         modifiedAt: HelsinkiDateTime
     ): Partnership? {
         return try {
@@ -107,11 +102,11 @@ data class Partner(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val conflict: Boolean = false,
-    val createType: CreateType?,
+    val createSource: CreateSource?,
     val createdAt: HelsinkiDateTime?,
     val createdBy: EvakaUserId?,
     val createdByName: String?,
-    val modifyType: ModifyType?,
+    val modifySource: ModifySource?,
     val modifiedAt: HelsinkiDateTime?,
     val modifiedBy: EvakaUserId?,
     val modifiedByName: String?,

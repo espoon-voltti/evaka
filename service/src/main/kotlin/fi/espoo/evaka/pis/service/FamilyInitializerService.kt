@@ -7,12 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
-import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.getParentships
-import fi.espoo.evaka.pis.getPartnershipsForPerson
-import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.personIsHeadOfFamily
+import fi.espoo.evaka.pis.*
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -303,8 +298,7 @@ class FamilyInitializerService(
                         startDate = startDate,
                         endDate = null,
                         conflict = false,
-                        null,
-                        applicationId,
+                        CreatorOrApplicationId.Application(applicationId),
                         evakaClock.now()
                     )
                 }
@@ -322,8 +316,7 @@ class FamilyInitializerService(
                             startDate = startDate,
                             endDate = null,
                             conflict = true,
-                            null,
-                            applicationId,
+                            CreatorOrApplicationId.Application(applicationId),
                             evakaClock.now()
                         )
                     }
