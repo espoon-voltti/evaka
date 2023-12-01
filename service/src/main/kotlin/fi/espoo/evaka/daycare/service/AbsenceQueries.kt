@@ -201,11 +201,18 @@ fun Database.Transaction.clearOldCitizenEditableAbsences(
     val batch =
         prepareBatch(
             """
-DELETE FROM absence
+DELETE FROM absence a
 WHERE child_id = :childId
 AND date = :date
 AND absence_type <> 'FREE_ABSENCE'::absence_type
-${if (reservableRange != null) "AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE')" else ""}
+${if (reservableRange != null) """
+AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE' OR NOT EXISTS (
+    SELECT
+    FROM service_need_option sno
+    JOIN service_need sn ON sn.option_id = sno.id AND a.date BETWEEN sn.start_date AND sn.end_date
+    JOIN placement p ON p.id = sn.placement_id AND p.child_id = a.child_id AND a.date BETWEEN p.start_date AND p.end_date
+    WHERE sno.contract_days_per_month IS NOT NULL
+))""" else ""}
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """

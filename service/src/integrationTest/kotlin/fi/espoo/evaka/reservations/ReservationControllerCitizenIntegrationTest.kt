@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -29,6 +30,7 @@ import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestHoliday
@@ -44,6 +46,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -85,10 +88,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private val testStaffId = EmployeeId(UUID.randomUUID())
 
+    private lateinit var testChild1PlacementId: PlacementId
+
     @BeforeEach
     fun before() {
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)
 
             tx.insert(testArea)
             tx.insert(testDaycare)
@@ -102,13 +108,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 tx.insert(child, DevPersonType.CHILD)
             }
 
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
-            )
+            testChild1PlacementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             tx.insertTestPlacement(
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
@@ -1017,8 +1024,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `citizen can override billable planned absence with sick leave before threshold`() {
+    fun `citizen can override billable planned absence in contract day placement with sick leave before threshold`() {
         db.transaction { tx ->
+            tx.insertTestServiceNeed(
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                placementId = testChild1PlacementId,
+                period = FiniteDateRange(monday, tuesday),
+                optionId = snPreschoolDaycareContractDays13.id,
+                shiftCare = ShiftCareType.NONE
+            )
             tx.insertTestAbsence(
                 childId = testChild_1.id,
                 date = monday,
@@ -1060,8 +1074,58 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `citizen cannot override billable planned absence with sick leave after threshold`() {
+    fun `citizen can override billable planned absence in non contract day placement with sick leave after threshold`() {
         db.transaction { tx ->
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+            )
+        }
+
+        postAbsences(
+            AbsenceRequest(
+                childIds = setOf(testChild_1.id),
+                dateRange = FiniteDateRange(monday, tuesday),
+                absenceType = AbsenceType.SICKLEAVE
+            ),
+            clock =
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+        )
+
+        assertThat(
+                db.read { tx ->
+                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
+                }
+            )
+            .extracting({ it.date }, { it.absenceType }, { it.category })
+            .containsExactlyInAnyOrder(
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(monday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
+                Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
+            )
+    }
+
+    @Test
+    fun `citizen cannot override billable planned absence in contract day placement with sick leave after threshold`() {
+        db.transaction { tx ->
+            tx.insertTestServiceNeed(
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                placementId = testChild1PlacementId,
+                period = FiniteDateRange(monday, tuesday),
+                optionId = snPreschoolDaycareContractDays13.id,
+                shiftCare = ShiftCareType.NONE
+            )
             tx.insertTestAbsence(
                 childId = testChild_1.id,
                 date = monday,
