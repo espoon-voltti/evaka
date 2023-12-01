@@ -99,7 +99,7 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
         },
         project: `evaka-${name}`,
         sourcemaps: {
-          assets: path.resolve(__dirname, `dist/bundle/${name}`)
+          assets: path.resolve(__dirname, `dist/bundle/${name}/**`)
         }
       })
     )
