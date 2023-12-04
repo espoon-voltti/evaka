@@ -127,10 +127,13 @@ fun deleteChildDataFromVardaAndDb(
         "VardaUpdate: deleting all varda data for evaka child $evakaChildId, varda child ids: ${vardaChildIds.joinToString(",")}"
     )
 
+    logger.info("VardaUpdate: deleting all varda service needs for $evakaChildId")
+    db.transaction { it.deleteVardaServiceNeedByEvakaChildId(evakaChildId) }
+
     val successfulDeletes: List<Boolean> =
         vardaChildIds.map { vardaChildId ->
             try {
-                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId, evakaChildId)
+                deleteChildDataFromVardaAndDbByVardaId(db, vardaClient, vardaChildId)
                 true
             } catch (e: Exception) {
                 logger.warn(
@@ -147,8 +150,7 @@ fun deleteChildDataFromVardaAndDb(
 fun deleteChildDataFromVardaAndDbByVardaId(
     db: Database.Connection,
     vardaClient: VardaClient,
-    vardaChildId: Long,
-    evakaChildId: ChildId
+    vardaChildId: Long
 ) {
     logger.info("VardaUpdate: deleting all child data from varda (child id: $vardaChildId)")
     try {
@@ -159,10 +161,7 @@ fun deleteChildDataFromVardaAndDbByVardaId(
     }
 
     logger.info("VardaUpdate: deleting all evaka side varda data of child $vardaChildId")
-    db.transaction {
-        it.deleteVardaOrganizerChildByVardaChildId(vardaChildId)
-        it.deleteVardaServiceNeedByEvakaChildId(evakaChildId)
-    }
+    db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
 
     logger.info("VardaUpdate: successfully deleted evaka side varda data for child $vardaChildId")
 }
