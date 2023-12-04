@@ -270,10 +270,6 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
 
     @Test
     fun `end date moves later then draft is ignored`() {
-        if (evakaEnv.feeDecisionGeneratorV1Enabled || !evakaEnv.feeDecisionGeneratorV2Enabled) {
-            return // only implemented for v2
-        }
-
         db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(10), day(25)) }
         generate()
         assertDrafts(listOf(dateRange(21, 25) to 1))
@@ -371,14 +367,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     }
 
     private fun generate() {
-        db.transaction { tx ->
-            generator.generateNewDecisionsForAdult(
-                tx,
-                now,
-                testAdult_1.id,
-                originalRange.start.minusYears(5)
-            )
-        }
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
     }
 
     private fun sendAllFeeDecisions() {

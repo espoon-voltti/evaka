@@ -226,16 +226,6 @@ interface BaseFeatureFlags {
   childDocuments?: boolean
 
   /**
-   * EXPERIMENTAL: Allows marking fee decision drafts as ignored
-   */
-  feeDecisionIgnoredStatus?: boolean
-
-  /**
-   * EXPERIMENTAL: Allows marking voucher value decision drafts as ignored
-   */
-  voucherValueDecisionIgnoredStatus?: boolean
-
-  /**
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean

@@ -299,7 +299,7 @@ class VoucherValueDecisionController(
                     voucherValueDecisionIds
                 )
                 val headsOfFamilies =
-                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds, clock.today())
+                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -355,7 +355,7 @@ class VoucherValueDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
                     id
                 )
-                generator.createRetroactiveValueDecisions(it, clock, id, body.from)
+                generator.createRetroactiveValueDecisions(it, id, body.from)
             }
         }
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)

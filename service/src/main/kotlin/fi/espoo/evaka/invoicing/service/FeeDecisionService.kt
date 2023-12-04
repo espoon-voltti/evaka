@@ -196,11 +196,7 @@ class FeeDecisionService(
             .forEach { tx.setFeeDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(
-        tx: Database.Transaction,
-        ids: List<FeeDecisionId>,
-        today: LocalDate
-    ): Set<PersonId> {
+    fun unignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>): Set<PersonId> {
         return tx.getFeeDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != IGNORED) {

@@ -31,7 +31,6 @@ import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.invoicing.mapIncomeToDecisionIncome
-import fi.espoo.evaka.invoicing.service.AssistanceNeedCoefficient
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.determineHeadOfFamily
@@ -181,16 +180,15 @@ private fun getVoucherBases(
     val startOf3YoCoefficient = firstOfMonthAfterThirdBirthday(child.dateOfBirth)
 
     val assistanceNeedCoefficients =
-        (if (valueDecisionCapacityFactorEnabled) {
-                tx.getCapacityFactorsByChild(child.id).map {
-                    AssistanceNeedCoefficient(it.dateRange, it.capacityFactor)
-                }
-            } else {
-                tx.getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
-                    AssistanceNeedCoefficient(it.validityPeriod.asDateRange(), it.coefficient)
-                }
-            })
-            .map { AssistanceNeedRange(it.validityPeriod, it.coefficient) }
+        if (valueDecisionCapacityFactorEnabled) {
+            tx.getCapacityFactorsByChild(child.id).map {
+                AssistanceNeedRange(it.dateRange, it.capacityFactor)
+            }
+        } else {
+            tx.getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
+                AssistanceNeedRange(it.validityPeriod.asDateRange(), it.coefficient)
+            }
+        }
 
     val datesOfChange =
         getDatesOfChange(

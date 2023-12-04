@@ -36,17 +36,8 @@ data class EvakaEnv(
     val fiveYearsOldDaycareEnabled: Boolean,
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
-    val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
-    val feeDecisionGeneratorV1Enabled: Boolean,
-    val feeDecisionGeneratorV2Enabled: Boolean,
-    val voucherValueDecisionGeneratorV2Enabled: Boolean
+    val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long
 ) {
-    init {
-        if (feeDecisionGeneratorV1Enabled && feeDecisionGeneratorV2Enabled) {
-            error("Both v1 and v2 fee decision generators must not be enabled at the same time")
-        }
-    }
-
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
             return EvakaEnv(
@@ -90,13 +81,7 @@ data class EvakaEnv(
                 nrOfDaysFeeDecisionCanBeSentInAdvance =
                     env.lookup("evaka.fee_decision.days_in_advance") ?: 0,
                 nrOfDaysVoucherValueDecisionCanBeSentInAdvance =
-                    env.lookup("evaka.voucher_value_decision.days_in_advance") ?: 0,
-                feeDecisionGeneratorV1Enabled =
-                    env.lookup("evaka.fee_decision.generator.v1_enabled") ?: true,
-                feeDecisionGeneratorV2Enabled =
-                    env.lookup("evaka.fee_decision.generator.v2_enabled") ?: false,
-                voucherValueDecisionGeneratorV2Enabled =
-                    env.lookup("evaka.voucher_value_decision.generator.v2_enabled") ?: false
+                    env.lookup("evaka.voucher_value_decision.days_in_advance") ?: 0
             )
         }
     }
