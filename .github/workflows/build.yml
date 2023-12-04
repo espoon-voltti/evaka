@@ -428,7 +428,9 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          docker run --rm ${{ needs.service.outputs.builder_image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
+          docker run --rm -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
+              ${{ needs.service.outputs.builder_image }} \
+              sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
   service-integration-test:
     needs:

@@ -262,6 +262,7 @@ tasks {
             nodeEnabled = false
             nuspecEnabled = false
         }
+        nvd.apply { apiKey = System.getenv("NVD_API_KEY") }
         suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
 }
