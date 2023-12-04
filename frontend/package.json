@@ -61,7 +61,7 @@
     "react-day-picker": "^8.9.1",
     "react-dom": "^18.2.0",
     "react-focus-lock": "2.9.4",
-    "react-image-crop": "^10.1.5",
+    "react-image-crop": "^11.0.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.20.0",
     "react-select": "^5.8.0",
