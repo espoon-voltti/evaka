@@ -339,6 +339,8 @@ function signXml(xml: string) {
     digestAlgorithm: 'http://www.w3.org/2001/04/xmlenc#sha256'
   })
   sig.signatureAlgorithm = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+  sig.canonicalizationAlgorithm =
+    'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
   sig.privateKey = IDP_PVK
   sig.computeSignature(xml)
   return sig.getSignedXml()
