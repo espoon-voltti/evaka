@@ -5290,13 +5290,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "clsx@npm:1.2.1"
-  checksum: 5ded6f61f15f1fa0350e691ccec43a28b12fb8e64c8e94715f2a937bc3722d4c3ed41d6e945c971fc4dcc2a7213a43323beaf2e1c28654af63ba70c9968a8643
-  languageName: node
-  linkType: hard
-
 "co@npm:^4.6.0":
   version: 4.6.0
   resolution: "co@npm:4.6.0"
@@ -6868,7 +6861,7 @@ __metadata:
     react-day-picker: "npm:^8.9.1"
     react-dom: "npm:^18.2.0"
     react-focus-lock: "npm:2.9.4"
-    react-image-crop: "npm:^10.1.5"
+    react-image-crop: "npm:^11.0.1"
     react-leaflet: "npm:^4.2.1"
     react-router-dom: "npm:^6.20.0"
     react-select: "npm:^5.8.0"
@@ -10943,14 +10936,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-image-crop@npm:^10.1.5":
-  version: 10.1.5
-  resolution: "react-image-crop@npm:10.1.5"
-  dependencies:
-    clsx: "npm:^1.2.1"
+"react-image-crop@npm:^11.0.1":
+  version: 11.0.1
+  resolution: "react-image-crop@npm:11.0.1"
   peerDependencies:
     react: ">=16.13.1"
-  checksum: 8deddd097b1d50000324466d08fdca6456a82df90eeb3a3d121016a21c5dcdb5a9230ea3e6eefb2889a53de3b486b0762e2c0b87b57acda8946df03e20ec3f0c
+  checksum: 62909cbe625c9acaa5eb9fadda204fe979487ea00ad02d0d1d82437ff3f8c7002729ea4e9b787c4a55931fa9b4d4a85d44c733055de757c8017ae5a350422bf9
   languageName: node
   linkType: hard
 
