@@ -211,7 +211,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
           (template) =>
             !documents.some(
               ({ data: doc }) =>
-                doc.type === template.type && doc.status !== 'COMPLETED'
+                doc.templateId === template.id && doc.status !== 'COMPLETED'
             )
         )
         .filter((template) => featureFlags.hojks || template.type !== 'HOJKS')

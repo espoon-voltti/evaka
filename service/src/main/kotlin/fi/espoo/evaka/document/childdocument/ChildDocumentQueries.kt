@@ -32,7 +32,7 @@ fun Database.Transaction.insertChildDocument(
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
     return createQuery(
             """
-            SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.name as template_name
+            SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name
             FROM child_document cd
             JOIN document_template dt on cd.template_id = dt.id
             WHERE cd.child_id = :childId

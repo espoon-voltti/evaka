@@ -8,7 +8,10 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -297,6 +300,37 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
         val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
+        assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint does not return templates in swedish when placement unit is finnish`() {
+        val childId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea(shortName = "area2"))
+                val daycareId = tx.insert(DevDaycare(areaId = areaId, language = Language.fi))
+                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5)
+                )
+                childId
+            }
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    language = DocumentLanguage.SV,
+                    validity = DateRange(now.today(), null)
+                )
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, childId)
         assertTrue(active.isEmpty())
     }
 

@@ -25,7 +25,11 @@ import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('documentTemplates', {
   documentTemplateSummaries: () => ['documentTemplateSummaries'],
-  documentTemplate: (templateId: UUID) => ['documentTemplates', templateId]
+  documentTemplate: (templateId: UUID) => ['documentTemplates', templateId],
+  activeDocumentTemplateSummaries: (childId: UUID) => [
+    'activeDocumentTemplateSummaries',
+    childId
+  ]
 })
 
 export const documentTemplateSummariesQuery = query({
@@ -35,7 +39,7 @@ export const documentTemplateSummariesQuery = query({
 
 export const activeDocumentTemplateSummariesQuery = query({
   api: getActiveDocumentTemplateSummaries,
-  queryKey: queryKeys.documentTemplateSummaries
+  queryKey: queryKeys.activeDocumentTemplateSummaries
 })
 
 export const documentTemplateQuery = query({
