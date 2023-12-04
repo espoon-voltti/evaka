@@ -3307,7 +3307,7 @@ __metadata:
     nock: "npm:^13.4.0"
     node-forge: "npm:^1.3.1"
     nodemon: "npm:^3.0.1"
-    passport: "npm:^0.6.0"
+    passport: "npm:^0.7.0"
     pino: "npm:^8.16.0"
     pino-http: "npm:^8.5.0"
     pino-pretty: "npm:^10.2.0"
@@ -5733,6 +5733,17 @@ __metadata:
     pause: "npm:0.0.1"
     utils-merge: "npm:^1.0.1"
   checksum: 5051e1d773ac0d802d4d71315f5fee566b8765b9731396b60c1d6822b7983bef31ae2f51af94d973ade94fb040efae0816e736e534b55294d0fbd10efcdf2d36
+  languageName: node
+  linkType: hard
+
+"passport@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "passport@npm:0.7.0"
+  dependencies:
+    passport-strategy: "npm:1.x.x"
+    pause: "npm:0.0.1"
+    utils-merge: "npm:^1.0.1"
+  checksum: 0ebd4de8e3cba6731b1fddd09b95b8332526f316afded9c9589ff68751e10001c9f1c007170a516e8c1909f9fafdc378c12feb82820241856775005924735b29
   languageName: node
   linkType: hard
 
