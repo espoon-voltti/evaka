@@ -22,9 +22,9 @@
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",
-    "@fortawesome/fontawesome-svg-core": "6.4.0",
-    "@fortawesome/free-regular-svg-icons": "6.4.0",
-    "@fortawesome/free-solid-svg-icons": "6.4.0",
+    "@fortawesome/fontawesome-svg-core": "6.5.1",
+    "@fortawesome/free-regular-svg-icons": "6.5.1",
+    "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
     "@react-spring/rafz": "^9.7.3",
     "@react-spring/web": "^9.7.3",
