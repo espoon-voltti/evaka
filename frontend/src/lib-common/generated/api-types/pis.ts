@@ -83,9 +83,9 @@ export interface CreatePersonBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.CreateType
+* Generated from fi.espoo.evaka.pis.service.CreateSource
 */
-export type CreateType =
+export type CreateSource =
   | 'USER'
   | 'APPLICATION'
 
@@ -337,9 +337,9 @@ export interface MobileDeviceTracking {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.ModifyType
+* Generated from fi.espoo.evaka.pis.service.ModifySource
 */
-export type ModifyType =
+export type ModifySource =
   | 'USER'
   | 'DVV'
 

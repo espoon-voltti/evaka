@@ -163,11 +163,11 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
     createdAt,
     createdBy,
     createdByName,
-    createType,
+    createSource,
     createdFromApplication,
     createdFromApplicationType,
     createdFromApplicationCreated,
-    modifyType,
+    modifySource,
     modifiedAt,
     modifiedByName
   }
@@ -176,11 +176,11 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
   const formatDate = (date: HelsinkiDateTime | null) =>
     date ? date.format() : i18n.timeline.notAvailable
   const createInfo = (() => {
-    if (createType === 'USER') {
+    if (createSource === 'USER') {
       return createdBy
         ? `${i18n.timeline.user} ${createdByName}`
         : i18n.timeline.notAvailable
-    } else if (createType === 'APPLICATION') {
+    } else if (createSource === 'APPLICATION') {
       if (
         createdFromApplication &&
         createdFromApplicationType &&
@@ -201,11 +201,11 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
     }
   })()
   const modifyInfo = (() => {
-    if (modifyType === 'USER') {
+    if (modifySource === 'USER') {
       return modifiedByName
         ? `${i18n.timeline.user} ${modifiedByName}`
         : i18n.timeline.notAvailable
-    } else if (modifyType === 'DVV') {
+    } else if (modifySource === 'DVV') {
       return i18n.timeline.DVV
     } else {
       return i18n.timeline.unknownModification
