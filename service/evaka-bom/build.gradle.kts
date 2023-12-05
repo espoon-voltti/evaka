@@ -36,9 +36,9 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-core:10.1.16")
         api("org.apache.tomcat.embed:tomcat-embed-el:10.1.16")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.16")
-        api("ch.qos.logback:logback-access:1.4.13")
-        api("ch.qos.logback:logback-classic:1.4.13")
-        api("ch.qos.logback:logback-core:1.4.13")
+        api("ch.qos.logback:logback-access:1.4.14")
+        api("ch.qos.logback:logback-classic:1.4.14")
+        api("ch.qos.logback:logback-core:1.4.14")
         // ---
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.1")
         api(libs.bouncycastle.bcpkix)
