@@ -424,11 +424,21 @@ jobs:
         with:
           mask-password: 'true'
 
+      - name: Cache dependency check database
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        uses: actions/cache@v3
+        with:
+          path: dependency-check-data
+          key: dependency-check-data
+
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          docker run --rm -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
+          mkdir -p dependency-check-data
+          docker run --rm \
+              -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
+              -v $(pwd)/dependency-check-data:/root/.gradle/dependency-check-data \
               ${{ needs.service.outputs.builder_image }} \
               sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
