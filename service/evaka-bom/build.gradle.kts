@@ -33,9 +33,9 @@ dependencies {
         api("org.apache.commons:commons-imaging:1.0-alpha3")
         api("org.apache.tika:tika-core:2.9.0")
         // --- only needed for CVE fix
-        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.14")
-        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.14")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.14")
+        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.16")
+        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.16")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.16")
         api("ch.qos.logback:logback-access:1.4.13")
         api("ch.qos.logback:logback-classic:1.4.13")
         api("ch.qos.logback:logback-core:1.4.13")
