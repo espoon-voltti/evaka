@@ -28,7 +28,7 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 
 const val familyUnitPlacementCoefficient = "1.75"
-const val workingDayHours = 7.75
+const val workingDayHours = 7.65 // 7 hours 39 minutes
 const val defaultOccupancyCoefficient = 7
 
 enum class OccupancyType {

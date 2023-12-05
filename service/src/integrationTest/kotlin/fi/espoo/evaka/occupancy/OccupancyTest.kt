@@ -229,7 +229,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             .withCoefficient(BigDecimal(7))
             .withType(type)
             .arriving(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)))
-            .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 45)))
+            .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39)))
             .save()
 
     private fun assertRealtimeAttendances(
@@ -404,10 +404,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             FixtureBuilder.EmployeeFixture(tx, today, employeeId)
                 .addRealtimeAttendance()
                 .inGroup(daycareGroup1)
-                .withCoefficient(BigDecimal(3.5))
+                .withCoefficient(BigDecimal(defaultOccupancyCoefficient / 2.0))
                 .withType(StaffAttendanceType.PRESENT)
-                .arriving(LocalTime.of(16, 15))
-                .departing(today.plusDays(1), LocalTime.of(0, 0))
+                .arriving(LocalTime.of(16, 21))
+                .departing(today.plusDays(1), LocalTime.of(0, 0)) // At work for 7 hours 39 minutes
                 .save()
         }
 
@@ -1493,8 +1493,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertRealtimeAttendances(
             listOf(
-                today.minusDays(1) to OccupancyValues(1.0, 1, 0.3871, 36.9),
-                today to OccupancyValues(1.0, 1, 0.6129, 23.3)
+                today.minusDays(1) to OccupancyValues(1.0, 1, 0.3922, 36.4),
+                today to OccupancyValues(1.0, 1, 0.6209, 23.0)
             )
         )
     }
