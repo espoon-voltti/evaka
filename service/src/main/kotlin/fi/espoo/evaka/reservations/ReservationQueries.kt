@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
@@ -559,16 +558,7 @@ data class DailyChildReservationInfoRow(
     val groupId: GroupId?,
     val absenceType: AbsenceType?,
     val backupUnitId: DaycareId?,
-    val dailyServiceTimeType: DailyServiceTimesType?,
-    val validityPeriod: DateRange?,
-    val regularTimes: TimeRange?,
-    val mondayTimes: TimeRange?,
-    val tuesdayTimes: TimeRange?,
-    val wednesdayTimes: TimeRange?,
-    val thursdayTimes: TimeRange?,
-    val fridayTimes: TimeRange?,
-    val saturdayTimes: TimeRange?,
-    val sundayTimes: TimeRange?
+    val placementType: PlacementType
 )
 
 fun Database.Read.getChildReservationsOfUnitForDay(
@@ -577,73 +567,34 @@ fun Database.Read.getChildReservationsOfUnitForDay(
 ): List<DailyChildReservationInfoRow> {
     return createQuery(
             """
-with placement_days as
-         (SELECT pl.child_id,
-                 pl.start_date        as placement_start,
-                 pl.end_date          as placement_end,
-                 gpl.start_date       as grouping_start,
-                 gpl.end_date         as grouping_end,
-                 gpl.daycare_group_id as group_id
-          FROM placement pl
-                   JOIN daycare_group_placement gpl
-                             ON pl.id = gpl.daycare_placement_id
-
-          WHERE unit_id = :unitId
-            AND daterange(pl.start_date, pl.end_date, '[]') @> :examinationDate
-            AND daterange(gpl.start_date, gpl.end_date, '[]') @> :examinationDate
-            AND NOT EXISTS (select
-                            from backup_care bc
-                            where bc.child_id = pl.child_id
-                              AND bc.unit_id = pl.unit_id
-                              AND daterange(bc.start_date, bc.end_date, '[]') @> :examinationDate)
-          UNION
-          SELECT bc.child_id,
-                 bc.start_date as placement_start,
-                 bc.end_date   as placement_end,
-                 bc.start_date as grouping_start,
-                 bc.end_date   as grouping_end,
-                 bc.group_id   as group_id
-          FROM backup_care bc
-          WHERE unit_id = :unitId
-            AND daterange(bc.start_date, bc.end_date, '[]') @> :examinationDate)
 SELECT pcd.child_id,
        p.date_of_birth,
        p.first_name,
        p.last_name,
        p.preferred_name,
-       pcd.group_id,
-       ar.start_time   as reservation_start_time,
-       ar.end_time     as reservation_end_time,
-       ab.absence_type as absence_type,
-       dst.type        as daily_service_time_type,
-       dst.validity_period,
-       dst.regular_times,
-       dst.monday_times,
-       dst.tuesday_times,
-       dst.wednesday_times,
-       dst.thursday_times,
-       dst.friday_times,
-       dst.saturday_times,
-       dst.sunday_times,
-       bc.unit_id      as backup_unit_id
-FROM placement_days pcd
+       CASE -- affected group in the examination unit
+           WHEN (pcd.unit_id <> :unitId) THEN pcd.placement_group_id
+           ELSE pcd.group_id END                                       AS group_id,
+       ar.start_time                                                   AS reservation_start_time,
+       ar.end_time                                                     AS reservation_end_time,
+       ab.absence_type                                                 AS absence_type,
+       CASE
+           WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = :unitId)
+           THEN unit_id END                                            AS backup_unit_id,
+        pcd.placement_type
+FROM realized_placement_one(:examinationDate) pcd
          JOIN person p ON pcd.child_id = p.id
          JOIN daycare u ON u.id = :unitId
          LEFT JOIN absence ab
                    ON ab.child_id = pcd.child_id
                        AND ab.date = :examinationDate
-         LEFT JOIN backup_care bc
-                   ON bc.child_id = pcd.child_id
-                       AND bc.unit_id <> :unitId
-                       AND
-                      daterange(bc.start_date, bc.end_date, '[]') @>
-                      :examinationDate
          LEFT JOIN attendance_reservation ar
                    ON ar.child_id = pcd.child_id
                        AND ar.date = :examinationDate
-         LEFT JOIN daily_service_time dst
-                   ON pcd.child_id = dst.child_id
-                       AND dst.validity_period @> :examinationDate
+  -- show placed children and children of both backup directions
+WHERE (pcd.unit_id = :unitId OR pcd.placement_unit_id = :unitId)
+  -- only show groupless children if they are on back up care in another unit
+  AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> :unitId)
             """
                 .trimIndent()
         )
@@ -654,7 +605,7 @@ FROM placement_days pcd
 
 data class GroupReservationStatisticsRow(
     val date: LocalDate,
-    val groupId: GroupId?,
+    val groupId: GroupId,
     val calculatedPresent: BigDecimal,
     val absent: Int,
     val present: Int
@@ -666,59 +617,28 @@ fun Database.Read.getReservationStatisticsForUnit(
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
     return createQuery(
             """
-select count(1) filter (where a.absence_status = 'ABSENT')     as absent,
-       count(1) filter (where a.absence_status = 'PRESENT') as present,
-       coalesce(sum(occupancy_coefficient) filter ( where a.absence_status = 'PRESENT' ), 0)              as calculated_present,
-       date,
-       group_id
-from (with placement_days as
-               (SELECT day.date,
-                       pl.child_id,
-                       pl.start_date        as placement_start,
-                       pl.end_date          as placement_end,
-                       gpl.start_date       as grouping_start,
-                       gpl.end_date         as grouping_end,
-                       gpl.daycare_group_id as group_id
-                FROM (SELECT t.date
-                      FROM unnest(:confirmedDays) AS t(date)) day
-                         LEFT JOIN placement pl
-                                   ON daterange(pl.start_date, pl.end_date, '[]') @> day.date AND pl.unit_id = :unitId
-                         JOIN daycare_group_placement gpl
-                                   ON pl.id = gpl.daycare_placement_id AND
-                                      daterange(gpl.start_date, gpl.end_date, '[]') @> day.date
-                WHERE NOT EXISTS (select
-                                  from backup_care bc
-                                  where bc.child_id = pl.child_id
-                                    AND bc.unit_id = pl.unit_id
-                                    AND daterange(bc.start_date, bc.end_date, '[]') @> day.date)
-                UNION
-                SELECT day.date,
-                       bc.child_id,
-                       bc.start_date as placement_start,
-                       bc.end_date   as placement_end,
-                       bc.start_date as grouping_start,
-                       bc.end_date   as grouping_end,
-                       bc.group_id   as group_id
-                FROM (SELECT t.date
-                      FROM unnest(:confirmedDays) AS t(date)) day
-                         LEFT JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> day.date
-                    AND bc.unit_id = :unitId)
-      SELECT pcd.date,
-             pcd.group_id,
-             CASE
-                 WHEN p.id IS NULL
-                     THEN null
-                 ELSE CASE
-                          WHEN (ab.absence_type IS NOT NULL OR bc.unit_id IS NOT NULL)
-                              THEN 'ABSENT'
-                          ELSE 'PRESENT'
-                          END
-                 END as absence_status,
-             CASE
+select date,
+       count(1) FILTER ( WHERE NOT a.child_in_unit ) AS absent,
+       count(1) FILTER ( WHERE a.child_in_unit )     AS present,
+       coalesce(sum(a.occupancy_coefficient * a.capacity_factor)
+                FILTER ( WHERE a.child_in_unit ), 0) AS calculated_present,
+       affected_group_id                             AS group_id
+from (SELECT d                                  AS date,
+             CASE -- affected group in the examination unit
+                 WHEN (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId) THEN rp.placement_group_id
+                 ELSE rp.group_id END           AS affected_group_id,
+             CASE -- whether child in examination unit at given date
+                 WHEN (ab.absence_type IS NOT NULL OR -- absence or backup care
+                       (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId))
+                     THEN false
+                 WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
+                     THEN false
+                 ELSE true END                  AS child_in_unit,
+             CASE -- service need occupancy coefficient of child
                  WHEN u.type && array ['FAMILY', 'GROUP_FAMILY']::care_types[]
                      THEN $familyUnitPlacementCoefficient
                  ELSE CASE
-                          WHEN (extract('year' from age(pcd.date, p.date_of_birth)) < 3)
+                          WHEN (extract('year' from age(d, p.date_of_birth)) < 3)
                               THEN coalesce(
                                   sno.realized_occupancy_coefficient_under_3y,
                                   sno_default.realized_occupancy_coefficient_under_3y)
@@ -726,40 +646,33 @@ from (with placement_days as
                                   sno.realized_occupancy_coefficient,
                                   sno_default.realized_occupancy_coefficient)
                      END
-                 END *
-             coalesce(af.capacity_factor, 1.00)  as occupancy_coefficient
-      FROM placement_days pcd
-               JOIN daycare u ON u.id = :unitId
+                 END                            AS occupancy_coefficient,
+             coalesce(af.capacity_factor, 1.00) AS capacity_factor
+      FROM unnest(:confirmedDays) d
+               LEFT JOIN realized_placement_one(d) rp
+                         ON TRUE
+               JOIN daycare u
+                    ON u.id = :unitId
+               JOIN person p
+                    ON rp.child_id = p.id
                LEFT JOIN absence ab
-                         ON ab.child_id = pcd.child_id
-                             AND ab.date = pcd.date
-               LEFT JOIN backup_care bc
-                         ON bc.child_id = pcd.child_id
-                             AND bc.unit_id <> :unitId
-                             AND
-                            daterange(bc.start_date, bc.end_date, '[]') @>
-                            pcd.date
-               LEFT JOIN placement pl
-                         ON pcd.child_id = pl.child_id
-                             AND
-                            daterange(pl.start_date, pl.end_date, '[]') @>
-                            pcd.date
+                         ON ab.child_id = rp.child_id
+                             AND ab.date = d
                LEFT JOIN service_need sn
-                         ON pl.id = sn.placement_id
+                         ON rp.placement_id = sn.placement_id
                LEFT JOIN service_need_option sno
                          ON sn.option_id = sno.id
                LEFT JOIN service_need_option sno_default
                          ON sno_default.default_option IS TRUE
-                             AND
-                            sno_default.valid_placement_type =
-                            pl.type
-               LEFT JOIN person p
-                         ON pcd.child_id = p.id
+                             AND sno_default.valid_placement_type = rp.placement_type
                LEFT JOIN assistance_factor af
-                         ON pcd.child_id = af.child_id
-                             AND
-                            af.valid_during @> pcd.date) a
-group by a.date, a.group_id
+                         ON rp.child_id = af.child_id
+                             AND af.valid_during @> d
+               LEFT JOIN club_term ct ON rp.placement_type IN ('CLUB') AND ct.term_breaks @> d
+               LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL','PREPARATORY') AND pt.term_breaks @> d
+      WHERE (rp.unit_id = :unitId OR rp.placement_unit_id = :unitId)) a
+WHERE a.affected_group_id IS NOT NULL
+GROUP BY a.date, a.affected_group_id
             """
                 .trimIndent()
         )

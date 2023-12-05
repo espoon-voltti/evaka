@@ -41,7 +41,8 @@ const features: Features = {
     assistanceNeedPreschoolDecisions: true,
     hojks: true,
     employeeMobileStaffAttendanceEdit: true,
-    employeeMobileChildAttendanceReservationEdit: true
+    employeeMobileChildAttendanceReservationEdit: true,
+    employeeMobileConfirmedDaysReservations: true
   },
   staging: {
     citizenShiftCareAbsence: true,

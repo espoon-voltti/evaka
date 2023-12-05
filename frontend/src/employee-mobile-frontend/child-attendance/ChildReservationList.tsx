@@ -42,7 +42,7 @@ export type CategorizedReservationInfo = ReservationChildInfo &
   ChildReservationInfo
 
 const ChildSubList = styled.div`
-  & > .absent:not(.absent ~ .absent) {
+  & > .present ~ .absent:not(.absent ~ .absent) {
     border-top: 1px dashed ${theme.colors.grayscale.g35};
   }
 
@@ -115,6 +115,7 @@ export default React.memo(function ChildReservationList({
                 }
               if (ri.absent) categoryInfo = { sortCategory: 4 }
               if (ri.outOnBackupPlacement) categoryInfo = { sortCategory: 5 }
+              if (ri.onTermBreak) categoryInfo = { sortCategory: 6 }
               return { ...ri, ...childInfo, ...categoryInfo }
             }),
             [

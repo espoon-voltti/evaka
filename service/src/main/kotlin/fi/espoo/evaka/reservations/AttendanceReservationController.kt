@@ -7,7 +7,6 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
@@ -383,7 +382,8 @@ class AttendanceReservationController(
         val groupId: GroupId?,
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
-        val dailyServiceTimes: DailyServiceTimesValue?
+        val dailyServiceTimes: DailyServiceTimesValue?,
+        val onTermBreak: Boolean
     )
 
     data class DailyChildReservationResult(
@@ -411,93 +411,64 @@ class AttendanceReservationController(
 
                     val rowsByDate =
                         tx.getChildReservationsOfUnitForDay(unitId = unitId, day = examinationDate)
+
+                    val clubTerms = tx.getClubTerms()
+                    val preschoolTerms = tx.getPreschoolTerms()
+                    val dateRowsByChild = rowsByDate.groupBy { it.childId }
+                    val childIds = dateRowsByChild.keys
+                    val dailyServiceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
 
                     val childReservationInfos =
-                        rowsByDate
-                            .groupBy { it.childId }
-                            .map { row ->
-
-                                // every row duplicates full basic info for child
-                                val basicInfoItem = row.value[0]
-                                childMap.putIfAbsent(
-                                    row.key,
-                                    ReservationChildInfo(
-                                        id = basicInfoItem.childId,
-                                        firstName = basicInfoItem.firstName,
-                                        lastName = basicInfoItem.lastName,
-                                        preferredName = basicInfoItem.preferredName,
-                                        dateOfBirth = basicInfoItem.dateOfBirth
-                                    )
+                        dateRowsByChild.map { row ->
+                            // every row duplicates full basic info for child
+                            val basicInfoItem = row.value[0]
+                            childMap.putIfAbsent(
+                                row.key,
+                                ReservationChildInfo(
+                                    id = basicInfoItem.childId,
+                                    firstName = basicInfoItem.firstName,
+                                    lastName = basicInfoItem.lastName,
+                                    preferredName = basicInfoItem.preferredName,
+                                    dateOfBirth = basicInfoItem.dateOfBirth
                                 )
+                            )
 
-                                // repeating child rows are for separate reservation times
-                                val res =
-                                    row.value
-                                        .sortedBy { it.reservationStartTime }
-                                        .map {
-                                            if (
-                                                it.reservationStartTime != null &&
-                                                    it.reservationEndTime != null
+                            val scheduleType =
+                                basicInfoItem.placementType.scheduleType(
+                                    examinationDate,
+                                    clubTerms,
+                                    preschoolTerms
+                                )
+                            // repeating child rows are for separate reservation times
+                            val res =
+                                row.value
+                                    .sortedBy { it.reservationStartTime }
+                                    .map {
+                                        if (
+                                            it.reservationStartTime != null &&
+                                                it.reservationEndTime != null
+                                        )
+                                            Reservation.Times(
+                                                startTime = it.reservationStartTime,
+                                                endTime = it.reservationEndTime
                                             )
-                                                Reservation.Times(
-                                                    startTime = it.reservationStartTime,
-                                                    endTime = it.reservationEndTime
-                                                )
-                                            else Reservation.NoTimes
-                                        }
+                                        else Reservation.NoTimes
+                                    }
 
-                                ChildReservationInfo(
-                                    reservations = res,
-                                    absent = basicInfoItem.absenceType != null,
-                                    groupId = basicInfoItem.groupId,
-                                    childId = basicInfoItem.childId,
-                                    outOnBackupPlacement = basicInfoItem.backupUnitId != null,
-                                    dailyServiceTimes =
-                                        when (basicInfoItem.dailyServiceTimeType) {
-                                            DailyServiceTimesType.REGULAR ->
-                                                DailyServiceTimesValue.RegularTimes(
-                                                    validityPeriod =
-                                                        basicInfoItem.validityPeriod
-                                                            ?: DateRange(
-                                                                examinationDate,
-                                                                examinationDate
-                                                            ),
-                                                    regularTimes =
-                                                        basicInfoItem.regularTimes
-                                                            ?: throw IllegalStateException(
-                                                                "Regular daily service time must have designated regular times"
-                                                            )
-                                                )
-                                            DailyServiceTimesType.IRREGULAR ->
-                                                DailyServiceTimesValue.IrregularTimes(
-                                                    validityPeriod =
-                                                        basicInfoItem.validityPeriod
-                                                            ?: DateRange(
-                                                                examinationDate,
-                                                                examinationDate
-                                                            ),
-                                                    monday = basicInfoItem.mondayTimes,
-                                                    tuesday = basicInfoItem.tuesdayTimes,
-                                                    wednesday = basicInfoItem.wednesdayTimes,
-                                                    thursday = basicInfoItem.thursdayTimes,
-                                                    friday = basicInfoItem.fridayTimes,
-                                                    saturday = basicInfoItem.saturdayTimes,
-                                                    sunday = basicInfoItem.sundayTimes
-                                                )
-                                            DailyServiceTimesType.VARIABLE_TIME ->
-                                                DailyServiceTimesValue.VariableTimes(
-                                                    validityPeriod =
-                                                        basicInfoItem.validityPeriod
-                                                            ?: DateRange(
-                                                                examinationDate,
-                                                                examinationDate
-                                                            )
-                                                )
-                                            else -> null
-                                        }
-                                )
-                            }
+                            ChildReservationInfo(
+                                reservations = res,
+                                absent = basicInfoItem.absenceType != null,
+                                groupId = basicInfoItem.groupId,
+                                childId = basicInfoItem.childId,
+                                outOnBackupPlacement = basicInfoItem.backupUnitId != null,
+                                dailyServiceTimes =
+                                    dailyServiceTimes[row.key]?.find {
+                                        it.validityPeriod.includes(examinationDate)
+                                    },
+                                onTermBreak = scheduleType == ScheduleType.TERM_BREAK
+                            )
+                        }
 
                     DailyChildReservationResult(
                         children = childMap,
@@ -544,6 +515,7 @@ class AttendanceReservationController(
 
                     val unitData =
                         tx.getDaycare(unitId) ?: throw BadRequest("Invalid unit id $unitId")
+
                     val nonReservableRange =
                         FiniteDateRange(
                             clock.today().plusDays(1),
@@ -554,11 +526,18 @@ class AttendanceReservationController(
                                 .minusDays(1)
                         )
 
+                    val holidays = tx.getHolidays(nonReservableRange)
+                    val operationalDays =
+                        getUnitOperationalDayData(
+                            nonReservableRange,
+                            unitData,
+                            holidays,
+                            emptyList(),
+                            false
+                        )
+
                     val nextConfirmedUnitDays =
-                        nonReservableRange
-                            .dates()
-                            .filter { unitData.operationDays.contains(it.dayOfWeek.value) }
-                            .toList()
+                        operationalDays.filter { !it.isHoliday }.map { it.date }
 
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(
@@ -580,7 +559,14 @@ class AttendanceReservationController(
                             date = date,
                             groupStatistics =
                                 groupResults
-                                    ?: throw IllegalStateException("No statistics for required day")
+                                    ?: listOf(
+                                        GroupReservationStatisticResult(
+                                            presentCount = 0,
+                                            calculatedPresent = BigDecimal.ZERO,
+                                            absentCount = 0,
+                                            groupId = null
+                                        )
+                                    )
                         )
                     }
                 }

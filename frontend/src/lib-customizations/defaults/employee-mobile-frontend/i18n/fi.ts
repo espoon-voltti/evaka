@@ -213,7 +213,11 @@ export const fi = {
     confirmedDays: {
       noChildren: 'Ei lapsia',
       tomorrow: 'Huomenna',
-      inOtherUnit: 'Muussa yksikössä'
+      inOtherUnit: 'Muussa yksikössä',
+      status: {
+        ABSENT: 'Poissa',
+        ON_TERM_BREAK: 'Ei toimintaa'
+      }
     },
     notes: {
       day: 'Päivä',

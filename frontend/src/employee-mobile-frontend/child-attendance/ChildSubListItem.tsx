@@ -105,7 +105,10 @@ export default React.memo(function ChildSubListItem({
   const childAge = date.differenceInYears(reservationData.dateOfBirth)
 
   const reservationTextContent = useMemo(() => {
-    if (reservationData.absent) return [i18n.attendances.status.ABSENT]
+    if (reservationData.onTermBreak)
+      return [i18n.attendances.confirmedDays.status.ON_TERM_BREAK]
+    if (reservationData.absent)
+      return [i18n.attendances.confirmedDays.status.ABSENT]
     if (reservationData.outOnBackupPlacement)
       return [i18n.attendances.confirmedDays.inOtherUnit]
     const [withTimes] = partition(

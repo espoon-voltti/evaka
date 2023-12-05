@@ -40,6 +40,7 @@ export interface ChildReservationInfo {
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
+  onTermBreak: boolean
   outOnBackupPlacement: boolean
   reservations: Reservation[]
 }
