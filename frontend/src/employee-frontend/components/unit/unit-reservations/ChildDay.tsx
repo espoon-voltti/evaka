@@ -155,6 +155,7 @@ export default React.memo(function ChildDay({
       (reservation.type === 'TIMES' && day.time.end < reservation.endTime))
   const requiresBackupCare =
     dailyData.attendance === null &&
+    dailyData.absence === null &&
     intermittent &&
     (unitIsNotOpenOnReservationStart || unitIsNotOpenOnReservationEnd) &&
     !inOtherUnit
