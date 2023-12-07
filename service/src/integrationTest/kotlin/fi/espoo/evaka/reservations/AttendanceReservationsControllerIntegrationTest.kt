@@ -9,6 +9,7 @@ import fi.espoo.evaka.assistance.AssistanceFactorUpdate
 import fi.espoo.evaka.assistance.insertAssistanceFactor
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
@@ -16,6 +17,7 @@ import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.DaycareId
@@ -24,6 +26,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -34,6 +37,7 @@ import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -44,7 +48,9 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
@@ -54,6 +60,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -887,18 +894,6 @@ class AttendanceReservationsControllerIntegrationTest :
                         )
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
-                    date = LocalDate.of(2021, 2, 26),
-                    groupStatistics =
-                        listOf(
-                            AttendanceReservationController.GroupReservationStatisticResult(
-                                calculatedPresent = BigDecimal.ZERO,
-                                presentCount = 0,
-                                absentCount = 0,
-                                groupId = null
-                            )
-                        )
-                ),
-                AttendanceReservationController.DayReservationStatisticsResult(
                     date = mon,
                     groupStatistics =
                         listOf(
@@ -911,8 +906,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
-                                absentCount = 0,
-                                groupId = null
+                                absentCount = 1,
+                                groupId = testGroup2.id
                             )
                         )
                 ),
@@ -929,8 +924,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
-                                absentCount = 0,
-                                groupId = null
+                                absentCount = 1,
+                                groupId = testGroup2.id
                             )
                         )
                 ),
@@ -945,10 +940,10 @@ class AttendanceReservationsControllerIntegrationTest :
                                 groupId = testGroup1.id
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
-                                calculatedPresent = BigDecimal.ZERO,
-                                presentCount = 0,
+                                calculatedPresent = BigDecimal("0.5000"),
+                                presentCount = 1,
                                 absentCount = 0,
-                                groupId = null
+                                groupId = testGroup2.id
                             )
                         )
                 ),
@@ -957,8 +952,8 @@ class AttendanceReservationsControllerIntegrationTest :
                     groupStatistics =
                         listOf(
                             AttendanceReservationController.GroupReservationStatisticResult(
-                                calculatedPresent = BigDecimal("1.0000"),
-                                presentCount = 1,
+                                calculatedPresent = BigDecimal("1.5000"),
+                                presentCount = 2,
                                 absentCount = 0,
                                 groupId = testGroup2.id
                             )
@@ -975,10 +970,10 @@ class AttendanceReservationsControllerIntegrationTest :
                                 groupId = testGroup1.id
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
-                                calculatedPresent = BigDecimal.ZERO,
-                                presentCount = 0,
+                                calculatedPresent = BigDecimal("0.5000"),
+                                presentCount = 1,
                                 absentCount = 0,
-                                groupId = null
+                                groupId = testGroup2.id
                             )
                         )
                 ),
@@ -1017,6 +1012,16 @@ class AttendanceReservationsControllerIntegrationTest :
                         preferredName = testChild_1.preferredName,
                         dateOfBirth = testChild_1.dateOfBirth
                     )
+                ),
+                Pair(
+                    testChild_2.id,
+                    AttendanceReservationController.ReservationChildInfo(
+                        id = testChild_2.id,
+                        firstName = testChild_2.firstName,
+                        lastName = testChild_2.lastName,
+                        preferredName = testChild_2.preferredName,
+                        dateOfBirth = testChild_2.dateOfBirth
+                    )
                 )
             )
 
@@ -1037,13 +1042,22 @@ class AttendanceReservationsControllerIntegrationTest :
                 groupId = testGroup1.id,
                 absent = false,
                 outOnBackupPlacement = false,
-                dailyServiceTimes = null
+                dailyServiceTimes = null,
+                onTermBreak = false
+            )
+
+        val child2Expectation =
+            child1Expectation.copy(
+                childId = testChild_2.id,
+                groupId = testGroup2.id,
+                onTermBreak = true,
+                reservations = listOf(Reservation.NoTimes)
             )
 
         val mondayExpectation =
             AttendanceReservationController.DailyChildReservationResult(
                 children = childMap,
-                childReservations = listOf(child1Expectation)
+                childReservations = listOf(child1Expectation, child2Expectation)
             )
 
         val tuesdayResult =
@@ -1060,7 +1074,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         child1Expectation.copy(
                             reservations = listOf(Reservation.NoTimes),
                             absent = true
-                        )
+                        ),
+                        child2Expectation
                     )
             )
 
@@ -1090,27 +1105,52 @@ class AttendanceReservationsControllerIntegrationTest :
                                             end = LocalTime.of(15, 0)
                                         )
                                 )
-                        )
+                        ),
+                        child2Expectation.copy(onTermBreak = false)
                     )
             )
 
-        assertEquals(mondayExpectation, mondayResult)
-        assertEquals(tuesdayExpectation, tuesdayResult)
-        assertEquals(fridayExpectation, fridayResult)
+        assertConfirmedDayResult(mondayExpectation, mondayResult)
+        assertConfirmedDayResult(tuesdayExpectation, tuesdayResult)
+        assertConfirmedDayResult(fridayExpectation, fridayResult)
+    }
+
+    private fun assertConfirmedDayResult(
+        expectation: AttendanceReservationController.DailyChildReservationResult,
+        result: AttendanceReservationController.DailyChildReservationResult
+    ) {
+        assertEquals(expectation.children, result.children)
+        assertEquals(expectation.childReservations.size, result.childReservations.size)
+        result.childReservations.forEach { childReservationInfo ->
+            assertContains(expectation.childReservations, childReservationInfo)
+        }
     }
 
     private fun insertConfirmedReservationTestData() {
         db.transaction {
+            // clear existing term that has no term breaks
+            it.createUpdate("DELETE FROM preschool_term where extended_term @> :day")
+                .bind("day", mon)
+                .execute()
+
+            val previousFriday = mon.minusDays(3)
+            it.insertPreschoolTerm(
+                preschoolTerm2020.copy(termBreaks = DateSet.of(FiniteDateRange(mon, tue)))
+            )
+
+            it.insertTestHoliday(previousFriday)
+
             val child1PlacementId =
                 it.insertTestPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = mon,
+                    startDate = previousFriday,
                     endDate = fri
                 )
+
             it.insertServiceNeed(
                 placementId = child1PlacementId,
-                startDate = mon,
+                startDate = previousFriday,
                 endDate = fri,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
@@ -1120,9 +1160,34 @@ class AttendanceReservationsControllerIntegrationTest :
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup1.id,
-                startDate = mon,
+                startDate = previousFriday,
                 endDate = fri
             )
+
+            val child2PlacementId =
+                it.insertTestPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = previousFriday,
+                    endDate = fri,
+                    type = PlacementType.PRESCHOOL
+                )
+            it.insertServiceNeed(
+                placementId = child2PlacementId,
+                startDate = previousFriday,
+                endDate = fri,
+                optionId = snDefaultPreschool.id,
+                shiftCare = ShiftCareType.NONE,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+            it.insertTestDaycareGroupPlacement(
+                daycarePlacementId = child2PlacementId,
+                groupId = testGroup2.id,
+                startDate = previousFriday,
+                endDate = fri
+            )
+
             it.insert(
                 DevReservation(
                     childId = testChild_1.id,
