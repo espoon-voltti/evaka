@@ -16,6 +16,11 @@ import {
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
+  async openSentMessages(nth = 0) {
+    await this.page.findAllByDataQa('message-box-row-sent').nth(nth).click()
+    return new SentMessagesPage(this.page)
+  }
+
   newMessageButton = this.page.find('[data-qa="new-message-btn"]')
   #personalAccount = this.page.find('[data-qa="personal-account"]')
   #draftMessagesBoxRow = new TextInput(
@@ -39,15 +44,6 @@ export default class MessagesPage {
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
-  }
-
-  async assertMessageIsSentForParticipants(nth: number, participants: string) {
-    await this.page.findAll('[data-qa="message-box-row-sent"]').first().click()
-    await this.page
-      .findAllByDataQa('sent-message-row')
-      .nth(nth)
-      .findByDataQa('participants')
-      .assertTextEquals(participants)
   }
 
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
@@ -140,6 +136,32 @@ export default class MessagesPage {
 
   async close() {
     return this.page.close()
+  }
+}
+
+export class SentMessagesPage {
+  constructor(private readonly page: Page) {}
+
+  sentMessages = this.page.findAllByDataQa('sent-message-row')
+
+  async assertMessageParticipants(nth: number, participants: string) {
+    await this.sentMessages
+      .nth(nth)
+      .findByDataQa('participants')
+      .assertTextEquals(participants)
+  }
+
+  async openMessage(nth: number) {
+    await this.sentMessages.nth(nth).click()
+    return new SentMessagePage(this.page)
+  }
+}
+
+export class SentMessagePage {
+  constructor(private readonly page: Page) {}
+
+  async assertMessageRecipients(recipients: string) {
+    await this.page.findByDataQa('recipient-names').assertTextEquals(recipients)
   }
 }
 

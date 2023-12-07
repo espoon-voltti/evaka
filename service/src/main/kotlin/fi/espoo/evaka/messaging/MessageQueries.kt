@@ -918,19 +918,7 @@ WITH pageable_messages AS (
     GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
     LIMIT :pageSize OFFSET :offset
-),
-recipients AS (
-    SELECT
-        m.content_id,
-        rec.recipient_id,
-        name_view.name,
-        acc.type AS account_type
-    FROM message_recipients rec
-    JOIN message m ON rec.message_id = m.id
-    JOIN message_account_view name_view ON rec.recipient_id = name_view.id
-    JOIN message_account acc ON acc.id = rec.recipient_id
 )
-
 SELECT
     msg.count,
     msg.content_id,
@@ -941,11 +929,6 @@ SELECT
     msg.urgent,
     msg.sensitive,
     mc.content,
-    (SELECT jsonb_agg(jsonb_build_object(
-           'id', rec.recipient_id,
-           'name', rec.name,
-           'type', rec.account_type
-       ))) AS recipients,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
@@ -954,7 +937,6 @@ SELECT
         FROM attachment att WHERE att.message_content_id = msg.content_id
         ) AS attachments
 FROM pageable_messages msg
-JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
 GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title
 ORDER BY msg.sent_at DESC

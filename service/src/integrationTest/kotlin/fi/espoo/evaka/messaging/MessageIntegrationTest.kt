@@ -236,7 +236,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1
+            user = employee1,
+            now = sendTime
         )
 
         // then sender does not see it in received messages
@@ -256,7 +257,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person1,
             threadWithOneReply.messages[0].id,
             setOf(employee1Account, person2Account),
-            "No niinpä näyttää tulevan"
+            "No niinpä näyttää tulevan",
+            now = sendTime.plusSeconds(1)
         )
 
         // then recipients see the same data
@@ -295,7 +297,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person1,
             person2Thread.messages.last().id,
             setOf(employee1Account),
-            "person 2 does not see this"
+            "person 2 does not see this",
+            now = sendTime.plusSeconds(2)
         )
 
         // then person one and employee see the new message
@@ -329,7 +332,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = employee1Account,
             messageId = threadWithOneReply.messages.last().id,
             recipientAccountIds = setOf(person2Account),
-            content = "person 1 does not see this"
+            content = "person 1 does not see this",
+            now = sendTime.plusSeconds(3)
         )
 
         // then person two sees that
@@ -361,13 +365,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then employee can see all sent messages
         assertEquals(
-            setOf(
-                Pair("person 1 does not see this", setOf(person2Account)),
-                Pair("Juhannus tulee pian", setOf(person1Account, person2Account))
-            ),
-            getSentMessages(employee1Account, employee1)
-                .map { it.toContentRecipientsPair() }
-                .toSet()
+            listOf("person 1 does not see this", "Juhannus tulee pian"),
+            getSentMessages(employee1Account, employee1).map { it.content }
         )
     }
 
@@ -426,10 +425,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, sentMessages.total)
         assertEquals(1, sentMessages.data.size)
         assertEquals(recipientNames, sentMessages.data.flatMap { it.recipientNames })
-        assertEquals(
-            setOf(person1Account, person2Account, person3Account, person4Account, person5Account),
-            sentMessages.data.flatMap { msg -> msg.recipients.map { it.id } }.toSet()
-        )
         assertEquals(title, sentMessages.data[0].threadTitle)
         assertEquals(MessageType.MESSAGE, sentMessages.data[0].type)
         assertEquals(content, sentMessages.data[0].content)
@@ -1365,6 +1360,3 @@ fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccoun
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
     this.messages.map { Pair(it.sender.id, it.content) }
-
-fun SentMessage.toContentRecipientsPair(): Pair<String, Set<MessageAccountId>> =
-    Pair(this.content, this.recipients.map { it.id }.toSet())

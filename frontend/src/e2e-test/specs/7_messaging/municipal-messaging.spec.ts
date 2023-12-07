@@ -155,6 +155,26 @@ describe('Municipal messaging -', () => {
     await citizenMessagesPage.assertThreadContent(defaultMessage)
   })
 
+  test('Sent municipal message has area name as recipients', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      receiver: fixtures.careAreaFixture.id
+    })
+
+    const sentMessagesPage = await messagesPage.openSentMessages()
+    await sentMessagesPage.assertMessageParticipants(
+      0,
+      fixtures.careAreaFixture.name
+    )
+
+    const messagePage = await sentMessagesPage.openMessage(0)
+    await messagePage.assertMessageRecipients(fixtures.careAreaFixture.name)
+  })
+
   test('Messages sent by messaging role creates a copy for the staff', async () => {
     await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)

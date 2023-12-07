@@ -296,7 +296,6 @@ export interface SentMessage {
   content: string
   contentId: UUID
   recipientNames: string[]
-  recipients: MessageAccount[]
   sensitive: boolean
   sentAt: HelsinkiDateTime
   threadTitle: string

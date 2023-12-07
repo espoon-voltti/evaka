@@ -218,7 +218,8 @@ describe('Sending and receiving messages', () => {
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await messagesPage.assertMessageIsSentForParticipants(
+        const sentMessagesPage = await messagesPage.openSentMessages()
+        await sentMessagesPage.assertMessageParticipants(
           0,
           `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`
         )
