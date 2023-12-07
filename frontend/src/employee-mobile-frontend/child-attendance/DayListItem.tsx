@@ -54,7 +54,7 @@ export default React.memo(function DayListItem({ dayStats }: DayListItemProps) {
 
   return (
     <>
-      <DayBox data-qa={`day-item-${dayStats.date.formatIso()}`}>
+      <DayBox>
         <DayBoxInfo>
           <DateBox>
             {dayStats.date.isEqual(tomorrow) && (

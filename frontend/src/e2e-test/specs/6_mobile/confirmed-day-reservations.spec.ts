@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -16,8 +17,10 @@ import {
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserChildFixturePorriHatterRestricted,
+  enduserNonSsnChildFixture,
   familyWithTwoGuardians,
   Fixture,
+  preschoolTermFixture2021,
   uuidv4
 } from '../../dev-api/fixtures'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
@@ -28,7 +31,6 @@ import { Page } from '../../utils/page'
 let page: Page
 let confirmedReservationPage: ConfirmedDayReservationPage
 let attendanceListPage: MobileListPage
-
 const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
 
 const group2 = {
@@ -41,6 +43,207 @@ const group2 = {
 beforeEach(async () => {
   await resetDatabase()
   await insertDefaultServiceNeedOptions()
+  await insertConfirmedDaysTestData()
+
+  const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+  page = await Page.open({
+    employeeMobileCustomizations: {
+      featureFlags: { employeeMobileConfirmedDaysReservations: true }
+    },
+    mockedTime: now.toSystemTzDate()
+  })
+
+  await page.goto(mobileSignupUrl)
+
+  attendanceListPage = new MobileListPage(page)
+  await attendanceListPage.confirmedDaysTab.click()
+
+  confirmedReservationPage = new ConfirmedDayReservationPage(page)
+})
+
+describe('Child confirmed reservations', () => {
+  test('Confirmed days are present', async () => {
+    const confirmedDaysOnTestDate = [
+      LocalDate.of(2022, 5, 18),
+      LocalDate.of(2022, 5, 19),
+      LocalDate.of(2022, 5, 20),
+      LocalDate.of(2022, 5, 23),
+      LocalDate.of(2022, 5, 25),
+      LocalDate.of(2022, 5, 26),
+      LocalDate.of(2022, 5, 27)
+    ]
+
+    for (const day of confirmedDaysOnTestDate) {
+      await confirmedReservationPage.assertDayExists(day)
+    }
+
+    const nonConfirmedDaysOnTestDate = [
+      LocalDate.of(2022, 5, 17),
+      LocalDate.of(2022, 5, 24),
+      LocalDate.of(2022, 5, 28)
+    ]
+
+    for (const day of nonConfirmedDaysOnTestDate) {
+      await confirmedReservationPage.assertDayDoesNotExist(day)
+    }
+  })
+
+  test('Daily counts are correct', async () => {
+    const dayCounts = [
+      {
+        date: LocalDate.of(2022, 5, 18),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '1'
+      },
+      {
+        date: LocalDate.of(2022, 5, 19),
+        presentCount: '2',
+        presentCalc: '2,75',
+        absentCount: '2'
+      },
+      {
+        date: LocalDate.of(2022, 5, 20),
+        presentCount: '3',
+        presentCalc: '3,75',
+        absentCount: '1'
+      },
+      {
+        date: LocalDate.of(2022, 5, 23),
+        presentCount: '4',
+        presentCalc: '4,25',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 25),
+        presentCount: '4',
+        presentCalc: '4,25',
+        absentCount: '0'
+      },
+      {
+        date: LocalDate.of(2022, 5, 26),
+        presentCount: '3',
+        presentCalc: '3,25',
+        absentCount: '1'
+      },
+      {
+        date: LocalDate.of(2022, 5, 27),
+        presentCount: '4',
+        presentCalc: '4,75',
+        absentCount: '0'
+      }
+    ]
+    for (const day of dayCounts) {
+      await confirmedReservationPage.assertDailyCounts(
+        day.date,
+        day.presentCount,
+        day.presentCalc,
+        day.absentCount
+      )
+    }
+  })
+  test('Daily children are correct', async () => {
+    const testDay = LocalDate.of(2022, 5, 19)
+    await confirmedReservationPage.openDayItem(testDay)
+    const expectedChildItems = [
+      {
+        date: testDay,
+        childId: enduserNonSsnChildFixture.id,
+        reservationTexts: ['Ei toimintaa'],
+        childDetails: {
+          firstName: enduserNonSsnChildFixture.firstName.split(/\s/)[0],
+          lastName: enduserNonSsnChildFixture.lastName,
+          preferredName: enduserNonSsnChildFixture.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixtureKaarina.id,
+        reservationTexts: ['Poissa'],
+        childDetails: {
+          firstName: enduserChildFixtureKaarina.firstName.split(/\s/)[0],
+          lastName: enduserChildFixtureKaarina.lastName,
+          preferredName: enduserChildFixtureKaarina.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixtureJari.id,
+        reservationTexts: ['08:12 - 13:45', '14:30 - 16:45'],
+        childDetails: {
+          firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
+          lastName: enduserChildFixtureJari.lastName,
+          preferredName: enduserChildFixtureJari.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixturePorriHatterRestricted.id,
+        reservationTexts: ['Sop.aika puuttuu'],
+        childDetails: {
+          firstName:
+            enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],
+          lastName: enduserChildFixturePorriHatterRestricted.lastName,
+          preferredName: enduserChildFixturePorriHatterRestricted.preferredName
+        }
+      }
+    ]
+
+    for (const childItem of expectedChildItems) {
+      await confirmedReservationPage.assertChildDetails(
+        childItem.date,
+        childItem.childId,
+        childItem.reservationTexts,
+        childItem.childDetails
+      )
+    }
+  })
+})
+
+async function createPlacements(
+  childId: string,
+  groupId: string = daycareGroupFixture.id,
+  placementType: PlacementType = 'DAYCARE'
+) {
+  const daycarePlacementFixture = await Fixture.placement()
+    .with({
+      childId,
+      unitId: daycareFixture.id,
+      type: placementType,
+      startDate: LocalDate.of(2021, 5, 1),
+      endDate: LocalDate.of(2022, 8, 31)
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycareGroupId: groupId,
+      startDate: daycarePlacementFixture.data.startDate,
+      endDate: daycarePlacementFixture.data.endDate
+    })
+    .save()
+  return daycarePlacementFixture.data
+}
+
+async function insertConfirmedDaysTestData() {
+  await Fixture.preschoolTerm()
+    .with({
+      ...preschoolTermFixture2021,
+      termBreaks: [
+        new FiniteDateRange(
+          LocalDate.of(2022, 5, 18),
+          LocalDate.of(2022, 5, 20)
+        )
+      ]
+    })
+    .save()
+
+  await Fixture.holiday()
+    .with({
+      date: LocalDate.of(2022, 5, 24),
+      description: 'Testing'
+    })
+    .save()
 
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
@@ -65,6 +268,9 @@ beforeEach(async () => {
     .save()
   await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
 
+  await Fixture.person().with(enduserNonSsnChildFixture).save()
+  await Fixture.child(enduserNonSsnChildFixture.id).save()
+
   await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
@@ -73,10 +279,13 @@ beforeEach(async () => {
     enduserChildFixturePorriHatterRestricted.id,
     daycareGroupFixture.id
   )
-
   await createPlacements(enduserChildFixtureJari.id, daycareGroupFixture.id)
-
   await createPlacements(enduserChildFixtureKaarina.id, daycareGroupFixture.id)
+  await createPlacements(
+    enduserNonSsnChildFixture.id,
+    daycareGroupFixture.id,
+    'PRESCHOOL'
+  )
 
   await Fixture.absence()
     .with({
@@ -119,132 +328,14 @@ beforeEach(async () => {
     })
     .save()
 
-  const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
-  page = await Page.open({
-    employeeMobileCustomizations: {
-      featureFlags: { employeeMobileConfirmedDaysReservations: true }
-    },
-    mockedTime: now.toSystemTzDate()
-  })
-
-  await page.goto(mobileSignupUrl)
-
-  attendanceListPage = new MobileListPage(page)
-  await attendanceListPage.confirmedDaysTab.click()
-
-  confirmedReservationPage = new ConfirmedDayReservationPage(page)
-})
-
-describe('Child confirmed reservations', () => {
-  test('Confirmed days are present', async () => {
-    const confirmedDaysOnTestDate = [
-      LocalDate.of(2022, 5, 18),
-      LocalDate.of(2022, 5, 19),
-      LocalDate.of(2022, 5, 20),
-      LocalDate.of(2022, 5, 23),
-      LocalDate.of(2022, 5, 24),
-      LocalDate.of(2022, 5, 25),
-      LocalDate.of(2022, 5, 26),
-      LocalDate.of(2022, 5, 27)
-    ]
-
-    for (const day of confirmedDaysOnTestDate) {
-      await confirmedReservationPage.assertDayExists(day)
+  await Fixture.attendanceReservation({
+    type: 'RESERVATIONS',
+    childId: enduserChildFixtureJari.id,
+    date: LocalDate.of(2022, 5, 19),
+    reservation: { start: LocalTime.of(8, 12), end: LocalTime.of(13, 45) },
+    secondReservation: {
+      start: LocalTime.of(14, 30),
+      end: LocalTime.of(16, 45)
     }
-
-    const nonConfirmedDaysOnTestDate = [
-      LocalDate.of(2022, 5, 17),
-      LocalDate.of(2022, 5, 28)
-    ]
-
-    for (const day of nonConfirmedDaysOnTestDate) {
-      await confirmedReservationPage.assertDayDoesNotExist(day)
-    }
-  })
-
-  test('Daily counts are correct', async () => {
-    const dayCounts = [
-      {
-        date: LocalDate.of(2022, 5, 18),
-        presentCount: '3',
-        presentCalc: '3,75',
-        absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 19),
-        presentCount: '2',
-        presentCalc: '2,75',
-        absentCount: '1'
-      },
-      {
-        date: LocalDate.of(2022, 5, 20),
-        presentCount: '3',
-        presentCalc: '3,75',
-        absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 23),
-        presentCount: '3',
-        presentCalc: '3,75',
-        absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 24),
-        presentCount: '3',
-        presentCalc: '3,75',
-        absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 25),
-        presentCount: '3',
-        presentCalc: '3,75',
-        absentCount: '0'
-      },
-      {
-        date: LocalDate.of(2022, 5, 26),
-        presentCount: '2',
-        presentCalc: '2,75',
-        absentCount: '1'
-      },
-      {
-        date: LocalDate.of(2022, 5, 27),
-        presentCount: '3',
-        presentCalc: '4,25',
-        absentCount: '0'
-      }
-    ]
-    for (const day of dayCounts) {
-      await confirmedReservationPage.assertDailyCounts(
-        day.date,
-        day.presentCount,
-        day.presentCalc,
-        day.absentCount
-      )
-    }
-  })
-})
-
-async function createPlacements(
-  childId: string,
-  groupId: string = daycareGroupFixture.id,
-  placementType: PlacementType = 'DAYCARE'
-) {
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId: daycareFixture.id,
-      type: placementType,
-      startDate: LocalDate.of(2021, 5, 1),
-      endDate: LocalDate.of(2022, 8, 31)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: groupId,
-      startDate: daycarePlacementFixture.data.startDate,
-      endDate: daycarePlacementFixture.data.endDate
-    })
-    .save()
-  return daycarePlacementFixture.data
+  }).save()
 }

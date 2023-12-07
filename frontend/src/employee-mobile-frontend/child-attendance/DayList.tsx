@@ -42,7 +42,10 @@ export default React.memo(function DayList({ reservationStatistics }: Props) {
       </HeaderBox>
       <NoMarginList>
         {sortedDays.map((dr) => (
-          <Li key={`${dr.date.format()}-li`}>
+          <Li
+            key={`${dr.date.format()}-li`}
+            data-qa={`day-item-${dr.date.formatIso()}`}
+          >
             <DayListItem key={`${dr.date.format()}-dli`} dayStats={dr} />
           </Li>
         ))}

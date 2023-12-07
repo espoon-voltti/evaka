@@ -15,8 +15,6 @@ export type ReservationChildDetails = {
 export default class ConfirmedDayReservationPage {
   constructor(private readonly page: Page) {}
 
-  dayItems = this.page.findAllByDataQa('day-item')
-
   dayRow = (date: LocalDate) =>
     this.page.findByDataQa(`day-item-${date.formatIso()}`)
 
@@ -56,7 +54,7 @@ export default class ConfirmedDayReservationPage {
     reservationTexts: string[],
     childDetails: ReservationChildDetails
   ) {
-    const childItem = this.dayRow(date).findByDataQa(`child-item-${childId}`)
+    const childItem = this.dayRow(date).findByDataQa(`child-${childId}`)
     const childPreferredName = childDetails.preferredName
       ? ` (${childDetails.preferredName})`
       : ''
@@ -66,10 +64,10 @@ export default class ConfirmedDayReservationPage {
         `${childDetails.firstName} ${childDetails.lastName}${childPreferredName}`
       )
 
-    for (const [rt, index] of reservationTexts) {
+    for (const [index, value] of reservationTexts.entries()) {
       await childItem
         .findByDataQa(`reservation-content-${index}`)
-        .assertTextEquals(rt)
+        .assertTextEquals(value)
     }
   }
 }
