@@ -5,7 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.cancelAllActiveTransferApplicationsAfterDate
+import fi.espoo.evaka.application.cancelAllActiveTransferApplications
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -146,10 +146,7 @@ class PlacementControllerCitizen(
                         }
 
                         val cancelableTransferApplicationIds =
-                            tx.cancelAllActiveTransferApplicationsAfterDate(
-                                childId,
-                                terminationDate
-                            )
+                            tx.cancelAllActiveTransferApplications(childId)
 
                         asyncJobRunner.plan(
                             tx,

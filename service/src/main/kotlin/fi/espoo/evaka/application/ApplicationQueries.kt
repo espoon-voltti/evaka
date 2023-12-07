@@ -1254,9 +1254,8 @@ WHERE application_id = :applicationId
         .bind("applicationId", applicationId)
         .toList<ApplicationAttachment>()
 
-fun Database.Transaction.cancelAllActiveTransferApplicationsAfterDate(
-    childId: ChildId,
-    preferredStartDateMinDate: LocalDate
+fun Database.Transaction.cancelAllActiveTransferApplications(
+    childId: ChildId
 ): List<ApplicationId> =
     createUpdate(
             // language=sql
@@ -1266,13 +1265,11 @@ SET status = 'CANCELLED'
 WHERE transferapplication
 AND child_id = :childId
 AND status = ANY(:activeApplicationStatus::application_status_type[])
-AND daterange(:preferredStartDateMinDate::date, null, '[]') @> (document->>'preferredStartDate')::date
 RETURNING id
     """
                 .trimIndent()
         )
         .bind("activeApplicationStatus", arrayOf(ApplicationStatus.SENT))
-        .bind("preferredStartDateMinDate", preferredStartDateMinDate)
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
         .toList<ApplicationId>()
