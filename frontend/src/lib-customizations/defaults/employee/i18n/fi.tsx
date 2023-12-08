@@ -1956,6 +1956,7 @@ export const fi = {
     unknownSource: 'Luontilähde ei tiedossa',
     modifiedAtTitle: 'Muokattu',
     unknownModification: 'Muokkauksen tekijä ei tiedossa',
+    notModified: 'Ei muokattu',
     user: 'Käyttäjä',
     application: 'Hakemus',
     dvvSync: 'Väestötietojärjestelmä',

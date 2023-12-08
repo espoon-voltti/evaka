@@ -200,7 +200,7 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
       return i18n.timeline.unknownSource
     }
   })()
-  const modifyInfo = (() => {
+  const getModifyInfo = () => {
     if (modifySource === 'USER') {
       return modifiedByName
         ? `${i18n.timeline.user} ${modifiedByName}`
@@ -210,16 +210,19 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
     } else {
       return i18n.timeline.unknownModification
     }
-  })()
+  }
   return (
     <div>
       <strong>{i18n.timeline.createdAtTitle}:</strong> {formatDate(createdAt)}
       {' - '}
       {createInfo}
-      <br />
-      <strong>{i18n.timeline.modifiedAtTitle}:</strong> {formatDate(modifiedAt)}
-      {' - '}
-      {modifyInfo}
+      {modifiedAt && (
+        <>
+          <br />
+          <strong>{i18n.timeline.modifiedAtTitle}:</strong>{' '}
+          {formatDate(modifiedAt)} - {getModifyInfo()}
+        </>
+      )}
     </div>
   )
 })
