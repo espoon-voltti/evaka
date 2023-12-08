@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.insertTestDecisionMaker
 import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
@@ -22,6 +23,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -29,6 +31,11 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val partnershipCreator =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
             .evakaUserId
+
+    @BeforeEach
+    fun setup() {
+        db.transaction { it.insertTestDecisionMaker() }
+    }
 
     @Test
     fun `test creating partnership`() {

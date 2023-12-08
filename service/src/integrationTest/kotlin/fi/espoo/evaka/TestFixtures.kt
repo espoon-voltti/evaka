@@ -510,16 +510,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insert(testArea2)
     insert(testAreaSvebi)
 
-    testDecisionMaker_1.let {
-        insert(
-            DevEmployee(
-                id = it.id,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                roles = setOf(UserRole.SERVICE_WORKER)
-            )
-        )
-    }
+    insertTestDecisionMaker()
 
     testDecisionMaker_2.let {
         insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
@@ -595,6 +586,19 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertServiceNeedOptionFees()
     insertServiceNeedOptionVoucherValues()
     insertAssistanceActionOptions()
+}
+
+fun Database.Transaction.insertTestDecisionMaker() {
+    testDecisionMaker_1.let {
+        insert(
+            DevEmployee(
+                id = it.id,
+                firstName = it.firstName,
+                lastName = it.lastName,
+                roles = setOf(UserRole.SERVICE_WORKER)
+            )
+        )
+    }
 }
 
 val preschoolTerm2020 =
