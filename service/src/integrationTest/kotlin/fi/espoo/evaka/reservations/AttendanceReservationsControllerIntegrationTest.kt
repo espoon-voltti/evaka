@@ -23,6 +23,7 @@ import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -866,6 +867,7 @@ class AttendanceReservationsControllerIntegrationTest :
     @Test
     fun `daily confirmed reservation stats for unit`() {
         insertConfirmedReservationTestData()
+        val mobileDeviceId = insertMobileDevice(testDaycare.id)
 
         val expectation =
             listOf(
@@ -981,7 +983,12 @@ class AttendanceReservationsControllerIntegrationTest :
 
         val testClock = MockEvakaClock(HelsinkiDateTime.of(tue.minusWeeks(1), LocalTime.of(10, 0)))
 
-        val result = getConfirmedDailyReservationStats(testDaycare.id, clock = testClock)
+        val result =
+            getConfirmedDailyReservationStats(
+                testDaycare.id,
+                mobileDeviceId = mobileDeviceId,
+                clock = testClock
+            )
 
         result.forEachIndexed { index, dayReservationStatisticsResult ->
             val expected = expectation[index]
@@ -994,11 +1001,13 @@ class AttendanceReservationsControllerIntegrationTest :
     @Test
     fun `daily confirmed child reservation for unit`() {
         insertConfirmedReservationTestData()
+        val mobileDeviceId = insertMobileDevice(testDaycare.id)
 
         val mondayResult =
             getConfirmedChildReservationsForDay(
                 mon,
                 testDaycare.id,
+                mobileDeviceId = mobileDeviceId
             )
 
         val childMap =
@@ -1064,6 +1073,7 @@ class AttendanceReservationsControllerIntegrationTest :
             getConfirmedChildReservationsForDay(
                 tue,
                 testDaycare.id,
+                mobileDeviceId = mobileDeviceId
             )
 
         val tuesdayExpectation =
@@ -1083,6 +1093,7 @@ class AttendanceReservationsControllerIntegrationTest :
             getConfirmedChildReservationsForDay(
                 fri,
                 testDaycare.id,
+                mobileDeviceId = mobileDeviceId
             )
 
         val fridayExpectation =
@@ -1124,6 +1135,10 @@ class AttendanceReservationsControllerIntegrationTest :
         result.childReservations.forEach { childReservationInfo ->
             assertContains(expectation.childReservations, childReservationInfo)
         }
+    }
+
+    private fun insertMobileDevice(unitId: DaycareId): MobileDeviceId {
+        return db.transaction { tx -> tx.insert(DevMobileDevice(unitId = unitId)) }
     }
 
     private fun insertConfirmedReservationTestData() {
@@ -1280,11 +1295,12 @@ class AttendanceReservationsControllerIntegrationTest :
 
     private fun getConfirmedDailyReservationStats(
         daycareId: DaycareId,
+        mobileDeviceId: MobileDeviceId,
         clock: EvakaClock = this.clock,
     ): List<AttendanceReservationController.DayReservationStatisticsResult> =
         attendanceReservationController.getReservationStatisticsForConfirmedDays(
             dbInstance(),
-            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
             daycareId,
         )
@@ -1292,11 +1308,12 @@ class AttendanceReservationsControllerIntegrationTest :
     private fun getConfirmedChildReservationsForDay(
         date: LocalDate,
         daycareId: DaycareId,
-        clock: EvakaClock = this.clock,
+        mobileDeviceId: MobileDeviceId,
+        clock: EvakaClock = this.clock
     ): AttendanceReservationController.DailyChildReservationResult =
         attendanceReservationController.getChildReservationsForDay(
             dbInstance(),
-            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
             daycareId,
             date,

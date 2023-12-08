@@ -1936,28 +1936,8 @@ sealed interface Action {
                 .inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
-        READ_CHILD_RESERVATIONS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
-        ),
-        READ_UNIT_RESERVATION_STATISTICS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
-        ),
+        READ_CHILD_RESERVATIONS(IsMobile(requirePinLogin = false).inUnit()),
+        READ_UNIT_RESERVATION_STATISTICS(IsMobile(requirePinLogin = false).inUnit()),
         UPDATE_CHILD_ATTENDANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
