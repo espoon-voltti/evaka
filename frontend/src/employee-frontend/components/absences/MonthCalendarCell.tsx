@@ -277,7 +277,10 @@ export default React.memo(function MonthCalendarCell({
             operationTime.end < reservation.endTime))
     ) && !day.backupCare
   const requiresBackupCare =
-    intermittent && unitIsNotOpenOnReservation && !day.backupCare
+    day.absences.length === 0 &&
+    intermittent &&
+    unitIsNotOpenOnReservation &&
+    !day.backupCare
 
   return (
     <Tooltip
