@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.insertTestDecisionMaker
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -35,8 +36,8 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val person3 = testPerson3()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(300)
-
         db.transaction {
+            it.insertTestDecisionMaker()
             partnershipService.createPartnership(
                 it,
                 person1.id,
