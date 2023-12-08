@@ -28,7 +28,6 @@ import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -100,13 +99,15 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const title = 'Message to citizen'
       const content = 'Hello citizen!'
-      await messagesPage.inputTitle.fill(title)
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputTitle.fill(title)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -124,10 +125,12 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
-      await messagesPage.inputContent.fill('message')
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
+      await messageEditor.inputContent.fill('message')
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -144,12 +147,14 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
 
-      await messagesPage.assertReceiver(
+      await messageEditor.assertReceiver(
         `${fixtures.enduserGuardianFixture.lastName} ${fixtures.enduserGuardianFixture.firstName}`
       )
-      await messagesPage.assertTitle(
+      await messageEditor.assertTitle(
         `Hakemus 08.11.2022: ${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
       )
     })
@@ -161,11 +166,13 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const content = 'This should be visible in the application note'
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -179,11 +186,13 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const content = 'This should be visible in the application note'
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -194,7 +203,7 @@ describe('Service Worker Messaging', () => {
       await messagesPageWithThread.assertMessageContent(0, content)
     })
 
-    it('should delete the application note if the message is cancelled', async () => {
+    it('should delete the application note if the message is undone', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       const applicationsPage = new ApplicationsPage(staffPage)
       await new EmployeeNav(staffPage).applicationsTab.click()
@@ -202,10 +211,11 @@ describe('Service Worker Messaging', () => {
         .applicationRow(applicationFixtureId)
         .openApplication()
       const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = messagesPage.getMessageEditor()
       const content = 'This should be visible in the application note'
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
       await messagesPage.undoMessage()
 
@@ -220,13 +230,15 @@ describe('Service Worker Messaging', () => {
       let applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const title = 'Message about application that needs a reply'
       const content = 'Hello citizen, please reply to this'
-      await messagesPage.inputTitle.fill(title)
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputTitle.fill(title)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -254,13 +266,15 @@ describe('Service Worker Messaging', () => {
       let applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      let messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const title = 'This is the first message'
       const content = 'First!!1'
-      await messagesPage.inputTitle.fill(title)
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputTitle.fill(title)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -277,7 +291,7 @@ describe('Service Worker Messaging', () => {
       applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      messagesPage = await applReadView.openMessagesPage()
+      const messagesPage = await applReadView.openMessagesPage()
       await messagesPage.assertReplyContentIsEmpty()
       const replyContent = 'Service worker reply'
       await messagesPage.fillReplyContent(replyContent)
@@ -306,8 +320,10 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
-      await messagesPage.assertSimpleViewVisible()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
+      await messageEditor.assertSimpleViewVisible()
     })
 
     it('should not be possible for service workers to delete or edit notes created from messages', async () => {
@@ -317,10 +333,12 @@ describe('Service Worker Messaging', () => {
       const applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
-      await messagesPage.inputContent.fill('message content')
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
+      await messageEditor.inputContent.fill('message content')
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -335,11 +353,13 @@ describe('Service Worker Messaging', () => {
       let applReadView = await applicationsPage
         .applicationRow(applicationFixtureId)
         .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
+      const messageEditor = (
+        await applReadView.openMessagesPage()
+      ).getMessageEditor()
       const content = 'This is the message'
-      await messagesPage.inputContent.fill(content)
-      await messagesPage.sendMessageButton.click()
-      await waitUntilEqual(() => messagesPage.isEditorVisible(), false)
+      await messageEditor.inputContent.fill(content)
+      await messageEditor.sendButton.click()
+      await messageEditor.waitUntilHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openStaffPage(mockedTime, messagingAndServiceWorker)

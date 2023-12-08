@@ -2,32 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { waitUntilEqual } from '../../../utils'
 import {
   FileInput,
   TextInput,
   Page,
   Checkbox,
   Combobox,
-  TreeDropdown
+  TreeDropdown,
+  Element
 } from '../../../utils/page'
 
 export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
   newMessageButton = this.page.find('[data-qa="new-message-btn"]')
-  sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
-  #closeMessageEditorButton = this.page.find(
-    '[data-qa="close-message-editor-btn"]'
-  )
-  #discardMessageButton = this.page.find('[data-qa="discard-draft-btn"]')
-  #senderSelection = new Combobox(this.page.findByDataQa('select-sender'))
-  #receiverSelection = new TreeDropdown(
-    this.page.find('[data-qa="select-receiver"]')
-  )
-  inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
-  inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
-  #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
   #personalAccount = this.page.find('[data-qa="personal-account"]')
   #draftMessagesBoxRow = new TextInput(
     this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
@@ -46,34 +35,10 @@ export default class MessagesPage {
   #messageReplyContent = new TextInput(
     this.page.find('[data-qa="message-reply-content"]')
   )
-  #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
-  #sensitive = new Checkbox(this.page.findByDataQa('checkbox-sensitive'))
-  #messageTypeMessage = new Checkbox(
-    this.page.findByDataQa('radio-message-type-message')
-  )
-  #messageTypeBulletin = new Checkbox(
-    this.page.findByDataQa('radio-message-type-bulletin')
-  )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
-  }
-
-  async isEditorVisible() {
-    return (await this.page.findAll('[data-qa="input-content"]').count()) > 0
-  }
-
-  async existsSentMessage() {
-    return (await this.page.findAll('[data-qa="sent-message-row"]').count()) > 0
-  }
-
-  async assertSimpleViewVisible() {
-    await this.inputTitle.waitUntilVisible()
-    await this.#messageTypeMessage.waitUntilHidden()
-    await this.#messageTypeBulletin.waitUntilHidden()
-    await this.#urgent.waitUntilHidden()
-    await this.#fileUpload.waitUntilHidden()
   }
 
   async assertMessageIsSentForParticipants(nth: number, participants: string) {
@@ -118,98 +83,14 @@ export default class MessagesPage {
     await this.#messageReplyContent.assertTextEquals('')
   }
 
-  async sendNewMessage(message: {
-    title: string
-    content: string
-    urgent?: boolean
-    sensitive?: boolean
-    attachmentCount?: number
-    sender?: string
-    receiver?: string
-  }) {
-    const attachmentCount = message.attachmentCount ?? 0
-
+  async openMessageEditor() {
     await this.newMessageButton.click()
-    await waitUntilTrue(() => this.isEditorVisible())
-    await this.inputTitle.fill(message.title)
-    await this.inputContent.fill(message.content)
-
-    if (message.sender) {
-      await this.#senderSelection.fillAndSelectFirst(message.sender)
-    }
-
-    if (message.receiver) {
-      await this.#receiverSelection.open()
-      await this.#receiverSelection.expandAll()
-      await this.#receiverSelection.option(message.receiver).check()
-      await this.#receiverSelection.close()
-    } else {
-      await this.#receiverSelection.open()
-      await this.#receiverSelection.firstOption().check()
-      await this.#receiverSelection.close()
-    }
-    if (message.urgent ?? false) {
-      await this.#urgent.check()
-    }
-    if (message.sensitive ?? false) {
-      await this.#sensitive.check()
-    }
-
-    if (attachmentCount > 0) {
-      for (let i = 1; i <= attachmentCount; i++) {
-        await this.addAttachment()
-        await waitUntilEqual(
-          () =>
-            this.#fileUpload
-              .findAll('[data-qa="file-download-button"]')
-              .count(),
-          i
-        )
-      }
-    }
-    await this.sendMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), false)
+    return this.getMessageEditor()
   }
 
-  async addAttachment() {
-    const testFileName = 'test_file.png'
-    const testFilePath = `src/e2e-test/assets/${testFileName}`
-    await new FileInput(
-      this.#fileUpload.find('[data-qa="btn-upload-file"]')
-    ).setInputFiles(testFilePath)
-  }
-
-  async getEditorState() {
-    return this.page
-      .find('[data-qa="message-editor"]')
-      .getAttribute('data-status')
-  }
-
-  async draftNewMessage(title: string, content: string) {
-    await this.newMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), true)
-    await this.inputTitle.fill(title)
-    await this.inputContent.fill(content)
-    await this.#receiverSelection.open()
-    await this.#receiverSelection.firstOption().click()
-    await this.#receiverSelection.close()
-    await this.page.keyboard.press('Enter')
-    await waitUntilEqual(() => this.getEditorState(), 'clean')
-  }
-
-  async sendEditedMessage() {
-    await this.sendMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), false)
-  }
-
-  async closeMessageEditor() {
-    await this.#closeMessageEditorButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), false)
-  }
-
-  async discardMessage() {
-    await this.#discardMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), false)
+  // In some scenarios the message editor is automatically opened when the page is loaded
+  getMessageEditor() {
+    return new MessageEditor(this.page.findByDataQa('message-editor'))
   }
 
   async deleteFirstThread() {
@@ -257,15 +138,112 @@ export default class MessagesPage {
       .click()
   }
 
+  async close() {
+    return this.page.close()
+  }
+}
+
+export class MessageEditor extends Element {
+  closeButton = this.findByDataQa('close-message-editor-btn')
+
+  inputTitle = new TextInput(this.findByDataQa('input-title'))
+  inputContent = new TextInput(this.findByDataQa('input-content'))
+  senderSelection = new Combobox(this.findByDataQa('select-sender'))
+  receiverSelection = new TreeDropdown(this.findByDataQa('select-receiver'))
+  urgent = new Checkbox(this.findByDataQa('checkbox-urgent'))
+  sensitive = new Checkbox(this.findByDataQa('checkbox-sensitive'))
+  messageTypeMessage = new Checkbox(
+    this.findByDataQa('radio-message-type-message')
+  )
+  messageTypeBulletin = new Checkbox(
+    this.findByDataQa('radio-message-type-bulletin')
+  )
+  fileUpload = this.findByDataQa('upload-message-attachment')
+  sendButton = this.findByDataQa('send-message-btn')
+  discardButton = this.findByDataQa('discard-draft-btn')
+
+  async sendNewMessage(message: {
+    title: string
+    content: string
+    urgent?: boolean
+    sensitive?: boolean
+    attachmentCount?: number
+    sender?: string
+    receiver?: string
+  }) {
+    const attachmentCount = message.attachmentCount ?? 0
+
+    await this.inputTitle.fill(message.title)
+    await this.inputContent.fill(message.content)
+
+    if (message.sender) {
+      await this.senderSelection.fillAndSelectFirst(message.sender)
+    }
+
+    if (message.receiver) {
+      await this.receiverSelection.open()
+      await this.receiverSelection.expandAll()
+      await this.receiverSelection.option(message.receiver).check()
+      await this.receiverSelection.close()
+    } else {
+      await this.receiverSelection.open()
+      await this.receiverSelection.firstOption().check()
+      await this.receiverSelection.close()
+    }
+    if (message.urgent ?? false) {
+      await this.urgent.check()
+    }
+    if (message.sensitive ?? false) {
+      await this.sensitive.check()
+    }
+
+    if (attachmentCount > 0) {
+      for (let i = 1; i <= attachmentCount; i++) {
+        await this.addAttachment()
+        await waitUntilEqual(
+          () => this.fileUpload.findAllByDataQa('file-download-button').count(),
+          i
+        )
+      }
+    }
+    await this.sendButton.click()
+    await this.waitUntilHidden()
+  }
+
+  async addAttachment() {
+    const testFileName = 'test_file.png'
+    const testFilePath = `src/e2e-test/assets/${testFileName}`
+    await new FileInput(
+      this.fileUpload.find('[data-qa="btn-upload-file"]')
+    ).setInputFiles(testFilePath)
+  }
+
+  async assertSimpleViewVisible() {
+    await this.inputTitle.waitUntilVisible()
+    await this.messageTypeMessage.waitUntilHidden()
+    await this.messageTypeBulletin.waitUntilHidden()
+    await this.urgent.waitUntilHidden()
+    await this.fileUpload.waitUntilHidden()
+  }
+
+  async draftNewMessage(title: string, content: string) {
+    await this.inputTitle.fill(title)
+    await this.receiverSelection.open()
+    await this.receiverSelection.firstOption().click()
+    await this.receiverSelection.close()
+    await this.inputContent.fill(content)
+    await waitUntilEqual(() => this.getEditorState(), 'clean')
+  }
+
+  async getEditorState() {
+    return this.getAttribute('data-status')
+  }
+
   async assertReceiver(receiverName: string) {
-    return waitUntilEqual(() => this.#receiverSelection.text, receiverName)
+    return waitUntilEqual(() => this.receiverSelection.text, receiverName)
   }
 
   async assertTitle(title: string) {
     return waitUntilEqual(() => this.inputTitle.inputValue, title)
-  }
-
-  async close() {
-    return this.page.close()
   }
 }

@@ -158,7 +158,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage(defaultMessage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
@@ -210,7 +211,8 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
 
-        await messagesPage.sendNewMessage({
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage({
           ...defaultMessage,
           receiver: enduserChildFixtureKaarina.id
         })
@@ -274,7 +276,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage(message)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(message)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
@@ -297,7 +300,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage({
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage({
           ...defaultMessage,
           attachmentCount: 2
         })
@@ -317,7 +321,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage(defaultMessage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
@@ -363,7 +368,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage({ title, content })
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage({ title, content })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
@@ -571,7 +577,8 @@ describe('Sending and receiving messages', () => {
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.sendNewMessage(defaultMessage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await openCitizen(mockedDateAt11)
@@ -591,7 +598,8 @@ describe('Sending and receiving messages', () => {
           await openSupervisorPage(mockedDateAt10)
           await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
           const messagesPage = new MessagesPage(unitSupervisorPage)
-          await messagesPage.sendNewMessage(defaultMessage)
+          const messageEditor = await messagesPage.openMessageEditor()
+          await messageEditor.sendNewMessage(defaultMessage)
           await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
           await openCitizen(mockedDateAt11)
@@ -611,8 +619,9 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-      await messagesPage.closeMessageEditor()
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.draftNewMessage(defaultTitle, defaultContent)
+      await messageEditor.closeButton.click()
       await messagesPage.assertDraftContent(defaultTitle, defaultContent)
     })
 
@@ -620,8 +629,9 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-      await messagesPage.sendEditedMessage()
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.draftNewMessage(defaultTitle, defaultContent)
+      await messageEditor.sendButton.click()
       await messagesPage.assertNoDrafts()
     })
 
@@ -629,8 +639,9 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-      await messagesPage.discardMessage()
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.draftNewMessage(defaultTitle, defaultContent)
+      await messageEditor.discardButton.click()
       await messagesPage.assertNoDrafts()
     })
   })
@@ -640,7 +651,8 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(defaultMessage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
       await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
       await openCitizenPage(mockedDateAt11)
@@ -659,7 +671,8 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage({
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage({
         ...defaultMessage,
         attachmentCount: 1
       })
@@ -681,7 +694,8 @@ describe('Sending and receiving messages', () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       let messagesPage = new MessagesPage(unitSupervisorPage)
-      await messagesPage.sendNewMessage(defaultMessage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
       await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
       await openCitizenPage(mockedDateAt11)

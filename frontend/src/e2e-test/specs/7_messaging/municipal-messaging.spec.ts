@@ -145,7 +145,8 @@ describe('Municipal messaging -', () => {
     await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
-    await messagesPage.sendNewMessage(defaultMessage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage(defaultMessage)
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
     await openCitizenPage(messageReadTime)
@@ -158,7 +159,8 @@ describe('Municipal messaging -', () => {
     await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
-    await messagesPage.sendNewMessage({
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage({
       ...defaultMessage,
       receiver: fixtures.careAreaFixture.id
     })

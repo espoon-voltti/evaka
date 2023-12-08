@@ -244,7 +244,8 @@ test('Foster parent can receive and reply to messages', async () => {
     title: 'Message title',
     content: 'Message content'
   }
-  await messagesPage.sendNewMessage(message)
+  const messageEditor = await messagesPage.openMessageEditor()
+  await messageEditor.sendNewMessage(message)
   await runPendingAsyncJobs(mockedNow)
 
   await activeRelationshipPage.goto(config.enduserMessagesUrl)

@@ -38,7 +38,7 @@ export default React.memo(function ApplicationNotes({
 
   return renderResult(notesResponse, (notes) => (
     <>
-      <FixedSpaceColumn>
+      <FixedSpaceColumn data-qa="application-notes-list">
         {notes.map(({ note, permittedActions }) =>
           editing === note.id ? (
             <ApplicationNoteBox

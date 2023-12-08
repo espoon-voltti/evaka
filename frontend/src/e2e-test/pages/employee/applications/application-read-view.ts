@@ -25,7 +25,8 @@ export default class ApplicationReadView {
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
   #applicationStatus = this.page.find('[data-qa="application-status"]')
   #sendMessageButton = this.page.findByDataQa('send-message-button')
-  #notes = this.page.findAllByDataQa('note-container')
+  notesList = this.page.findByDataQa('application-notes-list')
+  notes = this.notesList.findAllByDataQa('note-container')
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
@@ -176,7 +177,7 @@ export default class ApplicationReadView {
 
   async clickMessageThreadLinkInNote(index: number): Promise<MessagesPage> {
     const popup = await this.page.capturePopup(async () => {
-      await this.#notes
+      await this.notes
         .nth(index)
         .findByDataQa('note-message-thread-link')
         .click()
@@ -185,22 +186,23 @@ export default class ApplicationReadView {
   }
 
   async assertNote(index: number, note: string) {
-    await this.#notes
+    await this.notes
       .nth(index)
       .findByDataQa('application-note-content')
       .assertTextEquals(note)
   }
 
   async assertNoteNotEditable(index: number) {
-    await this.#notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
+    await this.notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
   }
 
   async assertNoteNotDeletable(index: number) {
-    await this.#notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
+    await this.notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
   }
 
   async assertNoNotes() {
-    await this.#notes.nth(0).waitUntilHidden()
+    await this.notesList.waitUntilAttached()
+    await this.notes.nth(0).waitUntilHidden()
   }
 
   async reload() {
