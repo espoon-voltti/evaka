@@ -435,7 +435,6 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          mkdir -p dependency-check-data
           docker run --rm \
               -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
               -v $(pwd)/dependency-check-data:/root/.gradle/dependency-check-data \
