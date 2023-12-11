@@ -19,6 +19,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,7 +30,6 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import java.time.LocalTime
 
 class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 

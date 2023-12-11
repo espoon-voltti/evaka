@@ -34,26 +34,10 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    1,
-                    2,
-                    person1.id,
-                    startDate,
-                    endDate,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate, createdAt)
             )
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    2,
-                    1,
-                    person2.id,
-                    startDate,
-                    endDate,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate, createdAt)
             )
         }
     }
@@ -68,26 +52,10 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    1,
-                    2,
-                    person1.id,
-                    startDate1,
-                    endDate1,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate1, createdAt)
             )
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    2,
-                    1,
-                    person2.id,
-                    startDate1,
-                    endDate1,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate1, endDate1, createdAt)
             )
         }
 
@@ -96,26 +64,10 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    1,
-                    2,
-                    person1.id,
-                    startDate2,
-                    endDate2,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate2, endDate2, createdAt)
             )
             it.insert(
-                DevFridgePartner(
-                    partnershipId,
-                    2,
-                    1,
-                    person2.id,
-                    startDate2,
-                    endDate2,
-                    createdAt
-                )
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate2, createdAt)
             )
         }
     }
@@ -359,7 +311,6 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                 it.insert(
                     DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate, createdAt)
                 )
-
             }
         }
     }
