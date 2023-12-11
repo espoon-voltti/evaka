@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -103,7 +104,8 @@ describe('Mobile PIN login', () => {
         otherIndx: 2,
         personId: fixtures.enduserGuardianFixture.id,
         startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz()
+        endDate: LocalDate.todayInSystemTz(),
+        createdAt: HelsinkiDateTime.now()
       },
       {
         partnershipId: parentshipId,
@@ -111,7 +113,8 @@ describe('Mobile PIN login', () => {
         otherIndx: 1,
         personId: fixtures.enduserChildJariOtherGuardianFixture.id,
         startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz()
+        endDate: LocalDate.todayInSystemTz(),
+        createdAt: HelsinkiDateTime.now()
       }
     ])
 

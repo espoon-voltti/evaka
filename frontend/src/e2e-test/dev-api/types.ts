@@ -429,6 +429,7 @@ export interface FridgePartner {
   personId: string
   startDate: LocalDate
   endDate: LocalDate
+  createdAt: HelsinkiDateTime
 }
 
 export interface FosterParent {

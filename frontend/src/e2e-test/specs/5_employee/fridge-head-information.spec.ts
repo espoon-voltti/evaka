@@ -180,9 +180,6 @@ describe('Employee - Head of family details', () => {
     await timelineEvent.expandEvent()
     await timelineEvent.assertMetadataContains('Luotu: 01.01.2020')
     await timelineEvent.assertMetadataContains(' - Käyttäjä Sorsa Seppo')
-    await timelineEvent.assertMetadataContains(
-      'Muokattu: Aika ei tiedossa - Muokkauksen tekijä ei tiedossa'
-    )
   })
 
   test('Manually added income is shown in family overview', async () => {
