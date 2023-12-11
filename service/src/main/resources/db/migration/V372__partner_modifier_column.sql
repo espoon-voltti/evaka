@@ -19,4 +19,5 @@ CREATE INDEX idx$fridge_partner_modified_by ON fridge_partner (modified_by);
 CREATE INDEX idx$fridge_partner_created_from_application ON fridge_partner (created_from_application);
 
 UPDATE fridge_partner
-    SET modified_at = updated;
+    SET modified_at = updated
+    WHERE updated <> created_at;
