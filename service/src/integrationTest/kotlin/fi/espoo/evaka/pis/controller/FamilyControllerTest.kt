@@ -105,7 +105,8 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             first = guardianAndHouseholdHead,
                             second = it,
                             startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
+                            endDate = currentlyValid.end,
+                            createdAt = clock.now()
                         )
                     )
                 }

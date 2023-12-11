@@ -1496,7 +1496,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     indx = 1,
                     otherIndx = 2,
                     personId = testAdult_1.id,
-                    startDate = startDate
+                    startDate = startDate,
+                    createdAt = clock.now()
                 )
             )
             tx.insert(
@@ -1505,7 +1506,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     indx = 2,
                     otherIndx = 1,
                     personId = testAdult_2.id,
-                    startDate = startDate
+                    startDate = startDate,
+                    createdAt = clock.now()
                 )
             )
 

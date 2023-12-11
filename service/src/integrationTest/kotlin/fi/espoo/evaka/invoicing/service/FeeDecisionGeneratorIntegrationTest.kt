@@ -1186,8 +1186,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1)
-        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2, clock.now())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -1208,7 +1208,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertIncome(testAdult_1.id, 10000, period)
         insertIncome(testAdult_2.id, 20000, period)
 
@@ -1228,8 +1228,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val secondPeriod = DateRange(LocalDate.of(2021, 2, 1), null)
         val clock =
             MockEvakaClock(HelsinkiDateTime.Companion.of(firstPeriod.start, LocalTime.of(0, 0)))
-        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
-        insertPartnership(testAdult_2.id, testAdult_1.id, secondPeriod)
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
+        insertPartnership(testAdult_2.id, testAdult_1.id, secondPeriod, clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), firstPeriod)
         insertFamilyRelations(
             testAdult_2.id,
@@ -1273,7 +1273,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
 
-        insertPartnership(testAdult_2.id, testAdult_1.id, period)
+        insertPartnership(testAdult_2.id, testAdult_1.id, period, clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -1316,7 +1316,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertIncome(testAdult_2.id, 10000, subPeriod2)
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
@@ -2320,8 +2320,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_2.id, listOf(testChild_3.id), wholePeriod)
         insertFamilyRelations(testAdult_3.id, listOf(testChild_4.id), wholePeriod)
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
-        insertPartnership(testAdult_1.id, testAdult_3.id, secondPeriod)
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, secondPeriod, clock.now())
 
         insertPlacement(testChild_1.id, wholePeriod, DAYCARE, testDaycare.id)
         insertPlacement(testChild_3.id, wholePeriod, DAYCARE, testDaycare.id)
@@ -2397,7 +2397,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
         insertGuardianship(testAdult_2.id, listOf(testChild_1.id, testChild_2.id, testChild_8.id))
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
 
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
@@ -2435,7 +2435,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertGuardianship(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id))
         insertGuardianship(testAdult_2.id, listOf(testChild_2.id, testChild_3.id, testChild_4.id))
 
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
 
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
@@ -2540,7 +2540,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
         val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2, clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, period)
         insertIncome(testAdult_2.id, 310200, period)
@@ -2590,7 +2590,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val subPeriod_1 = period.copy(end = period.start.plusMonths(1))
         val subPeriod_2 = period.copy(start = subPeriod_1.end!!.plusDays(1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod_2, clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, period)
 
@@ -2935,7 +2935,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -2949,7 +2949,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_2.id) }
@@ -3003,7 +3003,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period2 = DateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 12, 31))
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(period.start, LocalTime.of(0, 0)))
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
@@ -3344,13 +3344,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertPartnership(adultId1: PersonId, adultId2: PersonId, period: DateRange) {
+    private fun insertPartnership(
+        adultId1: PersonId,
+        adultId2: PersonId,
+        period: DateRange,
+        createdAt: HelsinkiDateTime
+    ) {
         db.transaction { tx ->
             tx.insertTestPartnership(
                 adultId1,
                 adultId2,
                 startDate = period.start,
-                endDate = period.end
+                endDate = period.end,
+                createdAt = createdAt
             )
         }
     }

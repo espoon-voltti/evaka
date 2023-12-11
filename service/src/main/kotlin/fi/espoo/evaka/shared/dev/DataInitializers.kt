@@ -335,7 +335,9 @@ fun Database.Transaction.insertTestPartnership(
     adult2: PersonId,
     id: PartnershipId = PartnershipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate? = null
+    endDate: LocalDate? = null,
+    createdAt: HelsinkiDateTime =
+        HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 0))
 ): PartnershipId {
     insert(
         DevFridgePartner(
@@ -344,7 +346,8 @@ fun Database.Transaction.insertTestPartnership(
             otherIndx = 2,
             personId = adult1,
             startDate = startDate,
-            endDate = endDate
+            endDate = endDate,
+            createdAt = createdAt
         )
     )
     insert(
@@ -354,7 +357,8 @@ fun Database.Transaction.insertTestPartnership(
             otherIndx = 1,
             personId = adult2,
             startDate = startDate,
-            endDate = endDate
+            endDate = endDate,
+            createdAt = createdAt
         )
     )
     return id
@@ -1241,15 +1245,16 @@ data class DevFridgePartner(
     val otherIndx: Int,
     val personId: PersonId,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
+    val createdAt: HelsinkiDateTime
 )
 
 fun Database.Transaction.insert(pickup: DevFridgePartner) =
     insertTestDataRow(
             pickup,
             """
-INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date)
-VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate)
+INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at)
+VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate, :createdAt)
 RETURNING partnership_id
 """
         )
@@ -1260,7 +1265,8 @@ data class DevFridgePartnership(
     val first: PersonId,
     val second: PersonId,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
+    val createdAt: HelsinkiDateTime
 )
 
 fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipId =
@@ -1271,7 +1277,8 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                 otherIndx = 2,
                 personId = partnership.first,
                 startDate = partnership.startDate,
-                endDate = partnership.endDate
+                endDate = partnership.endDate,
+                createdAt = partnership.createdAt
             )
         )
         .also {
@@ -1282,7 +1289,8 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                     otherIndx = 1,
                     personId = partnership.second,
                     startDate = partnership.startDate,
-                    endDate = partnership.endDate
+                    endDate = partnership.endDate,
+                    createdAt = partnership.createdAt
                 )
             )
         }

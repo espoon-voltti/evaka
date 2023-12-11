@@ -259,6 +259,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementId4 = PlacementId(UUID.randomUUID())
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
+        val createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 0, 0))
+
         db.transaction { tx ->
             tx.insertTestParentship(
                 citizenId,
@@ -291,7 +293,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 testAdult_2.id,
                 testAdult_3.id,
                 startDate = placementStart,
-                endDate = placementEnd
+                endDate = placementEnd,
+                createdAt = createdAt
             )
             tx.insertTestPlacement(
                 id = placementId2,
