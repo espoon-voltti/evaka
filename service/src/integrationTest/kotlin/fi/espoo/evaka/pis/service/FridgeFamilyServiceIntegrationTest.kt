@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.insertTestDecisionMaker
 import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
@@ -68,6 +69,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         db.transaction {
+            it.insertTestDecisionMaker()
             it.createPartnership(
                 adult1.id,
                 adult2.id,
@@ -106,6 +108,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         db.transaction {
+            it.insertTestDecisionMaker()
             it.createPartnership(
                 adult1.id,
                 adult2.id,
