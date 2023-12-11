@@ -1228,6 +1228,27 @@ class AttendanceReservationsControllerIntegrationTest :
                 absenceType = AbsenceType.OTHER_ABSENCE,
                 modifiedBy = EvakaUserId(employeeId.raw)
             )
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = tue,
+                category = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = EvakaUserId(employeeId.raw)
+            )
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = fri,
+                category = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = EvakaUserId(employeeId.raw)
+            )
+            it.insertTestAbsence(
+                childId = testChild_2.id,
+                date = tue,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = EvakaUserId(employeeId.raw)
+            )
             it.insertTestBackUpCare(
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,

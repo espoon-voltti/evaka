@@ -414,7 +414,7 @@ class AttendanceReservationController(
 
                     val clubTerms = tx.getClubTerms()
                     val preschoolTerms = tx.getPreschoolTerms()
-                    val dateRowsByChild = rowsByDate.groupBy { it.childId }
+                    val dateRowsByChild = rowsByDate.associateBy { it.childId }
                     val childIds = dateRowsByChild.keys
                     val dailyServiceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
@@ -422,46 +422,44 @@ class AttendanceReservationController(
                     val childReservationInfos =
                         dateRowsByChild.map { row ->
                             // every row duplicates full basic info for child
-                            val basicInfoItem = row.value[0]
+                            val childRow = row.value
                             childMap.putIfAbsent(
                                 row.key,
                                 ReservationChildInfo(
-                                    id = basicInfoItem.childId,
-                                    firstName = basicInfoItem.firstName,
-                                    lastName = basicInfoItem.lastName,
-                                    preferredName = basicInfoItem.preferredName,
-                                    dateOfBirth = basicInfoItem.dateOfBirth
+                                    id = childRow.childId,
+                                    firstName = childRow.firstName,
+                                    lastName = childRow.lastName,
+                                    preferredName = childRow.preferredName,
+                                    dateOfBirth = childRow.dateOfBirth
                                 )
                             )
 
                             val scheduleType =
-                                basicInfoItem.placementType.scheduleType(
+                                childRow.placementType.scheduleType(
                                     examinationDate,
                                     clubTerms,
                                     preschoolTerms
                                 )
-                            // repeating child rows are for separate reservation times
-                            val res =
-                                row.value
-                                    .sortedBy { it.reservationStartTime }
+
+                            val reservations =
+                                row.value.reservations
+                                    .sortedBy { it.start }
                                     .map {
-                                        if (
-                                            it.reservationStartTime != null &&
-                                                it.reservationEndTime != null
-                                        )
-                                            Reservation.Times(
-                                                startTime = it.reservationStartTime,
-                                                endTime = it.reservationEndTime
-                                            )
-                                        else Reservation.NoTimes
+                                        Reservation.Times(startTime = it.start, endTime = it.end)
                                     }
+                                    .ifEmpty { listOf(Reservation.NoTimes) }
+
+                            val absences = row.value.absences.map { it.category }.toSet()
 
                             ChildReservationInfo(
-                                reservations = res,
-                                absent = basicInfoItem.absenceType != null,
-                                groupId = basicInfoItem.groupId,
-                                childId = basicInfoItem.childId,
-                                outOnBackupPlacement = basicInfoItem.backupUnitId != null,
+                                reservations = reservations,
+                                absent =
+                                    absences.containsAll(
+                                        childRow.placementType.absenceCategories()
+                                    ),
+                                groupId = childRow.groupId,
+                                childId = childRow.childId,
+                                outOnBackupPlacement = childRow.backupUnitId != null,
                                 dailyServiceTimes =
                                     dailyServiceTimes[row.key]?.find {
                                         it.validityPeriod.includes(examinationDate)

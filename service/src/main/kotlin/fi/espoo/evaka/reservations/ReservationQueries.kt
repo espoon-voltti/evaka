@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.reservations
 
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
@@ -553,13 +554,17 @@ data class DailyChildReservationInfoRow(
     val lastName: String,
     val preferredName: String,
     val dateOfBirth: LocalDate,
-    val reservationStartTime: LocalTime?,
-    val reservationEndTime: LocalTime?,
+    @Json val reservations: List<ConfirmedDayReservationInfo>,
+    @Json val absences: List<ConfirmedDayAbsenceInfo>,
     val groupId: GroupId?,
     val absenceType: AbsenceType?,
     val backupUnitId: DaycareId?,
     val placementType: PlacementType
 )
+
+data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
+
+data class ConfirmedDayReservationInfo(val start: LocalTime, val end: LocalTime)
 
 fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
@@ -575,22 +580,29 @@ SELECT pcd.child_id,
        CASE -- affected group in the examination unit
            WHEN (pcd.unit_id <> :unitId) THEN pcd.placement_group_id
            ELSE pcd.group_id END                                       AS group_id,
-       ar.start_time                                                   AS reservation_start_time,
-       ar.end_time                                                     AS reservation_end_time,
-       ab.absence_type                                                 AS absence_type,
        CASE
            WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = :unitId)
            THEN unit_id END                                            AS backup_unit_id,
-        pcd.placement_type
+        pcd.placement_type,
+        -- reservation roll up
+        (SELECT coalesce(jsonb_agg(json_build_object(
+               'start', s.start_time,
+               'end', s.end_time)), '[]'::jsonb)
+        FROM (select ar.start_time, ar.end_time
+              FROM attendance_reservation ar
+              WHERE ar.child_id = pcd.child_id
+                AND ar.date = :examinationDate) s)
+           AS reservations,
+       -- absence roll up
+       (SELECT coalesce(jsonb_agg(json_build_object(
+               'category', s.category)), '[]'::jsonb)
+        FROM (SELECT ab.category
+              FROM absence ab
+              WHERE ab.child_id = pcd.child_id
+                AND ab.date = :examinationDate) s)
+           AS absences
 FROM realized_placement_one(:examinationDate) pcd
          JOIN person p ON pcd.child_id = p.id
-         JOIN daycare u ON u.id = :unitId
-         LEFT JOIN absence ab
-                   ON ab.child_id = pcd.child_id
-                       AND ab.date = :examinationDate
-         LEFT JOIN attendance_reservation ar
-                   ON ar.child_id = pcd.child_id
-                       AND ar.date = :examinationDate
   -- show placed children and children of both backup directions
 WHERE (pcd.unit_id = :unitId OR pcd.placement_unit_id = :unitId)
   -- only show groupless children if they are on back up care in another unit
@@ -623,17 +635,18 @@ select date,
        coalesce(sum(a.occupancy_coefficient * a.capacity_factor)
                 FILTER ( WHERE a.child_in_unit ), 0) AS calculated_present,
        affected_group_id                             AS group_id
-from (SELECT d                                  AS date,
+from (SELECT d                                     AS date,
              CASE -- affected group in the examination unit
                  WHEN (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId) THEN rp.placement_group_id
-                 ELSE rp.group_id END           AS affected_group_id,
+                 ELSE rp.group_id END              AS affected_group_id,
              CASE -- whether child in examination unit at given date
-                 WHEN (ab.absence_type IS NOT NULL OR -- absence or backup care
-                       (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId))
-                     THEN false
+                 WHEN ( -- absence or backup care
+                             absence.categories @> absence_categories(rp.placement_type) OR
+                             (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId)) THEN false
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false
-                 ELSE true END                  AS child_in_unit,
+                 ELSE true
+                 END                               AS child_in_unit,
              CASE -- service need occupancy coefficient of child
                  WHEN u.type && array ['FAMILY', 'GROUP_FAMILY']::care_types[]
                      THEN $familyUnitPlacementCoefficient
@@ -646,18 +659,19 @@ from (SELECT d                                  AS date,
                                   sno.realized_occupancy_coefficient,
                                   sno_default.realized_occupancy_coefficient)
                      END
-                 END                            AS occupancy_coefficient,
-             coalesce(af.capacity_factor, 1.00) AS capacity_factor
+                 END                               AS occupancy_coefficient,
+             coalesce(af.capacity_factor, 1.00)    AS capacity_factor
       FROM unnest(:confirmedDays) d
                LEFT JOIN realized_placement_one(d) rp
                          ON TRUE
+               JOIN LATERAL ( select array_agg(ab.category) as categories
+                              from absence ab
+                              where ab.child_id = rp.child_id
+                                and ab.date = d) absence on true
                JOIN daycare u
                     ON u.id = :unitId
                JOIN person p
                     ON rp.child_id = p.id
-               LEFT JOIN absence ab
-                         ON ab.child_id = rp.child_id
-                             AND ab.date = d
                LEFT JOIN service_need sn
                          ON rp.placement_id = sn.placement_id
                LEFT JOIN service_need_option sno
@@ -669,7 +683,7 @@ from (SELECT d                                  AS date,
                          ON rp.child_id = af.child_id
                              AND af.valid_during @> d
                LEFT JOIN club_term ct ON rp.placement_type IN ('CLUB') AND ct.term_breaks @> d
-               LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL','PREPARATORY') AND pt.term_breaks @> d
+               LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL', 'PREPARATORY') AND pt.term_breaks @> d
       WHERE (rp.unit_id = :unitId OR rp.placement_unit_id = :unitId)) a
 WHERE a.affected_group_id IS NOT NULL
 GROUP BY a.date, a.affected_group_id
