@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
@@ -27,6 +28,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -43,6 +45,11 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val partner = testAdult_2
 
     private val unitSupervisorId = EmployeeId(UUID.randomUUID())
+    private val serviceWorkerId = EmployeeId(UUID.randomUUID())
+    private val decisionMakerId = EmployeeId(UUID.randomUUID())
+    private val partnershipCreator =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+            .evakaUserId
     private val clock = RealEvakaClock()
 
     @BeforeEach
@@ -50,6 +57,8 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insert(DevEmployee(unitSupervisorId))
+            it.insert(DevEmployee(serviceWorkerId))
+            it.insert(DevEmployee(decisionMakerId))
             it.insert(
                 DevParentship(
                     id = ParentshipId(UUID.randomUUID()),
@@ -77,10 +86,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `service worker can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
-            )
+            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
         )
     }
 
@@ -94,7 +100,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `finance admin can create and fetch partnerships`() {
         `can create and fetch partnerships`(
-            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+            AuthenticatedUser.Employee(decisionMakerId, setOf(UserRole.FINANCE_ADMIN))
         )
     }
 
@@ -139,14 +145,20 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         person.id,
                         partner.id,
                         LocalDate.now(),
-                        LocalDate.now().plusDays(100)
+                        LocalDate.now().plusDays(100),
+                        false,
+                        CreatorOrApplicationId.Creator(partnershipCreator),
+                        clock.now()
                     )
                     .also {
                         tx.createPartnership(
                             person.id,
                             partner.id,
                             LocalDate.now().plusDays(200),
-                            LocalDate.now().plusDays(300)
+                            LocalDate.now().plusDays(300),
+                            false,
+                            CreatorOrApplicationId.Creator(partnershipCreator),
+                            clock.now()
                         )
                         assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
                     }
@@ -159,10 +171,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `service worker can update partnerships`() {
         canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(
-                EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
-            )
+            AuthenticatedUser.Employee(serviceWorkerId, setOf(UserRole.SERVICE_WORKER))
         )
     }
 
@@ -176,7 +185,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `finance admin can update partnerships`() {
         canUpdatePartnershipDuration(
-            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+            AuthenticatedUser.Employee(decisionMakerId, setOf(UserRole.FINANCE_ADMIN))
         )
     }
 
@@ -187,14 +196,20 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         person.id,
                         partner.id,
                         LocalDate.now(),
-                        LocalDate.now().plusDays(200)
+                        LocalDate.now().plusDays(200),
+                        false,
+                        CreatorOrApplicationId.Creator(partnershipCreator),
+                        clock.now()
                     )
                     .also {
                         tx.createPartnership(
                             person.id,
                             partner.id,
                             LocalDate.now().plusDays(500),
-                            LocalDate.now().plusDays(700)
+                            LocalDate.now().plusDays(700),
+                            false,
+                            CreatorOrApplicationId.Creator(partnershipCreator),
+                            clock.now()
                         )
                     }
             }
@@ -223,14 +238,20 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         person.id,
                         partner.id,
                         LocalDate.now(),
-                        LocalDate.now().plusDays(200)
+                        LocalDate.now().plusDays(200),
+                        false,
+                        CreatorOrApplicationId.Creator(partnershipCreator),
+                        clock.now()
                     )
                     .also {
                         tx.createPartnership(
                             person.id,
                             partner.id,
                             LocalDate.now().plusDays(500),
-                            LocalDate.now().plusDays(700)
+                            LocalDate.now().plusDays(700),
+                            false,
+                            CreatorOrApplicationId.Creator(partnershipCreator),
+                            clock.now()
                         )
                     }
             }
@@ -251,7 +272,10 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 person.id,
                 partner.id,
                 LocalDate.now(),
-                LocalDate.now().plusDays(200)
+                LocalDate.now().plusDays(200),
+                false,
+                CreatorOrApplicationId.Creator(partnershipCreator),
+                clock.now()
             )
         }
 
@@ -278,7 +302,10 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     person.id,
                     partner.id,
                     LocalDate.now(),
-                    LocalDate.now().plusDays(200)
+                    LocalDate.now().plusDays(200),
+                    false,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    clock.now()
                 )
             }
 
@@ -301,7 +328,10 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     person.id,
                     partner.id,
                     LocalDate.now(),
-                    LocalDate.now().plusDays(200)
+                    LocalDate.now().plusDays(200),
+                    false,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    clock.now()
                 )
             }
 

@@ -4,13 +4,18 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.pis.service.CreateSource
+import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -24,7 +29,11 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modified_at,
+            fp1.modified_by
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -49,7 +58,11 @@ fun Database.Read.getPartnershipsForPerson(
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modified_at,
+            fp1.modified_by
         FROM fridge_partner fp1
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
@@ -75,10 +88,15 @@ fun Database.Read.getPartnersForPerson(
         """
         SELECT
             fp.*,
-            ${aliasedPersonColumns("p")}
+            ${aliasedPersonColumns("p")},
+            (SELECT name FROM evaka_user WHERE id = fp.created_by) AS created_by_name,
+            (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS modified_by_name,
+            a.type AS created_from_application_type,
+            a.created AS created_from_application_created
         FROM fridge_partner fp
         JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
         JOIN person p ON partner.person_id = p.id
+        LEFT JOIN application a ON fp.created_from_application = a.id
         WHERE fp.person_id = :personId
         AND daterange(fp.start_date, fp.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:includeConflicts OR fp.conflict = false)
@@ -93,21 +111,40 @@ fun Database.Read.getPartnersForPerson(
         .toList(toPartner("p"))
 }
 
+sealed class CreatorOrApplicationId {
+    data class Creator(val id: EvakaUserId) : CreatorOrApplicationId()
+
+    data class Application(val id: ApplicationId) : CreatorOrApplicationId()
+}
+
 fun Database.Transaction.createPartnership(
     personId1: PersonId,
     personId2: PersonId,
     startDate: LocalDate,
     endDate: LocalDate?,
-    conflict: Boolean = false
+    conflict: Boolean = false,
+    creatorOrApplicationId: CreatorOrApplicationId,
+    createDate: HelsinkiDateTime
 ): Partnership {
-    // language=SQL
-    val sql =
-        """
+    val (createSource, creatorId, applicationId) =
+        when (creatorOrApplicationId) {
+            is CreatorOrApplicationId.Creator -> {
+                Triple(CreateSource.USER, creatorOrApplicationId.id.raw, null)
+            }
+            is CreatorOrApplicationId.Application -> {
+                Triple(CreateSource.APPLICATION, null, creatorOrApplicationId.id)
+            }
+        }
+
+    val partnershipId = UUID.randomUUID()
+    return createQuery<Any> {
+            sql(
+                """
         WITH new_fridge_partner AS (
-            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict)
+            INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at, created_from_application, create_source)
             VALUES
-                (:partnershipId, 1, 2, :person1, :startDate, :endDate, :conflict),
-                (:partnershipId, 2, 1, :person2, :startDate, :endDate, :conflict)
+                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)}),
+                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)})
             RETURNING *
         )
         SELECT
@@ -116,51 +153,59 @@ fun Database.Transaction.createPartnership(
             fp1.end_date,
             fp1.conflict,
             ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")}
+            ${aliasedPersonColumns("p2")},
+            fp1.create_source,
+            fp1.created_at,
+            fp1.created_by,
+            fp1.modify_source,
+            fp1.modified_at,
+            fp1.modified_by,
+            fp1.created_from_application
         FROM new_fridge_partner fp1
         JOIN new_fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
         """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("partnershipId", UUID.randomUUID())
-        .bind("person1", personId1)
-        .bind("person2", personId2)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("conflict", conflict)
+            )
+        }
         .exactlyOne(toPartnership("p1", "p2"))
 }
 
 fun Database.Transaction.updatePartnershipDuration(
     id: PartnershipId,
     startDate: LocalDate,
-    endDate: LocalDate?
+    endDate: LocalDate?,
+    modifySource: ModifySource,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId?
 ): Boolean {
-    // language=SQL
-    val sql =
-        """
-        UPDATE fridge_partner SET start_date = :startDate, end_date = :endDate
-        WHERE partnership_id = :id
+    return createQuery<Any> {
+            sql(
+                """
+        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
+        WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+            )
+        }
         .mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
 }
 
-fun Database.Transaction.retryPartnership(id: PartnershipId) {
-    // language=SQL
-    val sql = "UPDATE fridge_partner SET conflict = false WHERE partnership_id = :id"
-
-    createUpdate(sql).bind("id", id).execute()
+fun Database.Transaction.retryPartnership(
+    id: PartnershipId,
+    modifiedById: EvakaUserId,
+    modificationDate: HelsinkiDateTime
+) {
+    createUpdate<Any> {
+            sql(
+                """
+        UPDATE fridge_partner SET conflict = false
+        WHERE partnership_id = ${bind(id)}, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+    """
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
@@ -192,7 +237,18 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
             person = toPersonJSON(tableAlias),
             startDate = column("start_date"),
             endDate = column("end_date"),
-            conflict = column("conflict")
+            conflict = column("conflict"),
+            createSource = column("create_source"),
+            createdAt = column("created_at"),
+            createdBy = column("created_by"),
+            createdByName = column("created_by_name"),
+            modifySource = column("modify_source"),
+            modifiedAt = column("modified_at"),
+            modifiedBy = column("modified_by"),
+            modifiedByName = column("modified_by_name"),
+            createdFromApplication = column("created_from_application"),
+            createdFromApplicationType = column("created_from_application_type"),
+            createdFromApplicationCreated = column("created_from_application_created")
         )
     }
 }

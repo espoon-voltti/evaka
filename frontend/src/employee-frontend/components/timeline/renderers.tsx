@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
@@ -17,6 +18,7 @@ import {
   TimelineServiceNeed,
   TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
 import { maxOf, minOf } from 'lib-common/ordered'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -33,17 +35,22 @@ type SummaryRenderer<T extends WithRange> = (props: {
 type TooltipRenderer<T extends WithRange> = (props: {
   elem: T
 }) => React.ReactNode
+type MetadataRenderer<T extends WithRange> = (props: {
+  elem: T
+}) => React.ReactNode
 type NestedContentRenderer<T extends WithRange> = (props: {
   elem: T
   timelineRange: FiniteDateRange
   zoom: number
 }) => React.ReactNode
 export interface EventRenderer<T extends WithRange> {
+  Metadata?: MetadataRenderer<T>
   color: (elem: T) => string
   linkProvider?: (elem: T) => string
   Summary: SummaryRenderer<T>
   Tooltip?: TooltipRenderer<T>
   NestedContent?: NestedContentRenderer<T>
+  eventType: string
 }
 
 const TlNestedContainer = styled.div`
@@ -55,7 +62,8 @@ const TlNestedContainer = styled.div`
 
 export const monthRenderer: EventRenderer<WithRange> = {
   color: () => '#ffffff',
-  Summary: ({ elem }) => elem.range.start.format('MM/yyyy')
+  Summary: ({ elem }) => elem.range.start.format('MM/yyyy'),
+  eventType: 'month'
 }
 
 export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
@@ -89,7 +97,8 @@ export const feeDecisionRenderer: EventRenderer<TimelineFeeDecision> = {
         <span>{formatCents(elem.totalFee)} €</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'fee-decision'
 }
 
 export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
@@ -122,7 +131,8 @@ export const valueDecisionRenderer: EventRenderer<TimelineValueDecision> = {
         <span>{i18n.valueDecision.status[elem.status]}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'value-decision'
 }
 
 export const incomeRenderer: EventRenderer<TimelineIncome> = {
@@ -141,9 +151,81 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
         </span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'income'
+}
+interface PartnershipMetadataProps {
+  partnerDetails: TimelinePartnerDetailed
 }
 
+const PartnershipMetadata = React.memo(function PartnershipMetadata({
+  partnerDetails: {
+    createdAt,
+    createdBy,
+    createdByName,
+    createSource,
+    createdFromApplication,
+    createdFromApplicationType,
+    createdFromApplicationCreated,
+    modifySource,
+    modifiedAt,
+    modifiedByName
+  }
+}: PartnershipMetadataProps) {
+  const { i18n } = useTranslation()
+  const formatDate = (date: HelsinkiDateTime | null) =>
+    date ? date.format() : i18n.timeline.notAvailable
+  const createInfo = (() => {
+    if (createSource === 'USER') {
+      return createdBy
+        ? `${i18n.timeline.user} ${createdByName}`
+        : i18n.timeline.notAvailable
+    } else if (createSource === 'APPLICATION') {
+      if (
+        createdFromApplication &&
+        createdFromApplicationType &&
+        createdFromApplicationCreated
+      ) {
+        return (
+          <Link to={`/applications/${createdFromApplication}`}>
+            {`${i18n.timeline.application}: ${
+              i18n.common.types[createdFromApplicationType]
+            }, ${createdFromApplicationCreated.format()}`}
+          </Link>
+        )
+      } else {
+        return i18n.timeline.notAvailable
+      }
+    } else {
+      return i18n.timeline.unknownSource
+    }
+  })()
+  const getModifyInfo = () => {
+    if (modifySource === 'USER') {
+      return modifiedByName
+        ? `${i18n.timeline.user} ${modifiedByName}`
+        : i18n.timeline.notAvailable
+    } else if (modifySource === 'DVV') {
+      return i18n.timeline.DVV
+    } else {
+      return i18n.timeline.unknownModification
+    }
+  }
+  return (
+    <div>
+      <strong>{i18n.timeline.createdAtTitle}:</strong> {formatDate(createdAt)}
+      {' - '}
+      {createInfo}
+      {modifiedAt && (
+        <>
+          <br />
+          <strong>{i18n.timeline.modifiedAtTitle}:</strong>{' '}
+          {formatDate(modifiedAt)} - {getModifyInfo()}
+        </>
+      )}
+    </div>
+  )
+})
 export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
   color: () => '#f4bcff',
   linkProvider: (elem) => `/profile/${elem.partnerId}`,
@@ -151,29 +233,33 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     const { i18n } = useTranslation()
     return `${i18n.timeline.partner} ${elem.firstName} ${elem.lastName}`
   },
-  Tooltip: ({ elem }) => (
+  Tooltip: ({ elem: partnerDetails }) => (
     <FixedSpaceColumn spacing="xxs">
-      <span>{elem.range.format()}</span>
+      <span>{partnerDetails.range.format()}</span>
       <span>
-        {elem.firstName} {elem.lastName}
+        {partnerDetails.firstName} {partnerDetails.lastName}
       </span>
     </FixedSpaceColumn>
   ),
-  NestedContent: ({ elem, timelineRange, zoom }) => {
-    const nestedRange = getNestedRange(elem.range, timelineRange)
-    if (nestedRange === null) return null
+  Metadata: ({ elem: partnerDetails }) => (
+    <PartnershipMetadata partnerDetails={partnerDetails} />
+  ),
+  NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
+    const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
+    if (nestedRange === null)
+      return <PartnershipMetadata partnerDetails={partnerDetails} />
 
     return (
       <TlNestedContainer>
         {/*Fee decisions grouped by statuses*/}
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'SENT')}
+          data={partnerDetails.feeDecisions.filter((d) => d.status === 'SENT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) =>
+          data={partnerDetails.feeDecisions.filter((d) =>
             ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
               d.status
             )
@@ -183,19 +269,23 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'DRAFT')}
+          data={partnerDetails.feeDecisions.filter((d) => d.status === 'DRAFT')}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'ANNULLED')}
+          data={partnerDetails.feeDecisions.filter(
+            (d) => d.status === 'ANNULLED'
+          )}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.feeDecisions.filter((d) => d.status === 'IGNORED')}
+          data={partnerDetails.feeDecisions.filter(
+            (d) => d.status === 'IGNORED'
+          )}
           renderer={feeDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -205,13 +295,15 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
 
         {/*Value decisions grouped by statuses*/}
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'SENT')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'SENT'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) =>
+          data={partnerDetails.valueDecisions.filter((d) =>
             ['WAITING_FOR_SENDING', 'WAITING_FOR_MANUAL_SENDING'].includes(
               d.status
             )
@@ -221,13 +313,17 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'DRAFT')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'DRAFT'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
         <TimelineGroup
-          data={elem.valueDecisions.filter((d) => d.status === 'ANNULLED')}
+          data={partnerDetails.valueDecisions.filter(
+            (d) => d.status === 'ANNULLED'
+          )}
           renderer={valueDecisionRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -236,7 +332,7 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={elem.incomes}
+          data={partnerDetails.incomes}
           renderer={incomeRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
@@ -245,14 +341,15 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
         <Gap size="xs" />
 
         <TimelineGroup
-          data={elem.children}
+          data={partnerDetails.children}
           renderer={childRenderer}
           timelineRange={nestedRange}
           zoom={zoom}
         />
       </TlNestedContainer>
     )
-  }
+  },
+  eventType: 'partner'
 }
 
 export const childRenderer: EventRenderer<TimelineChildDetailed> = {
@@ -312,7 +409,8 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
         />
       </TlNestedContainer>
     )
-  }
+  },
+  eventType: 'child'
 }
 
 export const placementRenderer: EventRenderer<TimelinePlacement> = {
@@ -330,7 +428,8 @@ export const placementRenderer: EventRenderer<TimelinePlacement> = {
         <span>{elem.unit.name}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'placement'
 }
 
 export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
@@ -341,7 +440,8 @@ export const serviceNeedRenderer: EventRenderer<TimelineServiceNeed> = {
       <span>{elem.range.format()}</span>
       <span>{elem.name}</span>
     </FixedSpaceColumn>
-  )
+  ),
+  eventType: 'service-need'
 }
 
 const getNestedRange = (range: DateRange, parentRange: FiniteDateRange) => {
@@ -374,5 +474,6 @@ export const feeAlterationRenderer: EventRenderer<TimelineFeeAlteration> = {
         <span>{elem.notes}</span>
       </FixedSpaceColumn>
     )
-  }
+  },
+  eventType: 'fee-alteration'
 }

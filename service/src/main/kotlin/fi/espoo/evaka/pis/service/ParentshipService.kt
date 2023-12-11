@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -139,3 +140,17 @@ data class Parentship(
     val endDate: LocalDate,
     val conflict: Boolean = false
 )
+
+enum class CreateSource : DatabaseEnum {
+    USER,
+    APPLICATION;
+
+    override val sqlType = "create_source"
+}
+
+enum class ModifySource : DatabaseEnum {
+    USER,
+    DVV;
+
+    override val sqlType = "modify_source"
+}

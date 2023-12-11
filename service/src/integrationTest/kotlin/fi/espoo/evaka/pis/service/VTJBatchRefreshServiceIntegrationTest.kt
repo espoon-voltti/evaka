@@ -13,11 +13,13 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -126,13 +128,15 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         val partnershipId = PartnershipId(UUID.randomUUID())
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
+            val createdAt = HelsinkiDateTime.of(startDate, LocalTime.of(12, 0, 0))
             tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
                     indx = 1,
                     otherIndx = 2,
                     personId = testAdult_1.id,
-                    startDate = startDate
+                    startDate = startDate,
+                    createdAt = createdAt
                 )
             )
             tx.insert(
@@ -141,7 +145,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     indx = 2,
                     otherIndx = 1,
                     personId = testAdult_2.id,
-                    startDate = startDate
+                    startDate = startDate,
+                    createdAt = createdAt
                 )
             )
         }
@@ -171,6 +176,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         db.transaction { tx ->
             val startDate = LocalDate.of(2000, 1, 1)
             val endDate = LocalDate.of(2010, 1, 1)
+            val createdAt = HelsinkiDateTime.of(startDate, LocalTime.of(12, 0, 0))
             tx.insert(
                 DevFridgePartner(
                     partnershipId = partnershipId,
@@ -178,7 +184,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     otherIndx = 2,
                     personId = testAdult_1.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
+                    createdAt = createdAt
                 )
             )
             tx.insert(
@@ -188,7 +195,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     otherIndx = 1,
                     personId = testAdult_2.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
+                    createdAt = createdAt
                 )
             )
         }

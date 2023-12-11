@@ -169,6 +169,19 @@ describe('Employee - Head of family details', () => {
     await familyOverview.assertPerson({ personId: fridgePartner.id })
   })
 
+  test('Partner metadata is shown in timeline', async () => {
+    await guardianInformation.navigateToGuardian(regularPerson.id)
+    const partnersSection =
+      await guardianInformation.openCollapsible('partners')
+    await partnersSection.addPartner(fridgePartner.firstName, '01.01.2020')
+
+    const timelinePage = await guardianInformation.openTimeline()
+    const timelineEvent = timelinePage.getTimelineEvent('partner', 0)
+    await timelineEvent.expandEvent()
+    await timelineEvent.assertMetadataContains('Luotu: 01.01.2020')
+    await timelineEvent.assertMetadataContains(' - Käyttäjä Sorsa Seppo')
+  })
+
   test('Manually added income is shown in family overview', async () => {
     await Fixture.fridgeChild()
       .with({

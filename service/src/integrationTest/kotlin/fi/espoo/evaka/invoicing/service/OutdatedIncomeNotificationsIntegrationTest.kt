@@ -203,11 +203,20 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     2,
                     fridgeHeadOfChildId,
                     clock.today(),
-                    clock.today()
+                    clock.today(),
+                    clock.now()
                 )
             )
             it.insert(
-                DevFridgePartner(partnershipId, 2, 1, fridgePartnerId, clock.today(), clock.today())
+                DevFridgePartner(
+                    partnershipId,
+                    2,
+                    1,
+                    fridgePartnerId,
+                    clock.today(),
+                    clock.today(),
+                    clock.now()
+                )
             )
         }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -14,8 +15,12 @@ import fi.espoo.evaka.invoicing.service.generator.WithRange
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.CreateSource
+import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
@@ -30,6 +35,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -106,7 +112,19 @@ class TimelineController(private val accessControl: AccessControl) {
                                                 feeAlterations =
                                                     tx.getFeeAlterations(child.childId, childRange)
                                             )
-                                        }
+                                        },
+                                    createdAt = partner.createdAt,
+                                    createdBy = partner.createdBy,
+                                    createSource = partner.createSource,
+                                    createdByName = partner.createdByName,
+                                    modifiedAt = partner.modifiedAt,
+                                    modifiedBy = partner.modifiedBy,
+                                    modifySource = partner.modifySource,
+                                    modifiedByName = partner.modifiedByName,
+                                    createdFromApplication = partner.createdFromApplication,
+                                    createdFromApplicationType = partner.createdFromApplicationType,
+                                    createdFromApplicationCreated =
+                                        partner.createdFromApplicationCreated
                                 )
                             },
                         children =
@@ -209,7 +227,18 @@ data class TimelinePartner(
     override val range: DateRange,
     val partnerId: PersonId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val createdByName: String?,
+    val createSource: CreateSource?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
+    val modifiedByName: String?,
+    val modifySource: ModifySource?,
+    val createdFromApplication: ApplicationId?,
+    val createdFromApplicationType: ApplicationType?,
+    val createdFromApplicationCreated: HelsinkiDateTime?
 ) : WithRange
 
 data class TimelinePartnerDetailed(
@@ -221,7 +250,18 @@ data class TimelinePartnerDetailed(
     val feeDecisions: List<TimelineFeeDecision>,
     val valueDecisions: List<TimelineValueDecision>,
     val incomes: List<TimelineIncome>,
-    val children: List<TimelineChildDetailed>
+    val children: List<TimelineChildDetailed>,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val createdByName: String?,
+    val createSource: CreateSource?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
+    val modifiedByName: String?,
+    val modifySource: ModifySource?,
+    val createdFromApplication: ApplicationId?,
+    val createdFromApplicationType: ApplicationType?,
+    val createdFromApplicationCreated: HelsinkiDateTime?
 ) : WithRange
 
 private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
@@ -236,7 +276,18 @@ private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange
                 range = DateRange(it.startDate, it.endDate),
                 partnerId = it.person.id,
                 firstName = it.person.firstName,
-                lastName = it.person.lastName
+                lastName = it.person.lastName,
+                createSource = it.createSource,
+                createdAt = it.createdAt,
+                createdBy = it.createdBy,
+                createdByName = it.createdByName,
+                modifySource = it.modifySource,
+                modifiedAt = it.modifiedAt,
+                modifiedBy = it.modifiedBy,
+                modifiedByName = it.modifiedByName,
+                createdFromApplication = it.createdFromApplication,
+                createdFromApplicationType = it.createdFromApplicationType,
+                createdFromApplicationCreated = it.createdFromApplicationCreated
             )
         }
         .sortedBy { it.range.start }

@@ -1951,7 +1951,17 @@ export const fi = {
     feeDecision: 'Maksupäätös',
     valueDecision: 'Arvopäätös',
     partner: 'Puoliso',
-    child: 'Lapsi'
+    child: 'Lapsi',
+    createdAtTitle: 'Luotu',
+    unknownSource: 'Luontilähde ei tiedossa',
+    modifiedAtTitle: 'Muokattu',
+    unknownModification: 'Muokkauksen tekijä ei tiedossa',
+    notModified: 'Ei muokattu',
+    user: 'Käyttäjä',
+    application: 'Hakemus',
+    dvvSync: 'Väestötietojärjestelmä',
+    notAvailable: 'Aika ei tiedossa',
+    DVV: 'Väestötietojärjestelmä synkronointi'
   },
   incomeStatement: {
     startDate: 'Voimassa alkaen',

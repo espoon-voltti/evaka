@@ -127,7 +127,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val youngerChild = testChild_1
         val olderChild = testChild_2
         val partnershipPeriod = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31))
-        insertPartnership(dad.id, mom.id, partnershipPeriod)
+        insertPartnership(dad.id, mom.id, partnershipPeriod, clock.now())
         insertFamilyRelations(
             dad.id,
             listOf(youngerChild.id),
@@ -563,7 +563,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val wholePeriod = firstPeriod.copy(end = secondPeriod.end)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), wholePeriod)
         insertPlacement(testChild_2.id, wholePeriod, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod, clock.now())
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_2.id) }
 
@@ -635,7 +635,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertPlacement(
             testChild_1.id,
             period,
@@ -653,7 +653,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertPlacement(
             testChild_1.id,
             period,
@@ -700,8 +700,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1)
-        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1, clock.now())
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2, clock.now())
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
 
@@ -726,7 +726,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertIncome(testAdult_1.id, 10000, period)
         insertIncome(testAdult_2.id, 20000, period)
 
@@ -779,7 +779,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
-        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period, clock.now())
         insertIncome(testAdult_2.id, 10000, subPeriod2)
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
@@ -1368,13 +1368,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
-    private fun insertPartnership(adultId1: PersonId, adultId2: PersonId, period: DateRange) {
+    private fun insertPartnership(
+        adultId1: PersonId,
+        adultId2: PersonId,
+        period: DateRange,
+        createdAt: HelsinkiDateTime
+    ) {
         db.transaction { tx ->
             tx.insertTestPartnership(
                 adultId1,
                 adultId2,
                 startDate = period.start,
-                endDate = period.end
+                endDate = period.end,
+                createdAt = createdAt
             )
         }
     }

@@ -83,6 +83,13 @@ export interface CreatePersonBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.service.CreateSource
+*/
+export type CreateSource =
+  | 'USER'
+  | 'APPLICATION'
+
+/**
 * Generated from fi.espoo.evaka.pis.DaycareGroupRole
 */
 export interface DaycareGroupRole {
@@ -328,6 +335,13 @@ export interface MergeRequest {
 export interface MobileDeviceTracking {
   userAgent: string
 }
+
+/**
+* Generated from fi.espoo.evaka.pis.service.ModifySource
+*/
+export type ModifySource =
+  | 'USER'
+  | 'DVV'
 
 /**
 * Generated from fi.espoo.evaka.pis.NewEmployee

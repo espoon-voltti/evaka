@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
@@ -135,7 +136,7 @@ class DvvModificationsService(
                 logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
                 tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
 
-                endFamilyRelations(tx, person.id, dateOfDeath)
+                endFamilyRelations(tx, person.id, dateOfDeath, clock)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -163,14 +164,24 @@ class DvvModificationsService(
     private fun endFamilyRelations(
         tx: Database.Transaction,
         personId: PersonId,
-        dateOfDeath: LocalDate
+        dateOfDeath: LocalDate,
+        clock: EvakaClock
     ) {
         tx.getPartnersForPerson(
                 personId,
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
             )
-            .forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }
+            .forEach {
+                tx.updatePartnershipDuration(
+                    it.partnershipId,
+                    it.startDate,
+                    dateOfDeath,
+                    ModifySource.DVV,
+                    clock.now(),
+                    null
+                )
+            }
 
         tx.getParentships(
                 headOfChildId = personId,

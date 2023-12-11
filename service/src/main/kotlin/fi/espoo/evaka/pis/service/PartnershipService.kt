@@ -4,15 +4,15 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.deletePartnership
-import fi.espoo.evaka.pis.getPartnership
-import fi.espoo.evaka.pis.retryPartnership
-import fi.espoo.evaka.pis.updatePartnershipDuration
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.pis.*
+import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -25,10 +25,20 @@ class PartnershipService {
         personId1: PersonId,
         personId2: PersonId,
         startDate: LocalDate,
-        endDate: LocalDate?
+        endDate: LocalDate?,
+        createdBy: EvakaUserId,
+        createdAt: HelsinkiDateTime
     ): Partnership {
         return try {
-            tx.createPartnership(personId1, personId2, startDate, endDate)
+            tx.createPartnership(
+                personId1,
+                personId2,
+                startDate,
+                endDate,
+                false,
+                CreatorOrApplicationId.Creator(createdBy),
+                createdAt
+            )
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
@@ -38,21 +48,36 @@ class PartnershipService {
         tx: Database.Transaction,
         partnershipId: PartnershipId,
         startDate: LocalDate,
-        endDate: LocalDate?
+        endDate: LocalDate?,
+        modifiedBy: EvakaUserId,
+        modifiedAt: HelsinkiDateTime
     ) {
         try {
-            val success = tx.updatePartnershipDuration(partnershipId, startDate, endDate)
+            val success =
+                tx.updatePartnershipDuration(
+                    partnershipId,
+                    startDate,
+                    endDate,
+                    ModifySource.USER,
+                    modifiedAt,
+                    modifiedBy
+                )
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    fun retryPartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
+    fun retryPartnership(
+        tx: Database.Transaction,
+        partnershipId: PartnershipId,
+        modifiedById: EvakaUserId,
+        modifiedAt: HelsinkiDateTime
+    ): Partnership? {
         return try {
             tx.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
-                ?.also { tx.retryPartnership(partnershipId) }
+                ?.also { tx.retryPartnership(partnershipId, modifiedById, modifiedAt) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
@@ -76,5 +101,16 @@ data class Partner(
     val person: PersonJSON,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
+    val createSource: CreateSource?,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val createdByName: String?,
+    val modifySource: ModifySource?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
+    val modifiedByName: String?,
+    val createdFromApplication: ApplicationId?,
+    val createdFromApplicationType: ApplicationType?,
+    val createdFromApplicationCreated: HelsinkiDateTime?
 )

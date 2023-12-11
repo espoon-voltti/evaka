@@ -6,10 +6,14 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import DateRange from '../../date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { ApplicationType } from './application'
+import { CreateSource } from './pis'
 import { FeeAlterationType } from './invoicing'
 import { FeeDecisionStatus } from './invoicing'
 import { IncomeEffect } from './invoicing'
+import { ModifySource } from './pis'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 import { VoucherValueDecisionStatus } from './invoicing'
@@ -80,11 +84,22 @@ export interface TimelineIncome {
 */
 export interface TimelinePartnerDetailed {
   children: TimelineChildDetailed[]
+  createSource: CreateSource | null
+  createdAt: HelsinkiDateTime | null
+  createdBy: UUID | null
+  createdByName: string | null
+  createdFromApplication: UUID | null
+  createdFromApplicationCreated: HelsinkiDateTime | null
+  createdFromApplicationType: ApplicationType | null
   feeDecisions: TimelineFeeDecision[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: UUID | null
+  modifiedByName: string | null
+  modifySource: ModifySource | null
   partnerId: UUID
   range: DateRange
   valueDecisions: TimelineValueDecision[]

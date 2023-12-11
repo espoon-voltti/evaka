@@ -22,6 +22,7 @@ import {
 } from '../../utils/page'
 
 import { IncomeStatementPage } from './IncomeStatementPage'
+import { TimelinePage } from './timeline/timeline-page'
 
 export default class GuardianInformationPage {
   constructor(private readonly page: Page) {}
@@ -46,6 +47,7 @@ export default class GuardianInformationPage {
   #personStreetAddress = this.page.find(
     '[data-qa="person-details-street-address"]'
   )
+  #timelineButton = this.page.find('[data-qa="timeline-button"]')
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
@@ -78,6 +80,10 @@ export default class GuardianInformationPage {
     const { selector, section } = collapsibles[collapsible]
     const element = this.page.find(selector)
     return new section(this.page, element) as SectionFor<C>
+  }
+  async openTimeline(): Promise<TimelinePage> {
+    await this.#timelineButton.click()
+    return new TimelinePage(this.page)
   }
 }
 

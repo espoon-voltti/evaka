@@ -62,7 +62,9 @@ class PartnershipsController(
                             body.person1Id,
                             body.person2Id,
                             body.startDate,
-                            body.endDate
+                            body.endDate,
+                            user.evakaUserId,
+                            clock.now()
                         )
                         .also {
                             asyncJobRunner.plan(
@@ -170,7 +172,9 @@ class PartnershipsController(
                     tx,
                     partnershipId,
                     body.startDate,
-                    body.endDate
+                    body.endDate,
+                    user.evakaUserId,
+                    clock.now()
                 )
                 asyncJobRunner.plan(
                     tx,
@@ -209,18 +213,20 @@ class PartnershipsController(
                     Action.Partnership.RETRY,
                     partnershipId
                 )
-                partnershipService.retryPartnership(tx, partnershipId)?.let {
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                it.partners.first().id,
-                                DateRange(it.startDate, it.endDate)
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
+                partnershipService
+                    .retryPartnership(tx, partnershipId, user.evakaUserId, clock.now())
+                    ?.let {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forAdult(
+                                    it.partners.first().id,
+                                    DateRange(it.startDate, it.endDate)
+                                )
+                            ),
+                            runAt = clock.now()
+                        )
+                    }
             }
         }
         Audit.PartnerShipsRetry.log(targetId = partnershipId)

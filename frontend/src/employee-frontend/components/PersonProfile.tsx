@@ -254,6 +254,7 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
                   text={i18n.personProfile.timeline}
                   onClick={() => navigate(`/profile/${id}/timeline`)}
                   icon={faListTimeline}
+                  data-qa="timeline-button"
                 />
               )}
             </FixedSpaceColumn>

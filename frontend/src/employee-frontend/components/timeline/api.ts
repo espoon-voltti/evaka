@@ -15,6 +15,7 @@ import {
   TimelineServiceNeed,
   TimelineValueDecision
 } from 'lib-common/generated/api-types/timeline'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -68,6 +69,13 @@ const deserializePartner = (
   json: JsonOf<TimelinePartnerDetailed>
 ): TimelinePartnerDetailed => ({
   ...json,
+  createdAt: json.createdAt ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+  modifiedAt: json.modifiedAt
+    ? HelsinkiDateTime.parseIso(json.modifiedAt)
+    : null,
+  createdFromApplicationCreated: json.createdFromApplicationCreated
+    ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated)
+    : null,
   range: DateRange.parseJson(json.range),
   feeDecisions: json.feeDecisions.map(deserializeFeeDecision),
   valueDecisions: json.valueDecisions.map(deserializeValueDecision),

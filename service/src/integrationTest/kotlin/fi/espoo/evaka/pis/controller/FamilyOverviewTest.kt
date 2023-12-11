@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
+import fi.espoo.evaka.pis.CreatorOrApplicationId
 import fi.espoo.evaka.pis.controllers.FamilyController
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPartnership
@@ -148,9 +149,18 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun createTestFixture2plus2() {
         val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction {
+            val creator = financeUser.evakaUserId
             it.createParentship(testChild_1.id, testAdult_1.id, from, to)
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
-            it.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
+            it.createPartnership(
+                testAdult_1.id,
+                testAdult_2.id,
+                from,
+                to,
+                false,
+                CreatorOrApplicationId.Creator(creator),
+                clock.now()
+            )
         }
     }
 

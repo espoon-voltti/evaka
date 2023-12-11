@@ -35,13 +35,18 @@ export default function TlEvent<T extends WithRange>({
 }) {
   const [open, setOpen] = useState(false)
   return (
-    <TlEventContainer left={left} width={width} color={renderer.color(event)}>
+    <TlEventContainer
+      left={left}
+      width={width}
+      color={renderer.color(event)}
+      data-qa={`timeline-event-${renderer.eventType}`}
+    >
       <FixedSpaceColumn spacing="xs">
         <Header>
           <StickyHeaderPositioner>
             <HeaderInner>
               {renderer.NestedContent && (
-                <ExpanderButton>
+                <ExpanderButton data-qa="event-expander-button">
                   <IconButton
                     icon={open ? faChevronUp : faChevronDown}
                     size="xs"
@@ -50,7 +55,7 @@ export default function TlEvent<T extends WithRange>({
                   />
                 </ExpanderButton>
               )}
-              <SummaryLabel>
+              <SummaryLabel data-qa="event-summary">
                 {renderer.linkProvider ? (
                   <Link to={renderer.linkProvider(event)} target="_blank">
                     <renderer.Summary elem={event} />
@@ -71,6 +76,11 @@ export default function TlEvent<T extends WithRange>({
         </Header>
         {open && renderer.NestedContent && (
           <ExpandedContent>
+            {!!renderer.Metadata && (
+              <StickyHeaderPositioner data-qa="partner-metadata">
+                <renderer.Metadata elem={event} />
+              </StickyHeaderPositioner>
+            )}
             <renderer.NestedContent
               elem={event}
               timelineRange={timelineRange}
