@@ -431,7 +431,7 @@ jobs:
           path: dependency-check-data
           key: dependency-check-data-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            dependency-check-data
+            dependency-check-data-
 
       - name: Run service OWASP tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
