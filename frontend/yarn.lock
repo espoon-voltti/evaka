@@ -5504,10 +5504,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.33.0":
-  version: 3.33.0
-  resolution: "core-js@npm:3.33.0"
-  checksum: 940ad9c3bbc971d884c08da7cf4a3fe9b360011a35b9e93c35627c439419f0e852749a357bef5d072d5f8921d45b46bd886a3ebb6979628c292ecf787a50506f
+"core-js@npm:^3.34.0":
+  version: 3.34.0
+  resolution: "core-js@npm:3.34.0"
+  checksum: 054474ab6a0a08a2277ca2c1c953e5789c562bbe144f6a43786b0f4167b4a76c671833bd0a112e275e1d99d84fa157e64814ff23aa01532e08e3b46403d7f7f4
   languageName: node
   linkType: hard
 
@@ -6817,7 +6817,7 @@ __metadata:
     classnames: "npm:^2.3.2"
     compute-scroll-into-view: "npm:^3.1.0"
     concurrently: "npm:^8.2.0"
-    core-js: "npm:^3.33.0"
+    core-js: "npm:^3.34.0"
     css-loader: "npm:^6.8.1"
     csstype: "npm:^3.1.2"
     date-fns: "npm:^2.30.0"
