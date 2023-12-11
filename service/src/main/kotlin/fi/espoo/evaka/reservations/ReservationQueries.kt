@@ -664,7 +664,7 @@ from (SELECT d                                     AS date,
       FROM unnest(:confirmedDays) d
                LEFT JOIN realized_placement_one(d) rp
                          ON TRUE
-               JOIN LATERAL ( select array_agg(ab.category) as categories
+               JOIN LATERAL ( select coalesce(array_agg(ab.category), '{}'::absence_category[]) as categories
                               from absence ab
                               where ab.child_id = rp.child_id
                                 and ab.date = d) absence on true
