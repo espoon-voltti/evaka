@@ -4,147 +4,120 @@
 
 package fi.espoo.evaka.messaging
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
-import java.util.UUID
+import java.time.LocalTime
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var messageController: MessageController
 
-    private val child = testChild_1
-    private val unit = testDaycare
-    private val secondUnit = testDaycare2
-
-    private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor1 =
-        AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
-    private val supervisor2Id = EmployeeId(UUID.randomUUID())
-    private val supervisor2 =
-        AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
-    private val guardianPerson = testAdult_6
-    private val groupId = GroupId(UUID.randomUUID())
-    private val groupName = "Testaajat"
-    private val secondGroupId = GroupId(UUID.randomUUID())
-    private val secondGroupName = "Koekaniinit"
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
-    private lateinit var groupMessageAccount: MessageAccountId
-    private lateinit var supervisor1MessageAccount: MessageAccountId
-    private lateinit var supervisor2MessageAccount: MessageAccountId
-
-    private fun insertChildToUnit(
-        tx: Database.Transaction,
-        childId: ChildId,
-        guardianId: PersonId?,
-        unitId: DaycareId
-    ): PlacementId {
-        if (guardianId != null) tx.insertGuardian(guardianId, childId)
-        return tx.insert(
-            DevPlacement(
-                childId = childId,
-                unitId = unitId,
-                startDate = placementStart,
-                endDate = placementEnd
-            )
-        )
-    }
-
-    private fun insertChildToGroup(
-        tx: Database.Transaction,
-        childId: ChildId,
-        guardianId: PersonId?,
-        groupId: GroupId,
-        unitId: DaycareId
-    ) {
-        val daycarePlacementId = insertChildToUnit(tx, childId, guardianId, unitId)
-        tx.insertTestDaycareGroupPlacement(
-            daycarePlacementId = daycarePlacementId,
-            groupId = groupId,
-            startDate = placementStart,
-            endDate = placementEnd
-        )
-    }
-
-    @BeforeEach
-    fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-
-            tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            groupMessageAccount = tx.createDaycareGroupMessageAccount(groupId)
-
-            tx.insert(
-                DevDaycareGroup(
-                    id = secondGroupId,
-                    daycareId = secondUnit.id,
-                    name = secondGroupName
-                )
-            )
-
-            insertChildToGroup(tx, child.id, guardianPerson.id, groupId, unit.id)
-            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnit.id)
-
-            // Child 2 has a placement but is not in any group => should not show up in receivers
-            // list
-            insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unit.id)
-
-            // Child 3 has no guardians => should not show up in receivers list
-            insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnit.id)
-            tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
-
-            tx.insert(DevEmployee(id = supervisorId))
-            supervisor1MessageAccount = tx.upsertEmployeeMessageAccount(supervisorId)
-            tx.insert(DevEmployee(id = supervisor2Id))
-            supervisor2MessageAccount = tx.upsertEmployeeMessageAccount(supervisor2Id)
-            tx.insertDaycareAclRow(unit.id, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(secondUnit.id, supervisor2Id, UserRole.UNIT_SUPERVISOR)
-        }
-    }
-
     @Test
-    fun `message receiver endpoint works for unit 1`() {
-        val (_, res, result) =
-            http
-                .get("/messages/receivers?unitId=${unit.id}")
-                .asUser(supervisor1)
-                .responseObject<List<MessageReceiversResponse>>(jsonMapper)
+    fun `message receiver endpoint works for units`() {
+        val area = DevCareArea()
+        val daycare1 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val daycare2 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
 
-        assertEquals(200, res.statusCode)
+        val group1 = DevDaycareGroup(daycareId = daycare1.id, name = "Testaajat")
+        val group2 = DevDaycareGroup(daycareId = daycare2.id, name = "Koekaniinit")
 
-        val receivers = result.get()
+        val supervisor1 = DevEmployee()
+        val supervisor2 = DevEmployee()
+
+        val adult1 = DevPerson()
+        val adult2 = DevPerson()
+        val adult3 = DevPerson()
+
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val child3 = DevPerson()
+        val child4 = DevPerson()
+
+        val (groupMessageAccount, supervisor1MessageAccount, supervisor2MessageAccount) =
+            db.transaction { tx ->
+                tx.insert(area)
+                tx.insert(daycare1)
+                tx.insert(daycare2)
+
+                tx.insert(group1)
+                tx.insert(group2)
+
+                val groupMessageAccount = tx.createDaycareGroupMessageAccount(group1.id)
+
+                tx.insert(child1, DevPersonType.CHILD)
+                tx.insert(child2, DevPersonType.CHILD)
+                tx.insert(child3, DevPersonType.CHILD)
+                tx.insert(child4, DevPersonType.CHILD)
+
+                tx.insert(adult1, DevPersonType.ADULT)
+                tx.insert(adult2, DevPersonType.ADULT)
+                tx.insert(adult3, DevPersonType.ADULT)
+
+                insertChildToGroup(tx, child1.id, adult1.id, group1.id, daycare1.id)
+                insertChildToGroup(tx, child2.id, adult2.id, group2.id, daycare2.id)
+
+                // Child 3 has a placement but is not in any group => should not show up in
+                // receivers list
+                tx.insert(
+                    DevPlacement(
+                        childId = child3.id,
+                        unitId = daycare1.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+                tx.insertGuardian(adult3.id, child3.id)
+
+                // Child 4 has no guardians => should not show up in receivers list
+                insertChildToGroup(tx, child4.id, null, group2.id, daycare2.id)
+                tx.createParentship(child4.id, adult3.id, placementStart, placementEnd)
+
+                tx.insert(supervisor1)
+                val supervisor1MessageAccount = tx.upsertEmployeeMessageAccount(supervisor1.id)
+                tx.insert(supervisor2)
+                val supervisor2MessageAccount = tx.upsertEmployeeMessageAccount(supervisor2.id)
+                tx.insertDaycareAclRow(daycare1.id, supervisor1.id, UserRole.UNIT_SUPERVISOR)
+                tx.insertDaycareAclRow(daycare2.id, supervisor2.id, UserRole.UNIT_SUPERVISOR)
+
+                listOf(groupMessageAccount, supervisor1MessageAccount, supervisor2MessageAccount)
+            }
+
+        val receivers1 =
+            messageController.getReceiversForNewMessage(
+                dbInstance(),
+                AuthenticatedUser.Employee(supervisor1.id, setOf()),
+                RealEvakaClock()
+            )
         assertEquals(
             setOf(
                 MessageReceiversResponse(
@@ -152,19 +125,19 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     receivers =
                         listOf(
                             MessageReceiver.Unit(
-                                id = unit.id,
-                                name = unit.name,
+                                id = daycare1.id,
+                                name = daycare1.name,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Group(
-                                            id = groupId,
-                                            name = groupName,
+                                            id = group1.id,
+                                            name = group1.name,
                                             receivers =
                                                 listOf(
                                                     MessageReceiver.Child(
-                                                        id = child.id,
+                                                        id = child1.id,
                                                         name =
-                                                            "${child.lastName} ${child.firstName}"
+                                                            "${child1.lastName} ${child2.firstName}"
                                                     )
                                                 )
                                         )
@@ -177,34 +150,28 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     receivers =
                         listOf(
                             MessageReceiver.Group(
-                                id = groupId,
-                                name = groupName,
+                                id = group1.id,
+                                name = group1.name,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Child(
-                                            id = child.id,
-                                            name = "${child.lastName} ${child.firstName}"
+                                            id = child1.id,
+                                            name = "${child1.lastName} ${child1.firstName}"
                                         )
                                     )
                             )
                         )
                 )
             ),
-            receivers.toSet()
+            receivers1.toSet()
         )
-    }
 
-    @Test
-    fun `message receiver endpoint works for unit 2`() {
-        val (_, res, result) =
-            http
-                .get("/messages/receivers?unitId=${secondUnit.id}")
-                .asUser(supervisor2)
-                .responseObject<List<MessageReceiversResponse>>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-
-        val receivers = result.get()
+        val receivers2 =
+            messageController.getReceiversForNewMessage(
+                dbInstance(),
+                AuthenticatedUser.Employee(supervisor2.id, setOf()),
+                RealEvakaClock()
+            )
         assertEquals(
             setOf(
                 MessageReceiversResponse(
@@ -212,19 +179,19 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     receivers =
                         listOf(
                             MessageReceiver.Unit(
-                                id = secondUnit.id,
-                                name = secondUnit.name,
+                                id = daycare2.id,
+                                name = daycare2.name,
                                 receivers =
                                     listOf(
                                         MessageReceiver.Group(
-                                            id = secondGroupId,
-                                            name = secondGroupName,
+                                            id = group2.id,
+                                            name = group2.name,
                                             receivers =
                                                 listOf(
                                                     MessageReceiver.Child(
-                                                        id = testChild_4.id,
+                                                        id = child2.id,
                                                         name =
-                                                            "${testChild_4.lastName} ${testChild_4.firstName}"
+                                                            "${child2.lastName} ${child2.firstName}"
                                                     )
                                                 )
                                         )
@@ -233,7 +200,133 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         )
                 )
             ),
-            receivers.toSet()
+            receivers2.toSet()
+        )
+    }
+
+    @Test
+    fun `municipal receivers`() {
+        val today = LocalDate.of(2023, 12, 1)
+        val employee = DevEmployee(roles = setOf(UserRole.MESSAGING))
+
+        val area1 = DevCareArea(name = "area1", shortName = "area1")
+        val daycare1 =
+            DevDaycare(
+                areaId = area1.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        val daycare2 =
+            DevDaycare(
+                areaId = area1.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+
+        val area2 = DevCareArea(name = "area2", shortName = "area2")
+        val daycare3 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        // Closed
+        val daycare4 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                closingDate = today.minusDays(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        // Messaging disabled
+        val daycare5 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf()
+            )
+
+        val municipalAccountId =
+            db.transaction { tx ->
+                tx.insert(area1)
+                tx.insert(area2)
+                tx.insert(daycare1)
+                tx.insert(daycare2)
+                tx.insert(daycare3)
+                tx.insert(daycare4)
+                tx.insert(daycare5)
+
+                tx.insert(employee)
+                tx.createMunicipalMessageAccount()
+            }
+
+        val receivers =
+            messageController.getReceiversForNewMessage(
+                dbInstance(),
+                AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
+            )
+        assertEquals(
+            listOf(
+                MessageReceiversResponse(
+                    accountId = municipalAccountId,
+                    receivers =
+                        listOf(
+                            MessageReceiver.Area(
+                                id = area1.id,
+                                name = area1.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare1.id,
+                                            name = daycare1.name,
+                                        ),
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare2.id,
+                                            name = daycare2.name,
+                                        )
+                                    )
+                            ),
+                            MessageReceiver.Area(
+                                id = area2.id,
+                                name = area2.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare3.id,
+                                            name = daycare3.name,
+                                        )
+                                    )
+                            )
+                        )
+                )
+            ),
+            receivers
+        )
+    }
+
+    private fun insertChildToGroup(
+        tx: Database.Transaction,
+        childId: ChildId,
+        guardianId: PersonId?,
+        groupId: GroupId,
+        unitId: DaycareId
+    ) {
+        if (guardianId != null) tx.insertGuardian(guardianId, childId)
+        val daycarePlacementId =
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+        tx.insertTestDaycareGroupPlacement(
+            daycarePlacementId = daycarePlacementId,
+            groupId = groupId,
+            startDate = placementStart,
+            endDate = placementEnd
         )
     }
 }
