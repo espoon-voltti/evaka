@@ -640,7 +640,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     }
 
     @Test
-    fun `transfer application with preferred date after requested termination date is cancelled`() {
+    fun `All active transfer applications are cancelled`() {
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = child.id,
@@ -666,7 +666,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     child = child,
                     applicationId = ApplicationId(UUID.randomUUID()),
                     preferredStartDate = placementTerminationDate.plusDays(-1),
-                    transferApplication = true
+                    transferApplication = true,
+                    status = ApplicationStatus.SENT
                 )
             }
 
@@ -693,7 +694,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         )
 
         assertEquals(
-            ApplicationStatus.CREATED,
+            ApplicationStatus.CANCELLED,
             db.read { it.getApplicationStatus(applicationBeforeTermination.id) }
         )
         assertEquals(
