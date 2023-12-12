@@ -164,6 +164,7 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
     createdBy,
     createdByName,
     createSource,
+    originApplicationAccessible,
     createdFromApplication,
     createdFromApplicationType,
     createdFromApplicationCreated,
@@ -186,13 +187,18 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
         createdFromApplicationType &&
         createdFromApplicationCreated
       ) {
-        return (
-          <Link to={`/applications/${createdFromApplication}`}>
-            {`${i18n.timeline.application}: ${
-              i18n.common.types[createdFromApplicationType]
-            }, ${createdFromApplicationCreated.format()}`}
-          </Link>
-        )
+        const applicationInfo = `${i18n.timeline.application}: ${
+          i18n.common.types[createdFromApplicationType]
+        }, ${createdFromApplicationCreated.format()}`
+        if (originApplicationAccessible) {
+          return (
+            <Link to={`/applications/${createdFromApplication}`}>
+              {applicationInfo}
+            </Link>
+          )
+        } else {
+          return applicationInfo
+        }
       } else {
         return i18n.timeline.notAvailable
       }

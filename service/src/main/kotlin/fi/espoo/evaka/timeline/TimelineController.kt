@@ -81,6 +81,17 @@ class TimelineController(private val accessControl: AccessControl) {
                         partners =
                             tx.getPartners(personId, range).map { partner ->
                                 val partnerRange = range.intersection(partner.range)!!
+                                val originApplicationAccessible =
+                                    if (partner.createdFromApplication != null)
+                                        accessControl
+                                            .getPermittedActions<ApplicationId, Action.Application>(
+                                                tx,
+                                                user,
+                                                clock,
+                                                partner.createdFromApplication
+                                            )
+                                            .contains(Action.Application.READ)
+                                    else false
                                 TimelinePartnerDetailed(
                                     id = partner.id,
                                     range = partner.range,
@@ -121,6 +132,7 @@ class TimelineController(private val accessControl: AccessControl) {
                                     modifiedBy = partner.modifiedBy,
                                     modifySource = partner.modifySource,
                                     modifiedByName = partner.modifiedByName,
+                                    originApplicationAccessible = originApplicationAccessible,
                                     createdFromApplication = partner.createdFromApplication,
                                     createdFromApplicationType = partner.createdFromApplicationType,
                                     createdFromApplicationCreated =
@@ -259,6 +271,7 @@ data class TimelinePartnerDetailed(
     val modifiedBy: EvakaUserId?,
     val modifiedByName: String?,
     val modifySource: ModifySource?,
+    val originApplicationAccessible: Boolean,
     val createdFromApplication: ApplicationId?,
     val createdFromApplicationType: ApplicationType?,
     val createdFromApplicationCreated: HelsinkiDateTime?
