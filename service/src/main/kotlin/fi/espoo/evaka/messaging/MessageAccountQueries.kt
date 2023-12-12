@@ -97,6 +97,14 @@ fun Database.Read.getAccountNames(
         .toList<String>()
 }
 
+fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
+    return createUpdate<Any> {
+            sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
 fun Database.Transaction.createDaycareGroupMessageAccount(
     daycareGroupId: GroupId
 ): MessageAccountId {

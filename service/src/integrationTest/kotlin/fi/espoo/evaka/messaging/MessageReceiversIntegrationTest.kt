@@ -24,41 +24,30 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var messageController: MessageController
 
-    private lateinit var area: DevCareArea
-    private lateinit var daycare1: DevDaycare
-    private lateinit var daycare2: DevDaycare
-
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
-    @BeforeEach
-    fun beforeEach() {
-        area = DevCareArea()
-        daycare1 =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-        daycare2 =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(daycare1)
-            tx.insert(daycare2)
-        }
-    }
-
     @Test
     fun `message receiver endpoint works for units`() {
+        val area = DevCareArea()
+        val daycare1 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+        val daycare2 =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+
         val group1 = DevDaycareGroup(daycareId = daycare1.id, name = "Testaajat")
         val group2 = DevDaycareGroup(daycareId = daycare2.id, name = "Koekaniinit")
 
@@ -76,6 +65,10 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val (groupMessageAccount, supervisor1MessageAccount, supervisor2MessageAccount) =
             db.transaction { tx ->
+                tx.insert(area)
+                tx.insert(daycare1)
+                tx.insert(daycare2)
+
                 tx.insert(group1)
                 tx.insert(group2)
 
@@ -208,6 +201,107 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             ),
             receivers2.toSet()
+        )
+    }
+
+    @Test
+    fun `municipal receivers`() {
+        val today = LocalDate.of(2023, 12, 1)
+        val employee = DevEmployee(roles = setOf(UserRole.MESSAGING))
+
+        val area1 = DevCareArea(name = "area1", shortName = "area1")
+        val daycare1 =
+            DevDaycare(
+                areaId = area1.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        val daycare2 =
+            DevDaycare(
+                areaId = area1.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+
+        val area2 = DevCareArea(name = "area2", shortName = "area2")
+        val daycare3 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        // Closed
+        val daycare4 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                closingDate = today.minusDays(1),
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            )
+        // Messaging disabled
+        val daycare5 =
+            DevDaycare(
+                areaId = area2.id,
+                openingDate = today.minusYears(1),
+                enabledPilotFeatures = setOf()
+            )
+
+        val municipalAccountId =
+            db.transaction { tx ->
+                tx.insert(area1)
+                tx.insert(area2)
+                tx.insert(daycare1)
+                tx.insert(daycare2)
+                tx.insert(daycare3)
+                tx.insert(daycare4)
+                tx.insert(daycare5)
+
+                tx.insert(employee)
+                tx.createMunicipalMessageAccount()
+            }
+
+        val receivers =
+            messageController.getReceiversForNewMessage(
+                dbInstance(),
+                AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
+                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
+            )
+        assertEquals(
+            listOf(
+                MessageReceiversResponse(
+                    accountId = municipalAccountId,
+                    receivers =
+                        listOf(
+                            MessageReceiver.Area(
+                                id = area1.id,
+                                name = area1.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare1.id,
+                                            name = daycare1.name,
+                                        ),
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare2.id,
+                                            name = daycare2.name,
+                                        )
+                                    )
+                            ),
+                            MessageReceiver.Area(
+                                id = area2.id,
+                                name = area2.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.UnitInArea(
+                                            id = daycare3.id,
+                                            name = daycare3.name,
+                                        )
+                                    )
+                            )
+                        )
+                )
+            ),
+            receivers
         )
     }
 

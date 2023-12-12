@@ -1219,7 +1219,9 @@ fun Database.Read.getReceiversForNewMessage(
         SELECT acc.id AS account_id, a.id AS area_id, a.name AS area_name, d.id AS unit_id, d.name AS unit_name
         FROM accounts acc, care_area a
         JOIN daycare d ON a.id = d.care_area_id
-        WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+        WHERE
+            daterange(d.opening_date, d.closing_date, '[]') @> ${bind(today)} AND
+            'MESSAGING' = ANY(d.enabled_pilot_features)
         ORDER BY area_name
         """
                 )
