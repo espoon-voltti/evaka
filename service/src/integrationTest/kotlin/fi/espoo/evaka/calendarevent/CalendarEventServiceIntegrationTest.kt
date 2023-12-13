@@ -1828,5 +1828,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         form: CalendarEventTimeReservationForm,
         user: AuthenticatedUser.Citizen = guardian,
         clock: EvakaClock = this.clock
-    ) = calendarEventController.deleteCalendarEventTimeReservation(dbInstance(), user, clock, form)
+    ) =
+        calendarEventController.deleteCalendarEventTimeReservation(
+            dbInstance(),
+            user,
+            clock,
+            form.calendarEventTimeId,
+            form.childId
+        )
 }

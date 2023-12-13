@@ -456,8 +456,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventTimeReservationForm
+        @RequestParam calendarEventTimeId: CalendarEventTimeId,
+        @RequestParam childId: ChildId
     ) {
+        val body = CalendarEventTimeReservationForm(calendarEventTimeId, childId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
