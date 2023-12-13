@@ -166,7 +166,8 @@ describe('Sending and receiving messages', () => {
         await initStaffPage(mockedDateAt10)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(staffPage)
-        await messagesPage.sendNewMessage(defaultMessage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await initCitizen(mockedDateAt11)
@@ -189,7 +190,8 @@ describe('Sending and receiving messages', () => {
         await initStaffPage(mockedDateAt10)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         let messagesPage = new MessagesPage(staffPage)
-        await messagesPage.sendNewMessage(defaultMessage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         await initCitizen(mockedDateAt11)
@@ -231,7 +233,8 @@ describe('Sending and receiving sensitive messages', () => {
     await initStaffPage(mockedDateAt10)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(staffPage)
-    await messagesPage.sendNewMessage(sensitiveMessage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendNewMessage(sensitiveMessage)
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -258,7 +261,10 @@ describe('Staff copies', () => {
       content: 'Ilmoituksen sisältö',
       receiver: fixtures.daycareFixture.id
     }
-    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    const messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
@@ -277,7 +283,10 @@ describe('Staff copies', () => {
       content: 'Ilmoituksen sisältö',
       receiver: fixtures.enduserChildFixtureKaarina.id
     }
-    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    const messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)
@@ -294,7 +303,10 @@ describe('Staff copies', () => {
       sender: `${fixtures.daycareFixture.name} - ${daycareGroupFixture.name}`,
       receiver: daycareGroupFixture.id
     }
-    await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
+    const messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     await initStaffPage(mockedDateAt11)

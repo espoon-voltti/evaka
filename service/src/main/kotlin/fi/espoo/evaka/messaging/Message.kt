@@ -116,7 +116,6 @@ data class SentMessage(
     val type: MessageType,
     val urgent: Boolean,
     val sensitive: Boolean,
-    @Json val recipients: Set<MessageAccount>,
     val recipientNames: List<String>,
     @Json val attachments: List<MessageAttachment>
 )

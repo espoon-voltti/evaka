@@ -472,7 +472,7 @@ export const MessageContextProvider = React.memo(
                     threadId: message.contentId,
                     sender: { ...selectedAccount.account },
                     sentAt: message.sentAt,
-                    recipients: message.recipients,
+                    recipients: [], // recipientNames should be used when viewing sent messages
                     readAt: HelsinkiDateTime.now(),
                     content: message.content,
                     attachments: message.attachments,

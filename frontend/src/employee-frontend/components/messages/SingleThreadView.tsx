@@ -92,28 +92,48 @@ const MessageContent = styled.div`
 `
 
 function SingleMessage({
+  view,
   message,
   messageChildren,
   index
 }: {
+  view: View
   message: Message
   messageChildren: MessageChild[]
   type?: MessageType
   title?: string
   index: number
 }) {
-  const { senderName, recipientNames } = useMemo(
-    () =>
-      formatAccountNames(message.sender, message.recipients, messageChildren),
-    [message.sender, message.recipients, messageChildren]
-  )
+  const { senderName, recipientNames } = useMemo(() => {
+    if (view === 'sent') {
+      return {
+        senderName: message.sender.name,
+        // message.recipientNames should always exist for sent messages, ?? is there to satisfy the type checker
+        recipientNames: message.recipientNames ?? []
+      }
+    } else {
+      return formatAccountNames(
+        message.sender,
+        message.recipients,
+        messageChildren
+      )
+    }
+  }, [
+    view,
+    message.sender,
+    message.recipients,
+    message.recipientNames,
+    messageChildren
+  ])
   return (
     <MessageContainer>
       <TitleRow>
         <Bold>{senderName}</Bold>
         <InformationText>{message.sentAt.format()}</InformationText>
       </TitleRow>
-      <InformationText>{recipientNames.join(', ')}</InformationText>
+      <InformationText data-qa="recipient-names">
+        {recipientNames.join(', ')}
+      </InformationText>
       <MessageContent data-qa="message-content" data-index={index}>
         <Linkify text={message.content} />
       </MessageContent>
@@ -251,6 +271,7 @@ export function SingleThreadView({
             )}
             <SingleMessage
               key={message.id}
+              view={view}
               message={message}
               messageChildren={children}
               index={idx}

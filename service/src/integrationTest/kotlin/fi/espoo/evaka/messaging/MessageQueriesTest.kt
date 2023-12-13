@@ -311,7 +311,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val newestMessage = firstPage.data[0]
         assertEquals("content 2", newestMessage.content)
         assertEquals("thread 2", newestMessage.threadTitle)
-        assertEquals(setOf(accounts.person1), newestMessage.recipients)
+        assertEquals(listOf(accounts.person1.name), newestMessage.recipientNames)
 
         val secondPage = db.read { it.getMessagesSentByAccount(accounts.employee1.id, 1, 2) }
         assertEquals(2, secondPage.total)
@@ -321,7 +321,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val oldestMessage = secondPage.data[0]
         assertEquals("content 1", oldestMessage.content)
         assertEquals("thread 1", oldestMessage.threadTitle)
-        assertEquals(setOf(accounts.person1, accounts.person2), oldestMessage.recipients)
+        assertEquals(
+            listOf(accounts.person1.name, accounts.person2.name),
+            oldestMessage.recipientNames
+        )
 
         // then fetching sent messages by recipient ids does not return the messages
         assertEquals(0, db.read { it.getMessagesSentByAccount(accounts.person1.id, 1, 1) }.total)
