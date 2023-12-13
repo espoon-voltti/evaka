@@ -7,8 +7,10 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -19,6 +21,13 @@ fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
     range: FiniteDateRange
 ): List<CalendarEvent> =
+    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
+
+private fun Database.Read.getCalendarEventsQuery(
+    calendarEventId: CalendarEventId? = null,
+    unitId: DaycareId? = null,
+    range: FiniteDateRange? = null
+) =
     this.createQuery(
             """
 SELECT
@@ -35,12 +44,21 @@ SELECT
             'name', concat(p.first_name, ' ', p.last_name),
             'groupId', cea.group_id
         )) FILTER (WHERE cea.child_id IS NOT NULL), '[]'::jsonb)
-    ) AS individual_children
+    ) AS individual_children,
+    (
+        coalesce(jsonb_agg(DISTINCT jsonb_build_object(
+            'id', cet.id,
+            'date', cet.date,
+            'startTime', cet.start_time,
+            'endTime', cet.end_time
+        )) FILTER (WHERE cet.id IS NOT NULL), '[]'::jsonb)
+    ) AS times
 FROM calendar_event_attendee cea
 JOIN calendar_event ce ON cea.calendar_event_id = ce.id
 LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN person p ON p.id = cea.child_id
-WHERE cea.unit_id = :unitId AND ce.period && :range AND (cea.child_id IS NULL OR EXISTS(
+LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
+WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId) AND (:unitId IS NULL OR cea.unit_id = :unitId) AND (:range IS NULL OR ce.period && :range) AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
     SELECT 1 FROM generate_series(lower(ce.period), upper(ce.period) - INTERVAL '1 day', '1 day') d
@@ -53,11 +71,15 @@ GROUP BY ce.id, cea.unit_id
         """
                 .trimIndent()
         )
+        .bind("calendarEventId", calendarEventId)
         .bind("unitId", unitId)
         .bind("range", range)
-        .toList<CalendarEvent>()
 
-fun Database.Transaction.createCalendarEvent(event: CalendarEventForm): CalendarEventId {
+fun Database.Transaction.createCalendarEvent(
+    event: CalendarEventForm,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId
+): CalendarEventId {
     val eventId =
         this.createUpdate(
                 """
@@ -71,22 +93,90 @@ RETURNING id
             .executeAndReturnGeneratedKeys()
             .exactlyOne<CalendarEventId>()
 
-    if (event.tree != null) {
-        event.tree.forEach { (groupId, childIds) ->
+    createCalendarEventAttendees(eventId, event.unitId, event.tree)
+
+    if (!event.times.isNullOrEmpty()) {
+        event.times.forEach { time ->
+            createCalendarEventTime(eventId, time, modifiedAt, modifiedBy)
+        }
+    }
+
+    return eventId
+}
+
+fun Database.Transaction.createCalendarEventAttendees(
+    eventId: CalendarEventId,
+    unitId: DaycareId,
+    tree: Map<GroupId, Set<ChildId>?>?
+) {
+    if (tree != null) {
+        tree.forEach { (groupId, childIds) ->
             // TODO: batching
             if (childIds != null) {
                 childIds.forEach { childId ->
-                    createCalendarEventAttendee(eventId, event.unitId, groupId, childId)
+                    createCalendarEventAttendee(eventId, unitId, groupId, childId)
                 }
             } else {
-                createCalendarEventAttendee(eventId, event.unitId, groupId, null)
+                createCalendarEventAttendee(eventId, unitId, groupId, null)
             }
         }
     } else {
-        createCalendarEventAttendee(eventId, event.unitId, null, null)
+        createCalendarEventAttendee(eventId, unitId, null, null)
     }
-    return eventId
 }
+
+fun Database.Transaction.deleteCalendarEventAttendees(eventId: CalendarEventId) =
+    createUpdate("DELETE FROM calendar_event_attendee WHERE calendar_event_id = :eventId")
+        .bind("eventId", eventId)
+        .execute()
+
+fun Database.Read.getReservableCalendarEventTimes(
+    calendarEventId: CalendarEventId,
+    childId: ChildId
+) =
+    createQuery(
+            """
+SELECT id, date, start_time, end_time
+FROM calendar_event_time
+WHERE calendar_event_id = :calendarEventId
+AND NOT EXISTS (
+    SELECT
+    FROM calendar_event_time_reservation
+    WHERE calendar_event_time_id = calendar_event_time.id
+    AND child_id <> :childId
+)
+"""
+        )
+        .bind("calendarEventId", calendarEventId)
+        .bind("childId", childId)
+        .toList<CalendarEventTime>()
+
+fun Database.Transaction.createCalendarEventTime(
+    calendarEventId: CalendarEventId,
+    time: CalendarEventTimeForm,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId
+) =
+    createUpdate(
+            """
+INSERT INTO calendar_event_time (modified_at, modified_by, calendar_event_id, date, start_time, end_time)
+VALUES (:modifiedAt, :modifiedBy, :calendarEventId, :date, :startTime, :endTime)
+RETURNING id, date, start_time, end_time
+"""
+        )
+        .bind("modifiedAt", modifiedAt)
+        .bind("modifiedBy", modifiedBy)
+        .bind("calendarEventId", calendarEventId)
+        .bindKotlin(time)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<CalendarEventTime>()
+        .exactlyOne()
+
+fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
+    createUpdate("DELETE FROM calendar_event_time WHERE id = :id").bind("id", id).updateExactlyOne()
+
+fun Database.Read.getCalendarEventById(id: CalendarEventId) =
+    getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
     this.createUpdate(
@@ -117,6 +207,22 @@ VALUES (:eventId, :unitId, :groupId, :childId)
         .bind("childId", childId)
         .updateExactlyOne()
 
+fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
+    createQuery("SELECT calendar_event_id FROM calendar_event_time WHERE id = :id")
+        .bind("id", id)
+        .exactlyOneOrNull<CalendarEventId>()
+
+fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) =
+    createQuery(
+            """
+SELECT child_id
+FROM calendar_event_attendee_child_view
+WHERE calendar_event_id = :calendarEventId
+"""
+        )
+        .bind("calendarEventId", calendarEventId)
+        .toList<ChildId>()
+
 fun Database.Transaction.updateCalendarEvent(
     eventId: CalendarEventId,
     updateForm: CalendarEventUpdateForm
@@ -132,6 +238,75 @@ WHERE id = :eventId
         .bind("eventId", eventId)
         .bindKotlin(updateForm)
         .updateExactlyOne()
+
+fun Database.Transaction.insertCalendarEventTimeReservation(
+    form: CalendarEventTimeReservationForm,
+    guardianId: PersonId,
+    modifiedAt: HelsinkiDateTime,
+    modifiedBy: EvakaUserId
+): CalendarEventTimeReservation =
+    createUpdate(
+            """
+INSERT INTO calendar_event_time_reservation (calendar_event_time_id, child_id, guardian_id, modified_at, modified_by)
+VALUES (:calendarEventTimeId, :childId, :guardianId, :modifiedAt, :modifiedBy)
+ON CONFLICT (calendar_event_time_id, child_id, guardian_id) DO UPDATE
+SET modified_at = EXCLUDED.modified_at, modified_by = EXCLUDED.modified_by
+RETURNING calendar_event_time_id, child_id, guardian_id
+"""
+        )
+        .bind("calendarEventTimeId", form.calendarEventTimeId)
+        .bind("childId", form.childId)
+        .bind("guardianId", guardianId)
+        .bind("modifiedAt", modifiedAt)
+        .bind("modifiedBy", modifiedBy)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<CalendarEventTimeReservation>()
+        .exactlyOne()
+
+fun Database.Transaction.deleteCalendarEventTimeReservation(
+    form: CalendarEventTimeReservationForm,
+    guardianId: PersonId
+) =
+    createUpdate(
+            """
+DELETE FROM calendar_event_time_reservation
+WHERE calendar_event_time_id = :calendarEventTimeId
+AND child_id = :childId
+AND guardian_id = :guardianId
+"""
+        )
+        .bindKotlin(form)
+        .bind("guardianId", guardianId)
+        .updateNoneOrOne()
+
+fun Database.Transaction.deleteCalendarEventTimeReservations(
+    calendarEventId: CalendarEventId,
+    childId: ChildId
+) =
+    createUpdate(
+            """
+DELETE FROM calendar_event_time_reservation cetr
+USING calendar_event_time cet
+WHERE cetr.calendar_event_time_id = cet.id
+AND cet.calendar_event_id = :calendarEventId
+AND cetr.child_id = :childId
+"""
+        )
+        .bind("calendarEventId", calendarEventId)
+        .bind("childId", childId)
+        .execute()
+
+fun Database.Transaction.deleteCalendarEventTimeReservations(
+    calendarEventTimeId: CalendarEventTimeId
+) =
+    createUpdate(
+            """
+DELETE FROM calendar_event_time_reservation
+WHERE calendar_event_time_id = :calendarEventTimeId
+"""
+        )
+        .bind("calendarEventTimeId", calendarEventTimeId)
+        .execute()
 
 data class CitizenCalendarEventRow(
     val id: CalendarEventId,

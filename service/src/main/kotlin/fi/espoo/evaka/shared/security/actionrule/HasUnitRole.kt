@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -971,6 +972,20 @@ WHERE employee_id = ${bind(user.id)} AND EXISTS(
                 """
 SELECT cea.calendar_event_id id, acl.role, acl.daycare_id AS unit_id
 FROM calendar_event_attendee cea
+JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
+WHERE employee_id = ${bind(user.id)}
+            """
+            )
+        }
+
+    fun inUnitOfCalendarEventTime() =
+        rule<CalendarEventTimeId> { user, _ ->
+            sql(
+                """
+SELECT cet.id, acl.role, acl.daycare_id AS unit_id
+FROM calendar_event_attendee cea
+JOIN calendar_event ce ON ce.id = cea.calendar_event_id
+JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 WHERE employee_id = ${bind(user.id)}
             """
