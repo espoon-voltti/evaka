@@ -100,6 +100,7 @@ export interface TimelinePartnerDetailed {
   modifiedBy: UUID | null
   modifiedByName: string | null
   modifySource: ModifySource | null
+  originApplicationAccessible: boolean
   partnerId: UUID
   range: DateRange
   valueDecisions: TimelineValueDecision[]
