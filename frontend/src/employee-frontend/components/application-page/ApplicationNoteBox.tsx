@@ -134,15 +134,19 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           })
         : createNote({ applicationId: props.applicationId, text })
     )
-      .then(() => props.onSave())
-      .catch(() =>
+      .then(() => {
+        props.onSave()
+        setSubmitting(false)
+      })
+      .catch(() => {
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
           text: i18n.application.notes.error.save,
           resolveLabel: i18n.common.ok
         })
-      )
+        setSubmitting(false)
+      })
   }
 
   const doDelete = () => {
