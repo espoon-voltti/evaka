@@ -24,6 +24,21 @@ const customizations: CitizenCustomizations = {
   langs: ['fi', 'sv', 'en'],
   translations: {
     fi: {
+      applications: {
+        editor: {
+          serviceNeed: {
+            assistanceNeeded:
+              'Lapsella on kehitykseen tai oppimiseen liittyvä tuen tarve'
+          },
+          verification: {
+            serviceNeed: {
+              assistanceNeed: {
+                assistanceNeed: 'Kehitykseen tai oppimiseen liittyvä tuen tarve'
+              }
+            }
+          }
+        }
+      },
       income: {
         assure: (
           <MultiLineCheckboxLabel>
@@ -58,6 +73,22 @@ const customizations: CitizenCustomizations = {
       }
     },
     sv: {
+      applications: {
+        editor: {
+          serviceNeed: {
+            assistanceNeeded:
+              'Barnet har behov av stöd i anslutning till utveckling eller lärande'
+          },
+          verification: {
+            serviceNeed: {
+              assistanceNeed: {
+                assistanceNeed:
+                  'Behov av stöd i anslutning till utveckling eller lärande'
+              }
+            }
+          }
+        }
+      },
       income: {
         assure: (
           <MultiLineCheckboxLabel>
@@ -93,6 +124,21 @@ const customizations: CitizenCustomizations = {
       }
     },
     en: {
+      applications: {
+        editor: {
+          serviceNeed: {
+            assistanceNeeded:
+              'The child needs support for development or learning'
+          },
+          verification: {
+            serviceNeed: {
+              assistanceNeed: {
+                assistanceNeed: 'Support for development or learning'
+              }
+            }
+          }
+        }
+      },
       income: {
         assure: (
           <MultiLineCheckboxLabel>
