@@ -7,8 +7,7 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.getDaycareGroups
-import fi.espoo.evaka.pis.service.getChildFosterParents
-import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.pis.service.isGuardianBlocked
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
@@ -314,8 +313,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.deleteCalendarEventTimeReservations(
                         calendarEventTimeId = body.calendarEventTimeId
                     )
-                    tx.getChildFosterParents(body.childId, clock.today())
-                        .ifEmpty { tx.getChildGuardians(body.childId) }
+                    tx.getChildGuardiansAndFosterParents(body.childId, clock.today())
                         .filterNot { guardianId -> tx.isGuardianBlocked(guardianId, body.childId) }
                         .map { guardianId ->
                             tx.insertCalendarEventTimeReservation(

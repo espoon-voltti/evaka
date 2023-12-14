@@ -566,7 +566,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             ),
-            expected = listOf(testAdult_2.id)
+            expected = listOf(testAdult_1.id, testAdult_2.id)
         )
     }
 

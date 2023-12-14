@@ -89,16 +89,6 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
     return createQuery(sql).bind("childId", childId).toList<PersonId>()
 }
 
-fun Database.Read.getChildFosterParents(childId: ChildId, date: LocalDate): List<PersonId> =
-    createQuery(
-            """
-SELECT parent_id AS id FROM foster_parent WHERE child_id = :childId AND valid_during @> :date
-"""
-        )
-        .bind("childId", childId)
-        .bind("date", date)
-        .toList<PersonId>()
-
 fun Database.Read.getChildGuardiansAndFosterParents(
     childId: ChildId,
     today: LocalDate
