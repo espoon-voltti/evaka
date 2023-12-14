@@ -4,7 +4,12 @@
 
 import { animated, useSpring } from '@react-spring/web'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import {
+  Outlet,
+  useLocation,
+  useNavigate,
+  useOutletContext
+} from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -15,7 +20,9 @@ import {
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
+import { TabLinks } from 'lib-components/molecules/Tabs'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
@@ -25,19 +32,24 @@ import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { zIndex } from '../constants'
-import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
+import { ChildAttendanceUIState } from '../types'
 
-import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
+export interface TabItem {
+  id: string
+  label: string
+  link: string
+}
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, attendanceStatus } = useNonNullableParams<{
     unitId: string
     attendanceStatus: ChildAttendanceUIState
   }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
   const { selectedGroupId } = useSelectedGroup()
@@ -59,14 +71,30 @@ export default React.memo(function AttendancePageWrapper() {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      navigate(
-        `/units/${unitId}/groups/${
-          group?.id ?? 'all'
-        }/child-attendance/list/${attendanceStatus}`
-      )
+      const newGroupRoute = location.pathname.split('/')
+      newGroupRoute[4] = `${group?.id ?? 'all'}`
+
+      navigate(newGroupRoute.join('/'))
     },
-    [navigate, unitId, attendanceStatus]
+    [navigate, location.pathname]
   )
+  const { groupRoute } = useSelectedGroup()
+  const tabs = useMemo(() => {
+    const url = `${groupRoute}/child-attendance`
+
+    return [
+      {
+        id: 'today',
+        link: `${url}/list`,
+        label: i18n.attendances.views.TODAY
+      },
+      {
+        id: 'confirmed-days',
+        link: `${url}/daylist`,
+        label: i18n.attendances.views.NEXT_DAYS
+      }
+    ]
+  }, [i18n, groupRoute])
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
 
@@ -113,14 +141,21 @@ export default React.memo(function AttendancePageWrapper() {
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       >
+        {featureFlags.employeeMobileConfirmedDaysReservations && (
+          <TabLinks tabs={tabs} mobile sticky />
+        )}
         {renderResult(
           combine(unitChildren, attendanceStatuses),
           ([children, attendanceStatuses]) => (
-            <AttendanceList
-              unitId={unitId}
-              activeStatus={mapChildAttendanceUIState(attendanceStatus)}
-              unitChildren={children}
-              attendanceStatuses={attendanceStatuses}
+            <Outlet
+              context={
+                {
+                  unitId: unitId,
+                  unitChildren: children,
+                  attendanceStatuses,
+                  attendanceStatus
+                } satisfies AttendanceContext
+              }
             />
           )
         )}
@@ -128,6 +163,14 @@ export default React.memo(function AttendancePageWrapper() {
     </>
   )
 })
+
+export type AttendanceContext = {
+  unitId: string
+  unitChildren: AttendanceChild[]
+  attendanceStatuses: AttendanceStatuses
+  attendanceStatus: ChildAttendanceUIState
+}
+export const useAttendanceContext = () => useOutletContext<AttendanceContext>()
 
 const ChildSearch = React.memo(function Search({
   unitId,

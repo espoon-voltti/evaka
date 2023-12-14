@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -12,8 +13,6 @@ import {
   createArrival,
   createDeparture,
   createFullDayAbsence,
-  deleteChildImage,
-  getChildDeparture,
   getFutureAbsencesByChildPlain,
   getNonReservableReservations,
   getUnitAttendanceStatuses,
@@ -21,7 +20,11 @@ import {
   putNonReservableReservationservations,
   returnToComing,
   returnToPresent,
-  uploadChildImage
+  deleteChildImage,
+  uploadChildImage,
+  getChildDeparture,
+  getUnitConfirmedDayReservations,
+  getUnitConfirmedDaysReservationStatistics
 } from './api'
 
 const queryKeys = createQueryKeys('childAttendance', {
@@ -39,6 +42,15 @@ const queryKeys = createQueryKeys('childAttendance', {
     'childDeparture',
     unitId,
     childId
+  ],
+  confirmedDayReservations: (unitId: string, examinationDate: LocalDate) => [
+    'confirmedDayReservations',
+    unitId,
+    examinationDate
+  ],
+  confirmedDaysReservationStatistics: (unitId: string) => [
+    'confirmedDaysReservationStatistics',
+    unitId
   ]
 })
 
@@ -62,6 +74,16 @@ export const childDepartureQuery = query({
   api: getChildDeparture,
   queryKey: ({ unitId, childId }) =>
     queryKeys.childDeparture({ unitId, childId })
+})
+
+export const confirmedDayReservationsQuery = query({
+  api: getUnitConfirmedDayReservations,
+  queryKey: queryKeys.confirmedDayReservations
+})
+
+export const confirmedDaysReservationsStatisticsQuery = query({
+  api: getUnitConfirmedDaysReservationStatistics,
+  queryKey: queryKeys.confirmedDaysReservationStatistics
 })
 
 export const getNonReservableReservationsQuery = query({

@@ -60,23 +60,31 @@ interface TabLink {
   link: string
   label: string | React.JSX.Element
   counter?: number
+  isTabActive?: () => boolean
 }
 
 interface TabLinksProps extends BaseProps {
   mobile?: boolean
   tabs: TabLink[]
   id?: string
+  sticky?: boolean
+  topOffset?: number
 }
 
 export const TabLinks = React.memo(function TabLinks({
   mobile,
   'data-qa': dataQa,
   tabs,
-  id
+  id,
+  sticky,
+  topOffset
 }: TabLinksProps) {
-  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
+  const maxWidth = mobile ? `${100 / tabs.length}%` : undefined
   return (
-    <Container>
+    <StickyableContainer
+      className={sticky ? 'sticky' : undefined}
+      $topOffset={topOffset}
+    >
       <TabsContainer data-qa={dataQa} shadow={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
           <TabLink
@@ -91,9 +99,17 @@ export const TabLinks = React.memo(function TabLinks({
           </TabLink>
         ))}
       </TabsContainer>
-    </Container>
+    </StickyableContainer>
   )
 })
+
+const StickyableContainer = styled(Container)<{ $topOffset?: number }>`
+  &.sticky {
+    position: sticky;
+    z-index: 3;
+    ${(p) => `top: ${p.$topOffset ? p.$topOffset : 0}px;`}
+  }
+`
 
 const TabsContainer = styled.nav<{ shadow?: boolean }>`
   display: flex;

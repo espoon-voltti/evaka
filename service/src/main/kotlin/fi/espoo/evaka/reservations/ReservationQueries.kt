@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.reservations
 
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
@@ -13,6 +15,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -22,6 +25,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -542,4 +546,152 @@ fun Database.Read.getReservationContractDayRanges(
         .bind("childIds", childIds)
         .bind("range", range)
         .toMap { columnPair("child_id", "contract_days") }
+}
+
+data class DailyChildReservationInfoRow(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val dateOfBirth: LocalDate,
+    @Json val reservations: List<ConfirmedDayReservationInfo>,
+    @Json val absences: List<ConfirmedDayAbsenceInfo>,
+    val groupId: GroupId?,
+    val absenceType: AbsenceType?,
+    val backupUnitId: DaycareId?,
+    val placementType: PlacementType
+)
+
+data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
+
+data class ConfirmedDayReservationInfo(val start: LocalTime, val end: LocalTime)
+
+fun Database.Read.getChildReservationsOfUnitForDay(
+    day: LocalDate,
+    unitId: DaycareId
+): List<DailyChildReservationInfoRow> {
+    return createQuery(
+            """
+SELECT pcd.child_id,
+       p.date_of_birth,
+       p.first_name,
+       p.last_name,
+       p.preferred_name,
+       CASE -- affected group in the examination unit
+           WHEN (pcd.unit_id <> :unitId) THEN pcd.placement_group_id
+           ELSE pcd.group_id END                                       AS group_id,
+       CASE
+           WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = :unitId)
+           THEN unit_id END                                            AS backup_unit_id,
+        pcd.placement_type,
+        -- reservation roll up
+        (SELECT coalesce(jsonb_agg(json_build_object(
+               'start', s.start_time,
+               'end', s.end_time)), '[]'::jsonb)
+        FROM (select ar.start_time, ar.end_time
+              FROM attendance_reservation ar
+              WHERE ar.child_id = pcd.child_id
+                AND ar.date = :examinationDate) s)
+           AS reservations,
+       -- absence roll up
+       (SELECT coalesce(jsonb_agg(json_build_object(
+               'category', s.category)), '[]'::jsonb)
+        FROM (SELECT ab.category
+              FROM absence ab
+              WHERE ab.child_id = pcd.child_id
+                AND ab.date = :examinationDate) s)
+           AS absences
+FROM realized_placement_one(:examinationDate) pcd
+         JOIN person p ON pcd.child_id = p.id
+  -- show placed children and children of both backup directions
+WHERE (pcd.unit_id = :unitId OR pcd.placement_unit_id = :unitId)
+  -- only show groupless children if they are on back up care in another unit
+  AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> :unitId)
+            """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("examinationDate", day)
+        .toList<DailyChildReservationInfoRow>()
+}
+
+data class GroupReservationStatisticsRow(
+    val date: LocalDate,
+    val groupId: GroupId,
+    val calculatedPresent: BigDecimal,
+    val absent: Int,
+    val present: Int
+)
+
+fun Database.Read.getReservationStatisticsForUnit(
+    confirmedDays: List<LocalDate>,
+    unitId: DaycareId
+): Map<LocalDate, List<GroupReservationStatisticsRow>> {
+    return createQuery(
+            """
+select date,
+       count(1) FILTER ( WHERE NOT a.child_in_unit ) AS absent,
+       count(1) FILTER ( WHERE a.child_in_unit )     AS present,
+       coalesce(sum(a.occupancy_coefficient * a.capacity_factor)
+                FILTER ( WHERE a.child_in_unit ), 0) AS calculated_present,
+       affected_group_id                             AS group_id
+from (SELECT d                                     AS date,
+             CASE -- affected group in the examination unit
+                 WHEN (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId) THEN rp.placement_group_id
+                 ELSE rp.group_id END              AS affected_group_id,
+             CASE -- whether child in examination unit at given date
+                 WHEN ( -- absence or backup care
+                             absence.categories @> absence_categories(rp.placement_type) OR
+                             (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId)) THEN false
+                 WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
+                     THEN false
+                 ELSE true
+                 END                               AS child_in_unit,
+             CASE -- service need occupancy coefficient of child
+                 WHEN u.type && array ['FAMILY', 'GROUP_FAMILY']::care_types[]
+                     THEN $familyUnitPlacementCoefficient
+                 ELSE CASE
+                          WHEN (extract('year' from age(d, p.date_of_birth)) < 3)
+                              THEN coalesce(
+                                  sno.realized_occupancy_coefficient_under_3y,
+                                  sno_default.realized_occupancy_coefficient_under_3y)
+                          ELSE coalesce(
+                                  sno.realized_occupancy_coefficient,
+                                  sno_default.realized_occupancy_coefficient)
+                     END
+                 END                               AS occupancy_coefficient,
+             coalesce(af.capacity_factor, 1.00)    AS capacity_factor
+      FROM unnest(:confirmedDays) d
+               LEFT JOIN realized_placement_one(d) rp
+                         ON TRUE
+               JOIN LATERAL ( select coalesce(array_agg(ab.category), '{}'::absence_category[]) as categories
+                              from absence ab
+                              where ab.child_id = rp.child_id
+                                and ab.date = d) absence on true
+               JOIN daycare u
+                    ON u.id = :unitId
+               JOIN person p
+                    ON rp.child_id = p.id
+               LEFT JOIN service_need sn
+                         ON rp.placement_id = sn.placement_id
+               LEFT JOIN service_need_option sno
+                         ON sn.option_id = sno.id
+               LEFT JOIN service_need_option sno_default
+                         ON sno_default.default_option IS TRUE
+                             AND sno_default.valid_placement_type = rp.placement_type
+               LEFT JOIN assistance_factor af
+                         ON rp.child_id = af.child_id
+                             AND af.valid_during @> d
+               LEFT JOIN club_term ct ON rp.placement_type IN ('CLUB') AND ct.term_breaks @> d
+               LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL', 'PREPARATORY') AND pt.term_breaks @> d
+      WHERE (rp.unit_id = :unitId OR rp.placement_unit_id = :unitId)) a
+WHERE a.affected_group_id IS NOT NULL
+GROUP BY a.date, a.affected_group_id
+            """
+                .trimIndent()
+        )
+        .bind("unitId", unitId)
+        .bind("confirmedDays", confirmedDays)
+        .toList<GroupReservationStatisticsRow>()
+        .groupBy { it.date }
 }

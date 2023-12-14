@@ -134,6 +134,10 @@ export const fi = {
     laterAbsence: 'Myöhemmät poissaolot'
   },
   attendances: {
+    views: {
+      TODAY: 'Tänään',
+      NEXT_DAYS: 'Seuraavat päivät'
+    },
     types: {
       COMING: 'Tulossa',
       PRESENT: 'Läsnä',
@@ -205,6 +209,15 @@ export const fi = {
       variableTimesShort: 'Sop.aika vaihtelee',
       yesterday: 'eilen',
       tomorrow: 'huomenna'
+    },
+    confirmedDays: {
+      noChildren: 'Ei lapsia',
+      tomorrow: 'Huomenna',
+      inOtherUnit: 'Muussa yksikössä',
+      status: {
+        ABSENT: 'Poissa',
+        ON_TERM_BREAK: 'Ei toimintaa'
+      }
     },
     notes: {
       day: 'Päivä',

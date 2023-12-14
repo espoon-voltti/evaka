@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.lang.Integer.max
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
@@ -350,6 +351,230 @@ class AttendanceReservationController(
             getNextReservableMonday(clock.now(), featureConfig.citizenReservationThresholdHours)
                 .minusDays(1)
         return FiniteDateRange(startDate, endDate)
+    }
+
+    data class ChildDailyReservationInfo(
+        val childId: ChildId,
+        val reservations: List<Reservation>,
+        val groupId: GroupId?,
+        val absent: Boolean,
+        val outOnBackupPlacement: Boolean,
+        val dailyServiceTimes: DailyServiceTimesValue?,
+        val occupancyCoefficient: BigDecimal
+    )
+
+    data class UnitDailyReservationInfo(
+        val date: LocalDate,
+        val reservationInfos: List<ChildDailyReservationInfo>
+    )
+
+    data class ReservationChildInfo(
+        val id: ChildId,
+        val firstName: String,
+        val lastName: String,
+        val preferredName: String,
+        val dateOfBirth: LocalDate
+    )
+
+    data class ChildReservationInfo(
+        val childId: ChildId,
+        val reservations: List<Reservation>,
+        val groupId: GroupId?,
+        val absent: Boolean,
+        val outOnBackupPlacement: Boolean,
+        val dailyServiceTimes: DailyServiceTimesValue?,
+        val onTermBreak: Boolean
+    )
+
+    data class DailyChildReservationResult(
+        val children: Map<ChildId, ReservationChildInfo>,
+        val childReservations: List<ChildReservationInfo>
+    )
+
+    @GetMapping("/confirmed-days/daily")
+    fun getChildReservationsForDay(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate
+    ): DailyChildReservationResult {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_RESERVATIONS,
+                        unitId
+                    )
+
+                    val rowsByDate =
+                        tx.getChildReservationsOfUnitForDay(unitId = unitId, day = examinationDate)
+
+                    val clubTerms = tx.getClubTerms()
+                    val preschoolTerms = tx.getPreschoolTerms()
+                    val dateRowsByChild = rowsByDate.associateBy { it.childId }
+                    val childIds = dateRowsByChild.keys
+                    val dailyServiceTimes = tx.getDailyServiceTimesForChildren(childIds)
+                    val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
+
+                    val childReservationInfos =
+                        dateRowsByChild.map { row ->
+                            // every row duplicates full basic info for child
+                            val childRow = row.value
+                            childMap.putIfAbsent(
+                                row.key,
+                                ReservationChildInfo(
+                                    id = childRow.childId,
+                                    firstName = childRow.firstName,
+                                    lastName = childRow.lastName,
+                                    preferredName = childRow.preferredName,
+                                    dateOfBirth = childRow.dateOfBirth
+                                )
+                            )
+
+                            val scheduleType =
+                                childRow.placementType.scheduleType(
+                                    examinationDate,
+                                    clubTerms,
+                                    preschoolTerms
+                                )
+
+                            val reservations =
+                                row.value.reservations
+                                    .sortedBy { it.start }
+                                    .map {
+                                        Reservation.Times(startTime = it.start, endTime = it.end)
+                                    }
+                                    .ifEmpty { listOf(Reservation.NoTimes) }
+
+                            val absences = row.value.absences.map { it.category }.toSet()
+
+                            ChildReservationInfo(
+                                reservations = reservations,
+                                absent =
+                                    absences.containsAll(
+                                        childRow.placementType.absenceCategories()
+                                    ),
+                                groupId = childRow.groupId,
+                                childId = childRow.childId,
+                                outOnBackupPlacement = childRow.backupUnitId != null,
+                                dailyServiceTimes =
+                                    dailyServiceTimes[row.key]?.find {
+                                        it.validityPeriod.includes(examinationDate)
+                                    },
+                                onTermBreak = scheduleType == ScheduleType.TERM_BREAK
+                            )
+                        }
+
+                    DailyChildReservationResult(
+                        children = childMap,
+                        childReservations = childReservationInfos
+                    )
+                }
+            }
+            .also {
+                Audit.ChildReservationStatusRead.log(
+                    targetId = unitId,
+                    meta = mapOf("childCount" to it.children.size)
+                )
+            }
+    }
+
+    data class GroupReservationStatisticResult(
+        val calculatedPresent: BigDecimal,
+        val presentCount: Int,
+        val absentCount: Int,
+        val groupId: GroupId?
+    )
+
+    data class DayReservationStatisticsResult(
+        val date: LocalDate,
+        val groupStatistics: List<GroupReservationStatisticResult>
+    )
+
+    @GetMapping("/confirmed-days/stats")
+    fun getReservationStatisticsForConfirmedDays(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId
+    ): List<DayReservationStatisticsResult> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_UNIT_RESERVATION_STATISTICS,
+                        unitId
+                    )
+
+                    val unitData =
+                        tx.getDaycare(unitId) ?: throw BadRequest("Invalid unit id $unitId")
+
+                    val nonReservableRange =
+                        FiniteDateRange(
+                            clock.today().plusDays(1),
+                            getNextReservableMonday(
+                                    clock.now(),
+                                    featureConfig.citizenReservationThresholdHours,
+                                )
+                                .minusDays(1)
+                        )
+
+                    val holidays = tx.getHolidays(nonReservableRange)
+                    val operationalDays =
+                        getUnitOperationalDayData(
+                            nonReservableRange,
+                            unitData,
+                            holidays,
+                            emptyList(),
+                            false
+                        )
+
+                    val nextConfirmedUnitDays =
+                        operationalDays.filter { !it.isHoliday }.map { it.date }
+
+                    val rowsByDate =
+                        tx.getReservationStatisticsForUnit(
+                            unitId = unitId,
+                            confirmedDays = nextConfirmedUnitDays
+                        )
+
+                    nextConfirmedUnitDays.map { date ->
+                        val groupResults =
+                            rowsByDate[date]?.map {
+                                GroupReservationStatisticResult(
+                                    presentCount = it.present,
+                                    calculatedPresent = it.calculatedPresent,
+                                    absentCount = it.absent,
+                                    groupId = it.groupId
+                                )
+                            }
+                        DayReservationStatisticsResult(
+                            date = date,
+                            groupStatistics =
+                                groupResults
+                                    ?: listOf(
+                                        GroupReservationStatisticResult(
+                                            presentCount = 0,
+                                            calculatedPresent = BigDecimal.ZERO,
+                                            absentCount = 0,
+                                            groupId = null
+                                        )
+                                    )
+                        )
+                    }
+                }
+            }
+            .also {
+                Audit.UnitDailyReservationStatistics.log(
+                    targetId = unitId,
+                    meta = mapOf("dayCount" to it.size)
+                )
+            }
     }
 }
 

@@ -32,6 +32,27 @@ export interface AbsenceRequest {
   dateRange: FiniteDateRange
 }
 
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ChildReservationInfo
+*/
+export interface ChildReservationInfo {
+  absent: boolean
+  childId: UUID
+  dailyServiceTimes: DailyServiceTimesValue | null
+  groupId: UUID | null
+  onTermBreak: boolean
+  outOnBackupPlacement: boolean
+  reservations: Reservation[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DailyChildReservationResult
+*/
+export interface DailyChildReservationResult {
+  childReservations: ChildReservationInfo[]
+  children: Record<string, ReservationChildInfo>
+}
+
 export namespace DailyReservationRequest {
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absent
@@ -77,6 +98,24 @@ export namespace DailyReservationRequest {
 */
 export type DailyReservationRequest = DailyReservationRequest.Absent | DailyReservationRequest.Nothing | DailyReservationRequest.Present | DailyReservationRequest.Reservations
 
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DayReservationStatisticsResult
+*/
+export interface DayReservationStatisticsResult {
+  date: LocalDate
+  groupStatistics: GroupReservationStatisticResult[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.GroupReservationStatisticResult
+*/
+export interface GroupReservationStatisticResult {
+  absentCount: number
+  calculatedPresent: number
+  groupId: UUID | null
+  presentCount: number
+}
 
 /**
 * Generated from fi.espoo.evaka.reservations.NonReservableReservation
@@ -155,6 +194,17 @@ export interface ReservationChild {
   lastName: string
   preferredName: string
   upcomingPlacementType: PlacementType | null
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ReservationChildInfo
+*/
+export interface ReservationChildInfo {
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
+  preferredName: string
 }
 
 /**

@@ -9,6 +9,7 @@ import {
 } from 'lib-common/api-types/daily-service-times'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { mockNow } from 'lib-common/utils/helpers'
 
 const dayNames = [
@@ -25,6 +26,22 @@ function getToday(): DayName | undefined {
   // Sunday is 0
   const dayIndex = ((mockNow() ?? new Date()).getDay() + 6) % 7
   return dayNames[dayIndex]
+}
+
+export function getServiceTimeRangeOrNullForDate(
+  times: DailyServiceTimesValue | null,
+  date: LocalDate
+): TimeRange | null {
+  if (times != null) {
+    if (isRegular(times)) return times.regularTimes
+    if (isIrregular(times)) {
+      const dayIndex = date.getIsoDayOfWeek()
+      const dayName = dayNames[dayIndex - 1]
+      return times[dayName]
+    }
+  }
+
+  return null
 }
 
 export function getTodaysServiceTimes(

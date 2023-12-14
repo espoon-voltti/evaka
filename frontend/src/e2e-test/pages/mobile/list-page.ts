@@ -11,6 +11,8 @@ export default class MobileListPage {
 
   unreadMessagesIndicator = this.page.findByDataQa('unread-messages-indicator')
 
+  confirmedDaysTab = this.page.findByDataQa('confirmed-days-tab')
+
   comingChildrenTab = this.page.findByDataQa('coming-tab')
   presentChildrenTab = this.page.findByDataQa('present-tab')
   departedChildrenTab = this.page.findByDataQa('departed-tab')

@@ -13,6 +13,11 @@ import {
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import {
+  DailyChildReservationResult,
+  DayReservationStatisticsResult,
+  ReservationChildInfo
+} from 'lib-common/generated/api-types/reservations'
 import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -39,6 +44,38 @@ export async function getUnitAttendanceStatuses(
     )
     .then((res) =>
       mapValues(res.data, deserializeChildAttendanceStatusResponse)
+    )
+}
+
+export async function getUnitConfirmedDayReservations(
+  unitId: string,
+  examinationDate: LocalDate
+): Promise<DailyChildReservationResult> {
+  return client
+    .get<JsonOf<DailyChildReservationResult>>(
+      `/attendance-reservations/confirmed-days/daily`,
+      {
+        params: { unitId, examinationDate }
+      }
+    )
+    .then((res) => deserializeUnitReservationConfirmedDayResult(res.data))
+}
+
+export async function getUnitConfirmedDaysReservationStatistics(
+  unitId: string
+): Promise<DayReservationStatisticsResult[]> {
+  return client
+    .get<JsonOf<DayReservationStatisticsResult[]>>(
+      `/attendance-reservations/confirmed-days/stats`,
+      {
+        params: { unitId }
+      }
+    )
+    .then((res) =>
+      res.data.map((stat) => ({
+        ...stat,
+        date: LocalDate.parseIso(stat.date)
+      }))
     )
 }
 
@@ -269,6 +306,27 @@ function deserializeChildAttendanceStatusResponse(
       arrived: HelsinkiDateTime.parseIso(attendance.arrived),
       departed: attendance.departed
         ? HelsinkiDateTime.parseIso(attendance.departed)
+        : null
+    }))
+  }
+}
+
+function deserializeUnitReservationConfirmedDayResult(
+  data: JsonOf<DailyChildReservationResult>
+): DailyChildReservationResult {
+  return {
+    children: mapValues(
+      data.children,
+      (data: JsonOf<ReservationChildInfo>): ReservationChildInfo => ({
+        ...data,
+        dateOfBirth: LocalDate.parseIso(data.dateOfBirth)
+      })
+    ),
+    childReservations: data.childReservations.map((childResult) => ({
+      ...childResult,
+      reservations: childResult.reservations.map(parseReservation),
+      dailyServiceTimes: childResult.dailyServiceTimes
+        ? parseDailyServiceTimes(childResult.dailyServiceTimes)
         : null
     }))
   }
