@@ -32,6 +32,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,9 +48,9 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val unitSupervisorId = EmployeeId(UUID.randomUUID())
     private val serviceWorkerId = EmployeeId(UUID.randomUUID())
     private val decisionMakerId = EmployeeId(UUID.randomUUID())
-    private val partnershipCreator =
+    private val testDecisionMakerEmployee =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-            .evakaUserId
+    private val partnershipCreator = testDecisionMakerEmployee.evakaUserId
     private val clock = RealEvakaClock()
 
     @BeforeEach
@@ -262,6 +263,29 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertThrows<Conflict> {
             controller.updatePartnership(dbInstance(), user, clock, partnership1.id, requestBody)
         }
+    }
+
+    @Test
+    fun `clearing conflict flag works`() {
+        val partnership1 =
+            db.transaction { tx ->
+                tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(200),
+                    true,
+                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    clock.now()
+                )
+            }
+
+        controller.retryPartnership(dbInstance(), testDecisionMakerEmployee, clock, partnership1.id)
+
+        val getResponse =
+            controller.getPartnerships(dbInstance(), testDecisionMakerEmployee, clock, person.id)
+        assertEquals(1, getResponse.size)
+        with(getResponse.first().data) { assertFalse(this.conflict) }
     }
 
     @Test
