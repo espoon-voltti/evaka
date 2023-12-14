@@ -200,8 +200,8 @@ fun Database.Transaction.retryPartnership(
     createUpdate<Any> {
             sql(
                 """
-        UPDATE fridge_partner SET conflict = false
-        WHERE partnership_id = ${bind(id)}, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+        UPDATE fridge_partner SET conflict = false, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
+        WHERE partnership_id = ${bind(id)}
     """
             )
         }
