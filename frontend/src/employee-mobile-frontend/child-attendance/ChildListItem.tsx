@@ -150,11 +150,6 @@ export default React.memo(function ChildListItem({
               size="XL"
             />
           )}
-          <AgeRoundIcon
-            content={`${childAge}v`}
-            color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
-            size="m"
-          />
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
           <NameRow>
@@ -200,6 +195,13 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               ) : null}
+              <AgeRoundIcon
+                content={`${childAge}v`}
+                color={
+                  childAge < 3 ? colors.accents.a6turquoise : colors.main.m1
+                }
+                size="m"
+              />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
@@ -254,8 +256,4 @@ const AgeRoundIcon = styled(RoundIcon)`
   &.m {
     font-size: 14px;
   }
-
-  position: absolute;
-  margin-left: -15px;
-  margin-top: 35px;
 `
