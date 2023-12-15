@@ -72,7 +72,6 @@ export default React.memo(function UnitDetailsPage() {
                   <Button onClick={useEditable.off} text={i18n.common.cancel} />
                   <MutateButton
                     primary
-                    type="submit"
                     preventDefault
                     mutation={updateUnitMutation}
                     onClick={() => {
@@ -82,6 +81,7 @@ export default React.memo(function UnitDetailsPage() {
                     onSuccess={useEditable.off}
                     disabled={!isValid}
                     text={i18n.common.save}
+                    data-qa="save-button"
                   />
                 </>
               )}

@@ -262,7 +262,7 @@ export class UnitEditor {
     this.page.find('[data-qa="check-invoice-by-municipality"]')
   )
 
-  #submitButton = this.page.find('button[type="submit"]')
+  saveButton = this.page.findByDataQa('save-button')
 
   static async openById(page: Page, unitId: UUID) {
     await page.goto(`${config.employeeUrl}/units/${unitId}/details`)
@@ -362,7 +362,7 @@ export class UnitEditor {
   }
 
   async submit() {
-    await this.#submitButton.click()
+    await this.saveButton.click()
     return new UnitDetailsPage(this.page)
   }
 }
