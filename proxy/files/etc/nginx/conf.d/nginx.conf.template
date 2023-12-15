@@ -149,7 +149,7 @@ server {
   add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"https://$host/api/csp"}]}';
 
   set $loadFailedInlineScript "'sha256-z1vaAvxob9VDuw7klCB049Y2Xr6lf7KjhDrsLvsvcPU='"; # SHA256 calculated from the script contents
-  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
   add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' ${loadFailedInlineScript}; frame-ancestors 'none'; form-action 'self';";
 
   # Tracing
