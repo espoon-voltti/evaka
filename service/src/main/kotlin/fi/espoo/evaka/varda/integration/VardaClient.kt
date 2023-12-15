@@ -45,7 +45,7 @@ class VardaClient(
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
     private val unitUrl = "${env.url}/v1/toimipaikat/"
     private val personUrl = "${env.url}/v1/henkilot/"
-    private val personSearchUrl = "${env.url}/v1/hae-henkilo/"
+    private val personSearchUrl = "${env.url}/v1/henkilot/"
     private val childUrl = "${env.url}/v1/lapset/"
     private val decisionUrl = "${env.url}/v1/varhaiskasvatuspaatokset/"
     private val placementUrl = "${env.url}/v1/varhaiskasvatussuhteet/"
@@ -135,7 +135,10 @@ class VardaClient(
 
     data class VardaPersonSearchRequest(
         @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String? = null,
-        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null
+        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null,
+        val etunimet: String,
+        val sukunimi: String,
+        val kutsumanimi: String
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
@@ -145,26 +148,26 @@ class VardaClient(
     }
 
     fun getPersonFromVardaBySsnOrOid(body: VardaPersonSearchRequest): VardaPersonResponse? {
-        logger.info("VardaUpdate: client finding person by $body")
+        logger.info("VardaUpdate: client creating/finding a varda henkilo by $body")
 
         val (request, _, result) =
             fuel
-                .post(personSearchUrl)
+                .get(personSearchUrl)
                 .jsonBody(jsonMapper.writeValueAsString(body))
                 .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info("VardaUpdate: client successfully found person matching $body")
+                logger.info("VardaUpdate: client successfully found varda henkilo matching $body")
                 jsonMapper.readValue(result.get())
             }
             is Result.Failure -> {
                 // TODO: once everything works, remove this debug logging
                 logger.error {
-                    "VardaUpdate: Fetching person from Varda failed for ${body.henkilotunnus?.slice(0..4)}"
+                    "VardaUpdate: finding henkilo from Varda failed for ${body.henkilotunnus?.slice(0..4)}"
                 }
                 vardaError(request, result.error) { err ->
-                    "VardaUpdate: client failed to find person by $body: $err"
+                    "VardaUpdate: client failed to find henkilo by $body: $err"
                 }
             }
         }

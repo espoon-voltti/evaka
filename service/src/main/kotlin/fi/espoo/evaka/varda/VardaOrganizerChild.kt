@@ -104,7 +104,10 @@ private fun createVardaPersonAndChild(
                 VardaClient.VardaPersonSearchRequest(
                     henkilotunnus = personPayload.ssn,
                     henkilo_oid =
-                        if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null
+                        if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null,
+                    etunimet = personPayload.firstName,
+                    kutsumanimi = personPayload.nickName.ifEmpty { personPayload.firstName },
+                    sukunimi = personPayload.lastName
                 )
             )
         } catch (e: Exception) {
