@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="robots" content="noindex, nofollow">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:200,300,400,700|Open+Sans:300,400,600,700" rel="stylesheet">
 
     <#if properties.meta?has_content>
         <#list properties.meta?split(' ') as meta>
