@@ -3315,7 +3315,7 @@ __metadata:
     node-forge: "npm:^1.3.1"
     nodemon: "npm:^3.0.1"
     passport: "npm:^0.7.0"
-    pino: "npm:^8.16.0"
+    pino: "npm:^8.17.1"
     pino-http: "npm:^8.5.0"
     pino-pretty: "npm:^10.3.0"
     prettier: "npm:^3.1.0"
@@ -5908,7 +5908,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^8.0.0, pino@npm:^8.16.0":
+"pino@npm:^8.0.0":
   version: 8.16.0
   resolution: "pino@npm:8.16.0"
   dependencies:
@@ -5926,6 +5926,27 @@ __metadata:
   bin:
     pino: bin.js
   checksum: f6bde350c476ca9edb5ccc50376fc02ba5c1ba7c2c67b1f76e9c24101bc6f1e799e010f3b02044952a08c617dbdfb091743754bf313197785426976ff23a66ab
+  languageName: node
+  linkType: hard
+
+"pino@npm:^8.17.1":
+  version: 8.17.1
+  resolution: "pino@npm:8.17.1"
+  dependencies:
+    atomic-sleep: "npm:^1.0.0"
+    fast-redact: "npm:^3.1.1"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:v1.1.0"
+    pino-std-serializers: "npm:^6.0.0"
+    process-warning: "npm:^2.0.0"
+    quick-format-unescaped: "npm:^4.0.3"
+    real-require: "npm:^0.2.0"
+    safe-stable-stringify: "npm:^2.3.1"
+    sonic-boom: "npm:^3.7.0"
+    thread-stream: "npm:^2.0.0"
+  bin:
+    pino: bin.js
+  checksum: 698958c92f641d0f0f5a690aca583ffc2f3b02dc9af9a0f507e51b360837d38ae249d33c88851e9131ea8ffe203bbe252585001151ddf860e6923da530306cbc
   languageName: node
   linkType: hard
 
