@@ -55,7 +55,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
             vardaClient.sourceSystem,
             mockEndpoint.units.values.elementAt(0).lahdejarjestelma
         )
-        assertEquals("[FI]", mockEndpoint.units.values.elementAt(0).asiointikieli_koodi.toString())
+        assertEquals("[FI]", mockEndpoint.units.values.elementAt(0).toimintakieli_koodi.toString())
     }
 
     @Test
