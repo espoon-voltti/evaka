@@ -104,7 +104,7 @@ const features: Features = {
     hojks: false,
     employeeMobileStaffAttendanceEdit: true,
     employeeMobileChildAttendanceReservationEdit: true,
-    employeeMobileConfirmedDaysReservations: true
+    employeeMobileConfirmedDaysReservations: false
   }
 }
 
