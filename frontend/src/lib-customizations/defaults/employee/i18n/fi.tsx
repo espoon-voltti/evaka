@@ -52,10 +52,9 @@ export const fi = {
     settings: 'Asetukset',
     unitFeatures: 'Toimintojen avaukset',
     welcomePage: 'Tervetuloa eVakaan',
-    vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
-    childDocument: 'Lapsen pedagoginen lomake',
-    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
+    assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
+    assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa'
   },
   common: {
     yes: 'Kyllä',

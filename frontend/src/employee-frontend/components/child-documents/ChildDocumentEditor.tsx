@@ -7,7 +7,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -40,6 +46,7 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 import {
   childDocumentNextStatusMutation,
@@ -73,6 +80,11 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 }) {
   const { data: document, permittedActions } = documentAndPermissions
   const { i18n } = useTranslation()
+  const { setTitle } = useContext<TitleState>(TitleContext)
+  useEffect(
+    () => setTitle(document.template.name, true),
+    [document.template.name, setTitle]
+  )
   const navigate = useNavigate()
   const bind = useForm(
     documentForm,

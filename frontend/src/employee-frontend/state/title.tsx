@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, createContext } from 'react'
 import { useTranslation } from './i18n'
 
 export interface TitleState {
-  setTitle: (title: string | undefined) => void
+  setTitle: (title: string | undefined, hideDefault?: boolean) => void
   formatTitleName: (firstName: string | null, lastName: string | null) => string
 }
 
@@ -26,9 +26,9 @@ export const TitleContextProvider = React.memo(function TitleContextProvider({
   const { i18n } = useTranslation()
 
   const setTitle = useCallback(
-    (title?: string) => {
+    (title?: string, hideDefault?: boolean) => {
       document.title = title
-        ? `${title} - ${i18n.titles.defaultTitle}`
+        ? `${title}${hideDefault ? '' : ` - ${i18n.titles.defaultTitle}`}`
         : i18n.titles.defaultTitle
     },
     [i18n]
