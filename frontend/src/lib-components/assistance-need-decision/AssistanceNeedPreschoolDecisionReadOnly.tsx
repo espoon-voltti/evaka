@@ -101,6 +101,7 @@ interface ViewTranslations {
   phone: string
   legalInstructions: string
   legalInstructionsText: string
+  legalInstructionsTextExtendedCompulsoryEducation: string
   jurisdiction: string
   jurisdictionText: string
   appealInstructionsTitle: string
@@ -326,6 +327,11 @@ export default React.memo(function DecisionFormReadView({
           <SectionSpacer>
             <H3 noMargin>{t.legalInstructions}</H3>
             <P noMargin>{t.legalInstructionsText}</P>
+            {decision.form.extendedCompulsoryEducation && (
+              <P noMargin>
+                {t.legalInstructionsTextExtendedCompulsoryEducation}
+              </P>
+            )}
             <H3 noMargin>{t.jurisdiction}</H3>
             <P noMargin>{t.jurisdictionText}</P>
           </SectionSpacer>

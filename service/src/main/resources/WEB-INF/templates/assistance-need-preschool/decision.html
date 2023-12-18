@@ -184,6 +184,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div class="decision-details-container">
           <h2 th:text="#{legalInstructions}"></h2>
           <p th:text="#{legalInstructionsText}"></p>
+          <p th:text="#{legalInstructionsTextExtendedCompulsoryEducation}"
+             th:if="${decision.form.extendedCompulsoryEducation}"></p>
         </div>
 
         <div class="decision-details-container">
