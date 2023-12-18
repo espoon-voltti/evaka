@@ -3317,7 +3317,7 @@ __metadata:
     passport: "npm:^0.7.0"
     pino: "npm:^8.16.0"
     pino-http: "npm:^8.5.0"
-    pino-pretty: "npm:^10.2.0"
+    pino-pretty: "npm:^10.3.0"
     prettier: "npm:^3.1.0"
     pump: "npm:^3.0.0"
     query-string: "npm:^8.1.0"
@@ -3934,6 +3934,13 @@ __metadata:
     glob: "npm:^8.0.0"
     readable-stream: "npm:^3.6.0"
   checksum: 2c5ea6d2aae62b9a27708f5a9d19dfdc73331f62521a7cb904aeafbb69bc6fd9934d65c31b653f4387dab31a744e81701a5b434b126ac37a8cc981a1426eea21
+  languageName: node
+  linkType: hard
+
+"help-me@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "help-me@npm:5.0.0"
+  checksum: 5f99bd91dae93d02867175c3856c561d7e3a24f16999b08f5fc79689044b938d7ed58457f4d8c8744c01403e6e0470b7896baa344d112b2355842fd935a75d69
   languageName: node
   linkType: hard
 
@@ -5846,7 +5853,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:*, pino-pretty@npm:^10.2.0":
+"pino-pretty@npm:*":
   version: 10.2.0
   resolution: "pino-pretty@npm:10.2.0"
   dependencies:
@@ -5867,6 +5874,30 @@ __metadata:
   bin:
     pino-pretty: bin.js
   checksum: cc450aaaaead4e2f7dabf562fbf6cad02067c69fade2bf77410bf8f32b5861d4ad87816dab490ca8ec6c67586fbc9ed636e614a4c82d9e9bdc5c28a560bf6731
+  languageName: node
+  linkType: hard
+
+"pino-pretty@npm:^10.3.0":
+  version: 10.3.0
+  resolution: "pino-pretty@npm:10.3.0"
+  dependencies:
+    colorette: "npm:^2.0.7"
+    dateformat: "npm:^4.6.3"
+    fast-copy: "npm:^3.0.0"
+    fast-safe-stringify: "npm:^2.1.1"
+    help-me: "npm:^5.0.0"
+    joycon: "npm:^3.1.1"
+    minimist: "npm:^1.2.6"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:^1.0.0"
+    pump: "npm:^3.0.0"
+    readable-stream: "npm:^4.0.0"
+    secure-json-parse: "npm:^2.4.0"
+    sonic-boom: "npm:^3.0.0"
+    strip-json-comments: "npm:^3.1.1"
+  bin:
+    pino-pretty: bin.js
+  checksum: 2cbcb440b03e220b69720278ff28625417dd6ca851a7a5b8fc73978fb36e4438b9ac33f287a94fe779cf893bf47b585b44d91f3693527f766ac22b760028ef48
   languageName: node
   linkType: hard
 
