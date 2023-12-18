@@ -237,7 +237,7 @@ data class VardaUnit(
                     }
                     else -> null
                 },
-            asiointikieli_koodi = listOfNotNull(language.vardaCode),
+            toimintakieli_koodi = listOfNotNull(language.vardaCode),
             kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
         )
 }
@@ -265,6 +265,6 @@ data class VardaUnitRequest(
     val kasvatusopillinen_jarjestelma_koodi: String? = VardaUnitEducationSystem.NONE.vardaCode,
     val jarjestamismuoto_koodi: List<String>,
     val toimintamuoto_koodi: String?,
-    val asiointikieli_koodi: List<String>,
+    val toimintakieli_koodi: List<String>,
     val kielipainotus_kytkin: Boolean
 )
