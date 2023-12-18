@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
@@ -886,7 +885,7 @@ AND (head_of_family_id = :citizenId
 
 data class FeeDecisionCitizenInfoRow(
     val id: FeeDecisionId,
-    val validDuring: FiniteDateRange,
+    val validDuring: DateRange,
     val sentAt: HelsinkiDateTime?,
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?

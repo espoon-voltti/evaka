@@ -38,6 +38,8 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import java.time.LocalDate
+import java.util.UUID
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -48,8 +50,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/citizen")
@@ -582,8 +582,14 @@ class ApplicationControllerCitizen(
                     val feeDecisionRows = tx.getFeeDecisionByLiableCitizen(user.id)
 
                     val citizenIds =
-                        feeDecisionRows.map { listOfNotNull(it.headOfFamilyId, it.partnerId) }.flatten().toSet() +
-                                voucherValueDecisionRows.map { listOfNotNull(it.headOfFamilyId, it.partnerId) }.flatten().toSet()
+                        feeDecisionRows
+                            .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+                            .flatten()
+                            .toSet() +
+                            voucherValueDecisionRows
+                                .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+                                .flatten()
+                                .toSet()
 
                     val childIds = voucherValueDecisionRows.map { it.childId }.toSet()
                     val personMap =
@@ -604,7 +610,6 @@ class ApplicationControllerCitizen(
                                             childInfo.lastName
                                         )
                                     ),
-
                                 validFrom =
                                     row.validFrom
                                         ?: throw IllegalStateException(

@@ -33,39 +33,34 @@ import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toValueDecisionServiceNeed
-import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -74,26 +69,9 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
 
-    private val testChild =
-        DevPerson(
-            id = ChildId(UUID.randomUUID()),
-            dateOfBirth = LocalDate.of(2017, 6, 1),
-            ssn = "010617A123U",
-            firstName = "Ricky",
-            lastName = "Doe",
-            streetAddress = "Kamreerintie 2",
-            postalCode = "02770",
-            postOffice = "Espoo",
-            restrictedDetailsEnabled = false
-        )
-
     private lateinit var headOfFamily: DevPerson
     private lateinit var partner: DevPerson
 
-    private lateinit var employeeId: EmployeeId
-    private lateinit var employeeEvakaUserId: EvakaUserId
-    private lateinit var hofAuthenticatedUser: AuthenticatedUser.Citizen
-    private lateinit var partnerAuthenticatedUser: AuthenticatedUser.Citizen
     private lateinit var feeDecisions: List<FinanceDecisionCitizenInfo>
     private lateinit var voucherValueDecisions: List<FinanceDecisionCitizenInfo>
 
@@ -114,14 +92,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             tx.insert(headOfFamily, DevPersonType.ADULT)
 
             tx.insert(partner, DevPersonType.ADULT)
-            hofAuthenticatedUser =
-                AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.STRONG)
-            partnerAuthenticatedUser =
-                AuthenticatedUser.Citizen(partner.id, CitizenAuthLevel.STRONG)
-
-            employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
-            tx.upsertEmployeeUser(employeeId)
-            employeeEvakaUserId = EvakaUserId(employeeId.raw)
 
             val testPeriod1 = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31))
             val testPeriod2 =
@@ -162,8 +132,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             tx.upsertFeeDecisions(testFeeDecisions)
             tx.setFeeDecisionSent(
                 ids = listOf(fdId),
-                clock =
-                    MockEvakaClock(now = feeDecisionSentAt)
+                clock = MockEvakaClock(now = feeDecisionSentAt)
             )
 
             feeDecisions =
@@ -176,12 +145,12 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         sentAt = feeDecisionSentAt,
                         coDebtors =
                             listOf(
+                                LiableCitizenInfo(partner.id, partner.firstName, partner.lastName),
                                 LiableCitizenInfo(
                                     headOfFamily.id,
                                     headOfFamily.firstName,
                                     headOfFamily.lastName
                                 ),
-                                LiableCitizenInfo(partner.id, partner.firstName, partner.lastName)
                             ),
                         decisionChildren = emptyList()
                     )
@@ -204,10 +173,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 )
             val voucherValueSentAt = HelsinkiDateTime.atStartOfDay(LocalDate.of(2018, 6, 1))
             tx.upsertValueDecisions(testVoucherValueDecisions)
-            tx.markVoucherValueDecisionsSent(
-                ids = listOf(vvdId),
-                now = voucherValueSentAt
-            )
+            tx.markVoucherValueDecisionsSent(ids = listOf(vvdId), now = voucherValueSentAt)
 
             voucherValueDecisions =
                 testVoucherValueDecisions.map {
@@ -244,17 +210,14 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
-                hofAuthenticatedUser,
+                AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.STRONG),
                 clock
             )
 
-        assertEquals(2, financeDecisions.size)
-        feeDecisions.forEach {
-            assertFinanceDecisionCitizenInfo()
-        }
-        voucherValueDecisions.forEach {
-            assertContains(financeDecisions, it)
-        }
+        Assertions.assertThatIterable(financeDecisions)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(feeDecisions + voucherValueDecisions)
     }
 
     @Test
@@ -263,18 +226,26 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
-                partnerAuthenticatedUser,
+                AuthenticatedUser.Citizen(partner.id, CitizenAuthLevel.STRONG),
                 clock
             )
 
-        assertEquals(1, financeDecisions.size)
+        Assertions.assertThatIterable(financeDecisions)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(feeDecisions)
     }
 
+    @Test
+    fun `no permission without strong auth`() {
 
-    fun assertFinanceDecisionCitizenInfo(expected: FinanceDecisionCitizenInfo, actual: FinanceDecisionCitizenInfo) {
-        Assertions.assertThat(actual).usingRecursiveAssertion().ignoringFields("coDebtors", "decisionChildren").isEqualTo(expected)
-        Assertions.assertThat(actual.coDebtors).containsAll(expected.coDebtors)
-        Assertions.assertThat(actual.decisionChildren).containsAll(expected.decisionChildren)
+        assertThrows<Forbidden> {
+            applicationControllerCitizen.getLiableCitizenFinanceDecisions(
+                dbInstance(),
+                AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.WEAK),
+                clock
+            )
+        }
     }
 
     private fun createTestVoucherValueDecision(

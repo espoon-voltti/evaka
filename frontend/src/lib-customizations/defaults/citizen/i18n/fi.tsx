@@ -1370,7 +1370,8 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
-    childhoodEducationTitle: 'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
+    childhoodEducationTitle:
+      'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
     summary: (
       <P width="800px">
         Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen,
@@ -1394,7 +1395,7 @@ export default {
       },
       title: 'Maksuihin liittyvät päätökset',
       liableCitizens: 'Maksuvelvolliset',
-      validityPeriod: 'Päätös voimassa',
+      validityPeriod: 'Päätös voimassa alkaen',
       sentAt: 'Päätös lähetetty',
       voucherValueChild: 'Lapsi jota päätös koskee',
       loadDecisionPDF: 'Näytä päätös'

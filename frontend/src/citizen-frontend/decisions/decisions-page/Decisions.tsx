@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 
@@ -52,9 +53,9 @@ export default React.memo(function Decisions() {
       | AssistanceNeedDecisionCitizenListItem
       | AssistanceNeedPreschoolDecisionCitizenListItem
       | {
-        applicationId: UUID
-        resolved: LocalDate | null
-      }
+          applicationId: UUID
+          resolved: LocalDate | null
+        }
     )[]
     firstName: string
     lastName: string
@@ -83,10 +84,13 @@ export default React.memo(function Decisions() {
     [applicationDecisions]
   )
 
-  const sortedFinanceDecisions = useMemo(() =>
-    financeDecisions.map((result) => sortBy(
-      result, ['sentAt', 'validFrom'], ['desc', 'desc'])
-    ), [financeDecisions])
+  const sortedFinanceDecisions = useMemo(
+    () =>
+      financeDecisions.map((results) =>
+        orderBy(results, ['sentAt', 'validFrom'], ['desc', 'desc'])
+      ),
+    [financeDecisions]
+  )
 
   const childrenWithSortedDecisions = useMemo(
     () =>
@@ -169,26 +173,28 @@ export default React.memo(function Decisions() {
 
       {renderResult(sortedFinanceDecisions, (decisions) => (
         <FixedSpaceColumn>
-          <ContentArea opaque paddingVertical='L'>
+          <ContentArea opaque paddingVertical="L">
             <H2 noMargin>{t.decisions.financeDecisions.title}</H2>
             <Gap size="xs" />
-            {decisions.map((decision, index) =>
+            {decisions.map((decision, index) => (
               <Fragment key={decision.id}>
                 <HorizontalLine dashed slim />
-                <FinanceDecision decisionData={decision} startOpen={index === 0} />
+                <FinanceDecision
+                  decisionData={decision}
+                  startOpen={index === 0}
+                />
               </Fragment>
-            )}
+            ))}
           </ContentArea>
         </FixedSpaceColumn>
-      ))
-      }
+      ))}
 
       {renderResult(
         childrenWithSortedDecisions,
         (childrenWithSortedDecisions) => (
           <>
             <Gap size="s" />
-            <ContentArea opaque paddingVertical='L'>
+            <ContentArea opaque paddingVertical="L">
               <H2 noMargin>{t.decisions.childhoodEducationTitle}</H2>
             </ContentArea>
             <Gap size="s" />
@@ -223,7 +229,6 @@ export default React.memo(function Decisions() {
       )}
 
       <Gap size="s" />
-
     </Container>
   )
 })

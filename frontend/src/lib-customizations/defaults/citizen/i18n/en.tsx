@@ -1425,7 +1425,8 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
-    childhoodEducationTitle: 'Decisions regarding child’s early childhood education, pre-primary education and clubs',
+    childhoodEducationTitle:
+      'Decisions regarding child’s early childhood education, pre-primary education and clubs',
     summary: (
       <P width="800px">
         This page displays the received decisions regarding child&lsquo;s early
@@ -1451,7 +1452,7 @@ const en: Translations = {
       },
       title: 'Decisions regarding payments',
       liableCitizens: 'Persons liable for payment',
-      validityPeriod: 'Decision valid during',
+      validityPeriod: 'Decision valid from',
       sentAt: 'Decision sent',
       voucherValueChild: 'Affected child',
       loadDecisionPDF: 'Show decision'

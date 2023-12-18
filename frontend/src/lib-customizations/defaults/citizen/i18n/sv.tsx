@@ -1375,11 +1375,12 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
-    childhoodEducationTitle: 'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
+    childhoodEducationTitle:
+      'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
     summary: (
       <P width="800px">
-        Till denna sida kommer beslut gällande betalningar och barnets ansökan till
-        småbarnspedagogik, förskola och klubbverksamhet.
+        Till denna sida kommer beslut gällande betalningar och beslut gällande
+        barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
         Om beslutet rör en ansökan till en för barnet ny plats, bör du ta emot
@@ -1398,7 +1399,7 @@ const sv: Translations = {
       },
       title: 'Beslut gällande betalningar',
       liableCitizens: 'Betalningsskyldiga',
-      validityPeriod: 'Beslut giltig',
+      validityPeriod: 'Beslut giltigt från',
       sentAt: 'Beslut skickat',
       voucherValueChild: 'Barnet som berörs av beslutet',
       loadDecisionPDF: 'Visa beslut'

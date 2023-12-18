@@ -8,13 +8,12 @@ import {
   DecisionWithValidStartDatePeriod,
   FinanceDecisionCitizenInfo
 } from 'lib-common/generated/api-types/application'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
-
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 export async function getDecisions(): Promise<ApplicationDecisions[]> {
   return client
@@ -61,8 +60,9 @@ export function getDecisionsOfApplication(
     )
 }
 
-export function getFinanceDecisionsForCitizen(
-): Promise<FinanceDecisionCitizenInfo[]> {
+export function getFinanceDecisionsForCitizen(): Promise<
+  FinanceDecisionCitizenInfo[]
+> {
   return client
     .get<JsonOf<FinanceDecisionCitizenInfo[]>>(
       `/citizen/finance-decisions/by-liable-citizen`

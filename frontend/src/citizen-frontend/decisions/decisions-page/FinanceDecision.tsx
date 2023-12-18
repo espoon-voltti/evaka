@@ -4,6 +4,8 @@
 
 import React, { useCallback, useState } from 'react'
 
+import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
+import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -12,8 +14,6 @@ import { Gap } from 'lib-components/white-space'
 import { faFileAlt } from 'lib-icons'
 
 import { useTranslation } from '../../localization'
-import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
-import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 
 interface Props {
   decisionData: FinanceDecisionCitizenInfo
@@ -32,60 +32,81 @@ export default React.memo(function FinanceDecision({
   const t = useTranslation()
   const [open, setOpen] = useState(startOpen)
   const toggleOpen = useCallback(() => setOpen((o) => !o), [])
-  const formatDuration = useCallback(() => `${decisionData.validFrom.format()} - ${decisionData.validTo?.format() && ''}`, [decisionData])
+  const formatFullDuration = useCallback(
+    () =>
+      `${decisionData.validFrom.format()} - ${
+        decisionData.validTo ? decisionData.validTo.format() : ''
+      }`,
+    [decisionData]
+  )
+  const formatTitleDuration = useCallback(
+    () => `${decisionData.validFrom.format()} -`,
+    [decisionData]
+  )
 
   return (
     <CollapsibleContentArea
+      data-qa={`finance-decision-${decisionData.id}`}
       opaque={false}
       open={open}
       toggleOpen={toggleOpen}
       title={
         <H3
           noMargin
-          data-qa={`title-decision-type-${decisionData.id}`}
-          aria-label={
-            `${t.decisions.financeDecisions.type[decisionData.type]
-            } ${formatDuration()}`
-          }
+          data-qa="finance-decision-title"
+          aria-label={`${
+            t.decisions.financeDecisions.type[decisionData.type]
+          } ${formatFullDuration()}`}
         >
-          {t.decisions.financeDecisions.type[decisionData.type]} {` ${formatDuration()}`}
+          {t.decisions.financeDecisions.type[decisionData.type]}{' '}
+          {` ${formatTitleDuration()}`}
         </H3>
       }
       paddingHorizontal="0"
       paddingVertical="0"
-      data-qa={`assistance-decision-${decisionData.id}`}
     >
       <Gap size="xs" />
       <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
-
         <Label>{t.decisions.financeDecisions.validityPeriod}</Label>
-        <span data-qa="validity-period">{formatDuration()}</span>
+        <span data-qa="finance-decision-validity-period">
+          {decisionData.validFrom.format()}
+        </span>
 
         <Label>{t.decisions.financeDecisions.sentAt}</Label>
-        <span data-qa="sent-at">{decisionData.sentAt.format()}</span>
+        <span data-qa="finance-decision-sent-at">
+          {decisionData.sentAt.format()}
+        </span>
 
         <Label>{t.decisions.financeDecisions.liableCitizens}</Label>
-        <span data-qa="liable-citizen-names">{decisionData.coDebtors.map(citizen => `${citizen.firstName} ${citizen.lastName}`).join(', ')}</span>
+        <span data-qa="finance-decision-co-debtors">
+          {decisionData.coDebtors
+            .map((citizen) => `${citizen.firstName} ${citizen.lastName}`)
+            .join(', ')}
+        </span>
         {decisionData.decisionChildren.length > 0 && (
           <>
             <Label>{t.decisions.financeDecisions.voucherValueChild}</Label>
-            <span data-qa="child-names">{decisionData.decisionChildren.map(child => `${child.firstName} ${child.lastName}`).join(', ')}</span>
+            <span data-qa="finance-decision-children">
+              {decisionData.decisionChildren
+                .map((child) => `${child.firstName} ${child.lastName}`)
+                .join(', ')}
+            </span>
           </>
-        )
-        }
+        )}
       </ListGrid>
       <Gap size="m" />
 
       <InlineButton
         icon={faFileAlt}
         text={t.decisions.financeDecisions.loadDecisionPDF}
-        onClick={() => window.open(
-          getDecisionUrl(decisionData.id, decisionData.type),
-          '_blank',
-          'noopener,noreferrer'
-        )}
+        onClick={() =>
+          window.open(
+            getDecisionUrl(decisionData.id, decisionData.type),
+            '_blank',
+            'noopener,noreferrer'
+          )
+        }
       />
-
     </CollapsibleContentArea>
   )
 })
