@@ -102,9 +102,9 @@ const features: Features = {
     childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
     hojks: false,
-    employeeMobileStaffAttendanceEdit: false,
-    employeeMobileChildAttendanceReservationEdit: false,
-    employeeMobileConfirmedDaysReservations: false
+    employeeMobileStaffAttendanceEdit: true,
+    employeeMobileChildAttendanceReservationEdit: true,
+    employeeMobileConfirmedDaysReservations: true
   }
 }
 
