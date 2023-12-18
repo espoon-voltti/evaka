@@ -946,6 +946,8 @@ export const fi = {
       phone: 'Puhelinnumero',
       legalInstructions: 'Sovelletut oikeusohjeet',
       legalInstructionsText: 'Perusopetuslaki 17 §',
+      legalInstructionsTextExtendedCompulsoryEducation:
+        'Oppivelvollisuulaki 2 §',
       jurisdiction: 'Toimivalta',
       jurisdictionText:
         'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',

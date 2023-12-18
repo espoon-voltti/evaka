@@ -819,6 +819,11 @@ const DecisionEditor = React.memo(function DecisionEditor({
             <SectionSpacer>
               <H3 noMargin>{t.legalInstructions}</H3>
               <P noMargin>{t.legalInstructionsText}</P>
+              {bind.state.extendedCompulsoryEducation && (
+                <P noMargin>
+                  {t.legalInstructionsTextExtendedCompulsoryEducation}
+                </P>
+              )}
               <H3 noMargin>{t.jurisdiction}</H3>
               <P noMargin>{t.jurisdictionText}</P>
             </SectionSpacer>
