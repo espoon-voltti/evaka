@@ -13,12 +13,14 @@ import { UserContext } from '../state/user'
 
 interface Props {
   title?: keyof Translations['titles']
+  hideDefaultTitle?: boolean
   requireAuth?: boolean
   children?: React.ReactNode
 }
 
 export default React.memo(function EmployeeRoute({
   title,
+  hideDefaultTitle,
   requireAuth = true,
   children
 }: Props) {
@@ -26,8 +28,8 @@ export default React.memo(function EmployeeRoute({
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   useEffect(
-    () => setTitle(title ? i18n.titles[title] : ''),
-    [i18n.titles, setTitle, title]
+    () => setTitle(title ? i18n.titles[title] : '', hideDefaultTitle),
+    [hideDefaultTitle, i18n.titles, setTitle, title]
   )
 
   return requireAuth ? <RequireAuth element={children} /> : <>{children}</>

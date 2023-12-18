@@ -290,7 +290,10 @@ export default createBrowserRouter(
         {
           path: '/child-information/:childId/assistance-need-decision/:id',
           element: (
-            <EmployeeRoute title="assistanceNeedDecision">
+            <EmployeeRoute
+              title="assistanceNeedDecision"
+              hideDefaultTitle={true}
+            >
               <AssistanceNeedDecisionPage />
             </EmployeeRoute>
           )
@@ -298,7 +301,10 @@ export default createBrowserRouter(
         {
           path: '/child-information/:childId/assistance-need-decision/:id/edit',
           element: (
-            <EmployeeRoute title="assistanceNeedDecision">
+            <EmployeeRoute
+              title="assistanceNeedDecision"
+              hideDefaultTitle={true}
+            >
               <AssistanceNeedDecisionEditPage />
             </EmployeeRoute>
           )
@@ -306,7 +312,10 @@ export default createBrowserRouter(
         {
           path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId',
           element: (
-            <EmployeeRoute title="assistanceNeedDecision">
+            <EmployeeRoute
+              title="assistanceNeedPreschoolDecision"
+              hideDefaultTitle={true}
+            >
               <AssistanceNeedPreschoolDecisionReadPage />
             </EmployeeRoute>
           )
@@ -314,7 +323,10 @@ export default createBrowserRouter(
         {
           path: '/child-information/:childId/assistance-need-preschool-decisions/:decisionId/edit',
           element: (
-            <EmployeeRoute title="assistanceNeedDecision">
+            <EmployeeRoute
+              title="assistanceNeedPreschoolDecision"
+              hideDefaultTitle={true}
+            >
               <AssistanceNeedPreschoolDecisionEditPage />
             </EmployeeRoute>
           )
@@ -790,7 +802,7 @@ export default createBrowserRouter(
         {
           path: '/vasu/:id',
           element: (
-            <EmployeeRoute title="vasuPage">
+            <EmployeeRoute>
               <VasuPage />
             </EmployeeRoute>
           )
@@ -798,7 +810,7 @@ export default createBrowserRouter(
         {
           path: '/vasu/:id/edit',
           element: (
-            <EmployeeRoute title="vasuPage">
+            <EmployeeRoute>
               <VasuEditPage />
             </EmployeeRoute>
           )
@@ -838,7 +850,7 @@ export default createBrowserRouter(
         {
           path: '/child-documents/:documentId',
           element: (
-            <EmployeeRoute title="childDocument">
+            <EmployeeRoute>
               <ChildDocumentEditor />
             </EmployeeRoute>
           )
