@@ -20,6 +20,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
+import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
@@ -383,7 +384,8 @@ class AttendanceReservationController(
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
         val dailyServiceTimes: DailyServiceTimesValue?,
-        val onTermBreak: Boolean
+        val onTermBreak: Boolean,
+        val isInHolidayPeriod: Boolean
     )
 
     data class DailyChildReservationResult(
@@ -414,11 +416,13 @@ class AttendanceReservationController(
 
                     val clubTerms = tx.getClubTerms()
                     val preschoolTerms = tx.getPreschoolTerms()
+                    val holidayPeriods = tx.getHolidayPeriods()
                     val dateRowsByChild = rowsByDate.associateBy { it.childId }
                     val childIds = dateRowsByChild.keys
                     val dailyServiceTimes = tx.getDailyServiceTimesForChildren(childIds)
                     val childMap = mutableMapOf<ChildId, ReservationChildInfo>()
 
+                    val isHolidayPeriod = holidayPeriods.any { it.period.includes(examinationDate) }
                     val childReservationInfos =
                         dateRowsByChild.map { row ->
                             // every row duplicates full basic info for child
@@ -445,7 +449,12 @@ class AttendanceReservationController(
                                 row.value.reservations
                                     .sortedBy { it.start }
                                     .map {
-                                        Reservation.Times(startTime = it.start, endTime = it.end)
+                                        ReservationTimesForDate(
+                                                startTime = it.start,
+                                                endTime = it.end,
+                                                date = examinationDate
+                                            )
+                                            .toReservationTimes()
                                     }
                                     .ifEmpty { listOf(Reservation.NoTimes) }
 
@@ -464,7 +473,8 @@ class AttendanceReservationController(
                                     dailyServiceTimes[row.key]?.find {
                                         it.validityPeriod.includes(examinationDate)
                                     },
-                                onTermBreak = scheduleType == ScheduleType.TERM_BREAK
+                                onTermBreak = scheduleType == ScheduleType.TERM_BREAK,
+                                isInHolidayPeriod = isHolidayPeriod
                             )
                         }
 

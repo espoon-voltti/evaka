@@ -564,7 +564,7 @@ data class DailyChildReservationInfoRow(
 
 data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
 
-data class ConfirmedDayReservationInfo(val start: LocalTime, val end: LocalTime)
+data class ConfirmedDayReservationInfo(val start: LocalTime?, val end: LocalTime?)
 
 fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
