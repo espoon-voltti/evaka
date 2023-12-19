@@ -1052,7 +1052,8 @@ class AttendanceReservationsControllerIntegrationTest :
                 absent = false,
                 outOnBackupPlacement = false,
                 dailyServiceTimes = null,
-                onTermBreak = false
+                onTermBreak = false,
+                isInHolidayPeriod = false
             )
 
         val child2Expectation =
