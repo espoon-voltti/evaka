@@ -11,6 +11,7 @@ evaka-review-profile/target
 !bin
 !theme/package*.json
 !theme/evaka
+!theme/fonts
 !theme/sass
 !theme/scripts
 !evaka-logging
