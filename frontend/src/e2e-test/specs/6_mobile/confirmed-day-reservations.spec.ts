@@ -142,7 +142,7 @@ describe('Child confirmed reservations', () => {
       )
     }
   })
-  test('Daily children are correct', async () => {
+  test('Daily children are correct (Thursday)', async () => {
     const testDay = LocalDate.of(2022, 5, 19)
     await confirmedReservationPage.openDayItem(testDay)
     const expectedChildItems = [
@@ -180,6 +180,66 @@ describe('Child confirmed reservations', () => {
         date: testDay,
         childId: enduserChildFixturePorriHatterRestricted.id,
         reservationTexts: ['Sop.aika puuttuu'],
+        childDetails: {
+          firstName:
+            enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],
+          lastName: enduserChildFixturePorriHatterRestricted.lastName,
+          preferredName: enduserChildFixturePorriHatterRestricted.preferredName
+        }
+      }
+    ]
+
+    for (const childItem of expectedChildItems) {
+      await confirmedReservationPage.assertChildDetails(
+        childItem.date,
+        childItem.childId,
+        childItem.reservationTexts,
+        childItem.childDetails
+      )
+    }
+  })
+
+  test('Holiday period daily children are correct (Thursday)', async () => {
+    await insertTestHolidayPeriod(
+      new FiniteDateRange(LocalDate.of(2022, 5, 19), LocalDate.of(2022, 5, 20))
+    )
+    const testDay = LocalDate.of(2022, 5, 19)
+    await confirmedReservationPage.openDayItem(testDay)
+    const expectedChildItems = [
+      {
+        date: testDay,
+        childId: enduserNonSsnChildFixture.id,
+        reservationTexts: ['Ei toimintaa'],
+        childDetails: {
+          firstName: enduserNonSsnChildFixture.firstName.split(/\s/)[0],
+          lastName: enduserNonSsnChildFixture.lastName,
+          preferredName: enduserNonSsnChildFixture.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixtureKaarina.id,
+        reservationTexts: ['Poissa'],
+        childDetails: {
+          firstName: enduserChildFixtureKaarina.firstName.split(/\s/)[0],
+          lastName: enduserChildFixtureKaarina.lastName,
+          preferredName: enduserChildFixtureKaarina.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixtureJari.id,
+        reservationTexts: ['08:12 - 13:45', '14:30 - 16:45'],
+        childDetails: {
+          firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
+          lastName: enduserChildFixtureJari.lastName,
+          preferredName: enduserChildFixtureJari.preferredName
+        }
+      },
+      {
+        date: testDay,
+        childId: enduserChildFixturePorriHatterRestricted.id,
+        reservationTexts: ['Lomavaraus puuttuu'],
         childDetails: {
           firstName:
             enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],
@@ -338,4 +398,10 @@ async function insertConfirmedDaysTestData() {
       end: LocalTime.of(16, 45)
     }
   }).save()
+}
+
+async function insertTestHolidayPeriod(period: FiniteDateRange) {
+  await Fixture.holidayPeriod()
+    .with({ period: period, reservationDeadline: LocalDate.of(2022, 4, 20) })
+    .save()
 }

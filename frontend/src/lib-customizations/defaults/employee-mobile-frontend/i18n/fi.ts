@@ -217,7 +217,8 @@ export const fi = {
       status: {
         ABSENT: 'Poissa',
         ON_TERM_BREAK: 'Ei toimintaa'
-      }
+      },
+      noHolidayReservation: 'Lomavaraus puuttuu'
     },
     notes: {
       day: 'Päivä',

@@ -111,16 +111,22 @@ export default React.memo(function ChildSubListItem({
       return [i18n.attendances.confirmedDays.status.ABSENT]
     if (reservationData.outOnBackupPlacement)
       return [i18n.attendances.confirmedDays.inOtherUnit]
-    const [withTimes] = partition(
+
+    const [withTimes, noTimes] = partition(
       reservationData.reservations,
       reservationHasTimes
     )
+
     if (withTimes.length > 0)
       return withTimes.map(
         (r) =>
           `${r.startTime.format(timeFormat)} - ${r.endTime.format(timeFormat)}`
       )
 
+    if (reservationData.isInHolidayPeriod) {
+      if (noTimes.length > 0)
+        return [i18n.attendances.confirmedDays.noHolidayReservation]
+    }
     const todaysServiceTime = getTodaysServiceTimes(
       reservationData.dailyServiceTimes
     )
