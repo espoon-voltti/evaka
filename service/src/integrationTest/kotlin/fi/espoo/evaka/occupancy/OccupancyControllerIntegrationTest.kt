@@ -81,13 +81,37 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months =
-                    OccupancyValues(sum = 0.0, headcount = 0, caretakers = 1.0, percentage = 0.0),
+                    OccupancyValues(
+                        sumUnder3y = 0.0,
+                        sumOver3y = 0.0,
+                        headcount = 0,
+                        caretakers = 1.0,
+                        percentage = 0.0
+                    ),
                 max6Months =
-                    OccupancyValues(sum = 0.0, headcount = 0, caretakers = 1.0, percentage = 0.0),
+                    OccupancyValues(
+                        sumUnder3y = 0.0,
+                        sumOver3y = 0.0,
+                        headcount = 0,
+                        caretakers = 1.0,
+                        percentage = 0.0
+                    ),
                 max3MonthsSpeculated =
-                    OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.0,
+                        headcount = 1,
+                        caretakers = 1.0,
+                        percentage = 25.0
+                    ),
                 max6MonthsSpeculated =
-                    OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0)
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.0,
+                        headcount = 1,
+                        caretakers = 1.0,
+                        percentage = 25.0
+                    )
             ),
             occupancies
         )
@@ -130,13 +154,37 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months =
-                    OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.0,
+                        headcount = 1,
+                        caretakers = 1.0,
+                        percentage = 25.0
+                    ),
                 max6Months =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    ),
                 max3MonthsSpeculated =
-                    OccupancyValues(sum = 3.5, headcount = 2, caretakers = 1.0, percentage = 50.0),
+                    OccupancyValues(
+                        sumUnder3y = 3.5,
+                        sumOver3y = 0.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 50.0
+                    ),
                 max6MonthsSpeculated =
-                    OccupancyValues(sum = 4.5, headcount = 3, caretakers = 1.0, percentage = 64.3)
+                    OccupancyValues(
+                        sumUnder3y = 3.5,
+                        sumOver3y = 1.0,
+                        headcount = 3,
+                        caretakers = 1.0,
+                        percentage = 64.3
+                    )
             ),
             occupancies
         )
@@ -184,13 +232,37 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months =
-                    OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.0,
+                        headcount = 1,
+                        caretakers = 1.0,
+                        percentage = 25.0
+                    ),
                 max6Months =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    ),
                 max3MonthsSpeculated =
-                    OccupancyValues(sum = 2.25, headcount = 2, caretakers = 1.0, percentage = 32.1),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.5,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 32.1
+                    ),
                 max6MonthsSpeculated =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3)
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    )
             ),
             occupancies
         )
@@ -239,15 +311,39 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months =
-                    OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.0,
+                        headcount = 1,
+                        caretakers = 1.0,
+                        percentage = 25.0
+                    ),
                 max6Months =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    ),
                 // preschool only
                 max3MonthsSpeculated =
-                    OccupancyValues(sum = 2.25, headcount = 2, caretakers = 1.0, percentage = 32.1),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 0.5,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 32.1
+                    ),
                 // preschool+daycare
                 max6MonthsSpeculated =
-                    OccupancyValues(sum = 3.75, headcount = 3, caretakers = 1.0, percentage = 53.6)
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 2.0,
+                        headcount = 3,
+                        caretakers = 1.0,
+                        percentage = 53.6
+                    )
             ),
             occupancies
         )
@@ -303,15 +399,39 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             OccupancyResponseSpeculated(
                 max3Months =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    ),
                 max6Months =
-                    OccupancyValues(sum = 3.75, headcount = 3, caretakers = 1.0, percentage = 53.6),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 2.0,
+                        headcount = 3,
+                        caretakers = 1.0,
+                        percentage = 53.6
+                    ),
                 // Same occupancy values as above, because the child already had a placement in this
                 // unit
                 max3MonthsSpeculated =
-                    OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 1.0,
+                        headcount = 2,
+                        caretakers = 1.0,
+                        percentage = 39.3
+                    ),
                 max6MonthsSpeculated =
-                    OccupancyValues(sum = 3.75, headcount = 3, caretakers = 1.0, percentage = 53.6)
+                    OccupancyValues(
+                        sumUnder3y = 1.75,
+                        sumOver3y = 2.0,
+                        headcount = 3,
+                        caretakers = 1.0,
+                        percentage = 53.6
+                    )
             ),
             occupancies
         )
