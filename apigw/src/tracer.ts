@@ -8,7 +8,8 @@ import {
   appCommit,
   tracingEnabled,
   traceAgentHostname,
-  traceAgentPort
+  traceAgentPort,
+  profilingEnabled
 } from './shared/config.js'
 import tracer from 'dd-trace'
 
@@ -19,6 +20,7 @@ if (tracingEnabled) {
     version: appCommit,
     hostname: traceAgentHostname,
     port: traceAgentPort,
+    profiling: profilingEnabled,
     logInjection: true,
     runtimeMetrics: true
   }) // initialized in a different file to avoid hoisting.

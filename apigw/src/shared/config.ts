@@ -334,6 +334,8 @@ export const hostIp = process.env.HOST_IP ?? 'UNDEFINED'
 export const debug = ifNodeEnv(['local', 'test'], true) ?? false
 
 export const tracingEnabled = process.env.DD_TRACE_ENABLED === 'true' ?? false
+export const profilingEnabled =
+  process.env.DD_PROFILING_ENABLED === 'true' ?? false
 export const traceAgentHostname =
   process.env.DD_TRACE_AGENT_HOSTNAME ?? 'localhost'
 export const traceAgentPort = env('DD_TRACE_AGENT_PORT', parseInteger) ?? 8126
