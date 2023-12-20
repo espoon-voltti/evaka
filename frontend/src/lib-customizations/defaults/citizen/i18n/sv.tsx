@@ -1379,13 +1379,12 @@ const sv: Translations = {
       'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
     summary: (
       <P width="800px">
-        Till denna sida kommer beslut gällande betalningar och beslut gällande
-        barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet.
+        Till denna sidan kommer beslut gällande betalningar, barnets ansökan
+        till småbarnspedagogik, förskola och klubbverksamhet.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
-        Om beslutet rör en ansökan till en för barnet ny plats, bör du ta emot
-        eller annullera platsen / platserna inom två veckor från mottagandet av
-        beslutet.
+        Om beslutet gäller en ny sökt plats för barnet ska du svara inom två
+        veckor om du tar emot eller inte tar emot platsen.
       </P>
     ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,

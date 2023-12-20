@@ -175,7 +175,7 @@ export default React.memo(function Decisions() {
         <FixedSpaceColumn>
           <ContentArea opaque paddingVertical="L">
             <H2 noMargin>{t.decisions.financeDecisions.title}</H2>
-            <Gap size="xs" />
+            {decisions.length > 0 && <Gap size="xs" />}
             {decisions.map((decision, index) => (
               <Fragment key={decision.id}>
                 <HorizontalLine dashed slim />
