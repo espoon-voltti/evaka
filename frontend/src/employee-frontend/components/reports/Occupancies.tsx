@@ -699,7 +699,11 @@ export default React.memo(function Occupancies() {
                             row.areaName === areaName &&
                             (filters.careAreaId !== undefined ||
                               areasOpen[areaName]) && (
-                              <Tr key={row.unitId}>
+                              <Tr
+                                key={
+                                  'groupId' in row ? row.groupId : row.unitId
+                                }
+                              >
                                 <StyledTd>
                                   <Link to={`/units/${row.unitId}`}>
                                     {row.unitName}
