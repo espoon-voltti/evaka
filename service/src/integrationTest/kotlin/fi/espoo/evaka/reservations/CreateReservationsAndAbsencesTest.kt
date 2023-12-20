@@ -49,6 +49,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
 
     private val monday = LocalDate.of(2021, 8, 23)
+    private val mondayNoon = HelsinkiDateTime.of(monday, LocalTime.NOON)
     private val tuesday = monday.plusDays(1)
     private val wednesday = monday.plusDays(2)
     private val startTime = LocalTime.of(9, 0)
@@ -57,6 +58,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
 
     private val citizenUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val employeeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf())
+
+    private val citizenReservationThresholdHours: Long = 150
 
     @BeforeEach
     fun before() {
@@ -80,7 +83,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -93,7 +96,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -133,7 +137,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -152,7 +156,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = wednesday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -191,7 +196,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -204,7 +209,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -242,7 +248,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -255,7 +261,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = monday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -295,7 +302,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -308,7 +315,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -359,7 +367,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -367,7 +375,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -427,7 +436,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Nothing(
@@ -438,7 +447,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         childId = testChild_1.id,
                         date = tuesday,
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -463,6 +473,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `correct absence types are created`() {
         // given
+        val unlockedDate = monday.plusDays(15)
         db.transaction { tx ->
             // monday: no service need
             // tuesday: contract days
@@ -470,12 +481,12 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = unlockedDate
                 )
                 .let { placementId ->
                     tx.insertTestServiceNeed(
                         placementId = placementId,
-                        period = FiniteDateRange(tuesday, tuesday),
+                        period = FiniteDateRange(tuesday, unlockedDate),
                         optionId = snDaycareContractDays15.id,
                         confirmedBy = employeeUser.evakaUserId,
                     )
@@ -487,7 +498,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Absent(
@@ -498,19 +509,31 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         childId = testChild_1.id,
                         date = tuesday,
                     ),
-                )
+                    DailyReservationRequest.Absent(
+                        childId = testChild_1.id,
+                        date = unlockedDate,
+                    )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
-        // then 2 absences with correct types are added
+        // then 3 absences with correct types are added
         val absences =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange) }
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange.copy(end = unlockedDate.plusDays(2))
+                    )
+                }
                 .flatMap { day -> day.children.map { child -> day.date to child.absence } }
 
         assertEquals(
             listOf(
                 monday to AbsenceType.OTHER_ABSENCE,
-                tuesday to AbsenceType.PLANNED_ABSENCE,
+                tuesday to AbsenceType.OTHER_ABSENCE,
+                unlockedDate to AbsenceType.PLANNED_ABSENCE
             ),
             absences
         )
@@ -553,7 +576,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -570,7 +593,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         childId = testChild_1.id,
                         date = wednesday,
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -637,7 +661,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -653,7 +677,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         childId = testChild_1.id,
                         date = wednesday,
                     ),
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -694,7 +719,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -707,7 +732,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -715,7 +741,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -723,7 +749,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = monday,
                         TimeRange(LocalTime.of(12, 0), endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -773,14 +800,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Present(
                         childId = testChild_1.id,
                         date = monday,
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -819,14 +847,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Present(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -873,14 +902,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             db.transaction {
                 createReservationsAndAbsences(
                     it,
-                    monday,
+                    mondayNoon,
                     citizenUser,
                     listOf(
                         DailyReservationRequest.Present(
                             childId = testChild_1.id,
                             date = holidayPeriodStart,
                         )
-                    )
+                    ),
+                    citizenReservationThresholdHours
                 )
             }
         }
@@ -890,14 +920,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             db.transaction {
                 createReservationsAndAbsences(
                     it,
-                    monday,
+                    mondayNoon,
                     citizenUser,
                     listOf(
                         DailyReservationRequest.Present(
                             childId = testChild_1.id,
                             date = holidayPeriodEnd.plusDays(1),
                         )
-                    )
+                    ),
+                    citizenReservationThresholdHours
                 )
             }
         }
@@ -940,7 +971,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -957,7 +988,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = holidayPeriodStart.plusDays(2),
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -1017,14 +1049,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Present(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
                     ),
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -1083,14 +1116,15 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 citizenUser,
                 listOf(
                     DailyReservationRequest.Nothing(
                         childId = testChild_1.id,
                         date = holidayPeriodStart,
                     ),
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -1145,7 +1179,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 employeeUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -1153,7 +1187,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 
@@ -1216,7 +1251,7 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             createReservationsAndAbsences(
                 it,
-                monday,
+                mondayNoon,
                 employeeUser,
                 listOf(
                     DailyReservationRequest.Reservations(
@@ -1224,7 +1259,8 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     )
-                )
+                ),
+                citizenReservationThresholdHours
             )
         }
 

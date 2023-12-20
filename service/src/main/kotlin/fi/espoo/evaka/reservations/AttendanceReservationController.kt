@@ -228,7 +228,13 @@ class AttendanceReservationController(
                         Action.Child.CREATE_ATTENDANCE_RESERVATION,
                         children
                     )
-                    createReservationsAndAbsences(it, clock.today(), user, body)
+                    createReservationsAndAbsences(
+                        it,
+                        clock.now(),
+                        user,
+                        body,
+                        featureConfig.citizenReservationThresholdHours
+                    )
                 }
             }
         Audit.AttendanceReservationEmployeeCreate.log(

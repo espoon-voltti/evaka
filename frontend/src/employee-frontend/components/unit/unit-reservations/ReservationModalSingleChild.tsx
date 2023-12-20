@@ -609,7 +609,6 @@ const ReservationTimes = React.memo(function ReservationTimes({
             />
           </div>
           <div />
-          <div />
         </>
       )
     case 'timeRanges':

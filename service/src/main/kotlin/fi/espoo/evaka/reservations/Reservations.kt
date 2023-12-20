@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -127,9 +128,10 @@ data class CreateReservationsResult(
 
 fun createReservationsAndAbsences(
     tx: Database.Transaction,
-    today: LocalDate,
+    now: HelsinkiDateTime,
     user: AuthenticatedUser,
-    requests: List<DailyReservationRequest>
+    requests: List<DailyReservationRequest>,
+    citizenReservationThresholdHours: Long
 ): CreateReservationsResult {
     val (userId, isCitizen) =
         when (user) {
@@ -138,6 +140,7 @@ fun createReservationsAndAbsences(
             else -> throw BadRequest("Invalid user type")
         }
 
+    val today = now.toLocalDate()
     val reservationsRange = reservationRequestRange(requests)
     val clubTerms = tx.getClubTerms()
     val preschoolTerms = tx.getPreschoolTerms()
@@ -153,6 +156,8 @@ fun createReservationsAndAbsences(
     val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
     val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
+
+    val unlockedRange = getReservableRange(now, citizenReservationThresholdHours)
 
     val isReservableChild = { req: DailyReservationRequest ->
         placements[req.childId]
@@ -256,7 +261,8 @@ fun createReservationsAndAbsences(
             AbsenceInsert(
                 it.childId,
                 it.date,
-                if (hasContractDays) AbsenceType.PLANNED_ABSENCE else AbsenceType.OTHER_ABSENCE
+                if (hasContractDays && unlockedRange.includes(it.date)) AbsenceType.PLANNED_ABSENCE
+                else AbsenceType.OTHER_ABSENCE
             )
         }
     val upsertedAbsences =

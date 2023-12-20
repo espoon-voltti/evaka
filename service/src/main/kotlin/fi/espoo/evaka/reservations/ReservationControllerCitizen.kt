@@ -206,7 +206,13 @@ class ReservationControllerCitizen(
                     if (!body.all { request -> reservableRange.includes(request.date) }) {
                         throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
                     }
-                    createReservationsAndAbsences(tx, clock.today(), user, body)
+                    createReservationsAndAbsences(
+                        tx,
+                        clock.now(),
+                        user,
+                        body,
+                        featureConfig.citizenReservationThresholdHours
+                    )
                 }
             }
         Audit.AttendanceReservationCitizenCreate.log(

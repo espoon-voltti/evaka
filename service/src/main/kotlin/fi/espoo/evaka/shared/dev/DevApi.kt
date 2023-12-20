@@ -114,50 +114,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.AssistanceActionId
-import fi.espoo.evaka.shared.AssistanceFactorId
-import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.BackupCareId
-import fi.espoo.evaka.shared.CalendarEventAttendeeId
-import fi.espoo.evaka.shared.CalendarEventId
-import fi.espoo.evaka.shared.ChildDailyNoteId
-import fi.espoo.evaka.shared.ChildDocumentId
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.ChildStickyNoteId
-import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
-import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.DaycareAssistanceId
-import fi.espoo.evaka.shared.DaycareCaretakerId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.DecisionId
-import fi.espoo.evaka.shared.DocumentTemplateId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.FeeThresholdsId
-import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.GroupNoteId
-import fi.espoo.evaka.shared.GroupPlacementId
-import fi.espoo.evaka.shared.HolidayPeriodId
-import fi.espoo.evaka.shared.HolidayQuestionnaireId
-import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.MobileDeviceId
-import fi.espoo.evaka.shared.OtherAssistanceMeasureId
-import fi.espoo.evaka.shared.PairingId
-import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.PaymentId
-import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.PreschoolAssistanceId
-import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
-import fi.espoo.evaka.shared.VasuDocumentId
-import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -233,7 +190,8 @@ class DevApi(
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
     private val bucketEnv: BucketEnv,
-    private val emailMessageProvider: IEmailMessageProvider
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val featureConfig: FeatureConfig
 ) {
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
@@ -1015,7 +973,13 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservationsAndAbsences(tx, clock.today(), fakeAdmin, body)
+                createReservationsAndAbsences(
+                    tx,
+                    clock.now(),
+                    fakeAdmin,
+                    body,
+                    featureConfig.citizenReservationThresholdHours
+                )
             }
         }
     }
