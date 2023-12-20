@@ -104,6 +104,7 @@ export const pinLoginRequestHandler = (redisClient: RedisClient) =>
     })
 
     req.session.employeeIdToken = token
+    req.session.jwt = undefined // Trigger JWT regeneration
     res.status(200).send(response)
   })
 
@@ -113,6 +114,7 @@ export const pinLogoutRequestHandler = (redisClient: RedisClient) =>
     if (token) {
       await redisClient.del(toMobileEmployeeIdKey(token))
       req.session.employeeIdToken = undefined
+      req.session.jwt = undefined // Trigger JWT regeneration
       if (req.user) req.user.mobileEmployeeId = undefined
     }
 

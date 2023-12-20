@@ -46,7 +46,7 @@ export interface EvakaSessionUser {
   mobileEmployeeId?: string | undefined
 }
 
-function createJwtToken(user: EvakaSessionUser): string {
+export function createJwtToken(user: EvakaSessionUser): string {
   const type =
     user.userType ?? (gatewayRole === 'enduser' ? 'ENDUSER' : 'EMPLOYEE')
 
@@ -87,10 +87,6 @@ function createJwtToken(user: EvakaSessionUser): string {
     default:
       throw new Error(`Unsupported user type ${type}`)
   }
-}
-
-export function createAuthHeader(user: EvakaSessionUser): string {
-  return `Bearer ${createJwtToken(user)}`
 }
 
 export function createIntegrationAuthHeader(): string {

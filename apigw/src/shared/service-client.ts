@@ -6,10 +6,11 @@ import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config.js'
 import {
-  createAuthHeader,
   createIntegrationAuthHeader,
+  createJwtToken,
   EvakaSessionUser
 } from './auth/index.js'
+import { subMinutes } from 'date-fns'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -53,14 +54,25 @@ export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
 
 export function createServiceRequestHeaders(
   req: express.Request | undefined,
-  user: EvakaSessionUser | undefined | null = req?.user
+  userOverride?: EvakaSessionUser | undefined
 ) {
   const headers: ServiceRequestHeaders = {}
   if (req?.path.startsWith('/integration/')) {
     headers.Authorization = createIntegrationAuthHeader()
   }
-  if (user) {
-    headers.Authorization = createAuthHeader(user)
+  if (userOverride) {
+    headers.Authorization = `Bearer ${createJwtToken(userOverride)}`
+  } else if (req && req.user) {
+    // Regenerate JWT every 10 minutes
+    let jwt = req.session.jwt
+    if (!jwt || jwt.generatedAt < subMinutes(new Date(), 10).valueOf()) {
+      jwt = {
+        token: createJwtToken(req.user),
+        generatedAt: new Date().valueOf()
+      }
+      req.session.jwt = jwt
+    }
+    headers.Authorization = `Bearer ${jwt.token}`
   }
   if (req?.traceId) {
     headers['X-Request-ID'] = req.traceId
