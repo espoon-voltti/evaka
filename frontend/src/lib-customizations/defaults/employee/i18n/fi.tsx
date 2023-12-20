@@ -3687,6 +3687,8 @@ export const fi = {
       },
       unitsGroupedByArea: 'Toimintayksiköt alueittain',
       average: 'Keskiarvo',
+      sumUnder3y: 'Alle 3v',
+      sumOver3y: 'Yli 3v',
       sum: 'Summa',
       caretakers: 'Kasvattajia',
       missingCaretakersLegend: 'kasvattajien lukumäärä puuttuu'
