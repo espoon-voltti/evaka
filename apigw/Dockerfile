@@ -53,6 +53,10 @@ COPY --from=builder /project .
 RUN yarn workspaces focus --production \
  && yarn cache clean --all
 
+RUN adduser evaka --gecos "" -q --home /home/evaka --disabled-password
+RUN chown -R evaka:evaka /home/evaka
+USER evaka
+
 ARG build=none
 ARG commit=none
 
