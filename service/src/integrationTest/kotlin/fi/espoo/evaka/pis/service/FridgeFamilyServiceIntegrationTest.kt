@@ -22,9 +22,13 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
+import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -181,6 +185,35 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             setOf(adult1.id, adult2.id),
             db.read { tx -> tx.getChildGuardians(child1.id) }.toSet()
         )
+    }
+
+    @Autowired lateinit var parentshipService: ParentshipService
+
+    @Test
+    fun testVtjRequestCounts() {
+        val mockVtjClientService: IVtjClientService = MockVtjClientService()
+        MockVtjClientService.resetQueryCounts()
+
+        val service =
+            FridgeFamilyService(
+                PersonService(VTJPersonDetailsService(mockVtjClientService, VtjHenkiloMapper())),
+                parentshipService
+            )
+
+        val parent = DevPerson(ssn = adult1.identity.toString())
+        val child = DevPerson(ssn = child1.identity.toString())
+
+        MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(parent, listOf(child))
+        MockVtjClientService.addPERUSSANOMA3RequestExpectation(child)
+        service.updateGuardianOrChildFromVtj(
+            db,
+            AuthenticatedUser.SystemInternalUser,
+            mockToday,
+            adult1.id
+        )
+
+        Assertions.assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(child))
+        Assertions.assertEquals(1, MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(parent))
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {

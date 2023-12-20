@@ -16,10 +16,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.vtjclient.dto.NativeLanguage
-import fi.espoo.evaka.vtjclient.dto.PersonAddress
-import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
-import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,7 +42,7 @@ class DvvModificationsServiceIntegrationTest :
                 ssn = "010579-9999",
                 dependants = emptyList()
             )
-        createVtjPerson(caretaker)
+        MockPersonDetailsService.addPerson(caretaker)
 
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 
@@ -87,7 +83,7 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `person restricted details started`() {
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
-        createVtjPerson(
+        MockPersonDetailsService.addPerson(
             testPerson.copy(
                 ssn = "020180-999Y",
                 streetAddress = "",
@@ -116,7 +112,7 @@ class DvvModificationsServiceIntegrationTest :
                 postOffice = ""
             )
         )
-        createVtjPerson(
+        MockPersonDetailsService.addPerson(
             testPerson.copy(
                 ssn = "030180-999L",
                 streetAddress = "Uusitie 17 A 2",
@@ -137,7 +133,7 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `person address change`() {
         createTestPerson(testPerson.copy(ssn = "040180-9998"))
-        createVtjPerson(
+        MockPersonDetailsService.addPerson(
             testPerson.copy(
                 ssn = "040180-9998",
                 streetAddress = "Uusitie 17 A 2",
@@ -173,8 +169,8 @@ class DvvModificationsServiceIntegrationTest :
         caretaker = caretaker.copy(dependants = listOf(custodian))
 
         createTestPerson(custodian)
-        createVtjPerson(custodian)
-        createVtjPerson(caretaker)
+        MockPersonDetailsService.addPerson(custodian)
+        MockPersonDetailsService.addPerson(caretaker)
 
         updatePeopleFromDvv(listOf("050180-999W"))
         val dvvCustodian = db.read { it.getPersonBySSN("050118A999W") }!!
@@ -203,8 +199,8 @@ class DvvModificationsServiceIntegrationTest :
         custodian = custodian.copy(guardians = listOf(caretaker))
 
         createTestPerson(custodian)
-        createVtjPerson(custodian)
-        createVtjPerson(caretaker)
+        MockPersonDetailsService.addPerson(custodian)
+        MockPersonDetailsService.addPerson(caretaker)
 
         updatePeopleFromDvv(listOf("060118A999J"))
         val dvvCaretaker = db.read { it.getPersonBySSN("060180-999J") }!!
@@ -234,8 +230,8 @@ class DvvModificationsServiceIntegrationTest :
         custodian = custodian.copy(guardians = listOf(caretaker))
 
         createTestPerson(custodian)
-        createVtjPerson(custodian)
-        createVtjPerson(caretaker)
+        MockPersonDetailsService.addPerson(custodian)
+        MockPersonDetailsService.addPerson(caretaker)
 
         updatePeopleFromDvv(listOf("yksinhuoltaja-muutos"))
         val dvvCaretaker = db.read { it.getPersonBySSN(caretaker.ssn!!) }!!
@@ -257,7 +253,7 @@ class DvvModificationsServiceIntegrationTest :
         val targetPerson: DevPerson =
             testPerson.copy(ssn = "140921A999X", streetAddress = "Tuntemattoman katuosoite")
         createTestPerson(targetPerson)
-        createVtjPerson(targetPerson)
+        MockPersonDetailsService.addPerson(targetPerson)
         updatePeopleFromDvv(listOf("tuntematon_muutos"))
         val updatedPerson = db.read { it.getPersonBySSN(targetPerson.ssn!!) }!!
         assertEquals(targetPerson.streetAddress, updatedPerson.streetAddress)
@@ -272,7 +268,7 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
 
         createTestPerson(personWithOldName)
-        createVtjPerson(personWithNewName)
+        MockPersonDetailsService.addPerson(personWithNewName)
 
         updatePeopleFromDvv(listOf(SSN))
         val updatedPerson = db.read { it.getPersonBySSN(SSN) }!!
@@ -313,7 +309,7 @@ class DvvModificationsServiceIntegrationTest :
         val child = testPerson.copy(dateOfBirth = childDateOfBirth, ssn = "010120A123K")
 
         createTestPerson(personWithoutChildren)
-        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+        MockPersonDetailsService.addPerson(personWithoutChildren.copy(dependants = listOf(child)))
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -340,7 +336,7 @@ class DvvModificationsServiceIntegrationTest :
         val currentDate = childDateOfBirth.plusMonths(3)
 
         createTestPerson(personWithoutChildren)
-        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+        MockPersonDetailsService.addPerson(personWithoutChildren.copy(dependants = listOf(child)))
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -367,7 +363,7 @@ class DvvModificationsServiceIntegrationTest :
         val currentDate = childDateOfBirth.plusMonths(4)
 
         createTestPerson(personWithoutChildren)
-        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+        MockPersonDetailsService.addPerson(personWithoutChildren.copy(dependants = listOf(child)))
 
         db.read { tx ->
             val person = tx.getPersonBySSN(ssn)
@@ -401,7 +397,7 @@ class DvvModificationsServiceIntegrationTest :
         createTestPerson(personWithoutChildren)
         createTestPerson(parent)
         createTestPerson(child)
-        createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
+        MockPersonDetailsService.addPerson(personWithoutChildren.copy(dependants = listOf(child)))
         db.transaction {
             it.createParentship(
                 child.id,
@@ -452,48 +448,4 @@ class DvvModificationsServiceIntegrationTest :
 
     private fun createTestPerson(devPerson: DevPerson): PersonId =
         db.transaction { tx -> tx.insert(devPerson, DevPersonType.RAW_ROW) }
-
-    private fun createVtjPerson(person: DevPerson) {
-        MockPersonDetailsService.addPerson(
-            VtjPerson(
-                socialSecurityNumber = person.ssn!!,
-                firstNames = person.firstName,
-                lastName = person.lastName,
-                address =
-                    if (person.streetAddress.isNullOrBlank()) {
-                        null
-                    } else {
-                        PersonAddress(
-                            streetAddress = person.streetAddress,
-                            postalCode = person.postalCode,
-                            postOffice = person.postOffice,
-                            postOfficeSe = person.postOffice,
-                            streetAddressSe = person.streetAddress
-                        )
-                    },
-                residenceCode = person.residenceCode,
-                nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
-                restrictedDetails =
-                    RestrictedDetails(
-                        enabled = person.restrictedDetailsEnabled,
-                        endDate = person.restrictedDetailsEndDate
-                    ),
-                guardians = person.guardians.map(::asVtjPerson),
-                dependants = person.dependants.map(::asVtjPerson)
-            )
-        )
-    }
-
-    private fun asVtjPerson(person: DevPerson): VtjPerson =
-        VtjPerson(
-            socialSecurityNumber = person.ssn!!,
-            firstNames = person.firstName,
-            lastName = person.lastName,
-            nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
-            restrictedDetails =
-                RestrictedDetails(
-                    enabled = person.restrictedDetailsEnabled,
-                    endDate = person.restrictedDetailsEndDate
-                )
-        )
 }
