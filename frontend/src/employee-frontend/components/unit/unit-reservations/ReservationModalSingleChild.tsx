@@ -536,7 +536,7 @@ const TimeInputs = React.memo(function TimeInputs({
     <>
       {label}
       <TimeRangeInput bind={timeRange} showAllErrors={showAllErrors} />
-      <div>
+      <DayButtons>
         <IconButton
           icon={faUserMinus}
           data-qa="set-absent-button"
@@ -555,7 +555,7 @@ const TimeInputs = React.memo(function TimeInputs({
         ) : (
           <div />
         )}
-      </div>
+      </DayButtons>
       {extraTimeRange ? (
         <>
           <div />
@@ -594,8 +594,8 @@ const ReservationTimes = React.memo(function ReservationTimes({
       return (
         <>
           {label}
+          <span>Poissa</span>
           <div>
-            <span>Poissa</span>
             <IconButton
               icon={faUserMinus}
               data-qa="set-absent-button"
@@ -608,7 +608,6 @@ const ReservationTimes = React.memo(function ReservationTimes({
               aria-label="Merkitse poissaolevaksi"
             />
           </div>
-          <div />
         </>
       )
     case 'timeRanges':
@@ -697,4 +696,9 @@ const Separator = styled.div`
 const MissingDateRange = styled(Light)`
   grid-column-start: 1;
   grid-column-end: 4;
+`
+const DayButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: ${defaultMargins.s}; // <- counteracts the negative 6px margin icon buttons have
 `
