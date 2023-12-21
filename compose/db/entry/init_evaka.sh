@@ -26,8 +26,19 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DATABASE
       IN ROLE "evaka_application_role_local";
 EOSQL
 
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname evaka_local <<EOSQL
+    GRANT ALL ON SCHEMA "public" TO "evaka_migration_role_local";
+
+    -- DevDataInitializer creates a few helper functions
+    GRANT CREATE ON SCHEMA "public" TO "evaka_application_local";
+EOSQL
+
 PGPASSWORD=flyway psql -v ON_ERROR_STOP=1 --username evaka_migration_local --dbname evaka_local <<EOSQL
     -- The reset_database function, used in e2e tests, truncates tables and resets sequences
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT TRUNCATE ON TABLES TO "evaka_application_local";
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT UPDATE ON SEQUENCES TO "evaka_application_local";
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname evaka_it <<EOSQL
+    GRANT ALL ON SCHEMA "public" TO "evaka_migration_role_local";
 EOSQL
