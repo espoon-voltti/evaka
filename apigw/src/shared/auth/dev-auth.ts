@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import passport, { Strategy } from 'passport'
-import { Request, Router, urlencoded } from 'express'
+import express from 'express'
+import type { Request } from 'express'
 import { authenticate, EvakaSessionUser, login, logout } from './index.js'
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { Sessions } from '../session.js'
@@ -36,15 +37,15 @@ export function createDevAuthRouter({
   strategyName,
   verifyUser,
   loginFormHandler
-}: DevAuthRouterOptions): Router {
+}: DevAuthRouterOptions): express.Router {
   passport.use(strategyName, new DevStrategy(verifyUser))
 
-  const router = Router()
+  const router = express.Router()
 
   router.get('/login', toRequestHandler(loginFormHandler))
   router.post(
     `/login/callback`,
-    urlencoded({ extended: false }), // needed to parse the POSTed form
+    express.urlencoded({ extended: false }), // needed to parse the POSTed form
     toRequestHandler(async (req, res) => {
       try {
         const user = await authenticate(strategyName, req, res)

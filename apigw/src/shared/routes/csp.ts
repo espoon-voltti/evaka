@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { Router } from 'express'
+import express from 'express'
 import { logWarn } from '../logging.js'
 
-const router = Router()
+const router = express.Router()
 
 router.post(
   '/csp-report',
