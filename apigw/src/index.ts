@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import './tracer.js'
+
 import sourceMapSupport from 'source-map-support'
 import {
   configFromEnv,
@@ -9,7 +11,6 @@ import {
   httpPort,
   toRedisClientOpts
 } from './shared/config.js'
-import './tracer.js'
 import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
