@@ -61,6 +61,7 @@ export const sv = {
       phone: 'Telefonnummer',
       legalInstructions: 'Tillämpade bestämmelser',
       legalInstructionsText: 'Lag om grundläggande utbildning 17 §',
+      legalInstructionsTextExtendedCompulsoryEducation: 'Läropliktslag 2 §',
       jurisdiction: 'Befogenhet',
       jurisdictionText:
         'Delegointipäätös suomenkielisen varhaiskasvatuksen sekä kasvun ja oppimisen toimialan esikunnan viranhaltijoiden ratkaisuvallasta A osa 3 § 1 kohta',
