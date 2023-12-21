@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { Router, urlencoded } from 'express'
+import express from 'express'
 import passport from 'passport'
 import passportSaml from '@node-saml/passport-saml'
 import { createLogoutToken, login, logout } from '../auth/index.js'
@@ -18,7 +18,7 @@ import type {
 } from '@node-saml/passport-saml/lib/types.js'
 import { parseRelayState } from '../saml/index.js'
 
-const urlencodedParser = urlencoded({ extended: false })
+const urlencodedParser = express.urlencoded({ extended: false })
 
 function getDefaultPageUrl(req: express.Request): string {
   switch (gatewayRole) {
@@ -166,7 +166,7 @@ function createLogoutHandler({
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
 export default function createSamlRouter(
   endpointConfig: SamlEndpointConfig
-): Router {
+): express.Router {
   const { strategyName, strategy } = endpointConfig
 
   passport.use(strategyName, strategy)
@@ -181,7 +181,7 @@ export default function createSamlRouter(
     )
   })
 
-  const router = Router()
+  const router = express.Router()
 
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Router } from 'express'
+import express from 'express'
 import {
   digitransitApiEnabled,
   digitransitApiKey,
@@ -12,7 +12,7 @@ import expressHttpProxy from 'express-http-proxy'
 import { createProxy } from '../shared/proxy-utils.js'
 import { logError, logWarn } from '../shared/logging.js'
 
-const router = Router()
+const router = express.Router()
 
 function createDigitransitProxy(path: string) {
   return expressHttpProxy(digitransitApiUrl, {

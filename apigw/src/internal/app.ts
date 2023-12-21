@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import cookieParser from 'cookie-parser'
-import express, { Router } from 'express'
+import express from 'express'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createAdSamlStrategy } from './ad-saml.js'
@@ -37,8 +37,8 @@ import { RedisClient } from '../shared/redis-client.js'
 export function internalGwRouter(
   config: Config,
   redisClient: RedisClient
-): Router {
-  const router = Router()
+): express.Router {
+  const router = express.Router()
 
   const sessions = sessionSupport('employee', redisClient, config.employee)
 

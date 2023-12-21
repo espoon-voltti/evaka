@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import cookieParser from 'cookie-parser'
-import { Router } from 'express'
+import express from 'express'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createSuomiFiStrategy } from './suomi-fi-saml.js'
@@ -26,8 +26,8 @@ import { RedisClient } from '../shared/redis-client.js'
 export function enduserGwRouter(
   config: Config,
   redisClient: RedisClient
-): Router {
-  const router = Router()
+): express.Router {
+  const router = express.Router()
 
   const sessions = sessionSupport('enduser', redisClient, config.citizen)
 
