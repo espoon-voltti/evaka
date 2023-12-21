@@ -24,12 +24,12 @@ local_database=evaka_local
 mkdir -p ./backup
 
 if [ "$1" = "dump" ]; then
-  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump pg_dump -Fc -h "$local_host" -p "$local_port" -U "$local_postgres_user" -f "$dump_remote_path" "$local_database"
+  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml --rm run dbdump pg_dump -Fc -h "$local_host" -p "$local_port" -U "$local_postgres_user" -f "$dump_remote_path" "$local_database"
   echo "Wrote dump to $dump_remote_path -> $dump_local_path"
 elif [ "$1" = "restore" ]; then
   date_string="$(date +%Y%m%d%H%M)"
 
-  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump psql -h "$local_host" -U "$local_postgres_user" postgres <<EOSQL
+  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml run --rm -T dbdump psql -h "$local_host" -U "$local_postgres_user" postgres <<EOSQL
     SELECT
         pg_terminate_backend(pid)
     FROM
@@ -41,7 +41,7 @@ elif [ "$1" = "restore" ]; then
 EOSQL
 
   echo "Restoring"
-  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump pg_restore \
+  docker compose -f docker-compose.yml -f docker-compose.dbdump.yml run --rm dbdump pg_restore \
     -Fc \
     --verbose \
     --host="$local_host" \
