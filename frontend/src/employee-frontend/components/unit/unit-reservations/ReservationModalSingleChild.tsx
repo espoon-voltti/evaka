@@ -598,7 +598,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
           <div>
             <IconButton
               icon={faUserMinus}
-              data-qa="set-absent-button"
+              data-qa="set-present-button"
               onClick={() =>
                 bind.update(() => ({
                   branch: 'timeRanges',

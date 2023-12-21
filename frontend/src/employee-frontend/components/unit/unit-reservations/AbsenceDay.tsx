@@ -21,7 +21,7 @@ interface Props {
 export default React.memo(function AbsenceDay({ type, onDelete }: Props) {
   const { i18n } = useTranslation()
   return (
-    <FixedSpaceRow spacing="xs" alignItems="center">
+    <FixedSpaceRow spacing="xs" alignItems="center" data-qa="absence">
       <RoundIcon
         content={absenceIcons[type]}
         color={absenceColors[type]}

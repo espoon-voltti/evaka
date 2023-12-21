@@ -498,6 +498,24 @@ describe('Unit group calendar', () => {
       attendances.length
     )
   })
+
+  test('Employee can add absence records', async () => {
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+    reservationModal = await childReservations.openReservationModal(
+      child1Fixture.id
+    )
+    await reservationModal.addAbsence(mockedToday)
+    await waitUntilEqual(
+      () =>
+        childReservations
+          .childRows(child1Fixture.id)
+          .findAllByDataQa('absence')
+          .count(),
+      1
+    )
+  })
 })
 
 describe('Unit group calendar for shift care unit', () => {
