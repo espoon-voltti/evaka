@@ -92,6 +92,8 @@ export interface OccupancyValues {
   headcount: number
   percentage: number | null
   sum: number
+  sumOver3y: number
+  sumUnder3y: number
 }
 
 /**

@@ -153,30 +153,61 @@ function getHeadCountAverage(
   }
 }
 
+interface DisplayCell {
+  value: string
+  borderEdge?: 'left' | 'right'
+  tooltip?: string
+}
+
 function getDisplayCells(
+  i18n: Translations,
   reportRows: OccupancyReportRow[],
   dates: Date[],
   usedValues: ValueOnReport
-): string[][] {
+): DisplayCell[][] {
   return reportRows.map((row) => {
-    const nameCells =
-      'groupName' in row
-        ? [row.areaName, row.unitName, row.groupName]
-        : [row.areaName, row.unitName]
+    const nameCells: DisplayCell[] =
+      'groupId' in row
+        ? [
+            { value: row.areaName },
+            { value: row.unitName },
+            { value: row.groupName }
+          ]
+        : [{ value: row.areaName }, { value: row.unitName }]
     if (usedValues === 'raw') {
       const cells = [...nameCells]
       for (const date of dates) {
         const occupancy = row.occupancies[toOccupancyKey(date)]
-        cells.push(
-          typeof occupancy?.sum === 'number'
-            ? occupancy.sum.toFixed(2).replace('.', ',')
-            : '0'
-        )
-        cells.push(
-          typeof occupancy?.caretakers === 'number'
-            ? occupancy.caretakers.toFixed(2).replace('.', ',')
-            : '0'
-        )
+        cells.push({
+          value:
+            typeof occupancy?.sumUnder3y === 'number'
+              ? occupancy.sumUnder3y.toFixed(2).replace('.', ',')
+              : '0',
+          borderEdge: 'left',
+          tooltip: i18n.reports.occupancies.sumUnder3y
+        })
+        cells.push({
+          value:
+            typeof occupancy?.sumOver3y === 'number'
+              ? occupancy.sumOver3y.toFixed(2).replace('.', ',')
+              : '0',
+          tooltip: i18n.reports.occupancies.sumOver3y
+        })
+        cells.push({
+          value:
+            typeof occupancy?.sum === 'number'
+              ? occupancy.sum.toFixed(2).replace('.', ',')
+              : '0',
+          tooltip: i18n.reports.occupancies.sum
+        })
+        cells.push({
+          value:
+            typeof occupancy?.caretakers === 'number'
+              ? occupancy.caretakers.toFixed(2).replace('.', ',')
+              : '0',
+          borderEdge: 'right',
+          tooltip: i18n.reports.occupancies.caretakers
+        })
       }
       return cells
     } else {
@@ -189,7 +220,7 @@ function getDisplayCells(
         ...nameCells,
 
         // average
-        formatAverage(average, usedValues),
+        { value: formatAverage(average, usedValues) },
 
         // daily values
         ...dates.map((date) => {
@@ -197,16 +228,20 @@ function getDisplayCells(
 
           if (usedValues === 'percentage') {
             if (!occupancy) {
-              return ''
+              return { value: '' }
             }
 
             if (!occupancy.caretakers) {
-              return caretakersMissingSymbol
+              return { value: caretakersMissingSymbol }
             }
 
-            return formatPercentage(occupancy.percentage) ?? ''
+            return {
+              value: formatPercentage(occupancy.percentage) ?? ''
+            }
           } else {
-            return occupancy?.[usedValues]?.toString() ?? ''
+            return {
+              value: occupancy?.[usedValues]?.toString() ?? ''
+            }
           }
         })
       ]
@@ -325,18 +360,23 @@ export default React.memo(function Occupancies() {
   const rows = useQueryResult(occupanciesReportQuery(filters))
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
-  const displayCells: string[][] = rows
-    .map((rs) => getDisplayCells(rs, dates, usedValues))
+  const displayCells: DisplayCell[][] = rows
+    .map((rs) => getDisplayCells(i18n, rs, dates, usedValues))
     .getOrElse([])
   const displayAreas = displayCells
     .map((cell) => cell[0])
-    .filter((value, index, self) => self.indexOf(value) === index)
+    .filter(
+      ({ value }, index, self) =>
+        self.findIndex((cell) => cell.value === value) === index
+    )
   const averages = rows
     .map((rs) => calculateAverages(rs, dates, usedValues))
     .getOrElse<Averages>({ average: null, byArea: {} })
   const dateCols = dates.reduce((cols, date) => {
     cols.push(date)
-    if (usedValues === 'raw') cols.push(date)
+    if (usedValues === 'raw') {
+      cols.push(date, date, date)
+    }
     return cols
   }, [] as Date[])
 
@@ -560,7 +600,9 @@ export default React.memo(function Occupancies() {
                         : undefined,
                       ...dateCols.map((date) => formatDate(date, 'dd.MM.'))
                     ].filter((label) => label !== undefined),
-                    ...displayCells
+                    ...displayCells.map((row) =>
+                      row.map((column) => column.value)
+                    )
                   ]}
                   filename={getFilename(
                     i18n,
@@ -591,7 +633,7 @@ export default React.memo(function Occupancies() {
                         <Th
                           align="center"
                           key={date.toDateString()}
-                          colSpan={usedValues === 'raw' ? 2 : undefined}
+                          colSpan={usedValues === 'raw' ? 4 : undefined}
                         >
                           {formatDate(date, 'dd.MM.')}
                         </Th>
@@ -599,14 +641,14 @@ export default React.memo(function Occupancies() {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {displayAreas.map((areaName) => (
+                    {displayAreas.map(({ value: areaName }) => (
                       <React.Fragment key={areaName}>
                         {filters.careAreaId === undefined && (
                           <Tr>
                             <StyledTd
                               colSpan={
                                 usedValues === 'raw'
-                                  ? 2 + dateCols.length
+                                  ? 4 + dateCols.length
                                   : undefined
                               }
                             >
@@ -657,7 +699,11 @@ export default React.memo(function Occupancies() {
                             row.areaName === areaName &&
                             (filters.careAreaId !== undefined ||
                               areasOpen[areaName]) && (
-                              <Tr key={row.unitId}>
+                              <Tr
+                                key={
+                                  'groupId' in row ? row.groupId : row.unitId
+                                }
+                              >
                                 <StyledTd>
                                   <Link to={`/units/${row.unitId}`}>
                                     {row.unitName}
@@ -668,30 +714,14 @@ export default React.memo(function Occupancies() {
                                   .map((cell, colNum) => (
                                     <StyledTd
                                       key={colNum}
-                                      borderEdge={
-                                        usedValues === 'raw'
-                                          ? colNum % 2 ===
-                                            (includeGroups ? 1 : 0)
-                                            ? 'left'
-                                            : 'right'
-                                          : undefined
-                                      }
+                                      borderEdge={cell.borderEdge}
                                     >
-                                      {usedValues === 'raw' &&
-                                      (!includeGroups || colNum > 0) ? (
-                                        <Tooltip
-                                          tooltip={
-                                            colNum % 2 ===
-                                            (includeGroups ? 1 : 0)
-                                              ? i18n.reports.occupancies.sum
-                                              : i18n.reports.occupancies
-                                                  .caretakers
-                                          }
-                                        >
-                                          {cell}
+                                      {cell.tooltip ? (
+                                        <Tooltip tooltip={cell.tooltip}>
+                                          {cell.value}
                                         </Tooltip>
                                       ) : (
-                                        <>{cell}</>
+                                        <>{cell.value}</>
                                       )}
                                     </StyledTd>
                                   ))}
@@ -704,7 +734,7 @@ export default React.memo(function Occupancies() {
                   {usedValues !== 'raw' && (
                     <StyledTfoot>
                       <Tr>
-                        <Td colSpan={includeGroups ? 2 : undefined}>
+                        <Td colSpan={includeGroups ? 4 : undefined}>
                           {i18n.reports.common.total}
                         </Td>
                         <Td colSpan={1 + dateCols.length}>

@@ -168,14 +168,16 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 mapOf(
                     period.start to
                         OccupancyValues(
-                            sum = 1.75,
+                            sumUnder3y = 1.75,
+                            sumOver3y = 0.0,
                             headcount = 1,
                             caretakers = 6.0,
                             percentage = 4.2
                         ),
                     period.end to
                         OccupancyValues(
-                            sum = 1.0,
+                            sumUnder3y = 0.0,
+                            sumOver3y = 1.0,
                             headcount = 1,
                             caretakers = 6.0,
                             percentage = 2.4
@@ -286,7 +288,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.addRealtimeAttendanceToday(employeeId)
         }
 
-        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 1, 1.0, 14.3)))
+        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3)))
 
         db.read { tx ->
             val occupancyValues =
@@ -324,8 +326,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertRealtimeAttendances(
             listOf(
-                today.minusDays(1) to OccupancyValues(1.0, 1, 1.0, 14.3),
-                today to OccupancyValues(1.0, 1, 1.0, 14.3)
+                today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3),
+                today to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3)
             )
         )
     }
@@ -360,7 +362,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2.0, occupancies[today]!!.caretakers)
         }
 
-        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 1, 2.0, 7.1)))
+        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1)))
     }
 
     @Test
@@ -383,8 +385,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertRealtimeAttendances(
             listOf(
-                today.minusDays(1) to OccupancyValues(1.0, 1, 2.0, 7.1),
-                today to OccupancyValues(1.0, 1, 2.0, 7.1)
+                today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1),
+                today to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1)
             )
         )
     }
@@ -411,7 +413,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .save()
         }
 
-        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 1, 0.5, 28.6)))
+        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 0.5, 28.6)))
     }
 
     @Test
@@ -435,7 +437,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .save()
         }
 
-        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 1, null, null)))
+        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, null, null)))
     }
 
     @Test
@@ -464,7 +466,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 5.0)
         }
 
-        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 1, 1.0, 14.3)))
+        assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3)))
     }
 
     @Test
@@ -485,8 +487,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertRealtimeAttendances(
             listOf(
-                today.minusDays(1) to OccupancyValues(1.0, 1, 1.0, 14.3),
-                today to OccupancyValues(1.0, 1, 2.0, 7.1)
+                today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3),
+                today to OccupancyValues(1.0, 0.0, 1, 2.0, 7.1)
             )
         )
     }
@@ -519,7 +521,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
 
         assertRealtimeAttendances(
-            listOf(today to OccupancyValues(1.0, 1, expectedCaretakers, expectedPercentage))
+            listOf(today to OccupancyValues(1.0, 0.0, 1, expectedCaretakers, expectedPercentage))
         )
     }
 
@@ -1493,8 +1495,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertRealtimeAttendances(
             listOf(
-                today.minusDays(1) to OccupancyValues(1.0, 1, 0.3922, 36.4),
-                today to OccupancyValues(1.0, 1, 0.6209, 23.0)
+                today.minusDays(1) to OccupancyValues(1.0, 0.0, 1, 0.3922, 36.4),
+                today to OccupancyValues(1.0, 0.0, 1, 0.6209, 23.0)
             )
         )
     }

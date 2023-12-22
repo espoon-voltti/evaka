@@ -68,11 +68,14 @@ data class DailyOccupancyValues<K : OccupancyGroupingKey>(
 )
 
 data class OccupancyValues(
-    val sum: Double,
+    val sumUnder3y: Double,
+    val sumOver3y: Double,
     val headcount: Int,
     val caretakers: Double? = null,
     val percentage: Double? = null
 ) {
+    val sum = sumUnder3y + sumOver3y
+
     fun withPeriod(period: FiniteDateRange) =
         OccupancyPeriod(period, sum, headcount, caretakers, percentage)
 }
@@ -513,7 +516,7 @@ WHERE sn.placement_id = ANY(:placementIds)
             mapOf()
         }
 
-    fun getCoefficient(date: LocalDate, placement: Placement): BigDecimal {
+    fun getCoefficient(date: LocalDate, placement: Placement): Pair<BigDecimal, Boolean> {
         val assistanceCoefficient =
             assistanceFactors[placement.childId]?.find { it.period.includes(date) }?.capacityFactor
                 ?: BigDecimal.ONE
@@ -521,6 +524,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         val dateOfBirth =
             childBirthdays[placement.childId]
                 ?: error("No date of birth found for child ${placement.childId}")
+        val under3y = date < dateOfBirth.plusYears(3)
 
         val serviceNeedCoefficient = run {
             val coefficients =
@@ -541,20 +545,19 @@ WHERE sn.placement_id = ANY(:placementIds)
                 OccupancyType.REALIZED ->
                     when {
                         placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
-                        date < dateOfBirth.plusYears(3) ->
-                            coefficients.realizedOccupancyCoefficientUnder3y
+                        under3y -> coefficients.realizedOccupancyCoefficientUnder3y
                         else -> coefficients.realizedOccupancyCoefficient
                     }
                 else ->
                     when {
                         placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
-                        date < dateOfBirth.plusYears(3) -> coefficients.occupancyCoefficientUnder3y
+                        under3y -> coefficients.occupancyCoefficientUnder3y
                         else -> coefficients.occupancyCoefficient
                     }
             }
         }
 
-        return assistanceCoefficient * serviceNeedCoefficient
+        return assistanceCoefficient * serviceNeedCoefficient to under3y
     }
 
     val placementsAndPlans = (placements + placementPlans).groupBy { it.groupingId }
@@ -577,15 +580,20 @@ WHERE sn.placement_id = ANY(:placementIds)
                     placementsOnDate
                         .groupBy { it.childId }
                         .mapNotNull { (_, childPlacements) ->
-                            childPlacements.map { getCoefficient(caretakers.date, it) }.maxOrNull()
+                            childPlacements
+                                .map { getCoefficient(caretakers.date, it) }
+                                .maxByOrNull { it.first }
                         }
-                        .fold(BigDecimal.ZERO) { sum, coefficient -> sum + coefficient }
+                        .fold(CoefficientSum.ZERO) { sum, (coefficient, under3y) ->
+                            if (under3y) sum.copy(under3y = sum.under3y + coefficient)
+                            else sum.copy(over3y = sum.over3y + coefficient)
+                        }
 
                 val percentage =
                     if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
                         null
                     } else {
-                        coefficientSum
+                        coefficientSum.sum
                             .divide(
                                 caretakers.caretakerCount * BigDecimal(7),
                                 4,
@@ -597,7 +605,8 @@ WHERE sn.placement_id = ANY(:placementIds)
 
                 caretakers.date to
                     OccupancyValues(
-                        sum = coefficientSum.toDouble(),
+                        sumUnder3y = coefficientSum.under3y.toDouble(),
+                        sumOver3y = coefficientSum.over3y.toDouble(),
                         headcount = placementsOnDate.size,
                         percentage = percentage?.toDouble(),
                         caretakers = caretakers.caretakerCount.toDouble().takeUnless { it == 0.0 }
@@ -614,6 +623,14 @@ private data class ServiceNeedCoefficients(
     val realizedOccupancyCoefficient: BigDecimal,
     val realizedOccupancyCoefficientUnder3y: BigDecimal
 )
+
+private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecimal) {
+    val sum = under3y + over3y
+
+    companion object {
+        val ZERO = CoefficientSum(BigDecimal.ZERO, BigDecimal.ZERO)
+    }
+}
 
 private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
