@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SSN_REGEXP } from 'lib-common/form-validation'
 import LocalDate from 'lib-common/local-date'
 
 import { DateRange, rangesOverlap } from '../date'
@@ -17,9 +18,7 @@ export const isEmailValid = (value: string) => EMAIL_REGEX.test(value)
 
 export const isPhoneValid = (value: string) => PHONE_REGEX.test(value)
 
-export const ssnRegex = /^\d{6}[A+-]\d{3}[\dA-Z]$/
-
-export const isSsnValid = (value: string) => ssnRegex.test(value)
+export const isSsnValid = (value: string) => SSN_REGEXP.test(value)
 
 export const timeRegex = /^(([0-1][0-9])|(2[0-4])):[0-5][0-9]$/
 
