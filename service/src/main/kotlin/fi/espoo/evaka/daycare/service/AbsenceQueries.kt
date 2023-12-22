@@ -229,6 +229,26 @@ RETURNING id
     return batch.executeAndReturn().toList<AbsenceId>()
 }
 
+fun Database.Transaction.clearOldAbsences(
+    childDatePairs: List<Pair<ChildId, LocalDate>>
+): List<AbsenceId> {
+    val batch =
+        prepareBatch(
+            """
+DELETE FROM absence a
+WHERE child_id = :childId
+AND date = :date
+RETURNING id
+"""
+        )
+
+    childDatePairs.forEach { (childId, date) ->
+        batch.bind("childId", childId).bind("date", date).add()
+    }
+
+    return batch.executeAndReturn().toList<AbsenceId>()
+}
+
 fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
     createUpdate(
             """
