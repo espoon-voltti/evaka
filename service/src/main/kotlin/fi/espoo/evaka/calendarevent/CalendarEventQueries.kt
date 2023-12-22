@@ -50,7 +50,8 @@ SELECT
             'id', cet.id,
             'date', cet.date,
             'startTime', cet.start_time,
-            'endTime', cet.end_time
+            'endTime', cet.end_time,
+            'childId', cet.child_id
         )) FILTER (WHERE cet.id IS NOT NULL), '[]'::jsonb)
     ) AS times
 FROM calendar_event_attendee cea
@@ -139,12 +140,7 @@ fun Database.Read.getReservableCalendarEventTimes(
 SELECT id, date, start_time, end_time
 FROM calendar_event_time
 WHERE calendar_event_id = :calendarEventId
-AND NOT EXISTS (
-    SELECT
-    FROM calendar_event_time_reservation
-    WHERE calendar_event_time_id = calendar_event_time.id
-    AND child_id <> :childId
-)
+AND (child_id IS NULL OR child_id = :childId)
 """
         )
         .bind("calendarEventId", calendarEventId)
@@ -161,7 +157,7 @@ fun Database.Transaction.createCalendarEventTime(
             """
 INSERT INTO calendar_event_time (modified_at, modified_by, calendar_event_id, date, start_time, end_time)
 VALUES (:modifiedAt, :modifiedBy, :calendarEventId, :date, :startTime, :endTime)
-RETURNING id, date, start_time, end_time
+RETURNING id
 """
         )
         .bind("modifiedAt", modifiedAt)
@@ -169,7 +165,7 @@ RETURNING id, date, start_time, end_time
         .bind("calendarEventId", calendarEventId)
         .bindKotlin(time)
         .executeAndReturnGeneratedKeys()
-        .mapTo<CalendarEventTime>()
+        .mapTo<CalendarEventTimeId>()
         .exactlyOne()
 
 fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
@@ -241,42 +237,20 @@ WHERE id = :eventId
 
 fun Database.Transaction.insertCalendarEventTimeReservation(
     form: CalendarEventTimeReservationForm,
-    guardianId: PersonId,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId
-): CalendarEventTimeReservation =
+) =
     createUpdate(
             """
-INSERT INTO calendar_event_time_reservation (calendar_event_time_id, child_id, guardian_id, modified_at, modified_by)
-VALUES (:calendarEventTimeId, :childId, :guardianId, :modifiedAt, :modifiedBy)
-ON CONFLICT (calendar_event_time_id, child_id, guardian_id) DO UPDATE
-SET modified_at = EXCLUDED.modified_at, modified_by = EXCLUDED.modified_by
-RETURNING calendar_event_time_id, child_id, guardian_id
+UPDATE calendar_event_time
+SET child_id = :childId, modified_at = :modifiedAt, modified_by = :modifiedBy
+WHERE id = :calendarEventTimeId AND (child_id IS NULL OR child_id = :childId)
 """
         )
         .bind("calendarEventTimeId", form.calendarEventTimeId)
         .bind("childId", form.childId)
-        .bind("guardianId", guardianId)
         .bind("modifiedAt", modifiedAt)
         .bind("modifiedBy", modifiedBy)
-        .executeAndReturnGeneratedKeys()
-        .mapTo<CalendarEventTimeReservation>()
-        .exactlyOne()
-
-fun Database.Transaction.deleteCalendarEventTimeReservation(
-    form: CalendarEventTimeReservationForm,
-    guardianId: PersonId
-) =
-    createUpdate(
-            """
-DELETE FROM calendar_event_time_reservation
-WHERE calendar_event_time_id = :calendarEventTimeId
-AND child_id = :childId
-AND guardian_id = :guardianId
-"""
-        )
-        .bindKotlin(form)
-        .bind("guardianId", guardianId)
         .updateNoneOrOne()
 
 fun Database.Transaction.deleteCalendarEventTimeReservations(
@@ -285,27 +259,30 @@ fun Database.Transaction.deleteCalendarEventTimeReservations(
 ) =
     createUpdate(
             """
-DELETE FROM calendar_event_time_reservation cetr
-USING calendar_event_time cet
-WHERE cetr.calendar_event_time_id = cet.id
-AND cet.calendar_event_id = :calendarEventId
-AND cetr.child_id = :childId
+UPDATE calendar_event_time
+SET child_id = NULL::uuid
+WHERE calendar_event_id = :calendarEventId
+AND child_id = :childId
 """
         )
         .bind("calendarEventId", calendarEventId)
         .bind("childId", childId)
         .execute()
 
-fun Database.Transaction.deleteCalendarEventTimeReservations(
-    calendarEventTimeId: CalendarEventTimeId
+fun Database.Transaction.deleteCalendarEventTimeReservation(
+    calendarEventTimeId: CalendarEventTimeId,
+    childId: ChildId?
 ) =
     createUpdate(
             """
-DELETE FROM calendar_event_time_reservation
-WHERE calendar_event_time_id = :calendarEventTimeId
+UPDATE calendar_event_time
+SET child_id = NULL::uuid
+WHERE id = :calendarEventTimeId
+AND (:childId IS NULL OR child_id = :childId)
 """
         )
         .bind("calendarEventTimeId", calendarEventTimeId)
+        .bind("childId", childId)
         .execute()
 
 data class CitizenCalendarEventRow(

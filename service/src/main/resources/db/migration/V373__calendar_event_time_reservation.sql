@@ -8,31 +8,13 @@ CREATE TABLE calendar_event_time
     calendar_event_id uuid                     NOT NULL REFERENCES calendar_event (id) ON DELETE CASCADE,
     date              date                     NOT NULL,
     start_time        time without time zone   NOT NULL,
-    end_time          time without time zone   NOT NULL
+    end_time          time without time zone   NOT NULL,
+    child_id          uuid REFERENCES child (id)
 );
 
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
     ON calendar_event_time
-    FOR EACH ROW
-EXECUTE PROCEDURE trigger_refresh_updated();
-
-CREATE TABLE calendar_event_time_reservation
-(
-    calendar_event_time_id uuid                     NOT NULL REFERENCES calendar_event_time (id) ON DELETE CASCADE,
-    child_id               uuid                     NOT NULL REFERENCES child (id),
-    guardian_id            uuid                     NOT NULL REFERENCES person (id),
-    created                timestamp with time zone NOT NULL DEFAULT now(),
-    updated                timestamp with time zone NOT NULL DEFAULT now(),
-    modified_at            timestamp with time zone NOT NULL,
-    modified_by            uuid                     NOT NULL REFERENCES evaka_user (id),
-    PRIMARY KEY (calendar_event_time_id, child_id, guardian_id),
-    CONSTRAINT exclude$calendar_event_time_reservation_unique_child_id EXCLUDE USING gist (calendar_event_time_id WITH =, child_id WITH <>)
-);
-
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON calendar_event_time_reservation
     FOR EACH ROW
 EXECUTE PROCEDURE trigger_refresh_updated();
 

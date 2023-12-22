@@ -50,6 +50,7 @@ export interface CalendarEventForm {
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventTime
 */
 export interface CalendarEventTime {
+  childId: UUID | null
   date: LocalDate
   endTime: LocalTime
   id: UUID
@@ -63,15 +64,6 @@ export interface CalendarEventTimeForm {
   date: LocalDate
   endTime: LocalTime
   startTime: LocalTime
-}
-
-/**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeReservation
-*/
-export interface CalendarEventTimeReservation {
-  calendarEventTimeId: UUID
-  childId: UUID
-  guardianId: UUID
 }
 
 /**

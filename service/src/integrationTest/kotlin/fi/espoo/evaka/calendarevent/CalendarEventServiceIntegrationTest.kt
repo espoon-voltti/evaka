@@ -24,29 +24,24 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevFosterParent
-import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -246,17 +241,18 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         )
                 )
             )
-        val calendarEventTimeId = event.times.first().id
 
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
+                calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
 
-        val calendarEventTime =
+        val calendarEventTimeId =
             calendarEventController.addCalendarEventTime(
                 dbInstance(),
                 admin,
@@ -264,18 +260,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
             )
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTime.id,
+                calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTime.id
+            calendarEventTimeId
         )
 
         deleteCalendarEvent(event.id)
@@ -301,17 +299,18 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         )
                 )
             )
-        val calendarEventTimeId = event.times.first().id
 
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
+                calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
 
-        val calendarEventTime =
+        val calendarEventTimeId =
             calendarEventController.addCalendarEventTime(
                 dbInstance(),
                 admin,
@@ -319,18 +318,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
             )
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTime.id,
+                calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTime.id
+            calendarEventTimeId
         )
 
         deleteCalendarEvent(event.id)
@@ -356,17 +357,18 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         )
                 )
             )
-        val calendarEventTimeId = event.times.first().id
 
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
+                calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
 
-        val calendarEventTime =
+        val calendarEventTimeId =
             calendarEventController.addCalendarEventTime(
                 dbInstance(),
                 admin,
@@ -374,18 +376,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
             )
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTime.id,
+                calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTime.id
+            calendarEventTimeId
         )
 
         deleteCalendarEvent(event.id)
@@ -459,13 +463,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         )
                 )
             )
-        val calendarEventTimeId = created.times.first().id
-        setCalendarEventTimeReservation(
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
             CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
+                calendarEventTimeId = created.times.first().id,
                 childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
+            )
         )
         assertThat(getReservableCalendarEventTimes(created.id, testChild_2.id)).isEmpty()
 
@@ -494,118 +499,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertThat(getReservableCalendarEventTimes(created.id, testChild_2.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
             .containsExactly(Tuple(today.plusDays(3), LocalTime.of(8, 20), LocalTime.of(8, 40)))
-    }
-
-    @Test
-    fun `time reservation with multiple guardians`() {
-        db.transaction { tx -> tx.insertGuardian(testAdult_2.id, testChild_1.id) }
-
-        val event =
-            createCalendarEvent(
-                CalendarEventForm(
-                    unitId = testDaycare.id,
-                    tree = mapOf(groupId to setOf(testChild_1.id)),
-                    title = "Child-specific event",
-                    description = "cse",
-                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
-                    times =
-                        listOf(
-                            CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
-                            )
-                        )
-                )
-            )
-        val calendarEventTimeId = event.times.first().id
-
-        setCalendarEventTimeReservation(
-            CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id, testAdult_2.id)
-        )
-    }
-
-    @Test
-    fun `time reservation with foster parent`() {
-        db.transaction { tx ->
-            tx.insert(
-                DevFosterParent(
-                    parentId = testAdult_2.id,
-                    childId = testChild_1.id,
-                    validDuring = DateRange(start = today, end = null)
-                )
-            )
-        }
-
-        val event =
-            createCalendarEvent(
-                CalendarEventForm(
-                    unitId = testDaycare.id,
-                    tree = mapOf(groupId to setOf(testChild_1.id)),
-                    title = "Child-specific event",
-                    description = "cse",
-                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
-                    times =
-                        listOf(
-                            CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
-                            )
-                        )
-                )
-            )
-        val calendarEventTimeId = event.times.first().id
-
-        setCalendarEventTimeReservation(
-            CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id, testAdult_2.id)
-        )
-    }
-
-    @Test
-    fun `time reservation with blocklisted guardian`() {
-        db.transaction { tx ->
-            tx.insertGuardian(testAdult_2.id, testChild_1.id)
-            tx.insert(
-                DevGuardianBlocklistEntry(guardianId = testAdult_2.id, childId = testChild_1.id)
-            )
-        }
-
-        val event =
-            createCalendarEvent(
-                CalendarEventForm(
-                    unitId = testDaycare.id,
-                    tree = mapOf(groupId to setOf(testChild_1.id)),
-                    title = "Child-specific event",
-                    description = "cse",
-                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
-                    times =
-                        listOf(
-                            CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
-                            )
-                        )
-                )
-            )
-        val calendarEventTimeId = event.times.first().id
-
-        setCalendarEventTimeReservation(
-            CalendarEventTimeReservationForm(
-                calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            ),
-            expected = listOf(testAdult_1.id)
-        )
     }
 
     @Test
@@ -644,13 +537,21 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             )
-        addCalendarEventTimeReservation(reservationForm)
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            guardian,
+            clock,
+            reservationForm
+        )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
             .containsExactly(Tuple(today.plusDays(3), LocalTime.of(8, 20), LocalTime.of(8, 40)))
         assertThat(getReservableCalendarEventTimes(event.id, testChild_2.id)).isEmpty()
         assertThrows<Conflict> {
-            addCalendarEventTimeReservation(
+            calendarEventController.addCalendarEventTimeReservation(
+                dbInstance(),
+                guardian,
+                clock,
                 CalendarEventTimeReservationForm(
                     calendarEventTimeId = calendarEventTimeId,
                     childId = testChild_2.id
@@ -659,13 +560,24 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         // adding same reservation again is nop
-        addCalendarEventTimeReservation(reservationForm)
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            guardian,
+            clock,
+            reservationForm
+        )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
             .containsExactly(Tuple(today.plusDays(3), LocalTime.of(8, 20), LocalTime.of(8, 40)))
         assertThat(getReservableCalendarEventTimes(event.id, testChild_2.id)).isEmpty()
 
-        deleteCalendarEventTimeReservation(reservationForm)
+        calendarEventController.deleteCalendarEventTimeReservation(
+            dbInstance(),
+            guardian,
+            clock,
+            reservationForm.calendarEventTimeId,
+            reservationForm.childId
+        )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
             .containsExactly(Tuple(today.plusDays(3), LocalTime.of(8, 20), LocalTime.of(8, 40)))
@@ -1742,8 +1654,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock
     ): CalendarEvent {
         val id = calendarEventController.createCalendarEvent(dbInstance(), user, clock, form)
-        return getCalendarEvent(id, user = user, clock = clock)
+        return readCalendarEvent(id, user = user, clock = clock)
     }
+
+    private fun readCalendarEvent(
+        id: CalendarEventId,
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock
+    ) = calendarEventController.getCalendarEvent(dbInstance(), user, clock, id)
 
     private fun updateCalendarEvent(
         id: CalendarEventId,
@@ -1752,14 +1670,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock
     ): CalendarEvent {
         calendarEventController.updateCalendarEvent(dbInstance(), user, clock, id, form)
-        return getCalendarEvent(id, user = user, clock = clock)
+        return readCalendarEvent(id, user = user, clock = clock)
     }
-
-    private fun getCalendarEvent(
-        id: CalendarEventId,
-        user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
-    ) = calendarEventController.getCalendarEvent(dbInstance(), user, clock, id)
 
     private fun deleteCalendarEvent(
         id: CalendarEventId,
@@ -1767,29 +1679,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock
     ) {
         calendarEventController.deleteCalendarEvent(dbInstance(), user, clock, id)
-        assertThrows<NotFound> { getCalendarEvent(id, user = admin, clock = clock) }
-        assertThrows<NotFound> { deleteCalendarEvent(id, user = user, clock = clock) }
-    }
-
-    private fun setCalendarEventTimeReservation(
-        form: CalendarEventTimeReservationForm,
-        expected: List<PersonId>,
-        user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
-    ): List<CalendarEventTimeReservation> {
-        val reservations =
-            calendarEventController.setCalendarEventTimeReservation(dbInstance(), user, clock, form)
-        assertThat(reservations)
-            .containsExactlyInAnyOrderElementsOf(
-                expected.map { guardianId ->
-                    CalendarEventTimeReservation(
-                        calendarEventTimeId = form.calendarEventTimeId,
-                        childId = form.childId,
-                        guardianId = guardianId
-                    )
-                }
-            )
-        return reservations
+        assertThrows<NotFound> { readCalendarEvent(id, user = admin, clock = clock) }
+        assertThrows<NotFound> {
+            calendarEventController.deleteCalendarEvent(dbInstance(), user, clock, id)
+        }
     }
 
     private fun getReservableCalendarEventTimes(
@@ -1804,36 +1697,5 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             calendarEventId,
             childId
-        )
-
-    private fun addCalendarEventTimeReservation(
-        form: CalendarEventTimeReservationForm,
-        user: AuthenticatedUser.Citizen = guardian,
-        clock: EvakaClock = this.clock
-    ): CalendarEventTimeReservation {
-        val reservation =
-            calendarEventController.addCalendarEventTimeReservation(dbInstance(), user, clock, form)
-        assertThat(reservation)
-            .isEqualTo(
-                CalendarEventTimeReservation(
-                    calendarEventTimeId = form.calendarEventTimeId,
-                    childId = form.childId,
-                    guardianId = user.id
-                )
-            )
-        return reservation
-    }
-
-    private fun deleteCalendarEventTimeReservation(
-        form: CalendarEventTimeReservationForm,
-        user: AuthenticatedUser.Citizen = guardian,
-        clock: EvakaClock = this.clock
-    ) =
-        calendarEventController.deleteCalendarEventTimeReservation(
-            dbInstance(),
-            user,
-            clock,
-            form.calendarEventTimeId,
-            form.childId
         )
 }

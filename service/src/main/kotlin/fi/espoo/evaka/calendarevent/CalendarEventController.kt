@@ -7,8 +7,6 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.getDaycareGroups
-import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.pis.service.isGuardianBlocked
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
 import fi.espoo.evaka.shared.CalendarEventId
@@ -18,8 +16,8 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -255,7 +253,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
         @RequestBody body: CalendarEventTimeForm
-    ): CalendarEventTime {
+    ): CalendarEventTimeId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -299,9 +297,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeReservationForm
-    ): List<CalendarEventTimeReservation> {
+    ) {
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+            dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -310,22 +308,14 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         body.calendarEventTimeId
                     )
                     validate(tx, body)
-                    tx.deleteCalendarEventTimeReservations(
-                        calendarEventTimeId = body.calendarEventTimeId
+                    tx.deleteCalendarEventTimeReservation(
+                        calendarEventTimeId = body.calendarEventTimeId,
+                        childId = null
                     )
-                    tx.getChildGuardiansAndFosterParents(body.childId, clock.today())
-                        .filterNot { guardianId -> tx.isGuardianBlocked(guardianId, body.childId) }
-                        .map { guardianId ->
-                            tx.insertCalendarEventTimeReservation(
-                                body,
-                                guardianId,
-                                clock.now(),
-                                user.evakaUserId
-                            )
-                        }
+                    tx.insertCalendarEventTimeReservation(body, clock.now(), user.evakaUserId)
                 }
-            }
-            .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = body) }
+                .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = body) }
+        }
     }
 
     @GetMapping("/citizen/calendar-events")
@@ -423,7 +413,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeReservationForm
-    ): CalendarEventTimeReservation {
+    ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -434,15 +424,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         body.childId
                     )
                     validate(tx, body)
-                    try {
-                        tx.insertCalendarEventTimeReservation(
-                            body,
-                            user.id,
-                            clock.now(),
-                            user.evakaUserId
-                        )
-                    } catch (e: Exception) {
-                        throw mapPSQLException(e)
+                    val count =
+                        tx.insertCalendarEventTimeReservation(body, clock.now(), user.evakaUserId)
+                    if (count != 1) {
+                        throw Conflict("Calendar event time already reserved")
                     }
                 }
             }
@@ -467,7 +452,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
                         body.childId
                     )
-                    tx.deleteCalendarEventTimeReservation(body, user.id)
+                    tx.deleteCalendarEventTimeReservation(
+                        calendarEventTimeId = body.calendarEventTimeId,
+                        childId = body.childId
+                    )
                 }
             }
             .also { Audit.CalendarEventTimeReservationDelete.log(targetId = body) }

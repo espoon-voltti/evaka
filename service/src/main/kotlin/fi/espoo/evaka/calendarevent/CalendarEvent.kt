@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -34,13 +33,8 @@ data class CalendarEventTime(
     val id: CalendarEventTimeId,
     val date: LocalDate,
     val startTime: LocalTime,
-    val endTime: LocalTime
-)
-
-data class CalendarEventTimeReservation(
-    val calendarEventTimeId: CalendarEventTimeId,
-    val childId: ChildId,
-    val guardianId: PersonId,
+    val endTime: LocalTime,
+    val childId: ChildId?
 )
 
 data class AttendingChild(
