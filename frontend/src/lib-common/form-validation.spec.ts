@@ -7,8 +7,15 @@ import { ssn } from './form-validation'
 describe('form-validation', () => {
   describe('ssn', () => {
     it('passes with valid SSN', () => {
-      const str = '240514A1831'
-      expect(ssn(str)).toEqual(undefined)
+      ;[
+        '240514A1831',
+        '240514B1831',
+        '240514-1831',
+        '240514U1831',
+        '240514+1831'
+      ].forEach((str) => {
+        expect(ssn(str)).toEqual(undefined)
+      })
     })
 
     it('fails if does not match regexp', () => {

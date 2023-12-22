@@ -117,9 +117,12 @@ private fun freeTextComputedColumnQuery(tables: List<String>, param: String): St
         ")"
 }
 
-private fun findSsnParams(str: String) = splitSearchText(str).filter(SSN_PATTERN.toRegex()::matches)
+private fun findSsnParams(str: String) =
+    splitSearchText(str).filter(SSN_PATTERN.toRegex(RegexOption.IGNORE_CASE)::matches)
 
-private val removeSsnParams: (String) -> String = { it.replace(SSN_PATTERN.toRegex(), "") }
+private val removeSsnParams: (String) -> String = {
+    it.replace(SSN_PATTERN.toRegex(RegexOption.IGNORE_CASE), "")
+}
 
 private fun ssnQuery(tablePrefixes: List<String>, params: Collection<String>): String {
     return params

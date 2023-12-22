@@ -6,7 +6,8 @@ import { parse } from 'date-fns'
 
 import LocalDate from 'lib-common/local-date'
 
-export const SSN_REGEXP = /^[0-9]{6}[+\-A][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
+export const SSN_REGEXP =
+  /^[0-9]{6}[-+ABCDEFUVWXY][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
 
 export const TIME_REGEXP = /^(?:[0-1][0-9]|2[0-3]):[0-5][0-9]$/
 

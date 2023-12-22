@@ -6,7 +6,7 @@ package fi.espoo.evaka.identity
 
 import java.time.LocalDate
 
-const val SSN_PATTERN = "^(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-Z]$"
+const val SSN_PATTERN = "^(\\d{2})(\\d{2})(\\d{2})[-+ABCDEFUVWXY](\\d{3})[\\dA-Z]$"
 private val CHECK_DIGITS =
     arrayOf(
         '0',
@@ -74,8 +74,18 @@ fun getDobFromSsn(ssn: String): LocalDate {
 fun getYearFromSSN(ssn: String): Int {
     val century =
         when (val c = ssn[6]) {
-            'A' -> 2000
-            '-' -> 1900
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F' -> 2000
+            '-',
+            'U',
+            'V',
+            'W',
+            'X',
+            'Y' -> 1900
             '+' -> 1800
             else -> throw java.lang.IllegalArgumentException("Invalid century in SSN ('$c')")
         }
