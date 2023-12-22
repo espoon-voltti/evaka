@@ -508,11 +508,7 @@ describe('Unit group calendar', () => {
     )
     await reservationModal.addAbsence(mockedToday)
     await waitUntilEqual(
-      () =>
-        childReservations
-          .childRows(child1Fixture.id)
-          .findAllByDataQa('absence')
-          .count(),
+      () => childReservations.childAbsenceRows(child1Fixture.id).count(),
       1
     )
   })

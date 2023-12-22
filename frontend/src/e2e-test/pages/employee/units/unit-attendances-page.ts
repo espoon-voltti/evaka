@@ -355,6 +355,11 @@ export class UnitChildReservationsTable extends Element {
   childRows(childId: UUID) {
     return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
+  childAbsenceRows(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('absence')
+  }
 
   childInOtherUnit(childId: UUID) {
     return this.findAllByDataQa(
