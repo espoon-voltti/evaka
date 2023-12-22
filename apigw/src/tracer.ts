@@ -26,4 +26,4 @@ if (tracingEnabled) {
   }) // initialized in a different file to avoid hoisting.
 }
 
-export default tracer
+export default tracer.tracer
