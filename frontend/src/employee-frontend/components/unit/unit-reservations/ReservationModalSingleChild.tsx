@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faUserMinus } from 'Icons'
 import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -16,6 +17,7 @@ import {
   object,
   oneOf,
   required,
+  union,
   value
 } from 'lib-common/form/form'
 import {
@@ -24,7 +26,8 @@ import {
   useForm,
   useFormElem,
   useFormElems,
-  useFormField
+  useFormField,
+  useFormUnion
 } from 'lib-common/form/hooks'
 import {
   combine,
@@ -64,14 +67,17 @@ const reservableDates = new FiniteDateRange(
   LocalDate.todayInSystemTz(),
   LocalDate.todayInSystemTz().addYears(1)
 )
-
-export const times = array(required(localTimeRange()))
+const ranges = array(required(localTimeRange()))
+export const reservation = union({
+  timeRanges: ranges,
+  absent: value<true>()
+})
 
 const weekDay = chained(
   object({
     index: value<number>(),
     enabled: boolean(),
-    times
+    times: reservation
   }),
   (form, state) =>
     state.enabled
@@ -87,14 +93,14 @@ const weekDay = chained(
 
 const irregularDay = object({
   date: value<LocalDate>(),
-  times
+  times: reservation
 })
 
 const reservationForm = mapped(
   object({
     dateRange: required(localDateRange()),
     repetition: required(oneOf<Repetition>()),
-    dailyTimes: times,
+    dailyTimes: reservation,
     weeklyTimes: mapped(array(weekDay), (output) =>
       output.flatMap((value) => (value !== undefined ? [value] : []))
     ),
@@ -105,28 +111,37 @@ const reservationForm = mapped(
       const dates = [...output.dateRange.dates()]
       switch (output.repetition) {
         case 'DAILY':
-          return dates.map((date) => ({
-            type: 'RESERVATIONS',
-            childId,
-            date,
-            reservation: output.dailyTimes[0],
-            secondReservation: output.dailyTimes[1] ?? null
-          }))
+          return dates.map((date) => {
+            if (output.dailyTimes.branch === 'absent') {
+              return { type: 'ABSENT', childId, date }
+            }
+            return {
+              type: 'RESERVATIONS',
+              childId,
+              date,
+              reservation: output.dailyTimes.value[0],
+              secondReservation: output.dailyTimes.value[1] ?? null
+            }
+          })
         case 'WEEKLY':
           return dates
             .map((date) => {
               const weekDay = output.weeklyTimes.find(
                 (d) => d.index === date.getIsoDayOfWeek()
               )
-              return weekDay !== undefined
-                ? {
-                    type: 'RESERVATIONS' as const,
-                    childId,
-                    date,
-                    reservation: weekDay.times[0],
-                    secondReservation: weekDay.times[1] ?? null
-                  }
-                : undefined
+              if (weekDay === undefined) {
+                return undefined
+              }
+              if (weekDay.times.branch === 'absent') {
+                return { type: 'ABSENT' as const, childId, date }
+              }
+              return {
+                type: 'RESERVATIONS' as const,
+                childId,
+                date,
+                reservation: weekDay.times.value[0],
+                secondReservation: weekDay.times.value[1] ?? null
+              }
             })
             .flatMap((value) => (value !== undefined ? [value] : []))
         case 'IRREGULAR':
@@ -134,13 +149,22 @@ const reservationForm = mapped(
             .filter((irregularDay) =>
               output.dateRange.includes(irregularDay.date)
             )
-            .map((irregularDay) => ({
-              type: 'RESERVATIONS' as const,
-              childId,
-              date: irregularDay.date,
-              reservation: irregularDay.times[0],
-              secondReservation: irregularDay.times[1] ?? null
-            }))
+            .map((irregularDay) => {
+              if (irregularDay.times.branch === 'absent') {
+                return {
+                  type: 'ABSENT' as const,
+                  childId,
+                  date: irregularDay.date
+                }
+              }
+              return {
+                type: 'RESERVATIONS' as const,
+                childId,
+                date: irregularDay.date,
+                reservation: irregularDay.times.value[0],
+                secondReservation: irregularDay.times.value[1] ?? null
+              }
+            })
       }
     }
 )
@@ -181,12 +205,15 @@ export function initialState(
       domValue: 'DAILY' as const,
       options: repetitionOptions(i18n)
     },
-    dailyTimes: [
-      {
-        startTime: '',
-        endTime: ''
-      }
-    ],
+    dailyTimes: {
+      branch: 'timeRanges',
+      state: [
+        {
+          startTime: '',
+          endTime: ''
+        }
+      ]
+    },
     weeklyTimes: [],
     irregularTimes: []
   }
@@ -210,27 +237,42 @@ function resetTimes(
   switch (repetition) {
     case 'DAILY':
       return {
-        dailyTimes: [{ startTime: '', endTime: '' }],
+        dailyTimes: {
+          branch: 'timeRanges',
+          state: [{ startTime: '', endTime: '' }]
+        },
         weeklyTimes: [],
         irregularTimes: []
       }
     case 'WEEKLY':
       return {
-        dailyTimes: [],
+        dailyTimes: {
+          branch: 'timeRanges',
+          state: []
+        },
         weeklyTimes: includedWeekDays.map((dayIndex) => ({
           index: dayIndex,
           enabled: true,
-          times: [{ startTime: '', endTime: '' }]
+          times: {
+            branch: 'timeRanges',
+            state: [{ startTime: '', endTime: '' }]
+          }
         })),
         irregularTimes: []
       }
     case 'IRREGULAR':
       return {
-        dailyTimes: [],
+        dailyTimes: {
+          branch: 'timeRanges',
+          state: []
+        },
         weeklyTimes: [],
         irregularTimes: [...selectedRange.dates()].map((date) => ({
           date,
-          times: [{ startTime: '', endTime: '' }]
+          times: {
+            branch: 'timeRanges',
+            state: [{ startTime: '', endTime: '' }]
+          }
         }))
       }
   }
@@ -341,7 +383,7 @@ export default React.memo(function ReservationModalSingleChild({
 
       <TimeInputGrid>
         {repetition.value() === 'DAILY' ? (
-          <TimeInputs
+          <ReservationTimes
             label={
               <Label>{`${
                 i18n.common.datetime.weekdaysShort[includedDays[0] - 1]
@@ -420,7 +462,7 @@ const WeeklyTimeInputs = React.memo(function WeeklyTimeInputs({
     />
   )
   return enabled.value() ? (
-    <TimeInputs
+    <ReservationTimes
       key={`day-${index}`}
       label={enabledCheckbox}
       bind={times}
@@ -460,7 +502,7 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
         </Week>
       ) : null}
       {includedDays.includes(date.getIsoDayOfWeek()) && (
-        <TimeInputs
+        <ReservationTimes
           label={<Label>{date.format('EEEEEE d.M.', lang)}</Label>}
           bind={times}
           showAllErrors={showAllErrors}
@@ -473,11 +515,13 @@ const IrregularTimeInputs = React.memo(function IrregularTimeInputs({
 const TimeInputs = React.memo(function TimeInputs({
   label,
   bind,
-  showAllErrors
+  showAllErrors,
+  onAbsent
 }: {
   label: React.JSX.Element
-  bind: BoundForm<typeof times>
+  bind: BoundForm<typeof ranges>
   showAllErrors: boolean
+  onAbsent: () => void
 }) {
   const { i18n } = useTranslation()
 
@@ -492,18 +536,26 @@ const TimeInputs = React.memo(function TimeInputs({
     <>
       {label}
       <TimeRangeInput bind={timeRange} showAllErrors={showAllErrors} />
-      {!extraTimeRange ? (
+      <DayButtons>
         <IconButton
-          icon={faPlus}
-          data-qa="add-new-reservation-timerange"
-          onClick={() =>
-            bind.update((prev) => [...prev, { startTime: '', endTime: '' }])
-          }
-          aria-label={i18n.common.addNew}
+          icon={faUserMinus}
+          data-qa="set-absent-button"
+          onClick={onAbsent}
+          aria-label="Merkitse poissaolevaksi"
         />
-      ) : (
-        <div />
-      )}
+        {!extraTimeRange ? (
+          <IconButton
+            icon={faPlus}
+            data-qa="add-new-reservation-timerange"
+            onClick={() =>
+              bind.update((prev) => [...prev, { startTime: '', endTime: '' }])
+            }
+            aria-label={i18n.common.addNew}
+          />
+        ) : (
+          <div />
+        )}
+      </DayButtons>
       {extraTimeRange ? (
         <>
           <div />
@@ -517,6 +569,57 @@ const TimeInputs = React.memo(function TimeInputs({
       ) : null}
     </>
   )
+})
+
+const ReservationTimes = React.memo(function ReservationTimes({
+  label,
+  bind,
+  showAllErrors
+}: {
+  label: React.JSX.Element
+  bind: BoundForm<typeof reservation>
+  showAllErrors: boolean
+}) {
+  const { branch, form } = useFormUnion(bind)
+
+  const onAbsent = () => {
+    bind.update(() => ({
+      branch: 'absent',
+      state: true
+    }))
+  }
+
+  switch (branch) {
+    case 'absent':
+      return (
+        <>
+          {label}
+          <span>Poissa</span>
+          <div>
+            <IconButton
+              icon={faUserMinus}
+              data-qa="set-present-button"
+              onClick={() =>
+                bind.update(() => ({
+                  branch: 'timeRanges',
+                  state: [{ startTime: '', endTime: '' }]
+                }))
+              }
+              aria-label="Merkitse poissaolevaksi"
+            />
+          </div>
+        </>
+      )
+    case 'timeRanges':
+      return (
+        <TimeInputs
+          label={label}
+          bind={form}
+          showAllErrors={showAllErrors}
+          onAbsent={onAbsent}
+        />
+      )
+  }
 })
 
 const TimeRangeInput = React.memo(function TimeRangeInput({
@@ -593,4 +696,9 @@ const Separator = styled.div`
 const MissingDateRange = styled(Light)`
   grid-column-start: 1;
   grid-column-end: 4;
+`
+const DayButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: ${defaultMargins.s}; // <- counteracts the negative 6px margin icon buttons have
 `

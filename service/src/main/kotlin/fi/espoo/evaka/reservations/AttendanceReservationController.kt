@@ -218,10 +218,6 @@ class AttendanceReservationController(
     ) {
         val children = body.map { it.childId }.toSet()
 
-        if (body.any { it is DailyReservationRequest.Absent }) {
-            throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
-        }
-
         val result =
             db.connect { dbc ->
                 dbc.transaction {
@@ -232,7 +228,13 @@ class AttendanceReservationController(
                         Action.Child.CREATE_ATTENDANCE_RESERVATION,
                         children
                     )
-                    createReservationsAndAbsences(it, clock.today(), user, body)
+                    createReservationsAndAbsences(
+                        it,
+                        clock.now(),
+                        user,
+                        body,
+                        featureConfig.citizenReservationThresholdHours
+                    )
                 }
             }
         Audit.AttendanceReservationEmployeeCreate.log(

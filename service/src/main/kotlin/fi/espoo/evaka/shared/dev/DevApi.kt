@@ -137,6 +137,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -233,7 +234,8 @@ class DevApi(
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
     private val bucketEnv: BucketEnv,
-    private val emailMessageProvider: IEmailMessageProvider
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val featureConfig: FeatureConfig
 ) {
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
@@ -1015,7 +1017,13 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservationsAndAbsences(tx, clock.today(), fakeAdmin, body)
+                createReservationsAndAbsences(
+                    tx,
+                    clock.now(),
+                    fakeAdmin,
+                    body,
+                    featureConfig.citizenReservationThresholdHours
+                )
             }
         }
     }

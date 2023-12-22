@@ -355,6 +355,11 @@ export class UnitChildReservationsTable extends Element {
   childRows(childId: UUID) {
     return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
+  childAbsenceRows(childId: UUID) {
+    return this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).findAllByDataQa('absence')
+  }
 
   childInOtherUnit(childId: UUID) {
     return this.findAllByDataQa(
@@ -514,12 +519,25 @@ export class ReservationModal extends Modal {
   async save() {
     await this.submit()
   }
+  async setAbsent() {
+    const absentButton = this.find(`[data-qa="set-absent-button"]`)
+    await absentButton.click()
+  }
 
   async addReservation(endDate: LocalDate) {
     await this.selectRepetitionType('IRREGULAR')
     await this.endDate.fill(endDate.format())
     await this.setStartTime('10:00', 0)
     await this.setEndTime('16:00', 0)
+    await this.save()
+  }
+
+  async addAbsence(date: LocalDate) {
+    await this.selectRepetitionType('IRREGULAR')
+    await this.endDate.fill(date.format())
+    // dismiss datepicker
+    await this.endDate.press('Escape')
+    await this.setAbsent()
     await this.save()
   }
 }
