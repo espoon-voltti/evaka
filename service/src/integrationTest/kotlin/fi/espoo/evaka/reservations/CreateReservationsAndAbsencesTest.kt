@@ -1282,4 +1282,142 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
             assertEquals(listOf(Reservation.Times(startTime, endTime)), reservations)
         }
     }
+
+    @Test
+    fun `citizen cannot override employee created absences with reservations`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = monday,
+                endDate = tuesday
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(employeeUser.id.raw)
+            )
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = tuesday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(employeeUser.id.raw)
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                mondayNoon,
+                citizenUser,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = monday,
+                        TimeRange(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = tuesday,
+                        TimeRange(startTime, endTime),
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then reservation is not added
+        val reservations =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
+                .mapNotNull { dailyData ->
+                    dailyData.date.takeIf {
+                        dailyData.children.any { it.reservations.isNotEmpty() }
+                    }
+                }
+        assertEquals(0, reservations.size)
+
+        // and absence has not been removed
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+        assertEquals(2, absences.size)
+    }
+
+    @Test
+    fun `employee can override employee created absences with reservations`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = monday,
+                endDate = tuesday
+            )
+            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(employeeUser.id.raw)
+            )
+            it.insertTestAbsence(
+                childId = testChild_1.id,
+                date = tuesday,
+                category = AbsenceCategory.BILLABLE,
+                modifiedBy = EvakaUserId(employeeUser.id.raw)
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                mondayNoon,
+                employeeUser,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = monday,
+                        TimeRange(startTime, endTime),
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = testChild_1.id,
+                        date = tuesday,
+                        TimeRange(startTime, endTime),
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then reservations are added
+        val reservations =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        testAdult_1.id,
+                        queryRange,
+                    )
+                }
+                .mapNotNull { dailyData ->
+                    dailyData.date.takeIf {
+                        dailyData.children.any { it.reservations.isNotEmpty() }
+                    }
+                }
+        assertEquals(2, reservations.size)
+
+        // and absences have been removed
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+        assertEquals(0, absences.size)
+    }
 }

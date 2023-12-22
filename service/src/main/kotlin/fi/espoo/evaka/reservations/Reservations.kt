@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
@@ -240,7 +241,8 @@ fun createReservationsAndAbsences(
             }
 
     val deletedAbsences =
-        tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
+        if (isCitizen) tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
+        else tx.clearOldAbsences(validated.map { it.childId to it.date })
     val deletedReservations = tx.clearOldReservations(validated.map { it.childId to it.date })
     val upsertedReservations =
         tx.insertValidReservations(
