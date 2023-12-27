@@ -673,7 +673,7 @@ from (SELECT d                                     AS date,
                JOIN person p
                     ON rp.child_id = p.id
                LEFT JOIN service_need sn
-                         ON rp.placement_id = sn.placement_id
+                         ON rp.placement_id = sn.placement_id AND d BETWEEN sn.start_date AND sn.end_date
                LEFT JOIN service_need_option sno
                          ON sn.option_id = sno.id
                LEFT JOIN service_need_option sno_default

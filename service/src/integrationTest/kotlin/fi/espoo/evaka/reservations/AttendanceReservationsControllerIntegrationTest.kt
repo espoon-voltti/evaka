@@ -47,6 +47,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschool
@@ -966,7 +967,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     groupStatistics =
                         listOf(
                             AttendanceReservationController.GroupReservationStatisticResult(
-                                calculatedPresent = BigDecimal("2.500"),
+                                calculatedPresent = BigDecimal("1.250"),
                                 presentCount = 1,
                                 absentCount = 0,
                                 groupId = testGroup1.id
@@ -1167,8 +1168,17 @@ class AttendanceReservationsControllerIntegrationTest :
             it.insertServiceNeed(
                 placementId = child1PlacementId,
                 startDate = previousFriday,
-                endDate = fri,
+                endDate = thu,
                 optionId = snDaycareContractDays15.id,
+                shiftCare = ShiftCareType.NONE,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+            it.insertServiceNeed(
+                placementId = child1PlacementId,
+                startDate = fri,
+                endDate = fri,
+                optionId = snDaycareContractDays10.id,
                 shiftCare = ShiftCareType.NONE,
                 confirmedBy = null,
                 confirmedAt = null
