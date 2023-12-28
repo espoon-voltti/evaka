@@ -132,16 +132,26 @@ class AttendanceReservationController(
                                             UnitAttendanceReservations.ChildRecordOfDay(
                                                 childId = childData.child.id,
                                                 reservations =
-                                                    childData.reservations[date] ?: emptyList(),
+                                                    childData.reservations[date]?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    } ?: emptyList(),
                                                 attendances =
-                                                    childData.attendances[date] ?: emptyList(),
-                                                absence = childData.absences[date],
+                                                    childData.attendances[date]?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    } ?: emptyList(),
+                                                absence =
+                                                    childData.absences[date]?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    },
                                                 dailyServiceTimes =
                                                     serviceTimes[childId]?.find {
                                                         it.validityPeriod.includes(day.date)
                                                     },
                                                 groupId = placementStatus.groupId,
-                                                backupGroupId = placementStatus.backupGroupId,
+                                                backupGroupId =
+                                                    placementStatus.backupGroupId?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    },
                                                 inOtherUnit = placementStatus.backupOtherUnit,
                                                 scheduleType =
                                                     placementStatus.placementType.scheduleType(

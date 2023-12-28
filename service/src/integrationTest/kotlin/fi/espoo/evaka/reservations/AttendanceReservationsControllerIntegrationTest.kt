@@ -64,6 +64,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -86,21 +87,10 @@ class AttendanceReservationsControllerIntegrationTest :
     private val now = HelsinkiDateTime.of(mon, LocalTime.of(10, 0))
     private val clock = MockEvakaClock(now)
 
-    private val unitOperationalDays =
-        monFri
-            .dates()
-            .map {
-                UnitAttendanceReservations.OperationalDay(
-                    it,
-                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
-                    isHoliday = false,
-                    isInHolidayPeriod = false
-                )
-            }
-            .toList()
-
     private val testGroup1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 1")
     private val testGroup2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 2")
+    private val testGroupInDaycare2 =
+        DevDaycareGroup(daycareId = testDaycare2.id, name = "Test group 3")
 
     @BeforeEach
     fun beforeEach() {
@@ -108,6 +98,7 @@ class AttendanceReservationsControllerIntegrationTest :
             it.insertGeneralTestFixtures()
             it.insert(testGroup1)
             it.insert(testGroup2)
+            it.insert(testGroupInDaycare2)
 
             it.insert(DevEmployee(employeeId))
             it.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
@@ -193,7 +184,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_4.id,
                 unitId = testDaycare.id,
                 startDate = wed,
-                endDate = fri
+                endDate = thu
             )
 
             // Placement in other unit, backup in this unit's group 2
@@ -205,6 +196,12 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri
                 )
+            it.insertTestDaycareGroupPlacement(
+                daycarePlacementId = testChild5PlacementId,
+                groupId = testGroupInDaycare2.id,
+                startDate = mon,
+                endDate = fri
+            )
             it.insertTestBackUpCare(
                 childId = testChild_5.id,
                 unitId = testDaycare.id,
@@ -221,7 +218,6 @@ class AttendanceReservationsControllerIntegrationTest :
                 confirmedBy = null,
                 confirmedAt = null
             )
-
             it.insert(
                 DevDailyServiceTimes(
                     childId = testChild_5.id,
@@ -257,6 +253,7 @@ class AttendanceReservationsControllerIntegrationTest :
             it.insertTestBackUpCare(
                 childId = testChild_6.id,
                 unitId = testDaycare2.id,
+                groupId = testGroupInDaycare2.id,
                 startDate = fri,
                 endDate = fri
             )
@@ -282,275 +279,297 @@ class AttendanceReservationsControllerIntegrationTest :
             )
         }
 
-        val attendanceReservations = getAttendanceReservations()
-        assertEquals(testDaycare.name, attendanceReservations.unit)
-        assertEquals(unitOperationalDays, attendanceReservations.operationalDays)
+        val response = getAttendanceReservations()
+        assertEquals(testDaycare.name, response.unit)
 
-        val group1SnInfos =
-            attendanceReservations.unitServiceNeedInfo.groups.find { it.groupId == testGroup1.id }!!
         assertEquals(
-            UnitAttendanceReservations.GroupServiceNeedInfo(
-                groupId = testGroup1.id,
-                childInfos =
+            setOf(testChild_1.id, testChild_4.id, testChild_5.id, testChild_6.id),
+            response.children.map { it.id }.toSet()
+        )
+        response.children
+            .first { it.id == testChild_1.id }
+            .also { child1 ->
+                assertEquals(
                     listOf(
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
                             hasContractDays = true,
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = FiniteDateRange(mon, thu),
-                            shiftCare = ShiftCareType.NONE,
+                            shiftCare = ShiftCareType.NONE
+                        ),
+                        ChildServiceNeedInfo(
+                            childId = testChild_1.id,
+                            hasContractDays = false,
+                            optionName = snDaycareFullDay35.nameFi,
+                            validDuring = FiniteDateRange(fri, fri),
+                            shiftCare = ShiftCareType.NONE
                         )
-                    )
-            ),
-            group1SnInfos
-        )
+                    ),
+                    child1.serviceNeeds
+                )
+            }
+        response.children
+            .first { it.id == testChild_4.id }
+            .also { child4 -> assertEquals(emptyList(), child4.serviceNeeds) }
+        response.children
+            .first { it.id == testChild_5.id }
+            .also { child5 ->
+                assertEquals(
+                    listOf(
+                        ChildServiceNeedInfo(
+                            childId = testChild_5.id,
+                            hasContractDays = true,
+                            optionName = snDaycareContractDays15.nameFi,
+                            validDuring = monFri,
+                            shiftCare = ShiftCareType.NONE
+                        )
+                    ),
+                    child5.serviceNeeds
+                )
+            }
+        response.children
+            .first { it.id == testChild_6.id }
+            .also { child6 -> assertEquals(emptyList(), child6.serviceNeeds) }
 
-        val group2SnInfos =
-            attendanceReservations.unitServiceNeedInfo.groups.find { it.groupId == testGroup2.id }!!
         assertEquals(
             listOf(
-                ChildServiceNeedInfo(
-                    childId = testChild_5.id,
-                    hasContractDays = true,
-                    optionName = snDaycareContractDays15.nameFi,
-                    validDuring = FiniteDateRange(mon, fri),
-                    shiftCare = ShiftCareType.NONE,
-                ),
-                ChildServiceNeedInfo(
-                    childId = testChild_1.id,
-                    hasContractDays = false,
-                    optionName = snDaycareFullDay35.nameFi,
-                    validDuring = FiniteDateRange(fri, fri),
-                    shiftCare = ShiftCareType.NONE,
-                )
+                UnitAttendanceReservations.ReservationGroup(testGroup1.id, testGroup1.name),
+                UnitAttendanceReservations.ReservationGroup(testGroup2.id, testGroup2.name),
             ),
-            group2SnInfos.childInfos.sortedBy { it.validDuring.start }
+            response.groups
         )
 
-        val group1 = attendanceReservations.groups.find { it.group.id == testGroup1.id }!!
-        assertEquals(
-            listOf(
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_1.id,
-                        testChild_1.firstName,
-                        testChild_1.lastName,
-                        testChild_1.preferredName,
-                        testChild_1.dateOfBirth
-                    ),
-                    listOf(
-                        mapOf(
-                            mon to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations =
-                                        Reservation.Times(
-                                            LocalTime.of(8, 0),
-                                            LocalTime.of(16, 0),
-                                        ),
-                                    attendances =
-                                        UnitAttendanceReservations.AttendanceTimes(
-                                            "08:15",
-                                            "16:05"
-                                        ),
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                ),
-                            tue to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = null,
-                                    attendances = null,
-                                    absence =
-                                        UnitAttendanceReservations.Absence(
-                                            AbsenceType.OTHER_ABSENCE
-                                        ),
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                ),
-                            wed to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = Reservation.NoTimes,
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                ),
-                            thu to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = null,
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                )
-                        )
+        assertEquals(5, response.days.size)
+        assertTrue(
+            response.days.all {
+                it.dateInfo ==
+                    UnitAttendanceReservations.UnitDateInfo(
+                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                        isHoliday = false,
+                        isInHolidayPeriod = false
                     )
-                ),
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_6.id,
-                        testChild_6.firstName,
-                        testChild_6.lastName,
-                        testChild_6.preferredName,
-                        testChild_6.dateOfBirth
-                    ),
-                    listOf(
-                        mapOf(
-                            wed to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = null,
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                ),
-                            // Backup in group 2
-                            thu to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations =
-                                        Reservation.Times(
-                                            LocalTime.of(9, 0),
-                                            LocalTime.of(15, 0),
-                                        ),
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = true,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                ),
-                            // Backup in another unit
-                            fri to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = null,
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = true,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                )
-                        )
-                    )
-                )
-            ),
-            group1.children.sortedBy { it.child.lastName }
+            }
         )
 
-        val group2 = attendanceReservations.groups.find { it.group.id == testGroup2.id }!!
-        assertEquals(
-            listOf(
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_1.id,
-                        testChild_1.firstName,
-                        testChild_1.lastName,
-                        testChild_1.preferredName,
-                        testChild_1.dateOfBirth
-                    ),
-                    listOf(emptyChildRecords(FiniteDateRange(fri, fri)))
-                ),
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_6.id,
-                        testChild_6.firstName,
-                        testChild_6.lastName,
-                        testChild_6.preferredName,
-                        testChild_6.dateOfBirth
-                    ),
+        response.days
+            .first { it.date == mon }
+            .children
+            .also { monChildren ->
+                assertEquals(
                     listOf(
-                        mapOf(
-                            // Backup in group 2
-                            thu to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations =
-                                        Reservation.Times(
-                                            LocalTime.of(9, 0),
-                                            LocalTime.of(15, 0),
-                                        ),
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes = null,
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                )
+                        UnitAttendanceReservations.ChildRecordOfDay(
+                            childId = testChild_1.id,
+                            reservations =
+                                listOf(
+                                    Reservation.Times(
+                                        startTime = LocalTime.of(8, 0),
+                                        endTime = LocalTime.of(16, 0)
+                                    )
+                                ),
+                            attendances =
+                                listOf(
+                                    UnitAttendanceReservations.AttendanceTimes(
+                                        startTime = LocalTime.of(8, 15),
+                                        endTime = LocalTime.of(16, 5)
+                                    )
+                                ),
+                            absence = null,
+                            dailyServiceTimes = null,
+                            groupId = testGroup1.id,
+                            backupGroupId = null,
+                            inOtherUnit = false,
+                            scheduleType = ScheduleType.RESERVATION_REQUIRED
                         )
-                    )
-                ),
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_5.id,
-                        testChild_5.firstName,
-                        testChild_5.lastName,
-                        testChild_5.preferredName,
-                        testChild_5.dateOfBirth
                     ),
-                    listOf(
-                        mapOf(
-                            // Normally in another unit, backup in group 2
-                            fri to
-                                UnitAttendanceReservations.ChildRecordOfDay(
-                                    reservations = null,
-                                    attendances = null,
-                                    absence = null,
-                                    dailyServiceTimes =
-                                        DailyServiceTimesValue.RegularTimes(
-                                            monFri.asDateRange(),
-                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-                                        ),
-                                    inOtherUnit = false,
-                                    isInBackupGroup = false,
-                                    scheduleType = ScheduleType.FIXED_SCHEDULE,
-                                )
-                        )
-                    )
+                    monChildren
                 )
-            ),
-            group2.children.sortedBy { it.child.lastName }
-        )
+            }
 
-        // Ungrouped
-        assertEquals(
-            listOf(
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_4.id,
-                        testChild_4.firstName,
-                        testChild_4.lastName,
-                        testChild_4.preferredName,
-                        testChild_4.dateOfBirth
+        response.days
+            .first { it.date == tue }
+            .children
+            .also { tueChildren ->
+                assertEquals(
+                    listOf(
+                        UnitAttendanceReservations.ChildRecordOfDay(
+                            childId = testChild_1.id,
+                            reservations = emptyList(),
+                            attendances = emptyList(),
+                            absence =
+                                UnitAttendanceReservations.Absence(
+                                    type = AbsenceType.OTHER_ABSENCE
+                                ),
+                            dailyServiceTimes = null,
+                            groupId = testGroup1.id,
+                            backupGroupId = null,
+                            inOtherUnit = false,
+                            scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        )
                     ),
-                    listOf(emptyChildRecords(FiniteDateRange(wed, fri)))
+                    tueChildren
                 )
-            ),
-            attendanceReservations.ungrouped.sortedBy { it.child.lastName }
-        )
+            }
+
+        response.days
+            .first { it.date == wed }
+            .children
+            .also { wedChildren ->
+                assertEquals(3, wedChildren.size)
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_1.id,
+                        reservations = listOf(Reservation.NoTimes),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup1.id,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    wedChildren.first { it.childId == testChild_1.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_4.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = null,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    wedChildren.first { it.childId == testChild_4.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_6.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup1.id,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    wedChildren.first { it.childId == testChild_6.id }
+                )
+            }
+
+        response.days
+            .first { it.date == thu }
+            .children
+            .also { thuChildren ->
+                assertEquals(3, thuChildren.size)
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_1.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup1.id,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    thuChildren.first { it.childId == testChild_1.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_4.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = null,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    thuChildren.first { it.childId == testChild_4.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_6.id,
+                        reservations =
+                            listOf(Reservation.Times(LocalTime.of(9, 0), LocalTime.of(15, 0))),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup1.id,
+                        backupGroupId = testGroup2.id,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    thuChildren.first { it.childId == testChild_6.id }
+                )
+            }
+
+        response.days
+            .first { it.date == fri }
+            .children
+            .also { friChildren ->
+                assertEquals(3, friChildren.size)
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_1.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup2.id,
+                        backupGroupId = null,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    friChildren.first { it.childId == testChild_1.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_5.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes =
+                            DailyServiceTimesValue.RegularTimes(
+                                validityPeriod = monFri.asDateRange(),
+                                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                            ),
+                        groupId = null,
+                        backupGroupId = testGroup2.id,
+                        inOtherUnit = false,
+                        scheduleType = ScheduleType.FIXED_SCHEDULE
+                    ),
+                    friChildren.first { it.childId == testChild_5.id }
+                )
+                assertEquals(
+                    UnitAttendanceReservations.ChildRecordOfDay(
+                        childId = testChild_6.id,
+                        reservations = emptyList(),
+                        attendances = emptyList(),
+                        absence = null,
+                        dailyServiceTimes = null,
+                        groupId = testGroup1.id,
+                        backupGroupId = null,
+                        inOtherUnit = true,
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    ),
+                    friChildren.first { it.childId == testChild_6.id }
+                )
+            }
     }
 
     @Test
     fun `two reservations or attendances in the same day`() {
         db.transaction { tx ->
-            val child1PlacementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = mon,
-                    endDate = fri
-                )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child1PlacementId,
-                groupId = testGroup1.id,
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
                 startDate = mon,
                 endDate = fri
             )
@@ -607,103 +626,77 @@ class AttendanceReservationsControllerIntegrationTest :
                 }
         }
 
-        val attendanceReservations = getAttendanceReservations()
+        val response = getAttendanceReservations()
 
-        val group1 = attendanceReservations.groups.find { it.group.id == testGroup1.id }!!
         assertEquals(
             listOf(
-                UnitAttendanceReservations.ChildDailyRecords(
-                    UnitAttendanceReservations.Child(
-                        testChild_1.id,
-                        testChild_1.firstName,
-                        testChild_1.lastName,
-                        testChild_1.preferredName,
-                        testChild_1.dateOfBirth
-                    ),
-                    listOf(
-                        emptyChildRecords(monFri) +
-                            mapOf(
-                                mon to
-                                    UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservations =
-                                            Reservation.Times(
-                                                LocalTime.of(19, 0),
-                                                LocalTime.of(23, 59),
-                                            ),
-                                        attendances =
-                                            UnitAttendanceReservations.AttendanceTimes(
-                                                "19:10",
-                                                "23:59"
-                                            ),
-                                        absence = null,
-                                        dailyServiceTimes = null,
-                                        inOtherUnit = false,
-                                        isInBackupGroup = false,
-                                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                    ),
-                                tue to
-                                    UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservations =
-                                            Reservation.Times(
-                                                LocalTime.of(0, 0),
-                                                LocalTime.of(8, 0),
-                                            ),
-                                        attendances =
-                                            UnitAttendanceReservations.AttendanceTimes(
-                                                "00:00",
-                                                "10:30"
-                                            ),
-                                        absence = null,
-                                        dailyServiceTimes = null,
-                                        inOtherUnit = false,
-                                        isInBackupGroup = false,
-                                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                    ),
-                                wed to
-                                    UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservations =
-                                            Reservation.Times(
-                                                LocalTime.of(0, 0),
-                                                LocalTime.of(9, 30),
-                                            ),
-                                        attendances = null,
-                                        absence = null,
-                                        dailyServiceTimes = null,
-                                        inOtherUnit = false,
-                                        isInBackupGroup = false,
-                                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                    )
-                            ),
-
-                        // Second daily entries go to another map
-                        emptyChildRecords(monFri) +
-                            mapOf(
-                                tue to
-                                    UnitAttendanceReservations.ChildRecordOfDay(
-                                        reservations =
-                                            Reservation.Times(
-                                                LocalTime.of(17, 30),
-                                                LocalTime.of(23, 59),
-                                            ),
-                                        attendances =
-                                            UnitAttendanceReservations.AttendanceTimes(
-                                                "17:00",
-                                                null
-                                            ),
-                                        absence = null,
-                                        dailyServiceTimes = null,
-                                        inOtherUnit = false,
-                                        isInBackupGroup = false,
-                                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                                    )
+                UnitAttendanceReservations.ChildRecordOfDay(
+                    childId = testChild_1.id,
+                    reservations =
+                        listOf(Reservation.Times(LocalTime.of(19, 0), LocalTime.of(23, 59))),
+                    attendances =
+                        listOf(
+                            UnitAttendanceReservations.AttendanceTimes(
+                                LocalTime.of(19, 10),
+                                LocalTime.of(23, 59)
                             )
-                    )
+                        ),
+                    absence = null,
+                    dailyServiceTimes = null,
+                    groupId = null,
+                    backupGroupId = null,
+                    inOtherUnit = false,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED
                 )
             ),
-            group1.children.sortedBy { it.child.lastName }
+            response.days.first { it.date == mon }.children
         )
 
-        assertEquals(emptyList(), attendanceReservations.ungrouped)
+        assertEquals(
+            listOf(
+                UnitAttendanceReservations.ChildRecordOfDay(
+                    childId = testChild_1.id,
+                    reservations =
+                        listOf(
+                            Reservation.Times(LocalTime.of(0, 0), LocalTime.of(8, 0)),
+                            Reservation.Times(LocalTime.of(17, 30), LocalTime.of(23, 59)),
+                        ),
+                    attendances =
+                        listOf(
+                            UnitAttendanceReservations.AttendanceTimes(
+                                LocalTime.of(0, 0),
+                                LocalTime.of(10, 30)
+                            ),
+                            UnitAttendanceReservations.AttendanceTimes(LocalTime.of(17, 0), null),
+                        ),
+                    absence = null,
+                    dailyServiceTimes = null,
+                    groupId = null,
+                    backupGroupId = null,
+                    inOtherUnit = false,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                )
+            ),
+            response.days.first { it.date == tue }.children
+        )
+
+        assertEquals(
+            listOf(
+                UnitAttendanceReservations.ChildRecordOfDay(
+                    childId = testChild_1.id,
+                    reservations =
+                        listOf(Reservation.Times(LocalTime.of(0, 0), LocalTime.of(9, 30))),
+                    attendances = emptyList(),
+                    absence = null,
+                    dailyServiceTimes = null,
+                    groupId = null,
+                    backupGroupId = null,
+                    inOtherUnit = false,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                )
+            ),
+            response.days.first { it.date == wed }.children
+        )
     }
 
     @Test
@@ -711,20 +704,17 @@ class AttendanceReservationsControllerIntegrationTest :
         db.transaction { tx -> tx.insertHolidayPeriod(monFri, mon) }
 
         val result = getAttendanceReservations()
-        assertEquals(
-            monFri
-                .dates()
-                .map {
-                    UnitAttendanceReservations.OperationalDay(
-                        it,
-                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
-                        isHoliday = false,
-                        isInHolidayPeriod = true
-                    )
-                }
-                .toList(),
-            result.operationalDays,
-        )
+        assertEquals(5, result.days.size)
+        result.days.forEach { day ->
+            assertEquals(
+                UnitAttendanceReservations.UnitDateInfo(
+                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    isHoliday = false,
+                    isInHolidayPeriod = true
+                ),
+                day.dateInfo
+            )
+        }
     }
 
     @Test
@@ -735,19 +725,31 @@ class AttendanceReservationsControllerIntegrationTest :
             getAttendanceReservations(
                 clock = MockEvakaClock(HelsinkiDateTime.of(tue, LocalTime.of(10, 0)))
             )
+        assertEquals(5, result.days.size)
+        result.days.forEach { day ->
+            assertEquals(
+                UnitAttendanceReservations.UnitDateInfo(
+                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    isHoliday = false,
+                    isInHolidayPeriod = true
+                ),
+                day.dateInfo
+            )
+        }
+    }
+
+    @Test
+    fun `operational day for holiday`() {
+        db.transaction { tx -> tx.insertTestHoliday(mon) }
+
+        val result = getAttendanceReservations()
         assertEquals(
-            monFri
-                .dates()
-                .map {
-                    UnitAttendanceReservations.OperationalDay(
-                        it,
-                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
-                        isHoliday = false,
-                        isInHolidayPeriod = true
-                    )
-                }
-                .toList(),
-            result.operationalDays,
+            UnitAttendanceReservations.UnitDateInfo(
+                time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                isHoliday = true,
+                isInHolidayPeriod = false
+            ),
+            result.days.first().dateInfo
         )
     }
 
@@ -1292,25 +1294,6 @@ class AttendanceReservationsControllerIntegrationTest :
             )
         }
     }
-
-    private fun emptyChildRecords(
-        period: FiniteDateRange
-    ): Map<LocalDate, UnitAttendanceReservations.ChildRecordOfDay> =
-        period
-            .dates()
-            .map {
-                it to
-                    UnitAttendanceReservations.ChildRecordOfDay(
-                        reservations = null,
-                        attendances = null,
-                        absence = null,
-                        dailyServiceTimes = null,
-                        inOtherUnit = false,
-                        isInBackupGroup = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                    )
-            }
-            .toMap()
 
     private fun getAttendanceReservations(
         clock: EvakaClock = this.clock
