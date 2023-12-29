@@ -59,7 +59,7 @@ export default React.memo(function PreferredUnitBox({
   }
 
   return (
-    <Wrapper>
+    <Wrapper data-qa={`preferred-unit-${unit.id}`}>
       <MainColLeft>
         <BigNumber>{n}</BigNumber>
       </MainColLeft>
