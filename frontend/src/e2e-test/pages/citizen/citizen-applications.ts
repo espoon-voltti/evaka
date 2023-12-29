@@ -4,6 +4,7 @@
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 
 import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
@@ -323,6 +324,15 @@ class CitizenApplicationEditor {
     await this.page
       .find('[data-qa="child-street-address"]')
       .assertTextEquals(fullAddress)
+  }
+
+  async assertSelectedPreferredUnits(unitIds: UUID[]) {
+    await this.openSection('unitPreference')
+    for (const unitId of unitIds) {
+      await this.page
+        .findByDataQa(`preferred-unit-${unitId}`)
+        .waitUntilVisible()
+    }
   }
 
   async setPreferredStartDate(formattedDate: string) {
