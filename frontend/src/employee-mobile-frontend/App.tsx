@@ -23,7 +23,6 @@ import {
 } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import RequireAuth from './RequireAuth'
 import UnitList from './UnitList'
@@ -175,13 +174,11 @@ function ChildAttendanceRouter() {
           path="list/:attendanceStatus"
           element={<AttendanceTodayWrapper />}
         />
-        {featureFlags.employeeMobileConfirmedDaysReservations && (
-          <Route
-            path="daylist"
-            id="daylist"
-            element={<ConfimedReservationDaysWrapper />}
-          />
-        )}
+        <Route
+          path="daylist"
+          id="daylist"
+          element={<ConfimedReservationDaysWrapper />}
+        />
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 
