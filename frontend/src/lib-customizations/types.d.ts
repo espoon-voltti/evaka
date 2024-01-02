@@ -216,11 +216,6 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * EXPERIMENTAL: Enable assistance need preschool decisions (esiopetuksen tuen päätös)
-   */
-  assistanceNeedPreschoolDecisions?: boolean
-
-  /**
    * EXPERIMENTAL: Enable support for new template editor and child documents
    */
   childDocuments?: boolean

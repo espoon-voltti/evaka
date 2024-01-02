@@ -10,7 +10,6 @@ import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
@@ -57,13 +56,12 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
             <AssistanceNeedDecisionSection id={id} />
           </>
         )}
-        {featureFlags.assistanceNeedPreschoolDecisions &&
-          permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
-            <>
-              <HorizontalLine dashed slim />
-              <AssistanceNeedPreschoolDecisionSection childId={id} />
-            </>
-          )}
+        {permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
+          <>
+            <HorizontalLine dashed slim />
+            <AssistanceNeedPreschoolDecisionSection childId={id} />
+          </>
+        )}
         {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
           permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
             <>
