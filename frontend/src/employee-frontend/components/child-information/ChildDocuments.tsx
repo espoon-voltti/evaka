@@ -28,7 +28,6 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -206,15 +205,13 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   return renderResult(
     combine(documentsResult, documentTemplatesResult),
     ([documents, templates]) => {
-      const validTemplates = templates
-        .filter(
-          (template) =>
-            !documents.some(
-              ({ data: doc }) =>
-                doc.templateId === template.id && doc.status !== 'COMPLETED'
-            )
-        )
-        .filter((template) => featureFlags.hojks || template.type !== 'HOJKS')
+      const validTemplates = templates.filter(
+        (template) =>
+          !documents.some(
+            ({ data: doc }) =>
+              doc.templateId === template.id && doc.status !== 'COMPLETED'
+          )
+      )
 
       return (
         <FixedSpaceColumn>
