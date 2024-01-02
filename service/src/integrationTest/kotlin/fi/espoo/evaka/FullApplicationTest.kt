@@ -15,6 +15,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.config.FuelManagerConfig
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.getTestDataSource
@@ -52,7 +53,8 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     private lateinit var jdbi: Jdbi
 
     /** HTTP client for testing the application */
-    @Autowired protected lateinit var http: FuelManager
+    @Autowired private lateinit var fuelManagerConfig: FuelManagerConfig
+    protected lateinit var http: FuelManager
 
     @Autowired protected lateinit var env: Environment
 
@@ -70,6 +72,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @BeforeAll
     fun beforeAll() {
         assert(httpPort > 0)
+        http = fuelManagerConfig.noCertCheckFuelManager()
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))

@@ -59,7 +59,7 @@ class FuelManagerConfig {
             hostnameVerifier = HostnameVerifier { _, _ -> true }
         }
 
-    private fun noCertCheckFuelManager() =
+    fun noCertCheckFuelManager() =
         FuelManager().apply {
             val trustAllCerts =
                 arrayOf<TrustManager>(
