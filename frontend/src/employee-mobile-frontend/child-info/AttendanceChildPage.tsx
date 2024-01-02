@@ -20,7 +20,6 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -258,8 +257,7 @@ export default React.memo(function AttendanceChildPage() {
                   </FlexColumn>
                 </Shadow>
                 <BottomButtonWrapper>
-                  {featureFlags.employeeMobileChildAttendanceReservationEdit &&
-                  unitInfoResponse
+                  {unitInfoResponse
                     .map((unit) => unit.features.includes('RESERVATIONS'))
                     .getOrElse(false) ? (
                     <LinkButtonWithIcon

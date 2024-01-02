@@ -37,7 +37,6 @@ const features: Features = {
     citizenAttendanceSummary: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   },
   staging: {
@@ -64,7 +63,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   },
   prod: {
@@ -91,7 +89,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   }
 }

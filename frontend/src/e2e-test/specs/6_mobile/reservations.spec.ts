@@ -297,9 +297,6 @@ describe('when unit is open every day', () => {
 
 const loginToMobile = async (today: LocalDate, unitId: UUID) => {
   const page = await Page.open({
-    employeeMobileCustomizations: {
-      featureFlags: { employeeMobileChildAttendanceReservationEdit: true }
-    },
     mockedTime: HelsinkiDateTime.fromLocal(
       today,
       LocalTime.of(14, 50)

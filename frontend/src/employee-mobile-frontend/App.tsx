@@ -188,12 +188,7 @@ function ChildAttendanceRouter() {
       <Route path=":childId" element={<AttendanceChildPage />} />
       <Route path=":childId/mark-present" element={<MarkPresent />} />
       <Route path=":childId/mark-absent" element={<MarkAbsent />} />
-      {featureFlags.employeeMobileChildAttendanceReservationEdit && (
-        <Route
-          path=":childId/mark-reservations"
-          element={<MarkReservations />}
-        />
-      )}
+      <Route path=":childId/mark-reservations" element={<MarkReservations />} />
       <Route
         path=":childId/mark-absent-beforehand"
         element={<MarkAbsentBeforehand />}
