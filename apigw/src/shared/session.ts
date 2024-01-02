@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import RedisStore from 'connect-redis'
-import {
-  addMinutes,
-  differenceInMinutes,
-  differenceInSeconds,
-  isDate
-} from 'date-fns'
+import { addMinutes } from 'date-fns/addMinutes'
+import { differenceInMinutes } from 'date-fns/differenceInMinutes'
+import { differenceInSeconds } from 'date-fns/differenceInSeconds'
+import { isDate } from 'date-fns/isDate'
 import express from 'express'
 import session from 'express-session'
 import { LogoutToken, toMiddleware } from './express.js'
