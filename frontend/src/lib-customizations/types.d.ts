@@ -216,11 +216,6 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * EXPERIMENTAL: Enable support for new template editor and child documents
-   */
-  childDocuments?: boolean
-
-  /**
    * EXPERIMENTAL: Allows creating and displaying HOJKS documents
    */
   hojks?: boolean

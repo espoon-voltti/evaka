@@ -19,7 +19,6 @@ import { fontWeights, NavLinkText } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
 
 import { logoutUrl } from '../api/auth'
@@ -360,16 +359,15 @@ export default React.memo(function Header() {
                   {i18n.titles.financeBasics}
                 </Link>
               )}
-              {featureFlags.childDocuments &&
-                user?.accessibleFeatures.documentTemplates && (
-                  <Link
-                    to="/document-templates"
-                    onClick={closeUserPopup}
-                    data-qa="user-popup-document-templates"
-                  >
-                    {i18n.documentTemplates.title}
-                  </Link>
-                )}
+              {user?.accessibleFeatures.documentTemplates && (
+                <Link
+                  to="/document-templates"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-document-templates"
+                >
+                  {i18n.documentTemplates.title}
+                </Link>
+              )}
               {user?.accessibleFeatures.vasuTemplates && (
                 <Link
                   to="/vasu-templates"
