@@ -11,7 +11,7 @@ evaka:
     enabled: true
   max_attachments_per_user: 100
   s3mock:
-    url: "http://localhost:9876"
+    url: "https://localhost:9876"
 
 spring:
   profiles:

@@ -4,19 +4,18 @@
 
 package fi.espoo.evaka.childimages
 
-import com.github.kittinunf.fuel.core.BlobDataPart
-import com.github.kittinunf.fuel.core.Method
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.s3.fuelResponseToS3URL
+import fi.espoo.evaka.s3.responseEntityToS3URL
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.utils.decodeHex
 import fi.espoo.evaka.testChild_1
 import java.awt.image.BufferedImage
@@ -28,8 +27,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
+import org.springframework.web.multipart.MultipartFile
 
 class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var childImageController: ChildImageController
+
     private final val adminId = EmployeeId(UUID.randomUUID())
     private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
 
@@ -43,34 +48,34 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `image round trip`() {
-        uploadImage(testChild_1.id, imageName1, imageData1)
+        uploadImage(testChild_1.id, image1)
 
         val images = db.read { it.createQuery("SELECT * FROM child_images").toList<ChildImage>() }
         assertEquals(1, images.size)
 
         val receivedData = downloadImage(images.first().id)
-        assertContentEquals(imageData1, receivedData)
+        assertContentEquals(image1.bytes, receivedData)
     }
 
     @Test
     fun `replacing image`() {
-        uploadImage(testChild_1.id, imageName1, imageData1)
+        uploadImage(testChild_1.id, image1)
         val oldImage =
             db.read { it.createQuery("SELECT * FROM child_images").exactlyOne<ChildImage>() }
 
-        uploadImage(testChild_1.id, imageName2, imageData2)
+        uploadImage(testChild_1.id, image2)
 
         val newImage =
             db.read { it.createQuery("SELECT * FROM child_images").exactlyOne<ChildImage>() }
         assertNotEquals(oldImage.id, newImage.id)
 
         val receivedData = downloadImage(newImage.id)
-        assertContentEquals(imageData2, receivedData)
+        assertContentEquals(image2.bytes, receivedData)
     }
 
     @Test
     fun `deleting image`() {
-        uploadImage(testChild_1.id, imageName1, imageData1)
+        uploadImage(testChild_1.id, image1)
         deleteImage(testChild_1.id)
 
         val newImages =
@@ -84,12 +89,21 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
         val image = BufferedImage(1024, 1024, BufferedImage.TYPE_INT_RGB)
         val output = ByteArrayOutputStream()
         ImageIO.write(image, "jpg", output)
-        uploadImage(testChild_1.id, imageName1, output.toByteArray(), 400)
+
+        assertThrows<BadRequest> {
+            uploadImage(
+                testChild_1.id,
+                MockMultipartFile("file", "test1.jpg", "image/jpeg", output.toByteArray())
+            )
+        }
     }
 
-    private val imageName1 = "test1.jpg"
-    private val imageData1 =
-        """
+    private val image1 =
+        MockMultipartFile(
+            "file",
+            "test1.jpg",
+            "image/jpeg",
+            """
 FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
 FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -98,11 +112,15 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
 """
-            .decodeHex()
+                .decodeHex()
+        )
 
-    private val imageName2 = "test2.jpg"
-    private val imageData2 =
-        """
+    private val image2 =
+        MockMultipartFile(
+            "file",
+            "test2.jpg",
+            "image/jpeg",
+            """
 FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
 FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -111,33 +129,23 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 01
 """
-            .decodeHex()
+                .decodeHex()
+        )
 
     private fun uploadImage(
         childId: ChildId,
-        fileName: String,
-        fileData: ByteArray,
-        statusCode: Int = 200
+        file: MultipartFile,
     ) {
-        val (_, response, _) =
-            http
-                .upload("/children/$childId/image", Method.PUT)
-                .add(BlobDataPart(fileData.inputStream(), "file", fileName))
-                .asUser(admin)
-                .response()
-        assertEquals(statusCode, response.statusCode)
+        childImageController.putImage(dbInstance(), admin, RealEvakaClock(), childId, file)
     }
 
     private fun deleteImage(childId: ChildId) {
-        val (_, response, _) = http.delete("/children/$childId/image").asUser(admin).response()
-        assertEquals(200, response.statusCode)
+        childImageController.deleteImage(dbInstance(), admin, RealEvakaClock(), childId)
     }
 
     private fun downloadImage(imageId: ChildImageId): ByteArray {
-        val (_, response, _) = http.get("/child-images/$imageId").asUser(admin).response()
-        assertEquals(200, response.statusCode)
-
-        val (_, _, data) = http.get(fuelResponseToS3URL(response)).response()
+        val response = childImageController.getImage(dbInstance(), admin, RealEvakaClock(), imageId)
+        val (_, _, data) = http.get(responseEntityToS3URL(response)).response()
         return data.get()
     }
 }
