@@ -37,7 +37,6 @@ const features: Features = {
     citizenAttendanceSummary: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileStaffAttendanceEdit: true,
     employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   },
@@ -65,7 +64,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileStaffAttendanceEdit: true,
     employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   },
@@ -93,7 +91,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    employeeMobileStaffAttendanceEdit: true,
     employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
   }

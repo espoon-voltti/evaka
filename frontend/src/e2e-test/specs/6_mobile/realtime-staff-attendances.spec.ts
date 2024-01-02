@@ -108,9 +108,7 @@ const initPages = async (
 ) => {
   page = await Page.open({
     mockedTime,
-    employeeMobileCustomizations: {
-      featureFlags: { ...featureFlags, employeeMobileStaffAttendanceEdit: true }
-    }
+    employeeMobileCustomizations: { featureFlags }
   })
   nav = new MobileNav(page)
 

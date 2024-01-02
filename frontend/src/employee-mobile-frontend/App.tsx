@@ -240,9 +240,7 @@ function StaffAttendanceRouter() {
         element={<ExternalStaffMemberPage />}
       />
       <Route path=":employeeId" element={<StaffMemberPage />} />
-      {featureFlags.employeeMobileStaffAttendanceEdit && (
-        <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
-      )}
+      <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
       <Route
         path=":employeeId/mark-arrived"
         element={<StaffMarkArrivedPage />}

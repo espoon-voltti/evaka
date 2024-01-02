@@ -90,19 +90,18 @@ export default React.memo(function StaffMemberPage() {
                         <span>
                           {arrived.toLocalTime().format()}–
                           {departed?.toLocalTime().format() ?? ''}
-                          {featureFlags.employeeMobileStaffAttendanceEdit &&
-                            index === attendances.length - 1 && (
-                              <InlineIconButton
-                                icon={faEdit}
-                                onClick={() =>
-                                  navigate(
-                                    `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
-                                  )
-                                }
-                                aria-label={i18n.common.edit}
-                                data-qa="edit"
-                              />
-                            )}
+                          {index === attendances.length - 1 && (
+                            <InlineIconButton
+                              icon={faEdit}
+                              onClick={() =>
+                                navigate(
+                                  `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                                )
+                              }
+                              aria-label={i18n.common.edit}
+                              data-qa="edit"
+                            />
+                          )}
                         </span>
                       </TimeInfo>
                     ))}
@@ -129,18 +128,16 @@ export default React.memo(function StaffMemberPage() {
                           </span>
                         </>
                       )}
-                      {featureFlags.employeeMobileStaffAttendanceEdit && (
-                        <InlineIconButton
-                          icon={faEdit}
-                          onClick={() =>
-                            navigate(
-                              `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
-                            )
-                          }
-                          aria-label={i18n.common.edit}
-                          data-qa="edit"
-                        />
-                      )}
+                      <InlineIconButton
+                        icon={faEdit}
+                        onClick={() =>
+                          navigate(
+                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                          )
+                        }
+                        aria-label={i18n.common.edit}
+                        data-qa="edit"
+                      />
                     </TimeInfo>
                   </>
                 )
