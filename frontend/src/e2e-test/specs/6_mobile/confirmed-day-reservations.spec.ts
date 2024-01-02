@@ -179,7 +179,7 @@ describe('Child confirmed reservations', () => {
       {
         date: testDay,
         childId: enduserChildFixturePorriHatterRestricted.id,
-        reservationTexts: ['Sop.aika puuttuu'],
+        reservationTexts: ['Ilmoitus puuttuu'],
         childDetails: {
           firstName:
             enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],

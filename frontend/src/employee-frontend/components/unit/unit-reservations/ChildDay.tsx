@@ -258,7 +258,7 @@ export default React.memo(function ChildDay({
           </ReservationTime>
         ) : (
           // otherwise show missing service time indicator
-          <ReservationTime warning data-qa="reservation-missing">
+          <ReservationTime data-qa="reservation-missing">
             {i18n.unit.attendanceReservations.missingServiceTime}
           </ReservationTime>
         )}

@@ -74,7 +74,7 @@ describe('when placement is ending tomorrow', () => {
     const page = await loginToMobile(mockedToday, unit.data.id)
     const reservationsPage = await navigateToReservations(page, child.data.id)
     await reservationsPage.assertReservations([
-      { date: mockedTomorrow, text: 'Varhaiskasvatusaikaa ei asetettuna' }
+      { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
     await reservationsPage.editButton.click()
     await reservationsPage.fillTime(mockedTomorrow, 0, '08:00', '16:00')
@@ -146,7 +146,7 @@ describe('when placement is ending tomorrow', () => {
     const page = await loginToMobile(mockedToday, unit.data.id)
     const reservationsPage = await navigateToReservations(page, child.data.id)
     await reservationsPage.assertReservations([
-      { date: mockedTomorrow, text: 'Varhaiskasvatusaikaa ei asetettuna' }
+      { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
     await reservationsPage.editButton.click()
     await reservationsPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
