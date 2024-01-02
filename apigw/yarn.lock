@@ -3209,7 +3209,7 @@ __metadata:
     nodemon: "npm:^3.0.1"
     passport: "npm:^0.7.0"
     pino: "npm:^8.17.1"
-    pino-http: "npm:^8.6.0"
+    pino-http: "npm:^9.0.0"
     pino-pretty: "npm:^10.3.0"
     prettier: "npm:^3.1.0"
     pump: "npm:^3.0.0"
@@ -5693,15 +5693,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^8.6.0":
-  version: 8.6.0
-  resolution: "pino-http@npm:8.6.0"
+"pino-http@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "pino-http@npm:9.0.0"
   dependencies:
     get-caller-file: "npm:^2.0.5"
-    pino: "npm:^8.17.0"
-    pino-std-serializers: "npm:^6.0.0"
-    process-warning: "npm:^2.0.0"
-  checksum: 24bdb4cec600aa0250665c723e33b0cf06c572fa8e327013ca731294b93f57c0d2414b8b0e3fe785b557ae56327f6f809b01a98ab21063a75dc6ad44eea178a2
+    pino: "npm:^8.17.1"
+    pino-std-serializers: "npm:^6.2.2"
+    process-warning: "npm:^3.0.0"
+  checksum: 12a0b016c62c1f4e7d506f6a690d10b7ccdbb5868fba8156a1bf515143e522087f87ce83a732615773e903271468c308d5f5eb908ca5446208803da119025fdf
   languageName: node
   linkType: hard
 
@@ -5736,7 +5736,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^8.17.0, pino@npm:^8.17.1":
+"pino-std-serializers@npm:^6.2.2":
+  version: 6.2.2
+  resolution: "pino-std-serializers@npm:6.2.2"
+  checksum: a00cdff4e1fbc206da9bed047e6dc400b065f43e8b4cef1635b0192feab0e8f932cdeb0faaa38a5d93d2e777ba4cda939c2ed4c1a70f6839ff25f9aef97c27ff
+  languageName: node
+  linkType: hard
+
+"pino@npm:^8.17.1":
   version: 8.17.1
   resolution: "pino@npm:8.17.1"
   dependencies:
@@ -5820,6 +5827,13 @@ __metadata:
   version: 2.1.0
   resolution: "process-warning@npm:2.1.0"
   checksum: 34ea92949171c8f73547d1f80ec00e14ba83e68e38c074d441f9610ce03305c7c972f2b79616b27fa1e4a04b1ebceacf2937ea28324bb5ea76904a08ba86c6d2
+  languageName: node
+  linkType: hard
+
+"process-warning@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "process-warning@npm:3.0.0"
+  checksum: 2d82fa641e50a5789eaf0f2b33453760996e373d4591aac576a22d696186ab7e240a0592db86c264d4f28a46c2abbe9b94689752017db7dadc90f169f12b0924
   languageName: node
   linkType: hard
 
