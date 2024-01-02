@@ -6060,9 +6060,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"downshift@npm:^8.2.1":
-  version: 8.2.1
-  resolution: "downshift@npm:8.2.1"
+"downshift@npm:^8.3.1":
+  version: 8.3.1
+  resolution: "downshift@npm:8.3.1"
   dependencies:
     "@babel/runtime": "npm:^7.22.15"
     compute-scroll-into-view: "npm:^3.0.3"
@@ -6071,7 +6071,7 @@ __metadata:
     tslib: "npm:^2.6.2"
   peerDependencies:
     react: ">=16.12.0"
-  checksum: 048c8ad7c66562bb3af3da50276399d7a6f8a4abca6dfd8f7430749a8d9c2bd5161b47f462f448b16661274e8bf62e75ef89db1befeabba029dfe9a933ed6f45
+  checksum: b616da957802bd80bc8d909d36bff851d9701e743d800be6443514f24deeaf0ce22ae56e6802c386c769328d8442969c6629c6f94d99ff12bea8d07e11c86cee
   languageName: node
   linkType: hard
 
@@ -6823,7 +6823,7 @@ __metadata:
     csstype: "npm:^3.1.2"
     date-fns: "npm:^2.30.0"
     date-fns-tz: "npm:^2.0.0"
-    downshift: "npm:^8.2.1"
+    downshift: "npm:^8.3.1"
     esbuild: "npm:^0.19.2"
     eslint: "npm:^8.56.0"
     eslint-config-prettier: "npm:^9.1.0"
