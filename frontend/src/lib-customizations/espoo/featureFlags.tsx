@@ -101,7 +101,7 @@ const features: Features = {
     noAbsenceType: false,
     childDocuments: true,
     assistanceNeedPreschoolDecisions: true,
-    hojks: false,
+    hojks: true,
     employeeMobileStaffAttendanceEdit: true,
     employeeMobileChildAttendanceReservationEdit: true,
     employeeMobileConfirmedDaysReservations: true
