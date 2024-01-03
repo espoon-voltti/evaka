@@ -23,7 +23,6 @@ import {
 } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import RequireAuth from './RequireAuth'
 import UnitList from './UnitList'
@@ -175,25 +174,18 @@ function ChildAttendanceRouter() {
           path="list/:attendanceStatus"
           element={<AttendanceTodayWrapper />}
         />
-        {featureFlags.employeeMobileConfirmedDaysReservations && (
-          <Route
-            path="daylist"
-            id="daylist"
-            element={<ConfimedReservationDaysWrapper />}
-          />
-        )}
+        <Route
+          path="daylist"
+          id="daylist"
+          element={<ConfimedReservationDaysWrapper />}
+        />
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 
       <Route path=":childId" element={<AttendanceChildPage />} />
       <Route path=":childId/mark-present" element={<MarkPresent />} />
       <Route path=":childId/mark-absent" element={<MarkAbsent />} />
-      {featureFlags.employeeMobileChildAttendanceReservationEdit && (
-        <Route
-          path=":childId/mark-reservations"
-          element={<MarkReservations />}
-        />
-      )}
+      <Route path=":childId/mark-reservations" element={<MarkReservations />} />
       <Route
         path=":childId/mark-absent-beforehand"
         element={<MarkAbsentBeforehand />}
@@ -240,9 +232,7 @@ function StaffAttendanceRouter() {
         element={<ExternalStaffMemberPage />}
       />
       <Route path=":employeeId" element={<StaffMemberPage />} />
-      {featureFlags.employeeMobileStaffAttendanceEdit && (
-        <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
-      )}
+      <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
       <Route
         path=":employeeId/mark-arrived"
         element={<StaffMarkArrivedPage />}

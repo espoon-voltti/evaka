@@ -34,7 +34,6 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Dimmed, H3 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faExclamation, faLockAlt } from 'lib-icons'
 
@@ -253,12 +252,10 @@ export default React.memo(function PedagogicalDocumentsSection({
             </ExpandingInfo>
             <H3>{i18n.children.vasu.plansTitle}</H3>
             <VasuAndLeopsContent childId={childId} />
-            {featureFlags.hojks && (
-              <>
-                <H3>{i18n.children.vasu.hojksTitle}</H3>
-                <ChildDocumentsContent childId={childId} types={['HOJKS']} />
-              </>
-            )}
+            <>
+              <H3>{i18n.children.vasu.hojksTitle}</H3>
+              <ChildDocumentsContent childId={childId} types={['HOJKS']} />
+            </>
             <H3>{i18n.children.vasu.otherDocumentsTitle}</H3>
             <ChildDocumentsContent
               childId={childId}

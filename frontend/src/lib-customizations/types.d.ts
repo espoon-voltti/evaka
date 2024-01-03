@@ -214,36 +214,6 @@ interface BaseFeatureFlags {
    * These flags will either be dropped when features are deemed ready or promoted
    * to top-level flags (moved up, `?` removed).
    */
-
-  /**
-   * EXPERIMENTAL: Enable assistance need preschool decisions (esiopetuksen tuen päätös)
-   */
-  assistanceNeedPreschoolDecisions?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable support for new template editor and child documents
-   */
-  childDocuments?: boolean
-
-  /**
-   * EXPERIMENTAL: Allows creating and displaying HOJKS documents
-   */
-  hojks?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable staff attendance edit in employee mobile
-   */
-  employeeMobileStaffAttendanceEdit?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable child attendance reservation edit in employee mobile
-   */
-  employeeMobileChildAttendanceReservationEdit?: boolean
-
-  /**
-   * EXPERIMENTAL: Enable confirmed days reservation view and navlinks
-   */
-  employeeMobileConfirmedDaysReservations?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
