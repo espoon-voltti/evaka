@@ -637,9 +637,27 @@ val preschoolTerm2023 =
             FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
         )
     )
+val preschoolTerm2024 =
+    PreschoolTerm(
+        FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
+        FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
+        FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 5, 30)),
+        FiniteDateRange(LocalDate.of(2024, 1, 9), LocalDate.of(2024, 1, 19)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
+            FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
+            FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
+        )
+    )
 
 val preschoolTerms =
-    listOf(preschoolTerm2020, preschoolTerm2021, preschoolTerm2022, preschoolTerm2023)
+    listOf(
+        preschoolTerm2020,
+        preschoolTerm2021,
+        preschoolTerm2022,
+        preschoolTerm2023,
+        preschoolTerm2024
+    )
 
 fun Database.Transaction.insertPreschoolTerms() {
     preschoolTerms.forEach { insertPreschoolTerm(it) }
