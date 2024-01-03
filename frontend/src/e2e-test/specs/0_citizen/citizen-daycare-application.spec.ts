@@ -15,7 +15,11 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { applicationFixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  applicationFixture,
+  daycareFixture,
+  uuidv4
+} from '../../dev-api/fixtures'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import {
@@ -189,6 +193,25 @@ describe('Citizen daycare applications', () => {
     await applicationsPage.editApplication(applicationId)
     await editorPage.setPreferredStartDate(mockedDate.subDays(1).format())
     await editorPage.assertPreferredStartDateInfo('Valitse myöhäisempi päivä')
+  })
+
+  test('Previously selected preferred units exists', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData(
+      minimalDaycareForm({
+        otherGuardianAgreementStatus: 'AGREED'
+      }).form
+    )
+    await editorPage.saveAsDraftButton.click()
+    await editorPage.modalOkBtn.click()
+    await page.reload()
+    await applicationsPage.editApplication(applicationId)
+    await editorPage.assertSelectedPreferredUnits([daycareFixture.id])
   })
 
   test('Application can be made for restricted child', async () => {
