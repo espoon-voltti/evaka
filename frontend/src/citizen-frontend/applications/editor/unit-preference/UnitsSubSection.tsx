@@ -40,7 +40,7 @@ export default React.memo(function UnitsSubSection({
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
 
-  const { data: units = [] } = useQuery(
+  const { data: units = null } = useQuery(
     applicationUnitsQuery(
       applicationType,
       preparatory,
@@ -50,9 +50,11 @@ export default React.memo(function UnitsSubSection({
   )
   useEffect(() => {
     updateFormData((prev) => ({
-      preferredUnits: prev.preferredUnits.filter(({ id }) =>
-        units.some((unit) => unit.id === id)
-      )
+      preferredUnits: units
+        ? prev.preferredUnits.filter(({ id }) =>
+            units.some((unit) => unit.id === id)
+          )
+        : prev.preferredUnits
     }))
   }, [units, updateFormData])
 
@@ -116,14 +118,23 @@ export default React.memo(function UnitsSubSection({
               <MultiSelect
                 data-qa="preferredUnits-input"
                 inputId="unit-selector"
-                value={units.filter(
-                  (u) => !!formData.preferredUnits.find((u2) => u2.id === u.id)
-                )}
-                options={units.filter(
-                  (u) =>
-                    (displayFinnish && u.language === 'fi') ||
-                    (displaySwedish && u.language === 'sv')
-                )}
+                value={
+                  units
+                    ? units.filter(
+                        (u) =>
+                          !!formData.preferredUnits.find((u2) => u2.id === u.id)
+                      )
+                    : []
+                }
+                options={
+                  units
+                    ? units.filter(
+                        (u) =>
+                          (displayFinnish && u.language === 'fi') ||
+                          (displaySwedish && u.language === 'sv')
+                      )
+                    : []
+                }
                 getOptionId={(unit) => unit.id}
                 getOptionLabel={(unit) => unit.name}
                 getOptionSecondaryText={(unit) => unit.streetAddress}
@@ -183,51 +194,53 @@ export default React.memo(function UnitsSubSection({
                 />
               )}
               <FixedSpaceColumn spacing="s">
-                {formData.preferredUnits
-                  .map((u) => units.find((u2) => u.id === u2.id))
-                  .map((unit, i) =>
-                    unit ? (
-                      <PreferredUnitBox
-                        key={unit.id}
-                        unit={unit}
-                        n={i + 1}
-                        remove={() =>
-                          updateFormData((prev) => ({
-                            preferredUnits: [
-                              ...prev.preferredUnits.slice(0, i),
-                              ...prev.preferredUnits.slice(i + 1)
-                            ]
-                          }))
-                        }
-                        moveUp={
-                          i > 0
-                            ? () =>
-                                updateFormData((prev) => ({
-                                  preferredUnits: [
-                                    ...prev.preferredUnits.slice(0, i - 1),
-                                    prev.preferredUnits[i],
-                                    prev.preferredUnits[i - 1],
-                                    ...prev.preferredUnits.slice(i + 1)
-                                  ]
-                                }))
-                            : null
-                        }
-                        moveDown={
-                          i < formData.preferredUnits.length - 1
-                            ? () =>
-                                updateFormData((prev) => ({
-                                  preferredUnits: [
-                                    ...prev.preferredUnits.slice(0, i),
-                                    prev.preferredUnits[i + 1],
-                                    prev.preferredUnits[i],
-                                    ...prev.preferredUnits.slice(i + 2)
-                                  ]
-                                }))
-                            : null
-                        }
-                      />
-                    ) : null
-                  )}
+                {units
+                  ? formData.preferredUnits
+                      .map((u) => units.find((u2) => u.id === u2.id))
+                      .map((unit, i) =>
+                        unit ? (
+                          <PreferredUnitBox
+                            key={unit.id}
+                            unit={unit}
+                            n={i + 1}
+                            remove={() =>
+                              updateFormData((prev) => ({
+                                preferredUnits: [
+                                  ...prev.preferredUnits.slice(0, i),
+                                  ...prev.preferredUnits.slice(i + 1)
+                                ]
+                              }))
+                            }
+                            moveUp={
+                              i > 0
+                                ? () =>
+                                    updateFormData((prev) => ({
+                                      preferredUnits: [
+                                        ...prev.preferredUnits.slice(0, i - 1),
+                                        prev.preferredUnits[i],
+                                        prev.preferredUnits[i - 1],
+                                        ...prev.preferredUnits.slice(i + 1)
+                                      ]
+                                    }))
+                                : null
+                            }
+                            moveDown={
+                              i < formData.preferredUnits.length - 1
+                                ? () =>
+                                    updateFormData((prev) => ({
+                                      preferredUnits: [
+                                        ...prev.preferredUnits.slice(0, i),
+                                        prev.preferredUnits[i + 1],
+                                        prev.preferredUnits[i],
+                                        ...prev.preferredUnits.slice(i + 2)
+                                      ]
+                                    }))
+                                : null
+                            }
+                          />
+                        ) : null
+                      )
+                  : null}
               </FixedSpaceColumn>
             </FixedWidthDiv>
           </FixedSpaceFlexWrap>
