@@ -1533,15 +1533,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/source-map-support@npm:^0.5.6":
-  version: 0.5.6
-  resolution: "@types/source-map-support@npm:0.5.6"
-  dependencies:
-    source-map: "npm:^0.6.0"
-  checksum: a0fe4e1926a1ac7465c2c4dc7f72bf7c5272bba10006548998007fa5518020ad0b8cd0a950d7db9fc7cde4ca6f3ad9a3f326f1612243c023ccbfa6214af41971
-  languageName: node
-  linkType: hard
-
 "@types/split2@npm:^4.2.0":
   version: 4.2.0
   resolution: "@types/split2@npm:4.2.0"
@@ -3191,7 +3182,6 @@ __metadata:
     "@types/pino-std-serializers": "npm:^4.0.0"
     "@types/pump": "npm:^1.1.1"
     "@types/redis": "npm:^4.0.11"
-    "@types/source-map-support": "npm:^0.5.6"
     "@types/split2": "npm:^4.2.0"
     "@types/through2": "npm:^2.0.38"
     "@types/tough-cookie": "npm:^4.0.2"
@@ -3232,7 +3222,6 @@ __metadata:
     pump: "npm:^3.0.0"
     query-string: "npm:^8.1.0"
     redis: "npm:^4.6.7"
-    source-map-support: "npm:^0.5.21"
     split2: "npm:^4.2.0"
     through2: "npm:^4.0.2"
     tough-cookie: "npm:^4.1.3"
@@ -6482,16 +6471,6 @@ __metadata:
     buffer-from: "npm:^1.0.0"
     source-map: "npm:^0.6.0"
   checksum: d1514a922ac9c7e4786037eeff6c3322f461cd25da34bb9fefb15387b3490531774e6e31d95ab6d5b84a3e139af9c3a570ccaee6b47bd7ea262691ed3a8bc34e
-  languageName: node
-  linkType: hard
-
-"source-map-support@npm:^0.5.21":
-  version: 0.5.21
-  resolution: "source-map-support@npm:0.5.21"
-  dependencies:
-    buffer-from: "npm:^1.0.0"
-    source-map: "npm:^0.6.0"
-  checksum: 8317e12d84019b31e34b86d483dd41d6f832f389f7417faf8fc5c75a66a12d9686e47f589a0554a868b8482f037e23df9d040d29387eb16fa14cb85f091ba207
   languageName: node
   linkType: hard
 

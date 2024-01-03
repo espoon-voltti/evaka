@@ -4,7 +4,6 @@
 
 import './tracer.js'
 
-import sourceMapSupport from 'source-map-support'
 import {
   configFromEnv,
   gatewayRole,
@@ -24,7 +23,6 @@ import { assertRedisConnection } from './shared/redis-client.js'
 import tracing from './shared/middleware/tracing.js'
 import passport from 'passport'
 
-sourceMapSupport.install()
 const config = configFromEnv()
 
 const redisClient = redis.createClient(toRedisClientOpts(config))

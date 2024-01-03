@@ -67,4 +67,4 @@ LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["node", "--loader", "dd-trace/loader-hook.mjs", "dist/index.js"]
+CMD ["node", "--enable-source-maps", "--loader", "dd-trace/loader-hook.mjs", "dist/index.js"]
