@@ -581,11 +581,13 @@ export default React.memo(function MessageEditor({
                 </HalfWidthColumn>
               </FixedSpaceRow>
               {sensitiveInfoOpen && !sensitiveCheckboxEnabled && (
-                <ExpandingInfoBox
-                  width="full"
-                  info={i18n.messageEditor.flags.sensitive.whyDisabled}
-                  close={onSensitiveInfoClick}
-                />
+                <InfoBoxContainer>
+                  <ExpandingInfoBox
+                    width="full"
+                    info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                    close={onSensitiveInfoClick}
+                  />
+                </InfoBoxContainer>
               )}
               {flagsInfo}
             </>
@@ -771,4 +773,7 @@ const HalfWidthColumn = styled(FixedSpaceColumn)`
 const UlNoMargin = styled.ul`
   margin-block: 0;
   padding-inline-start: 16px;
+`
+const InfoBoxContainer = styled.div`
+  overflow: none;
 `
