@@ -674,6 +674,29 @@ val clubTerms =
             FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
             FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
             DateSet.empty()
+        ),
+        ClubTerm(
+            FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+            FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
+            DateSet.empty()
+        ),
+        ClubTerm(
+            FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
+            FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
+            DateSet.of(
+                FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+                FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+                FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
+            )
+        ),
+        ClubTerm(
+            FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
+            FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+            DateSet.of(
+                FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
+                FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
+                FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
+            )
         )
     )
 
