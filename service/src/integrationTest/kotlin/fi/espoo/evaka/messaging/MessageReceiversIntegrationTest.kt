@@ -259,50 +259,30 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 tx.insert(employee)
                 tx.createMunicipalMessageAccount()
             }
+        val expectations = mapOf(area1 to listOf(daycare1, daycare2), area2 to listOf(daycare3))
 
-        val receivers =
-            messageController.getReceiversForNewMessage(
-                dbInstance(),
-                AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
-                MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
-            )
-        assertEquals(
-            listOf(
-                MessageReceiversResponse(
-                    accountId = municipalAccountId,
-                    receivers =
-                        listOf(
-                            MessageReceiver.Area(
-                                id = area1.id,
-                                name = area1.name,
-                                receivers =
-                                    listOf(
-                                        MessageReceiver.UnitInArea(
-                                            id = daycare1.id,
-                                            name = daycare1.name,
-                                        ),
-                                        MessageReceiver.UnitInArea(
-                                            id = daycare2.id,
-                                            name = daycare2.name,
-                                        )
-                                    )
-                            ),
-                            MessageReceiver.Area(
-                                id = area2.id,
-                                name = area2.name,
-                                receivers =
-                                    listOf(
-                                        MessageReceiver.UnitInArea(
-                                            id = daycare3.id,
-                                            name = daycare3.name,
-                                        )
-                                    )
-                            )
-                        )
+        val response =
+            messageController
+                .getReceiversForNewMessage(
+                    dbInstance(),
+                    AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
+                    MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
                 )
-            ),
-            receivers
-        )
+                .single()
+        assertEquals(municipalAccountId, response.accountId)
+
+        assertEquals(expectations.size, response.receivers.size)
+        for ((area, units) in expectations) {
+            val areaReceiver = response.receivers.find { it.id == area.id } as MessageReceiver.Area
+            assertEquals(area.name, areaReceiver.name)
+
+            assertEquals(
+                units
+                    .sortedBy { it.id }
+                    .map { MessageReceiver.UnitInArea(id = it.id, name = it.name) },
+                areaReceiver.receivers.sortedBy { it.id }
+            )
+        }
     }
 
     private fun insertChildToGroup(
