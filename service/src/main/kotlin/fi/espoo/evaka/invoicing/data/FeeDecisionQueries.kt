@@ -874,8 +874,9 @@ SELECT fd.id,
        fd.partner_id
 FROM fee_decision fd
 WHERE fd.status in ('SENT')
-AND (head_of_family_id = :citizenId
-    OR partner_id = :citizenId)
+AND fd.document_key IS NOT NULL
+AND (fd.head_of_family_id = :citizenId
+    OR fd.partner_id = :citizenId)
     """
                 .trimIndent()
         )
@@ -886,7 +887,7 @@ AND (head_of_family_id = :citizenId
 data class FeeDecisionCitizenInfoRow(
     val id: FeeDecisionId,
     val validDuring: DateRange,
-    val sentAt: HelsinkiDateTime?,
+    val sentAt: HelsinkiDateTime,
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?
 )

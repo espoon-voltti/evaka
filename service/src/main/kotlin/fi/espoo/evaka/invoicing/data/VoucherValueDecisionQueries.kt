@@ -622,6 +622,7 @@ SELECT vvd.id,
        vvd.child_id
 FROM voucher_value_decision vvd
 WHERE vvd.status IN ('SENT')
+AND vvd.document_key IS NOT NULL
 AND (vvd.head_of_family_id = :citizenId
     OR vvd.partner_id = :citizenId)
     """
@@ -633,9 +634,9 @@ AND (vvd.head_of_family_id = :citizenId
 
 data class VoucherValueDecisionCitizenInfoRow(
     val id: VoucherValueDecisionId,
-    val validFrom: LocalDate?,
+    val validFrom: LocalDate,
     val validTo: LocalDate?,
-    val sentAt: HelsinkiDateTime?,
+    val sentAt: HelsinkiDateTime,
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?,
     val childId: PersonId

@@ -9,7 +9,7 @@ import fi.espoo.evaka.application.ApplicationControllerCitizen
 import fi.espoo.evaka.application.FinanceDecisionChildInfo
 import fi.espoo.evaka.application.FinanceDecisionCitizenInfo
 import fi.espoo.evaka.application.LiableCitizenInfo
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -47,8 +48,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toValueDecisionServiceNeed
@@ -71,6 +71,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private lateinit var headOfFamily: DevPerson
     private lateinit var partner: DevPerson
+    private lateinit var child: DevPerson
 
     private lateinit var feeDecisions: List<FinanceDecisionCitizenInfo>
     private lateinit var voucherValueDecisions: List<FinanceDecisionCitizenInfo>
@@ -78,8 +79,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-
             headOfFamily =
                 DevPerson(id = PersonId(UUID.randomUUID()), firstName = "Hof", lastName = "Person")
             partner =
@@ -88,10 +87,21 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                     firstName = "Partner",
                     lastName = "Person"
                 )
+            child =
+                DevPerson(
+                    id = PersonId(UUID.randomUUID()),
+                    firstName = "Only",
+                    lastName = "Child",
+                    dateOfBirth = LocalDate.of(2020, 2, 2)
+                )
+
+            tx.insertServiceNeedOptions()
+            tx.insert(area = testArea)
+            tx.insert(daycare = testDaycare)
 
             tx.insert(headOfFamily, DevPersonType.ADULT)
-
             tx.insert(partner, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
 
             val testPeriod1 = FiniteDateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31))
             val testPeriod2 =
@@ -109,20 +119,11 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         children =
                             listOf(
                                 createFeeDecisionChildFixture(
-                                    childId = testChild_1.id,
-                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    childId = child.id,
+                                    dateOfBirth = child.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = PlacementType.DAYCARE,
                                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                                ),
-                                createFeeDecisionChildFixture(
-                                    childId = testChild_2.id,
-                                    dateOfBirth = testChild_2.dateOfBirth,
-                                    placementUnitId = testDaycare.id,
-                                    placementType = PlacementType.DAYCARE,
-                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                                    siblingDiscount = 50,
-                                    fee = 14500
                                 )
                             )
                     )
@@ -134,6 +135,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 ids = listOf(fdId),
                 clock = MockEvakaClock(now = feeDecisionSentAt)
             )
+            markFeeDecisionDocumentKey(tx, fdId)
 
             feeDecisions =
                 testFeeDecisions.map {
@@ -164,8 +166,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         validFrom = testPeriod2.start,
                         validTo = testPeriod2.end,
                         headOfFamilyId = headOfFamily.id,
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
+                        childId = child.id,
+                        dateOfBirth = child.dateOfBirth,
                         unitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
@@ -174,6 +176,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             val voucherValueSentAt = HelsinkiDateTime.atStartOfDay(LocalDate.of(2018, 6, 1))
             tx.upsertValueDecisions(testVoucherValueDecisions)
             tx.markVoucherValueDecisionsSent(ids = listOf(vvdId), now = voucherValueSentAt)
+            markVoucherValueDecisionDocumentKey(tx, vvdId)
 
             voucherValueDecisions =
                 testVoucherValueDecisions.map {
@@ -193,11 +196,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                             ),
                         decisionChildren =
                             listOf(
-                                FinanceDecisionChildInfo(
-                                    testChild_1.id,
-                                    testChild_1.firstName,
-                                    testChild_1.lastName
-                                )
+                                FinanceDecisionChildInfo(child.id, child.firstName, child.lastName)
                             )
                     )
                 }
@@ -265,7 +264,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         baseCoPayment: Int = 28900,
         siblingDiscount: Int = 0,
         coPayment: Int = 28900,
-        feeAlterations: List<FeeAlterationWithEffect> = listOf()
+        feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+        documentKey: String = "test-voucher-document-key"
     ) =
         VoucherValueDecision(
             id = id,
@@ -291,7 +291,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             coPayment = coPayment,
             feeAlterations = feeAlterations,
             finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
-            difference = emptySet()
+            difference = emptySet(),
+            documentKey = documentKey
         )
 
     private fun createTestFeeDecision(
@@ -306,7 +307,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         headOfFamilyIncome: DecisionIncome? = null,
         partnerIncome: DecisionIncome? = null,
         familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
-        created: HelsinkiDateTime = HelsinkiDateTime.now()
+        created: HelsinkiDateTime = HelsinkiDateTime.now(),
+        documentKey: String = "test-fee-document-key"
     ) =
         FeeDecision(
             id = id,
@@ -321,6 +323,31 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             feeThresholds = feeThresholds,
             children = children,
             difference = emptySet(),
-            created = created
+            created = created,
+            documentKey = documentKey
         )
+
+    private fun markFeeDecisionDocumentKey(
+        tx: Database.Transaction,
+        feeDecisionId: FeeDecisionId,
+        documentKey: String? = "test-fd-document-key"
+    ) {
+        tx.createUpdate("UPDATE fee_decision set document_key = :documentKey WHERE id = :id")
+            .bind("documentKey", documentKey)
+            .bind("id", feeDecisionId)
+            .execute()
+    }
+
+    private fun markVoucherValueDecisionDocumentKey(
+        tx: Database.Transaction,
+        feeDecisionId: VoucherValueDecisionId,
+        documentKey: String? = "test-fd-document-key"
+    ) {
+        tx.createUpdate(
+                "UPDATE voucher_value_decision set document_key = :documentKey WHERE id = :id"
+            )
+            .bind("documentKey", documentKey)
+            .bind("id", feeDecisionId)
+            .execute()
+    }
 }

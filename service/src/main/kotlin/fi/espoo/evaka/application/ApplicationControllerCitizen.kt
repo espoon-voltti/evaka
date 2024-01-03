@@ -610,17 +610,9 @@ class ApplicationControllerCitizen(
                                             childInfo.lastName
                                         )
                                     ),
-                                validFrom =
-                                    row.validFrom
-                                        ?: throw IllegalStateException(
-                                            "Voucher value decision missing start date"
-                                        ),
+                                validFrom = row.validFrom,
                                 validTo = row.validTo,
-                                sentAt =
-                                    row.sentAt
-                                        ?: throw IllegalStateException(
-                                            "Sent voucher value decision missing sent at date"
-                                        ),
+                                sentAt = row.sentAt,
                                 coDebtors =
                                     listOfNotNull(
                                             personMap[row.headOfFamilyId],
@@ -643,11 +635,7 @@ class ApplicationControllerCitizen(
                                 type = FinanceDecisionType.FEE_DECISION,
                                 validFrom = row.validDuring.start,
                                 validTo = row.validDuring.end,
-                                sentAt =
-                                    row.sentAt
-                                        ?: throw IllegalStateException(
-                                            "Sent fee decision missing sent at date"
-                                        ),
+                                sentAt = row.sentAt,
                                 coDebtors =
                                     listOfNotNull(
                                             personMap[row.headOfFamilyId],
