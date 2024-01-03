@@ -6,7 +6,6 @@ import express from 'express'
 import passport from 'passport'
 import passportSaml from '@node-saml/passport-saml'
 import { createLogoutToken, login, logout } from '../auth/index.js'
-import { gatewayRole, nodeEnv } from '../config.js'
 import { toMiddleware, toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
@@ -20,37 +19,17 @@ import { parseRelayState } from '../saml/index.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
-function getDefaultPageUrl(req: express.Request): string {
-  switch (gatewayRole) {
-    case 'internal':
-      return '/employee'
-    case 'enduser':
-      return '/'
-    default:
-  }
-  if (nodeEnv === 'local') {
-    switch (req.headers['host']) {
-      case 'localhost:3020':
-        return '/employee'
-      default:
-    }
-  }
-  return '/'
-}
-
-function getRedirectUrl(req: express.Request): string {
-  return parseRelayState(req) ?? getDefaultPageUrl(req)
-}
-
 export interface SamlEndpointConfig {
   sessions: Sessions
   strategyName: string
   strategy: passportSaml.Strategy
+  defaultPageUrl: string
 }
 
 function createLoginHandler({
   sessions,
-  strategyName
+  strategyName,
+  defaultPageUrl
 }: SamlEndpointConfig): express.RequestHandler {
   return (req, res, next) => {
     logAuditEvent(
@@ -78,7 +57,7 @@ function createLoginHandler({
           if (err.message === 'InResponseTo is not valid' && req.user) {
             // When user uses browse back functionality after login we get invalid InResponseTo
             // This will ignore the error
-            const redirectUrl = getRedirectUrl(req)
+            const redirectUrl = parseRelayState(req) ?? defaultPageUrl
             logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
             return res.redirect(redirectUrl)
           }
@@ -88,7 +67,7 @@ function createLoginHandler({
             req,
             `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
-          return res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
+          return res.redirect(`${defaultPageUrl}?loginError=true`)
         }
         ;(async () => {
           await login(req, user)
@@ -109,7 +88,7 @@ function createLoginHandler({
             createLogoutToken(user.nameID, user.sessionIndex)
           )
 
-          const redirectUrl = getRedirectUrl(req)
+          const redirectUrl = parseRelayState(req) ?? defaultPageUrl
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
         })().catch((err) => {
@@ -119,7 +98,7 @@ function createLoginHandler({
             `Error logging user in. Error: ${err}`
           )
           if (!res.headersSent) {
-            res.redirect(`${getDefaultPageUrl(req)}?loginError=true`)
+            res.redirect(`${defaultPageUrl}?loginError=true`)
           } else {
             next(err)
           }
@@ -132,7 +111,8 @@ function createLoginHandler({
 function createLogoutHandler({
   sessions,
   strategy,
-  strategyName
+  strategyName,
+  defaultPageUrl
 }: SamlEndpointConfig): express.RequestHandler {
   return toRequestHandler(async (req, res) => {
     logAuditEvent(
@@ -146,7 +126,7 @@ function createLogoutHandler({
       )
       logDebug('Logging user out from passport.', req)
       await logout(sessions, req, res)
-      res.redirect(redirectUrl ?? getDefaultPageUrl(req))
+      res.redirect(redirectUrl ?? defaultPageUrl)
     } catch (err) {
       logAuditEvent(
         `evaka.saml.${strategyName}.sign_out_failed`,
@@ -205,14 +185,16 @@ export default function createSamlRouter(
     `/logout/callback`,
     logoutCallback,
     passport.authenticate(strategyName),
-    (req, res) => res.redirect(getRedirectUrl(req))
+    (req, res) =>
+      res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
   )
   router.post(
     `/logout/callback`,
     urlencodedParser,
     logoutCallback,
     passport.authenticate(strategyName),
-    (req, res) => res.redirect(getRedirectUrl(req))
+    (req, res) =>
+      res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
   )
 
   return router
