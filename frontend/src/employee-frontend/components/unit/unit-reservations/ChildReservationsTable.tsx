@@ -43,6 +43,7 @@ interface Props {
   days: OperationalDay[]
   childBasics: Child[]
   onMakeReservationForChild: (child: Child) => void
+  onOpenEditForChildDate: (childId: UUID, date: LocalDate) => void
   selectedDate: LocalDate
   selectedGroup: AttendanceGroupFilter
 }
@@ -62,6 +63,7 @@ export default React.memo(function ChildReservationsTable({
   days,
   childBasics,
   onMakeReservationForChild,
+  onOpenEditForChildDate,
   selectedDate,
   selectedGroup
 }: Props) {
@@ -103,6 +105,7 @@ export default React.memo(function ChildReservationsTable({
               days={childDays}
               selectedDate={selectedDate}
               onMakeReservationForChild={onMakeReservationForChild}
+              onOpenEditForChildDate={onOpenEditForChildDate}
               selectedGroup={selectedGroup}
             />
           )
@@ -116,6 +119,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
   childBasics,
   days,
   onMakeReservationForChild,
+  onOpenEditForChildDate,
   selectedDate,
   selectedGroup
 }: {
@@ -126,6 +130,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
     child: ChildRecordOfDay | undefined
   }[]
   onMakeReservationForChild: (child: Child) => void
+  onOpenEditForChildDate: (childId: UUID, date: LocalDate) => void
   selectedDate: LocalDate
   selectedGroup: AttendanceGroupFilter
 }) {
@@ -192,7 +197,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                   reservationIndex={index}
                   dateInfo={dateInfo}
                   reservation={child.reservations[index]}
-                  absence={index === 0 ? child.absence : null}
+                  absent={index === 0 && child.absences.length > 0}
                   dailyServiceTimes={child.dailyServiceTimes}
                   inOtherUnit={child.inOtherUnit}
                   isInBackupGroup={
@@ -205,6 +210,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                   serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
                     sn.validDuring.includes(date)
                   )}
+                  onStartEdit={() => onOpenEditForChildDate(childId, date)}
                 />
               )}
             </DayTd>
@@ -253,6 +259,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                   serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
                     sn.validDuring.includes(date)
                   )}
+                  onStartEdit={() => onOpenEditForChildDate(childId, date)}
                 />
               )}
             </DayTd>

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
@@ -17,6 +18,7 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -280,4 +282,122 @@ fun createReservationsAndAbsences(
         upsertedAbsences,
         upsertedReservations
     )
+}
+
+data class ChildDatePresence(
+    val date: LocalDate,
+    val childId: ChildId,
+    val reservations: List<Reservation>,
+    val attendances: List<OpenTimeRange>,
+    val absences: List<AbsenceInput>
+)
+
+data class AbsenceInput(val type: AbsenceType, val category: AbsenceCategory)
+
+data class UpsertChildDatePresenceResult(
+    val insertedReservations: List<AttendanceReservationId>,
+    val deletedReservations: List<AttendanceReservationId>,
+)
+
+fun upsertChildDatePresence(
+    tx: Database.Transaction,
+    userId: EvakaUserId,
+    rawInput: ChildDatePresence
+): UpsertChildDatePresenceResult {
+    val input =
+        rawInput.copy(
+            reservations =
+                rawInput.reservations.map {
+                    when (it) {
+                        is Reservation.NoTimes -> it
+                        is Reservation.Times ->
+                            it.copy(
+                                endTime =
+                                    if (it.endTime == LocalTime.of(0, 0)) LocalTime.of(23, 59)
+                                    else it.endTime
+                            )
+                    }
+                }
+        )
+    input.validate()
+
+    // check which of the reservations already exist, so that they won't be unnecessarily replaced
+    // and metadata lost
+    val reservations =
+        input.reservations.map { reservation ->
+            val existingId =
+                tx.createQuery<Any> {
+                        sql(
+                            """
+            SELECT id 
+            FROM attendance_reservation ar
+            WHERE date = ${bind(input.date)} AND child_id = ${bind(input.childId)} AND
+            ${when (reservation) {
+                is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
+                is Reservation.Times -> "start_time = ${bind(reservation.startTime)} AND end_time = ${bind(reservation.endTime)}"
+            }}
+        """
+                        )
+                    }
+                    .exactlyOneOrNull<AttendanceReservationId>()
+            reservation to existingId
+        }
+
+    val deletedReservations =
+        tx.deleteReservations(
+            date = input.date,
+            childId = input.childId,
+            skip = reservations.mapNotNull { it.second }
+        )
+
+    val insertedReservations =
+        tx.insertValidReservations(
+            userId = userId,
+            reservations =
+                reservations
+                    .filter { it.second == null }
+                    .map {
+                        ReservationInsert(
+                            childId = input.childId,
+                            date = input.date,
+                            range = it.first.asTimeRange()
+                        )
+                    }
+        )
+
+    return UpsertChildDatePresenceResult(
+        insertedReservations = insertedReservations,
+        deletedReservations = deletedReservations
+    )
+}
+
+private fun ChildDatePresence.validate() {
+    if (reservations.size > 2) throw BadRequest("Too many reservations")
+    if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1)
+        throw BadRequest("Mixed reservations")
+    reservations.filterIsInstance<Reservation.Times>().forEach { r ->
+        if (!r.endTime.isAfter(r.startTime)) throw BadRequest("Inverted time range")
+    }
+    if (
+        reservations.size == 2 &&
+            !reservations[1].asTimeRange()!!.start.isAfter(reservations[0].asTimeRange()!!.end)
+    )
+        throw BadRequest("Overlapping reservation times")
+}
+
+private fun Database.Transaction.deleteReservations(
+    date: LocalDate,
+    childId: ChildId,
+    skip: List<AttendanceReservationId>
+): List<AttendanceReservationId> {
+    return createQuery<Any> {
+            sql(
+                """
+        DELETE FROM attendance_reservation
+        WHERE date = ${bind(date)} AND child_id = ${bind(childId)} AND NOT (id = ANY (${bind(skip)}))
+        RETURNING id
+    """
+            )
+        }
+        .toList<AttendanceReservationId>()
 }

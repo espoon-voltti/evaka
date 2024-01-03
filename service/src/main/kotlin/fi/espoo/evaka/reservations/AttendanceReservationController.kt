@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
@@ -139,10 +140,10 @@ class AttendanceReservationController(
                                                     childData.attendances[date]?.takeIf {
                                                         !placementStatus.backupOtherUnit
                                                     } ?: emptyList(),
-                                                absence =
+                                                absences =
                                                     childData.absences[date]?.takeIf {
                                                         !placementStatus.backupOtherUnit
-                                                    },
+                                                    } ?: emptyList(),
                                                 dailyServiceTimes =
                                                     serviceTimes[childId]?.find {
                                                         it.validityPeriod.includes(day.date)
@@ -212,6 +213,38 @@ class AttendanceReservationController(
                     "upsertedReservations" to result.upsertedReservations
                 )
         )
+    }
+
+    @PostMapping("/child-date")
+    fun postChildDatePresence(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ChildDatePresence
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPSERT_CHILD_DATE_PRESENCE,
+                        body.childId
+                    )
+
+                    upsertChildDatePresence(tx, user.evakaUserId, body)
+                }
+            }
+            .also { result ->
+                Audit.ChildDatePresenceUpsert.log(
+                    targetId = body.childId,
+                    meta =
+                        mapOf(
+                            "insertedReservations" to result.insertedReservations,
+                            "deletedReservations" to result.deletedReservations,
+                        )
+                )
+            }
     }
 
     @GetMapping("/by-child/{childId}/non-reservable")
@@ -320,21 +353,6 @@ class AttendanceReservationController(
                 .minusDays(1)
         return FiniteDateRange(startDate, endDate)
     }
-
-    data class ChildDailyReservationInfo(
-        val childId: ChildId,
-        val reservations: List<Reservation>,
-        val groupId: GroupId?,
-        val absent: Boolean,
-        val outOnBackupPlacement: Boolean,
-        val dailyServiceTimes: DailyServiceTimesValue?,
-        val occupancyCoefficient: BigDecimal
-    )
-
-    data class UnitDailyReservationInfo(
-        val date: LocalDate,
-        val reservationInfos: List<ChildDailyReservationInfo>
-    )
 
     data class ReservationChildInfo(
         val id: ChildId,
@@ -586,7 +604,7 @@ data class UnitAttendanceReservations(
         val childId: ChildId,
         val reservations: List<Reservation>,
         val attendances: List<AttendanceTimes>,
-        val absence: Absence?,
+        val absences: List<Absence>,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val groupId: GroupId?,
         val backupGroupId: GroupId?,
@@ -596,7 +614,7 @@ data class UnitAttendanceReservations(
 
     data class AttendanceTimes(val startTime: LocalTime, val endTime: LocalTime?)
 
-    data class Absence(val type: AbsenceType)
+    data class Absence(val type: AbsenceType, val category: AbsenceCategory)
 
     data class Child(
         val id: ChildId,
@@ -800,7 +818,7 @@ private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<Reservation>>,
     val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
-    val absences: Map<LocalDate, UnitAttendanceReservations.Absence>
+    val absences: Map<LocalDate, List<UnitAttendanceReservations.Absence>>
 )
 
 private data class ChildDataQueryResult(
@@ -834,8 +852,12 @@ private data class AttendanceTimesForDate(
     fun toAttendanceTimes() = UnitAttendanceReservations.AttendanceTimes(startTime, endTime)
 }
 
-private data class AbsenceForDate(val date: LocalDate, val type: AbsenceType) {
-    fun toAbsence() = UnitAttendanceReservations.Absence(type)
+private data class AbsenceForDate(
+    val date: LocalDate,
+    val type: AbsenceType,
+    val category: AbsenceCategory
+) {
+    fun toAbsence() = UnitAttendanceReservations.Absence(type, category)
 }
 
 private fun Database.Read.getChildData(
@@ -872,7 +894,8 @@ SELECT
     coalesce((
         SELECT jsonb_agg(json_build_object(
             'date', a.date,
-            'type', a.absence_type
+            'type', a.absence_type,
+            'category', a.category
         ) ORDER BY a.date)
         FROM absence a
         WHERE a.child_id = p.id AND between_start_and_end(:dateRange, a.date)
@@ -907,7 +930,7 @@ WHERE p.id = ANY(:childIds)
                         valueTransform = { it.toAttendanceTimes() }
                     ),
                 absences =
-                    row.absences.associateBy(
+                    row.absences.groupBy(
                         keySelector = { it.date },
                         valueTransform = { it.toAbsence() }
                     ),

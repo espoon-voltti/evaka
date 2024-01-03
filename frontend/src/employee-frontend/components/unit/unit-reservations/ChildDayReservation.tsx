@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleEllipsis } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -16,13 +17,14 @@ import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyserv
 import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  Absence,
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Light } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
@@ -36,12 +38,13 @@ interface Props {
   reservationIndex: number
   dateInfo: UnitDateInfo
   reservation: Reservation | undefined
-  absence: Absence | null
+  absent: boolean
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
   scheduleType: ScheduleType
   serviceNeedInfo: ChildServiceNeedInfo | undefined
+  onStartEdit: () => void
 }
 
 export default React.memo(function ChildDay({
@@ -49,12 +52,13 @@ export default React.memo(function ChildDay({
   reservationIndex,
   dateInfo,
   reservation,
-  absence,
+  absent,
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
   scheduleType,
-  serviceNeedInfo
+  serviceNeedInfo,
+  onStartEdit
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -84,7 +88,7 @@ export default React.memo(function ChildDay({
       (reservation.type === 'TIMES' && dateInfo.time.end < reservation.endTime))
 
   return (
-    <DateCell>
+    <ReservationDateCell>
       <TimesRow data-qa={`reservation-${date.formatIso()}-${reservationIndex}`}>
         {inOtherUnit ? (
           <TimeCell data-qa="in-other-unit">
@@ -94,10 +98,9 @@ export default React.memo(function ChildDay({
           <TimeCell data-qa="in-other-group">
             <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
           </TimeCell>
-        ) : absence ? (
-          <AbsenceDay type={absence.type} />
+        ) : absent ? (
+          <AbsenceDay type="OTHER_ABSENCE" />
         ) : reservation && reservation.type === 'TIMES' ? (
-          // a reservation exists for this day
           <>
             <ReservationTime
               data-qa="reservation-start"
@@ -133,8 +136,7 @@ export default React.memo(function ChildDay({
         ) : reservationIndex === 0 ? (
           dateInfo.isInHolidayPeriod &&
           scheduleType === 'RESERVATION_REQUIRED' &&
-          reservation === null &&
-          reservationIndex === 0 ? (
+          reservation === undefined ? (
             // holiday period, no reservation yet
             <Tooltip
               tooltip={
@@ -169,6 +171,10 @@ export default React.memo(function ChildDay({
             <ReservationTime data-qa="fixed-schedule">
               {i18n.unit.attendanceReservations.fixedSchedule}
             </ReservationTime>
+          ) : reservation && reservation.type === 'NO_TIMES' ? (
+            <ReservationTime data-qa="reservation-no-times">
+              {i18n.unit.attendanceReservations.reservationNoTimes}
+            </ReservationTime>
           ) : (
             // otherwise show missing service time indicator
             <ReservationTime warning data-qa="reservation-missing">
@@ -177,8 +183,42 @@ export default React.memo(function ChildDay({
           )
         ) : null}
       </TimesRow>
-    </DateCell>
+      {!inOtherUnit && !isInBackupGroup && (
+        <DetailsToggle>
+          <IconButton
+            icon={faCircleEllipsis}
+            onClick={onStartEdit}
+            data-qa="open-details"
+            aria-label={i18n.common.open}
+          />
+        </DetailsToggle>
+      )}
+    </ReservationDateCell>
   )
 })
+
+const DetailsToggle = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${defaultMargins.xxs};
+  margin-left: -${defaultMargins.s};
+  visibility: hidden;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 5px;
+`
+
+export const ReservationDateCell = styled(DateCell)`
+  position: relative;
+  height: 38px;
+  padding-right: 12px;
+
+  &:hover {
+    ${DetailsToggle} {
+      visibility: visible;
+    }
+  }
+`
 
 const ReservationTime = styled(TimeCell)``

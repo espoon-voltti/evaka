@@ -2431,6 +2431,7 @@ export const fi = {
           IRREGULAR: 'Epäsäännöllinen'
         }
       },
+      reservationNoTimes: 'Läsnä',
       missingHolidayReservation: 'Lomavaraus puuttuu',
       missingHolidayReservationShort: 'Lomavar. puuttuu',
       fixedSchedule: 'Läsnä',
@@ -4383,7 +4384,8 @@ export const fi = {
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
     timeRangeNotLinear: 'Tarkista järjestys',
-    guardianMustBeHeard: 'Huoltajaa on kuultava'
+    guardianMustBeHeard: 'Huoltajaa on kuultava',
+    unexpectedError: 'Tarkista tiedot'
   },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',

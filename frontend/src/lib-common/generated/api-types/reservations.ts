@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import { AbsenceCategory } from './daycare'
 import { AbsenceType } from './daycare'
 import { ChildServiceNeedInfo } from './daycare'
 import { DailyServiceTimesValue } from './dailyservicetimes'
@@ -20,6 +21,7 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Absence
 */
 export interface Absence {
+  category: AbsenceCategory
   type: AbsenceType
 }
 
@@ -28,6 +30,14 @@ export interface Absence {
 */
 export interface AbsenceInfo {
   editable: boolean
+  type: AbsenceType
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.AbsenceInput
+*/
+export interface AbsenceInput {
+  category: AbsenceCategory
   type: AbsenceType
 }
 
@@ -61,10 +71,21 @@ export interface Child {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.ChildDatePresence
+*/
+export interface ChildDatePresence {
+  absences: AbsenceInput[]
+  attendances: OpenTimeRange[]
+  childId: UUID
+  date: LocalDate
+  reservations: Reservation[]
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
 */
 export interface ChildRecordOfDay {
-  absence: Absence | null
+  absences: Absence[]
   attendances: AttendanceTimes[]
   backupGroupId: UUID | null
   childId: UUID

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleEllipsis } from 'Icons'
 import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -22,7 +23,9 @@ import {
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { reservationHasTimes, TimeRange } from 'lib-common/reservations'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
@@ -40,6 +43,7 @@ interface Props {
   inOtherUnit: boolean
   isInBackupGroup: boolean
   serviceNeedInfo: ChildServiceNeedInfo | undefined
+  onStartEdit: () => void
 }
 
 export default React.memo(function ChildDay({
@@ -51,7 +55,8 @@ export default React.memo(function ChildDay({
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
-  serviceNeedInfo
+  serviceNeedInfo,
+  onStartEdit
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -149,6 +154,16 @@ export default React.memo(function ChildDay({
           )}
         </TimesRow>
       ) : null}
+      {!inOtherUnit && !isInBackupGroup && (
+        <DetailsToggle>
+          <IconButton
+            icon={faCircleEllipsis}
+            onClick={onStartEdit}
+            data-qa="open-details"
+            aria-label={i18n.common.open}
+          />
+        </DetailsToggle>
+      )}
     </AttendanceDateCell>
   )
 })
@@ -171,8 +186,29 @@ const getExpectedAttendanceTimes = (
   return []
 }
 
+const DetailsToggle = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${defaultMargins.xxs};
+  margin-left: -${defaultMargins.s};
+  visibility: hidden;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 5px;
+`
+
 export const AttendanceDateCell = styled(DateCell)`
   background-color: ${colors.grayscale.g4};
+  position: relative;
+  height: 38px;
+  padding-right: 12px;
+
+  &:hover {
+    ${DetailsToggle} {
+      visibility: visible;
+    }
+  }
 `
 
 const AttendanceTime = styled(TimeCell)`

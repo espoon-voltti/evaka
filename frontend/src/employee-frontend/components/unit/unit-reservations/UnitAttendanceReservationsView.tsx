@@ -32,6 +32,7 @@ import LabelValueList from '../../common/LabelValueList'
 import { AttendanceGroupFilter } from '../TabCalendar'
 import { unitAttendanceReservationsQuery } from '../queries'
 
+import ChildDateModal, { ChildDateEditorTarget } from './ChildDateModal'
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import StaffAttendanceTable from './StaffAttendanceTable'
@@ -87,6 +88,9 @@ export default React.memo(function UnitAttendanceReservationsView({
   const [creatingReservationChild, setCreatingReservationChild] =
     useState<Child>()
 
+  const [childDateEditorTarget, setChildDateEditorTarget] =
+    useState<ChildDateEditorTarget | null>(null)
+
   const legendTimeLabels = useMemo(() => {
     const t = i18n.unit.attendanceReservations.legend
     const indicator = i18n.unit.attendanceReservations.serviceTimeIndicator
@@ -119,6 +123,12 @@ export default React.memo(function UnitAttendanceReservationsView({
           child={creatingReservationChild}
           onClose={() => setCreatingReservationChild(undefined)}
           operationalDays={operationalDays}
+        />
+      )}
+      {childDateEditorTarget && (
+        <ChildDateModal
+          target={childDateEditorTarget}
+          onClose={() => setChildDateEditorTarget(null)}
         />
       )}
 
@@ -158,6 +168,21 @@ export default React.memo(function UnitAttendanceReservationsView({
               days={childData.days}
               childBasics={childData.children}
               onMakeReservationForChild={setCreatingReservationChild}
+              onOpenEditForChildDate={(childId, date) => {
+                const child = childData.children.find((c) => c.id === childId)
+                const day = childData.days.find((d) => d.date === date)
+                const childDayRecord = day?.children?.find(
+                  (c) => c.childId === childId
+                )
+                if (child && day && childDayRecord) {
+                  setChildDateEditorTarget({
+                    date,
+                    dateInfo: day.dateInfo,
+                    child,
+                    childDayRecord
+                  })
+                }
+              }}
               selectedDate={selectedDate}
               selectedGroup={selectedGroup}
             />

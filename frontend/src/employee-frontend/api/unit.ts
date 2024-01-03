@@ -47,6 +47,7 @@ import {
   TerminatedPlacement
 } from 'lib-common/generated/api-types/placement'
 import {
+  ChildDatePresence,
   DailyReservationRequest,
   UnitAttendanceReservations
 } from 'lib-common/generated/api-types/reservations'
@@ -863,4 +864,28 @@ export async function getUnitAttendanceReservations(
         }
       }))
     }))
+}
+
+export async function postChildDatePresence(
+  data: ChildDatePresence
+): Promise<void> {
+  const body: JsonOf<ChildDatePresence> = {
+    ...data,
+    date: data.date.formatIso(),
+    reservations: data.reservations.map((r) =>
+      r.type === 'NO_TIMES'
+        ? r
+        : {
+            ...r,
+            startTime: r.startTime.formatIso(),
+            endTime: r.endTime.formatIso()
+          }
+    ),
+    attendances: data.attendances.map((a) => ({
+      ...a,
+      startTime: a.startTime.formatIso(),
+      endTime: a.endTime?.formatIso() ?? null
+    }))
+  }
+  await client.post('/attendance-reservations/child-date', body)
 }
