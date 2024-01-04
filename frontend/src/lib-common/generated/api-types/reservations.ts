@@ -79,6 +79,7 @@ export interface ChildDatePresence {
   childId: UUID
   date: LocalDate
   reservations: Reservation[]
+  unitId: UUID
 }
 
 /**

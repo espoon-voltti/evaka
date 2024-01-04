@@ -4384,8 +4384,7 @@ export const fi = {
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
     timeRangeNotLinear: 'Tarkista järjestys',
-    guardianMustBeHeard: 'Huoltajaa on kuultava',
-    unexpectedError: 'Tarkista tiedot'
+    guardianMustBeHeard: 'Huoltajaa on kuultava'
   },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',

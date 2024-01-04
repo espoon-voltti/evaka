@@ -4,6 +4,7 @@
 
 import DateRange from '../date-range'
 import FiniteDateRange from '../finite-date-range'
+import { OpenTimeRange } from '../generated/api-types/reservations'
 import { TimeRange } from '../generated/api-types/shared'
 import LocalDate from '../local-date'
 import LocalTime from '../local-time'
@@ -241,7 +242,7 @@ export const localTimeRange = () =>
       if (
         startTime === undefined ||
         endTime === undefined ||
-        endTime.isBefore(startTime)
+        !endTime.isAfter(startTime)
       ) {
         return ValidationError.of('timeFormat')
       } else {
@@ -251,3 +252,27 @@ export const localTimeRange = () =>
   )
 
 export type LocalTimeRangeField = FieldType<typeof localTimeRange>
+
+export const openEndedLocalTimeRange = () =>
+  transformed(
+    object({
+      startTime: localTime(),
+      endTime: localTime()
+    }),
+    ({
+      startTime,
+      endTime
+    }): ValidationResult<OpenTimeRange | undefined, 'timeFormat'> => {
+      if (startTime === undefined && endTime === undefined) {
+        return ValidationSuccess.of(undefined)
+      }
+      if (
+        startTime === undefined ||
+        (endTime !== undefined && !endTime.isAfter(startTime))
+      ) {
+        return ValidationError.of('timeFormat')
+      } else {
+        return ValidationSuccess.of({ startTime, endTime: endTime ?? null })
+      }
+    }
+  )

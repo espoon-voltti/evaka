@@ -1,10 +1,12 @@
-import { faPlus, faTrash } from 'Icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, fasExclamationTriangle, faTrash } from 'Icons'
 import React from 'react'
 
 import {
   boolean,
   localDate,
   localTimeRange,
+  openEndedLocalTimeRange,
   string
 } from 'lib-common/form/fields'
 import { array, object, required, transformed } from 'lib-common/form/form'
@@ -23,6 +25,7 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -31,8 +34,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, H4 } from 'lib-components/typography'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
 import { upsertChildDatePresenceMutation } from '../queries'
@@ -46,21 +51,41 @@ export interface ChildDateEditorTarget {
 
 const reservationForm = required(localTimeRange())
 
+const attendanceForm = required(openEndedLocalTimeRange())
+
 const form = transformed(
   object({
     date: required(localDate()),
     childId: required(string()),
+    unitId: required(string()),
     reservations: array(reservationForm),
-    reservationNoTimes: boolean()
+    reservationNoTimes: boolean(),
+    attendances: array(attendanceForm)
   }),
-  ({ date, childId, reservations, reservationNoTimes }) => {
-    if (reservations.length > 0 && reservationNoTimes) {
-      return ValidationError.of('unexpectedError')
+  ({
+    date,
+    childId,
+    unitId,
+    reservations,
+    reservationNoTimes,
+    attendances
+  }) => {
+    for (let i = 1; i < reservations.length; i++) {
+      if (reservations[i].start.isBefore(reservations[i - 1].end)) {
+        return ValidationError.field('reservations', 'timeFormat')
+      }
+    }
+    for (let i = 1; i < attendances.length; i++) {
+      const prevEnd = attendances[i - 1].endTime
+      if (!prevEnd || attendances[i].startTime.isBefore(prevEnd)) {
+        return ValidationError.field('attendances', 'timeFormat')
+      }
     }
 
     const result: ChildDatePresence = {
       date,
       childId,
+      unitId,
       reservations: reservationNoTimes
         ? [{ type: 'NO_TIMES' }]
         : reservations.map((r) => ({
@@ -68,7 +93,7 @@ const form = transformed(
             startTime: r.start,
             endTime: r.end
           })),
-      attendances: [],
+      attendances,
       absences: []
     }
     return ValidationSuccess.of(result)
@@ -77,9 +102,11 @@ const form = transformed(
 
 export default React.memo(function ChildDateModal({
   target: { date, dateInfo, child, childDayRecord },
+  unitId,
   onClose
 }: {
   target: ChildDateEditorTarget
+  unitId: UUID
   onClose: () => void
 }) {
   const { i18n } = useTranslation()
@@ -89,6 +116,7 @@ export default React.memo(function ChildDateModal({
     () => ({
       date: localDate.fromDate(date),
       childId: child.id,
+      unitId,
       reservations: childDayRecord.reservations
         .filter((r): r is Reservation.Times => r.type === 'TIMES')
         .map((r) => ({
@@ -98,13 +126,19 @@ export default React.memo(function ChildDateModal({
       reservationNoTimes:
         dateInfo.isInHolidayPeriod &&
         childDayRecord.reservations.length === 1 &&
-        childDayRecord.reservations[0].type === 'NO_TIMES'
+        childDayRecord.reservations[0].type === 'NO_TIMES',
+      attendances: childDayRecord.attendances.map((a) => ({
+        startTime: a.startTime.format(),
+        endTime: a.endTime?.format() ?? ''
+      }))
     }),
     i18n.validationErrors
   )
 
-  const { reservations, reservationNoTimes } = useFormFields(boundForm)
+  const { reservations, reservationNoTimes, attendances } =
+    useFormFields(boundForm)
   const reservationElems = useFormElems(reservations)
+  const attendanceElems = useFormElems(attendances)
 
   return (
     <MutateFormModal
@@ -121,10 +155,10 @@ export default React.memo(function ChildDateModal({
         {child.preferredName || child.firstName} {child.lastName}
       </H3>
 
-      <H4>Varaukset</H4>
+      <H4>Läsnäolovaraus</H4>
       <FixedSpaceColumn>
         {reservationElems.map((r, i) => (
-          <ReservationTimesForm
+          <TimesForm
             key={`reservation-${i}`}
             bind={r}
             onRemove={() =>
@@ -151,22 +185,50 @@ export default React.memo(function ChildDateModal({
             label="Läsnä, kellonaika ei vielä tiedossa"
           />
         )}
+        {!reservations.isValid() &&
+          reservations.validationError() === 'timeFormat' && (
+            <AlertBox message="Tarkista päällekkäisyys" thin noMargin />
+          )}
+      </FixedSpaceColumn>
+
+      <H4>Läsnäolototeuma</H4>
+      <FixedSpaceColumn>
+        {attendanceElems.map((a, i) => (
+          <TimesForm
+            key={`attendance-${i}`}
+            bind={a}
+            onRemove={() =>
+              attendances.update((s) => [...s.slice(0, i), ...s.slice(i + 1)])
+            }
+          />
+        ))}
+        <InlineButton
+          text="Lisää uusi rivi"
+          icon={faPlus}
+          onClick={() =>
+            attendances.update((s) => [...s, { startTime: '', endTime: '' }])
+          }
+        />
+        {!attendances.isValid() &&
+          attendances.validationError() === 'timeFormat' && (
+            <AlertBox message="Tarkista päällekkäisyys" thin noMargin />
+          )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
 })
 
-const ReservationTimesForm = React.memo(function ReservationTimesForm({
+const TimesForm = React.memo(function ReservationTimesForm({
   bind,
   onRemove
 }: {
-  bind: BoundForm<typeof reservationForm>
+  bind: BoundForm<typeof reservationForm | typeof attendanceForm>
   onRemove: () => void
 }) {
   const { i18n } = useTranslation()
   const { startTime, endTime } = useFormFields(bind)
   return (
-    <FixedSpaceRow>
+    <FixedSpaceRow alignItems="center">
       <TimeInputF bind={startTime} />
       <span>-</span>
       <TimeInputF bind={endTime} />
@@ -175,6 +237,12 @@ const ReservationTimesForm = React.memo(function ReservationTimesForm({
         aria-label={i18n.common.remove}
         onClick={onRemove}
       />
+      {startTime.isValid() && endTime.isValid() && !bind.isValid() && (
+        <FontAwesomeIcon
+          icon={fasExclamationTriangle}
+          color={colors.status.warning}
+        />
+      )}
     </FixedSpaceRow>
   )
 })

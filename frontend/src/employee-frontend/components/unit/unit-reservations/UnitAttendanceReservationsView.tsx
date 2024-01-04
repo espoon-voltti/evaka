@@ -128,6 +128,7 @@ export default React.memo(function UnitAttendanceReservationsView({
       {childDateEditorTarget && (
         <ChildDateModal
           target={childDateEditorTarget}
+          unitId={unitId}
           onClose={() => setChildDateEditorTarget(null)}
         />
       )}

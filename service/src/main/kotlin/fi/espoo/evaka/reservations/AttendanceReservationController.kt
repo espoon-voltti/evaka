@@ -242,6 +242,8 @@ class AttendanceReservationController(
                         mapOf(
                             "insertedReservations" to result.insertedReservations,
                             "deletedReservations" to result.deletedReservations,
+                            "insertedAttendances" to result.insertedAttendances,
+                            "deletedAttendances" to result.deletedAttendances,
                         )
                 )
             }

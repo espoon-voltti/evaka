@@ -6,6 +6,8 @@ package fi.espoo.evaka.reservations
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.attendance.deleteAttendancesByDate
+import fi.espoo.evaka.attendance.insertAttendance
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
@@ -16,8 +18,10 @@ import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -287,6 +291,7 @@ fun createReservationsAndAbsences(
 data class ChildDatePresence(
     val date: LocalDate,
     val childId: ChildId,
+    val unitId: DaycareId,
     val reservations: List<Reservation>,
     val attendances: List<OpenTimeRange>,
     val absences: List<AbsenceInput>
@@ -297,28 +302,15 @@ data class AbsenceInput(val type: AbsenceType, val category: AbsenceCategory)
 data class UpsertChildDatePresenceResult(
     val insertedReservations: List<AttendanceReservationId>,
     val deletedReservations: List<AttendanceReservationId>,
+    val insertedAttendances: List<AttendanceId>,
+    val deletedAttendances: List<AttendanceId>,
 )
 
 fun upsertChildDatePresence(
     tx: Database.Transaction,
     userId: EvakaUserId,
-    rawInput: ChildDatePresence
+    input: ChildDatePresence
 ): UpsertChildDatePresenceResult {
-    val input =
-        rawInput.copy(
-            reservations =
-                rawInput.reservations.map {
-                    when (it) {
-                        is Reservation.NoTimes -> it
-                        is Reservation.Times ->
-                            it.copy(
-                                endTime =
-                                    if (it.endTime == LocalTime.of(0, 0)) LocalTime.of(23, 59)
-                                    else it.endTime
-                            )
-                    }
-                }
-        )
     input.validate()
 
     // check which of the reservations already exist, so that they won't be unnecessarily replaced
@@ -365,9 +357,23 @@ fun upsertChildDatePresence(
                     }
         )
 
+    val deletedAttendances = tx.deleteAttendancesByDate(childId = input.childId, date = input.date)
+    val insertedAttendances =
+        input.attendances.map { attendance ->
+            tx.insertAttendance(
+                input.childId,
+                input.unitId,
+                input.date,
+                attendance.startTime,
+                attendance.endTime
+            )
+        }
+
     return UpsertChildDatePresenceResult(
         insertedReservations = insertedReservations,
-        deletedReservations = deletedReservations
+        deletedReservations = deletedReservations,
+        insertedAttendances = insertedAttendances,
+        deletedAttendances = deletedAttendances
     )
 }
 
@@ -378,11 +384,18 @@ private fun ChildDatePresence.validate() {
     reservations.filterIsInstance<Reservation.Times>().forEach { r ->
         if (!r.endTime.isAfter(r.startTime)) throw BadRequest("Inverted time range")
     }
-    if (
-        reservations.size == 2 &&
-            !reservations[1].asTimeRange()!!.start.isAfter(reservations[0].asTimeRange()!!.end)
-    )
-        throw BadRequest("Overlapping reservation times")
+    reservations.filterIsInstance<Reservation.Times>().zipWithNext().forEach { (r1, r2) ->
+        if (r2.startTime.isBefore(r1.endTime)) throw BadRequest("Overlapping reservation times")
+    }
+
+    attendances.forEach { a ->
+        if (a.endTime != null && !a.endTime.isAfter(a.startTime))
+            throw BadRequest("Inverted time range")
+    }
+    attendances.zipWithNext().forEach { (a1, a2) ->
+        if (a1.endTime == null || a2.startTime.isBefore(a1.endTime))
+            throw BadRequest("Overlapping attendance times")
+    }
 }
 
 private fun Database.Transaction.deleteReservations(
