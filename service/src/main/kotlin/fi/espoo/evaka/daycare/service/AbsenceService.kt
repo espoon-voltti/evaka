@@ -268,6 +268,27 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
     tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
 }
 
+fun deleteFutureNonGeneratedAbsencesByCategoryInRange(
+    tx: Database.Transaction,
+    clock: EvakaClock,
+    childId: ChildId,
+    range: DateRange,
+    categoryToDelete: AbsenceCategory
+) {
+    if (range.start.isBefore(clock.now().toLocalDate().plusDays(1))) {
+        throw BadRequest("Could not delete future absences - Range has to be in future ")
+    }
+
+    val futureAbsences = getFutureAbsencesOfChild(tx, clock, childId)
+
+    val futureAbsencesToDelete =
+        futureAbsences.filter { absence -> absence.category == categoryToDelete }
+
+    if (futureAbsencesToDelete.isNotEmpty()) {
+        tx.deleteNonSystemGeneratedAbsencesByCategoryInRange(childId, range, categoryToDelete)
+    }
+}
+
 private fun supplementReservationsWithDailyServiceTimes(
     possibleAttendanceDates: List<LocalDate>,
     reservations: List<Pair<LocalDate, List<ChildReservation>>>,
