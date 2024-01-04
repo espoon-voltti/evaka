@@ -211,7 +211,7 @@ export default React.memo(function ChildListItem({
 })
 
 function ChildReservationInfo(props: { child: AttendanceChild }) {
-  const { reservations, dailyServiceTimes } = props.child
+  const { reservations, dailyServiceTimes, scheduleType } = props.child
   const { i18n } = useTranslation()
 
   const reservationsWithTimes = useMemo(
@@ -223,6 +223,9 @@ function ChildReservationInfo(props: { child: AttendanceChild }) {
   )
   if (reservationsWithTimes.length > 0) {
     return <Reservations reservations={reservationsWithTimes} />
+  }
+  if (scheduleType === 'FIXED_SCHEDULE') {
+    return <em>{i18n.attendances.serviceTime.present}</em>
   }
 
   const todaysServiceTime = getTodaysServiceTimes(dailyServiceTimes)

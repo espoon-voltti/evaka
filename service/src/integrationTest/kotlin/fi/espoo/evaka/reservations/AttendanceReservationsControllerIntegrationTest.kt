@@ -773,7 +773,7 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
-    fun `get non-reservable reservations returns correct data`() {
+    fun `get confirmed range reservations returns correct data`() {
         val mobileDeviceId =
             db.transaction { tx ->
                 tx.insertTestPlacement(
@@ -795,24 +795,28 @@ class AttendanceReservationsControllerIntegrationTest :
             listOf(
                 ConfirmedRangeDate(
                     date = tue,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
                 ConfirmedRangeDate(
                     date = wed,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
                 ConfirmedRangeDate(
                     date = thu,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
                 ConfirmedRangeDate(
                     date = fri,
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
@@ -1052,11 +1056,10 @@ class AttendanceReservationsControllerIntegrationTest :
             clock,
             testChild_1.id,
             listOf(
-                ConfirmedRangeDate(
+                ConfirmedRangeDateUpdate(
                     clock.today().plusDays(1),
                     reservations = emptyList(),
                     absenceType = null,
-                    dailyServiceTimes = null
                 )
             )
         )
@@ -1250,7 +1253,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 absent = false,
                 outOnBackupPlacement = false,
                 dailyServiceTimes = null,
-                onTermBreak = false,
+                scheduleType = ScheduleType.RESERVATION_REQUIRED,
                 isInHolidayPeriod = false
             )
 
@@ -1258,7 +1261,7 @@ class AttendanceReservationsControllerIntegrationTest :
             child1Expectation.copy(
                 childId = testChild_2.id,
                 groupId = testGroup2.id,
-                onTermBreak = true,
+                scheduleType = ScheduleType.TERM_BREAK,
                 reservations = listOf(Reservation.NoTimes)
             )
 
@@ -1316,7 +1319,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                         )
                                 )
                         ),
-                        child2Expectation.copy(onTermBreak = false)
+                        child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE)
                     )
             )
 

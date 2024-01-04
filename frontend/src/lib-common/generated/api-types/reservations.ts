@@ -85,9 +85,9 @@ export interface ChildReservationInfo {
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
   isInHolidayPeriod: boolean
-  onTermBreak: boolean
   outOnBackupPlacement: boolean
   reservations: Reservation[]
+  scheduleType: ScheduleType
 }
 
 /**
@@ -96,6 +96,16 @@ export interface ChildReservationInfo {
 export interface ConfirmedRangeDate {
   absenceType: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
+  date: LocalDate
+  reservations: Reservation[]
+  scheduleType: ScheduleType
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ConfirmedRangeDateUpdate
+*/
+export interface ConfirmedRangeDateUpdate {
+  absenceType: AbsenceType | null
   date: LocalDate
   reservations: Reservation[]
 }

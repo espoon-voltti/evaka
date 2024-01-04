@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
+import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -92,8 +92,13 @@ export const getConfirmedRangeQuery = query({
 })
 
 export const setConfirmedRangeMutation = mutation({
-  api: ({ childId, body }: { childId: UUID; body: ConfirmedRangeDate[] }) =>
-    putConfirmedRange(childId, body),
+  api: ({
+    childId,
+    body
+  }: {
+    childId: UUID
+    body: ConfirmedRangeDateUpdate[]
+  }) => putConfirmedRange(childId, body),
   invalidateQueryKeys: ({ childId }) => [
     queryKeys.confirmedRangeReservations(childId),
     queryKeys.futureAbsencesByChild(childId)

@@ -89,7 +89,13 @@ export default React.memo(function ChildReservationList({
                 ri.reservations,
                 reservationHasTimes
               )
-              if (ri.dailyServiceTimes != null) {
+              if (withTimes.length > 0) {
+                categoryInfo = {
+                  sortCategory: 1,
+                  sortStartTime: withTimes[0].startTime,
+                  sortEndTime: withTimes[withTimes.length - 1].endTime
+                }
+              } else if (ri.dailyServiceTimes != null) {
                 const times = getServiceTimeRangeOrNullForDate(
                   ri.dailyServiceTimes,
                   date
@@ -115,7 +121,10 @@ export default React.memo(function ChildReservationList({
                 }
               if (ri.absent) categoryInfo = { sortCategory: 4 }
               if (ri.outOnBackupPlacement) categoryInfo = { sortCategory: 5 }
-              if (ri.onTermBreak) categoryInfo = { sortCategory: 6 }
+              if (ri.scheduleType === 'FIXED_SCHEDULE')
+                categoryInfo = { sortCategory: 2 }
+              if (ri.scheduleType === 'TERM_BREAK')
+                categoryInfo = { sortCategory: 6 }
               return { ...ri, ...childInfo, ...categoryInfo }
             }),
             [

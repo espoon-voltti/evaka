@@ -33,6 +33,7 @@ const DetailsRow = styled.div`
 
   font-size: 0.875em;
   width: 100%;
+
   &.absent > span {
     color: ${colors.grayscale.g70};
   }
@@ -42,9 +43,11 @@ const NameRow = styled.div`
   width: 100%;
   word-break: break-word;
   margin-right: 10px;
+
   &.absent > span {
     color: ${colors.grayscale.g70};
   }
+
   min-height: 40px;
 `
 
@@ -105,7 +108,7 @@ export default React.memo(function ChildSubListItem({
   const childAge = date.differenceInYears(reservationData.dateOfBirth)
 
   const reservationTextContent = useMemo(() => {
-    if (reservationData.onTermBreak)
+    if (reservationData.scheduleType === 'TERM_BREAK')
       return [i18n.attendances.confirmedDays.status.ON_TERM_BREAK]
     if (reservationData.absent)
       return [i18n.attendances.confirmedDays.status.ABSENT]
@@ -127,6 +130,11 @@ export default React.memo(function ChildSubListItem({
       if (noTimes.length > 0)
         return [i18n.attendances.confirmedDays.noHolidayReservation]
     }
+
+    if (reservationData.scheduleType === 'FIXED_SCHEDULE') {
+      return [i18n.attendances.serviceTime.present]
+    }
+
     const todaysServiceTime = getTodaysServiceTimes(
       reservationData.dailyServiceTimes
     )

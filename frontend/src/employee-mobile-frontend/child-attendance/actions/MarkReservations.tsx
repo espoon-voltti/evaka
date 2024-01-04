@@ -22,6 +22,7 @@ import { StateOf } from 'lib-common/form/types'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
   ConfirmedRangeDate,
+  ConfirmedRangeDateUpdate,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -111,7 +112,7 @@ const reservationForm = mapped(
       return undefined
     }
   ),
-  (output): ConfirmedRangeDate => ({
+  (output): ConfirmedRangeDateUpdate => ({
     date: output.date,
     reservations: output.times
       .filter(
@@ -125,8 +126,7 @@ const reservationForm = mapped(
         ...reservation,
         type: 'TIMES'
       })),
-    absenceType: output.absenceType,
-    dailyServiceTimes: null
+    absenceType: output.absenceType
   })
 )
 
@@ -341,8 +341,9 @@ const ReservationView = ({
       ) : (
         <AttendanceDailyServiceTimes
           hideLabel={true}
-          times={reservation.dailyServiceTimes}
+          dailyServiceTimes={reservation.dailyServiceTimes}
           reservations={sortBy(reservation.reservations, reservationStartTime)}
+          scheduleType={reservation.scheduleType}
         />
       )}
     </div>

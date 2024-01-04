@@ -14,6 +14,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
+  ConfirmedRangeDateUpdate,
   DailyChildReservationResult,
   DayReservationStatisticsResult,
   ReservationChildInfo
@@ -179,7 +180,7 @@ export async function getConfirmedRange(
 
 export async function putConfirmedRange(
   childId: UUID,
-  body: ConfirmedRangeDate[]
+  body: ConfirmedRangeDateUpdate[]
 ): Promise<void> {
   return client.put(
     `/attendance-reservations/by-child/${childId}/confirmed-range`,

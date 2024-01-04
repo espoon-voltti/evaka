@@ -207,8 +207,9 @@ export default React.memo(function AttendanceChildPage() {
                     {child.scheduleType !== 'TERM_BREAK' ? (
                       <>
                         <AttendanceDailyServiceTimes
-                          times={child.dailyServiceTimes}
+                          dailyServiceTimes={child.dailyServiceTimes}
                           reservations={child.reservations}
+                          scheduleType={child.scheduleType}
                         />
                         <ArrivalAndDeparture
                           attendances={childAttendance.attendances}

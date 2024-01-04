@@ -5,6 +5,7 @@
 import React, { useMemo } from 'react'
 
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
+import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import { Reservation } from 'lib-common/generated/api-types/reservations'
 
 import { Reservations } from '../child-attendance/Reservations'
@@ -14,14 +15,16 @@ import { useTranslation } from '../common/i18n'
 
 interface Props {
   hideLabel?: boolean
-  times: DailyServiceTimesValue | null
+  dailyServiceTimes: DailyServiceTimesValue | null
   reservations: Reservation[]
+  scheduleType: ScheduleType
 }
 
 export default React.memo(function AttendanceDailyServiceTimes({
   hideLabel,
-  times,
-  reservations
+  dailyServiceTimes,
+  reservations,
+  scheduleType
 }: Props) {
   const { i18n } = useTranslation()
   const reservationsWithTimes = useMemo(
@@ -32,14 +35,24 @@ export default React.memo(function AttendanceDailyServiceTimes({
     [reservations]
   )
 
-  const todaysTimes = getTodaysServiceTimes(times)
-  return (
-    <ServiceTime>
-      {reservationsWithTimes.length > 0 ? (
+  if (reservationsWithTimes.length > 0) {
+    return (
+      <ServiceTime>
         <Reservations
           hideLabel={hideLabel}
           reservations={reservationsWithTimes}
         />
+      </ServiceTime>
+    )
+  }
+
+  const todaysTimes = getTodaysServiceTimes(dailyServiceTimes)
+  return (
+    <ServiceTime>
+      {scheduleType === 'FIXED_SCHEDULE' ? (
+        i18n.attendances.serviceTime.present
+      ) : scheduleType === 'TERM_BREAK' ? (
+        i18n.attendances.termBreak
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (

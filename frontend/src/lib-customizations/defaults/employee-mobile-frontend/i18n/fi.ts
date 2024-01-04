@@ -207,6 +207,7 @@ export const fi = {
       notSetShort: 'Ilmoitus puuttuu',
       variableTimes: 'Vaihteleva varhaiskasvatusaika',
       variableTimesShort: 'Sop.aika vaihtelee',
+      present: 'Läsnä',
       yesterday: 'eilen',
       tomorrow: 'huomenna'
     },
