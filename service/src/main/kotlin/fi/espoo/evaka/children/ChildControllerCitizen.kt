@@ -36,7 +36,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen/children")
 class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
-    fun getChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<Child> {
+    fun getChildren(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): List<ChildAndPermittedActions> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -46,7 +50,17 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_CHILDREN,
                         user.id
                     )
-                    it.getChildrenByParent(user.id, clock.today())
+                    it.getChildrenByParent(user.id, clock.today()).map { child ->
+                        ChildAndPermittedActions.fromChild(
+                            child,
+                            accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
+                                it,
+                                user,
+                                clock,
+                                child.id
+                            )
+                        )
+                    }
                 }
             }
             .also {

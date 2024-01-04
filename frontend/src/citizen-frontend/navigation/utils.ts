@@ -5,7 +5,6 @@
 import sum from 'lodash/sum'
 import { useMemo } from 'react'
 
-import { Child } from 'lib-common/generated/api-types/children'
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -65,7 +64,7 @@ export function useUnreadChildNotifications() {
   return { unreadChildNotifications, totalUnreadChildNotifications }
 }
 
-export function useChildrenWithOwnPage(): Child[] {
+export function useChildrenWithOwnPage() {
   const { data } = useQuery(childrenQuery())
   return useMemo(() => {
     if (!data) return []

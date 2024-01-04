@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
+import { Success } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -22,10 +23,12 @@ import { getDailyServiceTimes, getServiceNeeds } from './api'
 
 interface ServiceNeedProps {
   childId: UUID
+  showServiceTimes: boolean
 }
 
 export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
-  childId
+  childId,
+  showServiceTimes
 }: ServiceNeedProps) {
   const t = useTranslation()
   const [open, setOpen] = useState(false)
@@ -34,8 +37,11 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
     [childId]
   )
   const [dailyServiceTimesResponse] = useApiState(
-    () => getDailyServiceTimes(childId),
-    [childId]
+    () =>
+      showServiceTimes
+        ? getDailyServiceTimes(childId)
+        : Promise.resolve(Success.of([])),
+    [childId, showServiceTimes]
   )
 
   const hasContractDays = serviceNeedsResponse
@@ -72,14 +78,20 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
         </>
       )}
       <HorizontalLine slim hiddenOnTabletAndDesktop />
-      <H3>{t.children.dailyServiceTime.title}</H3>
-      {dailyServiceTimesResponse.mapAll({
-        failure: () => <ErrorSegment title={t.common.errors.genericGetError} />,
-        loading: () => <Spinner />,
-        success: (dailyServiceTimes) => (
-          <DailyServiceTimeTable dailyServiceTimes={dailyServiceTimes} />
-        )
-      })}
+      {showServiceTimes && (
+        <>
+          <H3>{t.children.dailyServiceTime.title}</H3>
+          {dailyServiceTimesResponse.mapAll({
+            failure: () => (
+              <ErrorSegment title={t.common.errors.genericGetError} />
+            ),
+            loading: () => <Spinner />,
+            success: (dailyServiceTimes) => (
+              <DailyServiceTimeTable dailyServiceTimes={dailyServiceTimes} />
+            )
+          })}
+        </>
+      )}
     </ResponsiveWholePageCollapsible>
   )
 })

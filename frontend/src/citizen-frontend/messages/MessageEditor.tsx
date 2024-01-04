@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
 import { Result } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/children'
+import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import {
   AccountType,
   CitizenMessageBody,
@@ -47,7 +47,7 @@ export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
   type !== 'CITIZEN'
 
 interface Props {
-  children_: Child[]
+  children_: ChildAndPermittedActions[]
   receiverOptions: GetReceiversResponse
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
   onSuccess: () => void
