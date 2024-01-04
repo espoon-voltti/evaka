@@ -218,7 +218,7 @@ class PlacementController(
                             tx,
                             childId = body.childId,
                             unitId = body.unitId,
-                            FiniteDateRange(body.startDate, body.endDate),
+                            period = FiniteDateRange(body.startDate, body.endDate),
                             type = body.type,
                             useFiveYearsOldDaycare = useFiveYearsOldDaycare,
                             placeGuarantee = body.placeGuarantee
