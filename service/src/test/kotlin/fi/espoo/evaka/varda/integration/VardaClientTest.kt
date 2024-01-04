@@ -13,7 +13,7 @@ import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.io.ByteArrayInputStream
-import java.net.URL
+import java.net.URI
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -49,7 +49,7 @@ class VardaClientTest {
             .thenReturn(
                 Response(
                     statusCode = 403,
-                    url = URL("https://example.com"),
+                    url = URI("https://example.com").toURL(),
                     body =
                         DefaultBody.from(
                             {
@@ -61,7 +61,7 @@ class VardaClientTest {
                         )
                 ) // This should trigger the token refresh
             )
-            .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
+            .thenReturn(Response(statusCode = 204, url = URI("https://example.com").toURL()))
 
         val client =
             VardaClient(

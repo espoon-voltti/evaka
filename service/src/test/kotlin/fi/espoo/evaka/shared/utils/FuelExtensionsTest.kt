@@ -16,7 +16,7 @@ import com.github.kittinunf.fuel.core.requests.DefaultBody
 import com.github.kittinunf.fuel.core.requests.DefaultRequest
 import com.github.kittinunf.result.Result
 import java.io.ByteArrayInputStream
-import java.net.URL
+import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.hamcrest.CoreMatchers.equalTo
@@ -33,7 +33,7 @@ class FuelExtensionsTest {
     @Test
     fun `token adds Token Authorization header to request`() {
         val request =
-            DefaultRequest(Method.GET, URL("https://example.com/authentication"))
+            DefaultRequest(Method.GET, URI("https://example.com/authentication").toURL())
                 .authentication()
                 .token("token")
 
@@ -48,7 +48,7 @@ class FuelExtensionsTest {
             .thenReturn(
                 Response(
                     statusCode = 200,
-                    url = URL("https://example.com"),
+                    url = URI("https://example.com").toURL(),
                     body = DefaultBody.from({ ByteArrayInputStream("final".toByteArray()) }, null)
                 )
             )
@@ -67,7 +67,7 @@ class FuelExtensionsTest {
             .thenReturn(basicRetryResponse)
             .thenReturn(basicRetryResponse)
             .thenReturn(basicRetryResponse) // One more than retry count
-            .thenReturn(Response(statusCode = 200, url = URL("https://example.com")))
+            .thenReturn(Response(statusCode = 200, url = URI("https://example.com").toURL()))
         FuelManager.instance.client = client
 
         val (_, response, result) =
@@ -108,7 +108,7 @@ class FuelExtensionsTest {
             .thenReturn(
                 Response(
                     statusCode = 400,
-                    url = URL("https://example.com"),
+                    url = URI("https://example.com").toURL(),
                     body =
                         DefaultBody.from(
                             { ByteArrayInputStream("unhandled error".toByteArray()) },
@@ -130,7 +130,7 @@ class FuelExtensionsTest {
             .thenReturn(
                 Response(
                     statusCode = 400,
-                    url = URL("https://example.com"),
+                    url = URI("https://example.com").toURL(),
                     body =
                         DefaultBody.from(
                             { ByteArrayInputStream("unhandled error".toByteArray()) },
@@ -146,7 +146,7 @@ class FuelExtensionsTest {
                     r.first,
                     Response(
                         statusCode = 400,
-                        url = URL("https://example.com"),
+                        url = URI("https://example.com").toURL(),
                         body =
                             DefaultBody.from(
                                 { ByteArrayInputStream("handled error".toByteArray()) },
@@ -167,7 +167,7 @@ class FuelExtensionsTest {
         Response(
             statusCode = 429,
             responseMessage = "RETRY",
-            url = URL("https://example.com"),
+            url = URI("https://example.com").toURL(),
             headers = headers
         )
 }
