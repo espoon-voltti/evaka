@@ -84,7 +84,8 @@ export function internalGwRouter(
             config.ad.saml,
             redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
           )
-        )
+        ),
+        defaultPageUrl: '/employee'
       })
     )
   }
@@ -103,7 +104,8 @@ export function internalGwRouter(
       strategy: createKeycloakEmployeeSamlStrategy(
         sessions,
         keycloakEmployeeConfig
-      )
+      ),
+      defaultPageUrl: '/employee'
     })
   )
 

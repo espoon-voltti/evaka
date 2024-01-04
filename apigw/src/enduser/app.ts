@@ -58,7 +58,8 @@ export function enduserGwRouter(
       createSamlRouter({
         sessions,
         strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(sessions, suomifiSamlConfig)
+        strategy: createSuomiFiStrategy(sessions, suomifiSamlConfig),
+        defaultPageUrl: '/'
       })
     )
   }
@@ -77,7 +78,8 @@ export function enduserGwRouter(
       strategy: createKeycloakCitizenSamlStrategy(
         sessions,
         keycloakCitizenConfig
-      )
+      ),
+      defaultPageUrl: '/'
     })
   )
   router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
