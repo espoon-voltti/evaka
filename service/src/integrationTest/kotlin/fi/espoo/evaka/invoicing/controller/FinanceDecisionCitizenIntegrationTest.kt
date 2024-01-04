@@ -13,6 +13,8 @@ import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
+import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -38,7 +40,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -135,7 +136,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 ids = listOf(fdId),
                 clock = MockEvakaClock(now = feeDecisionSentAt)
             )
-            markFeeDecisionDocumentKey(tx, fdId)
+            tx.updateFeeDecisionDocumentKey(fdId, "test-fd-document-key")
 
             feeDecisions =
                 testFeeDecisions.map {
@@ -176,7 +177,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             val voucherValueSentAt = HelsinkiDateTime.atStartOfDay(LocalDate.of(2018, 6, 1))
             tx.upsertValueDecisions(testVoucherValueDecisions)
             tx.markVoucherValueDecisionsSent(ids = listOf(vvdId), now = voucherValueSentAt)
-            markVoucherValueDecisionDocumentKey(tx, vvdId)
+            tx.updateVoucherValueDecisionDocumentKey(vvdId, "test-vvd-document-key")
 
             voucherValueDecisions =
                 testVoucherValueDecisions.map {
@@ -326,28 +327,4 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             created = created,
             documentKey = documentKey
         )
-
-    private fun markFeeDecisionDocumentKey(
-        tx: Database.Transaction,
-        feeDecisionId: FeeDecisionId,
-        documentKey: String? = "test-fd-document-key"
-    ) {
-        tx.createUpdate("UPDATE fee_decision set document_key = :documentKey WHERE id = :id")
-            .bind("documentKey", documentKey)
-            .bind("id", feeDecisionId)
-            .execute()
-    }
-
-    private fun markVoucherValueDecisionDocumentKey(
-        tx: Database.Transaction,
-        feeDecisionId: VoucherValueDecisionId,
-        documentKey: String? = "test-fd-document-key"
-    ) {
-        tx.createUpdate(
-                "UPDATE voucher_value_decision set document_key = :documentKey WHERE id = :id"
-            )
-            .bind("documentKey", documentKey)
-            .bind("id", feeDecisionId)
-            .execute()
-    }
 }

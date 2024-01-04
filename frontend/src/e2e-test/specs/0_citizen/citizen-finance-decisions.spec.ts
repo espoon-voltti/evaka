@@ -66,7 +66,8 @@ beforeEach(async () => {
     partner,
     feeDecisionValidDuring,
     now,
-    uuidv4()
+    uuidv4(),
+    'test-fd-key'
   )
   await insertFeeDecision(feeDecision)
   voucherValueDecision = voucherValueDecisionsFixture(
@@ -78,7 +79,8 @@ beforeEach(async () => {
     'SENT',
     voucherValueDecisionValidDuring.start,
     voucherValueDecisionValidDuring.end ?? undefined,
-    now.subHours(24)
+    now.subHours(24),
+    'test-vvd-key'
   )
   await insertVoucherValueDecision(voucherValueDecision)
 })

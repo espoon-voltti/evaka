@@ -70,6 +70,8 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
+import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -509,6 +511,9 @@ class DevApi(
                     if (fd.sentAt != null) {
                         tx.updateFeeDecisionSentAt(fd)
                     }
+                    if (fd.documentKey != null) {
+                        tx.updateFeeDecisionDocumentKey(fd.id, fd.documentKey)
+                    }
                 }
             }
         }
@@ -525,6 +530,9 @@ class DevApi(
                 decisions.forEach { fd ->
                     if (fd.sentAt != null) {
                         tx.markVoucherValueDecisionsSent(listOf(fd.id), fd.sentAt)
+                    }
+                    if (fd.documentKey != null) {
+                        tx.updateVoucherValueDecisionDocumentKey(fd.id, fd.documentKey)
                     }
                 }
             }
