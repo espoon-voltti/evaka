@@ -183,38 +183,49 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
               </NameWrapper>
             </NameTd>
           )}
-          {days.map(({ date, dateInfo, child }) => (
-            <DayTd
-              key={date.formatIso()}
-              className={classNames({ 'is-today': date.isToday() })}
-              partialRow={reservationRowCount > 1}
-              rowIndex={index}
-              maxRows={reservationRowCount}
-            >
-              {child && childFilter(child, selectedGroup) && (
-                <ChildDayReservation
-                  date={date}
-                  reservationIndex={index}
-                  dateInfo={dateInfo}
-                  reservation={child.reservations[index]}
-                  absent={index === 0 && child.absences.length > 0}
-                  dailyServiceTimes={child.dailyServiceTimes}
-                  inOtherUnit={child.inOtherUnit}
-                  isInBackupGroup={
-                    selectedGroup.type === 'group' &&
-                    !child.inOtherUnit &&
-                    child.backupGroupId !== null &&
-                    child.backupGroupId !== selectedGroup.id
-                  }
-                  scheduleType={child.scheduleType}
-                  serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
-                    sn.validDuring.includes(date)
-                  )}
-                  onStartEdit={() => onOpenEditForChildDate(childId, date)}
-                />
-              )}
-            </DayTd>
-          ))}
+          {days.map(({ date, dateInfo, child }) => {
+            const fullyAbsent =
+              !!child &&
+              child.possibleAbsenceCategories.every((c) => child.absences[c])
+            const hasReservations = !!child && child.reservations.length > 0
+            const displayAbsence =
+              index === 0 && (fullyAbsent || !hasReservations)
+            const absence =
+              child?.absences.BILLABLE ?? child?.absences.NONBILLABLE ?? null
+
+            return (
+              <DayTd
+                key={date.formatIso()}
+                className={classNames({ 'is-today': date.isToday() })}
+                partialRow={reservationRowCount > 1}
+                rowIndex={index}
+                maxRows={reservationRowCount}
+              >
+                {child && childFilter(child, selectedGroup) && (
+                  <ChildDayReservation
+                    date={date}
+                    reservationIndex={index}
+                    dateInfo={dateInfo}
+                    reservation={child.reservations[index]}
+                    absence={displayAbsence ? absence : null}
+                    dailyServiceTimes={child.dailyServiceTimes}
+                    inOtherUnit={child.inOtherUnit}
+                    isInBackupGroup={
+                      selectedGroup.type === 'group' &&
+                      !child.inOtherUnit &&
+                      child.backupGroupId !== null &&
+                      child.backupGroupId !== selectedGroup.id
+                    }
+                    scheduleType={child.scheduleType}
+                    serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
+                      sn.validDuring.includes(date)
+                    )}
+                    onStartEdit={() => onOpenEditForChildDate(childId, date)}
+                  />
+                )}
+              </DayTd>
+            )
+          })}
           {index === 0 && (
             <StyledTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
               <RowMenu

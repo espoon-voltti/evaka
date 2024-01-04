@@ -18,26 +18,10 @@ import { TimeRange } from './shared'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Absence
-*/
-export interface Absence {
-  category: AbsenceCategory
-  type: AbsenceType
-}
-
-/**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
 */
 export interface AbsenceInfo {
   editable: boolean
-  type: AbsenceType
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.AbsenceInput
-*/
-export interface AbsenceInput {
-  category: AbsenceCategory
   type: AbsenceType
 }
 
@@ -74,7 +58,7 @@ export interface Child {
 * Generated from fi.espoo.evaka.reservations.ChildDatePresence
 */
 export interface ChildDatePresence {
-  absences: AbsenceInput[]
+  absences: Record<AbsenceCategory, AbsenceType | null>
   attendances: OpenTimeRange[]
   childId: UUID
   date: LocalDate
@@ -86,13 +70,14 @@ export interface ChildDatePresence {
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
 */
 export interface ChildRecordOfDay {
-  absences: Absence[]
+  absences: Record<AbsenceCategory, AbsenceType>
   attendances: AttendanceTimes[]
   backupGroupId: UUID | null
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
   inOtherUnit: boolean
+  possibleAbsenceCategories: AbsenceCategory[]
   reservations: Reservation[]
   scheduleType: ScheduleType
 }

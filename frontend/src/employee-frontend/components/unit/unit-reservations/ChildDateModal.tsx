@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, fasExclamationTriangle, faTrash } from 'Icons'
 import React from 'react'
+import styled from 'styled-components'
 
 import {
   boolean,
@@ -9,7 +10,13 @@ import {
   openEndedLocalTimeRange,
   string
 } from 'lib-common/form/fields'
-import { array, object, required, transformed } from 'lib-common/form/form'
+import {
+  array,
+  object,
+  oneOf,
+  required,
+  transformed
+} from 'lib-common/form/form'
 import {
   BoundForm,
   useForm,
@@ -17,6 +24,10 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import {
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import {
   Child,
   ChildDatePresence,
@@ -28,6 +39,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import {
@@ -38,6 +50,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, H4 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import { upsertChildDatePresenceMutation } from '../queries'
@@ -53,6 +66,8 @@ const reservationForm = required(localTimeRange())
 
 const attendanceForm = required(openEndedLocalTimeRange())
 
+const absenceForm = oneOf<AbsenceType>()
+
 const form = transformed(
   object({
     date: required(localDate()),
@@ -60,7 +75,9 @@ const form = transformed(
     unitId: required(string()),
     reservations: array(reservationForm),
     reservationNoTimes: boolean(),
-    attendances: array(attendanceForm)
+    attendances: array(attendanceForm),
+    billableAbsence: absenceForm,
+    nonBillableAbsence: absenceForm
   }),
   ({
     date,
@@ -68,7 +85,9 @@ const form = transformed(
     unitId,
     reservations,
     reservationNoTimes,
-    attendances
+    attendances,
+    billableAbsence,
+    nonBillableAbsence
   }) => {
     for (let i = 1; i < reservations.length; i++) {
       if (reservations[i].start.isBefore(reservations[i - 1].end)) {
@@ -94,7 +113,10 @@ const form = transformed(
             endTime: r.end
           })),
       attendances,
-      absences: []
+      absences: {
+        BILLABLE: billableAbsence ?? null,
+        NONBILLABLE: nonBillableAbsence ?? null
+      }
     }
     return ValidationSuccess.of(result)
   }
@@ -110,6 +132,13 @@ export default React.memo(function ChildDateModal({
   onClose: () => void
 }) {
   const { i18n } = useTranslation()
+
+  const absenceOptions = absenceTypes.map((at) => ({
+    domValue: at,
+    value: at,
+    label: i18n.absences.absenceTypes[at],
+    dataQa: at
+  }))
 
   const boundForm = useForm(
     form,
@@ -130,13 +159,40 @@ export default React.memo(function ChildDateModal({
       attendances: childDayRecord.attendances.map((a) => ({
         startTime: a.startTime.format(),
         endTime: a.endTime?.format() ?? ''
-      }))
+      })),
+      billableAbsence: childDayRecord.possibleAbsenceCategories.includes(
+        'BILLABLE'
+      )
+        ? {
+            domValue: childDayRecord.absences.BILLABLE ?? '',
+            options: absenceOptions
+          }
+        : {
+            domValue: '',
+            options: []
+          },
+      nonBillableAbsence: childDayRecord.possibleAbsenceCategories.includes(
+        'NONBILLABLE'
+      )
+        ? {
+            domValue: childDayRecord.absences.NONBILLABLE ?? '',
+            options: absenceOptions
+          }
+        : {
+            domValue: '',
+            options: []
+          }
     }),
     i18n.validationErrors
   )
 
-  const { reservations, reservationNoTimes, attendances } =
-    useFormFields(boundForm)
+  const {
+    reservations,
+    reservationNoTimes,
+    attendances,
+    billableAbsence,
+    nonBillableAbsence
+  } = useFormFields(boundForm)
   const reservationElems = useFormElems(reservations)
   const attendanceElems = useFormElems(attendances)
 
@@ -155,7 +211,9 @@ export default React.memo(function ChildDateModal({
         {child.preferredName || child.firstName} {child.lastName}
       </H3>
 
-      <H4>Läsnäolovaraus</H4>
+      <H4>
+        {i18n.unit.attendanceReservations.childDateModal.reservations.title}
+      </H4>
       <FixedSpaceColumn>
         {reservationElems.map((r, i) => (
           <TimesForm
@@ -166,32 +224,42 @@ export default React.memo(function ChildDateModal({
             }
           />
         ))}
-        {reservationElems.length < 2 &&
-          reservationNoTimes.value() === false && (
-            <InlineButton
-              text="Lisää varaus"
-              icon={faPlus}
-              onClick={() =>
-                reservations.update((s) => [
-                  ...s,
-                  { startTime: '', endTime: '' }
-                ])
-              }
-            />
-          )}
+        {reservationElems.length < 2 && (
+          <InlineButton
+            text={
+              i18n.unit.attendanceReservations.childDateModal.reservations.add
+            }
+            icon={faPlus}
+            disabled={reservationNoTimes.value()}
+            onClick={() =>
+              reservations.update((s) => [...s, { startTime: '', endTime: '' }])
+            }
+          />
+        )}
         {reservationElems.length === 0 && dateInfo.isInHolidayPeriod && (
           <CheckboxF
             bind={reservationNoTimes}
-            label="Läsnä, kellonaika ei vielä tiedossa"
+            label={
+              i18n.unit.attendanceReservations.childDateModal.reservations
+                .noTimes
+            }
           />
         )}
         {!reservations.isValid() &&
           reservations.validationError() === 'timeFormat' && (
-            <AlertBox message="Tarkista päällekkäisyys" thin noMargin />
+            <AlertBox
+              message={
+                i18n.unit.attendanceReservations.childDateModal.overlapWarning
+              }
+              thin
+              noMargin
+            />
           )}
       </FixedSpaceColumn>
 
-      <H4>Läsnäolototeuma</H4>
+      <H4>
+        {i18n.unit.attendanceReservations.childDateModal.attendances.title}
+      </H4>
       <FixedSpaceColumn>
         {attendanceElems.map((a, i) => (
           <TimesForm
@@ -203,7 +271,7 @@ export default React.memo(function ChildDateModal({
           />
         ))}
         <InlineButton
-          text="Lisää uusi rivi"
+          text={i18n.unit.attendanceReservations.childDateModal.attendances.add}
           icon={faPlus}
           onClick={() =>
             attendances.update((s) => [...s, { startTime: '', endTime: '' }])
@@ -211,14 +279,38 @@ export default React.memo(function ChildDateModal({
         />
         {!attendances.isValid() &&
           attendances.validationError() === 'timeFormat' && (
-            <AlertBox message="Tarkista päällekkäisyys" thin noMargin />
+            <AlertBox
+              message={
+                i18n.unit.attendanceReservations.childDateModal.overlapWarning
+              }
+              thin
+              noMargin
+            />
           )}
+      </FixedSpaceColumn>
+
+      <H4>{i18n.unit.attendanceReservations.childDateModal.absences.title}</H4>
+      <FixedSpaceColumn>
+        {childDayRecord.possibleAbsenceCategories.includes('NONBILLABLE') && (
+          <AbsenceForm
+            bind={billableAbsence}
+            category="NONBILLABLE"
+            otherAbsence={nonBillableAbsence.value()}
+          />
+        )}
+        {childDayRecord.possibleAbsenceCategories.includes('BILLABLE') && (
+          <AbsenceForm
+            bind={nonBillableAbsence}
+            category="BILLABLE"
+            otherAbsence={billableAbsence.value()}
+          />
+        )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
 })
 
-const TimesForm = React.memo(function ReservationTimesForm({
+const TimesForm = React.memo(function TimesForm({
   bind,
   onRemove
 }: {
@@ -246,3 +338,51 @@ const TimesForm = React.memo(function ReservationTimesForm({
     </FixedSpaceRow>
   )
 })
+
+const AbsenceForm = React.memo(function AbsenceForm({
+  bind,
+  category,
+  otherAbsence
+}: {
+  bind: BoundForm<typeof absenceForm>
+  category: AbsenceCategory
+  otherAbsence: AbsenceType | undefined
+}) {
+  const { i18n } = useTranslation()
+
+  const defaultType: AbsenceType = otherAbsence ?? 'OTHER_ABSENCE'
+
+  if (bind.value() === undefined) {
+    return (
+      <InlineButton
+        onClick={() => bind.update((s) => ({ ...s, domValue: defaultType }))}
+        text={
+          i18n.unit.attendanceReservations.childDateModal.absences.add[category]
+        }
+        icon={faPlus}
+      />
+    )
+  }
+
+  return (
+    <FixedSpaceRow alignItems="center">
+      <AbsenceLabel>
+        {
+          i18n.unit.attendanceReservations.childDateModal.absences.label[
+            category
+          ]
+        }
+      </AbsenceLabel>
+      <SelectF bind={bind} />
+      <IconButton
+        icon={faTrash}
+        aria-label={i18n.common.remove}
+        onClick={() => bind.update((s) => ({ ...s, domValue: '' }))}
+      />
+    </FixedSpaceRow>
+  )
+})
+
+const AbsenceLabel = styled.div`
+  width: 135px;
+`

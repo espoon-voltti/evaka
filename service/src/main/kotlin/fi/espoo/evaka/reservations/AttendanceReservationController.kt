@@ -143,7 +143,10 @@ class AttendanceReservationController(
                                                 absences =
                                                     childData.absences[date]?.takeIf {
                                                         !placementStatus.backupOtherUnit
-                                                    } ?: emptyList(),
+                                                    } ?: emptyMap(),
+                                                possibleAbsenceCategories =
+                                                    placementStatus.placementType
+                                                        .absenceCategories(),
                                                 dailyServiceTimes =
                                                     serviceTimes[childId]?.find {
                                                         it.validityPeriod.includes(day.date)
@@ -606,7 +609,8 @@ data class UnitAttendanceReservations(
         val childId: ChildId,
         val reservations: List<Reservation>,
         val attendances: List<AttendanceTimes>,
-        val absences: List<Absence>,
+        val absences: Map<AbsenceCategory, AbsenceType>,
+        val possibleAbsenceCategories: Set<AbsenceCategory>,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val groupId: GroupId?,
         val backupGroupId: GroupId?,
@@ -615,8 +619,6 @@ data class UnitAttendanceReservations(
     )
 
     data class AttendanceTimes(val startTime: LocalTime, val endTime: LocalTime?)
-
-    data class Absence(val type: AbsenceType, val category: AbsenceCategory)
 
     data class Child(
         val id: ChildId,
@@ -820,7 +822,7 @@ private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<Reservation>>,
     val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
-    val absences: Map<LocalDate, List<UnitAttendanceReservations.Absence>>
+    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
 )
 
 private data class ChildDataQueryResult(
@@ -858,9 +860,7 @@ private data class AbsenceForDate(
     val date: LocalDate,
     val type: AbsenceType,
     val category: AbsenceCategory
-) {
-    fun toAbsence() = UnitAttendanceReservations.Absence(type, category)
-}
+)
 
 private fun Database.Read.getChildData(
     unitId: DaycareId,
@@ -932,10 +932,12 @@ WHERE p.id = ANY(:childIds)
                         valueTransform = { it.toAttendanceTimes() }
                     ),
                 absences =
-                    row.absences.groupBy(
-                        keySelector = { it.date },
-                        valueTransform = { it.toAbsence() }
-                    ),
+                    row.absences
+                        .groupBy(
+                            keySelector = { it.date },
+                            valueTransform = { it.category to it.type }
+                        )
+                        .mapValues { it.value.toMap() },
             )
         }
         .associateBy { it.child.id }

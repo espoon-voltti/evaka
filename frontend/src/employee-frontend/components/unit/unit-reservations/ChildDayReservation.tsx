@@ -14,7 +14,10 @@ import {
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
+import {
+  AbsenceType,
+  ChildServiceNeedInfo
+} from 'lib-common/generated/api-types/daycare'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   Reservation,
@@ -38,7 +41,7 @@ interface Props {
   reservationIndex: number
   dateInfo: UnitDateInfo
   reservation: Reservation | undefined
-  absent: boolean
+  absence: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
@@ -52,7 +55,7 @@ export default React.memo(function ChildDay({
   reservationIndex,
   dateInfo,
   reservation,
-  absent,
+  absence,
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
@@ -98,8 +101,8 @@ export default React.memo(function ChildDay({
           <TimeCell data-qa="in-other-group">
             <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
           </TimeCell>
-        ) : absent ? (
-          <AbsenceDay type="OTHER_ABSENCE" />
+        ) : absence ? (
+          <AbsenceDay type={absence} />
         ) : reservation && reservation.type === 'TIMES' ? (
           <>
             <ReservationTime

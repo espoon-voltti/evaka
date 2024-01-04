@@ -2431,6 +2431,29 @@ export const fi = {
           IRREGULAR: 'Epäsäännöllinen'
         }
       },
+      childDateModal: {
+        reservations: {
+          title: 'Läsnäolovaraus',
+          add: 'Lisää varaus',
+          noTimes: 'Läsnä, kellonaika ei vielä tiedossa'
+        },
+        attendances: {
+          title: 'Läsnäolototeuma',
+          add: 'Lisää uusi rivi'
+        },
+        absences: {
+          title: 'Poissaolo',
+          add: {
+            BILLABLE: 'Merkitse varhaiskasvatuksen poissaolo',
+            NONBILLABLE: 'Merkitse maksuttoman toiminnan poissaolo'
+          },
+          label: {
+            BILLABLE: 'Poissa varhais-kasvatuksesta, syy:',
+            NONBILLABLE: 'Poissa maksuttomasta toiminnasta, syy:'
+          }
+        },
+        overlapWarning: 'Tarkista päällekkäisyys'
+      },
       reservationNoTimes: 'Läsnä',
       missingHolidayReservation: 'Lomavaraus puuttuu',
       missingHolidayReservationShort: 'Lomavar. puuttuu',
