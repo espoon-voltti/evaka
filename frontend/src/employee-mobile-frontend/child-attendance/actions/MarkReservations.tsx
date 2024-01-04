@@ -21,7 +21,7 @@ import {
 import { StateOf } from 'lib-common/form/types'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
-  NonReservableReservation,
+  ConfirmedRangeDate,
   Reservation
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -53,8 +53,8 @@ import { TallContentArea } from '../../pairing/components'
 import {
   childrenQuery,
   getFutureAbsencesByChildQuery,
-  getNonReservableReservationsQuery,
-  setNonReservableReservationsMutation
+  getConfirmedRangeQuery,
+  setConfirmedRangeMutation
 } from '../queries'
 import { useChild } from '../utils'
 
@@ -111,7 +111,7 @@ const reservationForm = mapped(
       return undefined
     }
   ),
-  (output): NonReservableReservation => ({
+  (output): ConfirmedRangeDate => ({
     date: output.date,
     reservations: output.times
       .filter(
@@ -135,7 +135,7 @@ const reservationsForm = object({
 })
 
 const initialFormState = (
-  reservations: NonReservableReservation[]
+  reservations: ConfirmedRangeDate[]
 ): StateOf<typeof reservationsForm> => ({
   reservations: sortBy(reservations, (reservation) => reservation.date).map(
     (reservation) => ({
@@ -165,9 +165,7 @@ export default React.memo(function MarkReservations() {
     childId: string
   }>()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const reservations = useQueryResult(
-    getNonReservableReservationsQuery(childId)
-  )
+  const reservations = useQueryResult(getConfirmedRangeQuery(childId))
   const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))
   const [mode, setMode] = useState<Mode>('view')
   const goBack = useCallback(() => {
@@ -234,7 +232,7 @@ const ReservationsView = ({
   onEditReservations,
   onMarkAbsence
 }: {
-  reservations: NonReservableReservation[]
+  reservations: ConfirmedRangeDate[]
   absences: Absence[]
   onEditReservations: () => void
   onMarkAbsence: () => void
@@ -308,7 +306,7 @@ const ReservationsView = ({
         >
           <Button
             text={
-              i18n.attendances.actions.nonReservableReservations
+              i18n.attendances.actions.confirmedRangeReservations
                 .markReservations
             }
             onClick={onEditReservations}
@@ -317,7 +315,7 @@ const ReservationsView = ({
           <Button
             primary
             text={
-              i18n.attendances.actions.nonReservableReservations
+              i18n.attendances.actions.confirmedRangeReservations
                 .markAbsentBeforehand
             }
             onClick={onMarkAbsence}
@@ -332,7 +330,7 @@ const ReservationsView = ({
 const ReservationView = ({
   reservation
 }: {
-  reservation: NonReservableReservation
+  reservation: ConfirmedRangeDate
 }) => {
   const { i18n } = useTranslation()
 
@@ -358,7 +356,7 @@ const ReservationsEdit = ({
   onSuccess
 }: {
   childId: UUID
-  reservations: NonReservableReservation[]
+  reservations: ConfirmedRangeDate[]
   onCancel: () => void
   onSuccess: () => void
 }) => {
@@ -408,7 +406,7 @@ const ReservationsEdit = ({
           <MutateButton
             primary
             text={i18n.common.confirm}
-            mutation={setNonReservableReservationsMutation}
+            mutation={setConfirmedRangeMutation}
             onClick={() => ({
               childId,
               body: reservations.value()

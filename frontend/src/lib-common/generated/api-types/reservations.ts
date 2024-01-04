@@ -91,6 +91,16 @@ export interface ChildReservationInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.ConfirmedRangeDate
+*/
+export interface ConfirmedRangeDate {
+  absenceType: AbsenceType | null
+  dailyServiceTimes: DailyServiceTimesValue | null
+  date: LocalDate
+  reservations: Reservation[]
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DailyChildReservationResult
 */
 export interface DailyChildReservationResult {
@@ -160,16 +170,6 @@ export interface GroupReservationStatisticResult {
   calculatedPresent: number
   groupId: UUID | null
   presentCount: number
-}
-
-/**
-* Generated from fi.espoo.evaka.reservations.NonReservableReservation
-*/
-export interface NonReservableReservation {
-  absenceType: AbsenceType | null
-  dailyServiceTimes: DailyServiceTimesValue | null
-  date: LocalDate
-  reservations: Reservation[]
 }
 
 /**

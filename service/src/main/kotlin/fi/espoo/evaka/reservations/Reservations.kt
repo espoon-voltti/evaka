@@ -166,7 +166,7 @@ fun createReservationsAndAbsences(
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
     val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
 
-    val unlockedRange = getReservableRange(now, citizenReservationThresholdHours)
+    val reservableRange = getReservableRange(now, citizenReservationThresholdHours)
 
     val isReservableChild = { req: DailyReservationRequest ->
         placements[req.childId]
@@ -271,7 +271,8 @@ fun createReservationsAndAbsences(
             AbsenceInsert(
                 it.childId,
                 it.date,
-                if (hasContractDays && unlockedRange.includes(it.date)) AbsenceType.PLANNED_ABSENCE
+                if (hasContractDays && reservableRange.includes(it.date))
+                    AbsenceType.PLANNED_ABSENCE
                 else AbsenceType.OTHER_ABSENCE
             )
         }

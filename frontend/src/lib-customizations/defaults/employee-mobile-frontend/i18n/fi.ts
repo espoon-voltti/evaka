@@ -169,7 +169,7 @@ export const fi = {
         'Palauta läsnäolevaksi ilman uutta saapumisaikaa',
       markAbsentBeforehand: 'Tulevat poissaolot',
       markReservations: 'Tulevat varaukset ja poissaolot',
-      nonReservableReservations: {
+      confirmedRangeReservations: {
         markReservations: 'Muokkaa varauksia',
         markAbsentBeforehand: 'Merkitse poissaolo'
       }

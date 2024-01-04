@@ -785,7 +785,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
         val reservations =
-            attendanceReservationController.getNonReservableReservations(
+            attendanceReservationController.getConfirmedRangeData(
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
@@ -793,25 +793,25 @@ class AttendanceReservationsControllerIntegrationTest :
             )
         assertEquals(
             listOf(
-                NonReservableReservation(
+                ConfirmedRangeDate(
                     date = tue,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
-                NonReservableReservation(
+                ConfirmedRangeDate(
                     date = wed,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
-                NonReservableReservation(
+                ConfirmedRangeDate(
                     date = thu,
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
                 ),
-                NonReservableReservation(
+                ConfirmedRangeDate(
                     date = fri,
                     reservations = emptyList(),
                     absenceType = null,
@@ -1003,7 +1003,7 @@ class AttendanceReservationsControllerIntegrationTest :
         val mobileDeviceId =
             db.transaction { tx -> tx.insert(DevMobileDevice(unitId = testDaycare.id)) }
         assertThrows<Forbidden> {
-            attendanceReservationController.getNonReservableReservations(
+            attendanceReservationController.getConfirmedRangeData(
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
@@ -1025,7 +1025,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
         assertThrows<Forbidden> {
-            attendanceReservationController.getNonReservableReservations(
+            attendanceReservationController.getConfirmedRangeData(
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
@@ -1046,13 +1046,13 @@ class AttendanceReservationsControllerIntegrationTest :
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
-        attendanceReservationController.setNonReservableReservations(
+        attendanceReservationController.setConfirmedRangeReservations(
             dbInstance(),
             AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
             testChild_1.id,
             listOf(
-                NonReservableReservation(
+                ConfirmedRangeDate(
                     clock.today().plusDays(1),
                     reservations = emptyList(),
                     absenceType = null,
