@@ -2437,7 +2437,8 @@ const sv: Translations = {
         `Sida ${current} av ${total}`
     },
     serviceNeedAndDailyServiceTime: {
-      title: 'Dagvårdsbehov och daglig vårdtid'
+      title: 'Dagvårdsbehov',
+      titleWithDailyServiceTime: 'Dagvårdsbehov och daglig vårdtid'
     },
     serviceNeed: {
       title: 'Dagvårdsbehov',

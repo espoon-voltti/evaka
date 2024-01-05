@@ -54,7 +54,11 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
 
   return (
     <ResponsiveWholePageCollapsible
-      title={t.children.serviceNeedAndDailyServiceTime.title}
+      title={
+        showServiceTimes
+          ? t.children.serviceNeedAndDailyServiceTime.titleWithDailyServiceTime
+          : t.children.serviceNeedAndDailyServiceTime.title
+      }
       open={open}
       toggleOpen={() => setOpen(!open)}
       opaque

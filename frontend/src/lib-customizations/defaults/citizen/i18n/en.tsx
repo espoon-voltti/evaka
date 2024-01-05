@@ -2193,7 +2193,8 @@ const en: Translations = {
         `Page ${current} of ${total}`
     },
     serviceNeedAndDailyServiceTime: {
-      title: 'Service need and daily service time'
+      title: 'Service need',
+      titleWithDailyServiceTime: 'Service need and daily service time'
     },
     serviceNeed: {
       title: 'Service need',
