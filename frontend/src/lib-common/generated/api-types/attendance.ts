@@ -86,27 +86,11 @@ export type AttendanceStatus =
   | 'ABSENT'
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.AttendanceTimeRange
-*/
-export interface AttendanceTimeRange {
-  endTime: string | null
-  startTime: string
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.AttendanceTimes
 */
 export interface AttendanceTimes {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.AttendancesRequest
-*/
-export interface AttendancesRequest {
-  attendances: AttendanceTimeRange[]
-  date: LocalDate
 }
 
 /**

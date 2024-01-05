@@ -15,7 +15,6 @@ import {
   ApplicationUnitSummary,
   UnitApplications
 } from 'lib-common/generated/api-types/application'
-import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   AclUpdate,
@@ -797,20 +796,6 @@ export async function postReservations(
 ): Promise<void> {
   return client
     .post('/attendance-reservations', reservations)
-    .then(() => undefined)
-}
-
-export async function postAttendances({
-  childId,
-  unitId,
-  attendances
-}: {
-  childId: UUID
-  unitId: UUID
-  attendances: AttendancesRequest
-}): Promise<void> {
-  return client
-    .post(`/attendances/units/${unitId}/children/${childId}`, attendances)
     .then(() => undefined)
 }
 

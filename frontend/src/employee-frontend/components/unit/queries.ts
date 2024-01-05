@@ -34,7 +34,6 @@ import {
   getUnitGroupDetails,
   getUnitNotifications,
   getUnitOccupancies,
-  postAttendances,
   postChildDatePresence,
   postReservations,
   TransferGroup,
@@ -207,10 +206,6 @@ export const unitGroupDetailsQuery = query({
 export const postReservationsMutation = mutation({
   api: postReservations,
   invalidateQueryKeys: () => [queryKeys.unitAttendanceReservations()]
-})
-
-export const postAttendancesMutation = mutation({
-  api: postAttendances
 })
 
 export const createBackupCareMutation = mutation({
