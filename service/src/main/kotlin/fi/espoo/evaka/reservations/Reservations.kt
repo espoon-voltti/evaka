@@ -311,12 +311,13 @@ data class UpsertChildDatePresenceResult(
 fun upsertChildDatePresence(
     tx: Database.Transaction,
     userId: EvakaUserId,
+    now: HelsinkiDateTime,
     input: ChildDatePresence
 ): UpsertChildDatePresenceResult {
     val placementType =
         tx.getChildPlacementTypes(setOf(input.childId), input.date)[input.childId]
             ?: throw BadRequest("No placement")
-    input.validate(placementType)
+    input.validate(now, placementType)
 
     // check which of the reservations already exist, so that they won't be unnecessarily replaced
     // and metadata lost
@@ -403,7 +404,7 @@ fun upsertChildDatePresence(
     )
 }
 
-private fun ChildDatePresence.validate(placementType: PlacementType) {
+private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: PlacementType) {
     if (reservations.size > 2) throw BadRequest("Too many reservations")
     if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1)
         throw BadRequest("Mixed reservation types")
@@ -422,6 +423,14 @@ private fun ChildDatePresence.validate(placementType: PlacementType) {
         if (a1.endTime == null || a2.startTime.isBefore(a1.endTime))
             throw BadRequest("Overlapping attendance times")
     }
+    attendances
+        .flatMap { listOfNotNull(it.startTime, it.endTime) }
+        .map { HelsinkiDateTime.of(date, it) }
+        .forEach {
+            if (it.isAfter(now.plusMinutes(30))) {
+                throw BadRequest("Cannot mark attendances into future")
+            }
+        }
 
     if (
         absences.entries

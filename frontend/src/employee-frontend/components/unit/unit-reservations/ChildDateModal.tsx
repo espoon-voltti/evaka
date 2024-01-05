@@ -133,6 +133,9 @@ export default React.memo(function ChildDateModal({
 }) {
   const { i18n } = useTranslation()
 
+  const today = LocalDate.todayInHelsinkiTz()
+  const editingFuture = date.isAfter(today)
+
   const absenceOptions = absenceTypes.map((at) => ({
     domValue: at,
     value: at,
@@ -160,10 +163,12 @@ export default React.memo(function ChildDateModal({
         childDayRecord.scheduleType === 'RESERVATION_REQUIRED' &&
         childDayRecord.reservations.length === 1 &&
         childDayRecord.reservations[0].type === 'NO_TIMES',
-      attendances: childDayRecord.attendances.map((a) => ({
-        startTime: a.startTime.format(),
-        endTime: a.endTime?.format() ?? ''
-      })),
+      attendances: editingFuture
+        ? []
+        : childDayRecord.attendances.map((a) => ({
+            startTime: a.startTime.format(),
+            endTime: a.endTime?.format() ?? ''
+          })),
       billableAbsence: childDayRecord.possibleAbsenceCategories.includes(
         'BILLABLE'
       )
@@ -273,37 +278,50 @@ export default React.memo(function ChildDateModal({
         </>
       )}
 
-      <H4>
-        {i18n.unit.attendanceReservations.childDateModal.attendances.title}
-      </H4>
-      <FixedSpaceColumn>
-        {attendanceElems.map((a, i) => (
-          <TimesForm
-            key={`attendance-${i}`}
-            bind={a}
-            onRemove={() =>
-              attendances.update((s) => [...s.slice(0, i), ...s.slice(i + 1)])
-            }
-          />
-        ))}
-        <InlineButton
-          text={i18n.unit.attendanceReservations.childDateModal.attendances.add}
-          icon={faPlus}
-          onClick={() =>
-            attendances.update((s) => [...s, { startTime: '', endTime: '' }])
-          }
-        />
-        {!attendances.isValid() &&
-          attendances.validationError() === 'timeFormat' && (
-            <AlertBox
-              message={
-                i18n.unit.attendanceReservations.childDateModal.overlapWarning
+      {!editingFuture && (
+        <>
+          <H4>
+            {i18n.unit.attendanceReservations.childDateModal.attendances.title}
+          </H4>
+          <FixedSpaceColumn>
+            {attendanceElems.map((a, i) => (
+              <TimesForm
+                key={`attendance-${i}`}
+                bind={a}
+                onRemove={() =>
+                  attendances.update((s) => [
+                    ...s.slice(0, i),
+                    ...s.slice(i + 1)
+                  ])
+                }
+              />
+            ))}
+            <InlineButton
+              text={
+                i18n.unit.attendanceReservations.childDateModal.attendances.add
               }
-              thin
-              noMargin
+              icon={faPlus}
+              onClick={() =>
+                attendances.update((s) => [
+                  ...s,
+                  { startTime: '', endTime: '' }
+                ])
+              }
             />
-          )}
-      </FixedSpaceColumn>
+            {!attendances.isValid() &&
+              attendances.validationError() === 'timeFormat' && (
+                <AlertBox
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .overlapWarning
+                  }
+                  thin
+                  noMargin
+                />
+              )}
+          </FixedSpaceColumn>
+        </>
+      )}
 
       <H4>{i18n.unit.attendanceReservations.childDateModal.absences.title}</H4>
       <FixedSpaceColumn>

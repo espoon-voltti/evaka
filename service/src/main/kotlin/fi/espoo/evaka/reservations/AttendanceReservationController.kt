@@ -235,7 +235,7 @@ class AttendanceReservationController(
                         body.childId
                     )
 
-                    upsertChildDatePresence(tx, user.evakaUserId, body)
+                    upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body)
                 }
             }
             .also { result ->
