@@ -170,7 +170,7 @@ fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate):
 fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
     childId: ChildId,
     range: DateRange,
-    category: AbsenceCategory
+    categories: Set<AbsenceCategory>
 ): List<AbsenceId> =
     createQuery(
             """
@@ -178,14 +178,14 @@ DELETE FROM absence
 WHERE
     child_id = :childId AND
     between_start_and_end(:range, date) AND
-    category = :category AND
+    category = ANY (:categories::absence_category[]) AND
     modified_by != :systemUserId
 RETURNING id
 """
         )
         .bind("childId", childId)
         .bind("range", range)
-        .bind("category", category)
+        .bind("categories", categories)
         .bind("systemUserId", AuthenticatedUser.SystemInternalUser.evakaUserId)
         .toList<AbsenceId>()
 

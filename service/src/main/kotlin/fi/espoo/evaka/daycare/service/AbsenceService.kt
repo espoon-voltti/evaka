@@ -273,7 +273,7 @@ fun deleteFutureNonGeneratedAbsencesByCategoryInRange(
     clock: EvakaClock,
     childId: ChildId,
     range: DateRange,
-    categoryToDelete: AbsenceCategory
+    categoriesToDelete: Set<AbsenceCategory>
 ) {
     if (range.start.isBefore(clock.now().toLocalDate().plusDays(1))) {
         throw BadRequest("Could not delete future absences - Range has to be in future ")
@@ -282,10 +282,10 @@ fun deleteFutureNonGeneratedAbsencesByCategoryInRange(
     val futureAbsences = getFutureAbsencesOfChild(tx, clock, childId)
 
     val futureAbsencesToDelete =
-        futureAbsences.filter { absence -> absence.category == categoryToDelete }
+        futureAbsences.filter { absence -> categoriesToDelete.contains(absence.category) }
 
     if (futureAbsencesToDelete.isNotEmpty()) {
-        tx.deleteNonSystemGeneratedAbsencesByCategoryInRange(childId, range, categoryToDelete)
+        tx.deleteNonSystemGeneratedAbsencesByCategoryInRange(childId, range, categoriesToDelete)
     }
 }
 

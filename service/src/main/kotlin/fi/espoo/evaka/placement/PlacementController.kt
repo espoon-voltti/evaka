@@ -229,47 +229,33 @@ class PlacementController(
                             // Only proceed with future absence and reservation deletion if
                             // placements range is in future
                             if (body.endDate.isAfter(now.toLocalDate())) {
+                                val future = DateRange(now.toLocalDate().plusDays(1), null)
                                 val range =
-                                    DateRange(
-                                        when (body.startDate.isAfter(now.toLocalDate())) {
-                                            true -> body.startDate
-                                            false -> now.toLocalDate().plusDays(1)
-                                        },
-                                        body.endDate
-                                    )
+                                    DateRange(body.startDate, body.endDate).intersection(future)
+
                                 // Delete future absences if new absence category is specific
                                 if (
-                                    !body.type
-                                        .absenceCategories()
-                                        .containsAll(
-                                            setOf(
-                                                AbsenceCategory.BILLABLE,
-                                                AbsenceCategory.NONBILLABLE
-                                            )
-                                        )
+                                    body.type.absenceCategories().size !=
+                                        AbsenceCategory.values().size
                                 ) {
-                                    when (body.type.absenceCategories().first()) {
-                                        AbsenceCategory.BILLABLE ->
-                                            deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                                tx,
-                                                clock,
-                                                body.childId,
-                                                range,
-                                                AbsenceCategory.NONBILLABLE
-                                            )
-                                        AbsenceCategory.NONBILLABLE ->
-                                            deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                                tx,
-                                                clock,
-                                                body.childId,
-                                                range,
-                                                AbsenceCategory.BILLABLE
-                                            )
-                                    }
+                                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                                        tx,
+                                        clock,
+                                        body.childId,
+                                        range!!,
+                                        setOf(
+                                            when (body.type.absenceCategories().single()) {
+                                                AbsenceCategory.BILLABLE ->
+                                                    AbsenceCategory.NONBILLABLE
+                                                AbsenceCategory.NONBILLABLE ->
+                                                    AbsenceCategory.BILLABLE
+                                            }
+                                        )
+                                    )
                                 }
                                 tx.clearReservationsForRangeExceptInHolidayPeriod(
                                     body.childId,
-                                    range
+                                    range!!
                                 )
                             }
 
@@ -327,15 +313,13 @@ class PlacementController(
                         body.endDate.isBefore(oldPlacement.endDate)
                 ) {
                     val range = DateRange(body.endDate, oldPlacement.endDate)
-                    oldPlacement.type.absenceCategories().forEach { category ->
-                        deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                            tx,
-                            clock,
-                            oldPlacement.childId,
-                            range,
-                            category
-                        )
-                    }
+                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                        tx,
+                        clock,
+                        oldPlacement.childId,
+                        range,
+                        oldPlacement.type.absenceCategories()
+                    )
                     tx.clearReservationsForRangeExceptInHolidayPeriod(oldPlacement.childId, range)
                 }
 
@@ -384,15 +368,13 @@ class PlacementController(
                         // period
                         if (placement.endDate.isAfter(now.toLocalDate())) {
                             val range = DateRange(now.toLocalDate().plusDays(1), placement.endDate)
-                            placement.type.absenceCategories().forEach { category ->
-                                deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                    tx,
-                                    clock,
-                                    placement.childId,
-                                    range,
-                                    category
-                                )
-                            }
+                            deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                                tx,
+                                clock,
+                                placement.childId,
+                                range,
+                                placement.type.absenceCategories()
+                            )
                             tx.clearReservationsForRangeExceptInHolidayPeriod(
                                 placement.childId,
                                 range
