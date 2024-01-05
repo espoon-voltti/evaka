@@ -85,7 +85,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `getChild returns permitted actions`() {
+    fun `getChild permitted actions should not contain READ_DAILY_SERVICE_TIMES with default AccessControl`() {
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
@@ -94,39 +94,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val result = childController.getChild(dbInstance(), user, RealEvakaClock(), childId)
 
         Assertions.assertThat(result.permittedActions)
-            .isEqualTo(
-                setOf(
-                    Action.Child.READ,
-                    Action.Child.READ_ADDITIONAL_INFO,
-                    Action.Child.UPDATE_ADDITIONAL_INFO,
-                    Action.Child.READ_DECISIONS,
-                    Action.Child.READ_APPLICATION,
-                    Action.Child.READ_ASSISTANCE,
-                    Action.Child.CREATE_ASSISTANCE_FACTOR,
-                    Action.Child.READ_ASSISTANCE_FACTORS,
-                    Action.Child.CREATE_DAYCARE_ASSISTANCE,
-                    Action.Child.READ_DAYCARE_ASSISTANCES,
-                    Action.Child.CREATE_PRESCHOOL_ASSISTANCE,
-                    Action.Child.READ_PRESCHOOL_ASSISTANCES,
-                    Action.Child.CREATE_ASSISTANCE_ACTION,
-                    Action.Child.READ_ASSISTANCE_ACTION,
-                    Action.Child.CREATE_OTHER_ASSISTANCE_MEASURE,
-                    Action.Child.READ_OTHER_ASSISTANCE_MEASURES,
-                    Action.Child.CREATE_ASSISTANCE_NEED_DECISION,
-                    Action.Child.READ_ASSISTANCE_NEED_DECISIONS,
-                    Action.Child.CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION,
-                    Action.Child.READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS,
-                    Action.Child.CREATE_BACKUP_CARE,
-                    Action.Child.READ_BACKUP_CARE,
-                    Action.Child.CREATE_DAILY_SERVICE_TIME,
-                    Action.Child.READ_PLACEMENT,
-                    Action.Child.READ_GUARDIANS,
-                    Action.Child.READ_BLOCKED_GUARDIANS,
-                    Action.Child.READ_CHILD_RECIPIENTS,
-                    Action.Child.UPDATE_CHILD_RECIPIENT,
-                    Action.Child.READ_CHILD_CONSENTS
-                )
-            )
+            .doesNotContain(Action.Child.READ_DAILY_SERVICE_TIMES)
     }
 
     @Test

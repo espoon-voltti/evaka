@@ -279,7 +279,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `getChildren contains child info and permitted actions`() {
+    fun `getChildren contains child info and default permitted actions`() {
         val (guardianId, childId) =
             db.transaction { tx ->
                 val areaId = tx.insert(DevCareArea())
