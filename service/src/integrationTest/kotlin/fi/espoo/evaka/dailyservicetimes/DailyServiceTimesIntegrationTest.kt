@@ -6,6 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
+import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -32,12 +33,14 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -48,7 +51,10 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
+    private val dailyServiceTimesController =
+        DailyServiceTimesController(
+            AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
+        )
     @Autowired
     private lateinit var dailyServiceTimesCitizenController: DailyServiceTimesCitizenController
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
