@@ -226,13 +226,12 @@ class PlacementController(
                         .also {
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
 
+                            val future = DateRange(now.toLocalDate().plusDays(1), null)
+                            val range = DateRange(body.startDate, body.endDate).intersection(future)
+
                             // Only proceed with future absence and reservation deletion if
                             // placements range is in future
-                            if (body.endDate.isAfter(now.toLocalDate())) {
-                                val future = DateRange(now.toLocalDate().plusDays(1), null)
-                                val range =
-                                    DateRange(body.startDate, body.endDate).intersection(future)
-
+                            if (range != null) {
                                 // Delete future absences if new absence category is specific
                                 if (
                                     body.type.absenceCategories().size !=
@@ -242,7 +241,7 @@ class PlacementController(
                                         tx,
                                         clock,
                                         body.childId,
-                                        range!!,
+                                        range,
                                         setOf(
                                             when (body.type.absenceCategories().single()) {
                                                 AbsenceCategory.BILLABLE ->
@@ -255,7 +254,7 @@ class PlacementController(
                                 }
                                 tx.clearReservationsForRangeExceptInHolidayPeriod(
                                     body.childId,
-                                    range!!
+                                    range
                                 )
                             }
 
