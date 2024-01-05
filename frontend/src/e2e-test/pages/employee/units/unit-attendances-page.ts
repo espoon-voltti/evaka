@@ -350,12 +350,14 @@ export class UnitChildReservationsTable extends Element {
 
   #ellipsisMenu = (childId: UUID) =>
     this.findByDataQa(`ellipsis-menu-${childId}`)
-  #editInline = this.findByDataQa('menu-item-edit-row')
 
-  childRows(childId: UUID) {
+  childReservationRows(childId: UUID) {
     return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
-  childAbsenceRows(childId: UUID) {
+  childAttendanceRows(childId: UUID) {
+    return this.findAllByDataQa(`attendance-row-child-${childId}`)
+  }
+  childAbsenceCells(childId: UUID) {
     return this.findAllByDataQa(
       `reservation-row-child-${childId}`
     ).findAllByDataQa('absence')
@@ -404,77 +406,6 @@ export class UnitChildReservationsTable extends Element {
   getBackupCareRequiredWarning(date: LocalDate, row: number): Promise<string> {
     const cell = this.#attendanceCell(date, row)
     return cell.findByDataQa('backup-care-required-warning').text
-  }
-
-  async openInlineEditor(childId: UUID) {
-    await this.#ellipsisMenu(childId).click()
-    await this.#editInline.click()
-  }
-
-  async closeInlineEditor() {
-    await this.findByDataQa('inline-editor-state-button').click()
-  }
-
-  async setReservationTimes(
-    date: LocalDate,
-    startTime: string,
-    endTime: string
-  ) {
-    const reservations = this.#reservationCell(date, 0)
-    await new TextInput(reservations.findByDataQa('input-start-time')).fill(
-      startTime
-    )
-    await new TextInput(reservations.findByDataQa('input-end-time')).fill(
-      endTime
-    )
-    // Click table header to trigger last input's onblur
-    await this.findAll('thead').first().click()
-  }
-
-  async assertWarningIsShown(
-    date: LocalDate,
-    expectStartTimeWarning: boolean,
-    expectEndTimeWarning: boolean
-  ) {
-    const reservations = this.#attendanceCell(date, 0)
-
-    expectStartTimeWarning
-      ? await reservations
-          .find('[data-qa="input-start-time"].warning')
-          .waitUntilVisible()
-      : await waitUntilEqual(
-          () =>
-            reservations
-              .findAll('[data-qa="input-start-time"].warning')
-              .count(),
-          0
-        )
-
-    expectEndTimeWarning
-      ? await reservations
-          .find('[data-qa="input-end-time"].warning')
-          .waitUntilVisible()
-      : await waitUntilEqual(
-          () =>
-            reservations.findAll('[data-qa="input-end-time"].warning').count(),
-          0
-        )
-  }
-
-  async setAttendanceTimes(
-    date: LocalDate,
-    startTime: string,
-    endTime: string
-  ) {
-    const attendances = this.#attendanceCell(date, 0)
-    await new TextInput(attendances.findByDataQa('input-start-time')).fill(
-      startTime
-    )
-    await new TextInput(attendances.findByDataQa('input-end-time')).fill(
-      endTime
-    )
-    // Click table header to trigger last input's onblur
-    await this.findAll('thead').first().click()
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {

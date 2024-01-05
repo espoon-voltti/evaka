@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+// TODO: Reimplement with the new editor modal
+
+/*
+
 import { EmployeeDetail } from 'e2e-test/dev-api/types'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -273,3 +277,4 @@ const navigateToUnitCalendar = async (
   await unitPage.navigateToUnit(unitId)
   return await unitPage.openCalendarPage()
 }
+*/
