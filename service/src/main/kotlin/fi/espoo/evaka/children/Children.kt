@@ -18,7 +18,7 @@ data class Group(@PropagateNull val id: GroupId, val name: String)
 
 data class Unit(@PropagateNull val id: DaycareId, val name: String)
 
-open class Child(
+data class Child(
     val id: ChildId,
     val firstName: String,
     val preferredName: String,
