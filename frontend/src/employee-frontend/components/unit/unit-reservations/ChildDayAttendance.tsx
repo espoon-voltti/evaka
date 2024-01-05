@@ -15,6 +15,7 @@ import {
 } from 'lib-common/api-types/daily-service-times'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
+import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   AttendanceTimes,
   Reservation,
@@ -42,11 +43,12 @@ interface Props {
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
+  scheduleType: ScheduleType
   serviceNeedInfo: ChildServiceNeedInfo | undefined
   onStartEdit: () => void
 }
 
-export default React.memo(function ChildDay({
+export default React.memo(function ChildDayAttendance({
   date,
   attendanceIndex,
   dateInfo,
@@ -55,6 +57,7 @@ export default React.memo(function ChildDay({
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
+  scheduleType,
   serviceNeedInfo,
   onStartEdit
 }: Props) {
@@ -154,7 +157,7 @@ export default React.memo(function ChildDay({
           )}
         </TimesRow>
       ) : null}
-      {!inOtherUnit && !isInBackupGroup && (
+      {!inOtherUnit && !isInBackupGroup && scheduleType !== 'TERM_BREAK' && (
         <DetailsToggle>
           <IconButton
             icon={faCircleEllipsis}

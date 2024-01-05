@@ -267,6 +267,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                     child.backupGroupId !== null &&
                     child.backupGroupId !== selectedGroup.id
                   }
+                  scheduleType={child.scheduleType}
                   serviceNeedInfo={childBasics.serviceNeeds.find((sn) =>
                     sn.validDuring.includes(date)
                   )}

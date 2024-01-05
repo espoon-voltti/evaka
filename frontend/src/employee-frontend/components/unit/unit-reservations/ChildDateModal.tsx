@@ -146,14 +146,18 @@ export default React.memo(function ChildDateModal({
       date: localDate.fromDate(date),
       childId: child.id,
       unitId,
-      reservations: childDayRecord.reservations
-        .filter((r): r is Reservation.Times => r.type === 'TIMES')
-        .map((r) => ({
-          startTime: r.startTime.format(),
-          endTime: r.endTime.format()
-        })),
+      reservations:
+        childDayRecord.scheduleType === 'RESERVATION_REQUIRED'
+          ? childDayRecord.reservations
+              .filter((r): r is Reservation.Times => r.type === 'TIMES')
+              .map((r) => ({
+                startTime: r.startTime.format(),
+                endTime: r.endTime.format()
+              }))
+          : [],
       reservationNoTimes:
         dateInfo.isInHolidayPeriod &&
+        childDayRecord.scheduleType === 'RESERVATION_REQUIRED' &&
         childDayRecord.reservations.length === 1 &&
         childDayRecord.reservations[0].type === 'NO_TIMES',
       attendances: childDayRecord.attendances.map((a) => ({
@@ -211,51 +215,63 @@ export default React.memo(function ChildDateModal({
         {child.preferredName || child.firstName} {child.lastName}
       </H3>
 
-      <H4>
-        {i18n.unit.attendanceReservations.childDateModal.reservations.title}
-      </H4>
-      <FixedSpaceColumn>
-        {reservationElems.map((r, i) => (
-          <TimesForm
-            key={`reservation-${i}`}
-            bind={r}
-            onRemove={() =>
-              reservations.update((s) => [...s.slice(0, i), ...s.slice(i + 1)])
-            }
-          />
-        ))}
-        {reservationElems.length < 2 && (
-          <InlineButton
-            text={
-              i18n.unit.attendanceReservations.childDateModal.reservations.add
-            }
-            icon={faPlus}
-            disabled={reservationNoTimes.value()}
-            onClick={() =>
-              reservations.update((s) => [...s, { startTime: '', endTime: '' }])
-            }
-          />
-        )}
-        {reservationElems.length === 0 && dateInfo.isInHolidayPeriod && (
-          <CheckboxF
-            bind={reservationNoTimes}
-            label={
-              i18n.unit.attendanceReservations.childDateModal.reservations
-                .noTimes
-            }
-          />
-        )}
-        {!reservations.isValid() &&
-          reservations.validationError() === 'timeFormat' && (
-            <AlertBox
-              message={
-                i18n.unit.attendanceReservations.childDateModal.overlapWarning
-              }
-              thin
-              noMargin
-            />
-          )}
-      </FixedSpaceColumn>
+      {childDayRecord.scheduleType === 'RESERVATION_REQUIRED' && (
+        <>
+          <H4>
+            {i18n.unit.attendanceReservations.childDateModal.reservations.title}
+          </H4>
+          <FixedSpaceColumn>
+            {reservationElems.map((r, i) => (
+              <TimesForm
+                key={`reservation-${i}`}
+                bind={r}
+                onRemove={() =>
+                  reservations.update((s) => [
+                    ...s.slice(0, i),
+                    ...s.slice(i + 1)
+                  ])
+                }
+              />
+            ))}
+            {reservationElems.length < 2 && (
+              <InlineButton
+                text={
+                  i18n.unit.attendanceReservations.childDateModal.reservations
+                    .add
+                }
+                icon={faPlus}
+                disabled={reservationNoTimes.value()}
+                onClick={() =>
+                  reservations.update((s) => [
+                    ...s,
+                    { startTime: '', endTime: '' }
+                  ])
+                }
+              />
+            )}
+            {reservationElems.length === 0 && dateInfo.isInHolidayPeriod && (
+              <CheckboxF
+                bind={reservationNoTimes}
+                label={
+                  i18n.unit.attendanceReservations.childDateModal.reservations
+                    .noTimes
+                }
+              />
+            )}
+            {!reservations.isValid() &&
+              reservations.validationError() === 'timeFormat' && (
+                <AlertBox
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .overlapWarning
+                  }
+                  thin
+                  noMargin
+                />
+              )}
+          </FixedSpaceColumn>
+        </>
+      )}
 
       <H4>
         {i18n.unit.attendanceReservations.childDateModal.attendances.title}

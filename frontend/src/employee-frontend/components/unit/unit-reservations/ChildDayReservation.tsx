@@ -50,7 +50,7 @@ interface Props {
   onStartEdit: () => void
 }
 
-export default React.memo(function ChildDay({
+export default React.memo(function ChildDayReservation({
   date,
   reservationIndex,
   dateInfo,
@@ -186,7 +186,7 @@ export default React.memo(function ChildDay({
           )
         ) : null}
       </TimesRow>
-      {!inOtherUnit && !isInBackupGroup && (
+      {!inOtherUnit && !isInBackupGroup && scheduleType !== 'TERM_BREAK' && (
         <DetailsToggle>
           <IconButton
             icon={faCircleEllipsis}
