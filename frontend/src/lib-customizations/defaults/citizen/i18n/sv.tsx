@@ -1375,21 +1375,34 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
+    childhoodEducationTitle:
+      'Beslut gällande barnets ansökan till småbarnspedagogik, förskola och klubbverksamhet',
     summary: (
       <P width="800px">
-        Till denna sida kommer beslut gällande barnets ansökan till
-        småbarnspedagogik, förskola och klubbverksamhet.
+        Till denna sidan kommer beslut gällande betalningar, barnets ansökan
+        till småbarnspedagogik, förskola och klubbverksamhet.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
-        Om beslutet rör en ansökan till en för barnet ny plats, bör du ta emot
-        eller annullera platsen / platserna inom två veckor från mottagandet av
-        beslutet.
+        Om beslutet gäller en ny sökt plats för barnet ska du svara inom två
+        veckor om du tar emot eller inte tar emot platsen.
       </P>
     ),
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
     noUnconfirmedDecisions: 'alla beslut bekräftade',
     unreadDecision: 'oläst beslut',
     pageLoadError: 'Hämtning av information misslyckades',
+    financeDecisions: {
+      type: {
+        FEE_DECISION: 'Betalningsbeslut',
+        VOUCHER_VALUE_DECISION: 'Beslut om värdet på servicesedlar'
+      },
+      title: 'Beslut gällande betalningar',
+      liableCitizens: 'Betalningsskyldiga',
+      validityPeriod: 'Beslut giltigt från',
+      sentAt: 'Beslut skickat',
+      voucherValueChild: 'Barnet som berörs av beslutet',
+      loadDecisionPDF: 'Visa beslut'
+    },
     applicationDecisions: {
       decision: 'Beslut',
       type: {

@@ -358,6 +358,13 @@ export interface FeeThresholdsWithId {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+*/
+export type FinanceDecisionType =
+  | 'FEE_DECISION'
+  | 'VOUCHER_VALUE_DECISION'
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.GenerateDecisionsBody
 */
 export interface GenerateDecisionsBody {

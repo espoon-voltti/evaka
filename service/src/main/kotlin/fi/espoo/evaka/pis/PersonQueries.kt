@@ -101,6 +101,22 @@ WHERE id = :id
         .exactlyOneOrNull(toPersonDTO)
 }
 
+data class PersonNameDetails(val id: PersonId, val firstName: String, val lastName: String)
+
+fun Database.Read.getPersonNameDetailsById(personIds: Set<PersonId>): List<PersonNameDetails> {
+    return createQuery(
+            """
+SELECT
+id, first_name, last_name
+FROM person
+WHERE id = ANY(:personIds)
+        """
+                .trimIndent()
+        )
+        .bind("personIds", personIds)
+        .toList<PersonNameDetails>()
+}
+
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)

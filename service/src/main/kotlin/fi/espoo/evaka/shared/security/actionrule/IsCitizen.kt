@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.VasuDocumentId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.QuerySql
@@ -468,6 +470,30 @@ WHERE person_id = ${bind(citizenId)}
 SELECT id
 FROM daily_service_time_notification
 WHERE guardian_id = ${bind(citizenId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun liableForFeeDecisionPayment() =
+        rule<FeeDecisionId> { citizenId, _ ->
+            sql(
+                """
+SELECT fd.id
+FROM fee_decision fd
+WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citizenId)}) 
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun liableForVoucherValueDecisionPayment() =
+        rule<VoucherValueDecisionId> { citizenId, _ ->
+            sql(
+                """
+SELECT vvd.id
+FROM voucher_value_decision vvd
+WHERE (vvd.head_of_family_id = ${bind(citizenId)} OR vvd.partner_id = ${bind(citizenId)}) 
             """
                     .trimIndent()
             )

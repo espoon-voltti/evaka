@@ -12,24 +12,34 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.decision.getSentDecision
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
+import fi.espoo.evaka.invoicing.data.getFeeDecisionByLiableCitizen
+import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionByLiableCitizen
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+import fi.espoo.evaka.invoicing.service.FeeDecisionService
+import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.getPersonNameDetailsById
 import fi.espoo.evaka.pis.isDuplicate
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
+import java.util.UUID
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -48,7 +58,9 @@ class ApplicationControllerCitizen(
     private val featureConfig: FeatureConfig,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
-    private val personService: PersonService
+    private val personService: PersonService,
+    private val feeDecisionService: FeeDecisionService,
+    private val voucherValueDecisionService: VoucherValueDecisionService
 ) {
 
     @GetMapping("/applications/by-guardian")
@@ -549,6 +561,152 @@ class ApplicationControllerCitizen(
             }
             .also { Audit.ApplicationReadNotifications.log(targetId = user.id) }
     }
+
+    @GetMapping("/finance-decisions/by-liable-citizen")
+    fun getLiableCitizenFinanceDecisions(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ): List<FinanceDecisionCitizenInfo> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_FINANCE_DECISIONS,
+                        user.id
+                    )
+                    val voucherValueDecisionRows =
+                        tx.getVoucherValueDecisionByLiableCitizen(user.id)
+                    val feeDecisionRows = tx.getFeeDecisionByLiableCitizen(user.id)
+
+                    val citizenIds =
+                        feeDecisionRows
+                            .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+                            .flatten()
+                            .toSet() +
+                            voucherValueDecisionRows
+                                .map { listOfNotNull(it.headOfFamilyId, it.partnerId) }
+                                .flatten()
+                                .toSet()
+
+                    val childIds = voucherValueDecisionRows.map { it.childId }.toSet()
+                    val personMap =
+                        tx.getPersonNameDetailsById(citizenIds + childIds).associateBy { it.id }
+                    val voucherValueDecisionInfos =
+                        voucherValueDecisionRows.map { row ->
+                            val childInfo =
+                                personMap[row.childId]
+                                    ?: throw IllegalStateException("Voucher value child not found")
+                            FinanceDecisionCitizenInfo(
+                                id = row.id.raw,
+                                type = FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                                decisionChildren =
+                                    listOf(
+                                        FinanceDecisionChildInfo(
+                                            childInfo.id,
+                                            childInfo.firstName,
+                                            childInfo.lastName
+                                        )
+                                    ),
+                                validFrom = row.validFrom,
+                                validTo = row.validTo,
+                                sentAt = row.sentAt,
+                                coDebtors =
+                                    listOfNotNull(
+                                            personMap[row.headOfFamilyId],
+                                            personMap[row.partnerId]
+                                        )
+                                        .map {
+                                            LiableCitizenInfo(
+                                                id = it.id,
+                                                firstName = it.firstName,
+                                                lastName = it.lastName
+                                            )
+                                        }
+                            )
+                        }
+                    val feeDecisionInfos =
+                        feeDecisionRows.map { row ->
+                            FinanceDecisionCitizenInfo(
+                                id = row.id.raw,
+                                decisionChildren = emptyList(),
+                                type = FinanceDecisionType.FEE_DECISION,
+                                validFrom = row.validDuring.start,
+                                validTo = row.validDuring.end,
+                                sentAt = row.sentAt,
+                                coDebtors =
+                                    listOfNotNull(
+                                            personMap[row.headOfFamilyId],
+                                            personMap[row.partnerId]
+                                        )
+                                        .map {
+                                            LiableCitizenInfo(
+                                                id = it.id,
+                                                firstName = it.firstName,
+                                                lastName = it.lastName
+                                            )
+                                        }
+                            )
+                        }
+                    voucherValueDecisionInfos + feeDecisionInfos
+                }
+            }
+            .also {
+                Audit.FinanceDecisionCitizenRead.log(
+                    targetId = user.id,
+                    meta = mapOf("count" to it.size)
+                )
+            }
+    }
+
+    @GetMapping("/fee-decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
+    fun downloadFeeDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: FeeDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.FeeDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                feeDecisionService.getFeeDecisionPdfResponse(dbc, id)
+            }
+            .also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = id) }
+    }
+
+    @GetMapping(
+        "/voucher-value-decisions/{id}/download",
+        produces = [MediaType.APPLICATION_PDF_VALUE]
+    )
+    fun downloadVoucherValueDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: VoucherValueDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.VoucherValueDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                voucherValueDecisionService.getDecisionPdfResponse(dbc, id)
+            }
+            .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = id) }
+    }
 }
 
 data class ApplicationsOfChild(
@@ -574,6 +732,28 @@ data class DecisionSummary(
     val status: DecisionStatus,
     val sentDate: LocalDate,
     val resolved: LocalDate?
+)
+
+data class LiableCitizenInfo(
+    val id: PersonId,
+    val firstName: String,
+    val lastName: String,
+)
+
+data class FinanceDecisionChildInfo(
+    val id: PersonId,
+    val firstName: String,
+    val lastName: String,
+)
+
+data class FinanceDecisionCitizenInfo(
+    val id: UUID,
+    val type: FinanceDecisionType,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val sentAt: HelsinkiDateTime,
+    val coDebtors: List<LiableCitizenInfo>,
+    val decisionChildren: List<FinanceDecisionChildInfo>
 )
 
 private fun hideCriticalApplicationInfoFromOtherGuardian(

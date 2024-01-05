@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
 
@@ -26,12 +27,13 @@ import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
 import { assistanceDecisionsQuery } from '../assistance-decision-page/queries'
 import { assistanceNeedPreschoolDecisionsQuery } from '../assistance-decision-page/queries-preschool'
-import { decisionsQuery } from '../queries'
+import { decisionsQuery, financeDecisionsQuery } from '../queries'
 import { applicationDecisionIsUnread } from '../shared'
 
 import ApplicationDecision from './ApplicationDecision'
 import AssistanceDecision from './AssistanceDecision'
 import AssistancePreschoolDecision from './AssistancePreschoolDecision'
+import FinanceDecision from './FinanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
@@ -41,6 +43,8 @@ export default React.memo(function Decisions() {
   const assistancePreschoolDecisions = useQueryResult(
     assistanceNeedPreschoolDecisionsQuery()
   )
+
+  const financeDecisions = useQueryResult(financeDecisionsQuery())
 
   useTitle(t, t.decisions.title)
 
@@ -78,6 +82,14 @@ export default React.memo(function Decisions() {
         )
         .getOrElse(0),
     [applicationDecisions]
+  )
+
+  const sortedFinanceDecisions = useMemo(
+    () =>
+      financeDecisions.map((results) =>
+        orderBy(results, ['sentAt', 'validFrom'], ['desc', 'desc'])
+      ),
+    [financeDecisions]
   )
 
   const childrenWithSortedDecisions = useMemo(
@@ -158,37 +170,65 @@ export default React.memo(function Decisions() {
         )}
       </ContentArea>
       <Gap size="s" />
+
+      {renderResult(sortedFinanceDecisions, (decisions) => (
+        <FixedSpaceColumn>
+          <ContentArea opaque paddingVertical="L">
+            <H2 noMargin>{t.decisions.financeDecisions.title}</H2>
+            {decisions.length > 0 && <Gap size="xs" />}
+            {decisions.map((decision, index) => (
+              <Fragment key={decision.id}>
+                <HorizontalLine dashed slim />
+                <FinanceDecision
+                  decisionData={decision}
+                  startOpen={index === 0}
+                />
+              </Fragment>
+            ))}
+          </ContentArea>
+        </FixedSpaceColumn>
+      ))}
+
       {renderResult(
         childrenWithSortedDecisions,
         (childrenWithSortedDecisions) => (
-          <FixedSpaceColumn>
-            {childrenWithSortedDecisions.map((child) => (
-              <ContentArea
-                key={child.id}
-                opaque
-                paddingVertical="L"
-                data-qa={`child-decisions-${child.id}`}
-              >
-                <H2 noMargin aria-label={getAriaLabelForChild(child)}>
-                  {child.firstName} {child.lastName}
-                </H2>
-                {child.decisions.map((decision) => (
-                  <Fragment key={decision.id}>
-                    <HorizontalLine dashed slim />
-                    {'applicationId' in decision ? (
-                      <ApplicationDecision {...decision} />
-                    ) : 'assistanceLevels' in decision ? (
-                      <AssistanceDecision {...decision} />
-                    ) : (
-                      <AssistancePreschoolDecision decision={decision} />
-                    )}
-                  </Fragment>
-                ))}
-              </ContentArea>
-            ))}
-          </FixedSpaceColumn>
+          <>
+            <Gap size="s" />
+            <ContentArea opaque paddingVertical="L">
+              <H2 noMargin>{t.decisions.childhoodEducationTitle}</H2>
+            </ContentArea>
+            <Gap size="s" />
+            <FixedSpaceColumn>
+              {childrenWithSortedDecisions.map((child) => (
+                <ContentArea
+                  key={child.id}
+                  opaque
+                  paddingVertical="L"
+                  data-qa={`child-decisions-${child.id}`}
+                >
+                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
+                    {child.firstName} {child.lastName}
+                  </H2>
+                  {child.decisions.map((decision) => (
+                    <Fragment key={decision.id}>
+                      <HorizontalLine dashed slim />
+                      {'applicationId' in decision ? (
+                        <ApplicationDecision {...decision} />
+                      ) : 'assistanceLevels' in decision ? (
+                        <AssistanceDecision {...decision} />
+                      ) : (
+                        <AssistancePreschoolDecision decision={decision} />
+                      )}
+                    </Fragment>
+                  ))}
+                </ContentArea>
+              ))}
+            </FixedSpaceColumn>
+          </>
         )
       )}
+
+      <Gap size="s" />
     </Container>
   )
 })

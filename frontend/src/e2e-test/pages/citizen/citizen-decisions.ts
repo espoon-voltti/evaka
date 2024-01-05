@@ -38,6 +38,43 @@ export default class CitizenDecisionsPage {
       .assertText((text) => text.toLowerCase() === expectedStatus.toLowerCase())
   }
 
+  async assertFinanceDecisionShown(
+    decisionId: string,
+    expectedTitle: string,
+    expectedSentAt: string,
+    expectedCoDebtorNames: string[],
+    expectedChildNames?: string[]
+  ) {
+    const financeDecision = this.page.findByDataQa(
+      `finance-decision-${decisionId}`
+    )
+    await financeDecision
+      .findByDataQa(`finance-decision-title`)
+      .assertTextEquals(expectedTitle)
+    await financeDecision
+      .findByDataQa(`finance-decision-sent-at`)
+      .assertTextEquals(expectedSentAt)
+    for (const coDebtor of expectedCoDebtorNames) {
+      await financeDecision
+        .findByDataQa(`finance-decision-co-debtors`)
+        .assertText((text) => text.includes(coDebtor))
+    }
+
+    if (expectedChildNames) {
+      for (const name of expectedChildNames) {
+        await financeDecision
+          .findByDataQa(`finance-decision-children`)
+          .assertText((text) => text.includes(name))
+      }
+    }
+  }
+
+  async assertFinanceDecisionNotShown(decisionId: string) {
+    await this.page
+      .findByDataQa(`finance-decision-${decisionId}`)
+      .waitUntilHidden()
+  }
+
   async navigateToDecisionResponse(applicationId: string) {
     await this.#decisionResponseButton(applicationId).click()
     const responsePage = new CitizenDecisionResponsePage(this.page)

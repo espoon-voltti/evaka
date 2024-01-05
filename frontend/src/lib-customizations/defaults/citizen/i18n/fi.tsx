@@ -1370,10 +1370,12 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
+    childhoodEducationTitle:
+      'Varhaiskasvatukseen, esiopetukseen ja kerhoon liittyvät päätökset',
     summary: (
       <P width="800px">
-        Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen ja
-        kerhoon liittyvät päätökset.
+        Tälle sivulle saapuvat lapsen varhaiskasvatukseen, esiopetukseen,
+        kerhoon ja maksuihin liittyvät päätökset.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
         Jos päätös koskee uutta lapselle haettua paikkaa,{' '}
@@ -1386,6 +1388,18 @@ export default {
     noUnconfirmedDecisions: 'kaikki päätökset vahvistettu',
     unreadDecision: 'lukematon päätös',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    financeDecisions: {
+      type: {
+        FEE_DECISION: 'Maksupäätös',
+        VOUCHER_VALUE_DECISION: 'Arvopäätös'
+      },
+      title: 'Maksuihin liittyvät päätökset',
+      liableCitizens: 'Maksuvelvolliset',
+      validityPeriod: 'Päätös voimassa alkaen',
+      sentAt: 'Päätös lähetetty',
+      voucherValueChild: 'Lapsi jota päätös koskee',
+      loadDecisionPDF: 'Näytä päätös'
+    },
     applicationDecisions: {
       decision: 'Päätös',
       type: {

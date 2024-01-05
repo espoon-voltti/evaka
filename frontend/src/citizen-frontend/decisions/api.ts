@@ -5,8 +5,10 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDecisions,
-  DecisionWithValidStartDatePeriod
+  DecisionWithValidStartDatePeriod,
+  FinanceDecisionCitizenInfo
 } from 'lib-common/generated/api-types/application'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -54,6 +56,23 @@ export function getDecisionsOfApplication(
         validRequestedStartDatePeriod: FiniteDateRange.parseJson(
           validRequestedStartDatePeriod
         )
+      }))
+    )
+}
+
+export function getFinanceDecisionsForCitizen(): Promise<
+  FinanceDecisionCitizenInfo[]
+> {
+  return client
+    .get<JsonOf<FinanceDecisionCitizenInfo[]>>(
+      `/citizen/finance-decisions/by-liable-citizen`
+    )
+    .then((res) =>
+      res.data.map((decision) => ({
+        ...decision,
+        validFrom: LocalDate.parseIso(decision.validFrom),
+        validTo: LocalDate.parseNullableIso(decision.validTo),
+        sentAt: HelsinkiDateTime.parseIso(decision.sentAt)
       }))
     )
 }

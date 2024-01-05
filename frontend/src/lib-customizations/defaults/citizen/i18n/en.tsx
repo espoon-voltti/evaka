@@ -1425,10 +1425,12 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
+    childhoodEducationTitle:
+      'Decisions regarding child’s early childhood education, pre-primary education and clubs',
     summary: (
       <P width="800px">
         This page displays the received decisions regarding child&lsquo;s early
-        childhood education, pre-primary education and clubs.
+        childhood education, pre-primary education, clubs and payments.
         <br aria-hidden="true" />
         <br aria-hidden="true" />
         Upon receiving a new decision concerning a new placement applied for a
@@ -1443,6 +1445,18 @@ const en: Translations = {
     noUnconfirmedDecisions: 'all decisions confirmed',
     unreadDecision: 'unread decision',
     pageLoadError: 'Error in fetching the requested information',
+    financeDecisions: {
+      type: {
+        FEE_DECISION: 'Fee decision',
+        VOUCHER_VALUE_DECISION: 'Voucher value decision'
+      },
+      title: 'Decisions regarding payments',
+      liableCitizens: 'Persons liable for payment',
+      validityPeriod: 'Decision valid from',
+      sentAt: 'Decision sent',
+      voucherValueChild: 'Affected child',
+      loadDecisionPDF: 'Show decision'
+    },
     applicationDecisions: {
       decision: 'Decision of',
       type: {

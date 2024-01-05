@@ -861,3 +861,33 @@ FROM partner_children, partner_fridge_children
             .bind("childIds", childIds)
             .bind("dateRange", dateRange)
             .exactlyOne<Boolean>()
+
+fun Database.Read.getFeeDecisionByLiableCitizen(
+    citizenId: PersonId
+): List<FeeDecisionCitizenInfoRow> {
+    return createQuery(
+            """
+SELECT fd.id,
+       fd.valid_during,
+       fd.sent_at,
+       fd.head_of_family_id,
+       fd.partner_id
+FROM fee_decision fd
+WHERE fd.status in ('SENT')
+AND fd.document_key IS NOT NULL
+AND (fd.head_of_family_id = :citizenId
+    OR fd.partner_id = :citizenId)
+    """
+                .trimIndent()
+        )
+        .bind("citizenId", citizenId)
+        .toList<FeeDecisionCitizenInfoRow>()
+}
+
+data class FeeDecisionCitizenInfoRow(
+    val id: FeeDecisionId,
+    val validDuring: DateRange,
+    val sentAt: HelsinkiDateTime,
+    val headOfFamilyId: PersonId,
+    val partnerId: PersonId?
+)
