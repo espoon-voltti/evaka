@@ -1094,10 +1094,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
         READ_DAILY_SERVICE_TIMES(),
-        CREATE_DAILY_SERVICE_TIME(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()
-        ),
+        CREATE_DAILY_SERVICE_TIME(),
         READ_PLACEMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
