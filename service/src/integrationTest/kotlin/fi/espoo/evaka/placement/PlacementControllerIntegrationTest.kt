@@ -9,7 +9,11 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.reservations.DailyReservationRequest
+import fi.espoo.evaka.reservations.createReservationsAndAbsences
+import fi.espoo.evaka.reservations.getReservationsForChildInRange
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -23,19 +27,36 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+
+    @Autowired lateinit var placementController: PlacementController
+
+    private val mockClock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 1, 1), LocalTime.of(12, 0)))
+
     final val childId = testChild_1.id
     final val daycareId = testDaycare.id
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
@@ -49,6 +70,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private val staff = AuthenticatedUser.Employee(testDecisionMaker_2.id, emptySet())
     private val serviceWorker =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
+    private val admin =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+
+    private val citizenReservationThresholdHours: Long = 150
 
     @BeforeEach
     fun setUp() {
@@ -309,6 +334,595 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
 
         Assertions.assertThat(res.statusCode).isEqualTo(404)
+    }
+
+    @Test
+    fun `Creating overlapping future placement with different absence category, should delete future absences with wrong category type that are in the range of new placements period`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create absences
+        val firstAbsence = activePlacementStart.plusDays(10)
+        val secondAbsence = activePlacementStart.plusDays(11)
+        val thirdAbsence = mockClock.today().plusDays(5)
+        val fourthAbsence = mockClock.today().plusDays(6)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = firstAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = secondAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = thirdAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = fourthAbsence,
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 2 absences with correct category types
+        val absences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, absences.size)
+        assertEquals(firstAbsence, absences[0].date)
+        assertEquals(secondAbsence, absences[1].date)
+        assertEquals(thirdAbsence, absences[2].date)
+        assertEquals(fourthAbsence, absences[3].date)
+        assertContains(activePlacement.type.absenceCategories(), absences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[1].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[2].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[3].category)
+
+        // Create placement with different absence category that overlaps with original placements
+        // second absence
+        // -> should delete second absence, because its wrong absence type
+        val newPlacementStartDate = thirdAbsence
+        val newPlacementEndDate = activePlacementEnd.plusWeeks(1)
+
+        placementController.createPlacement(
+            dbInstance(),
+            unitSupervisor,
+            mockClock,
+            PlacementCreateRequestBody(
+                PlacementType.PRESCHOOL,
+                childId,
+                daycareId,
+                newPlacementStartDate,
+                newPlacementEndDate,
+                false
+            )
+        )
+
+        val placements = db.read { r -> r.getPlacementsForChild(childId) }
+        assertEquals(3, placements.size)
+        val newPlacement =
+            placements.find { it.id != testPlacement.id && it.id != activePlacement.id }!!
+
+        val secondGroupPlacementId =
+            placementController.createGroupPlacement(
+                dbInstance(),
+                unitSupervisor,
+                mockClock,
+                newPlacement.id,
+                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate)
+            )
+        assertNotNull(secondGroupPlacementId)
+
+        // Verify that the future absences in new placement period has been deleted
+        val updatedAbsences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedAbsences.size)
+        assertEquals(firstAbsence, updatedAbsences[0].date)
+        assertEquals(secondAbsence, updatedAbsences[1].date)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[1].category)
+    }
+
+    @Test
+    fun `Creating overlapping placement, should delete future attendance reservations of old placement that are in the range of new placements period`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create reservations
+        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val firstReservation = activePlacementStart.plusDays(10)
+        val secondReservation = activePlacementStart.plusDays(11)
+        val thirdReservation = mockClock.today().plusDays(8)
+        val fourthReservation = mockClock.today().plusDays(9)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = firstReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = secondReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = thirdReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = fourthReservation,
+                        reservation = reservationTime
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 4 reservathions
+        val reservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, reservations.size)
+        assertTrue(reservations.containsKey(firstReservation))
+        assertTrue(reservations.containsKey(secondReservation))
+        assertTrue(reservations.containsKey(thirdReservation))
+        assertTrue(reservations.containsKey(fourthReservation))
+
+        // Create placement that overlaps with original placements third and fourth reservation
+        // -> should delete third and fourth reservations, because they are not in the new
+        // placements period
+        val newPlacementStartDate = thirdReservation
+        val newPlacementEndDate = activePlacementEnd.plusWeeks(1)
+
+        placementController.createPlacement(
+            dbInstance(),
+            unitSupervisor,
+            mockClock,
+            PlacementCreateRequestBody(
+                PlacementType.PRESCHOOL,
+                childId,
+                daycareId,
+                newPlacementStartDate,
+                newPlacementEndDate,
+                false
+            )
+        )
+
+        val placements = db.read { r -> r.getPlacementsForChild(childId) }
+        assertEquals(3, placements.size)
+        val newPlacement =
+            placements.find { it.id != testPlacement.id && it.id != activePlacement.id }!!
+
+        val secondGroupPlacementId =
+            placementController.createGroupPlacement(
+                dbInstance(),
+                unitSupervisor,
+                mockClock,
+                newPlacement.id,
+                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate)
+            )
+        assertNotNull(secondGroupPlacementId)
+
+        // Verify that the future absences in new placement period has been deleted
+        val updatedReservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedReservations.size)
+        assertTrue(updatedReservations.containsKey(firstReservation))
+        assertTrue(updatedReservations.containsKey(secondReservation))
+    }
+
+    @Test
+    fun `Modifying placement period end date, should delete future absences that are not in range`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create absences
+        val firstAbsence = activePlacementStart.plusDays(10)
+        val secondAbsence = mockClock.today().plusDays(8)
+        val thirdAbsence = mockClock.today().plusDays(15)
+        val fourthAbsence = mockClock.today().plusDays(16)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = firstAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = secondAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = thirdAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = fourthAbsence,
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 4 absences with correct category types
+        val absences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, absences.size)
+        assertEquals(firstAbsence, absences[0].date)
+        assertEquals(secondAbsence, absences[1].date)
+        assertEquals(thirdAbsence, absences[2].date)
+        assertEquals(fourthAbsence, absences[3].date)
+        assertContains(activePlacement.type.absenceCategories(), absences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[1].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[2].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[3].category)
+
+        // Modify placement period so that only first and second absence are in the placements
+        // period range
+        // -> should delete third and fourth absence
+        val newEndDate = mockClock.today().plusDays(10)
+        placementController.updatePlacementById(
+            dbInstance(),
+            unitSupervisor,
+            mockClock,
+            activePlacement.id,
+            PlacementUpdateRequestBody(activePlacementStart, newEndDate)
+        )
+
+        val placements = db.read { r -> r.getPlacementsForChild(childId) }
+        assertEquals(2, placements.size)
+        val updatedPlacement = placements.find { it.id != testPlacement.id }!!
+        assertEquals(updatedPlacement.startDate, activePlacementStart)
+        assertEquals(updatedPlacement.endDate, newEndDate)
+
+        // Verify that the future absences in new placement period has been deleted
+        val updatedAbsences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedAbsences.size)
+        assertEquals(firstAbsence, updatedAbsences[0].date)
+        assertEquals(secondAbsence, updatedAbsences[1].date)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[1].category)
+    }
+
+    @Test
+    fun `Modifying placement period end date, should delete future attendance reservations that are not in range`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create reservations
+        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val firstReservation = activePlacementStart.plusDays(10)
+        val secondReservation = mockClock.today().plusDays(8)
+        val thirdReservation = mockClock.today().plusDays(15)
+        val fourthReservation = mockClock.today().plusDays(16)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = firstReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = secondReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = thirdReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = fourthReservation,
+                        reservation = reservationTime
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 4 reservathions
+        val reservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, reservations.size)
+        assertTrue(reservations.containsKey(firstReservation))
+        assertTrue(reservations.containsKey(secondReservation))
+        assertTrue(reservations.containsKey(thirdReservation))
+        assertTrue(reservations.containsKey(fourthReservation))
+
+        // Modify placement period so that only first and second reservations are in the placements
+        // period range
+        // -> should delete third and fourth reservation
+        val newEndDate = mockClock.today().plusDays(10)
+        placementController.updatePlacementById(
+            dbInstance(),
+            unitSupervisor,
+            mockClock,
+            activePlacement.id,
+            PlacementUpdateRequestBody(activePlacementStart, newEndDate)
+        )
+
+        val placements = db.read { r -> r.getPlacementsForChild(childId) }
+        assertEquals(2, placements.size)
+        val updatedPlacement = placements.find { it.id != testPlacement.id }!!
+        assertEquals(updatedPlacement.startDate, activePlacementStart)
+        assertEquals(updatedPlacement.endDate, newEndDate)
+
+        // Verify that the future reservations in new placement period has been deleted
+        val updatedReservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedReservations.size)
+        assertTrue(updatedReservations.containsKey(firstReservation))
+        assertTrue(updatedReservations.containsKey(secondReservation))
+    }
+
+    @Test
+    fun `Delete placement, should delete future absences that are in range of placement period`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create absences
+        val firstAbsence = activePlacementStart.plusDays(10)
+        val secondAbsence = activePlacementStart.plusDays(11)
+        val thirdAbsence = mockClock.today().plusDays(5)
+        val fourthAbsence = mockClock.today().plusDays(6)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = firstAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = secondAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = thirdAbsence,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = childId,
+                        date = fourthAbsence,
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 2 absences with correct category types
+        val absences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, absences.size)
+        assertEquals(firstAbsence, absences[0].date)
+        assertEquals(secondAbsence, absences[1].date)
+        assertEquals(thirdAbsence, absences[2].date)
+        assertEquals(fourthAbsence, absences[3].date)
+        assertContains(activePlacement.type.absenceCategories(), absences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[1].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[2].category)
+        assertContains(activePlacement.type.absenceCategories(), absences[3].category)
+
+        // Delete placement period, only third and fourth absences are in future and in the
+        // placements period range
+        // -> should delete third and fourth absences
+        placementController.deletePlacement(dbInstance(), admin, mockClock, activePlacement.id)
+        assertNull(db.read { r -> r.getPlacement(activePlacement.id) })
+
+        // Verify that the future absences in new placement period has been deleted
+        val updatedAbsences =
+            db.read {
+                it.getAbsencesOfChildByRange(
+                    childId,
+                    DateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedAbsences.size)
+        assertEquals(firstAbsence, updatedAbsences[0].date)
+        assertEquals(secondAbsence, updatedAbsences[1].date)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[0].category)
+        assertContains(activePlacement.type.absenceCategories(), updatedAbsences[1].category)
+    }
+
+    @Test
+    fun `Delete placement, should delete future attendance reservations that are in range of placement period`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(6)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create reservations
+        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val firstReservation = activePlacementStart.plusDays(10)
+        val secondReservation = activePlacementStart.plusDays(11)
+        val thirdReservation = mockClock.today().plusDays(15)
+        val fourthReservation = mockClock.today().plusDays(16)
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = firstReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = secondReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = thirdReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = fourthReservation,
+                        reservation = reservationTime
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then 4 reservathions
+        val reservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(4, reservations.size)
+        assertTrue(reservations.containsKey(firstReservation))
+        assertTrue(reservations.containsKey(secondReservation))
+        assertTrue(reservations.containsKey(thirdReservation))
+        assertTrue(reservations.containsKey(fourthReservation))
+
+        // Delete placement period, only third and fourth reservations are in future and in the
+        // placements period range
+        // -> should delete third and fourth reservation
+        placementController.deletePlacement(dbInstance(), admin, mockClock, activePlacement.id)
+        assertNull(db.read { r -> r.getPlacement(activePlacement.id) })
+
+        // Verify that the future reservations in new placement period has been deleted
+        val updatedReservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                )
+            }
+        assertEquals(2, updatedReservations.size)
+        assertTrue(updatedReservations.containsKey(firstReservation))
+        assertTrue(updatedReservations.containsKey(secondReservation))
     }
 
     @Test
@@ -675,6 +1289,41 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .asUser(unitSupervisor)
             .objectBody(bodyObject = groupPlacement, mapper = jsonMapper)
             .response()
+    }
+
+    private fun createPlacementAndGroupPlacement(
+        placementStartDate: LocalDate,
+        placementEndDate: LocalDate,
+        childId: ChildId,
+        daycareId: DaycareId,
+        groupId: GroupId,
+        groupPlacementStart: LocalDate = placementStartDate,
+        groupPlacementEnd: LocalDate = placementEndDate
+    ): DaycarePlacementDetails {
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = childId,
+                unitId = daycareId,
+                startDate = placementStartDate,
+                endDate = placementEndDate
+            )
+        }
+        val placement =
+            db.read { r ->
+                r.getDaycarePlacements(daycareId, childId, placementStartDate, placementEndDate)
+                    .first()
+            }
+        val groupPlacementId =
+            placementController.createGroupPlacement(
+                dbInstance(),
+                unitSupervisor,
+                mockClock,
+                placement.id,
+                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
+            )
+        assertNotNull(groupPlacementId)
+
+        return placement
     }
 
     private fun getGroupPlacements(

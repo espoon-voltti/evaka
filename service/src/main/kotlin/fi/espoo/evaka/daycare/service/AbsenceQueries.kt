@@ -167,6 +167,28 @@ fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate):
         .executeAndReturnGeneratedKeys()
         .toList<AbsenceId>()
 
+fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
+    childId: ChildId,
+    range: DateRange,
+    categories: Set<AbsenceCategory>
+): List<AbsenceId> =
+    createQuery(
+            """
+DELETE FROM absence
+WHERE
+    child_id = :childId AND
+    between_start_and_end(:range, date) AND
+    category = ANY (:categories::absence_category[]) AND
+    modified_by != :systemUserId
+RETURNING id
+"""
+        )
+        .bind("childId", childId)
+        .bind("range", range)
+        .bind("categories", categories)
+        .bind("systemUserId", AuthenticatedUser.SystemInternalUser.evakaUserId)
+        .toList<AbsenceId>()
+
 fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     now: HelsinkiDateTime,
     childId: ChildId,

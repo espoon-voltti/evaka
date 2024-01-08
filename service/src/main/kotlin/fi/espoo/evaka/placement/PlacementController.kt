@@ -10,7 +10,10 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.daycare.service.deleteFutureNonGeneratedAbsencesByCategoryInRange
 import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
+import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -28,6 +31,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -221,6 +225,39 @@ class PlacementController(
                         )
                         .also {
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
+
+                            val future = DateRange(now.toLocalDate().plusDays(1), null)
+                            val range = DateRange(body.startDate, body.endDate).intersection(future)
+
+                            // Only proceed with future absence and reservation deletion if
+                            // placements range is in future
+                            if (range != null) {
+                                // Delete future absences if new absence category is specific
+                                if (
+                                    body.type.absenceCategories().size !=
+                                        AbsenceCategory.values().size
+                                ) {
+                                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                                        tx,
+                                        clock,
+                                        body.childId,
+                                        range,
+                                        setOf(
+                                            when (body.type.absenceCategories().single()) {
+                                                AbsenceCategory.BILLABLE ->
+                                                    AbsenceCategory.NONBILLABLE
+                                                AbsenceCategory.NONBILLABLE ->
+                                                    AbsenceCategory.BILLABLE
+                                            }
+                                        )
+                                    )
+                                }
+                                tx.clearReservationsForRangeExceptInHolidayPeriod(
+                                    body.childId,
+                                    range
+                                )
+                            }
+
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
@@ -268,6 +305,23 @@ class PlacementController(
                         useFiveYearsOldDaycare
                     )
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
+
+                // Clear absences and reservations that are not in range of updated placement period
+                if (
+                    body.endDate.isAfter(now.toLocalDate()) &&
+                        body.endDate.isBefore(oldPlacement.endDate)
+                ) {
+                    val range = DateRange(body.endDate, oldPlacement.endDate)
+                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                        tx,
+                        clock,
+                        oldPlacement.childId,
+                        range,
+                        oldPlacement.type.absenceCategories()
+                    )
+                    tx.clearReservationsForRangeExceptInHolidayPeriod(oldPlacement.childId, range)
+                }
+
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -303,8 +357,29 @@ class PlacementController(
                         Action.Placement.DELETE,
                         placementId
                     )
+                    val placement =
+                        tx.getPlacement(placementId)
+                            ?: throw NotFound("Placement $placementId not found")
                     tx.cancelPlacement(placementId).also {
                         generateAbsencesFromIrregularDailyServiceTimes(tx, now, it.childId)
+
+                        // Clear future absences and reservations that are in range of placement
+                        // period
+                        if (placement.endDate.isAfter(now.toLocalDate())) {
+                            val range = DateRange(now.toLocalDate().plusDays(1), placement.endDate)
+                            deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                                tx,
+                                clock,
+                                placement.childId,
+                                range,
+                                placement.type.absenceCategories()
+                            )
+                            tx.clearReservationsForRangeExceptInHolidayPeriod(
+                                placement.childId,
+                                range
+                            )
+                        }
+
                         asyncJobRunner.plan(
                             tx,
                             listOf(
