@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
+import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 
@@ -42,6 +43,32 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
                     sequenceOf(
                         HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit() as ScopedActionRule<in T>
+                    )
+            }
+            Action.Child.READ_DAILY_SERVICE_TIMES -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                ) +
+                    sequenceOf(
+                        HasUnitRole(
+                                UserRole.UNIT_SUPERVISOR,
+                                UserRole.SPECIAL_EDUCATION_TEACHER,
+                                UserRole.STAFF,
+                                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                            )
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                    )
+            }
+            Action.Citizen.Child.READ_DAILY_SERVICE_TIMES -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    IsCitizen(allowWeakLogin = true).guardianOfChild() as ScopedActionRule<in T>
+                ) +
+                    sequenceOf(
+                        IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                            as ScopedActionRule<in T>
                     )
             }
             else -> action.defaultRules.asSequence()

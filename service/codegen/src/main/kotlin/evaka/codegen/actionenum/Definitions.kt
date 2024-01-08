@@ -49,7 +49,11 @@ val generatedFiles =
                 generateEnum<Action.Unit>(),
                 generateEnum<Action.VasuDocument>(),
                 generateEnum<Action.VasuTemplate>(),
-                generateNamespace("Citizen", generateEnum<Action.Citizen.Application>())
+                generateNamespace(
+                    "Citizen",
+                    generateEnum<Action.Citizen.Application>(),
+                    generateEnum<Action.Citizen.Child>()
+                ),
             )
         )
     )

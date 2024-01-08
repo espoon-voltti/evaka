@@ -2390,7 +2390,9 @@ export default {
     unreadCount: 'lukematonta',
     childPicture: 'Lapsen kuva',
     serviceNeedAndDailyServiceTime: {
-      title: 'Palveluntarve ja päivittäinen varhaiskasvatusaika'
+      title: 'Palveluntarve',
+      titleWithDailyServiceTime:
+        'Palveluntarve ja päivittäinen varhaiskasvatusaika'
     },
     serviceNeed: {
       title: 'Palveluntarve',

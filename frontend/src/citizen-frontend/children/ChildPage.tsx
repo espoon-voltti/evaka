@@ -6,7 +6,7 @@ import React from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/children'
+import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -27,7 +27,7 @@ import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 export default React.memo(function ChildPage() {
   const { childId } = useNonNullableParams<{ childId: string }>()
   const children = useQueryResult(childrenQuery())
-  const child = children.chain<Child>((children) => {
+  const child = children.chain<ChildAndPermittedActions>((children) => {
     const child = children.find((child) => child.id === childId)
     return child ? Success.of(child) : Failure.of({ message: 'Not found' })
   })
@@ -45,7 +45,12 @@ export default React.memo(function ChildPage() {
                 <ChildHeader child={child} />
               </ContentArea>
               <Gap size="s" />
-              <ServiceNeedAndDailyServiceTimeSection childId={childId} />
+              <ServiceNeedAndDailyServiceTimeSection
+                childId={childId}
+                showServiceTimes={child.permittedActions.includes(
+                  'READ_DAILY_SERVICE_TIMES'
+                )}
+              />
               {user?.accessibleFeatures.childDocumentation && (
                 <>
                   <Gap size="s" />

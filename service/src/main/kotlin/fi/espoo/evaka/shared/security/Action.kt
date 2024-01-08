@@ -430,10 +430,7 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             ),
-            READ_DAILY_SERVICE_TIMES(
-                IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
-            ),
+            READ_DAILY_SERVICE_TIMES(),
             READ_ATTENDANCE_SUMMARY(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
@@ -1096,16 +1093,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
-        READ_DAILY_SERVICE_TIMES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    SPECIAL_EDUCATION_TEACHER,
-                    STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inPlacementUnitOfChild()
-        ),
+        READ_DAILY_SERVICE_TIMES(),
         CREATE_DAILY_SERVICE_TIME(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()

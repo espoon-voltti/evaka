@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { Action } from '../action'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -17,9 +18,9 @@ export interface AttendanceSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.children.Child
+* Generated from fi.espoo.evaka.children.ChildAndPermittedActions
 */
-export interface Child {
+export interface ChildAndPermittedActions {
   duplicateOf: UUID | null
   firstName: string
   group: Group | null
@@ -28,6 +29,7 @@ export interface Child {
   id: UUID
   imageId: UUID | null
   lastName: string
+  permittedActions: Action.Citizen.Child[]
   preferredName: string
   unit: Unit | null
   upcomingPlacementType: PlacementType | null

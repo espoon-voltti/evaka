@@ -6,17 +6,24 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -75,5 +82,38 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(child.additionalInformation.diet, body.diet)
         assertEquals(child.additionalInformation.additionalInfo, body.additionalInfo)
         assertEquals(child.additionalInformation.allergies, body.allergies)
+    }
+
+    @Test
+    fun `getChild permitted actions should not contain READ_DAILY_SERVICE_TIMES with default AccessControl`() {
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        val result = childController.getChild(dbInstance(), user, RealEvakaClock(), childId)
+
+        Assertions.assertThat(result.permittedActions)
+            .doesNotContain(Action.Child.READ_DAILY_SERVICE_TIMES)
+    }
+
+    @Test
+    fun `getChild permitted actions contains READ_DAILY_SERVICE_TIMES in Espoo`() {
+        val featureConfig: FeatureConfig = testFeatureConfig
+
+        val espooChildController =
+            ChildController(
+                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create()),
+                featureConfig
+            )
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        val result = espooChildController.getChild(dbInstance(), user, RealEvakaClock(), childId)
+
+        Assertions.assertThat(result.permittedActions)
+            .contains(Action.Child.READ_DAILY_SERVICE_TIMES)
     }
 }

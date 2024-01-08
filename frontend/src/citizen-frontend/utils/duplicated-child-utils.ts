@@ -3,18 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Translations } from 'citizen-frontend/localization'
-import { Child } from 'lib-common/generated/api-types/children'
+import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { UUID } from 'lib-common/types'
 
-const toDuplicatedChildIds = (children: (Child | ReservationChild)[]) =>
+const toDuplicatedChildIds = (
+  children: (ChildAndPermittedActions | ReservationChild)[]
+) =>
   children.flatMap((child) =>
     child.duplicateOf !== null ? [child.id, child.duplicateOf] : []
   )
 
 const formatDuplicatedChildIdentifier = (
   t: Translations,
-  child: Child | ReservationChild,
+  child: ChildAndPermittedActions | ReservationChild,
   format: 'short' | 'long' = 'short'
 ) =>
   child.upcomingPlacementType === 'PRESCHOOL'
@@ -22,7 +24,7 @@ const formatDuplicatedChildIdentifier = (
     : t.common.duplicatedChild.identifier.DAYCARE[format]
 
 export function getDuplicateChildInfo(
-  children: (Child | ReservationChild)[],
+  children: (ChildAndPermittedActions | ReservationChild)[],
   i18n: Translations,
   format: 'short' | 'long' = 'short'
 ): Record<UUID, string> {

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/children'
+import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { RoundImage } from 'lib-components/atoms/RoundImage'
 import { desktopMin } from 'lib-components/breakpoints'
 import { H1, Title } from 'lib-components/typography'
@@ -36,7 +36,7 @@ const ChildHeaderContainer = styled.div`
 export default React.memo(function ChildHeader({
   child: { firstName, imageId, group, unit, lastName }
 }: {
-  child: Child
+  child: ChildAndPermittedActions
 }) {
   const t = useTranslation()
   return (
