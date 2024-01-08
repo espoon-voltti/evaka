@@ -76,6 +76,7 @@ class AttendanceReservationsControllerIntegrationTest :
     @Autowired lateinit var attendanceReservationController: AttendanceReservationController
 
     private val employeeId = EmployeeId(UUID.randomUUID())
+    private val employeeId2 = EmployeeId(UUID.randomUUID())
 
     private val mon = LocalDate.of(2021, 3, 1)
     private val tue = LocalDate.of(2021, 3, 2)
@@ -102,6 +103,8 @@ class AttendanceReservationsControllerIntegrationTest :
 
             it.insert(DevEmployee(employeeId))
             it.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+            it.insert(DevEmployee(employeeId2))
+            it.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
         }
     }
 
@@ -811,6 +814,197 @@ class AttendanceReservationsControllerIntegrationTest :
                 ),
             ),
             reservations
+        )
+    }
+
+    @Test
+    fun `post child date presence - insert, update and delete reservation, attendance and absence`() {
+        val testNow = HelsinkiDateTime.of(wed, LocalTime.of(18, 0))
+        val testClock = MockEvakaClock(testNow)
+
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = mon,
+                endDate = fri
+            )
+        }
+
+        attendanceReservationController.postChildDatePresence(
+            dbInstance(),
+            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            testClock,
+            ChildDatePresence(
+                date = testClock.today(),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                reservations =
+                    listOf(
+                        Reservation.Times(
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(17, 0)
+                        ),
+                        Reservation.Times(
+                            startTime = LocalTime.of(22, 0),
+                            endTime = LocalTime.of(23, 59)
+                        )
+                    ),
+                attendances = listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), null)),
+                absences =
+                    mapOf(
+                        AbsenceCategory.NONBILLABLE to AbsenceType.OTHER_ABSENCE,
+                        AbsenceCategory.BILLABLE to AbsenceType.OTHER_ABSENCE
+                    )
+            )
+        )
+
+        assertEquals(
+            UnitAttendanceReservations.ChildRecordOfDay(
+                childId = testChild_1.id,
+                reservations =
+                    listOf(
+                        Reservation.Times(
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(17, 0)
+                        ),
+                        Reservation.Times(
+                            startTime = LocalTime.of(22, 0),
+                            endTime = LocalTime.of(23, 59)
+                        )
+                    ),
+                attendances =
+                    listOf(
+                        UnitAttendanceReservations.AttendanceTimes(
+                            startTime = LocalTime.of(12, 30),
+                            endTime = null
+                        )
+                    ),
+                absences =
+                    mapOf(
+                        AbsenceCategory.NONBILLABLE to AbsenceType.OTHER_ABSENCE,
+                        AbsenceCategory.BILLABLE to AbsenceType.OTHER_ABSENCE
+                    ),
+                possibleAbsenceCategories =
+                    setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                dailyServiceTimes = null,
+                groupId = null,
+                backupGroupId = null,
+                inOtherUnit = false,
+                scheduleType = ScheduleType.RESERVATION_REQUIRED
+            ),
+            getAttendanceReservations(testClock).days[2].children.first()
+        )
+
+        // updating as a different user
+
+        attendanceReservationController.postChildDatePresence(
+            dbInstance(),
+            AuthenticatedUser.Employee(employeeId2, setOf(UserRole.STAFF)),
+            testClock,
+            ChildDatePresence(
+                date = testClock.today(),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                reservations =
+                    listOf(
+                        Reservation.Times(
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(17, 0)
+                        ),
+                        Reservation.Times(
+                            startTime = LocalTime.of(21, 30),
+                            endTime = LocalTime.of(23, 59)
+                        )
+                    ),
+                attendances =
+                    listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), LocalTime.of(17, 0))),
+                absences =
+                    mapOf(
+                        AbsenceCategory.NONBILLABLE to AbsenceType.OTHER_ABSENCE,
+                        AbsenceCategory.BILLABLE to AbsenceType.FORCE_MAJEURE
+                    )
+            )
+        )
+
+        assertEquals(
+            UnitAttendanceReservations.ChildRecordOfDay(
+                childId = testChild_1.id,
+                reservations =
+                    listOf(
+                        Reservation.Times(
+                            startTime = LocalTime.of(9, 0),
+                            endTime = LocalTime.of(17, 0)
+                        ),
+                        Reservation.Times(
+                            startTime = LocalTime.of(21, 30),
+                            endTime = LocalTime.of(23, 59)
+                        )
+                    ),
+                attendances =
+                    listOf(
+                        UnitAttendanceReservations.AttendanceTimes(
+                            startTime = LocalTime.of(12, 30),
+                            endTime = LocalTime.of(17, 0)
+                        )
+                    ),
+                absences =
+                    mapOf(
+                        AbsenceCategory.NONBILLABLE to AbsenceType.OTHER_ABSENCE,
+                        AbsenceCategory.BILLABLE to AbsenceType.FORCE_MAJEURE
+                    ),
+                possibleAbsenceCategories =
+                    setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                dailyServiceTimes = null,
+                groupId = null,
+                backupGroupId = null,
+                inOtherUnit = false,
+                scheduleType = ScheduleType.RESERVATION_REQUIRED
+            ),
+            getAttendanceReservations(testClock).days[2].children.first()
+        )
+        db.read { tx ->
+            val reservationCreators =
+                tx.createQuery("SELECT created_by FROM attendance_reservation").toSet<EmployeeId>()
+            val absenceCreators =
+                tx.createQuery("SELECT modified_by FROM absence").toSet<EmployeeId>()
+            // original should be preserved when unchanged
+            assertEquals(setOf(employeeId, employeeId2), reservationCreators)
+            assertEquals(setOf(employeeId, employeeId2), absenceCreators)
+        }
+
+        // deleting
+
+        attendanceReservationController.postChildDatePresence(
+            dbInstance(),
+            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            testClock,
+            ChildDatePresence(
+                date = testClock.today(),
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                reservations = emptyList(),
+                attendances = emptyList(),
+                absences = emptyMap()
+            )
+        )
+
+        assertEquals(
+            UnitAttendanceReservations.ChildRecordOfDay(
+                childId = testChild_1.id,
+                reservations = emptyList(),
+                attendances = emptyList(),
+                absences = emptyMap(),
+                possibleAbsenceCategories =
+                    setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+                dailyServiceTimes = null,
+                groupId = null,
+                backupGroupId = null,
+                inOtherUnit = false,
+                scheduleType = ScheduleType.RESERVATION_REQUIRED
+            ),
+            getAttendanceReservations(testClock).days[2].children.first()
         )
     }
 
