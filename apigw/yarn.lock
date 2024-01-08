@@ -2667,9 +2667,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^4.22.0":
-  version: 4.22.0
-  resolution: "dd-trace@npm:4.22.0"
+"dd-trace@npm:^4.23.0":
+  version: 4.23.0
+  resolution: "dd-trace@npm:4.23.0"
   dependencies:
     "@datadog/native-appsec": "npm:6.0.0"
     "@datadog/native-iast-rewriter": "npm:2.2.2"
@@ -2682,7 +2682,7 @@ __metadata:
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.2"
     ignore: "npm:^5.2.4"
-    import-in-the-middle: "npm:^1.4.2"
+    import-in-the-middle: "npm:^1.7.1"
     int64-buffer: "npm:^0.1.9"
     ipaddr.js: "npm:^2.1.0"
     istanbul-lib-coverage: "npm:3.2.0"
@@ -2705,7 +2705,7 @@ __metadata:
     retry: "npm:^0.13.1"
     semver: "npm:^7.5.4"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 402930961a05dd8b208218c515e15941fc45246bc5aea2fa4646d612740d7bdab25c5e0c1c7a24102e0f5793c1c83ad82c765376c0c1eb115e19833215874924
+  checksum: feb8e857f11c7885756c61fbe6e8ade68360fd1aca144b18ad22ca2ddced6cf156b703c7cb9cf0cf966a45a5d48396203b5fdcb4bf08beec405b1395ea45a0f5
   languageName: node
   linkType: hard
 
@@ -3195,7 +3195,7 @@ __metadata:
     cookie-parser: "npm:^1.4.6"
     csurf: "npm:^1.11.0"
     date-fns: "npm:^3.1.0"
-    dd-trace: "npm:^4.22.0"
+    dd-trace: "npm:^4.23.0"
     eslint: "npm:^8.56.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.1.2"
@@ -3953,15 +3953,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "import-in-the-middle@npm:1.4.2"
+"import-in-the-middle@npm:^1.7.1":
+  version: 1.7.2
+  resolution: "import-in-the-middle@npm:1.7.2"
   dependencies:
     acorn: "npm:^8.8.2"
     acorn-import-assertions: "npm:^1.9.0"
     cjs-module-lexer: "npm:^1.2.2"
     module-details-from-path: "npm:^1.0.3"
-  checksum: fe853b5f4fe521b3dc6ee1946fd9ef3f4c1aaab33a1c80130e57983cab91f95b469d4da27878312bfd300f87b056ae1d7d77f5dbf636647418221fac174c8fc0
+  checksum: 21d2e98047f1d37033a7f12a7518378ac023aaea9e6f1c865c1ff93f9b8c744687809030ce83141d56f05cc0d23c5ff75ae62be98c2af9e5f2df0f24495d7451
   languageName: node
   linkType: hard
 
