@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
