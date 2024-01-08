@@ -87,6 +87,9 @@ updates:
       node-saml:
         patterns:
           - "@node-saml/*"
+      testing-library:
+        patterns:
+          - "@testing-library/*"
   - package-ecosystem: gradle
     directory: "/service"
     schedule:
