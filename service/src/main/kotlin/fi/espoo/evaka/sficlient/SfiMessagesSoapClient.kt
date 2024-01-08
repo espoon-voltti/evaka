@@ -172,6 +172,7 @@ class SfiMessagesSoapClient(
                             ArrayOfKohdeWS2A().apply {
                                 kohde +=
                                     KohdeWS2A().apply {
+                                        isLisaaOsoitesivu = true
                                         viranomaisTunniste = msg.documentId
                                         nimeke = msg.messageHeader
                                         kuvausTeksti =
