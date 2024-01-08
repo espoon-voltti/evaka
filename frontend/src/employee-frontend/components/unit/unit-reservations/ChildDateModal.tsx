@@ -229,6 +229,7 @@ export default React.memo(function ChildDateModal({
             {reservationElems.map((r, i) => (
               <TimesForm
                 key={`reservation-${i}`}
+                data-qa={`reservation-${i}`}
                 bind={r}
                 onRemove={() =>
                   reservations.update((s) => [
@@ -244,6 +245,7 @@ export default React.memo(function ChildDateModal({
                   i18n.unit.attendanceReservations.childDateModal.reservations
                     .add
                 }
+                data-qa="add-reservation"
                 icon={faPlus}
                 disabled={reservationNoTimes.value()}
                 onClick={() =>
@@ -287,6 +289,7 @@ export default React.memo(function ChildDateModal({
             {attendanceElems.map((a, i) => (
               <TimesForm
                 key={`attendance-${i}`}
+                data-qa={`attendance-${i}`}
                 bind={a}
                 onRemove={() =>
                   attendances.update((s) => [
@@ -300,6 +303,7 @@ export default React.memo(function ChildDateModal({
               text={
                 i18n.unit.attendanceReservations.childDateModal.attendances.add
               }
+              data-qa="add-attendance"
               icon={faPlus}
               onClick={() =>
                 attendances.update((s) => [
@@ -327,16 +331,16 @@ export default React.memo(function ChildDateModal({
       <FixedSpaceColumn>
         {childDayRecord.possibleAbsenceCategories.includes('NONBILLABLE') && (
           <AbsenceForm
-            bind={billableAbsence}
+            bind={nonBillableAbsence}
             category="NONBILLABLE"
-            otherAbsence={nonBillableAbsence.value()}
+            otherAbsence={billableAbsence.value()}
           />
         )}
         {childDayRecord.possibleAbsenceCategories.includes('BILLABLE') && (
           <AbsenceForm
-            bind={nonBillableAbsence}
+            bind={billableAbsence}
             category="BILLABLE"
-            otherAbsence={billableAbsence.value()}
+            otherAbsence={nonBillableAbsence.value()}
           />
         )}
       </FixedSpaceColumn>
@@ -346,21 +350,24 @@ export default React.memo(function ChildDateModal({
 
 const TimesForm = React.memo(function TimesForm({
   bind,
-  onRemove
+  onRemove,
+  'data-qa': dataQa
 }: {
   bind: BoundForm<typeof reservationForm | typeof attendanceForm>
   onRemove: () => void
+  'data-qa': string
 }) {
   const { i18n } = useTranslation()
   const { startTime, endTime } = useFormFields(bind)
   return (
-    <FixedSpaceRow alignItems="center">
-      <TimeInputF bind={startTime} />
+    <FixedSpaceRow alignItems="center" data-qa={dataQa}>
+      <TimeInputF bind={startTime} data-qa="start" />
       <span>-</span>
-      <TimeInputF bind={endTime} />
+      <TimeInputF bind={endTime} data-qa="end" />
       <IconButton
         icon={faTrash}
         aria-label={i18n.common.remove}
+        data-qa="remove-btn"
         onClick={onRemove}
       />
       {startTime.isValid() && endTime.isValid() && !bind.isValid() && (
@@ -394,12 +401,16 @@ const AbsenceForm = React.memo(function AbsenceForm({
           i18n.unit.attendanceReservations.childDateModal.absences.add[category]
         }
         icon={faPlus}
+        data-qa={`add-${category.toLowerCase()}-absence`}
       />
     )
   }
 
   return (
-    <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow
+      alignItems="center"
+      data-qa={`${category.toLowerCase()}-absence`}
+    >
       <AbsenceLabel>
         {
           i18n.unit.attendanceReservations.childDateModal.absences.label[
@@ -407,8 +418,9 @@ const AbsenceForm = React.memo(function AbsenceForm({
           ]
         }
       </AbsenceLabel>
-      <SelectF bind={bind} />
+      <SelectF bind={bind} data-qa="type-select" />
       <IconButton
+        data-qa="remove-btn"
         icon={faTrash}
         aria-label={i18n.common.remove}
         onClick={() => bind.update((s) => ({ ...s, domValue: '' }))}

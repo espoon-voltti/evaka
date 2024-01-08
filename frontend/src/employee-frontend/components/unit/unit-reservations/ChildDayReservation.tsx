@@ -116,6 +116,7 @@ export default React.memo(function ChildDayReservation({
                   <FontAwesomeIcon
                     icon={faExclamationTriangle}
                     color={colors.status.warning}
+                    data-qa="outside-opening-times"
                   />
                 </>
               )}
@@ -131,6 +132,7 @@ export default React.memo(function ChildDayReservation({
                   <FontAwesomeIcon
                     icon={faExclamationTriangle}
                     color={colors.status.warning}
+                    data-qa="outside-opening-times"
                   />
                 </>
               )}

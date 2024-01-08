@@ -357,11 +357,38 @@ export class UnitChildReservationsTable extends Element {
   childAttendanceRows(childId: UUID) {
     return this.findAllByDataQa(`attendance-row-child-${childId}`)
   }
+
+  reservationCells = (childId: UUID, date: LocalDate) =>
+    this.childReservationRows(childId).findAllByDataQa(`td-${date.formatIso()}`)
+
+  attendanceCells = (childId: UUID, date: LocalDate) =>
+    this.childAttendanceRows(childId).findAllByDataQa(`td-${date.formatIso()}`)
+
   childAbsenceCells(childId: UUID) {
     return this.findAllByDataQa(
       `reservation-row-child-${childId}`
     ).findAllByDataQa('absence')
   }
+
+  startTimeOutsideOpeningHoursWarning = (
+    childId: UUID,
+    date: LocalDate,
+    n: number
+  ) =>
+    this.reservationCells(childId, date)
+      .nth(n)
+      .findByDataQa('reservation-start')
+      .findByDataQa('outside-opening-times')
+
+  endTimeOutsideOpeningHoursWarning = (
+    childId: UUID,
+    date: LocalDate,
+    n: number
+  ) =>
+    this.reservationCells(childId, date)
+      .nth(n)
+      .findByDataQa('reservation-end')
+      .findByDataQa('outside-opening-times')
 
   childInOtherUnit(childId: UUID) {
     return this.findAllByDataQa(
@@ -414,6 +441,62 @@ export class UnitChildReservationsTable extends Element {
 
     return new ReservationModal(this.page.findByDataQa('modal'))
   }
+
+  async assertCannotOpenChildDateModal(
+    childId: UUID,
+    date: LocalDate
+  ): Promise<void> {
+    const cell = this.reservationCells(childId, date).nth(0)
+    await cell.hover()
+    await cell.findByDataQa('open-details').waitUntilHidden()
+  }
+
+  async openChildDateModal(
+    childId: UUID,
+    date: LocalDate
+  ): Promise<ChildDatePresenceModal> {
+    const cell = this.reservationCells(childId, date).nth(0)
+    await cell.hover()
+    const editBtn = cell.findByDataQa('open-details')
+    await editBtn.click()
+
+    return new ChildDatePresenceModal(this.page.findByDataQa('modal'))
+  }
+}
+
+export class ChildDatePresenceModal extends Modal {
+  addReservationBtn = this.findByDataQa('add-reservation')
+  #reservation = (n: number) => this.findByDataQa(`reservation-${n}`)
+  reservationStart = (n: number) =>
+    new TextInput(this.#reservation(n).findByDataQa('start'))
+  reservationEnd = (n: number) =>
+    new TextInput(this.#reservation(n).findByDataQa('end'))
+  reservationRemove = (n: number) =>
+    this.#reservation(n).findByDataQa('remove-btn')
+
+  addAttendanceBtn = this.findByDataQa('add-attendance')
+  #attendance = (n: number) => this.findByDataQa(`attendance-${n}`)
+  attendanceStart = (n: number) =>
+    new TextInput(this.#attendance(n).findByDataQa('start'))
+  attendanceEnd = (n: number) =>
+    new TextInput(this.#attendance(n).findByDataQa('end'))
+  attendanceRemove = (n: number) =>
+    this.#attendance(n).findByDataQa('remove-btn')
+
+  addBillableAbsenceBtn = this.findByDataQa('add-billable-absence')
+  billableAbsenceType = new Select(
+    this.findByDataQa('billable-absence').findByDataQa('type-select')
+  )
+  billableAbsenceRemove =
+    this.findByDataQa('billable-absence').findByDataQa('remove-btn')
+
+  addNonbillableAbsenceBtn = this.findByDataQa('add-nonbillable-absence')
+  nonbillableAbsenceType = new Select(
+    this.findByDataQa('nonbillable-absence').findByDataQa('type-select')
+  )
+  nonbillableAbsenceRemove = this.findByDataQa(
+    'nonbillable-absence'
+  ).findByDataQa('remove-btn')
 }
 
 export class ReservationModal extends Modal {

@@ -196,6 +196,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
             return (
               <DayTd
                 key={date.formatIso()}
+                data-qa={`td-${date.formatIso()}`}
                 className={classNames({ 'is-today': date.isToday() })}
                 partialRow={reservationRowCount > 1}
                 rowIndex={index}
@@ -247,6 +248,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
           {days.map(({ date, dateInfo, child }) => (
             <DayTd
               key={date.formatIso()}
+              data-qa={`td-${date.formatIso()}`}
               className={classNames({ 'is-today': date.isToday() })}
               partialRow={attendanceRowCount > 1}
               rowIndex={index}
