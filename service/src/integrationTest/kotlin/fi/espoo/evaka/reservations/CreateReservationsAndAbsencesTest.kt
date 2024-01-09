@@ -4,12 +4,13 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
+import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -31,22 +32,22 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 
-class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
+class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val monday = LocalDate.of(2021, 8, 23)
     private val mondayNoon = HelsinkiDateTime.of(monday, LocalTime.NOON)
@@ -627,6 +628,10 @@ class CreateReservationsAndAbsencesTest : FullApplicationTest(resetDbBeforeEach 
 
     @Test
     fun `irregular daily service times absences are not overwritten`() {
+        val dailyServiceTimesController =
+            DailyServiceTimesController(
+                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
+            )
         // given
         db.transaction {
             it.insertTestPlacement(
