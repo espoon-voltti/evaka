@@ -107,10 +107,15 @@ const TemplateRow = React.memo(function TemplateRow({
   const { mutateAsync: deleteDocumentTemplate } = useMutationResult(
     deleteDocumentTemplateMutation
   )
+  const onClickExport = useCallback(() => {
+    window.open(
+      exportDocumentTemplateUrl(template.id, sanitizedFilename(template.name))
+    )
+  }, [template.id, template.name])
 
   return (
-    <Tr key={template.id}>
-      <Td>
+    <Tr key={template.id} data-qa="template-row">
+      <Td data-qa="name">
         <Link to={`/document-templates/${template.id}`}>{template.name}</Link>
       </Td>
       <Td>{i18n.documentTemplates.documentTypes[template.type]}</Td>
@@ -151,7 +156,12 @@ const TemplateRow = React.memo(function TemplateRow({
             disabled={template.published}
             onClick={() => deleteDocumentTemplate(template.id)}
           />
-          <ExportButton id={template.id} name={template.name} />
+          <IconButton
+            data-qa="export"
+            icon={faFileExport}
+            aria-label={i18n.documentTemplates.templatesPage.export}
+            onClick={onClickExport}
+          />
         </FixedSpaceRow>
       </Td>
     </Tr>
@@ -162,27 +172,6 @@ const sanitizedFilename = (name: string): string => {
   const problematicChars = /[^\p{Alpha}0-9]/gu
   return `${name.replace(problematicChars, '_')}.${Date.now()}.template.json`
 }
-
-const ExportButton = React.memo(function ExportButton({
-  id,
-  name
-}: {
-  id: UUID
-  name: string
-}) {
-  const { i18n } = useTranslation()
-  const onClick = useCallback(() => {
-    window.open(exportDocumentTemplateUrl(id, sanitizedFilename(name)))
-  }, [id, name])
-
-  return (
-    <IconButton
-      icon={faFileExport}
-      aria-label={i18n.documentTemplates.templatesPage.export}
-      onClick={onClick}
-    />
-  )
-})
 
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()
@@ -207,6 +196,7 @@ export default React.memo(function DocumentTemplatesPage() {
             onClick={openImportModal}
             icon={faFileImport}
             text={i18n.documentTemplates.templatesPage.import}
+            data-qa="import-template"
           />
           <Gap horizontal size="m" />
           <AddButton

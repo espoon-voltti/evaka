@@ -36,6 +36,7 @@ export default React.memo(function TemplateImportModal({
 
   return (
     <BaseModal
+      data-qa="template-import-modal"
       close={onClose}
       closeLabel={i18n.common.close}
       title={i18n.documentTemplates.templatesPage.import}

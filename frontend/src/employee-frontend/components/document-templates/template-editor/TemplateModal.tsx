@@ -135,6 +135,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   return (
     <AsyncFormModal
+      data-qa="template-modal"
       title={
         mode.type === 'import'
           ? i18n.documentTemplates.templatesPage.import
