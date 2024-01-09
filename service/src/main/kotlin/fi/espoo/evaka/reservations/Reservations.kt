@@ -296,7 +296,8 @@ data class ChildDatePresence(
     val unitId: DaycareId,
     val reservations: List<Reservation>,
     val attendances: List<OpenTimeRange>,
-    val absences: Map<AbsenceCategory, AbsenceType?>
+    val absenceBillable: AbsenceType?,
+    val absenceNonbillable: AbsenceType?
 )
 
 data class UpsertChildDatePresenceResult(
@@ -367,7 +368,11 @@ fun upsertChildDatePresence(
 
     val absenceChanges =
         AbsenceCategory.entries.map { category ->
-            val type = input.absences[category]
+            val type =
+                when (category) {
+                    AbsenceCategory.BILLABLE -> input.absenceBillable
+                    AbsenceCategory.NONBILLABLE -> input.absenceNonbillable
+                }
             val identicalAbsenceExists =
                 type != null &&
                     tx.absenceExists(
@@ -433,10 +438,10 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
         }
 
     if (
-        absences.entries
-            .filter { it.value != null }
-            .map { it.key }
-            .any { absenceCategory -> !placementType.absenceCategories().contains(absenceCategory) }
+        (absenceBillable != null &&
+            !placementType.absenceCategories().contains(AbsenceCategory.BILLABLE)) ||
+            (absenceNonbillable != null &&
+                !placementType.absenceCategories().contains(AbsenceCategory.NONBILLABLE))
     ) {
         throw BadRequest("Invalid absence category")
     }

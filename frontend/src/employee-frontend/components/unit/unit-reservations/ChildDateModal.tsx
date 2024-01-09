@@ -117,10 +117,8 @@ const form = transformed(
             endTime: r.end
           })),
       attendances,
-      absences: {
-        BILLABLE: billableAbsence ?? null,
-        NONBILLABLE: nonBillableAbsence ?? null
-      }
+      absenceBillable: billableAbsence ?? null,
+      absenceNonbillable: nonBillableAbsence ?? null
     }
     return ValidationSuccess.of(result)
   }
@@ -177,7 +175,7 @@ export default React.memo(function ChildDateModal({
         'BILLABLE'
       )
         ? {
-            domValue: childDayRecord.absences.BILLABLE ?? '',
+            domValue: childDayRecord.absenceBillable ?? '',
             options: absenceOptions
           }
         : {
@@ -188,7 +186,7 @@ export default React.memo(function ChildDateModal({
         'NONBILLABLE'
       )
         ? {
-            domValue: childDayRecord.absences.NONBILLABLE ?? '',
+            domValue: childDayRecord.absenceNonbillable ?? '',
             options: absenceOptions
           }
         : {

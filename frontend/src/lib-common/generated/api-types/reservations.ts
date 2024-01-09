@@ -35,14 +35,6 @@ export interface AbsenceRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.AttendanceTimes
-*/
-export interface AttendanceTimes {
-  endTime: LocalTime | null
-  startTime: LocalTime
-}
-
-/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Child
 */
 export interface Child {
@@ -58,7 +50,8 @@ export interface Child {
 * Generated from fi.espoo.evaka.reservations.ChildDatePresence
 */
 export interface ChildDatePresence {
-  absences: Record<AbsenceCategory, AbsenceType | null>
+  absenceBillable: AbsenceType | null
+  absenceNonbillable: AbsenceType | null
   attendances: OpenTimeRange[]
   childId: UUID
   date: LocalDate
@@ -70,8 +63,9 @@ export interface ChildDatePresence {
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
 */
 export interface ChildRecordOfDay {
-  absences: Record<AbsenceCategory, AbsenceType>
-  attendances: AttendanceTimes[]
+  absenceBillable: AbsenceType | null
+  absenceNonbillable: AbsenceType | null
+  attendances: OpenTimeRange[]
   backupGroupId: UUID | null
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null

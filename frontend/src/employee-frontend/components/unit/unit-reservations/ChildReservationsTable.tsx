@@ -186,12 +186,19 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
           {days.map(({ date, dateInfo, child }) => {
             const fullyAbsent =
               !!child &&
-              child.possibleAbsenceCategories.every((c) => child.absences[c])
+              child.possibleAbsenceCategories.every((c) => {
+                switch (c) {
+                  case 'BILLABLE':
+                    return child.absenceBillable !== null
+                  case 'NONBILLABLE':
+                    return child.absenceNonbillable !== null
+                }
+              })
             const hasReservations = !!child && child.reservations.length > 0
             const displayAbsence =
               index === 0 && (fullyAbsent || !hasReservations)
             const absence =
-              child?.absences.BILLABLE ?? child?.absences.NONBILLABLE ?? null
+              child?.absenceBillable ?? child?.absenceNonbillable ?? null
 
             return (
               <DayTd

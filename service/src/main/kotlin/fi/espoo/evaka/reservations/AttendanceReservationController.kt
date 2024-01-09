@@ -140,10 +140,18 @@ class AttendanceReservationController(
                                                     childData.attendances[date]?.takeIf {
                                                         !placementStatus.backupOtherUnit
                                                     } ?: emptyList(),
-                                                absences =
-                                                    childData.absences[date]?.takeIf {
-                                                        !placementStatus.backupOtherUnit
-                                                    } ?: emptyMap(),
+                                                absenceBillable =
+                                                    childData.absences[date]
+                                                        ?.get(AbsenceCategory.BILLABLE)
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        },
+                                                absenceNonbillable =
+                                                    childData.absences[date]
+                                                        ?.get(AbsenceCategory.NONBILLABLE)
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        },
                                                 possibleAbsenceCategories =
                                                     placementStatus.placementType
                                                         .absenceCategories(),
@@ -608,8 +616,9 @@ data class UnitAttendanceReservations(
     data class ChildRecordOfDay(
         val childId: ChildId,
         val reservations: List<Reservation>,
-        val attendances: List<AttendanceTimes>,
-        val absences: Map<AbsenceCategory, AbsenceType>,
+        val attendances: List<OpenTimeRange>,
+        val absenceBillable: AbsenceType?,
+        val absenceNonbillable: AbsenceType?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val groupId: GroupId?,
@@ -617,8 +626,6 @@ data class UnitAttendanceReservations(
         val inOtherUnit: Boolean,
         val scheduleType: ScheduleType
     )
-
-    data class AttendanceTimes(val startTime: LocalTime, val endTime: LocalTime?)
 
     data class Child(
         val id: ChildId,
@@ -821,7 +828,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<Reservation>>,
-    val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
+    val attendances: Map<LocalDate, List<OpenTimeRange>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
 )
 
@@ -853,7 +860,7 @@ private data class AttendanceTimesForDate(
     val startTime: LocalTime,
     val endTime: LocalTime?
 ) {
-    fun toAttendanceTimes() = UnitAttendanceReservations.AttendanceTimes(startTime, endTime)
+    fun toOpenTimeRange() = OpenTimeRange(startTime, endTime)
 }
 
 private data class AbsenceForDate(
@@ -929,7 +936,7 @@ WHERE p.id = ANY(:childIds)
                 attendances =
                     row.attendances.groupBy(
                         keySelector = { it.date },
-                        valueTransform = { it.toAttendanceTimes() }
+                        valueTransform = { it.toOpenTimeRange() }
                     ),
                 absences =
                     row.absences

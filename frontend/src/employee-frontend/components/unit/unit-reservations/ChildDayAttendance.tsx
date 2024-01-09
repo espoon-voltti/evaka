@@ -17,7 +17,7 @@ import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyserv
 import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  AttendanceTimes,
+  OpenTimeRange,
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
@@ -38,7 +38,7 @@ interface Props {
   date: LocalDate
   attendanceIndex: number
   dateInfo: UnitDateInfo
-  attendance: AttendanceTimes | undefined
+  attendance: OpenTimeRange | undefined
   reservations: Reservation[]
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
