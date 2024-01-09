@@ -215,11 +215,18 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await modal.addReservationBtn.click()
   await modal.reservationStart(0).fill('09:00')
   await modal.reservationEnd(0).fill('13:00')
+  await modal.addReservationBtn.click()
+  await modal.reservationStart(1).fill('14:00')
+  await modal.reservationEnd(1).fill('17:00')
   await modal.submit()
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
     .assertTextEquals('09:00\n13:00')
+  await reservationsTable
+    .reservationCells(childId, date)
+    .nth(1)
+    .assertTextEquals('14:00\n17:00')
 
   // reservation times are not shown if fully absent
   await reservationsTable.openChildDateModal(childId, date)
@@ -230,6 +237,10 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
     .reservationCells(childId, date)
     .nth(0)
     .assertTextEquals('Sairaus')
+  await reservationsTable
+    .reservationCells(childId, date)
+    .nth(1)
+    .assertTextEquals('')
 })
 
 test('Add absence for child in preschool for yesterday', async () => {

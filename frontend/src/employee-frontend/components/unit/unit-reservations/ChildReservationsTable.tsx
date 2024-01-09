@@ -195,8 +195,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                 }
               })
             const hasReservations = !!child && child.reservations.length > 0
-            const displayAbsence =
-              index === 0 && (fullyAbsent || !hasReservations)
+            const displayAbsence = fullyAbsent || !hasReservations
             const absence =
               child?.absenceBillable ?? child?.absenceNonbillable ?? null
 

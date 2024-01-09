@@ -102,7 +102,9 @@ export default React.memo(function ChildDayReservation({
             <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
           </TimeCell>
         ) : absence ? (
-          <AbsenceDay type={absence} />
+          reservationIndex === 0 ? (
+            <AbsenceDay type={absence} />
+          ) : null
         ) : reservation && reservation.type === 'TIMES' ? (
           <>
             <ReservationTime
