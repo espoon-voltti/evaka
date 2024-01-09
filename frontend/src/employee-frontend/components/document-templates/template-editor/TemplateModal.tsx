@@ -4,9 +4,9 @@
 
 import React, { useMemo } from 'react'
 
+import DateRange from 'lib-common/date-range'
 import {
   boolean,
-  localDateRange,
   openEndedLocalDateRange,
   string
 } from 'lib-common/form/fields'
@@ -16,9 +16,12 @@ import { nonBlank } from 'lib-common/form/validators'
 import {
   DocumentLanguage,
   DocumentType,
-  documentTypes
+  documentTypes,
+  ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
+import { JsonOf } from 'lib-common/json'
 import { useMutationResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -30,7 +33,8 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import {
   createDocumentTemplateMutation,
-  duplicateDocumentTemplateMutation
+  duplicateDocumentTemplateMutation,
+  importDocumentTemplateMutation
 } from '../queries'
 
 const documentTemplateForm = object({
@@ -42,19 +46,25 @@ const documentTemplateForm = object({
   validity: required(openEndedLocalDateRange())
 })
 
+export type TemplateModalMode =
+  | { type: 'new' }
+  | { type: 'duplicate'; from: UUID }
+  | { type: 'import'; data: JsonOf<ExportedDocumentTemplate> }
+
 interface Props {
   onClose: () => void
-  duplicateFrom: string | null
+  mode: TemplateModalMode
 }
 
-export default React.memo(function TemplateModal({
-  onClose,
-  duplicateFrom
-}: Props) {
+export default React.memo(function TemplateModal({ onClose, mode }: Props) {
   const { i18n, lang } = useTranslation()
 
   const { mutateAsync: createDocumentTemplate } = useMutationResult(
     createDocumentTemplateMutation
+  )
+
+  const { mutateAsync: importDocumentTemplate } = useMutationResult(
+    importDocumentTemplateMutation
   )
 
   const { mutateAsync: duplicateDocumentTemplate } = useMutationResult(
@@ -83,20 +93,38 @@ export default React.memo(function TemplateModal({
 
   const form = useForm(
     documentTemplateForm,
-    () => ({
-      name: '',
-      type: {
-        domValue: 'PEDAGOGICAL_ASSESSMENT',
-        options: typeOptions
-      },
-      language: {
-        domValue: 'FI',
-        options: languageOptions
-      },
-      confidential: true,
-      legalBasis: '',
-      validity: localDateRange.empty()
-    }),
+    () =>
+      mode.type === 'import'
+        ? {
+            name: mode.data.name,
+            type: {
+              domValue: mode.data.type,
+              options: typeOptions
+            },
+            language: {
+              domValue: mode.data.language,
+              options: languageOptions
+            },
+            confidential: mode.data.confidential,
+            legalBasis: mode.data.legalBasis,
+            validity: openEndedLocalDateRange.fromRange(
+              DateRange.parseJson(mode.data.validity)
+            )
+          }
+        : {
+            name: '',
+            type: {
+              domValue: 'PEDAGOGICAL_ASSESSMENT',
+              options: typeOptions
+            },
+            language: {
+              domValue: 'FI',
+              options: languageOptions
+            },
+            confidential: true,
+            legalBasis: '',
+            validity: openEndedLocalDateRange.empty()
+          },
     {
       ...i18n.validationErrors
     }
@@ -107,12 +135,31 @@ export default React.memo(function TemplateModal({
 
   return (
     <AsyncFormModal
-      title={i18n.documentTemplates.templateModal.title}
-      resolveAction={() =>
-        duplicateFrom
-          ? duplicateDocumentTemplate({ id: duplicateFrom, data: form.value() })
-          : createDocumentTemplate(form.value())
+      title={
+        mode.type === 'import'
+          ? i18n.documentTemplates.templatesPage.import
+          : i18n.documentTemplates.templateModal.title
       }
+      resolveAction={() => {
+        if (mode.type === 'duplicate') {
+          return duplicateDocumentTemplate({
+            id: mode.from,
+            data: form.value()
+          })
+        } else if (mode.type === 'import') {
+          const value = form.value()
+          return importDocumentTemplate({
+            ...value,
+            validity: {
+              start: value.validity.start.toJSON(),
+              end: value.validity.end?.toJSON() ?? null
+            },
+            content: mode.data.content
+          })
+        } else {
+          return createDocumentTemplate(form.value())
+        }
+      }}
       onSuccess={onClose}
       resolveLabel={i18n.common.confirm}
       rejectAction={onClose}

@@ -244,6 +244,19 @@ export const documentTypes = [
 
 export type DocumentType = typeof documentTypes[number]
 
+/**
+* Generated from fi.espoo.evaka.document.ExportedDocumentTemplate
+*/
+export interface ExportedDocumentTemplate {
+  confidential: boolean
+  content: DocumentTemplateContent
+  language: DocumentLanguage
+  legalBasis: string
+  name: string
+  type: DocumentType
+  validity: DateRange
+}
+
 export namespace Question {
   /**
   * Generated from fi.espoo.evaka.document.Question.CheckboxGroupQuestion

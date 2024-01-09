@@ -2,34 +2,46 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCheck, faCopy, faPen, faTimes, faTrash } from 'Icons'
-import React, { useState } from 'react'
+import {
+  faCheck,
+  faCopy,
+  faFileExport,
+  faFileImport,
+  faPen,
+  faTimes,
+  faTrash
+} from 'Icons'
+import React, { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
 import { required } from 'lib-common/form/form'
-import { useForm } from 'lib-common/form/hooks'
+import { useBoolean, useForm } from 'lib-common/form/hooks'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 
+import { exportDocumentTemplateUrl } from '../../../api/document-templates'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
+import { FlexRow } from '../../common/styled/containers'
 import {
   deleteDocumentTemplateMutation,
   documentTemplateSummariesQuery,
   updateDocumentTemplateValidityMutation
 } from '../queries'
 
-import TemplateModal from './TemplateModal'
+import TemplateImportModal from './TemplateImportModal'
+import TemplateModal, { TemplateModalMode } from './TemplateModal'
 
 const validityForm = required(openEndedLocalDateRange())
 
@@ -139,9 +151,36 @@ const TemplateRow = React.memo(function TemplateRow({
             disabled={template.published}
             onClick={() => deleteDocumentTemplate(template.id)}
           />
+          <ExportButton id={template.id} name={template.name} />
         </FixedSpaceRow>
       </Td>
     </Tr>
+  )
+})
+
+const sanitizedFilename = (name: string): string => {
+  const problematicChars = /[^\p{Alpha}0-9]/gu
+  return `${name.replace(problematicChars, '_')}.${Date.now()}.template.json`
+}
+
+const ExportButton = React.memo(function ExportButton({
+  id,
+  name
+}: {
+  id: UUID
+  name: string
+}) {
+  const { i18n } = useTranslation()
+  const onClick = useCallback(() => {
+    window.open(exportDocumentTemplateUrl(id, sanitizedFilename(name)))
+  }, [id, name])
+
+  return (
+    <IconButton
+      icon={faFileExport}
+      aria-label={i18n.documentTemplates.templatesPage.export}
+      onClick={onClick}
+    />
   )
 })
 
@@ -149,10 +188,10 @@ export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()
   const t = i18n.documentTemplates
 
-  const [templateModalOpen, setTemplateModalOpen] = useState(false)
-  const [duplicatingTemplateId, setDuplicatingTemplateId] = useState<
-    string | null
-  >(null)
+  const [importModalOpen, { on: openImportModal, off: closeImportModal }] =
+    useBoolean(false)
+  const [templateModalMode, setTemplateModalMode] =
+    useState<TemplateModalMode | null>(null)
   const [editingValidityId, setEditingValidityId] = useState<string | null>(
     null
   )
@@ -162,20 +201,33 @@ export default React.memo(function DocumentTemplatesPage() {
     <Container>
       <ContentArea opaque>
         <H1>{t.title}</H1>
-        <AddButtonRow
-          onClick={() => {
-            setDuplicatingTemplateId(null)
-            setTemplateModalOpen(true)
-          }}
-          text={i18n.documentTemplates.templatesPage.add}
-          data-qa="create-template-button"
-        />
-        {templateModalOpen && (
+        <FlexRow justifyContent="flex-end">
+          <AddButton
+            flipped
+            onClick={openImportModal}
+            icon={faFileImport}
+            text={i18n.documentTemplates.templatesPage.import}
+          />
+          <Gap horizontal size="m" />
+          <AddButton
+            flipped
+            onClick={() => setTemplateModalMode({ type: 'new' })}
+            text={i18n.documentTemplates.templatesPage.add}
+            data-qa="create-template-button"
+          />
+        </FlexRow>
+        {templateModalMode && (
           <TemplateModal
-            duplicateFrom={duplicatingTemplateId}
-            onClose={() => {
-              setTemplateModalOpen(false)
-              setDuplicatingTemplateId(null)
+            mode={templateModalMode}
+            onClose={() => setTemplateModalMode(null)}
+          />
+        )}
+        {importModalOpen && (
+          <TemplateImportModal
+            onClose={closeImportModal}
+            onContinue={(data) => {
+              closeImportModal()
+              setTemplateModalMode({ type: 'import', data })
             }}
           />
         )}
@@ -197,10 +249,12 @@ export default React.memo(function DocumentTemplatesPage() {
                   <TemplateRow
                     key={template.id}
                     template={template}
-                    onDuplicate={() => {
-                      setDuplicatingTemplateId(template.id)
-                      setTemplateModalOpen(true)
-                    }}
+                    onDuplicate={() =>
+                      setTemplateModalMode({
+                        type: 'duplicate',
+                        from: template.id
+                      })
+                    }
                     editingValidity={editingValidityId === template.id}
                     onEditValidity={() => setEditingValidityId(template.id)}
                     onCloseEditValidity={() => setEditingValidityId(null)}

@@ -7,18 +7,30 @@ import {
   DocumentTemplate,
   DocumentTemplateContent,
   DocumentTemplateCreateRequest,
-  DocumentTemplateSummary
+  DocumentTemplateSummary,
+  ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
-import { client } from './client'
+import { API_URL, client } from './client'
 
 export async function postDocumentTemplate(
   data: DocumentTemplateCreateRequest
 ): Promise<DocumentTemplate> {
   return client
     .post<JsonOf<DocumentTemplate>>('/document-templates', data)
+    .then((res) => ({
+      ...res.data,
+      validity: DateRange.parseJson(res.data.validity)
+    }))
+}
+
+export async function importDocumentTemplate(
+  data: JsonOf<ExportedDocumentTemplate>
+): Promise<DocumentTemplate> {
+  return client
+    .post<JsonOf<DocumentTemplate>>('/document-templates/import', data)
     .then((res) => ({
       ...res.data,
       validity: DateRange.parseJson(res.data.validity)
@@ -94,4 +106,10 @@ export async function putDocumentTemplatePublish(id: UUID): Promise<void> {
 
 export async function deleteDocumentTemplate(id: UUID): Promise<void> {
   await client.delete(`/document-templates/${id}`)
+}
+
+export function exportDocumentTemplateUrl(id: UUID, filename: string): string {
+  return `${API_URL}/document-templates/${encodeURIComponent(
+    id
+  )}/export/${encodeURIComponent(filename)}`
 }

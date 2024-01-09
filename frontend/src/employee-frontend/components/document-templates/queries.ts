@@ -5,8 +5,10 @@
 import DateRange from 'lib-common/date-range'
 import {
   DocumentTemplateContent,
-  DocumentTemplateCreateRequest
+  DocumentTemplateCreateRequest,
+  ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
+import { JsonOf } from 'lib-common/json'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -15,6 +17,7 @@ import {
   getActiveDocumentTemplateSummaries,
   getDocumentTemplate,
   getDocumentTemplateSummaries,
+  importDocumentTemplate,
   postDocumentTemplate,
   postDocumentTemplateDuplicate,
   putDocumentTemplateContent,
@@ -55,6 +58,11 @@ export const createDocumentTemplateMutation = mutation({
 export const duplicateDocumentTemplateMutation = mutation({
   api: (arg: { id: UUID; data: DocumentTemplateCreateRequest }) =>
     postDocumentTemplateDuplicate(arg.id, arg.data),
+  invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
+})
+
+export const importDocumentTemplateMutation = mutation({
+  api: (data: JsonOf<ExportedDocumentTemplate>) => importDocumentTemplate(data),
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
