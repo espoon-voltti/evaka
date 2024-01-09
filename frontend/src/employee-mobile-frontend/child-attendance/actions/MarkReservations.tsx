@@ -11,15 +11,25 @@ import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/Att
 import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
-import { array, mapped, object, validated, value } from 'lib-common/form/form'
+import {
+  array,
+  mapped,
+  object,
+  union,
+  validated,
+  value
+} from 'lib-common/form/form'
 import {
   BoundForm,
   useForm,
   useFormElems,
-  useFormFields
+  useFormField,
+  useFormFields,
+  useFormUnion
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   ConfirmedRangeDate,
   ConfirmedRangeDateUpdate,
@@ -62,39 +72,51 @@ import { useChild } from '../utils'
 type Mode = 'view' | 'edit'
 const MAX_RESERVATIONS_PER_DAY = 2
 
-const reservationTimeForm = validated(
-  object({
-    startTime: localTime(),
-    endTime: localTime()
-  }),
-  (output) => {
-    if (output.startTime === undefined && output.endTime !== undefined) {
-      return { startTime: 'required' }
-    }
-    if (output.startTime !== undefined && output.endTime === undefined) {
-      return { endTime: 'required' }
-    }
-    if (output.startTime !== undefined && output.endTime !== undefined) {
-      if (output.startTime.isEqualOrAfter(output.endTime)) {
-        return { endTime: 'timeFormat' }
+const reservationTimeForm = () =>
+  validated(
+    object({
+      startTime: localTime(),
+      endTime: localTime()
+    }),
+    (output) => {
+      if (output.startTime === undefined && output.endTime !== undefined) {
+        return { startTime: 'required' }
       }
+      if (output.startTime !== undefined && output.endTime === undefined) {
+        return { endTime: 'required' }
+      }
+      if (output.startTime !== undefined && output.endTime !== undefined) {
+        if (output.startTime.isEqualOrAfter(output.endTime)) {
+          return { endTime: 'timeFormat' }
+        }
+      }
+      return undefined
     }
-    return undefined
-  }
-)
+  )
 
-const reservationTimesForm = array(reservationTimeForm)
+const reservationTimesForm = () => array(reservationTimeForm())
+
+const reservation = () =>
+  union({
+    times: reservationTimesForm(),
+    absence: object({
+      absenceType: value<AbsenceType>(),
+      scheduleType: value<ScheduleType>()
+    }),
+    fixedSchedule: value<true>(),
+    termBreak: value<true>()
+  })
 
 const reservationForm = mapped(
   validated(
     object({
       date: value<LocalDate>(),
-      times: reservationTimesForm,
-      absenceType: value<AbsenceType | null>()
+      reservation: reservation()
     }),
     (output) => {
-      if (
-        output.times.some((time, index, array) =>
+      if (output.reservation.branch === 'times') {
+        const times = output.reservation.value
+        return times.some((time, index, array) =>
           array.some(
             (other, otherIndex) =>
               index !== otherIndex &&
@@ -106,28 +128,43 @@ const reservationForm = mapped(
                 !other.endTime.isEqualOrBefore(time.startTime))
           )
         )
-      ) {
-        return 'overlap'
+          ? 'overlap'
+          : undefined
       }
       return undefined
     }
   ),
-  (output): ConfirmedRangeDateUpdate => ({
-    date: output.date,
-    reservations: output.times
-      .filter(
-        (
-          reservation
-        ): reservation is { startTime: LocalTime; endTime: LocalTime } =>
-          reservation.startTime !== undefined &&
-          reservation.endTime !== undefined
-      )
-      .map((reservation) => ({
-        ...reservation,
-        type: 'TIMES'
-      })),
-    absenceType: output.absenceType
-  })
+  (output): ConfirmedRangeDateUpdate | undefined =>
+    output.reservation.branch === 'times'
+      ? {
+          date: output.date,
+          reservations: output.reservation.value
+            .filter(
+              (
+                reservation
+              ): reservation is { startTime: LocalTime; endTime: LocalTime } =>
+                reservation.startTime !== undefined &&
+                reservation.endTime !== undefined
+            )
+            .map((reservation) => ({
+              ...reservation,
+              type: 'TIMES'
+            })),
+          absenceType: null
+        }
+      : output.reservation.branch === 'absence'
+        ? {
+            date: output.date,
+            reservations: [],
+            absenceType: output.reservation.value.absenceType
+          }
+        : output.reservation.branch === 'fixedSchedule'
+          ? {
+              date: output.date,
+              reservations: [],
+              absenceType: null
+            }
+          : undefined
 )
 
 const reservationsForm = object({
@@ -140,18 +177,36 @@ const initialFormState = (
   reservations: sortBy(reservations, (reservation) => reservation.date).map(
     (reservation) => ({
       date: reservation.date,
-      times:
-        reservation.reservations.length > 0
-          ? sortBy(reservation.reservations, reservationStartTime).map((res) =>
-              res.type === 'TIMES'
-                ? {
-                    startTime: res.startTime.format(),
-                    endTime: res.endTime.format()
-                  }
-                : { startTime: '', endTime: '' }
-            )
-          : [{ startTime: '', endTime: '' }],
-      absenceType: reservation.absenceType
+      reservation:
+        reservation.absenceType !== null
+          ? {
+              branch: 'absence' as const,
+              state: {
+                absenceType: reservation.absenceType,
+                scheduleType: reservation.scheduleType
+              }
+            }
+          : reservation.scheduleType === 'FIXED_SCHEDULE'
+            ? { branch: 'fixedSchedule' as const, state: true }
+            : reservation.scheduleType === 'TERM_BREAK'
+              ? { branch: 'termBreak' as const, state: true }
+              : {
+                  branch: 'times' as const,
+                  state:
+                    reservation.reservations.length > 0
+                      ? sortBy(
+                          reservation.reservations,
+                          reservationStartTime
+                        ).map((res) =>
+                          res.type === 'TIMES'
+                            ? {
+                                startTime: res.startTime.format(),
+                                endTime: res.endTime.format()
+                              }
+                            : { startTime: '', endTime: '' }
+                        )
+                      : [{ startTime: '', endTime: '' }]
+                }
     })
   )
 })
@@ -367,8 +422,8 @@ const ReservationsEdit = ({
     () => initialFormState(data),
     i18n.attendances.validationErrors
   )
-  const { reservations } = useFormFields(form)
-  const boundReservations = useFormElems(reservations)
+  const reservations = useFormField(form, 'reservations')
+  const reservationElems = useFormElems(reservations)
 
   const minDatesByWeek = useMemo(
     () => getMinDatesByWeek(reservations.state),
@@ -377,7 +432,7 @@ const ReservationsEdit = ({
 
   return (
     <>
-      {boundReservations.map((reservation) => (
+      {reservationElems.map((reservation) => (
         <React.Fragment key={reservation.state.date.format()}>
           {minDatesByWeek[reservation.state.date.getIsoWeek()] ===
             reservation.state.date && (
@@ -390,7 +445,9 @@ const ReservationsEdit = ({
             data-qa={`reservation-date-${reservation.state.date.formatIso()}`}
           >
             <Label>{reservation.state.date.format('EEEEEE d.M.', lang)}</Label>
-            <ReservationEdit form={reservation} />
+            <ServiceTime>
+              <ReservationEdit bind={reservation} />
+            </ServiceTime>
           </FixedSpaceRow>
           <Gap size="s" />
         </React.Fragment>
@@ -410,7 +467,9 @@ const ReservationsEdit = ({
             mutation={setConfirmedRangeMutation}
             onClick={() => ({
               childId,
-              body: reservations.value()
+              body: reservations
+                .value()
+                .flatMap((reservation) => reservation ?? [])
             })}
             onSuccess={onSuccess}
             disabled={!form.isValid()}
@@ -423,18 +482,52 @@ const ReservationsEdit = ({
 }
 
 const ReservationEdit = ({
-  form
+  bind
 }: {
-  form: BoundForm<typeof reservationForm>
+  bind: BoundForm<typeof reservationForm>
 }) => {
-  const { times, absenceType } = useFormFields(form)
-  const boundTimes = useFormElems(times)
+  const { i18n } = useTranslation()
+  const reservation = useFormField(bind, 'reservation')
+  const { branch, form } = useFormUnion(reservation)
+  switch (branch) {
+    case 'times':
+      return <TimesEdit bind={form} />
+    case 'absence':
+      return (
+        <ButtonLink
+          onClick={() => {
+            if (form.state.scheduleType === 'FIXED_SCHEDULE') {
+              reservation.set({ branch: 'fixedSchedule', state: true })
+            } else {
+              reservation.set({
+                branch: 'times',
+                state: [{ startTime: '', endTime: '' }]
+              })
+            }
+          }}
+          data-qa="remove-absence"
+        >
+          {i18n.attendances.removeAbsence}
+        </ButtonLink>
+      )
+    case 'fixedSchedule':
+      return <div>{i18n.attendances.serviceTime.present}</div>
+    case 'termBreak':
+      return <div>{i18n.attendances.termBreak}</div>
+  }
+}
 
-  const formInputInfo = form.inputInfo()
+const TimesEdit = ({
+  bind
+}: {
+  bind: BoundForm<ReturnType<typeof reservationTimesForm>>
+}) => {
+  const formInputInfo = bind.inputInfo()
+  const boundTimes = useFormElems(bind)
   const addButtonLocation =
-    form.isValid() &&
-    form.state.times.length < MAX_RESERVATIONS_PER_DAY &&
-    form.state.times.every(
+    bind.isValid() &&
+    bind.state.length < MAX_RESERVATIONS_PER_DAY &&
+    bind.state.every(
       (reservation) =>
         reservation.startTime !== '' && reservation.endTime !== ''
     )
@@ -458,25 +551,20 @@ const ReservationEdit = ({
             onRemoveTime={
               index !== 0
                 ? () =>
-                    times.update((prev) => [
+                    bind.update((prev) => [
                       ...prev.slice(0, index),
                       ...prev.slice(index + 1)
                     ])
                 : undefined
             }
-            onRemoveAbsence={
-              absenceType.value() !== null
-                ? () => absenceType.update(() => null)
-                : undefined
-            }
           />
           {addButtonLocation === 'same-row' && (
-            <ReservationTimeAddButton form={times} />
+            <ReservationTimeAddButton form={bind} />
           )}
         </FixedSpaceRow>
       ))}
       {addButtonLocation === 'next-row' && (
-        <ReservationTimeAddButton form={times} />
+        <ReservationTimeAddButton form={bind} />
       )}
       {formInputInfo && (
         <InputFieldUnderRow className={classNames(formInputInfo.status)}>
@@ -491,7 +579,7 @@ const ReservationEdit = ({
 const ReservationTimeAddButton = ({
   form
 }: {
-  form: BoundForm<typeof reservationTimesForm>
+  form: BoundForm<ReturnType<typeof reservationTimesForm>>
 }) => {
   const { i18n } = useTranslation()
 
@@ -509,23 +597,14 @@ const ReservationTimeAddButton = ({
 
 const ReservationTimeEdit = ({
   form,
-  onRemoveTime,
-  onRemoveAbsence
+  onRemoveTime
 }: {
-  form: BoundForm<typeof reservationTimeForm>
+  form: BoundForm<ReturnType<typeof reservationTimeForm>>
   onRemoveTime?: () => void
-  onRemoveAbsence?: () => void
 }) => {
   const { i18n } = useTranslation()
   const { startTime, endTime } = useFormFields(form)
 
-  if (onRemoveAbsence !== undefined) {
-    return (
-      <ButtonLink onClick={onRemoveAbsence} data-qa="remove-absence">
-        {i18n.attendances.removeAbsence}
-      </ButtonLink>
-    )
-  }
   return (
     <>
       <TimeInputF bind={startTime} data-qa="reservation-start-time" />
