@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCheck,
   faCopy,
@@ -11,7 +12,7 @@ import {
   faTimes,
   faTrash
 } from 'Icons'
-import React, { useCallback, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import DateRange from 'lib-common/date-range'
@@ -107,11 +108,10 @@ const TemplateRow = React.memo(function TemplateRow({
   const { mutateAsync: deleteDocumentTemplate } = useMutationResult(
     deleteDocumentTemplateMutation
   )
-  const onClickExport = useCallback(() => {
-    window.open(
-      exportDocumentTemplateUrl(template.id, sanitizedFilename(template.name))
-    )
-  }, [template.id, template.name])
+  const exportUrl = useMemo(
+    () => exportDocumentTemplateUrl(template.id),
+    [template.id]
+  )
 
   return (
     <Tr key={template.id} data-qa="template-row">
@@ -156,22 +156,14 @@ const TemplateRow = React.memo(function TemplateRow({
             disabled={template.published}
             onClick={() => deleteDocumentTemplate(template.id)}
           />
-          <IconButton
-            data-qa="export"
-            icon={faFileExport}
-            aria-label={i18n.documentTemplates.templatesPage.export}
-            onClick={onClickExport}
-          />
+          <a data-qa="export" href={exportUrl} target="_blank" rel="noreferrer">
+            <FontAwesomeIcon icon={faFileExport} fontSize="20px" />
+          </a>
         </FixedSpaceRow>
       </Td>
     </Tr>
   )
 })
-
-const sanitizedFilename = (name: string): string => {
-  const problematicChars = /[^\p{Alpha}0-9]/gu
-  return `${name.replace(problematicChars, '_')}.${Date.now()}.template.json`
-}
 
 export default React.memo(function DocumentTemplatesPage() {
   const { i18n } = useTranslation()

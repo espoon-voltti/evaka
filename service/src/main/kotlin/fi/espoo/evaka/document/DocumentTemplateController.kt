@@ -144,13 +144,12 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
             ?: throw NotFound("Document template $templateId not found")
     }
 
-    @GetMapping("/{templateId}/export/{filename}")
+    @GetMapping("/{templateId}/export")
     fun exportTemplate(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @PathVariable filename: String
     ): ResponseEntity<ExportedDocumentTemplate> =
         db.connect { dbc ->
                 dbc.read { tx ->
@@ -165,12 +164,17 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                 }
             }
             ?.let { template ->
+                val sanitizedName = template.name.replace(Regex("[^\\p{L}0-9]+"), "_").take(60)
+                val timestamp = clock.now().toInstant().epochSecond
                 ResponseEntity.ok()
                     .headers(
                         HttpHeaders().apply {
                             contentDisposition =
                                 ContentDisposition.attachment()
-                                    .filename(filename, Charsets.UTF_8)
+                                    .filename(
+                                        "$sanitizedName.$timestamp.template.json",
+                                        Charsets.UTF_8
+                                    )
                                     .build()
                         }
                     )

@@ -108,8 +108,6 @@ export async function deleteDocumentTemplate(id: UUID): Promise<void> {
   await client.delete(`/document-templates/${id}`)
 }
 
-export function exportDocumentTemplateUrl(id: UUID, filename: string): string {
-  return `${API_URL}/document-templates/${encodeURIComponent(
-    id
-  )}/export/${encodeURIComponent(filename)}`
+export function exportDocumentTemplateUrl(id: UUID): string {
+  return `${API_URL}/document-templates/${encodeURIComponent(id)}/export`
 }
