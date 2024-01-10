@@ -20,6 +20,10 @@ interface Props {
   onContinue: (template: JsonOf<ExportedDocumentTemplate>) => void
 }
 
+const FileInput = styled.input`
+  max-width: 100%;
+`
+
 export default React.memo(function TemplateImportModal({
   onClose,
   onContinue
@@ -41,7 +45,7 @@ export default React.memo(function TemplateImportModal({
       closeLabel={i18n.common.close}
       title={i18n.documentTemplates.templatesPage.import}
     >
-      <input
+      <FileInput
         type="file"
         accept=".template.json"
         onChange={(e) => {
