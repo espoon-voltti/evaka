@@ -230,6 +230,55 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
     }
 
     @Test
+    fun `fridge partner with partnership end date as null and expiring income is notified 4 weeks beforehand`() {
+        db.transaction {
+            fridgePartnerId =
+                it.insert(DevPerson(email = "partner@example.com"), DevPersonType.ADULT)
+
+            it.insert(
+                DevIncome(
+                    personId = fridgePartnerId,
+                    updatedBy = employeeEvakaUserId,
+                    validFrom = clock.today().minusMonths(1),
+                    validTo = clock.today().plusWeeks(4)
+                )
+            )
+
+            val partnershipId = PartnershipId(UUID.randomUUID())
+            it.insert(
+                DevFridgePartner(
+                    partnershipId,
+                    1,
+                    2,
+                    fridgeHeadOfChildId,
+                    clock.today(),
+                    clock.today(),
+                    clock.now()
+                )
+            )
+            it.insert(
+                DevFridgePartner(
+                    partnershipId,
+                    2,
+                    1,
+                    fridgePartnerId,
+                    clock.today(),
+                    null,
+                    clock.now()
+                )
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+        assertEquals(0, getIncomeNotifications(fridgeHeadOfChildId).size)
+        assertEquals(1, getIncomeNotifications(fridgePartnerId).size)
+        assertEquals(
+            IncomeNotificationType.INITIAL_EMAIL,
+            getIncomeNotifications(fridgePartnerId)[0].notificationType
+        )
+    }
+
+    @Test
     fun `if expiration date is in the past no notification is sent`() {
         db.transaction {
             it.insert(
