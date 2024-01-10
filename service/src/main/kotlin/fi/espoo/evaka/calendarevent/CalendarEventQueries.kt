@@ -78,8 +78,8 @@ GROUP BY ce.id, cea.unit_id
 
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
-    modifiedAt: HelsinkiDateTime,
-    modifiedBy: EvakaUserId
+    createdAt: HelsinkiDateTime,
+    createdBy: EvakaUserId
 ): CalendarEventId {
     val eventId =
         this.createUpdate(
@@ -97,9 +97,7 @@ RETURNING id
     createCalendarEventAttendees(eventId, event.unitId, event.tree)
 
     if (!event.times.isNullOrEmpty()) {
-        event.times.forEach { time ->
-            createCalendarEventTime(eventId, time, modifiedAt, modifiedBy)
-        }
+        event.times.forEach { time -> createCalendarEventTime(eventId, time, createdAt, createdBy) }
     }
 
     return eventId
@@ -150,18 +148,18 @@ AND (child_id IS NULL OR child_id = :childId)
 fun Database.Transaction.createCalendarEventTime(
     calendarEventId: CalendarEventId,
     time: CalendarEventTimeForm,
-    modifiedAt: HelsinkiDateTime,
-    modifiedBy: EvakaUserId
+    createdAt: HelsinkiDateTime,
+    createdBy: EvakaUserId
 ) =
     createUpdate(
             """
-INSERT INTO calendar_event_time (modified_at, modified_by, calendar_event_id, date, start_time, end_time)
-VALUES (:modifiedAt, :modifiedBy, :calendarEventId, :date, :startTime, :endTime)
+INSERT INTO calendar_event_time (created_at, created_by, updated_at, modified_at, modified_by, calendar_event_id, date, start_time, end_time)
+VALUES (:createdAt, :createdBy, :createdAt, :createdAt, :createdBy, :calendarEventId, :date, :startTime, :endTime)
 RETURNING id
 """
         )
-        .bind("modifiedAt", modifiedAt)
-        .bind("modifiedBy", modifiedBy)
+        .bind("createdAt", createdAt)
+        .bind("createdBy", createdBy)
         .bind("calendarEventId", calendarEventId)
         .bindKotlin(time)
         .executeAndReturnGeneratedKeys()

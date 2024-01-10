@@ -1,8 +1,9 @@
 CREATE TABLE calendar_event_time
 (
     id                uuid PRIMARY KEY                  DEFAULT ext.uuid_generate_v1mc(),
-    created           timestamp with time zone NOT NULL DEFAULT now(),
-    updated           timestamp with time zone NOT NULL DEFAULT now(),
+    created_at        timestamp with time zone NOT NULL,
+    created_by        uuid                     NOT NULL REFERENCES evaka_user (id),
+    updated_at        timestamp with time zone NOT NULL,
     modified_at       timestamp with time zone NOT NULL,
     modified_by       uuid                     NOT NULL REFERENCES evaka_user (id),
     calendar_event_id uuid                     NOT NULL REFERENCES calendar_event (id) ON DELETE CASCADE,
@@ -12,11 +13,22 @@ CREATE TABLE calendar_event_time
     child_id          uuid REFERENCES child (id)
 );
 
+CREATE OR REPLACE FUNCTION public.trigger_refresh_updated_at() RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NEW.updated_at = OLD.updated_at THEN
+        NEW.updated_at = NOW();
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
     ON calendar_event_time
     FOR EACH ROW
-EXECUTE PROCEDURE trigger_refresh_updated();
+EXECUTE PROCEDURE trigger_refresh_updated_at();
 
 CREATE VIEW calendar_event_attendee_child_view(calendar_event_id, child_id) AS (
     -- child-specific
