@@ -26,13 +26,12 @@ import LocalTime from 'lib-common/local-time'
 import { reservationHasTimes, TimeRange } from 'lib-common/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
-import { DateCell, TimeCell, TimesRow } from './ChildDay'
+import { DateCell, DetailsToggle, TimeCell, TimesRow } from './ChildDayCommons'
 
 interface Props {
   date: LocalDate
@@ -188,18 +187,6 @@ const getExpectedAttendanceTimes = (
 
   return []
 }
-
-const DetailsToggle = styled.div`
-  display: flex;
-  align-items: center;
-  padding: ${defaultMargins.xxs};
-  margin-left: -${defaultMargins.s};
-  visibility: hidden;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 5px;
-`
 
 export const AttendanceDateCell = styled(DateCell)`
   background-color: ${colors.grayscale.g4};

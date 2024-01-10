@@ -27,14 +27,13 @@ import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Light } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
 import AbsenceDay from './AbsenceDay'
-import { DateCell, TimeCell, TimesRow } from './ChildDay'
+import { DateCell, DetailsToggle, TimeCell, TimesRow } from './ChildDayCommons'
 
 interface Props {
   date: LocalDate
@@ -203,18 +202,6 @@ export default React.memo(function ChildDayReservation({
     </ReservationDateCell>
   )
 })
-
-const DetailsToggle = styled.div`
-  display: flex;
-  align-items: center;
-  padding: ${defaultMargins.xxs};
-  margin-left: -${defaultMargins.s};
-  visibility: hidden;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 5px;
-`
 
 export const ReservationDateCell = styled(DateCell)`
   position: relative;

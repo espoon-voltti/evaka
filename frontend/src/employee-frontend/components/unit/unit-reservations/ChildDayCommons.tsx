@@ -33,3 +33,15 @@ export const TimeCell = styled.div<{ warning?: boolean }>`
       color: ${colors.accents.a2orangeDark};
     `};
 `
+
+export const DetailsToggle = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${defaultMargins.xxs};
+  margin-left: -${defaultMargins.s};
+  visibility: hidden;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 5px;
+`
