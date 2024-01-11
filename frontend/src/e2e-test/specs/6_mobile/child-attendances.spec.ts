@@ -477,6 +477,37 @@ describe('Child mobile attendance list', () => {
     await assertAttendanceCounts(1, 0, 0, 0, 1)
   })
 
+  test('Fixed schedule child\'s "reservation" is correct', async () => {
+    const term = new FiniteDateRange(
+      LocalDate.of(2021, 8, 15),
+      LocalDate.of(2022, 5, 31)
+    )
+
+    // Term break today
+    await Fixture.preschoolTerm()
+      .with({
+        finnishPreschool: term,
+        swedishPreschool: term,
+        extendedTerm: term,
+        applicationPeriod: new FiniteDateRange(
+          LocalDate.of(2022, 1, 10),
+          LocalDate.of(2022, 1, 20)
+        ),
+        termBreaks: []
+      })
+      .save()
+
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child, daycareGroupFixture.id, 'PRESCHOOL')
+
+    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await assertAttendanceCounts(1, 0, 0, 0, 1)
+    await listPage.selectChild(child)
+    await childPage.reservation.assertTextEquals('Läsnä')
+  })
+
   test('Term break child is shown in absent list', async () => {
     const term = new FiniteDateRange(
       LocalDate.of(2021, 8, 15),

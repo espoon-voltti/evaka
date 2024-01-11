@@ -511,9 +511,13 @@ const ReservationEdit = ({
         </ButtonLink>
       )
     case 'fixedSchedule':
-      return <div>{i18n.attendances.serviceTime.present}</div>
+      return (
+        <div data-qa="fixed-schedule">
+          {i18n.attendances.serviceTime.present}
+        </div>
+      )
     case 'termBreak':
-      return <div>{i18n.attendances.termBreak}</div>
+      return <div data-qa="term-break">{i18n.attendances.termBreak}</div>
   }
 }
 

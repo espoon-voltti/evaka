@@ -81,6 +81,18 @@ export class MobileReservationsEditPage {
     await reservationDate.findByDataQa('remove-absence').click()
   }
 
+  async assertFixedSchedule(date: LocalDate) {
+    await this.#findReservationDate(date)
+      .findByDataQa('fixed-schedule')
+      .waitUntilVisible()
+  }
+
+  async assertTermBreak(date: LocalDate) {
+    await this.#findReservationDate(date)
+      .findByDataQa('term-break')
+      .waitUntilVisible()
+  }
+
   #findReservationDate = (date: LocalDate) =>
     this.page.findByDataQa(`reservation-date-${date.formatIso()}`)
 }

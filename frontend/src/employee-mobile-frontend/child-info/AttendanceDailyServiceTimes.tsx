@@ -37,7 +37,7 @@ export default React.memo(function AttendanceDailyServiceTimes({
 
   if (reservationsWithTimes.length > 0) {
     return (
-      <ServiceTime>
+      <ServiceTime data-qa="reservation">
         <Reservations
           hideLabel={hideLabel}
           reservations={reservationsWithTimes}
@@ -48,10 +48,11 @@ export default React.memo(function AttendanceDailyServiceTimes({
 
   const todaysTimes = getTodaysServiceTimes(dailyServiceTimes)
   return (
-    <ServiceTime>
+    <ServiceTime data-qa="reservation">
       {scheduleType === 'FIXED_SCHEDULE' ? (
         i18n.attendances.serviceTime.present
       ) : scheduleType === 'TERM_BREAK' ? (
+        // Should not happen because a term break child is absent
         i18n.attendances.termBreak
       ) : todaysTimes === 'not_set' ? (
         <em>{i18n.attendances.serviceTime.notSet}</em>

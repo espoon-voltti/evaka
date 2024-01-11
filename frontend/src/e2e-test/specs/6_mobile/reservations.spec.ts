@@ -201,6 +201,100 @@ describe('when placement is ending tomorrow', () => {
   })
 })
 
+describe('when child is in preschool only', () => {
+  const mockedToday = LocalDate.of(2023, 11, 13)
+  const mockedTomorrow = mockedToday.addDays(1)
+  let unit: DaycareBuilder
+  let child: PersonBuilder
+
+  beforeEach(async () => {
+    const area = await Fixture.careArea().save()
+    unit = await Fixture.daycare()
+      .with({
+        areaId: area.data.id,
+        enabledPilotFeatures: ['RESERVATIONS'],
+        operationTimes: [
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          null,
+          null
+        ]
+      })
+      .save()
+    const group = await Fixture.daycareGroup()
+      .with({ daycareId: unit.data.id, startDate: mockedToday })
+      .save()
+    child = await Fixture.person().save()
+    await Fixture.child(child.data.id).save()
+    const placement = await Fixture.placement()
+      .with({
+        type: 'PRESCHOOL',
+        childId: child.data.id,
+        unitId: unit.data.id,
+        startDate: mockedToday,
+        endDate: mockedTomorrow
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .with({
+        daycareGroupId: group.data.id,
+        daycarePlacementId: placement.data.id,
+        startDate: placement.data.startDate,
+        endDate: placement.data.endDate
+      })
+      .save()
+  })
+
+  test('fixed schedule day', async () => {
+    const page = await loginToMobile(mockedToday, unit.data.id)
+    const reservationsPage = await navigateToReservations(page, child.data.id)
+    await reservationsPage.assertReservations([
+      { date: mockedTomorrow, text: 'Läsnä' }
+    ])
+    const editPage = await reservationsPage.edit()
+    await editPage.assertFixedSchedule(mockedTomorrow)
+  })
+
+  test('absence can be removed from fixed schedule day', async () => {
+    await Fixture.absence()
+      .with({ childId: child.data.id, date: mockedTomorrow })
+      .save()
+
+    const page = await loginToMobile(mockedToday, unit.data.id)
+    const reservationsPage = await navigateToReservations(page, child.data.id)
+    await reservationsPage.assertReservations([
+      { date: mockedTomorrow, text: 'Poissa' }
+    ])
+    const editPage = await reservationsPage.edit()
+    await editPage.removeAbsence(mockedTomorrow)
+    await editPage.assertFixedSchedule(mockedTomorrow)
+    await editPage.confirmButton.click()
+    await reservationsPage.assertReservations([
+      { date: mockedTomorrow, text: 'Läsnä' }
+    ])
+  })
+
+  test('term break day', async () => {
+    await Fixture.preschoolTerm()
+      .with({
+        finnishPreschool: new FiniteDateRange(mockedTomorrow, mockedTomorrow),
+        termBreaks: [new FiniteDateRange(mockedTomorrow, mockedTomorrow)]
+      })
+      .save()
+
+    const page = await loginToMobile(mockedToday, unit.data.id)
+    const reservationsPage = await navigateToReservations(page, child.data.id)
+    await reservationsPage.assertReservations([
+      { date: mockedTomorrow, text: 'Ei toimintaa tänään' }
+    ])
+    const editPage = await reservationsPage.edit()
+    await editPage.assertTermBreak(mockedTomorrow)
+  })
+})
+
 describe('when unit is open every day', () => {
   const mockedToday = LocalDate.of(2023, 11, 14) // Tue
   let unit: DaycareBuilder
