@@ -63,6 +63,8 @@ export interface Daycare {
   areaId: UUID
   name: string
   type: ('CENTRE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB')[]
+  dailyPreschoolTime: TimeRange | null
+  dailyPreparatoryTime: TimeRange | null
   openingDate?: LocalDate | null
   closingDate?: LocalDate | null
   costCenter: string

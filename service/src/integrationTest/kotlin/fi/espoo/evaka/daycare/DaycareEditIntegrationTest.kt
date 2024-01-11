@@ -40,6 +40,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             closingDate = LocalDate.of(2120, 1, 1),
             areaId = testArea.id,
             type = setOf(CareType.CENTRE),
+            dailyPreschoolTime = null,
+            dailyPreparatoryTime = null,
             daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
             preschoolApplyPeriod = null,
             clubApplyPeriod = null,
@@ -126,6 +128,26 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
 
+    @Test
+    fun testUpdatePreschool() {
+        val preschoolFields =
+            fields.copy(
+                type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 30), LocalTime.of(13, 30)),
+                dailyPreparatoryTime = TimeRange(LocalTime.of(8, 45), LocalTime.of(13, 45)),
+                preschoolApplyPeriod = DateRange(LocalDate.of(2021, 2, 1), null),
+                uploadToKoski = true
+            )
+        daycareController.updateDaycare(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            testDaycare.id,
+            preschoolFields
+        )
+        getAndAssertDaycareFields(testDaycare.id, preschoolFields)
+    }
+
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
         val body = daycareController.getDaycare(dbInstance(), admin, RealEvakaClock(), daycareId)
         val daycare = body.daycare
@@ -135,6 +157,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(fields.closingDate, daycare.closingDate)
         assertEquals(fields.areaId, daycare.area.id)
         assertEquals(fields.type, daycare.type)
+        assertEquals(fields.dailyPreschoolTime, daycare.dailyPreschoolTime)
+        assertEquals(fields.dailyPreparatoryTime, daycare.dailyPreparatoryTime)
         assertEquals(fields.daycareApplyPeriod, daycare.daycareApplyPeriod)
         assertEquals(fields.preschoolApplyPeriod, daycare.preschoolApplyPeriod)
         assertEquals(fields.clubApplyPeriod, daycare.clubApplyPeriod)

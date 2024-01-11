@@ -71,6 +71,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.PRESCHOOL),
+                        dailyPreparatoryTime = null,
                         openingDate = mockToday.today()
                     )
                 )
@@ -79,6 +80,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.CENTRE),
+                        dailyPreschoolTime = null,
+                        dailyPreparatoryTime = null,
                         openingDate = mockToday.today()
                     )
                 )
@@ -267,6 +270,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     id = transferDaycareId,
                     areaId = testData.areaId,
                     type = setOf(CareType.CENTRE),
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
                     openingDate = mockToday.today()
                 )
             )

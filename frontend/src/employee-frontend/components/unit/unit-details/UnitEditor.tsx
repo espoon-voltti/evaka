@@ -23,6 +23,7 @@ import {
 import { Coordinate, TimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -57,6 +58,8 @@ interface FormData {
   closingDate: LocalDate | null
   areaId: string
   careTypes: Record<OnlyCareType, boolean>
+  dailyPreschoolTime: EditableTimeRange
+  dailyPreparatoryTime: EditableTimeRange
   daycareType: OnlyDaycareType | undefined
   daycareApplyPeriod: DateRange | null
   preschoolApplyPeriod: DateRange | null
@@ -84,7 +87,7 @@ interface FormData {
   decisionCustomization: UnitDecisionCustomization
   ophUnitOid: string
   ophOrganizerOid: string
-  operationTimes: EditableTimeRange[]
+  operationTimes: (EditableTimeRange | null)[]
   businessId: string
   iban: string
   providerId: string
@@ -205,12 +208,16 @@ const emptyTimeRange: JsonOf<TimeRange> = {
 
 const emptyOperationWeek = [null, null, null, null, null, null, null]
 
-type EditableTimeRange = JsonOf<TimeRange> | null
+type EditableTimeRange = JsonOf<TimeRange>
 
 type FormErrorItem = { key: string; text: string }
 
 type UnitEditorErrors = {
-  rangeErrors: RangeValidationResult[]
+  rangeErrors: {
+    dailyPreschoolTime: RangeValidationResult
+    dailyPreparatoryTime: RangeValidationResult
+    operationTimes: RangeValidationResult[]
+  }
   formErrors: FormErrorItem[]
 }
 
@@ -300,37 +307,30 @@ interface Props {
   ) => React.ReactNode
 }
 
-function validateTimeRange(
-  { start, end }: Partial<JsonOf<TimeRange>>,
-  required = false
-): RangeValidationResult {
-  if (required && !start && !end) {
-    return {
-      start: 'timeRequired',
-      end: 'timeRequired'
-    }
-  }
-
+function validateTimeRange({
+  start,
+  end
+}: JsonOf<TimeRange>): RangeValidationResult {
   const errors: RangeValidationResult = {}
 
-  if (!start || start.length === 0) {
+  if (start.trim().length === 0) {
     errors.start = 'timeRequired'
+  } else {
+    errors.start = time(start)
   }
 
-  if (start) {
-    errors.start = errors.start ?? time(start)
-  }
-
-  if (!end || end.length === 0) {
+  if (end.trim().length === 0) {
     errors.end = 'timeRequired'
+  } else {
+    errors.end = time(end)
   }
 
-  if (end) {
-    errors.end = errors.end ?? time(end)
-  }
-
-  if (end && start && !errors.start && !errors.end) {
-    errors.end = errors.start = start > end ? 'timeRangeNotLinear' : undefined
+  if (
+    !errors.start &&
+    !errors.end &&
+    LocalTime.parse(end).isEqualOrBefore(LocalTime.parse(start))
+  ) {
+    errors.end = 'timeRangeNotLinear'
   }
 
   return errors
@@ -488,11 +488,51 @@ function validateForm(
       })
   }
 
+  let dailyPreschoolTime: TimeRange | null = null
+  let dailyPreschoolTimeRangeErrors: RangeValidationResult = {}
+  if (form.careTypes.PRESCHOOL) {
+    dailyPreschoolTimeRangeErrors = validateTimeRange(form.dailyPreschoolTime)
+    if (
+      dailyPreschoolTimeRangeErrors.start ||
+      dailyPreschoolTimeRangeErrors.end
+    ) {
+      errors.push({
+        text: i18n.unitEditor.error.dailyPreschoolTime,
+        key: 'daily-preschool-time'
+      })
+    } else {
+      const start = LocalTime.parse(form.dailyPreschoolTime.start)
+      const end = LocalTime.parse(form.dailyPreschoolTime.end)
+      dailyPreschoolTime = { start, end }
+    }
+  }
+
+  let dailyPreparatoryTime: TimeRange | null = null
+  let dailyPreparatoryTimeRangeErrors: RangeValidationResult = {}
+  if (form.careTypes.PREPARATORY_EDUCATION) {
+    dailyPreparatoryTimeRangeErrors = validateTimeRange(
+      form.dailyPreparatoryTime
+    )
+    if (
+      dailyPreparatoryTimeRangeErrors.start ||
+      dailyPreparatoryTimeRangeErrors.end
+    ) {
+      errors.push({
+        text: i18n.unitEditor.error.dailyPreparatoryTime,
+        key: 'daily-preparatory-time'
+      })
+    } else {
+      const start = LocalTime.parse(form.dailyPreparatoryTime.start)
+      const end = LocalTime.parse(form.dailyPreparatoryTime.end)
+      dailyPreparatoryTime = { start, end }
+    }
+  }
+
   let operationTimes: (TimeRange | null)[] = []
-  const rangeErrors = form.operationTimes.map((tr) =>
-    tr ? validateTimeRange(tr, true) : {}
+  const operationTimesRangeErrors = form.operationTimes.map((tr) =>
+    tr ? validateTimeRange(tr) : {}
   )
-  if (!rangeErrors.some((r) => r.start || r.end)) {
+  if (!operationTimesRangeErrors.some((r) => r.start || r.end)) {
     operationTimes = form.operationTimes.map((tr) =>
       tr ? parseTimeRange(tr) : null
     )
@@ -539,6 +579,8 @@ function validateForm(
         closingDate,
         areaId,
         type,
+        dailyPreschoolTime,
+        dailyPreparatoryTime,
         daycareApplyPeriod,
         preschoolApplyPeriod,
         clubApplyPeriod,
@@ -579,10 +621,27 @@ function validateForm(
         iban,
         providerId
       },
-      { formErrors: errors, rangeErrors }
+      {
+        formErrors: errors,
+        rangeErrors: {
+          dailyPreschoolTime: dailyPreschoolTimeRangeErrors,
+          dailyPreparatoryTime: dailyPreparatoryTimeRangeErrors,
+          operationTimes: operationTimesRangeErrors
+        }
+      }
     ]
   } else {
-    return [undefined, { formErrors: errors, rangeErrors }]
+    return [
+      undefined,
+      {
+        formErrors: errors,
+        rangeErrors: {
+          dailyPreschoolTime: dailyPreschoolTimeRangeErrors,
+          dailyPreparatoryTime: dailyPreparatoryTimeRangeErrors,
+          operationTimes: operationTimesRangeErrors
+        }
+      }
+    ]
   }
 }
 
@@ -609,6 +668,18 @@ function toFormData(unit: Unit | undefined): FormData {
         : type?.includes('CENTRE')
           ? 'CENTRE'
           : undefined,
+    dailyPreschoolTime: unit?.dailyPreschoolTime
+      ? {
+          start: unit.dailyPreschoolTime.start.format(),
+          end: unit.dailyPreschoolTime.end.format()
+        }
+      : emptyTimeRange,
+    dailyPreparatoryTime: unit?.dailyPreparatoryTime
+      ? {
+          start: unit.dailyPreparatoryTime.start.format(),
+          end: unit.dailyPreparatoryTime.end.format()
+        }
+      : emptyTimeRange,
     daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
     preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
     clubApplyPeriod: unit?.clubApplyPeriod ?? null,
@@ -669,7 +740,11 @@ export default function UnitEditor(props: Props) {
   )
   const [form, setForm] = useState<FormData>(initialData)
   const [validationErrors, setValidationErrors] = useState<UnitEditorErrors>({
-    rangeErrors: [],
+    rangeErrors: {
+      dailyPreparatoryTime: {},
+      dailyPreschoolTime: {},
+      operationTimes: []
+    },
     formErrors: []
   })
   const { careTypes, decisionCustomization, unitManager } = form
@@ -896,6 +971,31 @@ export default function UnitEditor(props: Props) {
                 onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
                 data-qa="care-type-checkbox-PRESCHOOL"
               />
+              {form.careTypes.PRESCHOOL && (
+                <IndentCheckboxLabel>
+                  <FixedSpaceRow alignItems="center">
+                    <span>Opetusaika:</span>
+                    {props.editable ? (
+                      <TimeRangeInput
+                        value={form.dailyPreschoolTime}
+                        onChange={(value) => {
+                          updateForm({
+                            dailyPreschoolTime: value
+                          })
+                        }}
+                        error={validationErrors.rangeErrors.dailyPreschoolTime}
+                        dataQaPrefix="daily-preschool-time"
+                        hideErrorsBeforeTouched
+                      />
+                    ) : (
+                      <div data-qa="daily-preschool-time-range">
+                        {form.dailyPreschoolTime.start} -{' '}
+                        {form.dailyPreschoolTime.end}
+                      </div>
+                    )}
+                  </FixedSpaceRow>
+                </IndentCheckboxLabel>
+              )}
               <Checkbox
                 disabled={!props.editable}
                 checked={form.careTypes.PREPARATORY_EDUCATION}
@@ -905,6 +1005,33 @@ export default function UnitEditor(props: Props) {
                 }
                 data-qa="care-type-checkbox-PREPARATORY"
               />
+              {form.careTypes.PREPARATORY_EDUCATION && (
+                <IndentCheckboxLabel>
+                  <FixedSpaceRow alignItems="center">
+                    <span>Opetusaika:</span>
+                    {props.editable ? (
+                      <TimeRangeInput
+                        value={form.dailyPreparatoryTime}
+                        onChange={(value) => {
+                          updateForm({
+                            dailyPreparatoryTime: value
+                          })
+                        }}
+                        error={
+                          validationErrors.rangeErrors.dailyPreparatoryTime
+                        }
+                        dataQaPrefix="daily-preparatory-time"
+                        hideErrorsBeforeTouched
+                      />
+                    ) : (
+                      <div data-qa="daily-preparatory-time-range">
+                        {form.dailyPreparatoryTime.start} -{' '}
+                        {form.dailyPreparatoryTime.end}
+                      </div>
+                    )}
+                  </FixedSpaceRow>
+                </IndentCheckboxLabel>
+              )}
             </>
           )}
           <Checkbox
@@ -1133,7 +1260,7 @@ export default function UnitEditor(props: Props) {
                         operationTimes: newOpTimes
                       })
                     }}
-                    error={validationErrors.rangeErrors[index]}
+                    error={validationErrors.rangeErrors.operationTimes[index]}
                     dataQaPrefix={dayOfWeek.toString()}
                     hideErrorsBeforeTouched={false}
                   />

@@ -100,7 +100,9 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = familyUnitInArea2,
                     areaId = careArea2,
                     providerType = ProviderType.PURCHASED,
-                    type = setOf(CareType.FAMILY)
+                    type = setOf(CareType.FAMILY),
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null
                 )
             )
             it.insert(DevDaycareGroup(id = familyGroup1, daycareId = familyUnitInArea2))
