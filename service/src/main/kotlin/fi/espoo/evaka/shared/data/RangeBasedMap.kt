@@ -179,6 +179,9 @@ abstract class RangeBasedMap<
     /** Constructs a range from endpoints. */
     protected abstract fun range(start: Point, end: Point): Range
 
+    /** Gets value at given point or null if not exists */
+    fun getValue(at: Point): T? = entries().find { it.first.includes(at) }?.second
+
     companion object {
         /**
          * Updates a sorted non-overlapping list of entries with the given range, value, and resolve

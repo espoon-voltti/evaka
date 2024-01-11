@@ -191,51 +191,6 @@ class ChildAttendanceController(
             }
     }
 
-    data class AttendancesRequest(val date: LocalDate, val attendances: List<AttendanceTimeRange>)
-
-    data class AttendanceTimeRange(
-        @ForceCodeGenType(String::class) val startTime: LocalTime,
-        @ForceCodeGenType(String::class) val endTime: LocalTime?
-    )
-
-    @PostMapping("/units/{unitId}/children/{childId}")
-    fun upsertAttendances(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId,
-        @RequestBody body: AttendancesRequest
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
-                )
-                tx.deleteAbsencesByDate(childId, clock.today())
-                tx.deleteAttendancesByDate(childId, body.date)
-                try {
-                    body.attendances.forEach {
-                        tx.insertAttendance(
-                            childId = childId,
-                            unitId = unitId,
-                            date = body.date,
-                            startTime = it.startTime,
-                            endTime = it.endTime
-                        )
-                    }
-                } catch (e: Exception) {
-                    throw mapPSQLException(e)
-                }
-            }
-        }
-        Audit.ChildAttendancesUpsert.log(targetId = childId, objectId = unitId)
-    }
-
     data class ArrivalRequest(
         @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )

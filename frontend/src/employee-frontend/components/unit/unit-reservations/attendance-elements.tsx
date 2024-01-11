@@ -1,46 +1,18 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import { OperationalDay } from 'lib-common/api-types/reservations'
-import { JsonOf } from 'lib-common/json'
-import { TimeRange } from 'lib-common/reservations'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { OperationalDay } from 'lib-common/generated/api-types/reservations'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins, SpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faCheck } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { stickyTopBarHeight } from '../TabCalendar'
-
-import { TimeRangeWithErrors } from './reservation-table-edit-state'
-
-export const EditStateIndicator = React.memo(function EditStateIndicator({
-  status,
-  stopEditing
-}: {
-  status: Result<void>
-  stopEditing: () => void
-}) {
-  const { i18n } = useTranslation()
-
-  return (
-    <IconButton
-      icon={faCheck}
-      onClick={stopEditing}
-      disabled={status.isLoading}
-      data-qa="inline-editor-state-button"
-      aria-label={i18n.common.save}
-    />
-  )
-})
 
 interface CustomThProps {
   shrink?: boolean
@@ -167,8 +139,8 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
         <CustomTh>
           <LabelLike>{nameColumnLabel}</LabelLike>
         </CustomTh>
-        {operationalDays.map(({ date, isHoliday }) => (
-          <DateTh shrink key={date.formatIso()} faded={isHoliday}>
+        {operationalDays.map(({ date, dateInfo }) => (
+          <DateTh shrink key={date.formatIso()} faded={dateInfo.isHoliday}>
             <Date highlight={date.isToday()}>
               {date.format('EEEEEE d.M.', lang)}
             </Date>
@@ -179,45 +151,3 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
     </Thead>
   )
 })
-
-export const TimeRangeEditor = React.memo(function TimeRangeEditor({
-  timeRange,
-  update,
-  save
-}: {
-  timeRange: TimeRangeWithErrors
-  update: (v: JsonOf<TimeRange>) => void
-  save: () => void
-}) {
-  const { startTime, endTime, errors } = timeRange
-
-  return (
-    <>
-      <TimeInputWithoutPadding
-        value={startTime}
-        onChange={(value) => update({ startTime: value, endTime })}
-        onBlur={save}
-        info={errors.startTime ? { status: 'warning', text: '' } : undefined}
-        data-qa="input-start-time"
-      />
-      <TimeInputWithoutPadding
-        value={endTime}
-        onChange={(value) => update({ startTime, endTime: value })}
-        onBlur={save}
-        info={errors.endTime ? { status: 'warning', text: '' } : undefined}
-        data-qa="input-end-time"
-      />
-    </>
-  )
-})
-
-export const TimeInputWithoutPadding = styled(TimeInput)`
-  padding: 0;
-  width: calc(2.8em);
-  max-width: calc(2.8em);
-  background: transparent;
-
-  &:focus {
-    padding: 0;
-  }
-`

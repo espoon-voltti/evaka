@@ -8,7 +8,9 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import { AbsenceCategory } from './daycare'
 import { AbsenceType } from './daycare'
+import { ChildServiceNeedInfo } from './daycare'
 import { DailyServiceTimesValue } from './dailyservicetimes'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
@@ -30,6 +32,48 @@ export interface AbsenceRequest {
   absenceType: AbsenceType
   childIds: UUID[]
   dateRange: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Child
+*/
+export interface Child {
+  dateOfBirth: LocalDate
+  firstName: string
+  id: UUID
+  lastName: string
+  preferredName: string
+  serviceNeeds: ChildServiceNeedInfo[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ChildDatePresence
+*/
+export interface ChildDatePresence {
+  absenceBillable: AbsenceType | null
+  absenceNonbillable: AbsenceType | null
+  attendances: OpenTimeRange[]
+  childId: UUID
+  date: LocalDate
+  reservations: Reservation[]
+  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
+*/
+export interface ChildRecordOfDay {
+  absenceBillable: AbsenceType | null
+  absenceNonbillable: AbsenceType | null
+  attendances: OpenTimeRange[]
+  backupGroupId: UUID | null
+  childId: UUID
+  dailyServiceTimes: DailyServiceTimesValue | null
+  groupId: UUID | null
+  inOtherUnit: boolean
+  possibleAbsenceCategories: AbsenceCategory[]
+  reservations: Reservation[]
+  scheduleType: ScheduleType
 }
 
 /**
@@ -136,6 +180,15 @@ export interface OpenTimeRange {
   startTime: LocalTime
 }
 
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.OperationalDay
+*/
+export interface OperationalDay {
+  children: ChildRecordOfDay[]
+  date: LocalDate
+  dateInfo: UnitDateInfo
+}
+
 export namespace ReservableTimeRange {
   /**
   * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.IntermittentShiftCare
@@ -209,6 +262,14 @@ export interface ReservationChildInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
+*/
+export interface ReservationGroup {
+  id: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.ReservationResponseDay
 */
 export interface ReservationResponseDay {
@@ -237,4 +298,23 @@ export interface ReservationsResponse {
   children: ReservationChild[]
   days: ReservationResponseDay[]
   reservableRange: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations
+*/
+export interface UnitAttendanceReservations {
+  children: Child[]
+  days: OperationalDay[]
+  groups: ReservationGroup[]
+  unit: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.UnitDateInfo
+*/
+export interface UnitDateInfo {
+  isHoliday: boolean
+  isInHolidayPeriod: boolean
+  time: TimeRange | null
 }

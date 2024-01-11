@@ -1,21 +1,20 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
-import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.Daycare
-import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
@@ -25,12 +24,13 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
+import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -42,12 +42,11 @@ import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.lang.Integer.max
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -90,7 +89,15 @@ class AttendanceReservationController(
                     val preschoolTerms = tx.getPreschoolTerms()
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
-                    val unitName = unit.name
+                    val groups =
+                        tx.getDaycareGroupSummaries(unitId)
+                            .filter { it.endDate == null || it.endDate.isAfter(clock.today()) }
+                            .map {
+                                UnitAttendanceReservations.ReservationGroup(
+                                    id = it.id,
+                                    name = it.name
+                                )
+                            }
 
                     val holidays = tx.getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
@@ -103,101 +110,71 @@ class AttendanceReservationController(
                             includeNonOperationalDays
                         )
 
-                    val effectiveGroupPlacements =
-                        tx.getEffectiveGroupPlacementsInRange(unitId, period)
-
-                    val unitServiceNeedInfo =
-                        tx.getGroupedActualServiceNeedInfosByRangeAndUnit(unitId, period)
-                    val flatData =
-                        period
-                            .dates()
-                            .flatMap { date ->
-                                effectiveGroupPlacements
-                                    .filter { it.period.includes(date) }
-                                    .groupBy { it.childId }
-                                    // Find the correct placement status for each child on this
-                                    // date.
-                                    // Precedence: Backup > Group placement > Placement
-                                    .flatMap { (childId, rows) ->
-                                        val backup = rows.find { it.isBackup }
-                                        val originalGroup = rows.find { it.group != null }?.group
-                                        val group =
-                                            if (backup != null && !backup.inOtherUnit) backup.group
-                                            else originalGroup
-                                        val originalPlacement =
-                                            rows.find { !it.isBackup && it.group == null }
-                                        val placementType =
-                                            backup?.placementType
-                                                ?: originalPlacement?.placementType
-                                                ?: throw Error(
-                                                    "Should not happen: each child either has a placement or backup care"
-                                                )
-                                        listOfNotNull(
-                                            ChildPlacementStatus(
-                                                date = date,
-                                                childId = childId,
-                                                placementType = placementType,
-                                                group = group,
-                                                inOtherUnit = backup?.inOtherUnit ?: false,
-                                                otherGroup = originalGroup,
-                                                isOriginalGroup = originalGroup == group
-                                            ),
-                                            if (backup != null && !backup.inOtherUnit)
-                                                ChildPlacementStatus(
-                                                    date = date,
-                                                    childId = childId,
-                                                    placementType = placementType,
-                                                    group = originalGroup,
-                                                    inOtherUnit = false,
-                                                    otherGroup = backup.group,
-                                                    isOriginalGroup = true
-                                                )
-                                            else null
-                                        )
-                                    }
-                            }
-                            .toList()
-
-                    val childIds = flatData.map { it.childId }.toSet()
+                    val placementInfo = createDateMaps(tx, unitId, period)
+                    val childIds = placementInfo.keys
                     val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
-                    val childData = tx.getChildData(childIds, period)
-
-                    val byGroup = flatData.groupBy { it.group }
+                    val childData = tx.getChildData(unitId, childIds, period)
 
                     UnitAttendanceReservations(
-                        unit = unitName,
-                        operationalDays = operationalDays,
-                        groups =
-                            byGroup.entries.mapNotNull { (group, rows) ->
-                                if (group == null) {
-                                    null
-                                } else {
-                                    UnitAttendanceReservations.GroupAttendanceReservations(
-                                        group = group,
-                                        children =
-                                            toChildDayRows(
-                                                rows,
-                                                serviceTimes,
-                                                childData,
-                                                includeNonOperationalDays,
-                                                clubTerms,
-                                                preschoolTerms
+                        unit = unit.name,
+                        groups = groups,
+                        children = childData.values.map { it.child },
+                        days =
+                            operationalDays.map { day ->
+                                val date = day.date
+                                day.copy(
+                                    children =
+                                        childData.values.mapNotNull { childData ->
+                                            val childId = childData.child.id
+                                            val placementStatus =
+                                                placementInfo[childId]?.getValue(date)
+                                                    ?: return@mapNotNull null
+
+                                            UnitAttendanceReservations.ChildRecordOfDay(
+                                                childId = childData.child.id,
+                                                reservations =
+                                                    childData.reservations[date]?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    } ?: emptyList(),
+                                                attendances =
+                                                    childData.attendances[date]?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    } ?: emptyList(),
+                                                absenceBillable =
+                                                    childData.absences[date]
+                                                        ?.get(AbsenceCategory.BILLABLE)
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        },
+                                                absenceNonbillable =
+                                                    childData.absences[date]
+                                                        ?.get(AbsenceCategory.NONBILLABLE)
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        },
+                                                possibleAbsenceCategories =
+                                                    placementStatus.placementType
+                                                        .absenceCategories(),
+                                                dailyServiceTimes =
+                                                    serviceTimes[childId]?.find {
+                                                        it.validityPeriod.includes(day.date)
+                                                    },
+                                                groupId = placementStatus.groupId,
+                                                backupGroupId =
+                                                    placementStatus.backupGroupId?.takeIf {
+                                                        !placementStatus.backupOtherUnit
+                                                    },
+                                                inOtherUnit = placementStatus.backupOtherUnit,
+                                                scheduleType =
+                                                    placementStatus.placementType.scheduleType(
+                                                        date,
+                                                        clubTerms,
+                                                        preschoolTerms
+                                                    )
                                             )
-                                    )
-                                }
-                            },
-                        ungrouped =
-                            byGroup[null]?.let {
-                                toChildDayRows(
-                                    it,
-                                    serviceTimes,
-                                    childData,
-                                    includeNonOperationalDays,
-                                    clubTerms,
-                                    preschoolTerms
+                                        }
                                 )
-                            } ?: emptyList(),
-                        unitServiceNeedInfo = unitServiceNeedInfo
+                            }
                     )
                 }
             }
@@ -247,6 +224,40 @@ class AttendanceReservationController(
                     "upsertedReservations" to result.upsertedReservations
                 )
         )
+    }
+
+    @PostMapping("/child-date")
+    fun postChildDatePresence(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ChildDatePresence
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPSERT_CHILD_DATE_PRESENCE,
+                        body.childId
+                    )
+
+                    upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body)
+                }
+            }
+            .also { result ->
+                Audit.ChildDatePresenceUpsert.log(
+                    targetId = body.childId,
+                    meta =
+                        mapOf(
+                            "insertedReservations" to result.insertedReservations,
+                            "deletedReservations" to result.deletedReservations,
+                            "insertedAttendances" to result.insertedAttendances,
+                            "deletedAttendances" to result.deletedAttendances,
+                        )
+                )
+            }
     }
 
     @GetMapping("/by-child/{childId}/non-reservable")
@@ -355,21 +366,6 @@ class AttendanceReservationController(
                 .minusDays(1)
         return FiniteDateRange(startDate, endDate)
     }
-
-    data class ChildDailyReservationInfo(
-        val childId: ChildId,
-        val reservations: List<Reservation>,
-        val groupId: GroupId?,
-        val absent: Boolean,
-        val outOnBackupPlacement: Boolean,
-        val dailyServiceTimes: DailyServiceTimesValue?,
-        val occupancyCoefficient: BigDecimal
-    )
-
-    data class UnitDailyReservationInfo(
-        val date: LocalDate,
-        val reservationInfos: List<ChildDailyReservationInfo>
-    )
 
     data class ReservationChildInfo(
         val id: ChildId,
@@ -547,7 +543,7 @@ class AttendanceReservationController(
                         )
 
                     val nextConfirmedUnitDays =
-                        operationalDays.filter { !it.isHoliday }.map { it.date }
+                        operationalDays.filter { !it.dateInfo.isHoliday }.map { it.date }
 
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(
@@ -590,81 +586,56 @@ class AttendanceReservationController(
     }
 }
 
-@ExcludeCodeGen
-data class UnitAttendanceReservations(
-    val unit: String,
-    val operationalDays: List<OperationalDay>,
-    val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildDailyRecords>,
-    val unitServiceNeedInfo: UnitServiceNeedInfo
-) {
-    data class OperationalDay(
-        val date: LocalDate,
-        val time: TimeRange?,
-        val isHoliday: Boolean,
-        val isInHolidayPeriod: Boolean
-    )
-
-    data class GroupAttendanceReservations(
-        val group: ReservationGroup,
-        val children: List<ChildDailyRecords>
-    )
-
-    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
-
-    data class ChildDailyRecords(
-        val child: Child,
-
-        // TODO: Refactor this data model
-        //
-        // Currently, each child has 0 or more ChildRecordOfDay objects for each day. It would be
-        // more realistic if each child had 0 or 1 ChildRecordOfDay object for each day instead, and
-        // the fields in ChildRecordOfDay that can have multiple values (e.g. attendance times)
-        // would be lists.
-        //
-        val dailyData: List<Map<LocalDate, ChildRecordOfDay>>
-    )
-
-    data class ChildRecordOfDay(
-        val reservation: Reservation?,
-        val attendance: AttendanceTimes?,
-        val absence: Absence?,
-        val dailyServiceTimes: DailyServiceTimesValue?,
-        val inOtherUnit: Boolean,
-        val isInBackupGroup: Boolean,
-        val scheduleType: ScheduleType
-    )
-
-    data class AttendanceTimes(val startTime: String, val endTime: String?)
-
-    data class Absence(val type: AbsenceType)
-
-    data class Child(
-        val id: ChildId,
-        val firstName: String,
-        val lastName: String,
-        val preferredName: String,
-        val dateOfBirth: LocalDate
-    )
-
-    data class UnitServiceNeedInfo(
-        val unitId: DaycareId,
-        val groups: List<GroupServiceNeedInfo>,
-        val ungrouped: List<ChildServiceNeedInfo>
-    )
-
-    data class GroupServiceNeedInfo(
-        val groupId: GroupId,
-        val childInfos: List<ChildServiceNeedInfo>
-    )
-}
-
 data class NonReservableReservation(
     val date: LocalDate,
     val reservations: List<Reservation>,
     val absenceType: AbsenceType?,
     val dailyServiceTimes: DailyServiceTimesValue?
 )
+
+data class UnitAttendanceReservations(
+    val unit: String,
+    val groups: List<ReservationGroup>,
+    val children: List<Child>,
+    val days: List<OperationalDay>,
+) {
+    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
+
+    data class OperationalDay(
+        val date: LocalDate,
+        val dateInfo: UnitDateInfo,
+        val children: List<ChildRecordOfDay>
+    )
+
+    data class UnitDateInfo(
+        val time: TimeRange?,
+        val isHoliday: Boolean,
+        val isInHolidayPeriod: Boolean
+    )
+
+    data class ChildRecordOfDay(
+        val childId: ChildId,
+        val reservations: List<Reservation>,
+        val attendances: List<OpenTimeRange>,
+        val absenceBillable: AbsenceType?,
+        val absenceNonbillable: AbsenceType?,
+        val possibleAbsenceCategories: Set<AbsenceCategory>,
+        val dailyServiceTimes: DailyServiceTimesValue?,
+        val groupId: GroupId?,
+        val backupGroupId: GroupId?,
+        val inOtherUnit: Boolean,
+        val scheduleType: ScheduleType
+    )
+
+    data class Child(
+        val id: ChildId,
+        val firstName: String,
+        val lastName: String,
+        val preferredName: String,
+        val dateOfBirth: LocalDate,
+        @Json val serviceNeeds: List<ChildServiceNeedInfo>
+    )
+}
 
 private fun getUnitOperationalDayData(
     period: FiniteDateRange,
@@ -682,106 +653,194 @@ private fun getUnitOperationalDayData(
                 isRoundTheClockUnit ||
                 unit.operationDays.contains(it.dayOfWeek.value)
         }
-        .map {
+        .map { date ->
             UnitAttendanceReservations.OperationalDay(
-                it,
-                time = unit.operationTimes[it.dayOfWeek.value - 1],
-                isHoliday =
-                    !isRoundTheClockUnit &&
-                        (holidays.contains(it) || !unit.operationDays.contains(it.dayOfWeek.value)),
-                isInHolidayPeriod = holidayPeriodDates.contains(it)
+                date = date,
+                dateInfo =
+                    UnitAttendanceReservations.UnitDateInfo(
+                        time = unit.operationTimes[date.dayOfWeek.value - 1],
+                        isHoliday =
+                            !isRoundTheClockUnit &&
+                                (holidays.contains(date) ||
+                                    !unit.operationDays.contains(date.dayOfWeek.value)),
+                        isInHolidayPeriod = holidayPeriodDates.contains(date),
+                    ),
+                children = emptyList()
             )
         }
         .toList()
 }
 
+private fun createDateMaps(
+    tx: Database.Read,
+    unitId: DaycareId,
+    period: FiniteDateRange
+): Map<ChildId, DateMap<ChildPlacementStatus>> {
+    val placements = tx.getPlacements(unitId, period)
+    val groupPlacements = tx.getGroupPlacements(unitId, period)
+    val backupPlacements = tx.getBackupPlacements(unitId, period)
+    val childIds = placements.keys + groupPlacements.keys + backupPlacements.keys
+    return childIds.associateWith { childId ->
+        createDateMapForChild(
+            unitId = unitId,
+            placements = placements[childId] ?: emptyList(),
+            groupPlacements = groupPlacements[childId] ?: emptyList(),
+            backupPlacements = backupPlacements[childId] ?: emptyList(),
+        )
+    }
+}
+
+private fun createDateMapForChild(
+    unitId: DaycareId,
+    placements: List<ChildPlacement>,
+    groupPlacements: List<ChildGroupPlacement>,
+    backupPlacements: List<ChildBackupPlacement>
+): DateMap<ChildPlacementStatus> {
+    return DateMap.of(
+            placements.map { p ->
+                p.period to
+                    ChildPlacementStatus(
+                        placementType = p.placementType,
+                        groupId = null,
+                        backupGroupId = null,
+                        backupOtherUnit = false
+                    )
+            }
+        )
+        .update(
+            entries =
+                groupPlacements.map { gp ->
+                    gp.period to
+                        ChildPlacementStatus(
+                            placementType = gp.placementType,
+                            groupId = gp.groupId,
+                            backupGroupId = null,
+                            backupOtherUnit = false
+                        )
+                },
+            resolve = { _, _, new -> new }
+        )
+        .update(
+            entries =
+                backupPlacements.map { bc ->
+                    bc.period to
+                        ChildPlacementStatus(
+                            placementType = bc.placementType,
+                            groupId = null,
+                            backupGroupId = bc.groupId,
+                            backupOtherUnit = bc.unitId != unitId
+                        )
+                },
+            resolve = { _, old, new -> new.copy(groupId = old.groupId) }
+        )
+}
+
 private data class ChildPlacementStatus(
-    val date: LocalDate,
-    val childId: ChildId,
     val placementType: PlacementType,
-    val group: UnitAttendanceReservations.ReservationGroup?,
-    val inOtherUnit: Boolean,
-    val otherGroup: UnitAttendanceReservations.ReservationGroup?,
-    val isOriginalGroup: Boolean
+    val groupId: GroupId?,
+    val backupGroupId: GroupId?,
+    val backupOtherUnit: Boolean
 )
 
-private data class EffectiveGroupPlacementPeriod(
+private data class ChildPlacement(
     val period: FiniteDateRange,
     val childId: ChildId,
-    val placementType: PlacementType,
-    @Nested("group") val group: UnitAttendanceReservations.ReservationGroup?,
-    val isBackup: Boolean,
-    val inOtherUnit: Boolean
+    val placementType: PlacementType
 )
 
-private fun Database.Read.getEffectiveGroupPlacementsInRange(
+private data class ChildGroupPlacement(
+    val period: FiniteDateRange,
+    val childId: ChildId,
+    val groupId: GroupId?,
+    val placementType: PlacementType
+)
+
+private data class ChildBackupPlacement(
+    val period: FiniteDateRange,
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val groupId: GroupId?,
+    val placementType: PlacementType
+)
+
+private fun Database.Read.getPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange
-): List<EffectiveGroupPlacementPeriod> {
-    return createQuery(
-            """
--- Placement without group
+): Map<ChildId, List<ChildPlacement>> =
+    createQuery<Any> {
+            sql(
+                """
 SELECT
-    daterange(p.start_date, p.end_date, '[]') * :dateRange AS period,
+    daterange(p.start_date, p.end_date, '[]') AS period,
     p.child_id,
-    p.type AS placement_type,
-    NULL AS group_id,
-    NULL AS group_name,
-    FALSE AS is_backup,
-    FALSE AS in_other_unit
+    p.type AS placement_type
 FROM placement p
-WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') && :dateRange
+WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && ${bind(dateRange)}
+"""
+            )
+        }
+        .toList<ChildPlacement>()
+        .groupBy { it.childId }
 
-UNION ALL
-
--- Group placement
+private fun Database.Read.getGroupPlacements(
+    unitId: DaycareId,
+    dateRange: FiniteDateRange
+): Map<ChildId, List<ChildGroupPlacement>> =
+    createQuery<Any> {
+            sql(
+                """
 SELECT
-    daterange(dgp.start_date, dgp.end_date, '[]') * :dateRange AS period,
+    daterange(dgp.start_date, dgp.end_date, '[]') AS period,
     p.child_id,
-    p.type AS placement_type,
     dgp.daycare_group_id AS group_id,
-    dg.name AS group_name,
-    FALSE AS is_backup,
-    FALSE AS in_other_unit
+    p.type AS placement_type
 FROM daycare_group_placement dgp
 JOIN placement p ON p.id = dgp.daycare_placement_id
-JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-WHERE p.unit_id = :unitId AND daterange(dgp.start_date, dgp.end_date, '[]') && :dateRange
-
-UNION ALL
-
-/*
-Backup placement
-- in own unit => use the backup group
-- in other unit => use no group, so the group is taken from own group placement
-*/
-SELECT
-    daterange(bc.start_date, bc.end_date, '[]') * :dateRange AS period,
-    bc.child_id,
-    p.type AS placement_type,
-    CASE WHEN bc.unit_id <> :unitId THEN NULL ELSE bc.group_id END AS group_id,
-    CASE WHEN bc.unit_id <> :unitId THEN NULL ELSE dg.name END AS group_name,
-    TRUE AS is_backup,
-    bc.unit_id <> :unitId AS in_other_unit
-FROM placement p
-JOIN backup_care bc ON bc.child_id = p.child_id
-LEFT JOIN daycare_group dg ON dg.id = bc.group_id
-WHERE
-    (p.unit_id = :unitId OR bc.unit_id = :unitId) AND
-    daterange(p.start_date, p.end_date, '[]') && :dateRange AND
-    daterange(bc.start_date, bc.end_date, '[]') && :dateRange
+WHERE p.unit_id = ${bind(unitId)} AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(dateRange)}
 """
-        )
-        .bind("unitId", unitId)
-        .bind("dateRange", dateRange)
-        .toList<EffectiveGroupPlacementPeriod>()
-}
+            )
+        }
+        .toList<ChildGroupPlacement>()
+        .groupBy { it.childId }
+
+private fun Database.Read.getBackupPlacements(
+    unitId: DaycareId,
+    dateRange: FiniteDateRange
+): Map<ChildId, List<ChildBackupPlacement>> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT
+    daterange(bc.start_date, bc.end_date, '[]') AS period,
+    bc.child_id,
+    bc.unit_id,
+    bc.group_id,
+    p.type AS placement_type
+FROM backup_care bc
+JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
+WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(dateRange)}
+"""
+            )
+        }
+        .toList<ChildBackupPlacement>()
+        .groupBy { it.childId }
 
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<Reservation>>,
-    val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
-    val absences: Map<LocalDate, UnitAttendanceReservations.Absence>
+    val attendances: Map<LocalDate, List<OpenTimeRange>>,
+    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
+)
+
+private data class ChildDataQueryResult(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val dateOfBirth: LocalDate,
+    @Json val reservations: List<ReservationTimesForDate>,
+    @Json val attendances: List<AttendanceTimesForDate>,
+    @Json val absences: List<AbsenceForDate>
 )
 
 private data class ReservationTimesForDate(
@@ -798,23 +857,28 @@ private data class ReservationTimesForDate(
 
 private data class AttendanceTimesForDate(
     val date: LocalDate,
-    val startTime: String,
-    val endTime: String?
+    val startTime: LocalTime,
+    val endTime: LocalTime?
 ) {
-    fun toAttendanceTimes() = UnitAttendanceReservations.AttendanceTimes(startTime, endTime)
+    fun toOpenTimeRange() = OpenTimeRange(startTime, endTime)
 }
 
-private data class AbsenceForDate(val date: LocalDate, val type: AbsenceType) {
-    fun toAbsence() = UnitAttendanceReservations.Absence(type)
-}
+private data class AbsenceForDate(
+    val date: LocalDate,
+    val type: AbsenceType,
+    val category: AbsenceCategory
+)
 
 private fun Database.Read.getChildData(
+    unitId: DaycareId,
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange
 ): Map<ChildId, ChildData> {
+    val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
+
     return createQuery(
             """
-SELECT            
+SELECT
     p.id,
     p.first_name,
     p.last_name,
@@ -822,24 +886,25 @@ SELECT
     p.date_of_birth,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
-            'date', to_char(ar.date, 'YYYY-MM-DD'),
-            'startTime', to_char(ar.start_time, 'HH24:MI'),
-            'endTime', to_char(ar.end_time, 'HH24:MI')
+            'date', ar.date,
+            'startTime', ar.start_time,
+            'endTime', ar.end_time
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
     ), '[]'::jsonb) AS reservations,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
-            'date', to_char(att.date, 'YYYY-MM-DD'),
-            'startTime', to_char(att.start_time, 'HH24:MI'),
-            'endTime', to_char(att.end_time, 'HH24:MI')
+            'date', att.date,
+            'startTime', att.start_time,
+            'endTime', att.end_time
         ) ORDER BY att.date, att.start_time)
         FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(:dateRange, att.date)
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(json_build_object(
-            'date', to_char(a.date, 'YYYY-MM-DD'),
-            'type', a.absence_type
+            'date', a.date,
+            'type', a.absence_type,
+            'category', a.category
         ) ORDER BY a.date)
         FROM absence a
         WHERE a.child_id = p.id AND between_start_and_end(:dateRange, a.date)
@@ -848,109 +913,39 @@ FROM person p
 WHERE p.id = ANY(:childIds)
 """
         )
+        .bind("unitId", unitId)
         .bind("dateRange", dateRange)
         .bind("childIds", childIds)
-        .toMap {
-            val childId = column<ChildId>("id")
-            childId to
-                ChildData(
-                    child = row<UnitAttendanceReservations.Child>(),
-                    reservations =
-                        jsonColumn<List<ReservationTimesForDate>>("reservations")
-                            .groupBy({ it.date }, { it.toReservationTimes() }),
-                    attendances =
-                        jsonColumn<List<AttendanceTimesForDate>>("attendances")
-                            .groupBy({ it.date }, { it.toAttendanceTimes() }),
-                    // The SQL query can return multiple absences for the same date, but here we
-                    // only
-                    // take one
-                    absences =
-                        jsonColumn<List<AbsenceForDate>>("absences")
-                            .associateBy({ it.date }, { it.toAbsence() })
-                )
-        }
-}
-
-private fun toChildDayRows(
-    rows: List<ChildPlacementStatus>,
-    serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
-    childData: Map<ChildId, ChildData>,
-    includeNonOperationalDays: Boolean,
-    clubTerms: List<ClubTerm>,
-    preschoolTerms: List<PreschoolTerm>
-): List<UnitAttendanceReservations.ChildDailyRecords> {
-    return rows
-        .groupBy { it.childId }
-        .map { (childId, dailyData) ->
-            val child =
-                childData[childId]
-                    ?: throw IllegalStateException("Child data not found for child $childId")
-            val maxRecordCountOnAnyDay =
-                max(
-                    1,
-                    dailyData.maxOf { placementStatus ->
-                        val date = placementStatus.date
-                        if (!placementStatus.inOtherUnit) {
-                            max(
-                                (child.reservations[date] ?: listOf()).size,
-                                (child.attendances[date] ?: listOf()).size
-                            )
-                        } else {
-                            0
-                        }
-                    }
-                )
-
-            UnitAttendanceReservations.ChildDailyRecords(
-                child = child.child,
-                dailyData =
-                    (0 until maxRecordCountOnAnyDay).map { rowIndex ->
-                        dailyData.associateBy(
-                            { it.date },
-                            {
-                                dailyRecord(
-                                    it,
-                                    rowIndex,
-                                    child,
-                                    serviceTimes[childId],
-                                    includeNonOperationalDays,
-                                    clubTerms,
-                                    preschoolTerms
-                                )
-                            }
+        .toList<ChildDataQueryResult>()
+        .map { row ->
+            ChildData(
+                child =
+                    UnitAttendanceReservations.Child(
+                        id = row.id,
+                        firstName = row.firstName,
+                        lastName = row.lastName,
+                        preferredName = row.preferredName,
+                        dateOfBirth = row.dateOfBirth,
+                        serviceNeeds = serviceNeedInfos.filter { it.childId == row.id }
+                    ),
+                reservations =
+                    row.reservations.groupBy(
+                        keySelector = { it.date },
+                        valueTransform = { it.toReservationTimes() }
+                    ),
+                attendances =
+                    row.attendances.groupBy(
+                        keySelector = { it.date },
+                        valueTransform = { it.toOpenTimeRange() }
+                    ),
+                absences =
+                    row.absences
+                        .groupBy(
+                            keySelector = { it.date },
+                            valueTransform = { it.category to it.type }
                         )
-                    }
+                        .mapValues { it.value.toMap() },
             )
         }
-}
-
-private fun dailyRecord(
-    placementStatus: ChildPlacementStatus,
-    rowIndex: Int,
-    childData: ChildData,
-    serviceTimes: List<DailyServiceTimesValue>?,
-    includeNonOperationalDays: Boolean,
-    clubTerms: List<ClubTerm>,
-    preschoolTerms: List<PreschoolTerm>
-): UnitAttendanceReservations.ChildRecordOfDay {
-    val date = placementStatus.date
-    val inOtherUnit = placementStatus.inOtherUnit
-
-    val reservation =
-        if (!includeNonOperationalDays && inOtherUnit) null
-        else childData.reservations[date]?.getOrNull(rowIndex)
-    val attendance =
-        if (!includeNonOperationalDays && inOtherUnit) null
-        else childData.attendances[date]?.getOrNull(rowIndex)
-
-    return UnitAttendanceReservations.ChildRecordOfDay(
-        reservation = reservation,
-        attendance = attendance,
-        absence = childData.absences[date],
-        dailyServiceTimes = serviceTimes?.find { dst -> dst.validityPeriod.includes(date) },
-        inOtherUnit = inOtherUnit,
-        isInBackupGroup =
-            placementStatus.isOriginalGroup && placementStatus.group != placementStatus.otherGroup,
-        scheduleType = placementStatus.placementType.scheduleType(date, clubTerms, preschoolTerms)
-    )
+        .associateBy { it.child.id }
 }

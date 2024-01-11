@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,9 +6,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { combine, isLoading } from 'lib-common/api'
-import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
+import { Child } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -32,6 +32,7 @@ import LabelValueList from '../../common/LabelValueList'
 import { AttendanceGroupFilter } from '../TabCalendar'
 import { unitAttendanceReservationsQuery } from '../queries'
 
+import ChildDateModal, { ChildDateEditorTarget } from './ChildDateModal'
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import StaffAttendanceTable from './StaffAttendanceTable'
@@ -87,6 +88,9 @@ export default React.memo(function UnitAttendanceReservationsView({
   const [creatingReservationChild, setCreatingReservationChild] =
     useState<Child>()
 
+  const [childDateEditorTarget, setChildDateEditorTarget] =
+    useState<ChildDateEditorTarget | null>(null)
+
   const legendTimeLabels = useMemo(() => {
     const t = i18n.unit.attendanceReservations.legend
     const indicator = i18n.unit.attendanceReservations.serviceTimeIndicator
@@ -121,6 +125,13 @@ export default React.memo(function UnitAttendanceReservationsView({
           operationalDays={operationalDays}
         />
       )}
+      {childDateEditorTarget && (
+        <ChildDateModal
+          target={childDateEditorTarget}
+          unitId={unitId}
+          onClose={() => setChildDateEditorTarget(null)}
+        />
+      )}
 
       <FixedSpaceColumn
         spacing="L"
@@ -130,7 +141,7 @@ export default React.memo(function UnitAttendanceReservationsView({
         {selectedGroup.type === 'staff' ? (
           <StaffAttendanceTable
             unitId={unitId}
-            operationalDays={childData.operationalDays}
+            operationalDays={childData.days}
             staffAttendances={staffData.staff}
             externalAttendances={staffData.extraAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
@@ -144,7 +155,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             selectedGroup.type === 'group' ? (
               <StaffAttendanceTable
                 unitId={unitId}
-                operationalDays={childData.operationalDays}
+                operationalDays={childData.days}
                 staffAttendances={staffData.staff}
                 externalAttendances={staffData.extraAttendances}
                 reloadStaffAttendances={reloadStaffAttendances}
@@ -155,35 +166,26 @@ export default React.memo(function UnitAttendanceReservationsView({
             ) : null}
             <ChildReservationsTable
               unitId={unitId}
-              operationalDays={childData.operationalDays}
-              allDayRows={
-                selectedGroup.type === 'all-children'
-                  ? childData.groups
-                      .flatMap(({ children }) => children)
-                      .concat(childData.ungrouped)
-                  : selectedGroup.type === 'no-group'
-                    ? childData.ungrouped
-                    : selectedGroup.type === 'group'
-                      ? childData.groups.find(
-                          (g) => g.group.id === selectedGroup.id
-                        )?.children ?? []
-                      : []
-              }
+              days={childData.days}
+              childBasics={childData.children}
               onMakeReservationForChild={setCreatingReservationChild}
+              onOpenEditForChildDate={(childId, date) => {
+                const child = childData.children.find((c) => c.id === childId)
+                const day = childData.days.find((d) => d.date === date)
+                const childDayRecord = day?.children?.find(
+                  (c) => c.childId === childId
+                )
+                if (child && day && childDayRecord) {
+                  setChildDateEditorTarget({
+                    date,
+                    dateInfo: day.dateInfo,
+                    child,
+                    childDayRecord
+                  })
+                }
+              }}
               selectedDate={selectedDate}
-              childServiceNeedInfos={
-                selectedGroup.type === 'all-children'
-                  ? childData.unitServiceNeedInfo.groups
-                      .flatMap(({ childInfos }) => childInfos)
-                      .concat(childData.unitServiceNeedInfo.ungrouped)
-                  : selectedGroup.type === 'no-group'
-                    ? childData.unitServiceNeedInfo.ungrouped
-                    : selectedGroup.type === 'group'
-                      ? childData.unitServiceNeedInfo.groups.find(
-                          (g) => g.groupId === selectedGroup.id
-                        )?.childInfos ?? []
-                      : []
-              }
+              selectedGroup={selectedGroup}
             />
           </>
         )}

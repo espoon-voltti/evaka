@@ -350,16 +350,45 @@ export class UnitChildReservationsTable extends Element {
 
   #ellipsisMenu = (childId: UUID) =>
     this.findByDataQa(`ellipsis-menu-${childId}`)
-  #editInline = this.findByDataQa('menu-item-edit-row')
 
-  childRows(childId: UUID) {
+  childReservationRows(childId: UUID) {
     return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
-  childAbsenceRows(childId: UUID) {
+  childAttendanceRows(childId: UUID) {
+    return this.findAllByDataQa(`attendance-row-child-${childId}`)
+  }
+
+  reservationCells = (childId: UUID, date: LocalDate) =>
+    this.childReservationRows(childId).findAllByDataQa(`td-${date.formatIso()}`)
+
+  attendanceCells = (childId: UUID, date: LocalDate) =>
+    this.childAttendanceRows(childId).findAllByDataQa(`td-${date.formatIso()}`)
+
+  childAbsenceCells(childId: UUID) {
     return this.findAllByDataQa(
       `reservation-row-child-${childId}`
     ).findAllByDataQa('absence')
   }
+
+  startTimeOutsideOpeningHoursWarning = (
+    childId: UUID,
+    date: LocalDate,
+    n: number
+  ) =>
+    this.reservationCells(childId, date)
+      .nth(n)
+      .findByDataQa('reservation-start')
+      .findByDataQa('outside-opening-times')
+
+  endTimeOutsideOpeningHoursWarning = (
+    childId: UUID,
+    date: LocalDate,
+    n: number
+  ) =>
+    this.reservationCells(childId, date)
+      .nth(n)
+      .findByDataQa('reservation-end')
+      .findByDataQa('outside-opening-times')
 
   childInOtherUnit(childId: UUID) {
     return this.findAllByDataQa(
@@ -406,83 +435,68 @@ export class UnitChildReservationsTable extends Element {
     return cell.findByDataQa('backup-care-required-warning').text
   }
 
-  async openInlineEditor(childId: UUID) {
-    await this.#ellipsisMenu(childId).click()
-    await this.#editInline.click()
-  }
-
-  async closeInlineEditor() {
-    await this.findByDataQa('inline-editor-state-button').click()
-  }
-
-  async setReservationTimes(
-    date: LocalDate,
-    startTime: string,
-    endTime: string
-  ) {
-    const reservations = this.#reservationCell(date, 0)
-    await new TextInput(reservations.findByDataQa('input-start-time')).fill(
-      startTime
-    )
-    await new TextInput(reservations.findByDataQa('input-end-time')).fill(
-      endTime
-    )
-    // Click table header to trigger last input's onblur
-    await this.findAll('thead').first().click()
-  }
-
-  async assertWarningIsShown(
-    date: LocalDate,
-    expectStartTimeWarning: boolean,
-    expectEndTimeWarning: boolean
-  ) {
-    const reservations = this.#attendanceCell(date, 0)
-
-    expectStartTimeWarning
-      ? await reservations
-          .find('[data-qa="input-start-time"].warning')
-          .waitUntilVisible()
-      : await waitUntilEqual(
-          () =>
-            reservations
-              .findAll('[data-qa="input-start-time"].warning')
-              .count(),
-          0
-        )
-
-    expectEndTimeWarning
-      ? await reservations
-          .find('[data-qa="input-end-time"].warning')
-          .waitUntilVisible()
-      : await waitUntilEqual(
-          () =>
-            reservations.findAll('[data-qa="input-end-time"].warning').count(),
-          0
-        )
-  }
-
-  async setAttendanceTimes(
-    date: LocalDate,
-    startTime: string,
-    endTime: string
-  ) {
-    const attendances = this.#attendanceCell(date, 0)
-    await new TextInput(attendances.findByDataQa('input-start-time')).fill(
-      startTime
-    )
-    await new TextInput(attendances.findByDataQa('input-end-time')).fill(
-      endTime
-    )
-    // Click table header to trigger last input's onblur
-    await this.findAll('thead').first().click()
-  }
-
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
     await this.#ellipsisMenu(childId).click()
     await this.findByDataQa('menu-item-reservation-modal').click()
 
     return new ReservationModal(this.page.findByDataQa('modal'))
   }
+
+  async assertCannotOpenChildDateModal(
+    childId: UUID,
+    date: LocalDate
+  ): Promise<void> {
+    const cell = this.reservationCells(childId, date).nth(0)
+    await cell.hover()
+    await cell.findByDataQa('open-details').waitUntilHidden()
+  }
+
+  async openChildDateModal(
+    childId: UUID,
+    date: LocalDate
+  ): Promise<ChildDatePresenceModal> {
+    const cell = this.reservationCells(childId, date).nth(0)
+    await cell.hover()
+    const editBtn = cell.findByDataQa('open-details')
+    await editBtn.click()
+
+    return new ChildDatePresenceModal(this.page.findByDataQa('modal'))
+  }
+}
+
+export class ChildDatePresenceModal extends Modal {
+  addReservationBtn = this.findByDataQa('add-reservation')
+  #reservation = (n: number) => this.findByDataQa(`reservation-${n}`)
+  reservationStart = (n: number) =>
+    new TextInput(this.#reservation(n).findByDataQa('start'))
+  reservationEnd = (n: number) =>
+    new TextInput(this.#reservation(n).findByDataQa('end'))
+  reservationRemove = (n: number) =>
+    this.#reservation(n).findByDataQa('remove-btn')
+
+  addAttendanceBtn = this.findByDataQa('add-attendance')
+  #attendance = (n: number) => this.findByDataQa(`attendance-${n}`)
+  attendanceStart = (n: number) =>
+    new TextInput(this.#attendance(n).findByDataQa('start'))
+  attendanceEnd = (n: number) =>
+    new TextInput(this.#attendance(n).findByDataQa('end'))
+  attendanceRemove = (n: number) =>
+    this.#attendance(n).findByDataQa('remove-btn')
+
+  addBillableAbsenceBtn = this.findByDataQa('add-billable-absence')
+  billableAbsenceType = new Select(
+    this.findByDataQa('billable-absence').findByDataQa('type-select')
+  )
+  billableAbsenceRemove =
+    this.findByDataQa('billable-absence').findByDataQa('remove-btn')
+
+  addNonbillableAbsenceBtn = this.findByDataQa('add-nonbillable-absence')
+  nonbillableAbsenceType = new Select(
+    this.findByDataQa('nonbillable-absence').findByDataQa('type-select')
+  )
+  nonbillableAbsenceRemove = this.findByDataQa(
+    'nonbillable-absence'
+  ).findByDataQa('remove-btn')
 }
 
 export class ReservationModal extends Modal {

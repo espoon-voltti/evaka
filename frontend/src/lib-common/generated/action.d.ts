@@ -232,6 +232,7 @@ export type Child =
   | 'UPDATE_NON_RESERVABLE_RESERVATIONS'
   | 'UPLOAD_IMAGE'
   | 'UPSERT_CHILD_CONSENT'
+  | 'UPSERT_CHILD_DATE_PRESENCE'
 
 export type ChildDailyNote =
   | 'DELETE'

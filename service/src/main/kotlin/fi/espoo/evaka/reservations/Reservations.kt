@@ -6,17 +6,25 @@ package fi.espoo.evaka.reservations
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.attendance.deleteAttendancesByDate
+import fi.espoo.evaka.attendance.getChildPlacementTypes
+import fi.espoo.evaka.attendance.insertAttendance
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -280,4 +288,254 @@ fun createReservationsAndAbsences(
         upsertedAbsences,
         upsertedReservations
     )
+}
+
+data class ChildDatePresence(
+    val date: LocalDate,
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val reservations: List<Reservation>,
+    val attendances: List<OpenTimeRange>,
+    val absenceBillable: AbsenceType?,
+    val absenceNonbillable: AbsenceType?
+)
+
+data class UpsertChildDatePresenceResult(
+    val insertedReservations: List<AttendanceReservationId>,
+    val deletedReservations: List<AttendanceReservationId>,
+    val insertedAttendances: List<AttendanceId>,
+    val deletedAttendances: List<AttendanceId>,
+    val insertedAbsences: List<AbsenceId>,
+    val deletedAbsences: List<AbsenceId>,
+)
+
+fun upsertChildDatePresence(
+    tx: Database.Transaction,
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+    input: ChildDatePresence
+): UpsertChildDatePresenceResult {
+    val placementType =
+        tx.getChildPlacementTypes(setOf(input.childId), input.date)[input.childId]
+            ?: throw BadRequest("No placement")
+    input.validate(now, placementType)
+
+    // check which of the reservations already exist, so that they won't be unnecessarily replaced
+    // and metadata lost
+    val reservations =
+        input.reservations.map { reservation ->
+            val existingId =
+                tx.createQuery<Any> {
+                        sql(
+                            """
+            SELECT id 
+            FROM attendance_reservation ar
+            WHERE date = ${bind(input.date)} AND child_id = ${bind(input.childId)} AND
+            ${when (reservation) {
+                is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
+                is Reservation.Times -> "start_time = ${bind(reservation.startTime)} AND end_time = ${bind(reservation.endTime)}"
+            }}
+        """
+                        )
+                    }
+                    .exactlyOneOrNull<AttendanceReservationId>()
+            reservation to existingId
+        }
+
+    val deletedReservations =
+        tx.deleteReservations(
+            date = input.date,
+            childId = input.childId,
+            skip = reservations.mapNotNull { it.second }
+        )
+
+    val insertedReservations =
+        reservations
+            .filter { it.second == null }
+            .map { tx.insertReservation(userId, input.date, input.childId, it.first) }
+
+    val deletedAttendances = tx.deleteAttendancesByDate(childId = input.childId, date = input.date)
+    val insertedAttendances =
+        input.attendances.map { attendance ->
+            tx.insertAttendance(
+                input.childId,
+                input.unitId,
+                input.date,
+                attendance.startTime,
+                attendance.endTime
+            )
+        }
+
+    val absenceChanges =
+        AbsenceCategory.entries.map { category ->
+            val type =
+                when (category) {
+                    AbsenceCategory.BILLABLE -> input.absenceBillable
+                    AbsenceCategory.NONBILLABLE -> input.absenceNonbillable
+                }
+            val identicalAbsenceExists =
+                type != null &&
+                    tx.absenceExists(
+                        date = input.date,
+                        childId = input.childId,
+                        category = category,
+                        type = type
+                    )
+            val deletedAbsence =
+                if (identicalAbsenceExists) {
+                    // do not delete and replace identical absence so that metadata is not lost
+                    null
+                } else {
+                    tx.deleteAbsenceOfCategory(input.date, input.childId, category)
+                }
+
+            val insertedAbsence =
+                if (type == null || identicalAbsenceExists) {
+                    null
+                } else {
+                    tx.insertAbsence(userId, input.date, input.childId, category, type)
+                }
+
+            insertedAbsence to deletedAbsence
+        }
+
+    return UpsertChildDatePresenceResult(
+        insertedReservations = insertedReservations,
+        deletedReservations = deletedReservations,
+        insertedAttendances = insertedAttendances,
+        deletedAttendances = deletedAttendances,
+        insertedAbsences = absenceChanges.mapNotNull { it.first },
+        deletedAbsences = absenceChanges.mapNotNull { it.second }
+    )
+}
+
+private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: PlacementType) {
+    if (reservations.size > 2) throw BadRequest("Too many reservations")
+    if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1)
+        throw BadRequest("Mixed reservation types")
+    reservations.filterIsInstance<Reservation.Times>().forEach { r ->
+        if (!r.endTime.isAfter(r.startTime)) throw BadRequest("Inverted time range")
+    }
+    reservations.filterIsInstance<Reservation.Times>().zipWithNext().forEach { (r1, r2) ->
+        if (r2.startTime.isBefore(r1.endTime)) throw BadRequest("Overlapping reservation times")
+    }
+
+    attendances.forEach { a ->
+        if (a.endTime != null && !a.endTime.isAfter(a.startTime))
+            throw BadRequest("Inverted time range")
+    }
+    attendances.zipWithNext().forEach { (a1, a2) ->
+        if (a1.endTime == null || a2.startTime.isBefore(a1.endTime))
+            throw BadRequest("Overlapping attendance times")
+    }
+    attendances
+        .flatMap { listOfNotNull(it.startTime, it.endTime) }
+        .map { HelsinkiDateTime.of(date, it) }
+        .forEach {
+            if (it.isAfter(now.plusMinutes(30))) {
+                throw BadRequest("Cannot mark attendances into future")
+            }
+        }
+
+    if (
+        (absenceBillable != null &&
+            !placementType.absenceCategories().contains(AbsenceCategory.BILLABLE)) ||
+            (absenceNonbillable != null &&
+                !placementType.absenceCategories().contains(AbsenceCategory.NONBILLABLE))
+    ) {
+        throw BadRequest("Invalid absence category")
+    }
+}
+
+private fun Database.Transaction.deleteReservations(
+    date: LocalDate,
+    childId: ChildId,
+    skip: List<AttendanceReservationId>
+): List<AttendanceReservationId> {
+    return createQuery<Any> {
+            sql(
+                """
+        DELETE FROM attendance_reservation
+        WHERE date = ${bind(date)} AND child_id = ${bind(childId)} AND NOT (id = ANY (${bind(skip)}))
+        RETURNING id
+    """
+            )
+        }
+        .toList<AttendanceReservationId>()
+}
+
+private fun Database.Transaction.insertReservation(
+    userId: EvakaUserId,
+    date: LocalDate,
+    childId: ChildId,
+    reservation: Reservation
+): AttendanceReservationId {
+    return createQuery<Any> {
+            sql(
+                """
+        INSERT INTO attendance_reservation (child_id, created_by, date, start_time, end_time) 
+        VALUES (${bind(childId)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
+        RETURNING id
+    """
+            )
+        }
+        .exactlyOne<AttendanceReservationId>()
+}
+
+private fun Database.Read.absenceExists(
+    date: LocalDate,
+    childId: ChildId,
+    category: AbsenceCategory,
+    type: AbsenceType
+): Boolean {
+    return createQuery<Any> {
+            sql(
+                """
+        SELECT exists(
+            SELECT 1 FROM absence
+            WHERE child_id = ${bind(childId)} 
+                AND date = ${bind(date)} 
+                AND category = ${bind(category)} 
+                AND absence_type = ${bind(type)}
+        )
+    """
+            )
+        }
+        .exactlyOne()
+}
+
+private fun Database.Transaction.deleteAbsenceOfCategory(
+    date: LocalDate,
+    childId: ChildId,
+    category: AbsenceCategory
+): AbsenceId? {
+    return createQuery<Any>() {
+            sql(
+                """
+            DELETE FROM absence
+            WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND category = ${bind(category)}
+            RETURNING id
+    """
+            )
+        }
+        .exactlyOneOrNull()
+}
+
+private fun Database.Transaction.insertAbsence(
+    userId: EvakaUserId,
+    date: LocalDate,
+    childId: ChildId,
+    category: AbsenceCategory,
+    type: AbsenceType
+): AbsenceId {
+    return createQuery<Any> {
+            sql(
+                """
+            INSERT INTO absence (date, child_id, category, absence_type, modified_by, questionnaire_id)
+            VALUES (${bind(date)}, ${bind(childId)}, ${bind(category)}, ${bind(type)}, ${bind(userId)}, NULL)
+            RETURNING id
+    """
+            )
+        }
+        .exactlyOne()
 }
