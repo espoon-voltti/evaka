@@ -76,11 +76,11 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.fillTime(mockedTomorrow, 0, '08:00', '16:00')
-    await reservationsPage.addTime(mockedTomorrow)
-    await reservationsPage.fillTime(mockedTomorrow, 1, '16:00', '18:00')
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.fillTime(mockedTomorrow, 0, '08:00', '16:00')
+    await editPage.addTime(mockedTomorrow)
+    await editPage.fillTime(mockedTomorrow, 1, '16:00', '18:00')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00,16:00–18:00' }
     ])
@@ -103,9 +103,9 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00,16:00–18:00' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.removeTime(mockedTomorrow, 1)
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.removeTime(mockedTomorrow, 1)
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00' }
     ])
@@ -125,9 +125,9 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '08:00–16:00' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '07:45–15:45' }
     ])
@@ -148,9 +148,9 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '07:45–15:45' }
     ])
@@ -166,10 +166,10 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Poissa' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.removeAbsence(mockedTomorrow)
-    await reservationsPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.removeAbsence(mockedTomorrow)
+    await editPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '07:45–15:45' }
     ])
@@ -192,9 +192,9 @@ describe('when placement is ending tomorrow', () => {
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: 'Varhaiskasvatusaika tänään 08:00-16:00' }
     ])
-    await reservationsPage.editButton.click()
-    await reservationsPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '07:45–15:45' }
     ])
@@ -249,35 +249,20 @@ describe('when unit is open every day', () => {
   test('reservation can be added to every non-reservable day', async () => {
     const page = await loginToMobile(mockedToday, unit.data.id)
     const reservationsPage = await navigateToReservations(page, child.data.id)
-    await reservationsPage.editButton.click()
-    await reservationsPage.fillTime(mockedToday.addDays(1), 0, '08:01', '16:01')
-    await reservationsPage.fillTime(mockedToday.addDays(2), 0, '08:02', '16:02')
-    await reservationsPage.fillTime(mockedToday.addDays(3), 0, '08:03', '16:03')
-    await reservationsPage.fillTime(mockedToday.addDays(4), 0, '08:04', '16:04')
-    await reservationsPage.fillTime(mockedToday.addDays(5), 0, '08:05', '16:05')
-    await reservationsPage.fillTime(mockedToday.addDays(6), 0, '08:06', '16:06')
-    await reservationsPage.fillTime(mockedToday.addDays(7), 0, '08:07', '16:07')
-    await reservationsPage.fillTime(mockedToday.addDays(8), 0, '08:08', '16:08')
-    await reservationsPage.fillTime(mockedToday.addDays(9), 0, '08:09', '16:09')
-    await reservationsPage.fillTime(
-      mockedToday.addDays(10),
-      0,
-      '08:10',
-      '16:10'
-    )
-    await reservationsPage.fillTime(
-      mockedToday.addDays(11),
-      0,
-      '08:11',
-      '16:11'
-    )
-    await reservationsPage.fillTime(
-      mockedToday.addDays(12),
-      0,
-      '08:12',
-      '16:12'
-    )
-    await reservationsPage.confirmButton.click()
+    const editPage = await reservationsPage.edit()
+    await editPage.fillTime(mockedToday.addDays(1), 0, '08:01', '16:01')
+    await editPage.fillTime(mockedToday.addDays(2), 0, '08:02', '16:02')
+    await editPage.fillTime(mockedToday.addDays(3), 0, '08:03', '16:03')
+    await editPage.fillTime(mockedToday.addDays(4), 0, '08:04', '16:04')
+    await editPage.fillTime(mockedToday.addDays(5), 0, '08:05', '16:05')
+    await editPage.fillTime(mockedToday.addDays(6), 0, '08:06', '16:06')
+    await editPage.fillTime(mockedToday.addDays(7), 0, '08:07', '16:07')
+    await editPage.fillTime(mockedToday.addDays(8), 0, '08:08', '16:08')
+    await editPage.fillTime(mockedToday.addDays(9), 0, '08:09', '16:09')
+    await editPage.fillTime(mockedToday.addDays(10), 0, '08:10', '16:10')
+    await editPage.fillTime(mockedToday.addDays(11), 0, '08:11', '16:11')
+    await editPage.fillTime(mockedToday.addDays(12), 0, '08:12', '16:12')
+    await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedToday.addDays(1), text: '08:01–16:01' },
       { date: mockedToday.addDays(2), text: '08:02–16:02' },

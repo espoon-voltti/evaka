@@ -8,20 +8,23 @@ import { Page, TextInput } from '../../utils/page'
 
 export default class MobileReservationsPage {
   editButton
-  confirmButton
 
   constructor(private readonly page: Page) {
     this.editButton = page.findByDataQa('edit')
-    this.confirmButton = page.findByDataQa('confirm')
   }
 
-  assertReservations = async (
+  async edit() {
+    await this.editButton.click()
+    return new MobileReservationsEditPage(this.page)
+  }
+
+  async assertReservations(
     expected: {
       date: LocalDate
       text: string
     }[]
-  ) => {
-    await Promise.all(
+  ) {
+    return await Promise.all(
       expected.map(async ({ date, text }) => {
         const reservationDate = this.#findReservationDate(date)
         await reservationDate
@@ -31,12 +34,23 @@ export default class MobileReservationsPage {
     )
   }
 
-  fillTime = async (
+  #findReservationDate = (date: LocalDate) =>
+    this.page.findByDataQa(`reservation-date-${date.formatIso()}`)
+}
+
+export class MobileReservationsEditPage {
+  confirmButton
+
+  constructor(private readonly page: Page) {
+    this.confirmButton = page.findByDataQa('confirm')
+  }
+
+  async fillTime(
     date: LocalDate,
     index: number,
     startTime: string,
     endTime: string
-  ) => {
+  ) {
     const reservationDate = this.#findReservationDate(date)
     const reservationTime = reservationDate
       .findAllByDataQa('reservation-time')
@@ -49,12 +63,12 @@ export default class MobileReservationsPage {
     ).fill(endTime)
   }
 
-  addTime = async (date: LocalDate) => {
+  async addTime(date: LocalDate) {
     const reservationDate = this.#findReservationDate(date)
     await reservationDate.findByDataQa('reservation-time-add').click()
   }
 
-  removeTime = async (date: LocalDate, index: number) => {
+  async removeTime(date: LocalDate, index: number) {
     const reservationDate = this.#findReservationDate(date)
     const reservationTime = reservationDate
       .findAllByDataQa('reservation-time')
@@ -62,7 +76,7 @@ export default class MobileReservationsPage {
     await reservationTime.findByDataQa('reservation-time-remove').click()
   }
 
-  removeAbsence = async (date: LocalDate) => {
+  async removeAbsence(date: LocalDate) {
     const reservationDate = this.#findReservationDate(date)
     await reservationDate.findByDataQa('remove-absence').click()
   }
