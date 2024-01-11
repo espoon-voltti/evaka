@@ -6,6 +6,7 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.IncomeId
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.lang.IllegalArgumentException
 
 fun Database.Transaction.insertAttachment(
@@ -283,3 +285,22 @@ fun Database.Transaction.associateFeeAlterationAttachments(
         throw BadRequest("Cannot associate all requested attachments")
     }
 }
+
+fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<AttachmentId> =
+    createQuery<DatabaseTable.Attachment> {
+            sql(
+                """
+SELECT id
+FROM attachment
+WHERE created < ${bind(olderThan)}
+AND application_id IS NULL
+AND fee_alteration_id IS NULL
+AND income_id IS NULL
+AND income_statement_id IS NULL
+AND message_content_id IS NULL
+AND message_draft_id IS NULL
+AND pedagogical_document_id IS NULL
+"""
+            )
+        }
+        .toList()

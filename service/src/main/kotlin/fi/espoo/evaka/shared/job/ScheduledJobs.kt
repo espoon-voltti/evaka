@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.getOrphanAttachments
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
@@ -21,6 +22,8 @@ import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingReservationsReminders
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -141,6 +144,10 @@ enum class ScheduledJob(
         ScheduledJobs::sendCalendarEventDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
     ),
+    ScheduleOrphanAttachmentDeletion(
+        ScheduledJobs::scheduleOrphanAttachmentDeletion,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+    )
 }
 
 private val logger = KotlinLogging.logger {}
@@ -159,6 +166,7 @@ class ScheduledJobs(
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val financeDecisionGenerator: FinanceDecisionGenerator,
     private val childDocumentService: ChildDocumentService,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -313,5 +321,12 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {
         calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
+    }
+
+    fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
+            asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
+        }
     }
 }

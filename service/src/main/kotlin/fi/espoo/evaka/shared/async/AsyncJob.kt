@@ -14,6 +14,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
@@ -293,6 +294,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeleteAttachment(val attachmentId: AttachmentId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -301,6 +306,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 setOf(
                     CreateAssistanceNeedDecisionPdf::class,
                     CreateAssistanceNeedPreschoolDecisionPdf::class,
+                    DeleteAttachment::class,
                     DvvModificationsRefresh::class,
                     GarbageCollectPairing::class,
                     GenerateFinanceDecisions::class,

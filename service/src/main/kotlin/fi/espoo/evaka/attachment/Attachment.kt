@@ -19,6 +19,7 @@ If you add a new parent type, remember to:
 - update the check constraint to include the new id column
 - update the orphan index to include the new id column in the WHERE condition
 - add a *partial index* for the new id column
+- update the orphan attachment deletion scheduled job so that it looks at the new id
  */
 sealed class AttachmentParent {
     data class Application(val applicationId: ApplicationId) : AttachmentParent()
