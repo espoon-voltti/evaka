@@ -61,6 +61,21 @@ class EspooActionRuleMapping : ActionRuleMapping {
                             .inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
             }
+            Action.Child.CREATE_DAILY_SERVICE_TIME -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(
+                    HasGlobalRole(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                        as ScopedActionRule<in T>
+                ) +
+                    sequenceOf(
+                        HasUnitRole(
+                                UserRole.UNIT_SUPERVISOR,
+                                UserRole.SPECIAL_EDUCATION_TEACHER,
+                                UserRole.STAFF
+                            )
+                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                    )
+            }
             Action.Citizen.Child.READ_DAILY_SERVICE_TIMES -> {
                 @Suppress("UNCHECKED_CAST")
                 sequenceOf(

@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
+import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -43,6 +44,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
@@ -56,6 +58,7 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -69,7 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
-    @Autowired private lateinit var dailyServiceTimesController: DailyServiceTimesController
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
@@ -507,6 +509,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `irregular daily service time absences are non-editable`() {
+        val dailyServiceTimesController =
+            DailyServiceTimesController(
+                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
+            )
         db.transaction { tx ->
             tx.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
         }
