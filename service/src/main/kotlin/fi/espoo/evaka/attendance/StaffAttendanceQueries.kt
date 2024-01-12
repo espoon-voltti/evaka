@@ -471,6 +471,7 @@ fun Database.Read.getGroupsForEmployees(
         .bind("employeeIds", employeeIds)
         .toMap { columnPair("employee_id", "group_ids") }
 
+// TODO
 fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
     createUpdate(
             // language=SQL
@@ -521,6 +522,34 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
         )
         .bind("startOfDay", now.atStartOfDay())
         .bind("defaultDepartureTime", defaultDepartureTime)
+        .execute()
+
+    createUpdate(
+            // language=SQL
+            """
+UPDATE staff_attendance_realtime a
+SET departed = a.arrived + interval '12 hours'
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+        """
+                .trimIndent()
+        )
+        .bind("now", now)
+        .execute()
+
+    createUpdate(
+            // language=SQL
+            """
+UPDATE staff_attendance_external a
+SET departed = a.arrived + interval '12 hours'
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+        """
+                .trimIndent()
+        )
+        .bind("now", now)
         .execute()
 }
 

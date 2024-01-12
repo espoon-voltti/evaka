@@ -291,13 +291,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a round the clock unit`() {
+    fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a round the clock unit and attendance is less than 24h`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markStaffArrival(
                 employee1Id,
                 roundTheClockGroup.id,
-                now.minusDays(1),
+                now.minusHours(23),
                 BigDecimal(7.0)
             )
 
@@ -306,6 +306,25 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(1, staffAttendances.size)
             assertEquals(null, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure when attendance is to a round the clock unit and attendance is more than 12h`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val arrival = now.minusHours(12 + 1)
+
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, roundTheClockGroup.id, arrival, BigDecimal(7.0))
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                arrival.plusHours(12),
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
         }
     }
 
