@@ -260,13 +260,13 @@ class AttendanceReservationController(
             }
     }
 
-    @GetMapping("/by-child/{childId}/non-reservable")
-    fun getNonReservableReservations(
+    @GetMapping("/by-child/{childId}/confirmed-range")
+    fun getConfirmedRangeData(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<NonReservableReservation> {
+    ): List<ConfirmedRangeDate> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
@@ -276,7 +276,13 @@ class AttendanceReservationController(
                         Action.Child.READ_NON_RESERVABLE_RESERVATIONS,
                         childId
                     )
-                    val range = getNonReservableReservationRange(clock)
+                    val clubTerms = tx.getClubTerms()
+                    val preschoolTerms = tx.getPreschoolTerms()
+                    val range =
+                        getConfirmedRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours
+                        )
                     val operationalDays = tx.operationalDays(range)
                     val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
                     val reservations = tx.getReservationsForChildInRange(childId, range)
@@ -298,8 +304,10 @@ class AttendanceReservationController(
                                 dailyServiceTimes.firstOrNull {
                                     it.times.validityPeriod.includes(date)
                                 }
-                            NonReservableReservation(
+                            ConfirmedRangeDate(
                                 date = date,
+                                scheduleType =
+                                    placement.type.scheduleType(date, clubTerms, preschoolTerms),
                                 reservations = reservationTimes,
                                 absenceType = absence?.absenceType,
                                 dailyServiceTimes = dailyServiceTime?.times
@@ -308,16 +316,16 @@ class AttendanceReservationController(
                         .toList()
                 }
             }
-            .also { Audit.ChildNonReservableReservationsRead.log(targetId = childId) }
+            .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = childId) }
     }
 
-    @PutMapping("/by-child/{childId}/non-reservable")
-    fun setNonReservableReservations(
+    @PutMapping("/by-child/{childId}/confirmed-range")
+    fun setConfirmedRangeReservations(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: List<NonReservableReservation>
+        @RequestBody body: List<ConfirmedRangeDateUpdate>
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -329,7 +337,11 @@ class AttendanceReservationController(
                         childId
                     )
 
-                    val range = getNonReservableReservationRange(clock)
+                    val range =
+                        getConfirmedRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours
+                        )
                     if (!body.all { range.includes(it.date) }) {
                         throw BadRequest("Request contains reservable day")
                     }
@@ -356,15 +368,7 @@ class AttendanceReservationController(
                     )
                 }
             }
-            .also { Audit.ChildNonReservableReservationsUpdate.log(targetId = childId) }
-    }
-
-    private fun getNonReservableReservationRange(clock: EvakaClock): FiniteDateRange {
-        val startDate = clock.today().plusDays(1)
-        val endDate =
-            getNextReservableMonday(clock.now(), featureConfig.citizenReservationThresholdHours)
-                .minusDays(1)
-        return FiniteDateRange(startDate, endDate)
+            .also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = childId) }
     }
 
     data class ReservationChildInfo(
@@ -382,7 +386,7 @@ class AttendanceReservationController(
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
         val dailyServiceTimes: DailyServiceTimesValue?,
-        val onTermBreak: Boolean,
+        val scheduleType: ScheduleType,
         val isInHolidayPeriod: Boolean
     )
 
@@ -471,7 +475,7 @@ class AttendanceReservationController(
                                     dailyServiceTimes[row.key]?.find {
                                         it.validityPeriod.includes(examinationDate)
                                     },
-                                onTermBreak = scheduleType == ScheduleType.TERM_BREAK,
+                                scheduleType = scheduleType,
                                 isInHolidayPeriod = isHolidayPeriod
                             )
                         }
@@ -522,20 +526,15 @@ class AttendanceReservationController(
                     val unitData =
                         tx.getDaycare(unitId) ?: throw BadRequest("Invalid unit id $unitId")
 
-                    val nonReservableRange =
-                        FiniteDateRange(
-                            clock.today().plusDays(1),
-                            getNextReservableMonday(
-                                    clock.now(),
-                                    featureConfig.citizenReservationThresholdHours,
-                                )
-                                .minusDays(1)
+                    val confirmedRange =
+                        getConfirmedRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours
                         )
-
-                    val holidays = tx.getHolidays(nonReservableRange)
+                    val holidays = tx.getHolidays(confirmedRange)
                     val operationalDays =
                         getUnitOperationalDayData(
-                            nonReservableRange,
+                            confirmedRange,
                             unitData,
                             holidays,
                             emptyList(),
@@ -586,8 +585,9 @@ class AttendanceReservationController(
     }
 }
 
-data class NonReservableReservation(
+data class ConfirmedRangeDate(
     val date: LocalDate,
+    val scheduleType: ScheduleType,
     val reservations: List<Reservation>,
     val absenceType: AbsenceType?,
     val dailyServiceTimes: DailyServiceTimesValue?
@@ -636,6 +636,12 @@ data class UnitAttendanceReservations(
         @Json val serviceNeeds: List<ChildServiceNeedInfo>
     )
 }
+
+data class ConfirmedRangeDateUpdate(
+    val date: LocalDate,
+    val reservations: List<Reservation>,
+    val absenceType: AbsenceType?,
+)
 
 private fun getUnitOperationalDayData(
     period: FiniteDateRange,

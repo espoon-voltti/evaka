@@ -169,7 +169,7 @@ export const fi = {
         'Palauta läsnäolevaksi ilman uutta saapumisaikaa',
       markAbsentBeforehand: 'Tulevat poissaolot',
       markReservations: 'Tulevat varaukset ja poissaolot',
-      nonReservableReservations: {
+      confirmedRangeReservations: {
         markReservations: 'Muokkaa varauksia',
         markAbsentBeforehand: 'Merkitse poissaolo'
       }
@@ -207,6 +207,7 @@ export const fi = {
       notSetShort: 'Ilmoitus puuttuu',
       variableTimes: 'Vaihteleva varhaiskasvatusaika',
       variableTimesShort: 'Sop.aika vaihtelee',
+      present: 'Läsnä',
       yesterday: 'eilen',
       tomorrow: 'huomenna'
     },

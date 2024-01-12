@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
+import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -14,10 +14,10 @@ import {
   createDeparture,
   createFullDayAbsence,
   getFutureAbsencesByChildPlain,
-  getNonReservableReservations,
+  getConfirmedRange,
   getUnitAttendanceStatuses,
   getUnitChildren,
-  putNonReservableReservationservations,
+  putConfirmedRange,
   returnToComing,
   returnToPresent,
   deleteChildImage,
@@ -29,8 +29,8 @@ import {
 
 const queryKeys = createQueryKeys('childAttendance', {
   children: (unitId: string) => ['children', unitId],
-  nonReservableReservations: (childId: string) => [
-    'nonReservableReservations',
+  confirmedRangeReservations: (childId: string) => [
+    'confirmedRangeReservations',
     childId
   ],
   futureAbsencesByChild: (childId: string) => [
@@ -86,21 +86,21 @@ export const confirmedDaysReservationsStatisticsQuery = query({
   queryKey: queryKeys.confirmedDaysReservationStatistics
 })
 
-export const getNonReservableReservationsQuery = query({
-  api: getNonReservableReservations,
-  queryKey: queryKeys.nonReservableReservations
+export const getConfirmedRangeQuery = query({
+  api: getConfirmedRange,
+  queryKey: queryKeys.confirmedRangeReservations
 })
 
-export const setNonReservableReservationsMutation = mutation({
+export const setConfirmedRangeMutation = mutation({
   api: ({
     childId,
     body
   }: {
     childId: UUID
-    body: NonReservableReservation[]
-  }) => putNonReservableReservationservations(childId, body),
+    body: ConfirmedRangeDateUpdate[]
+  }) => putConfirmedRange(childId, body),
   invalidateQueryKeys: ({ childId }) => [
-    queryKeys.nonReservableReservations(childId),
+    queryKeys.confirmedRangeReservations(childId),
     queryKeys.futureAbsencesByChild(childId)
   ]
 })

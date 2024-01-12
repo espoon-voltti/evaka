@@ -14,11 +14,12 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import {
+  ConfirmedRangeDateUpdate,
   DailyChildReservationResult,
   DayReservationStatisticsResult,
   ReservationChildInfo
 } from 'lib-common/generated/api-types/reservations'
-import { NonReservableReservation } from 'lib-common/generated/api-types/reservations'
+import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -155,12 +156,12 @@ export async function postAbsenceRange(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getNonReservableReservations(
+export async function getConfirmedRange(
   childId: UUID
-): Promise<NonReservableReservation[]> {
+): Promise<ConfirmedRangeDate[]> {
   return client
-    .get<JsonOf<NonReservableReservation[]>>(
-      `/attendance-reservations/by-child/${childId}/non-reservable`
+    .get<JsonOf<ConfirmedRangeDate[]>>(
+      `/attendance-reservations/by-child/${childId}/confirmed-range`
     )
     .then((res) =>
       res.data.map((row) => ({
@@ -177,12 +178,12 @@ export async function getNonReservableReservations(
     )
 }
 
-export async function putNonReservableReservationservations(
+export async function putConfirmedRange(
   childId: UUID,
-  body: NonReservableReservation[]
+  body: ConfirmedRangeDateUpdate[]
 ): Promise<void> {
   return client.put(
-    `/attendance-reservations/by-child/${childId}/non-reservable`,
+    `/attendance-reservations/by-child/${childId}/confirmed-range`,
     body
   )
 }

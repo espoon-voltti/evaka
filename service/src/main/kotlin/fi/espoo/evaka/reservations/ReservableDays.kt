@@ -38,3 +38,9 @@ fun getReservableRange(
 
     return FiniteDateRange(nextReservableMonday, lastReservableDay)
 }
+
+fun getConfirmedRange(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRange {
+    val startDate = now.toLocalDate().plusDays(1)
+    val endDate = getNextReservableMonday(now, thresholdHours).minusDays(1)
+    return FiniteDateRange(startDate, endDate)
+}
