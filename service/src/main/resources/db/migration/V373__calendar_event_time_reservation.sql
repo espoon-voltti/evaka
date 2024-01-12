@@ -17,9 +17,7 @@ CREATE OR REPLACE FUNCTION public.trigger_refresh_updated_at() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF NEW.updated_at = OLD.updated_at THEN
-        NEW.updated_at = NOW();
-    END IF;
+    NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$;
