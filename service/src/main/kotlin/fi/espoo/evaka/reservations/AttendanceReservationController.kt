@@ -251,11 +251,53 @@ class AttendanceReservationController(
                     targetId = body.childId,
                     meta =
                         mapOf(
+                            "date" to body.date,
                             "insertedReservations" to result.insertedReservations,
                             "deletedReservations" to result.deletedReservations,
                             "insertedAttendances" to result.insertedAttendances,
                             "deletedAttendances" to result.deletedAttendances,
                         )
+                )
+            }
+    }
+
+    @PostMapping("/child-date-expected-absences")
+    fun postChildDatePresenceAbsenceCheck(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ChildDatePresence
+    ): Set<AbsenceCategory>? {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPSERT_CHILD_DATE_PRESENCE,
+                        body.childId
+                    )
+
+                    val presenceTimes =
+                        if (body.date.isAfter(clock.today())) {
+                            body.reservations.map {
+                                when (it) {
+                                    is Reservation.Times -> OpenTimeRange(it.startTime, it.endTime)
+                                    is Reservation.NoTimes ->
+                                        OpenTimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59))
+                                }
+                            }
+                        } else {
+                            body.attendances
+                        }
+
+                    getExpectedAbsenceCategories(tx, body.date, body.childId, presenceTimes)
+                }
+            }
+            .also {
+                Audit.ChildDatePresenceExpectedAbsencesCheck.log(
+                    targetId = body.childId,
+                    meta = mapOf("date" to body.date)
                 )
             }
     }
