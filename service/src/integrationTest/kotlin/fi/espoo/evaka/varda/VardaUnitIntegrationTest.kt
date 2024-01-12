@@ -63,13 +63,16 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         val closingDate = LocalDate.now()
         db.transaction {
-            it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = current_date, updated = :now WHERE id = :daycareId"
-                        .trimIndent()
-                )
-                .bind("daycareId", testDaycare.id)
-                .bind("closingDate", closingDate)
-                .bind("now", clock.now())
+            it.createUpdate<Any> {
+                    sql(
+                        """
+                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
+                        UPDATE daycare SET closing_date = ${bind(closingDate)}, updated = ${bind(clock.now())}
+                        WHERE id = ${bind(testDaycare.id)};
+                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
+                        """
+                    )
+                }
                 .execute()
         }
         clock.tick()
@@ -82,12 +85,16 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         clock.tick()
         db.transaction {
-            it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = NULL, updated = :now WHERE id = :daycareId"
-                        .trimIndent()
-                )
-                .bind("daycareId", testDaycare.id)
-                .bind("now", clock.now())
+            it.createUpdate<Any> {
+                    sql(
+                        """
+                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
+                        UPDATE daycare SET closing_date = NULL, updated = ${bind(clock.now())}
+                        WHERE id = ${bind(testDaycare.id)};
+                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
+                        """
+                    )
+                }
                 .execute()
         }
         val unit =
@@ -147,13 +154,16 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         clock.tick()
         db.transaction {
-            it.createUpdate(
-                    """
-                        UPDATE daycare SET street_address = 'new address', updated = :now WHERE id = :daycareId;
+            it.createUpdate<Any> {
+                    sql(
                         """
-                )
-                .bind("daycareId", daycareId)
-                .bind("now", clock.now())
+                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
+                        UPDATE daycare SET street_address = 'new address', updated = ${bind(clock.now())}
+                        WHERE id = ${bind(daycareId)};
+                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
+                        """
+                    )
+                }
                 .execute()
         }
 
