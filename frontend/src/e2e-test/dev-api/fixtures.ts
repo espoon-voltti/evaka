@@ -1325,8 +1325,14 @@ export class Fixture {
       areaId: '',
       name: `daycare_${id}`,
       type: ['CENTRE'],
-      dailyPreschoolTime: null,
-      dailyPreparatoryTime: null,
+      dailyPreschoolTime: {
+        start: LocalTime.of(9, 0),
+        end: LocalTime.of(13, 0)
+      },
+      dailyPreparatoryTime: {
+        start: LocalTime.of(9, 0),
+        end: LocalTime.of(14, 0)
+      },
       costCenter: `costCenter_${id}`,
       streetAddress: `streetAddress_${id}`,
       postalCode: '02230',

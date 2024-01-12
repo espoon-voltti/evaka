@@ -411,9 +411,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                             name = "Backup Daycare",
                             areaId = testData.areaBId,
                             openingDate = previousAttendanceDay.minusDays(7),
-                            type = setOf(CareType.FAMILY),
-                            dailyPreschoolTime = null,
-                            dailyPreparatoryTime = null
+                            type = setOf(CareType.FAMILY)
                         )
                     )
 
@@ -551,9 +549,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         name = "Family Daycare A",
                         areaId = areaAId,
                         openingDate = keyDate.minusDays(7),
-                        type = setOf(CareType.FAMILY),
-                        dailyPreschoolTime = null,
-                        dailyPreparatoryTime = null
+                        type = setOf(CareType.FAMILY)
                     )
                 )
             val daycareBId =
@@ -562,9 +558,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         name = "Family Daycare B",
                         areaId = areaBId,
                         openingDate = keyDate.minusDays(7),
-                        type = setOf(CareType.FAMILY),
-                        dailyPreschoolTime = null,
-                        dailyPreparatoryTime = null
+                        type = setOf(CareType.FAMILY)
                     )
                 )
 
