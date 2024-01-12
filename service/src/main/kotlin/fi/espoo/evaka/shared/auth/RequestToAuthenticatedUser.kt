@@ -22,7 +22,7 @@ fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? =
 
 fun HttpServletRequest.setAuthenticatedUser(user: AuthenticatedUser) = setAttribute(ATTR_USER, user)
 
-class JwtToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
+class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
     override fun doFilter(
         request: HttpServletRequest,
         response: HttpServletResponse,
