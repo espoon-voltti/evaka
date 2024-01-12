@@ -5,10 +5,13 @@
 package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.time.LocalDate
+import java.time.LocalTime
 import org.jdbi.v3.json.Json
 
 data class GroupInfo(val id: GroupId, val name: String)
@@ -22,7 +25,16 @@ data class CalendarEvent(
     @Json val individualChildren: Set<IndividualChild>,
     val title: String,
     val description: String,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
+    @Json val times: Set<CalendarEventTime>
+)
+
+data class CalendarEventTime(
+    val id: CalendarEventTimeId,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+    val childId: ChildId?
 )
 
 data class AttendingChild(
@@ -44,7 +56,23 @@ data class CalendarEventForm(
     val tree: Map<GroupId, Set<ChildId>?>?,
     val title: String,
     val description: String,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
+    val times: List<CalendarEventTimeForm>? = null
 )
 
-data class CalendarEventUpdateForm(val title: String, val description: String)
+data class CalendarEventTimeForm(
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime
+)
+
+data class CalendarEventTimeReservationForm(
+    val calendarEventTimeId: CalendarEventTimeId,
+    val childId: ChildId
+)
+
+data class CalendarEventUpdateForm(
+    val title: String,
+    val description: String,
+    val tree: Map<GroupId, Set<ChildId>?>? = null
+)

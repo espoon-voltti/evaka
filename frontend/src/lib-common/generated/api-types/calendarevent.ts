@@ -6,6 +6,8 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import FiniteDateRange from '../../finite-date-range'
+import LocalDate from '../../local-date'
+import LocalTime from '../../local-time'
 import { UUID } from '../../types'
 
 /**
@@ -27,6 +29,7 @@ export interface CalendarEvent {
   id: UUID
   individualChildren: IndividualChild[]
   period: FiniteDateRange
+  times: CalendarEventTime[]
   title: string
   unitId: UUID
 }
@@ -37,9 +40,38 @@ export interface CalendarEvent {
 export interface CalendarEventForm {
   description: string
   period: FiniteDateRange
+  times: CalendarEventTimeForm[] | null
   title: string
   tree: Record<string, UUID[] | null> | null
   unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTime
+*/
+export interface CalendarEventTime {
+  childId: UUID | null
+  date: LocalDate
+  endTime: LocalTime
+  id: UUID
+  startTime: LocalTime
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeForm
+*/
+export interface CalendarEventTimeForm {
+  date: LocalDate
+  endTime: LocalTime
+  startTime: LocalTime
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeReservationForm
+*/
+export interface CalendarEventTimeReservationForm {
+  calendarEventTimeId: UUID
+  childId: UUID
 }
 
 /**
@@ -48,6 +80,7 @@ export interface CalendarEventForm {
 export interface CalendarEventUpdateForm {
   description: string
   title: string
+  tree: Record<string, UUID[] | null> | null
 }
 
 /**

@@ -27,6 +27,7 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -69,7 +70,13 @@ async function getCalendarEvents(
     return Success.of(
       data.map((event) => ({
         ...event,
-        period: FiniteDateRange.parseJson(event.period)
+        period: FiniteDateRange.parseJson(event.period),
+        times: event.times.map((time) => ({
+          ...time,
+          date: LocalDate.parseIso(time.date),
+          startTime: LocalTime.parseIso(time.startTime),
+          endTime: LocalTime.parseIso(time.endTime)
+        }))
       }))
     )
   } catch (e) {
@@ -615,7 +622,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
           title: form.title,
           description: form.description,
           period: form.period,
-          tree: getFormTree(form.attendees)
+          tree: getFormTree(form.attendees),
+          times: []
         })
       }
       resolveLabel={i18n.unit.calendar.events.create.add}
@@ -727,9 +735,14 @@ const EditEventModal = React.memo(function EditEventModal({
 }) {
   const { i18n } = useTranslation()
 
-  const [form, setForm] = useState<{ title: string; description: string }>({
+  const [form, setForm] = useState<{
+    title: string
+    description: string
+    tree: Record<string, UUID[] | null> | null
+  }>({
     title: event.title,
-    description: event.description
+    description: event.description,
+    tree: null
   })
 
   const updateForm = useCallback(

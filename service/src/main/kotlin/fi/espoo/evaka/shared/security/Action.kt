@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -381,6 +382,17 @@ sealed interface Action {
             DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
         }
 
+        enum class CalendarEvent(
+            override vararg val defaultRules: ScopedActionRule<in CalendarEventId>
+        ) : ScopedAction<CalendarEventId> {
+            READ(
+                IsCitizen(allowWeakLogin = true).guardianOfChildOfCalendarEventAttendee(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventAttendee()
+            );
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) :
             ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
@@ -438,6 +450,14 @@ sealed interface Action {
             READ_CHILD_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+            ),
+            CREATE_CALENDAR_EVENT_TIME_RESERVATION(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+            ),
+            DELETE_CALENDAR_EVENT_TIME_RESERVATION(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -875,6 +895,10 @@ sealed interface Action {
     enum class CalendarEvent(
         override vararg val defaultRules: ScopedActionRule<in CalendarEventId>
     ) : ScopedAction<CalendarEventId> {
+        READ(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
+        ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
@@ -882,6 +906,23 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class CalendarEventTime(
+        override vararg val defaultRules: ScopedActionRule<in CalendarEventTimeId>
+    ) : ScopedAction<CalendarEventTimeId> {
+        DELETE(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF)
+                .inUnitOfCalendarEventTime()
+        ),
+        UPDATE_RESERVATION(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF)
+                .inUnitOfCalendarEventTime()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
