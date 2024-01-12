@@ -13,6 +13,13 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 
+/*
+If you add a new parent type, remember to:
+- add a foreign key constraint with ON DELETE SET NULL for the new id column
+- update the check constraint to include the new id column
+- update the orphan index to include the new id column in the WHERE condition
+- add a *partial index* for the new id column
+ */
 sealed class AttachmentParent {
     data class Application(val applicationId: ApplicationId) : AttachmentParent()
 
