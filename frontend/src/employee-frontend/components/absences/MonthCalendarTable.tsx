@@ -78,7 +78,16 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
             />
           )}
           <Tooltip
-            tooltip={`${child.lastName}, ${child.firstName}`}
+            tooltip={
+              <div>
+                <p>
+                  {child.lastName}, {child.firstName}
+                </p>
+                {child.actualServiceNeeds.map((need, i) => (
+                  <p key={`service-need-option-${i}`}>{need.optionName}</p>
+                ))}
+              </div>
+            }
             position="top"
           >
             <FixedSpaceRow alignItems="center">
