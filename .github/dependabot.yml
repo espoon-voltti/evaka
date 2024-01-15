@@ -18,6 +18,10 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: docker
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
     directory: "/proxy"
     schedule:
       interval: weekly
