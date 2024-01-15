@@ -46,9 +46,9 @@ export async function getAssistanceNeedPreschoolDecisions(): Promise<
   AssistanceNeedPreschoolDecisionCitizenListItem[]
 > {
   return client
-    .get<JsonOf<AssistanceNeedPreschoolDecisionCitizenListItem[]>>(
-      `/citizen/assistance-need-preschool-decisions`
-    )
+    .get<
+      JsonOf<AssistanceNeedPreschoolDecisionCitizenListItem[]>
+    >(`/citizen/assistance-need-preschool-decisions`)
     .then(({ data }) =>
       data.map((decision) => ({
         ...decision,
@@ -62,9 +62,9 @@ export async function getAssistanceNeedPreschoolDecision(
   id: UUID
 ): Promise<AssistanceNeedPreschoolDecision> {
   return client
-    .get<JsonOf<AssistanceNeedPreschoolDecision>>(
-      `/citizen/children/assistance-need-preschool-decisions/${id}`
-    )
+    .get<
+      JsonOf<AssistanceNeedPreschoolDecision>
+    >(`/citizen/children/assistance-need-preschool-decisions/${id}`)
     .then((res) => mapToAssistanceNeedPreschoolDecision(res.data))
 }
 
@@ -72,9 +72,9 @@ export async function getAssistanceNeedPreschoolDecisionUnreadCounts(): Promise<
   UnreadAssistanceNeedDecisionItem[]
 > {
   return client
-    .get<JsonOf<UnreadAssistanceNeedDecisionItem[]>>(
-      `/citizen/children/assistance-need-preschool-decisions/unread-counts`
-    )
+    .get<
+      JsonOf<UnreadAssistanceNeedDecisionItem[]>
+    >(`/citizen/children/assistance-need-preschool-decisions/unread-counts`)
     .then((res) => res.data)
 }
 

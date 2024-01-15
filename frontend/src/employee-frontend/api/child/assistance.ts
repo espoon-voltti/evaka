@@ -21,9 +21,9 @@ export async function getAssistanceData(
   childId: UUID
 ): Promise<AssistanceResponse> {
   return client
-    .get<JsonOf<AssistanceResponse>>(
-      `/children/${encodeURIComponent(childId)}/assistance`
-    )
+    .get<
+      JsonOf<AssistanceResponse>
+    >(`/children/${encodeURIComponent(childId)}/assistance`)
     .then(({ data }) => ({
       assistanceFactors: data.assistanceFactors.map((row) => ({
         data: {

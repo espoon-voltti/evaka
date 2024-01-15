@@ -66,9 +66,9 @@ export async function postAssistanceNeedPreschoolDecision(
   childId: UUID
 ): Promise<AssistanceNeedPreschoolDecision> {
   return client
-    .post<JsonOf<AssistanceNeedPreschoolDecision>>(
-      `/children/${childId}/assistance-need-preschool-decisions`
-    )
+    .post<
+      JsonOf<AssistanceNeedPreschoolDecision>
+    >(`/children/${childId}/assistance-need-preschool-decisions`)
     .then((res) => deserializeAssistanceNeedPreschoolDecision(res.data))
 }
 
@@ -76,9 +76,9 @@ export async function getAssistanceNeedPreschoolDecisionBasics(
   childId: UUID
 ): Promise<AssistanceNeedPreschoolDecisionBasicsResponse[]> {
   return client
-    .get<JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse[]>>(
-      `/children/${childId}/assistance-need-preschool-decisions`
-    )
+    .get<
+      JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse[]>
+    >(`/children/${childId}/assistance-need-preschool-decisions`)
     .then((res) =>
       res.data.map(deserializeAssistanceNeedPreschoolDecisionBasicsResponse)
     )
@@ -88,9 +88,9 @@ export async function getAssistanceNeedPreschoolDecision(
   decisionId: UUID
 ): Promise<AssistanceNeedPreschoolDecisionResponse> {
   return client
-    .get<JsonOf<AssistanceNeedPreschoolDecisionResponse>>(
-      `/assistance-need-preschool-decisions/${decisionId}`
-    )
+    .get<
+      JsonOf<AssistanceNeedPreschoolDecisionResponse>
+    >(`/assistance-need-preschool-decisions/${decisionId}`)
     .then((res) => ({
       ...res.data,
       decision: deserializeAssistanceNeedPreschoolDecision(res.data.decision)
@@ -160,9 +160,9 @@ export async function getAssistanceNeedPreschoolDecisionMakerOptions(
   decisionId: UUID
 ): Promise<Employee[]> {
   return client
-    .get<JsonOf<Employee[]>>(
-      `/assistance-need-preschool-decisions/${decisionId}/decision-maker-options`
-    )
+    .get<
+      JsonOf<Employee[]>
+    >(`/assistance-need-preschool-decisions/${decisionId}/decision-maker-options`)
     .then((res) =>
       res.data.map((employee) => ({
         ...employee,

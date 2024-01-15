@@ -11,38 +11,14 @@ export type Form<Output, Error extends string, State, Shape> = {
 
 export type AnyForm = Form<any, string, any, any>
 
-export type OutputOf<F extends Form<any, any, any, any>> = F extends Form<
-  infer Output,
-  any,
-  any,
-  any
->
-  ? Output
-  : never
-export type ErrorOf<F extends Form<any, any, any, any>> = F extends Form<
-  any,
-  infer Error,
-  any,
-  any
->
-  ? Error
-  : never
-export type StateOf<F extends Form<any, any, any, any>> = F extends Form<
-  any,
-  any,
-  infer State,
-  any
->
-  ? State
-  : never
-export type ShapeOf<F extends AnyForm> = F extends Form<
-  any,
-  any,
-  any,
-  infer Shape
->
-  ? Shape
-  : never
+export type OutputOf<F extends Form<any, any, any, any>> =
+  F extends Form<infer Output, any, any, any> ? Output : never
+export type ErrorOf<F extends Form<any, any, any, any>> =
+  F extends Form<any, infer Error, any, any> ? Error : never
+export type StateOf<F extends Form<any, any, any, any>> =
+  F extends Form<any, any, infer State, any> ? State : never
+export type ShapeOf<F extends AnyForm> =
+  F extends Form<any, any, any, infer Shape> ? Shape : never
 
 export class ValidationSuccess<Output, Error> {
   readonly isValid = true

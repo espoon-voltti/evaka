@@ -260,8 +260,8 @@ export default React.memo(function PlacementCount() {
                   )
                 })
               }
-              value={placementTypes.filter(
-                (unitType) => filters.placementTypes?.includes(unitType)
+              value={placementTypes.filter((unitType) =>
+                filters.placementTypes?.includes(unitType)
               )}
               getOptionId={(placementType) => placementType}
               getOptionLabel={(placementType) =>

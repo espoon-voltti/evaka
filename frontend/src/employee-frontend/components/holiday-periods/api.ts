@@ -55,9 +55,9 @@ export function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
 
 export function getQuestionnaire(id: UUID): Promise<FixedPeriodQuestionnaire> {
   return client
-    .get<JsonOf<FixedPeriodQuestionnaire>>(
-      `/holiday-period/questionnaire/${id}`
-    )
+    .get<
+      JsonOf<FixedPeriodQuestionnaire>
+    >(`/holiday-period/questionnaire/${id}`)
     .then((res) => deserializeFixedPeriodQuestionnaire(res.data))
 }
 

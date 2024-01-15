@@ -38,9 +38,9 @@ export function getDecisionsOfApplication(
   applicationId: UUID
 ): Promise<DecisionWithValidStartDatePeriod[]> {
   return client
-    .get<JsonOf<DecisionWithValidStartDatePeriod[]>>(
-      `/citizen/applications/${applicationId}/decisions`
-    )
+    .get<
+      JsonOf<DecisionWithValidStartDatePeriod[]>
+    >(`/citizen/applications/${applicationId}/decisions`)
     .then((res) =>
       res.data.map(({ decision, validRequestedStartDatePeriod }) => ({
         decision: {
@@ -64,9 +64,9 @@ export function getFinanceDecisionsForCitizen(): Promise<
   FinanceDecisionCitizenInfo[]
 > {
   return client
-    .get<JsonOf<FinanceDecisionCitizenInfo[]>>(
-      `/citizen/finance-decisions/by-liable-citizen`
-    )
+    .get<
+      JsonOf<FinanceDecisionCitizenInfo[]>
+    >(`/citizen/finance-decisions/by-liable-citizen`)
     .then((res) =>
       res.data.map((decision) => ({
         ...decision,

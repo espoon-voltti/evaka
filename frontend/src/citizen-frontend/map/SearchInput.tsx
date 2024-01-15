@@ -69,9 +69,8 @@ export default React.memo(function SearchInput({
   const filteredUnitOptions = useMemo(() => {
     if (debouncedInputString.length < 3) return []
 
-    return unitOptions.filter(
-      ({ unit }) =>
-        unit?.name.toLowerCase().includes(debouncedInputString.toLowerCase())
+    return unitOptions.filter(({ unit }) =>
+      unit?.name.toLowerCase().includes(debouncedInputString.toLowerCase())
     )
   }, [unitOptions, debouncedInputString])
 

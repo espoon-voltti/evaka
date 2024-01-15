@@ -56,9 +56,9 @@ export async function getChildIncomeStatement({
   id: UUID
 }): Promise<IncomeStatement> {
   return client
-    .get<JsonOf<IncomeStatement>>(
-      `/citizen/income-statements/child/${childId}/${id}`
-    )
+    .get<
+      JsonOf<IncomeStatement>
+    >(`/citizen/income-statements/child/${childId}/${id}`)
     .then((res) => deserializeIncomeStatement(res.data))
 }
 
@@ -77,9 +77,9 @@ export const getChildIncomeStatementStartDates = (
   childId: string
 ): Promise<LocalDate[]> =>
   client
-    .get<JsonOf<LocalDate[]>>(
-      `/citizen/income-statements/child/start-dates/${childId}`
-    )
+    .get<
+      JsonOf<LocalDate[]>
+    >(`/citizen/income-statements/child/start-dates/${childId}`)
     .then(({ data }) => data.map((d) => LocalDate.parseIso(d)))
 
 export async function createIncomeStatement(

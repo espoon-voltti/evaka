@@ -51,10 +51,9 @@ export async function createBackupCare({
   payload: NewBackupCare
 }): Promise<UUID> {
   return client
-    .post<JsonOf<BackupCareCreateResponse>>(
-      `/children/${childId}/backup-cares`,
-      payload
-    )
+    .post<
+      JsonOf<BackupCareCreateResponse>
+    >(`/children/${childId}/backup-cares`, payload)
     .then((res) => res.data.id)
 }
 

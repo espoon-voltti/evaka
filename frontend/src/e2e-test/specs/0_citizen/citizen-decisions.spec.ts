@@ -73,8 +73,9 @@ describe('Citizen application decisions', () => {
 
     const decisions = await getDecisionsByApplication(applicationId)
     if (decisions.length !== 2) throw Error('Expected 2 decisions')
-    const preschoolDecisionId = decisions.find((d) => d.type === 'PRESCHOOL')
-      ?.id
+    const preschoolDecisionId = decisions.find(
+      (d) => d.type === 'PRESCHOOL'
+    )?.id
     if (!preschoolDecisionId)
       throw Error('Expected a decision with type PRESCHOOL')
     const preschoolDaycareDecisionId = decisions.find(
@@ -162,8 +163,9 @@ describe('Citizen application decisions', () => {
 
     const decisions = await getDecisionsByApplication(applicationId)
     if (decisions.length !== 2) throw Error('Expected 2 decisions')
-    const preschoolDecisionId = decisions.find((d) => d.type === 'PRESCHOOL')
-      ?.id
+    const preschoolDecisionId = decisions.find(
+      (d) => d.type === 'PRESCHOOL'
+    )?.id
     if (!preschoolDecisionId)
       throw Error('Expected a decision with type PRESCHOOL')
     const preschoolDaycareDecisionId = decisions.find(
