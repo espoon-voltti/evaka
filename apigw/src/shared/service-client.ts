@@ -6,12 +6,11 @@ import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config.js'
 import {
-  createAuthHeader,
-  createIntegrationAuthHeader,
   EvakaSessionUser,
   integrationUserHeader,
   createUserHeader
 } from './auth/index.js'
+import { getJwt } from './auth/jwt.js'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -58,20 +57,14 @@ export function createServiceRequestHeaders(
   req: express.Request | undefined,
   user: EvakaSessionUser | undefined | null = req?.user
 ) {
-  let headers: ServiceRequestHeaders = {}
+  const headers: ServiceRequestHeaders = {
+    Authorization: `Bearer ${getJwt()}`
+  }
   if (req?.path.startsWith('/integration/')) {
-    headers = {
-      // TODO: Use empty JWT
-      Authorization: createIntegrationAuthHeader(),
-      'X-User': integrationUserHeader
-    }
+    headers['X-User'] = integrationUserHeader
   }
   if (user) {
-    headers = {
-      // TODO: Use empty JWT
-      Authorization: createAuthHeader(user),
-      'X-User': createUserHeader(user)
-    }
+    headers['X-User'] = createUserHeader(user)
   }
   if (req?.traceId) {
     headers['X-Request-ID'] = req.traceId

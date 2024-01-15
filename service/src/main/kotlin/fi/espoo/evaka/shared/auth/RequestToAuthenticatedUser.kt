@@ -33,8 +33,6 @@ class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
             // JWT is valid => the request came from apigw
             val user =
                 request.getHeader("X-User")?.let { jsonMapper().readValue<AuthenticatedUser>(it) }
-                    // TODO: Remove this fallback when apigw has been deployed to production
-                    ?: decodedJwt.toAuthenticatedUser()
             if (user != null) {
                 request.setAuthenticatedUser(user)
                 tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash)
