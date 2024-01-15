@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -16,6 +16,7 @@ import {
   daycare2Fixture,
   daycareFixture,
   Fixture,
+  fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
@@ -39,7 +40,7 @@ let child1DaycarePlacementId: UUID
 let daycare: Daycare
 let unitSupervisor: EmployeeDetail
 
-const mockedToday = LocalDate.of(2023, 2, 15)
+const mockedToday = LocalDate.of(2023, 2, 15) // wed
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(8)
 const backupCareStartDate = mockedToday.startOfWeek().addWeeks(2)
@@ -48,12 +49,35 @@ const groupId: UUID = uuidv4()
 
 beforeEach(async () => {
   await resetDatabase()
+})
 
+const insertTestDataAndLogin = async ({
+  roundTheClockDaycare = true
+}: {
+  roundTheClockDaycare?: boolean
+} = {}) => {
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-
-  daycare = daycare2Fixture
+  const daycareBuilder = Fixture.daycare()
+    .with(daycare2Fixture)
+    .careArea(careArea)
+  if (!roundTheClockDaycare) {
+    daycareBuilder.with({
+      operationDays: [1, 2, 3, 4, 5],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ],
+      roundTheClock: false
+    })
+  }
+  await daycareBuilder.save()
+  daycare = daycareBuilder.data
 
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
@@ -113,7 +137,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedToday.toSystemTzDate() })
   await employeeLogin(page, unitSupervisor)
-})
+}
 
 const loadUnitAttendancesSection =
   async (): Promise<UnitAttendancesSection> => {
@@ -125,6 +149,7 @@ const loadUnitAttendancesSection =
 
 describe('Unit group calendar', () => {
   test('Employee sees row for child', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
@@ -135,6 +160,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Child in backup care in other group for part of the week is shown', async () => {
+    await insertTestDataAndLogin()
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
@@ -169,6 +195,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Reservations are shown in the backup group calendar when backup is within the same unit', async () => {
+    await insertTestDataAndLogin()
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
@@ -219,6 +246,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Child in backup care for the entire week is shown', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
@@ -230,6 +258,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Child in backup care during the week is shown', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
@@ -241,6 +270,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Missing holiday reservations are shown', async () => {
+    await insertTestDataAndLogin()
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
@@ -303,6 +333,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Missing holiday reservations are shown if reservation deadline has passed', async () => {
+    await insertTestDataAndLogin()
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
@@ -325,6 +356,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Tooltip for attendance reservation is shown', async () => {
+    await insertTestDataAndLogin()
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
@@ -430,6 +462,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Employee can add reservation', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
@@ -440,6 +473,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Employee can change between calendar modes', async () => {
+    await insertTestDataAndLogin()
     attendancesSection = await loadUnitAttendancesSection()
     await calendarPage.selectMode('week')
     await calendarPage.assertMode('week')
@@ -451,6 +485,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Employee can see the correct date range based on mode', async () => {
+    await insertTestDataAndLogin()
     attendancesSection = await loadUnitAttendancesSection()
     await calendarPage.selectMode('week')
     await calendarPage.assertDateRange(
@@ -470,6 +505,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Employee sees all attendances for a child during a day', async () => {
+    await insertTestDataAndLogin()
     const attendances = [
       [LocalTime.of(8, 15), LocalTime.of(9, 30)],
       [LocalTime.of(10, 30), LocalTime.of(11, 45)],
@@ -500,6 +536,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Employee can add absence records', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
@@ -516,6 +553,7 @@ describe('Unit group calendar', () => {
 
 describe('Unit group calendar for shift care unit', () => {
   test('Employee can add two reservations for day and sees two rows', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
 
@@ -544,7 +582,43 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 
+  test('Irregular reservation over weekend in normal unit', async () => {
+    await insertTestDataAndLogin({
+      roundTheClockDaycare: false
+    })
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+
+    await calendarPage.selectMode('week')
+
+    reservationModal = await childReservations.openReservationModal(
+      child1Fixture.id
+    )
+    await reservationModal.selectRepetitionType('IRREGULAR')
+
+    const nextFriday = mockedToday.addDays(2)
+    const nextWeekMonday = mockedToday.addDays(5)
+    await reservationModal.startDate.fill(nextFriday.format())
+    await reservationModal.endDate.fill(nextWeekMonday.format())
+    await reservationModal.setStartTime('09:00', 0)
+    await reservationModal.setEndTime('17:00', 0)
+    await reservationModal.setStartTime('08:00', 1)
+    await reservationModal.setEndTime('16:00', 1)
+    await reservationModal.save()
+
+    await childReservations
+      .reservationCells(child1Fixture.id, nextFriday)
+      .nth(0)
+      .assertTextEquals('09:00\n17:00')
+    await calendarPage.nextWeek.click()
+    await childReservations
+      .reservationCells(child1Fixture.id, nextWeekMonday)
+      .nth(0)
+      .assertTextEquals('08:00\n16:00')
+  })
+
   test('Employee sees attendances along reservations', async () => {
+    await insertTestDataAndLogin()
     const childReservations = (await loadUnitAttendancesSection())
       .childReservations
     await calendarPage.selectMode('week')
