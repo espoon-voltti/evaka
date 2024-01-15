@@ -111,6 +111,16 @@ data class DocumentTemplate(
     @Json val content: DocumentTemplateContent
 )
 
+data class ExportedDocumentTemplate(
+    val name: String,
+    val type: DocumentType,
+    val language: DocumentLanguage,
+    val confidential: Boolean,
+    val legalBasis: String,
+    val validity: DateRange,
+    @Json val content: DocumentTemplateContent
+)
+
 data class DocumentTemplateCreateRequest(
     val name: String,
     val type: DocumentType,

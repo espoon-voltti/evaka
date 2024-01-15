@@ -60,7 +60,9 @@ declare module 'Icons' {
   const fasFile: IconDefinition
   const faFileAlt: IconDefinition
   const fasFileAlt: IconDefinition
+  const faFileExport: IconDefinition
   const faFileImage: IconDefinition
+  const faFileImport: IconDefinition
   const faFilePdf: IconDefinition
   const faFileSpreadsheet: IconDefinition
   const faFileWord: IconDefinition

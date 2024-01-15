@@ -16,6 +16,9 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -45,6 +48,27 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                         Action.Global.CREATE_DOCUMENT_TEMPLATE
                     )
                     tx.insertTemplate(body)
+                }
+            }
+            .also { Audit.DocumentTemplateCreate.log(targetId = it.id) }
+    }
+
+    @PostMapping("/import")
+    fun importTemplate(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ExportedDocumentTemplate
+    ): DocumentTemplate {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_DOCUMENT_TEMPLATE
+                    )
+                    tx.importTemplate(body)
                 }
             }
             .also { Audit.DocumentTemplateCreate.log(targetId = it.id) }
@@ -119,6 +143,45 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
             ?.also { Audit.DocumentTemplateRead.log(targetId = templateId) }
             ?: throw NotFound("Document template $templateId not found")
     }
+
+    @GetMapping("/{templateId}/export")
+    fun exportTemplate(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable templateId: DocumentTemplateId,
+    ): ResponseEntity<ExportedDocumentTemplate> =
+        db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.DocumentTemplate.READ,
+                        templateId
+                    )
+                    tx.exportTemplate(templateId)
+                }
+            }
+            ?.let { template ->
+                val sanitizedName = template.name.replace(Regex("[^\\p{L}0-9]+"), "_").take(60)
+                val timestamp = clock.now().toInstant().epochSecond
+                ResponseEntity.ok()
+                    .headers(
+                        HttpHeaders().apply {
+                            contentDisposition =
+                                ContentDisposition.attachment()
+                                    .filename(
+                                        "$sanitizedName.$timestamp.template.json",
+                                        Charsets.UTF_8
+                                    )
+                                    .build()
+                        }
+                    )
+                    .body(template)
+            }
+            ?.also { Audit.DocumentTemplateRead.log(targetId = templateId) }
+            ?: throw NotFound("Document template $templateId not found")
 
     @PostMapping("/{templateId}/duplicate")
     fun duplicateTemplate(

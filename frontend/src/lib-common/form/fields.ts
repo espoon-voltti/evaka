@@ -191,6 +191,7 @@ export const openEndedLocalDateRange = Object.assign(
       }
     ),
   {
+    empty: (config?: LocalDateConfig) => ({ start: '', end: '', config }),
     fromRange: (
       range: DateRange | null | undefined,
       config?: LocalDateConfig

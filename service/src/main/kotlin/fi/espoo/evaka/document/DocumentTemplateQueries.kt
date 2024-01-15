@@ -22,6 +22,17 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest)
         .exactlyOne<DocumentTemplate>()
 }
 
+fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): DocumentTemplate =
+    createQuery(
+            """
+        INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content)
+        VALUES (:name, :type, :language, :confidential, :legalBasis, :validity, :content)
+        RETURNING *
+    """
+        )
+        .bindKotlin(template)
+        .exactlyOne<DocumentTemplate>()
+
 fun Database.Transaction.duplicateTemplate(
     id: DocumentTemplateId,
     template: DocumentTemplateCreateRequest
@@ -54,6 +65,12 @@ fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
     return createQuery("SELECT * FROM document_template WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<DocumentTemplate>()
+}
+
+fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? {
+    return createQuery("SELECT * FROM document_template WHERE id = :id")
+        .bind("id", id)
+        .exactlyOneOrNull<ExportedDocumentTemplate>()
 }
 
 fun Database.Transaction.updateDraftTemplateContent(

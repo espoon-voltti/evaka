@@ -62,12 +62,12 @@ describe('Employee - Child documents', () => {
     await nav.openAndClickDropdownMenuItem('document-templates')
 
     const documentTemplatesPage = new DocumentTemplatesListPage(page)
-    await documentTemplatesPage.createNewButton.click()
+    const modal = await documentTemplatesPage.openCreateModal()
     const documentName = 'HOJKS 2022-2023'
-    await documentTemplatesPage.nameInput.fill(documentName)
-    await documentTemplatesPage.typeSelect.selectOption('HOJKS')
-    await documentTemplatesPage.validityStartInput.fill('01.08.2022')
-    await documentTemplatesPage.confirmCreateButton.click()
+    await modal.nameInput.fill(documentName)
+    await modal.typeSelect.selectOption('HOJKS')
+    await modal.validityStartInput.fill('01.08.2022')
+    await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 
     const templateEditor = new DocumentTemplateEditorPage(page)

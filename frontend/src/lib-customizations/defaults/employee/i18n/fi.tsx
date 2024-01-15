@@ -4220,7 +4220,9 @@ export const fi = {
       validity: 'Voimassa',
       status: 'Tila',
       published: 'Julkaistu',
-      draft: 'Luonnos'
+      draft: 'Luonnos',
+      export: 'Vie tiedostoon',
+      import: 'Tuo tiedostosta'
     },
     templateModal: {
       title: 'Uusi lomakepohja',
