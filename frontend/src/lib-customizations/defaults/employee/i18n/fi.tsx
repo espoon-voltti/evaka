@@ -4020,6 +4020,9 @@ export const fi = {
       name: 'Nimi puuttuu',
       area: 'Alue puuttuu',
       careType: 'Toimintamuoto puuttuu',
+      dailyPreschoolTime: 'Esiopetusaika puuttuu tai on virheellinen',
+      dailyPreparatoryTime:
+        'Valmistavan opetuksen aika puuttuu tai on virheellinen',
       daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
       capacity: 'Kapasiteetti on virheellinen',
       costCenter: 'Kustannuspaikka puuttuu',

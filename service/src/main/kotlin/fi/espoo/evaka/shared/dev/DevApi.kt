@@ -1822,6 +1822,8 @@ data class DevDaycare(
     val areaId: AreaId,
     val type: Set<CareType> =
         setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
+    val dailyPreschoolTime: TimeRange? = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+    val dailyPreparatoryTime: TimeRange? = TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
     val daycareApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val preschoolApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val clubApplyPeriod: DateRange? = null,

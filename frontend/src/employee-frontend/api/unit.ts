@@ -68,6 +68,12 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
     ...unit,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
+    dailyPreschoolTime: unit.dailyPreschoolTime
+      ? parseIsoTimeRange(unit.dailyPreschoolTime)
+      : null,
+    dailyPreparatoryTime: unit.dailyPreparatoryTime
+      ? parseIsoTimeRange(unit.dailyPreparatoryTime)
+      : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
       ? DateRange.parseJson(unit.daycareApplyPeriod)
       : null,

@@ -39,6 +39,8 @@ data class Daycare(
     val closingDate: LocalDate?,
     @Nested("care_area_") val area: DaycareCareArea,
     val type: Set<CareType>,
+    val dailyPreschoolTime: TimeRange?,
+    val dailyPreparatoryTime: TimeRange?,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
     val clubApplyPeriod: DateRange?,

@@ -234,6 +234,8 @@ export interface Daycare {
   closingDate: LocalDate | null
   clubApplyPeriod: DateRange | null
   costCenter: string | null
+  dailyPreparatoryTime: TimeRange | null
+  dailyPreschoolTime: TimeRange | null
   daycareApplyPeriod: DateRange | null
   decisionCustomization: DaycareDecisionCustomization
   dwCostCenter: string | null
@@ -304,6 +306,8 @@ export interface DaycareFields {
   closingDate: LocalDate | null
   clubApplyPeriod: DateRange | null
   costCenter: string | null
+  dailyPreparatoryTime: TimeRange | null
+  dailyPreschoolTime: TimeRange | null
   daycareApplyPeriod: DateRange | null
   decisionCustomization: DaycareDecisionCustomization
   dwCostCenter: string | null
