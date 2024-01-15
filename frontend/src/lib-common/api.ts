@@ -324,11 +324,8 @@ export function isLoading(value: Result<unknown>) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiFunction = (...args: any[]) => Promise<Result<any>>
-export type ApiResultOf<T extends ApiFunction> = ReturnType<T> extends Promise<
-  Result<infer R>
->
-  ? R
-  : never
+export type ApiResultOf<T extends ApiFunction> =
+  ReturnType<T> extends Promise<Result<infer R>> ? R : never
 
 /**
  * Converts an API function into another that cancels stale responses

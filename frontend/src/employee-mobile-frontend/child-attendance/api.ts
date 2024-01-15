@@ -40,9 +40,9 @@ export async function getUnitAttendanceStatuses(
   unitId: string
 ): Promise<Record<UUID, ChildAttendanceStatusResponse | undefined>> {
   return client
-    .get<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>(
-      `/attendances/units/${unitId}/attendances`
-    )
+    .get<
+      JsonOf<Record<UUID, ChildAttendanceStatusResponse>>
+    >(`/attendances/units/${unitId}/attendances`)
     .then((res) =>
       mapValues(res.data, deserializeChildAttendanceStatusResponse)
     )
@@ -160,9 +160,9 @@ export async function getConfirmedRange(
   childId: UUID
 ): Promise<ConfirmedRangeDate[]> {
   return client
-    .get<JsonOf<ConfirmedRangeDate[]>>(
-      `/attendance-reservations/by-child/${childId}/confirmed-range`
-    )
+    .get<
+      JsonOf<ConfirmedRangeDate[]>
+    >(`/attendance-reservations/by-child/${childId}/confirmed-range`)
     .then((res) =>
       res.data.map((row) => ({
         ...row,
@@ -217,9 +217,9 @@ export async function getChildDeparture({
   childId: string
 }): Promise<AbsenceThreshold[]> {
   return client
-    .get<JsonOf<AbsenceThreshold[]>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`
-    )
+    .get<
+      JsonOf<AbsenceThreshold[]>
+    >(`/attendances/units/${unitId}/children/${childId}/departure`)
     .then((res) => res.data)
 }
 

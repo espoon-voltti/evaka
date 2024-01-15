@@ -519,10 +519,9 @@ export async function getPlacementGuaranteeReport(
   filters: PlacementGuaranteeReportFilters
 ): Promise<PlacementGuaranteeReportRow[]> {
   return client
-    .get<JsonOf<PlacementGuaranteeReportRow[]>>(
-      '/reports/placement-guarantee',
-      { params: filters }
-    )
+    .get<
+      JsonOf<PlacementGuaranteeReportRow[]>
+    >('/reports/placement-guarantee', { params: filters })
     .then((response) =>
       response.data.map((row) => ({
         ...row,
@@ -780,10 +779,9 @@ export async function getPreschoolGroupsReport(
   municipal: boolean
 ): Promise<PreschoolGroupsReportRow[]> {
   return client
-    .get<JsonOf<PreschoolGroupsReportRow[]>>(
-      '/reports/future-preschoolers/groups',
-      { params: { municipal: municipal } }
-    )
+    .get<
+      JsonOf<PreschoolGroupsReportRow[]>
+    >('/reports/future-preschoolers/groups', { params: { municipal: municipal } })
     .then((res) => res.data)
 }
 

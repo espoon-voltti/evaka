@@ -29,8 +29,8 @@ export function getChildConsentNotifications(): Promise<
   Record<string, number>
 > {
   return client
-    .get<JsonOf<Record<string, number>>>(
-      '/citizen/children/consents/notifications'
-    )
+    .get<
+      JsonOf<Record<string, number>>
+    >('/citizen/children/consents/notifications')
     .then((res) => res.data)
 }

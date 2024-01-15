@@ -33,9 +33,9 @@ export async function getMessagingAccounts(
   unitId: UUID
 ): Promise<AuthorizedMessageAccount[]> {
   return client
-    .get<JsonOf<AuthorizedMessageAccount[]>>(
-      `/messages/mobile/my-accounts/${unitId}`
-    )
+    .get<
+      JsonOf<AuthorizedMessageAccount[]>
+    >(`/messages/mobile/my-accounts/${unitId}`)
     .then((res) => res.data)
 }
 

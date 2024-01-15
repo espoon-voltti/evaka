@@ -77,16 +77,9 @@ export default React.memo(function AttendanceReservationByChild() {
   )
 
   const sortedRows = report
-    .map<AttendanceReservationReportByChildRow[]>((rows) =>
-      rows.sort(
-        (a, b) =>
-          compareByGroup(a, b, lang) ||
-          compareByDate(a, b) ||
-          (orderBy === 'start' ? compareByStartTime(a, b) : 0) ||
-          (orderBy === 'end' ? compareByEndTime(a, b) : 0) ||
-          compareByChildName(a, b, lang)
-      )
-    )
+    .map<
+      AttendanceReservationReportByChildRow[]
+    >((rows) => rows.sort((a, b) => compareByGroup(a, b, lang) || compareByDate(a, b) || (orderBy === 'start' ? compareByStartTime(a, b) : 0) || (orderBy === 'end' ? compareByEndTime(a, b) : 0) || compareByChildName(a, b, lang)))
     .getOrElse<AttendanceReservationReportByChildRow[]>([])
   const sortedUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))

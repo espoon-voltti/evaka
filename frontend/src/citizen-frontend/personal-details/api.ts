@@ -22,9 +22,9 @@ export function updatePersonalData(
 
 export function getNotificationSettings(): Promise<EmailNotificationSettings> {
   return client
-    .get<JsonOf<EmailNotificationSettings>>(
-      '/citizen/personal-data/notification-settings'
-    )
+    .get<
+      JsonOf<EmailNotificationSettings>
+    >('/citizen/personal-data/notification-settings')
     .then((res) => res.data)
 }
 

@@ -19,9 +19,9 @@ export function getPedagogicalDocuments(
   childId: UUID
 ): Promise<PedagogicalDocumentCitizen[]> {
   return client
-    .get<JsonOf<PedagogicalDocumentCitizen[]>>(
-      `/citizen/children/${childId}/pedagogical-documents`
-    )
+    .get<
+      JsonOf<PedagogicalDocumentCitizen[]>
+    >(`/citizen/children/${childId}/pedagogical-documents`)
     .then((res) => res.data.map(deserializePedagogicalDocument))
 }
 
@@ -29,9 +29,9 @@ export function getUnreadPedagogicalDocumentsCount(): Promise<
   Record<UUID, number>
 > {
   return client
-    .get<JsonOf<Record<UUID, number>>>(
-      `/citizen/pedagogical-documents/unread-count`
-    )
+    .get<
+      JsonOf<Record<UUID, number>>
+    >(`/citizen/pedagogical-documents/unread-count`)
     .then((res) => res.data)
 }
 

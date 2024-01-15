@@ -28,9 +28,9 @@ export function getChildVasuSummaries(
   childId: UUID
 ): Promise<CitizenGetVasuDocumentSummariesResponse> {
   return client
-    .get<JsonOf<CitizenGetVasuDocumentSummariesResponse>>(
-      `/citizen/vasu/children/${childId}/vasu-summaries`
-    )
+    .get<
+      JsonOf<CitizenGetVasuDocumentSummariesResponse>
+    >(`/citizen/vasu/children/${childId}/vasu-summaries`)
     .then((res) => ({
       data: res.data.data.map(
         ({ events, modifiedAt, publishedAt, ...rest }) => ({

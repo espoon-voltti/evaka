@@ -77,9 +77,9 @@ export async function getVasuDocumentSummaries(
   childId: UUID
 ): Promise<VasuDocumentSummaryWithPermittedActions[]> {
   return client
-    .get<JsonOf<VasuDocumentSummaryWithPermittedActions[]>>(
-      `/children/${childId}/vasu-summaries`
-    )
+    .get<
+      JsonOf<VasuDocumentSummaryWithPermittedActions[]>
+    >(`/children/${childId}/vasu-summaries`)
     .then((res) =>
       res.data.map(
         ({

@@ -91,9 +91,9 @@ export async function getDailyServiceTimeNotifications(): Promise<
   DailyServiceTimeNotification[]
 > {
   return client
-    .get<JsonOf<DailyServiceTimeNotification[]>>(
-      '/citizen/daily-service-time-notifications'
-    )
+    .get<
+      JsonOf<DailyServiceTimeNotification[]>
+    >('/citizen/daily-service-time-notifications')
     .then(({ data }) =>
       data.map((notif) => ({
         ...notif,

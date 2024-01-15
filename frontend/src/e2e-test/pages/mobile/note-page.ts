@@ -123,17 +123,12 @@ export default class MobileNotePage {
       expected.reminderNote || ''
     )
 
-    await waitUntilEqual(
-      async () => {
-        const hours = Number(
-          (await this.#note.sleepingTimeHours.inputValue) || 0
-        )
-        const minutes = Number(
-          (await this.#note.sleepingTimeMinutes.inputValue) || 0
-        )
-        return (hours * 60 + minutes).toString()
-      },
-      expected.sleepingMinutes?.toString() || '0'
-    )
+    await waitUntilEqual(async () => {
+      const hours = Number((await this.#note.sleepingTimeHours.inputValue) || 0)
+      const minutes = Number(
+        (await this.#note.sleepingTimeMinutes.inputValue) || 0
+      )
+      return (hours * 60 + minutes).toString()
+    }, expected.sleepingMinutes?.toString() || '0')
   }
 }

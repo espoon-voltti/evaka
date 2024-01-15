@@ -360,9 +360,9 @@ export async function getApplicationNotes(
   applicationId: UUID
 ): Promise<ApplicationNoteResponse[]> {
   return client
-    .get<JsonOf<ApplicationNoteResponse[]>>(
-      `/note/application/${applicationId}`
-    )
+    .get<
+      JsonOf<ApplicationNoteResponse[]>
+    >(`/note/application/${applicationId}`)
     .then((res) =>
       res.data.map(({ note, permittedActions }) => ({
         note: {

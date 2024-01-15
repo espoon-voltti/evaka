@@ -147,9 +147,9 @@ export function getDuplicateApplications(
   childId: string
 ): Promise<Record<ApplicationType, boolean>> {
   return client
-    .get<JsonOf<Record<ApplicationType, boolean>>>(
-      `/citizen/applications/duplicates/${childId}`
-    )
+    .get<
+      JsonOf<Record<ApplicationType, boolean>>
+    >(`/citizen/applications/duplicates/${childId}`)
     .then((res) => res.data)
 }
 
@@ -157,9 +157,9 @@ export function getActivePlacementsByApplicationType(
   childId: string
 ): Promise<Record<ApplicationType, boolean>> {
   return client
-    .get<Record<ApplicationType, boolean>>(
-      `/citizen/applications/active-placements/${childId}`
-    )
+    .get<
+      Record<ApplicationType, boolean>
+    >(`/citizen/applications/active-placements/${childId}`)
     .then((res) => res.data)
 }
 
@@ -179,9 +179,8 @@ export function getServiceNeedOptionPublicInfos(
   placementTypes: PlacementType[]
 ): Promise<ServiceNeedOptionPublicInfo[]> {
   return client
-    .get<JsonOf<ServiceNeedOptionPublicInfo[]>>(
-      '/public/service-needs/options',
-      { params: { placementTypes: placementTypes.join() } }
-    )
+    .get<
+      JsonOf<ServiceNeedOptionPublicInfo[]>
+    >('/public/service-needs/options', { params: { placementTypes: placementTypes.join() } })
     .then((res) => res.data)
 }
