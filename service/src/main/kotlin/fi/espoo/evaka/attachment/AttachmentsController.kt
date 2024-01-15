@@ -485,8 +485,7 @@ class AttachmentsController(
                                 Action.Attachment.READ_INCOME_ATTACHMENT,
                                 attachment.id
                             )
-                        is AttachmentParent.IncomeStatement,
-                        is AttachmentParent.None ->
+                        is AttachmentParent.IncomeStatement ->
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -532,6 +531,14 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.None ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_ORPHAN_ATTACHMENT,
                                 attachment.id
                             )
                     }.exhaust()
@@ -583,8 +590,7 @@ class AttachmentsController(
                                 Action.Attachment.DELETE_INCOME_ATTACHMENT,
                                 attachment.id
                             )
-                        is AttachmentParent.IncomeStatement,
-                        is AttachmentParent.None ->
+                        is AttachmentParent.IncomeStatement ->
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -625,6 +631,14 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
+                                attachment.id
+                            )
+                        is AttachmentParent.None ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_ORPHAN_ATTACHMENT,
                                 attachment.id
                             )
                     }.exhaust()
