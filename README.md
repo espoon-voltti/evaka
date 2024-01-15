@@ -32,13 +32,12 @@ The applications consists of several sub-projects:
 - [`apigw`](apigw/) – API gateway, responsible for handling authentication and
   routing requests to backend services
 - [`frontend`](frontend/) – User interfaces for the citizens and
-  employees
+  employees, and [Nginx](https://www.nginx.com) image for proxying
+  frontend requests to services
 - [`service`](service/) – All the business logic, e.g. handling early
   childhood education application process and daily work in daycare
 - [`compose`](compose/) – Tooling for running application in local
   development environment, using e.g. [Docker](https://www.docker.com)
-- [`proxy`](proxy/) – [Nginx](https://www.nginx.com) image for proxying
-  fronetend requests to services
 - [`service/service-lib`](service/service-lib/) – Old common library for service projects,
   but today only used by `service`.
 
