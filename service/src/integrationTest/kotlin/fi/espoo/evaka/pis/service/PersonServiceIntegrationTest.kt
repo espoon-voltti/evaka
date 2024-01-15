@@ -21,7 +21,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import java.time.LocalDate
 import java.util.*
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
