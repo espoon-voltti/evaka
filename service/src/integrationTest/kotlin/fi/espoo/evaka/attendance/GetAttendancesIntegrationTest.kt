@@ -11,7 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.ReservationDto
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -379,7 +379,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(
-            listOf(Reservation.Times(reservationStart, reservationEnd)),
+            listOf(ReservationDto.Times(reservationStart, reservationEnd, false)),
             child.reservations
         )
     }
@@ -398,7 +398,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(listOf(Reservation.NoTimes), child.reservations)
+        assertEquals(listOf(ReservationDto.NoTimes(false)), child.reservations)
     }
 
     @Test
@@ -426,7 +426,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(
-            listOf(Reservation.Times(reservationStart, reservationEnd)),
+            listOf(ReservationDto.Times(reservationStart, reservationEnd, false)),
             childInBackup.reservations
         )
     }

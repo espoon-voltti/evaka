@@ -36,7 +36,7 @@ import {
   Child,
   ChildDatePresence,
   ChildRecordOfDay,
-  Reservation,
+  ReservationDto,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
@@ -159,7 +159,7 @@ export default React.memo(function ChildDateModal({
       reservations:
         childDayRecord.scheduleType === 'RESERVATION_REQUIRED'
           ? childDayRecord.reservations
-              .filter((r): r is Reservation.Times => r.type === 'TIMES')
+              .filter((r): r is ReservationDto.Times => r.type === 'TIMES')
               .map((r) => ({
                 startTime: r.startTime.format(),
                 endTime: r.endTime.format()

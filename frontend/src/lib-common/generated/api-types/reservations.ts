@@ -72,7 +72,7 @@ export interface ChildRecordOfDay {
   groupId: UUID | null
   inOtherUnit: boolean
   possibleAbsenceCategories: AbsenceCategory[]
-  reservations: Reservation[]
+  reservations: ReservationDto[]
   scheduleType: ScheduleType
 }
 
@@ -86,7 +86,7 @@ export interface ChildReservationInfo {
   groupId: UUID | null
   isInHolidayPeriod: boolean
   outOnBackupPlacement: boolean
-  reservations: Reservation[]
+  reservations: ReservationDto[]
   scheduleType: ScheduleType
 }
 
@@ -97,7 +97,7 @@ export interface ConfirmedRangeDate {
   absenceType: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
   date: LocalDate
-  reservations: Reservation[]
+  reservations: ReservationDto[]
   scheduleType: ScheduleType
 }
 
@@ -280,6 +280,32 @@ export interface ReservationChildInfo {
   preferredName: string
 }
 
+export namespace ReservationDto {
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservationDto.NoTimes
+  */
+  export interface NoTimes {
+    type: 'NO_TIMES'
+    staffCreated: boolean
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservationDto.Times
+  */
+  export interface Times {
+    type: 'TIMES'
+    endTime: LocalTime
+    staffCreated: boolean
+    startTime: LocalTime
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.ReservationDto
+*/
+export type ReservationDto = ReservationDto.NoTimes | ReservationDto.Times
+
+
 /**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
 */
@@ -305,7 +331,7 @@ export interface ReservationResponseDayChild {
   attendances: OpenTimeRange[]
   childId: UUID
   reservableTimeRange: ReservableTimeRange
-  reservations: Reservation[]
+  reservations: ReservationDto[]
   scheduleType: ScheduleType
   shiftCare: boolean
 }

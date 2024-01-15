@@ -193,10 +193,11 @@ export type TooltipProps = BaseProps & {
 
 export default React.memo(function Tooltip({
   children,
+  className,
   ...props
 }: TooltipProps) {
   return (
-    <TooltipWrapper>
+    <TooltipWrapper className={className}>
       {children}
       <TooltipWithoutAnchor {...props} />
     </TooltipWrapper>

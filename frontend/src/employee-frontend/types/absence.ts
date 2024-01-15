@@ -14,7 +14,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { parseReservation } from 'lib-common/reservations'
+import { parseReservationDto } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 export const defaultAbsenceType = 'SICKLEAVE'
@@ -71,6 +71,6 @@ const deserializeGroupMonthCalendarDayChild = (
   reservations: json.reservations.map((reservation) => ({
     ...reservation,
     created: HelsinkiDateTime.parseIso(reservation.created),
-    reservation: parseReservation(reservation.reservation)
+    reservation: parseReservationDto(reservation.reservation)
   }))
 })

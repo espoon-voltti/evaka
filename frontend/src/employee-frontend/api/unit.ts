@@ -58,7 +58,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { parseReservation } from 'lib-common/reservations'
+import { parseReservationDto } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { DaycareGroup, Unit } from '../types/unit'
@@ -835,7 +835,7 @@ export async function getUnitAttendanceReservations(
         ...day,
         children: day.children.map((child) => ({
           ...child,
-          reservations: child.reservations.map(parseReservation),
+          reservations: child.reservations.map(parseReservationDto),
           attendances: child.attendances.map(({ startTime, endTime }) => ({
             startTime: LocalTime.parseIso(startTime),
             endTime: endTime ? LocalTime.parseIso(endTime) : null

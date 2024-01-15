@@ -2479,7 +2479,8 @@ export const fi = {
       affectsOccupancy: 'Lasketaan käyttöasteeseen',
       doesNotAffectOccupancy: 'Ei lasketa käyttöasteeseen',
       inOtherUnit: 'Muussa yksikössä',
-      inOtherGroup: 'Muussa ryhmässä'
+      inOtherGroup: 'Muussa ryhmässä',
+      createdByEmployee: '*Henkilökunnan tekemä merkintä'
     },
     staffAttendance: {
       startTime: 'tulo',

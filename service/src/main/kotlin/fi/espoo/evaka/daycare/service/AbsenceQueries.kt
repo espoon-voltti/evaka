@@ -8,7 +8,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.ReservationDto
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -507,7 +507,7 @@ AND daterange(bc.start_date, bc.end_date, '[]') && :period
         .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
-    val reservation: Reservation,
+    val reservation: ReservationDto,
     val createdByEvakaUserType: EvakaUserType,
     val created: HelsinkiDateTime
 )
@@ -521,7 +521,7 @@ fun Database.Read.getGroupReservations(
 WITH all_placements AS (
   $placementsQuery
 )
-SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, r.created AS created_date
+SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, r.created AS created_date, e.type = 'EMPLOYEE' as staff_created
 FROM attendance_reservation r
 JOIN evaka_user e ON r.created_by = e.id
 WHERE between_start_and_end(:dateRange, r.date)
@@ -539,7 +539,11 @@ AND EXISTS (
             val date: LocalDate = column("date")
             val reservation =
                 ChildReservation(
-                    Reservation.fromLocalTimes(column("start_time"), column("end_time")),
+                    ReservationDto.fromLocalTimes(
+                        column("start_time"),
+                        column("end_time"),
+                        column("staff_created")
+                    ),
                     column("created_by_evaka_user_type"),
                     column("created_date")
                 )

@@ -62,7 +62,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
@@ -365,9 +364,10 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = testChild_1.id,
                             reservations =
                                 listOf(
-                                    Reservation.Times(
+                                    ReservationDto.Times(
                                         startTime = LocalTime.of(8, 0),
-                                        endTime = LocalTime.of(16, 0)
+                                        endTime = LocalTime.of(16, 0),
+                                        true
                                     )
                                 ),
                             attendances =
@@ -423,7 +423,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
                         childId = testChild_1.id,
-                        reservations = listOf(Reservation.NoTimes),
+                        reservations = listOf(ReservationDto.NoTimes(true)),
                         attendances = emptyList(),
                         absenceBillable = null,
                         absenceNonbillable = null,
@@ -511,7 +511,9 @@ class AttendanceReservationsControllerIntegrationTest :
                     UnitAttendanceReservations.ChildRecordOfDay(
                         childId = testChild_6.id,
                         reservations =
-                            listOf(Reservation.Times(LocalTime.of(9, 0), LocalTime.of(15, 0))),
+                            listOf(
+                                ReservationDto.Times(LocalTime.of(9, 0), LocalTime.of(15, 0), true)
+                            ),
                         attendances = emptyList(),
                         absenceBillable = null,
                         absenceNonbillable = null,
@@ -655,7 +657,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 UnitAttendanceReservations.ChildRecordOfDay(
                     childId = testChild_1.id,
                     reservations =
-                        listOf(Reservation.Times(LocalTime.of(19, 0), LocalTime.of(23, 59))),
+                        listOf(
+                            ReservationDto.Times(LocalTime.of(19, 0), LocalTime.of(23, 59), true)
+                        ),
                     attendances = listOf(OpenTimeRange(LocalTime.of(19, 10), LocalTime.of(23, 59))),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -676,8 +680,8 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     reservations =
                         listOf(
-                            Reservation.Times(LocalTime.of(0, 0), LocalTime.of(8, 0)),
-                            Reservation.Times(LocalTime.of(17, 30), LocalTime.of(23, 59)),
+                            ReservationDto.Times(LocalTime.of(0, 0), LocalTime.of(8, 0), true),
+                            ReservationDto.Times(LocalTime.of(17, 30), LocalTime.of(23, 59), true),
                         ),
                     attendances =
                         listOf(
@@ -702,7 +706,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 UnitAttendanceReservations.ChildRecordOfDay(
                     childId = testChild_1.id,
                     reservations =
-                        listOf(Reservation.Times(LocalTime.of(0, 0), LocalTime.of(9, 30))),
+                        listOf(ReservationDto.Times(LocalTime.of(0, 0), LocalTime.of(9, 30), true)),
                     attendances = emptyList(),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -871,13 +875,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            endTime = LocalTime.of(17, 0),
+                            true
                         ),
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(22, 0),
-                            endTime = LocalTime.of(23, 59)
+                            endTime = LocalTime.of(23, 59),
+                            true
                         )
                     ),
                 attendances =
@@ -928,13 +934,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
+                            endTime = LocalTime.of(17, 0),
+                            true
                         ),
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(21, 30),
-                            endTime = LocalTime.of(23, 59)
+                            endTime = LocalTime.of(23, 59),
+                            true
                         )
                     ),
                 attendances =
@@ -1240,13 +1248,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(8, 0),
-                            endTime = LocalTime.of(12, 0)
+                            endTime = LocalTime.of(12, 0),
+                            true
                         ),
-                        Reservation.Times(
+                        ReservationDto.Times(
                             startTime = LocalTime.of(13, 0),
-                            endTime = LocalTime.of(16, 0)
+                            endTime = LocalTime.of(16, 0),
+                            true
                         )
                     ),
                 groupId = testGroup1.id,
@@ -1262,7 +1272,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_2.id,
                 groupId = testGroup2.id,
                 scheduleType = ScheduleType.TERM_BREAK,
-                reservations = listOf(Reservation.NoTimes)
+                reservations = listOf()
             )
 
         val mondayExpectation =
@@ -1283,10 +1293,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 children = childMap,
                 childReservations =
                     listOf(
-                        child1Expectation.copy(
-                            reservations = listOf(Reservation.NoTimes),
-                            absent = true
-                        ),
+                        child1Expectation.copy(reservations = listOf(), absent = true),
                         child2Expectation
                     )
             )
@@ -1304,7 +1311,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 childReservations =
                     listOf(
                         child1Expectation.copy(
-                            reservations = listOf(Reservation.NoTimes),
+                            reservations = listOf(),
                             dailyServiceTimes =
                                 DailyServiceTimesValue.RegularTimes(
                                     validityPeriod =
@@ -1322,21 +1329,15 @@ class AttendanceReservationsControllerIntegrationTest :
                         child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE)
                     )
             )
-
-        assertConfirmedDayResult(mondayExpectation, mondayResult)
-        assertConfirmedDayResult(tuesdayExpectation, tuesdayResult)
-        assertConfirmedDayResult(fridayExpectation, fridayResult)
-    }
-
-    private fun assertConfirmedDayResult(
-        expectation: AttendanceReservationController.DailyChildReservationResult,
-        result: AttendanceReservationController.DailyChildReservationResult
-    ) {
-        assertEquals(expectation.children, result.children)
-        assertEquals(expectation.childReservations.size, result.childReservations.size)
-        result.childReservations.forEach { childReservationInfo ->
-            assertContains(expectation.childReservations, childReservationInfo)
-        }
+        assertEquals(mondayExpectation.children, mondayResult.children)
+        assertThat(mondayResult.childReservations)
+            .containsExactlyInAnyOrderElementsOf(mondayExpectation.childReservations)
+        assertEquals(tuesdayExpectation.children, tuesdayResult.children)
+        assertThat(tuesdayResult.childReservations)
+            .containsExactlyInAnyOrderElementsOf(tuesdayExpectation.childReservations)
+        assertEquals(fridayExpectation.children, fridayResult.children)
+        assertThat(fridayResult.childReservations)
+            .containsExactlyInAnyOrderElementsOf(fridayExpectation.childReservations)
     }
 
     private fun insertMobileDevice(unitId: DaycareId): MobileDeviceId {

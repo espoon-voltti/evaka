@@ -18,7 +18,7 @@ import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
-import { Reservation } from './reservations'
+import { ReservationDto } from './reservations'
 import { ScheduleType } from './placement'
 import { ShiftCareType } from './serviceneed'
 import { TerminatedPlacement } from './placement'
@@ -174,7 +174,7 @@ export interface CaretakersResponse {
 export interface ChildReservation {
   created: HelsinkiDateTime
   createdByEvakaUserType: EvakaUserType
-  reservation: Reservation
+  reservation: ReservationDto
 }
 
 /**

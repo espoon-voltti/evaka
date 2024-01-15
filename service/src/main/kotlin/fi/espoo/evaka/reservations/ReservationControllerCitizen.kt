@@ -93,7 +93,7 @@ class ReservationControllerCitizen(
                                 }
                             }
                             .toMap()
-                    val reservations: Map<Pair<ChildId, LocalDate>, List<Reservation>> =
+                    val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationDto>> =
                         reservationData
                             .flatMap { d ->
                                 d.children.map { c ->
@@ -386,7 +386,7 @@ data class ReservationResponseDayChild(
     val scheduleType: ScheduleType,
     val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
     val absence: AbsenceInfo?,
-    val reservations: List<Reservation>,
+    val reservations: List<ReservationDto>,
     val attendances: List<OpenTimeRange>,
     val reservableTimeRange: ReservableTimeRange
 )
