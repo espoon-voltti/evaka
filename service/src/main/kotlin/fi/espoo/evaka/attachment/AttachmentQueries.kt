@@ -145,26 +145,25 @@ fun Database.Transaction.deleteAttachment(id: AttachmentId) {
     this.createUpdate("DELETE FROM attachment WHERE id = :id").bind("id", id).execute()
 }
 
-fun Database.Transaction.deleteAttachmentsByApplicationAndType(
+fun Database.Transaction.orphanAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: AttachmentType,
     userId: EvakaUserId
-): List<AttachmentId> {
-    return this.createQuery(
+): List<AttachmentId> =
+    createQuery(
             """
-            DELETE FROM attachment 
+            UPDATE attachment
+            SET application_id = NULL
             WHERE application_id = :applicationId 
             AND type = :type 
             AND uploaded_by = :userId
             RETURNING id
         """
-                .trimIndent()
         )
         .bind("applicationId", applicationId)
         .bind("type", type)
         .bind("userId", userId)
         .toList<AttachmentId>()
-}
 
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(

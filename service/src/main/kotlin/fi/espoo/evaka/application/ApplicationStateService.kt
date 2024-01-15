@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -17,7 +16,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
 import fi.espoo.evaka.attachment.AttachmentType
-import fi.espoo.evaka.attachment.deleteAttachmentsByApplicationAndType
+import fi.espoo.evaka.attachment.dissociateAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
@@ -50,7 +49,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
@@ -80,12 +78,8 @@ class ApplicationStateService(
     private val decisionService: DecisionService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val documentClient: DocumentService,
-    private val featureConfig: FeatureConfig,
-    env: BucketEnv
+    private val featureConfig: FeatureConfig
 ) {
-    private val filesBucket = env.attachments
-
     fun initializeApplicationForm(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -821,23 +815,19 @@ class ApplicationStateService(
         val updatedForm = original.form.update(update.form)
 
         if (!updatedForm.preferences.urgent) {
-            val deleted =
-                tx.deleteAttachmentsByApplicationAndType(
-                    applicationId,
-                    AttachmentType.URGENCY,
-                    user.evakaUserId
-                )
-            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+            tx.dissociateAttachmentsByApplicationAndType(
+                applicationId,
+                AttachmentType.URGENCY,
+                user.evakaUserId
+            )
         }
 
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
-            val deleted =
-                tx.deleteAttachmentsByApplicationAndType(
-                    applicationId,
-                    AttachmentType.EXTENDED_CARE,
-                    user.evakaUserId
-                )
-            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+            tx.dissociateAttachmentsByApplicationAndType(
+                applicationId,
+                AttachmentType.EXTENDED_CARE,
+                user.evakaUserId
+            )
         }
 
         if (asDraft) {
@@ -881,23 +871,19 @@ class ApplicationStateService(
         validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = false)
 
         if (!updatedForm.preferences.urgent) {
-            val deleted =
-                tx.deleteAttachmentsByApplicationAndType(
-                    applicationId,
-                    AttachmentType.URGENCY,
-                    userId
-                )
-            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+            tx.dissociateAttachmentsByApplicationAndType(
+                applicationId,
+                AttachmentType.URGENCY,
+                userId
+            )
         }
 
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
-            val deleted =
-                tx.deleteAttachmentsByApplicationAndType(
-                    applicationId,
-                    AttachmentType.EXTENDED_CARE,
-                    userId
-                )
-            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+            tx.dissociateAttachmentsByApplicationAndType(
+                applicationId,
+                AttachmentType.EXTENDED_CARE,
+                userId
+            )
         }
 
         tx.updateApplicationContents(

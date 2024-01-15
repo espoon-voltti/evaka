@@ -249,7 +249,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { it.removeOldDrafts(clock, attachmentsController::deleteAttachment) }
+        db.transaction { it.removeOldDrafts(clock) }
     }
 
     fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {

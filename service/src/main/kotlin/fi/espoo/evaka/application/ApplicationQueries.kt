@@ -17,7 +17,6 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
@@ -1105,22 +1104,10 @@ fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boo
     createUpdate(sql).bind("verified", verified).bind("id", id).execute()
 }
 
-fun Database.Transaction.deleteApplication(id: ApplicationId) {
-    // language=SQL
-    val sql =
-        """
-        DELETE FROM attachment WHERE application_id = :id;
-        DELETE FROM application WHERE id = :id;
-        """
-            .trimIndent()
+fun Database.Transaction.deleteApplication(id: ApplicationId) =
+    createUpdate("DELETE FROM application WHERE id = :id").bind("id", id).execute()
 
-    createUpdate(sql).bind("id", id).execute()
-}
-
-fun Database.Transaction.removeOldDrafts(
-    clock: EvakaClock,
-    deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit
-) {
+fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
     // ~2 months
     val thresholdDays = 60
 
@@ -1145,17 +1132,6 @@ fun Database.Transaction.removeOldDrafts(
             .bind("applicationIds", applicationIds)
             .execute()
 
-        applicationIds.forEach { applicationId ->
-            val attachmentIds =
-                createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
-                    .bind("id", applicationId)
-                    .executeAndReturnGeneratedKeys()
-                    .toList<AttachmentId>()
-
-            attachmentIds.forEach { attachmentId -> deleteAttachment(this, attachmentId) }
-        }
-
-        // language=SQL
         createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
             .bind("applicationIds", applicationIds)
             .execute()
