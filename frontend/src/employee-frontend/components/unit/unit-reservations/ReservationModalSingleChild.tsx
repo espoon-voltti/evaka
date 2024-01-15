@@ -269,13 +269,15 @@ function resetTimes(
           state: []
         },
         weeklyTimes: [],
-        irregularTimes: [...selectedRange.dates()].map((date) => ({
-          date,
-          times: {
-            branch: 'timeRanges',
-            state: [{ startTime: '', endTime: '' }]
-          }
-        }))
+        irregularTimes: [...selectedRange.dates()]
+          .filter((date) => includedWeekDays.includes(date.getIsoDayOfWeek()))
+          .map((date) => ({
+            date,
+            times: {
+              branch: 'timeRanges',
+              state: [{ startTime: '', endTime: '' }]
+            }
+          }))
       }
   }
 }
