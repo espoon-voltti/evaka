@@ -2452,7 +2452,16 @@ export const fi = {
             NONBILLABLE: 'Poissa maksuttomasta toiminnasta, syy:'
           }
         },
-        overlapWarning: 'Tarkista päällekkäisyys'
+        overlapWarning: 'Tarkista päällekkäisyys',
+        absenceWarning: 'Tarkista poissaolo',
+        extraNonbillableAbsence:
+          'Läsnäoloaikojen mukaan lapsi oli läsnä maksuttomassa toiminnassa.',
+        missingNonbillableAbsence:
+          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksuttomassa toiminnassa.',
+        extraBillableAbsence:
+          'Läsnäoloaikojen mukaan lapsi oli läsnä maksullisessa varhaiskasvatuksessa.',
+        missingBillableAbsence:
+          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksullisessa varhaiskasvatuksessa.'
       },
       reservationNoTimes: 'Läsnä',
       missingHolidayReservation: 'Lomavaraus puuttuu',

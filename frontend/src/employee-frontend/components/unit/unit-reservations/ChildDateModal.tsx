@@ -40,7 +40,9 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -57,7 +59,10 @@ import colors from 'lib-customizations/common'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
-import { upsertChildDatePresenceMutation } from '../queries'
+import {
+  childDateExpectedAbsencesQuery,
+  upsertChildDatePresenceMutation
+} from '../queries'
 
 export interface ChildDateEditorTarget {
   date: LocalDate
@@ -207,6 +212,25 @@ export default React.memo(function ChildDateModal({
   const reservationElems = useFormElems(reservations)
   const attendanceElems = useFormElems(attendances)
 
+  const debouncedAttendances = useDebounce(
+    attendances.isValid() &&
+      attendances.value().every(({ endTime }) => endTime !== null)
+      ? attendances.value()
+      : null,
+    750
+  )
+  const expectedAbsencesEnabled =
+    date.isBefore(LocalDate.todayInHelsinkiTz()) &&
+    debouncedAttendances !== null
+  const expectedAbsences = useQueryResult(
+    childDateExpectedAbsencesQuery({
+      childId: child.id,
+      date,
+      attendances: debouncedAttendances ?? []
+    }),
+    { enabled: expectedAbsencesEnabled }
+  )
+
   return (
     <MutateFormModal
       title={date.formatExotic('EEEEEE d.M.yyyy')}
@@ -345,6 +369,48 @@ export default React.memo(function ChildDateModal({
             otherAbsence={nonBillableAbsence.value()}
           />
         )}
+        {expectedAbsencesEnabled &&
+          expectedAbsences.isSuccess &&
+          expectedAbsences.value !== null && (
+            <>
+              {expectedAbsences.value.includes('NONBILLABLE') &&
+                nonBillableAbsence.value() === undefined && (
+                  <AbsenceWarning
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .missingNonbillableAbsence
+                    }
+                  />
+                )}
+              {!expectedAbsences.value.includes('NONBILLABLE') &&
+                nonBillableAbsence.value() !== undefined && (
+                  <AbsenceWarning
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .extraNonbillableAbsence
+                    }
+                  />
+                )}
+              {expectedAbsences.value.includes('BILLABLE') &&
+                billableAbsence.value() === undefined && (
+                  <AbsenceWarning
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .missingBillableAbsence
+                    }
+                  />
+                )}
+              {!expectedAbsences.value.includes('BILLABLE') &&
+                billableAbsence.value() !== undefined && (
+                  <AbsenceWarning
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .extraBillableAbsence
+                    }
+                  />
+                )}
+            </>
+          )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
@@ -428,6 +494,24 @@ const AbsenceForm = React.memo(function AbsenceForm({
         onClick={() => bind.update((s) => ({ ...s, domValue: '' }))}
       />
     </FixedSpaceRow>
+  )
+})
+
+const AbsenceWarning = React.memo(function AbsenceWarning({
+  message
+}: {
+  message: string
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <div>
+      <AlertBox
+        title={i18n.unit.attendanceReservations.childDateModal.absenceWarning}
+        message={message}
+        thin
+        noMargin
+      />
+    </div>
   )
 })
 
