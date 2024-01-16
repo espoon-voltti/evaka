@@ -15,13 +15,16 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -51,13 +54,19 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
+    @Autowired private lateinit var placementController: PlacementController
 
     private val child = testChild_1
     private val parent = testAdult_1
     private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
+    private val admin =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     private val daycareId = testDaycare.id
     private val daycare2Id = testDaycare2.id
+
+    private val daycareGroup = DevDaycareGroup(daycareId = daycareId)
+    private val daycareGroup2 = DevDaycareGroup(daycareId = daycare2Id)
 
     private val today = LocalDate.now()
 
@@ -68,8 +77,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insert(DevDaycareGroup(daycareId = daycareId))
-            tx.insert(DevDaycareGroup(daycareId = daycare2Id))
+            tx.insert(daycareGroup)
+            tx.insert(daycareGroup2)
             tx.insertGuardian(parent.id, child.id)
         }
     }
@@ -363,6 +372,17 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             placementBefore.additionalPlacements.map { it.type }
         )
 
+        val allPlacementsBefore = placementBefore.placements + placementBefore.additionalPlacements
+        val groupPlacementsBefore = getChildGroupPlacements(child.id)
+        assertEquals(3, groupPlacementsBefore.size)
+        allPlacementsBefore.forEach { placement ->
+            val groupPlacements =
+                groupPlacementsBefore.filter { it.daycarePlacementId == placement.id }
+            assertEquals(1, groupPlacements.size)
+            assertEquals(placement.startDate, groupPlacements[0].startDate)
+            assertEquals(placement.endDate, groupPlacements[0].endDate)
+        }
+
         val placementTerminationDate = today.plusWeeks(1)
         terminatePlacements(
             child.id,
@@ -400,12 +420,36 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(placementTerminationDate.plusDays(1), remainderOfPreschool.startDate)
         assertEquals(endPreschool, remainderOfPreschool.endDate)
 
+        val childGroupPlacements = getChildGroupPlacements(child.id)
+        assertEquals(3, childGroupPlacements.size)
+
+        val currentGroupPlacements =
+            childGroupPlacements.filter { it.daycarePlacementId == currentPlacement.id }
+        assertNotNull(currentGroupPlacements)
+        assertEquals(1, currentGroupPlacements.size)
+        assertEquals(currentPlacement.startDate, currentGroupPlacements[0].startDate)
+        assertEquals(currentPlacement.endDate, currentGroupPlacements[0].endDate)
+
+        val remainderGroupPlacements =
+            childGroupPlacements.filter { it.daycarePlacementId == remainderOfPreschool.id }
+        assertNotNull(remainderGroupPlacements)
+        assertEquals(1, remainderGroupPlacements.size)
+        assertEquals(remainderOfPreschool.startDate, remainderGroupPlacements[0].startDate)
+        assertEquals(remainderOfPreschool.endDate, remainderGroupPlacements[0].endDate)
+
         // the next PRESCHOOL_DAYCARE is simply converted to PRESCHOOL
         val nextPreschool = first.placements[2]
         assertNull(nextPreschool.terminationRequestedDate)
         assertEquals(PlacementType.PRESCHOOL, nextPreschool.type)
         assertEquals(startNextPreschoolDaycare, nextPreschool.startDate)
         assertEquals(endNextPreschoolDaycare, nextPreschool.endDate)
+
+        val nextGroupPlacements =
+            childGroupPlacements.filter { it.daycarePlacementId == nextPreschool.id }
+        assertNotNull(nextGroupPlacements)
+        assertEquals(1, nextGroupPlacements.size)
+        assertEquals(nextPreschool.startDate, nextGroupPlacements[0].startDate)
+        assertEquals(nextPreschool.endDate, nextGroupPlacements[0].endDate)
 
         // when terminated again with an earlier date
         val terminationDate2 = placementTerminationDate.minusDays(5)
@@ -590,21 +634,43 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         null,
                         null
                     )
+                    it.insertTestDaycareGroupPlacement(
+                        daycarePlacementId = id,
+                        groupId = daycareGroup.id,
+                        startDate = startPreschool,
+                        endDate = endPreschool
+                    )
                 }
             it.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = startDaycare,
-                endDate = endDaycare,
-                type = PlacementType.DAYCARE
-            )
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = startDaycare,
+                    endDate = endDaycare,
+                    type = PlacementType.DAYCARE
+                )
+                .let { id ->
+                    it.insertTestDaycareGroupPlacement(
+                        daycarePlacementId = id,
+                        groupId = daycareGroup.id,
+                        startDate = startDaycare,
+                        endDate = endDaycare
+                    )
+                }
             it.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = startNextPreschoolDaycare,
-                endDate = endNextPreschoolDaycare,
-                type = PlacementType.PRESCHOOL_DAYCARE
-            )
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = startNextPreschoolDaycare,
+                    endDate = endNextPreschoolDaycare,
+                    type = PlacementType.PRESCHOOL_DAYCARE
+                )
+                .let { id ->
+                    it.insertTestDaycareGroupPlacement(
+                        daycarePlacementId = id,
+                        groupId = daycareGroup.id,
+                        startDate = startNextPreschoolDaycare,
+                        endDate = endNextPreschoolDaycare
+                    )
+                }
         }
     }
 
@@ -851,5 +917,14 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         return placementControllerCitizen
             .getPlacements(dbInstance(), authenticatedParent, RealEvakaClock(), childId)
             .placements
+    }
+
+    private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
+        return placementController
+            .getPlacements(dbInstance(), admin, RealEvakaClock(), childId = childId)
+            .placements
+            .toList()
+            .flatMap { it.groupPlacements }
+            .filter { it.id != null }
     }
 }

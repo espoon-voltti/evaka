@@ -218,21 +218,34 @@ fun terminateBilledDaycare(
             }
         } else {
             tx.updatePlacementEndDate(placement.id, terminationDate)
+            tx.clearGroupPlacementsAfter(placement.id, terminationDate)
             tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
             tx.deleteServiceNeedsFromPlacementAfter(placement.id, terminationDate)
             if (adjacentPlacement != null) {
                 tx.updatePlacementStartDate(adjacentPlacement.id, terminationDate.plusDays(1))
+                tx.clearGroupPlacementsBefore(adjacentPlacement.id, terminationDate.plusDays(1))
             } else {
+                val groupPlacement =
+                    tx.getPlacementGroupPlacements(placement.id).firstOrNull { it.id != null }
                 // create new placement without daycare for the remaining period
                 // with placement type to PRESCHOOL / PREPARATORY
-                tx.insertPlacement(
-                    type = newPlacementType,
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = terminationDate.plusDays(1),
-                    endDate = placement.endDate,
-                    placeGuarantee = false
-                )
+                val newPlacement =
+                    tx.insertPlacement(
+                        type = newPlacementType,
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = terminationDate.plusDays(1),
+                        endDate = placement.endDate,
+                        placeGuarantee = false
+                    )
+                groupPlacement?.groupId?.let { groupId ->
+                    tx.createGroupPlacement(
+                        placementId = newPlacement.id,
+                        groupId = groupId,
+                        startDate = newPlacement.startDate,
+                        endDate = newPlacement.endDate
+                    )
+                }
             }
         }
     }

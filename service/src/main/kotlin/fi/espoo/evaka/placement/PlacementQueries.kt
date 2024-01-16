@@ -694,6 +694,27 @@ fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPl
     return createQuery(sql).bind("childId", childId).toList<DaycareGroupPlacement>()
 }
 
+fun Database.Read.getPlacementGroupPlacements(
+    placementId: PlacementId
+): List<DaycareGroupPlacement> {
+    val sql =
+        """
+        SELECT
+            gp.id,
+            gp.daycare_group_id AS group_id,
+            dg.name as group_name,
+            gp.daycare_placement_id,
+            gp.start_date,
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+        WHERE gp.daycare_placement_id = :placementId
+        """
+            .trimIndent()
+
+    return createQuery(sql).bind("placementId", placementId).toList<DaycareGroupPlacement>()
+}
+
 fun Database.Read.getGroupPlacementChildren(
     groupId: GroupId,
     range: FiniteDateRange
