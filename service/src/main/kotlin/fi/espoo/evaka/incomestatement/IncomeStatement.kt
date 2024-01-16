@@ -7,10 +7,12 @@ package fi.espoo.evaka.incomestatement
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.attachment.associateAttachments
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -143,7 +145,7 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
 fun createIncomeStatement(
     dbc: Database.Connection,
     incomeStatementPersonId: PersonId,
-    attachmentUploadedByPersonId: PersonId,
+    uploadedBy: AuthenticatedUser.Citizen,
     body: IncomeStatementBody
 ): IncomeStatementId {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
@@ -160,15 +162,15 @@ fun createIncomeStatement(
         val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
         when (body) {
             is IncomeStatementBody.Income ->
-                tx.associateAttachments(
-                    incomeStatementPersonId,
-                    incomeStatementId,
+                tx.associateOrphanAttachments(
+                    uploadedBy.evakaUserId,
+                    AttachmentParent.IncomeStatement(incomeStatementId),
                     body.attachmentIds
                 )
             is IncomeStatementBody.ChildIncome -> {
-                tx.associateAttachments(
-                    attachmentUploadedByPersonId,
-                    incomeStatementId,
+                tx.associateOrphanAttachments(
+                    uploadedBy.evakaUserId,
+                    AttachmentParent.IncomeStatement(incomeStatementId),
                     body.attachmentIds
                 )
             }

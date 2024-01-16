@@ -5,8 +5,9 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.attachment.associateAttachments
-import fi.espoo.evaka.attachment.dissociateAllPersonsAttachments
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
+import fi.espoo.evaka.attachment.dissociateAttachmentsOfParent
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
@@ -223,7 +224,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id
                     )
                 }
-                createIncomeStatement(dbc, user.id, user.id, body)
+                createIncomeStatement(dbc, user.id, user, body)
             }
         Audit.IncomeStatementCreate.log(targetId = user.id, objectId = id)
     }
@@ -247,7 +248,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId
                     )
                 }
-                createIncomeStatement(dbc, childId, user.id, body)
+                createIncomeStatement(dbc, childId, user, body)
             }
         Audit.IncomeStatementCreateForChild.log(targetId = user.id, objectId = id)
     }
@@ -273,12 +274,13 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
-                            tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                            val parent = AttachmentParent.IncomeStatement(incomeStatementId)
+                            tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
                             when (body) {
                                 is IncomeStatementBody.Income ->
-                                    tx.associateAttachments(
-                                        user.id,
-                                        incomeStatementId,
+                                    tx.associateOrphanAttachments(
+                                        user.evakaUserId,
+                                        parent,
                                         body.attachmentIds
                                     )
                                 else -> Unit
@@ -319,12 +321,13 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
-                            tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                            val parent = AttachmentParent.IncomeStatement(incomeStatementId)
+                            tx.dissociateAttachmentsOfParent(user.evakaUserId, parent)
                             when (body) {
                                 is IncomeStatementBody.ChildIncome ->
-                                    tx.associateAttachments(
-                                        user.id,
-                                        incomeStatementId,
+                                    tx.associateOrphanAttachments(
+                                        user.evakaUserId,
+                                        parent,
                                         body.attachmentIds
                                     )
                                 else -> Unit

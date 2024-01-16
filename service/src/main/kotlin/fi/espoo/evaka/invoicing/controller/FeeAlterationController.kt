@@ -6,7 +6,8 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
-import fi.espoo.evaka.attachment.associateFeeAlterationAttachments
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.deleteAttachment
 import fi.espoo.evaka.invoicing.data.deleteFeeAlteration
 import fi.espoo.evaka.invoicing.data.getFeeAlteration
@@ -109,9 +110,9 @@ class FeeAlterationController(
                     clock,
                     feeAlteration.copy(id = id, updatedBy = user.evakaUserId)
                 )
-                tx.associateFeeAlterationAttachments(
+                tx.associateOrphanAttachments(
                     user.evakaUserId,
-                    id,
+                    AttachmentParent.FeeAlteration(id),
                     feeAlteration.attachments.map { it.id }
                 )
                 asyncJobRunner.plan(

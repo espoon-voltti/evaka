@@ -37,7 +37,7 @@ sealed class AttachmentParent {
 
     data class FeeAlteration(val feeAlterationId: FeeAlterationId) : AttachmentParent()
 
-    object None : AttachmentParent()
+    data object None : AttachmentParent()
 }
 
 data class Attachment(

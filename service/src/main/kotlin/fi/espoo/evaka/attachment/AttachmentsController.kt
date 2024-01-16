@@ -400,21 +400,12 @@ class AttachmentsController(
         val count =
             db.read {
                 when (attachTo) {
-                    AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)
-                    is AttachmentParent.Application ->
-                        it.userApplicationAttachmentCount(attachTo.applicationId, user.evakaUserId)
-                    is AttachmentParent.IncomeStatement ->
-                        it.userIncomeStatementAttachmentCount(
-                            attachTo.incomeStatementId,
-                            user.evakaUserId
-                        )
-                    is AttachmentParent.Income ->
-                        it.userIncomeAttachmentCount(attachTo.incomeId, user.evakaUserId)
-                    is AttachmentParent.PedagogicalDocument ->
-                        it.userPedagogicalDocumentCount(
-                            attachTo.pedagogicalDocumentId,
-                            user.evakaUserId
-                        )
+                    is AttachmentParent.None,
+                    is AttachmentParent.Application,
+                    is AttachmentParent.IncomeStatement,
+                    is AttachmentParent.Income,
+                    is AttachmentParent.PedagogicalDocument, ->
+                        it.userAttachmentCount(user.evakaUserId, attachTo)
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
                     is AttachmentParent.FeeAlteration -> Integer.MAX_VALUE

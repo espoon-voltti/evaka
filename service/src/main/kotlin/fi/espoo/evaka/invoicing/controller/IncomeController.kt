@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.attachment.associateIncomeAttachments
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.deleteAttachment
 import fi.espoo.evaka.invoicing.data.deleteIncome
 import fi.espoo.evaka.invoicing.data.getIncome
@@ -138,9 +139,9 @@ class IncomeController(
                     val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                     tx.splitEarlierIncome(validIncome.personId, period)
                     tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
-                    tx.associateIncomeAttachments(
+                    tx.associateOrphanAttachments(
                         user.evakaUserId,
-                        id,
+                        AttachmentParent.Income(id),
                         income.attachments.map { it.id }
                     )
                     asyncJobRunner.plan(
