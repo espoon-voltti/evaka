@@ -17,7 +17,7 @@ import org.jdbi.v3.json.Json
 
 data class GroupInfo(val id: GroupId, val name: String)
 
-data class IndividualChild(val id: ChildId, val name: String, val groupId: GroupId)
+data class IndividualChild(val id: ChildId, val firstName: String,val lastName: String, val groupId: GroupId)
 
 data class CalendarEvent(
     val id: CalendarEventId,
@@ -76,5 +76,6 @@ data class CalendarEventTimeReservationForm(
 data class CalendarEventUpdateForm(
     val title: String,
     val description: String,
+    val period: FiniteDateRange,
     val tree: Map<GroupId, Set<ChildId>?>? = null
 )

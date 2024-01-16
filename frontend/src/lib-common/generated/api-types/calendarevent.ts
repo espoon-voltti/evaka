@@ -81,6 +81,7 @@ export interface CalendarEventTimeReservationForm {
 */
 export interface CalendarEventUpdateForm {
   description: string
+  period: FiniteDateRange
   title: string
   tree: Record<UUID, UUID[] | null> | null
 }
@@ -107,9 +108,10 @@ export interface GroupInfo {
 * Generated from fi.espoo.evaka.calendarevent.IndividualChild
 */
 export interface IndividualChild {
+  firstName: string
   groupId: UUID
   id: UUID
-  name: string
+  lastName: string
 }
 
 

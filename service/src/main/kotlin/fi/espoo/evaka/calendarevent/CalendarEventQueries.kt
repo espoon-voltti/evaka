@@ -26,7 +26,8 @@ fun Database.Read.getCalendarEventsByUnit(
 private fun Database.Read.getCalendarEventsQuery(
     calendarEventId: CalendarEventId? = null,
     unitId: DaycareId? = null,
-    range: FiniteDateRange? = null
+    range: FiniteDateRange? = null,
+    groupId: GroupId? = null
 ) =
     @Suppress("DEPRECATION")
     this.createQuery(
@@ -42,7 +43,8 @@ SELECT
     (
         coalesce(jsonb_agg(DISTINCT jsonb_build_object(
             'id', cea.child_id,
-            'name', concat(p.first_name, ' ', p.last_name),
+            'firstName', p.first_name,
+            'lastName', p.last_name,
             'groupId', cea.group_id
         )) FILTER (WHERE cea.child_id IS NOT NULL), '[]'::jsonb)
     ) AS individual_children,
@@ -60,7 +62,11 @@ JOIN calendar_event ce ON cea.calendar_event_id = ce.id
 LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN person p ON p.id = cea.child_id
 LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
-WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId) AND (:unitId IS NULL OR cea.unit_id = :unitId) AND (:range IS NULL OR ce.period && :range) AND (cea.child_id IS NULL OR EXISTS(
+WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId) 
+AND (:unitId IS NULL OR cea.unit_id = :unitId) 
+AND (:groupId IS NULL OR cea.group_id = :groupId)
+AND (:range IS NULL OR ce.period && :range) 
+AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
     SELECT 1 FROM generate_series(lower(ce.period), upper(ce.period) - INTERVAL '1 day', '1 day') d
@@ -75,6 +81,7 @@ GROUP BY ce.id, cea.unit_id
         )
         .bind("calendarEventId", calendarEventId)
         .bind("unitId", unitId)
+        .bind("groupId", groupId)
         .bind("range", range)
 
 fun Database.Transaction.createCalendarEvent(
@@ -179,6 +186,9 @@ fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
 fun Database.Read.getCalendarEventById(id: CalendarEventId) =
     getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
 
+fun Database.Read.getCalendarEventsByGroup(groupId: GroupId) =
+    getCalendarEventsQuery(groupId = groupId).toList<CalendarEvent>()
+
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
     @Suppress("DEPRECATION")
     this.createUpdate(
@@ -242,6 +252,24 @@ WHERE id = :eventId
         """
                 .trimIndent()
         )
+        .bind("eventId", eventId)
+        .bind("modifiedAt", modifiedAt)
+        .bindKotlin(updateForm)
+        .updateExactlyOne()
+
+fun Database.Transaction.updateCalendarEventWithPeriod(
+    eventId: CalendarEventId,
+    modifiedAt: HelsinkiDateTime,
+    updateForm: CalendarEventUpdateForm
+) =
+    this.createUpdate(
+        """
+UPDATE calendar_event
+SET title = :title, description = :description, period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
+WHERE id = :eventId
+        """
+            .trimIndent()
+    )
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .bindKotlin(updateForm)

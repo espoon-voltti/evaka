@@ -249,6 +249,7 @@ enum class Audit(
     FosterParentUpdateRelationship,
     FuturePreschoolers,
     GuardianChildrenRead,
+    GroupCalendarEventsRead,
     GroupNoteCreate,
     GroupNoteUpdate,
     GroupNoteDelete,

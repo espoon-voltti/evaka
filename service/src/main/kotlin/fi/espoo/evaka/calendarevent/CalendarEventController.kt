@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,6 +33,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
@@ -72,6 +72,36 @@ class CalendarEventController(private val accessControl: AccessControl) {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = unitId,
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
+                )
+            }
+    }
+
+    @GetMapping("/units/{unitId}/groups/{groupId}/discussion-surveys")
+    fun getGroupCalendarEventsWithTimes(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable groupId: GroupId
+    ): List<CalendarEvent> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CALENDAR_EVENTS,
+                        unitId
+                    )
+                    tx.getCalendarEventsByGroup(groupId).filter { calendarEvent ->
+                        calendarEvent.times.isNotEmpty()
+                    }
+                }
+            }
+            .also {
+                Audit.GroupCalendarEventsRead.log(
+                    targetId = groupId,
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -238,7 +268,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             childId = childId
                         )
                     }
-                    tx.updateCalendarEvent(id, clock.now(), body)
+                    tx.updateCalendarEventWithPeriod(id, clock.now(), body)
                     tx.deleteCalendarEventAttendees(id)
                     tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }

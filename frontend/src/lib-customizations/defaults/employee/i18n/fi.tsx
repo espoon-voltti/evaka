@@ -2306,6 +2306,33 @@ export const fi = {
             'Lyhyet ohjeet huoltajalle, esim. kellonaika, mitä pakata mukaan',
           missingPlacementsWarning:
             'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.'
+        },
+        discussionReservation: {
+          discussionPageTitle: 'Keskustelut',
+          discussionPageDescription:
+            'Tällä sivulla voit luoda ja seurata kyselyjä, joilla kysytään huoltajille sopivia keskusteluaikoja.',
+          surveyCreate: 'Uusi keskustelukysely',
+          surveyBasicsTitle: 'Perustiedot',
+          surveyPeriod: 'Kyselyn kesto',
+          surveySubject: 'Keskustelun aihe',
+          surveyInvitees: 'Keskustelujen osallistujat',
+          surveySummary: 'Lisätietoja huoltajalle',
+          surveySummaryInfo:
+            'Tämä teksti näytetään huoltajalle kyselyn yhteydessä. Voit kertoa siinä lisätietoja keskusteluista, esimerkiksi saapumisohjeet tai keskusteluun varattavan ajan.',
+          surveySubjectPlaceholder: 'Enintään 30 merkkiä',
+          surveySummaryPlaceholder: 'Kirjoita lisätiedot',
+          surveyDiscussionTimesTitle: 'Keskusteluajat',
+          surveyInviteeTitle: 'Osallistujat',
+          editSurveyButton: 'Muokkaa',
+          createSurveyButton: 'Lähetä keskusteluajat',
+          saveSurveyButton: 'Tallenna muutokset',
+          deleteSurveyButton: 'Poista',
+          cancelButton: 'Peruuta',
+          surveyModifiedAt: 'Muokattu',
+          surveyStatus: {
+            SENT: 'Lähetetty',
+            ENDED: 'Päättynyt'
+          }
         }
       }
     },

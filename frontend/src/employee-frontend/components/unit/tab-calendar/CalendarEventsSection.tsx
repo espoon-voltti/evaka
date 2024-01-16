@@ -46,6 +46,7 @@ import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
 import {
@@ -138,6 +139,10 @@ const EventLinkContainer = styled.div`
   &.type-partial-group {
     border-color: ${(p) => p.theme.colors.accents.a9pink};
   }
+`
+
+const DiscussionLink = styled(Link)`
+  font-weight: ${fontWeights.semibold};
 `
 
 type SpecifierType = 'daycare' | 'group' | 'partial-group'
@@ -274,7 +279,17 @@ export default React.memo(function CalendarEventsSection({
         />
       )}
 
-      <FlexRow justifyContent="flex-end">
+      <FlexRow justifyContent={groupId ? 'space-between' : 'flex-end'}>
+        {featureFlags.discussionReservations && !!groupId && (
+          <DiscussionLink
+            to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`}
+          >
+            {
+              i18n.unit.calendar.events.discussionReservation
+                .discussionPageTitle
+            }
+          </DiscussionLink>
+        )}
         <AddButton
           flipped
           text={i18n.unit.calendar.events.createEvent}
@@ -729,7 +744,9 @@ const getLongAttendees = (
   return groups
     .flatMap(
       ({ name, id }) =>
-        childGroupIds[id]?.map((child) => `${name}/${child.name}`) ?? [name]
+        childGroupIds[id]?.map(
+          (child) => `${name}/${child.lastName} ${child.firstName}`
+        ) ?? [name]
     )
     .join(', ')
 }
