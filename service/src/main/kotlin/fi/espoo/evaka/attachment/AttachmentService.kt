@@ -5,10 +5,12 @@
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -26,6 +28,27 @@ class AttachmentService(
         asyncJobRunner.registerHandler<AsyncJob.DeleteAttachment> { dbc, _, job ->
             deleteAttachment(dbc, job.attachmentId)
         }
+    }
+
+    /** Saves an attachment to both S3 and the database */
+    fun saveOrphanAttachment(
+        dbc: Database.Connection,
+        user: AuthenticatedUser,
+        fileName: String,
+        bytes: ByteArray,
+        contentType: String,
+        type: AttachmentType? = null,
+    ): AttachmentId {
+        val id =
+            dbc.transaction { tx ->
+                tx.insertAttachment(user, fileName, contentType, AttachmentParent.None, type = type)
+            }
+        dbc.close() // avoid hogging the connection while we access S3
+        documentClient.upload(
+            filesBucket,
+            Document(name = id.toString(), bytes = bytes, contentType = contentType)
+        )
+        return id
     }
 
     /**

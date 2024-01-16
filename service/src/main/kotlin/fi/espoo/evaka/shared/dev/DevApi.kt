@@ -122,7 +122,6 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
@@ -1174,15 +1173,14 @@ RETURNING id
     ): String {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
-                    val id = UUID.randomUUID()
-                    tx.insertAttachment(
-                        AuthenticatedUser.Employee(employeeId, emptySet()),
-                        AttachmentId(id),
-                        file.name,
-                        file.contentType ?: "image/jpeg",
-                        AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
-                        type = null
-                    )
+                    val id =
+                        tx.insertAttachment(
+                            AuthenticatedUser.Employee(employeeId, emptySet()),
+                            file.name,
+                            file.contentType ?: "image/jpeg",
+                            AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
+                            type = null
+                        )
                     documentClient.upload(
                         filesBucket,
                         Document(

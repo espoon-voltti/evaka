@@ -86,29 +86,29 @@ data class AttachmentForeignKeys(
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
-    id: AttachmentId,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
     type: AttachmentType?
-) {
+): AttachmentId {
     check(AttachmentForeignKeys.idFieldCount == 7) {
         "Unexpected AttachmentForeignKeys field count"
     }
     require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
+        INSERT INTO attachment (name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
+        VALUES (:name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
+        RETURNING id
         """
-    this.createUpdate(sql)
-        .bind("id", id)
+    return this.createUpdate(sql)
         .bind("name", name)
         .bind("contentType", contentType)
         .bindKotlin(AttachmentForeignKeys(attachTo))
         .bind("userId", user.evakaUserId)
         .bind("type", type ?: "")
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<AttachmentId>()
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
@@ -141,11 +141,7 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
             )
         }
 
-fun Database.Transaction.deleteAttachment(id: AttachmentId) {
-    this.createUpdate("DELETE FROM attachment WHERE id = :id").bind("id", id).execute()
-}
-
-fun Database.Transaction.orphanAttachmentsByApplicationAndType(
+fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: AttachmentType,
     userId: EvakaUserId

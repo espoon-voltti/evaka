@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -20,7 +19,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
 import java.time.LocalDateTime
-import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
@@ -105,7 +103,6 @@ class AttachmentAccessControlTest : AccessControlTest() {
 
     private fun insertApplicationAttachment(user: AuthenticatedUser) =
         db.transaction { tx ->
-            val attachmentId = AttachmentId(UUID.randomUUID())
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val applicationId =
@@ -116,12 +113,10 @@ class AttachmentAccessControlTest : AccessControlTest() {
                 )
             tx.insertAttachment(
                 user,
-                attachmentId,
                 "test.pdf",
                 "application/pdf",
                 AttachmentParent.Application(applicationId),
                 type = null
             )
-            attachmentId
         }
 }
