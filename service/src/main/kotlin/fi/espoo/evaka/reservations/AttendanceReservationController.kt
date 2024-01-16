@@ -261,12 +261,18 @@ class AttendanceReservationController(
             }
     }
 
-    @PostMapping("/child-date-expected-absences")
-    fun postChildDatePresenceAbsenceCheck(
+    data class ExpectedAbsencesRequest(
+        val childId: ChildId,
+        val date: LocalDate,
+        val attendances: List<OpenTimeRange>
+    )
+
+    @PostMapping("/child-date/expected-absences")
+    fun getExpectedAbsences(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: ChildDatePresence
+        @RequestBody body: ExpectedAbsencesRequest
     ): Set<AbsenceCategory>? {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -277,21 +283,9 @@ class AttendanceReservationController(
                         Action.Child.UPSERT_CHILD_DATE_PRESENCE,
                         body.childId
                     )
-
-                    val presenceTimes =
-                        if (body.date.isAfter(clock.today())) {
-                            body.reservations.map {
-                                when (it) {
-                                    is Reservation.Times -> OpenTimeRange(it.startTime, it.endTime)
-                                    is Reservation.NoTimes ->
-                                        OpenTimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59))
-                                }
-                            }
-                        } else {
-                            body.attendances
-                        }
-
-                    getExpectedAbsenceCategories(tx, body.date, body.childId, presenceTimes)
+                    if (body.date.isBefore(clock.today())) {
+                        getExpectedAbsenceCategories(tx, body.date, body.childId, body.attendances)
+                    } else null
                 }
             }
             .also {

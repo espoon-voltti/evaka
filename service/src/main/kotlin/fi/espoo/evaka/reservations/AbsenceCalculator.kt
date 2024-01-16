@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import fi.espoo.evaka.attendance.getChildAttendancesOfDate
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
@@ -13,11 +12,8 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.Duration
@@ -26,61 +22,23 @@ import java.time.LocalTime
 
 fun getExpectedAbsenceCategories(
     tx: Database.Read,
-    clock: EvakaClock,
-    date: LocalDate,
-    unitId: DaycareId,
-    childId: ChildId
-): Set<AbsenceCategory>? {
-    if (date.isAfter(clock.today())) {
-        val reservations = tx.getReservationsForChildInRange(childId, FiniteDateRange(date, date))
-        return getExpectedAbsenceCategories(
-            tx = tx,
-            date = date,
-            childId = childId,
-            presenceTimes =
-                reservations[date]?.map {
-                    when (it) {
-                        is Reservation.Times -> OpenTimeRange(it.startTime, it.endTime)
-                        is Reservation.NoTimes ->
-                            OpenTimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59))
-                    }
-                } ?: emptyList()
-        )
-    } else {
-        val attendances = tx.getChildAttendancesOfDate(childId, unitId, date)
-        return getExpectedAbsenceCategories(
-            tx = tx,
-            date = date,
-            childId = childId,
-            presenceTimes =
-                attendances.map {
-                    OpenTimeRange(it.arrived.toLocalTime(), it.departed?.toLocalTime())
-                }
-        )
-    }
-}
-
-fun getExpectedAbsenceCategories(
-    tx: Database.Read,
     date: LocalDate,
     childId: ChildId,
     presenceTimes: List<OpenTimeRange>
 ): Set<AbsenceCategory>? {
     if (presenceTimes.any { it.endTime == null }) {
-        // result is undefined while some attendance is still open
+        // result is undetermined while some attendance is still open
         return null
     }
-    val finalizedTimes =
-        presenceTimes.mapNotNull {
-            if (it.endTime != null) TimeRange(it.startTime, it.endTime) else null
-        }
+
     val placement =
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
             ?: throw BadRequest("child has no placement")
     val daycare = tx.getDaycare(placement.unitId)!!
+
     return getExpectedAbsenceCategories(
         date = date,
-        presenceTimes = finalizedTimes,
+        presenceTimes = presenceTimes.map { TimeRange(it.startTime, it.endTime!!) },
         placementType = placement.type,
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,
@@ -99,7 +57,7 @@ fun getExpectedAbsenceCategories(
     dailyPreparatoryTime: TimeRange?,
     preschoolTerms: List<PreschoolTerm>
 ): Set<AbsenceCategory>? {
-    val attendances = presenceTimes.map { HelsinkiDateTimeRange.of(date, it.start, it.end) }
+    val presences = presenceTimes.map { HelsinkiDateTimeRange.of(date, it.start, it.end) }
 
     val preschoolEducationOnGoing =
         preschoolTerms.any {
@@ -150,7 +108,7 @@ fun getExpectedAbsenceCategories(
         PlacementType.PRESCHOOL ->
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(attendances, preschoolTime) < Duration.ofMinutes(60)
+                        overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
                     }
                 )
                 .takeIf { preschoolEducationOnGoing }
@@ -159,24 +117,24 @@ fun getExpectedAbsenceCategories(
             if (preschoolEducationOnGoing) {
                 setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(attendances, preschoolTime) < Duration.ofMinutes(60)
+                        overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
                     },
                     AbsenceCategory.BILLABLE.takeIf {
-                        overlapTime(attendances, beforePreschoolTime) < Duration.ofMinutes(15) &&
-                            overlapTime(attendances, afterPreschoolTime) < Duration.ofMinutes(15)
+                        overlapTime(presences, beforePreschoolTime) < Duration.ofMinutes(15) &&
+                            overlapTime(presences, afterPreschoolTime) < Duration.ofMinutes(15)
                     }
                 )
             } else {
                 setOfNotNull(
                     AbsenceCategory.BILLABLE.takeIf {
-                        totalTime(attendances) < Duration.ofMinutes(15)
+                        totalTime(presences) < Duration.ofMinutes(15)
                     }
                 )
             }
         PlacementType.PREPARATORY ->
             setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(attendances, preparatoryTime) < Duration.ofMinutes(60)
+                        overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
                     }
                 )
                 .takeIf { preparatoryEducationOnGoing }
@@ -184,17 +142,17 @@ fun getExpectedAbsenceCategories(
             if (preparatoryEducationOnGoing) {
                 setOfNotNull(
                     AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(attendances, preparatoryTime) < Duration.ofMinutes(60)
+                        overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
                     },
                     AbsenceCategory.BILLABLE.takeIf {
-                        overlapTime(attendances, beforePreparatoryTime) < Duration.ofMinutes(15) &&
-                            overlapTime(attendances, afterPreparatoryTime) < Duration.ofMinutes(15)
+                        overlapTime(presences, beforePreparatoryTime) < Duration.ofMinutes(15) &&
+                            overlapTime(presences, afterPreparatoryTime) < Duration.ofMinutes(15)
                     }
                 )
             } else {
                 setOfNotNull(
                     AbsenceCategory.BILLABLE.takeIf {
-                        totalTime(attendances) < Duration.ofMinutes(15)
+                        totalTime(presences) < Duration.ofMinutes(15)
                     }
                 )
             }
@@ -203,23 +161,21 @@ fun getExpectedAbsenceCategories(
         PlacementType.TEMPORARY_DAYCARE,
         PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
             setOfNotNull(
-                AbsenceCategory.BILLABLE.takeIf { totalTime(attendances) < Duration.ofMinutes(15) }
+                AbsenceCategory.BILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
             )
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
             setOfNotNull(
                 AbsenceCategory.NONBILLABLE.takeIf {
-                    totalTime(attendances) < Duration.ofMinutes(15)
+                    totalTime(presences) < Duration.ofMinutes(15)
                 },
                 AbsenceCategory.BILLABLE.takeIf {
-                    totalTime(attendances) < Duration.ofMinutes(4 * 60 + 15)
+                    totalTime(presences) < Duration.ofMinutes(4 * 60 + 15)
                 }
             )
         PlacementType.SCHOOL_SHIFT_CARE ->
             setOfNotNull(
-                AbsenceCategory.NONBILLABLE.takeIf {
-                    totalTime(attendances) < Duration.ofMinutes(15)
-                }
+                AbsenceCategory.NONBILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
             )
         PlacementType.CLUB -> null
     }

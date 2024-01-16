@@ -73,27 +73,6 @@ fun Database.Read.getChildAttendance(
         .exactlyOneOrNull<ChildAttendance>()
 }
 
-fun Database.Read.getChildAttendancesOfDate(
-    childId: ChildId,
-    unitId: DaycareId,
-    date: LocalDate
-): List<ChildAttendance> {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, unit_id, (date + start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived, (date + end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
-        FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId AND date = :date
-        """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .toList<ChildAttendance>()
-}
-
 data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
 
 fun Database.Read.getChildOngoingAttendance(
