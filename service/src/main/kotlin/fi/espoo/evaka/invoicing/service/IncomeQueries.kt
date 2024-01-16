@@ -73,11 +73,11 @@ WITH latest_income AS (
     LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> :today AND fp.conflict = false
     LEFT JOIN fridge_partner fp_spouse ON (
         fp_spouse.partnership_id = fp.partnership_id AND
-        fp_spouse.person_id <> fc_head.head_of_child AND
+        fp_spouse.person_id <> fp.person_id AND
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> :today AND fp_spouse.conflict = false
     )
     JOIN latest_income i ON i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id
-    WHERE :checkForExpirationRange @> i.valid_to
+    WHERE between_start_and_end(:checkForExpirationRange, i.valid_to)
      AND (i.valid_to + INTERVAL '1 day')::date BETWEEN pl.start_date AND pl.end_date
 )
 SELECT person_id, valid_to AS expiration_date
