@@ -234,7 +234,7 @@ class ReservationControllerCitizen(
             throw BadRequest("Invalid absence type")
         }
 
-        val (deleted, inserted) =
+        val (deletedAbsences, deletedReservations, insertedAbsences) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -261,14 +261,24 @@ class ReservationControllerCitizen(
                             tx.getReservationContractDayRanges(body.childIds, range)
                         } ?: emptyMap()
 
-                    val deleted =
+                    val deletedAbsences =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { childId to it }
                             },
                             reservableRange = reservableRange
                         )
-                    val inserted =
+                    // Delete reservations on days in the reservable range. Reservations in the
+                    // closed range are kept.
+                    val deletedReservations =
+                        body.dateRange.intersection(reservableRange)?.dates()?.let { dates ->
+                            tx.clearOldReservations(
+                                body.childIds.flatMap { childId ->
+                                    dates.map { date -> childId to date }
+                                }
+                            )
+                        }
+                    val insertedAbsences =
                         tx.insertAbsences(
                             user.evakaUserId,
                             body.childIds.flatMap { childId ->
@@ -294,13 +304,17 @@ class ReservationControllerCitizen(
                                 }
                             }
                         )
-                    Pair(deleted, inserted)
+                    Triple(deletedAbsences, deletedReservations, insertedAbsences)
                 }
             }
         Audit.AbsenceCitizenCreate.log(
             targetId = body.childIds,
-            objectId = inserted,
-            meta = mapOf("deleted" to deleted)
+            objectId = insertedAbsences,
+            meta =
+                mapOf(
+                    "deletedAbsences" to deletedAbsences,
+                    "deletedReservations" to deletedReservations
+                )
         )
     }
 }

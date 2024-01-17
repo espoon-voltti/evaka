@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -39,7 +40,6 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -65,6 +65,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
+    private val beforeThreshold = HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))
+    private val afterThreshold = HelsinkiDateTime.of(mockToday.plusDays(7), LocalTime.of(21, 0))
 
     private val monday = LocalDate.of(2021, 11, 15)
     private val tuesday = monday.plusDays(1)
@@ -1232,8 +1234,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(15, 0)))
+            mockNow = beforeThreshold
         )
 
         assertThat(
@@ -1298,8 +1299,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+            mockNow = afterThreshold
         )
 
         assertThat(
@@ -1372,8 +1372,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+            mockNow = afterThreshold
         )
 
         assertThat(
@@ -1428,6 +1427,161 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             }
     }
 
+    @Test
+    fun `adding a reservation before threshold removes absences on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insertTestAbsence(
+                childId = child.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = adult.evakaUserId,
+            )
+        }
+
+        postReservations(
+            adult.user(CitizenAuthLevel.WEAK),
+            listOf(
+                DailyReservationRequest.Reservations(
+                    child.id,
+                    monday,
+                    TimeRange(startTime, endTime),
+                ),
+            ),
+            mockNow = beforeThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf())
+    }
+
+    @Test
+    fun `adding an absence before threshold removes reservations on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = adult.evakaUserId,
+                )
+            )
+        }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, monday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            ),
+            mockNow = beforeThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf(monday to 1))
+        assertReservationCounts(child.id, listOf())
+    }
+
+    @Test
+    fun `adding an absence after threshold keeps reservations on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = adult.evakaUserId,
+                )
+            )
+        }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, monday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            ),
+            mockNow = afterThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf(monday to 1))
+        assertReservationCounts(child.id, listOf(monday to 1))
+    }
+
     private fun dayChild(
         childId: ChildId,
         reservableTimeRange: ReservableTimeRange,
@@ -1449,12 +1603,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     private fun postReservations(
         user: AuthenticatedUser.Citizen,
-        request: List<DailyReservationRequest>
+        request: List<DailyReservationRequest>,
+        mockNow: HelsinkiDateTime = beforeThreshold,
     ) {
         reservationControllerCitizen.postReservations(
             dbInstance(),
             user,
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0))),
+            MockEvakaClock(mockNow),
             request
         )
     }
@@ -1462,24 +1617,25 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private fun postAbsences(
         user: AuthenticatedUser.Citizen,
         request: AbsenceRequest,
-        clock: EvakaClock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0)))
+        mockNow: HelsinkiDateTime = beforeThreshold
     ) {
         reservationControllerCitizen.postAbsences(
             dbInstance(),
             user,
-            clock,
+            MockEvakaClock(mockNow),
             request,
         )
     }
 
     private fun getReservations(
         user: AuthenticatedUser.Citizen,
-        range: FiniteDateRange
+        range: FiniteDateRange,
+        mockNow: HelsinkiDateTime = beforeThreshold
     ): ReservationsResponse {
         return reservationControllerCitizen.getReservations(
             dbInstance(),
             user,
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
+            MockEvakaClock(mockNow),
             range.start,
             range.end,
         )
@@ -1491,19 +1647,42 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val expected = counts.map { QueryResult(it.first, it.second) }
         val actual =
             db.read {
-                it.createQuery(
-                        """
-                SELECT date, COUNT(category) as count
-                FROM absence WHERE
-                child_id = :childId
-                GROUP BY date
-                ORDER BY date
-            """
-                    )
-                    .bind("childId", childId)
+                it.createQuery<Any> {
+                        sql(
+                            """
+                            SELECT date, COUNT(category) as count
+                            FROM absence WHERE
+                            child_id = ${bind(childId)}
+                            GROUP BY date
+                            ORDER BY date
+                            """
+                        )
+                    }
                     .toList<QueryResult>()
             }
 
+        assertEquals(expected, actual)
+    }
+
+    private fun assertReservationCounts(childId: ChildId, counts: List<Pair<LocalDate, Int>>) {
+        data class QueryResult(val date: LocalDate, val count: Int)
+
+        val expected = counts.map { QueryResult(it.first, it.second) }
+        val actual =
+            db.read {
+                it.createQuery<Any> {
+                        sql(
+                            """
+                            SELECT date, COUNT(*) as count
+                            FROM attendance_reservation
+                            WHERE child_id = ${bind(childId)}
+                            GROUP BY date
+                            ORDER BY date
+                            """
+                        )
+                    }
+                    .toList<QueryResult>()
+            }
         assertEquals(expected, actual)
     }
 }
