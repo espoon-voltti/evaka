@@ -372,10 +372,11 @@ export default React.memo(function ChildDateModal({
         {expectedAbsencesEnabled &&
           expectedAbsences.isSuccess &&
           expectedAbsences.value !== null && (
-            <>
+            <FixedSpaceColumn data-qa="absence-warnings">
               {expectedAbsences.value.includes('NONBILLABLE') &&
                 nonBillableAbsence.value() === undefined && (
                   <AbsenceWarning
+                    data-qa="missing-nonbillable-absence"
                     message={
                       i18n.unit.attendanceReservations.childDateModal
                         .missingNonbillableAbsence
@@ -385,6 +386,7 @@ export default React.memo(function ChildDateModal({
               {!expectedAbsences.value.includes('NONBILLABLE') &&
                 nonBillableAbsence.value() !== undefined && (
                   <AbsenceWarning
+                    data-qa="extra-nonbillable-absence"
                     message={
                       i18n.unit.attendanceReservations.childDateModal
                         .extraNonbillableAbsence
@@ -394,6 +396,7 @@ export default React.memo(function ChildDateModal({
               {expectedAbsences.value.includes('BILLABLE') &&
                 billableAbsence.value() === undefined && (
                   <AbsenceWarning
+                    data-qa="missing-billable-absence"
                     message={
                       i18n.unit.attendanceReservations.childDateModal
                         .missingBillableAbsence
@@ -403,13 +406,14 @@ export default React.memo(function ChildDateModal({
               {!expectedAbsences.value.includes('BILLABLE') &&
                 billableAbsence.value() !== undefined && (
                   <AbsenceWarning
+                    data-qa="extra-billable-absence"
                     message={
                       i18n.unit.attendanceReservations.childDateModal
                         .extraBillableAbsence
                     }
                   />
                 )}
-            </>
+            </FixedSpaceColumn>
           )}
       </FixedSpaceColumn>
     </MutateFormModal>
@@ -498,14 +502,17 @@ const AbsenceForm = React.memo(function AbsenceForm({
 })
 
 const AbsenceWarning = React.memo(function AbsenceWarning({
-  message
+  message,
+  ['data-qa']: dataQa
 }: {
   message: string
+  'data-qa': string
 }) {
   const { i18n } = useTranslation()
   return (
     <div>
       <AlertBox
+        data-qa={dataQa}
         title={i18n.unit.attendanceReservations.childDateModal.absenceWarning}
         message={message}
         thin
