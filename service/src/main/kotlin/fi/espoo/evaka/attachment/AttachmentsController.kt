@@ -426,11 +426,13 @@ class AttachmentsController(
             }
         val fileName = getAndCheckFileName(file)
         val contentType =
-            checkFileContentTypeAndExtension(
-                file.inputStream,
-                getFileExtension(fileName),
-                allowedContentTypes
-            )
+            file.inputStream.use { stream ->
+                checkFileContentTypeAndExtension(
+                    stream,
+                    getFileExtension(fileName),
+                    allowedContentTypes
+                )
+            }
 
         val id =
             attachmentsService.saveOrphanAttachment(
