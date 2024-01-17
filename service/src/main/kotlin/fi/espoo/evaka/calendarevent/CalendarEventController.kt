@@ -52,8 +52,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
         val range = FiniteDateRange(start, end)
 
-        if (range.durationInDays() > 7) {
-            throw BadRequest("Only 7 days of calendar events may be fetched at once")
+        if (range.durationInDays() > 6 * 7) {
+            throw BadRequest("Only 6 weeks of calendar events may be fetched at once")
         }
 
         return db.connect { dbc ->

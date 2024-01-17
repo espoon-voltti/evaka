@@ -22,7 +22,6 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
 import { UnitResponse } from '../../api/unit'
@@ -39,7 +38,7 @@ import CalendarEventsSection from './tab-calendar/CalendarEventsSection'
 import Occupancy from './tab-unit-information/Occupancy'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 
-type CalendarMode = 'week' | 'month'
+export type CalendarMode = 'week' | 'month'
 
 export type AttendanceGroupFilter =
   | { type: 'group'; id: UUID }
@@ -69,14 +68,17 @@ const TopHorizontalLine = styled(HorizontalLine)`
   margin-top: 0;
 `
 
-const getWeekDateRange = (date: LocalDate, operationalDays: DayOfWeek[]) => {
+const getWeekDateRange = (date: LocalDate) => {
   const start = date.startOfWeek()
-  return new FiniteDateRange(
-    start,
-    start.addDays(
-      featureFlags.intermittentShiftCare ? 6 : Math.max(...operationalDays) - 1
-    )
-  )
+  const end = start.addWeeks(1).subDays(1)
+  return new FiniteDateRange(start, end)
+}
+
+const getMonthRange = (date: LocalDate) => {
+  const start = date.startOfMonth().startOfWeek()
+  const lastDayOfMoth = date.addMonths(1).startOfMonth().subDays(1)
+  const end = lastDayOfMoth.startOfWeek().addWeeks(1).subDays(1)
+  return new FiniteDateRange(start, end)
 }
 
 function getDefaultGroup(
@@ -217,9 +219,11 @@ const CalendarContent = React.memo(function CalendarContent({
   }, [unitInformation.daycare.operationDays])
 
   const weekRange = useMemo(
-    () => getWeekDateRange(selectedDate, operationalDays),
-    [operationalDays, selectedDate]
+    () => getWeekDateRange(selectedDate),
+    [selectedDate]
   )
+
+  const monthRange = useMemo(() => getMonthRange(selectedDate), [selectedDate])
 
   const [calendarOpen, setCalendarOpen] = useState(true)
   const [attendancesOpen, setAttendancesOpen] = useState(true)
@@ -316,7 +320,9 @@ const CalendarContent = React.memo(function CalendarContent({
             paddingVertical="zero"
           >
             <CalendarEventsSection
-              weekDateRange={weekRange}
+              selectedDate={selectedDate}
+              dateRange={mode === 'week' ? weekRange : monthRange}
+              operationalDays={operationalDays}
               unitId={unitId}
               groupId={selectedGroup.type === 'group' ? selectedGroup.id : null}
             />
