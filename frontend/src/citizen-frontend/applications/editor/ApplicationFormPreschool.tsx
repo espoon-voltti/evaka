@@ -36,7 +36,13 @@ export default React.memo(function ApplicationFormPreschool({
   const t = useTranslation()
 
   const serviceNeedOptions = useQueryResult(
-    serviceNeedOptionPublicInfosQuery(['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB']),
+    serviceNeedOptionPublicInfosQuery([
+      'PRESCHOOL_DAYCARE',
+      ...(application.form.preferences.serviceNeed?.serviceNeedOption
+        ?.validPlacementType === 'PRESCHOOL_CLUB'
+        ? (['PRESCHOOL_CLUB'] as const)
+        : [])
+    ]),
     {
       enabled: featureFlags.preschoolApplication.serviceNeedOption,
       initialData: []
