@@ -20,6 +20,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -291,13 +292,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a round the clock unit and attendance is less than 24h`() {
+    fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a round the clock unit and attendance is less than 12h`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
             tx.markStaffArrival(
                 employee1Id,
                 roundTheClockGroup.id,
-                now.minusHours(23),
+                now.minusHours(11),
                 BigDecimal(7.0)
             )
 
@@ -325,6 +326,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 arrival.plusHours(12),
                 staffAttendances.first { it.employeeId == employee1Id }.departed
             )
+            assertTrue(staffAttendances.first().departedAutomatically)
         }
     }
 

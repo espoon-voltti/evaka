@@ -354,6 +354,7 @@ export interface StaffMember {
 export interface StaffMemberAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  departedAutomatically: boolean
   employeeId: UUID
   groupId: UUID | null
   id: UUID
