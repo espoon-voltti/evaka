@@ -149,6 +149,11 @@ fun createReservationsAndAbsences(
             else -> throw BadRequest("Invalid user type")
         }
 
+    val reservableRange = getReservableRange(now, citizenReservationThresholdHours)
+    if (isCitizen && !requests.all { request -> reservableRange.includes(request.date) }) {
+        throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+    }
+
     val today = now.toLocalDate()
     val reservationsRange = reservationRequestRange(requests)
     val clubTerms = tx.getClubTerms()
@@ -165,8 +170,6 @@ fun createReservationsAndAbsences(
     val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
     val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
-
-    val reservableRange = getReservableRange(now, citizenReservationThresholdHours)
 
     val isReservableChild = { req: DailyReservationRequest ->
         placements[req.childId]

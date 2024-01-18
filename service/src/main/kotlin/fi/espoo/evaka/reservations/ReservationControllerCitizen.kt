@@ -198,14 +198,6 @@ class ReservationControllerCitizen(
                         children
                     )
 
-                    val reservableRange =
-                        getReservableRange(
-                            clock.now(),
-                            featureConfig.citizenReservationThresholdHours,
-                        )
-                    if (!body.all { request -> reservableRange.includes(request.date) }) {
-                        throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
-                    }
                     createReservationsAndAbsences(
                         tx,
                         clock.now(),
