@@ -342,20 +342,17 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val daycarePlacementEnd = today.minusDays(1)
         val preschoolPeriodFirstDate = daycarePlacementEnd.plusDays(1)
 
-        val daycarePlacement =
-            givenPlacement(daycarePlacementStart, daycarePlacementEnd, PlacementType.DAYCARE)
-        val preschoolPlacementFirst =
-            givenPlacement(
-                preschoolPeriodFirstDate,
-                preschoolPeriodFirstDate,
-                PlacementType.PRESCHOOL_DAYCARE
-            )
-        val preschoolPlacementSecond =
-            givenPlacement(
-                preschoolPeriodFirstDate.plusDays(1),
-                preschoolPeriodFirstDate.plusYears(1),
-                PlacementType.PRESCHOOL
-            )
+        givenPlacement(daycarePlacementStart, daycarePlacementEnd, PlacementType.DAYCARE)
+        givenPlacement(
+            preschoolPeriodFirstDate,
+            preschoolPeriodFirstDate,
+            PlacementType.PRESCHOOL_DAYCARE
+        )
+        givenPlacement(
+            preschoolPeriodFirstDate.plusDays(1),
+            preschoolPeriodFirstDate.plusYears(1),
+            PlacementType.PRESCHOOL
+        )
 
         // Completely before any preschool placement
         val assistanceBeforePreschool =
@@ -525,7 +522,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         childId: ChildId,
         user: AuthenticatedUser = assistanceWorker
     ) {
-        val (_, res, result) =
+        val (_, res, _) =
             http
                 .get("/children/$childId/assistance")
                 .asUser(user)
