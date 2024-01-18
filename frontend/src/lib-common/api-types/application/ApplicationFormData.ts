@@ -194,7 +194,7 @@ export function apiDataToFormData(
       partTime: application.form.preferences.serviceNeed?.partTime ?? false,
       placementType:
         application.form.preferences.serviceNeed?.serviceNeedOption
-          ?.validPlacementType ?? null,
+          ?.validPlacementType ?? 'PRESCHOOL_DAYCARE',
       serviceNeedOption:
         application.form.preferences.serviceNeed?.serviceNeedOption ?? null,
       preparatory: application.form.preferences.preparatory,
