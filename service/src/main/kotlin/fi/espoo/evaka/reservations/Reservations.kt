@@ -254,7 +254,17 @@ fun createReservationsAndAbsences(
     val deletedAbsences =
         if (isCitizen) tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
         else tx.clearOldAbsences(validated.map { it.childId to it.date })
-    val deletedReservations = tx.clearOldReservations(validated.map { it.childId to it.date })
+
+    // Keep old reservations in the confirmed range if absences are added on top of them
+    val (absenceRequests, otherRequests) =
+        validated.partition { it is DailyReservationRequest.Absent }
+    val deletedReservations =
+        tx.clearOldReservations(
+            absenceRequests
+                .filter { reservableRange.includes(it.date) }
+                .map { it.childId to it.date } + otherRequests.map { it.childId to it.date }
+        )
+
     val upsertedReservations =
         tx.insertValidReservations(
             user.evakaUserId,

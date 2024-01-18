@@ -427,6 +427,200 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `reservations are removed from days with absence in unlocked range`() {
+        // given
+        db.transaction {
+            it.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = monday,
+                endDate = tuesday
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            it.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = employee.evakaUserId
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.STRONG),
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = child.id,
+                        date = monday,
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then reservations have been removed
+        val reservations =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        adult.id,
+                        queryRange,
+                    )
+                }
+                .mapNotNull { dailyData ->
+                    dailyData.date.takeIf {
+                        dailyData.children.any { it.reservations.isNotEmpty() }
+                    }
+                }
+        assertEquals(0, reservations.size)
+
+        // and absence has been added
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        assertEquals(1, absences.size)
+        assertEquals(monday, absences.first().date)
+    }
+
+    @Test
+    fun `reservations are kept on days with absence in confirmed range`() {
+        // given
+        db.transaction {
+            it.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+
+            it.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = monday,
+                endDate = tuesday
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            it.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = employee.evakaUserId
+                )
+            )
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                afterThreshold,
+                employee.user(setOf()),
+                listOf(
+                    DailyReservationRequest.Absent(
+                        childId = child.id,
+                        date = monday,
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then reservations have been kept
+        val reservations =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        adult.id,
+                        queryRange,
+                    )
+                }
+                .mapNotNull { dailyData ->
+                    dailyData.date.takeIf {
+                        dailyData.children.any { it.reservations.isNotEmpty() }
+                    }
+                }
+        assertEquals(1, reservations.size)
+        assertEquals(monday, reservations.first())
+
+        // and absence has been added
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        assertEquals(1, absences.size)
+        assertEquals(monday, absences.first().date)
+    }
+
+    @Test
+    fun `reservations can be replaced by employee in confirmed range`() {
+        val reservation1 = TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0))
+        val reservation2 = TimeRange(LocalTime.of(16, 0), LocalTime.of(19, 0))
+        val reservation3 = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+
+        // given
+        db.transaction {
+            it.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+
+            it.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = monday,
+                endDate = tuesday
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            listOf(reservation1, reservation2).forEach { (start, end) ->
+                it.insert(
+                    DevReservation(
+                        childId = child.id,
+                        date = monday,
+                        startTime = start,
+                        endTime = end,
+                        createdBy = employee.evakaUserId
+                    )
+                )
+            }
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                afterThreshold,
+                employee.user(setOf()),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = monday,
+                        reservation = reservation3,
+                        secondReservation = null
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then reservations are replaced
+        val reservations =
+            db.read {
+                    it.getReservationsCitizen(
+                        monday,
+                        adult.id,
+                        queryRange,
+                    )
+                }
+                .flatMap { dailyData ->
+                    dailyData.children.flatMap { childData ->
+                        childData.reservations.map { dailyData.date to it }
+                    }
+                }
+        assertEquals(1, reservations.size)
+        reservations.first().let { (date, reservation) ->
+            assertEquals(monday, date)
+            assertEquals(reservation3, reservation.asTimeRange())
+        }
+    }
+
+    @Test
     fun `absences and reservations are removed from empty days`() {
         // given
         db.transaction {
