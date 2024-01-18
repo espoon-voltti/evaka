@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.core.Response
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.shared.domain.NotFound
 import java.net.URL
-import java.nio.charset.StandardCharsets
 import java.time.Duration
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpStatus
@@ -46,25 +45,6 @@ class DocumentService(
         }
     }
 
-    enum class ContentDispositionType(val header: String) {
-        Inline("inline"),
-        Attachment("attachment")
-    }
-
-    private fun getContentDispositionHeader(
-        type: ContentDispositionType,
-        fileName: String?
-    ): String {
-        return ContentDisposition.builder(type.header)
-            .apply {
-                if (fileName != null) {
-                    this.filename(fileName, StandardCharsets.UTF_8)
-                }
-            }
-            .build()
-            .toString()
-    }
-
     private fun presignedGetUrl(bucketName: String, key: String): URL {
         val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
 
@@ -80,32 +60,38 @@ class DocumentService(
     private fun response(
         bucketName: String,
         key: String,
-        contentDispositionType: ContentDispositionType,
-        fileName: String?
+        contentDisposition: ContentDisposition
     ): ResponseEntity<Any> {
-        val contentDispositionHeader = getContentDispositionHeader(contentDispositionType, fileName)
         val presignedUrl = presignedGetUrl(bucketName, key)
 
         return if (env.proxyThroughNginx) {
             val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
             ResponseEntity.ok()
                 .header("X-Accel-Redirect", url)
-                .header("Content-Disposition", contentDispositionHeader)
+                .header("Content-Disposition", contentDisposition.toString())
                 .body(null)
         } else {
             // nginx is not available in development => redirect to the presigned S3 url
             ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", presignedUrl.toString())
-                .header("Content-Disposition", contentDispositionHeader)
+                .header("Content-Disposition", contentDisposition.toString())
                 .body(null)
         }
     }
 
     fun responseAttachment(bucketName: String, key: String, fileName: String?) =
-        response(bucketName, key, ContentDispositionType.Attachment, fileName)
+        response(
+            bucketName,
+            key,
+            ContentDisposition.attachment().filename(fileName, Charsets.UTF_8).build()
+        )
 
     fun responseInline(bucketName: String, key: String, fileName: String?) =
-        response(bucketName, key, ContentDispositionType.Inline, fileName)
+        response(
+            bucketName,
+            key,
+            ContentDisposition.inline().filename(fileName, Charsets.UTF_8).build()
+        )
 
     fun upload(bucketName: String, document: Document): DocumentLocation {
         val key = document.name
