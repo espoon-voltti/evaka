@@ -8,7 +8,7 @@ import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
-import fi.espoo.evaka.attachment.getOrphanAttachments
+import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
@@ -164,6 +164,7 @@ class ScheduledJobs(
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val financeDecisionGenerator: FinanceDecisionGenerator,
     private val childDocumentService: ChildDocumentService,
+    private val attachmentService: AttachmentService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
@@ -321,10 +322,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
     }
 
-    fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
-            asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
-        }
-    }
+    fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
 }

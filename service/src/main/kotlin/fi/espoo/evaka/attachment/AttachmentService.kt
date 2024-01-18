@@ -12,14 +12,15 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
 class AttachmentService(
     private val documentClient: DocumentService,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     bucketEnv: BucketEnv,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     private val filesBucket = bucketEnv.attachments
     private val logger = KotlinLogging.logger {}
@@ -72,5 +73,10 @@ WHERE id = ${bind(id)}
 """) }
                 .execute()
         }
+    }
+
+    fun scheduleOrphanAttachmentDeletion(tx: Database.Transaction, clock: EvakaClock) {
+        val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
+        asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
     }
 }
