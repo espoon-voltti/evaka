@@ -8,6 +8,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  AbsenceRangeRequest,
   AbsenceThreshold,
   AttendanceChild,
   ChildAttendanceStatusResponse
@@ -139,18 +140,12 @@ export async function createFullDayAbsence({
 export async function postAbsenceRange(
   unitId: string,
   childId: string,
-  absenceType: AbsenceType,
-  startDate: LocalDate,
-  endDate: LocalDate
+  body: AbsenceRangeRequest
 ): Promise<Result<void>> {
   return client
     .post<JsonOf<void>>(
       `/attendances/units/${unitId}/children/${childId}/absence-range`,
-      {
-        absenceType,
-        startDate,
-        endDate
-      }
+      body
     )
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))

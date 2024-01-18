@@ -76,13 +76,13 @@ export default React.memo(function MarkAbsentBeforehand() {
 
   const postAbsence = useCallback(
     (absenceType: AbsenceType) =>
-      postAbsenceRange(
-        unitId,
-        childId,
+      postAbsenceRange(unitId, childId, {
         absenceType,
-        LocalDate.parseIso(startDate),
-        LocalDate.parseIso(endDate)
-      ),
+        range: new FiniteDateRange(
+          LocalDate.parseIso(startDate),
+          LocalDate.parseIso(endDate)
+        )
+      }),
     [childId, endDate, startDate, unitId]
   )
 
