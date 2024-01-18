@@ -188,8 +188,6 @@ export const fi = {
     searchPlaceholder: 'Etsi lapsen nimellä',
     noAbsences: 'Ei poissaoloja',
     removeAbsence: 'Peru poissaolo',
-    missingFrom: 'Poissa seuraavasta toimintamuodosta',
-    missingFromPlural: 'Poissa seuraavista toimintamuodoista',
     timeError: 'Virheellinen aika',
     arrived: 'Saapui',
     departed: 'Lähti',

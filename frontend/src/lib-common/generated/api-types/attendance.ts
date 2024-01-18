@@ -30,14 +30,6 @@ export interface AbsenceRangeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.AbsenceThreshold
-*/
-export interface AbsenceThreshold {
-  category: AbsenceCategory
-  time: string
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalRequest
 */
 export interface ArrivalRequest {
@@ -98,6 +90,7 @@ export interface AttendanceTimes {
 */
 export interface ChildAbsence {
   category: AbsenceCategory
+  type: AbsenceType
 }
 
 /**
@@ -134,8 +127,9 @@ export interface CurrentDayStaffAttendanceResponse {
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DepartureRequest
 */
 export interface DepartureRequest {
-  absenceType: AbsenceType | null
-  departed: string
+  absenceTypeBillable: AbsenceType | null
+  absenceTypeNonbillable: AbsenceType | null
+  departed: LocalTime
 }
 
 /**
@@ -149,6 +143,13 @@ export interface EmployeeAttendance {
   groups: UUID[]
   lastName: string
   plannedAttendances: PlannedStaffAttendance[]
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDepartureRequest
+*/
+export interface ExpectedAbsencesOnDepartureRequest {
+  departed: LocalTime
 }
 
 /**

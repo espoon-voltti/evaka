@@ -22,3 +22,6 @@ inline fun <reified T : Enum<T>> emptyEnumSet(): EnumSet<T> = EnumSet.noneOf(T::
 
 inline fun <reified T : Enum<T>> enumSetOf(vararg elements: T): EnumSet<T> =
     emptyEnumSet<T>().also { it += elements }
+
+fun <K, V> mapOfNotNullValues(vararg pairs: Pair<K, V?>): Map<K, V> =
+    pairs.mapNotNull { if (it.second != null) Pair(it.first, it.second!!) else null }.toMap()

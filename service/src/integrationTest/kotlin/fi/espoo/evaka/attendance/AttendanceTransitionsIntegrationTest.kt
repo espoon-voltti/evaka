@@ -23,8 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.shared.domain.europeHelsinki
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -50,6 +49,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
+    private val mockClock = MockEvakaClock(2024, 1, 17, 19, 30)
+    private val roundedNow = mockClock.now().toLocalTime().withSecond(0).withNano(0)
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -64,7 +66,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
 
-        val arrived = roundedTimeNow()
+        val arrived = LocalTime.of(9, 15)
         markArrived(arrived)
         val child = expectOneAttendanceStatus()
 
@@ -78,9 +80,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     @Test
     fun `post child arrives - arriving twice is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent()
+        givenChildPresent(arrived = LocalTime.of(9, 0))
 
-        val arrived = roundedTimeNow()
+        val arrived = LocalTime.of(9, 15)
         assertThrows<Conflict> { markArrived(arrived) }
     }
 
@@ -107,284 +109,59 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `get child departure info - preschool daycare placement and present from preschool start`() {
+    fun `get expected absences - preschool daycare placement and present from preschool start`() {
         val arrived = LocalTime.of(9, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfo()
         assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
+            setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30))
         )
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45))
+        )
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 20)))
     }
 
     @Test
-    fun `get child departure info - preschool daycare placement and present from preschool end`() {
+    fun `get expected absences - preschool daycare placement and present from preschool end`() {
         val arrived = LocalTime.of(13, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfo()
         assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
-            info
+            setOf(AbsenceCategory.NONBILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20))
         )
     }
 
     @Test
-    fun `get child departure info - preschool daycare placement and present hour before preschool start`() {
+    fun `get expected absences - preschool daycare placement and present hour before preschool start`() {
         val arrived = LocalTime.of(8, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent(arrived)
 
-        val info = getDepartureInfo()
         assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0))),
-            info
+            setOf(AbsenceCategory.NONBILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45))
         )
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 0)))
     }
 
     @Test
-    fun `get child departure info - preschool daycare placement and present from 1230`() {
-        val arrived = LocalTime.of(12, 30)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 0850`() {
-        val arrived = LocalTime.of(8, 50)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1159`() {
-        val arrived = LocalTime.of(11, 59)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(12, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1200`() {
-        val arrived = LocalTime.of(12, 0)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(13, 0)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1201`() {
-        val arrived = LocalTime.of(12, 1)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1244`() {
-        val arrived = LocalTime.of(12, 44)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1245`() {
-        val arrived = LocalTime.of(12, 45)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(13, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1246`() {
-        val arrived = LocalTime.of(12, 46)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1314`() {
-        val arrived = LocalTime.of(13, 14)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1315`() {
-        val arrived = LocalTime.of(13, 15)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preschool daycare placement and present from 1316`() {
-        val arrived = LocalTime.of(13, 16)
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59))),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preparatory daycare placement and present from 8`() {
-        val arrived = LocalTime.of(8, 0)
-        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0))),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preparatory daycare placement and present from 9`() {
-        val arrived = LocalTime.of(9, 0)
-        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preparatory daycare placement and present from 1330`() {
-        val arrived = LocalTime.of(13, 30)
-        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(23, 59)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - preparatory daycare placement and present from 0850`() {
-        val arrived = LocalTime.of(8, 50)
-        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
-        givenChildPresent(arrived)
-
-        val info = getDepartureInfo()
-        assertEquals(
-            listOf(
-                AbsenceThreshold(AbsenceCategory.NONBILLABLE, LocalTime.of(10, 0)),
-                AbsenceThreshold(AbsenceCategory.BILLABLE, LocalTime.of(14, 15))
-            ),
-            info
-        )
-    }
-
-    @Test
-    fun `get child departure info - not yet present`() {
+    fun `get expected absences - not yet present`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        assertEquals(emptyList(), getDepartureInfo())
+        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30)) }
     }
 
     @Test
-    fun `get child departure info - already departed`() {
+    fun `get expected absences - already departed`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildDeparted()
-        assertEquals(emptyList(), getDepartureInfo())
+        givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(13, 0))
+        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30)) }
     }
 
     @Test
@@ -393,7 +170,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPresent(LocalTime.of(8, 0))
 
         val departed = LocalTime.of(16, 0)
-        markDeparted(departed, absenceType = null)
+        markDeparted(departed, absenceTypeNonbillable = null, absenceTypeBillable = null)
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -412,7 +189,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(13, 0)
         val absenceType = AbsenceType.OTHER_ABSENCE
-        markDeparted(departed, absenceType)
+        markDeparted(departed, absenceTypeNonbillable = null, absenceTypeBillable = absenceType)
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -431,7 +208,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(18, 0)
         val absenceType = AbsenceType.UNKNOWN_ABSENCE
-        markDeparted(departed, absenceType)
+        markDeparted(departed, absenceTypeNonbillable = absenceType, absenceTypeBillable = null)
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -450,7 +227,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         val departed = LocalTime.of(9, 30)
         val absenceType = AbsenceType.SICKLEAVE
-        markDeparted(departed, absenceType)
+        markDeparted(departed, absenceType, absenceType)
         val child = expectOneAttendanceStatus()
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -466,21 +243,21 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `post child departs - multi day attendance that ends at midnight`() {
+    fun `post child departs - multi day attendance`() {
         givenChildPlacement(PlacementType.DAYCARE)
-        givenChildPresent(LocalTime.of(8, 50), LocalDate.now().minusDays(1))
+        givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = LocalTime.of(0, 0)
-        markDeparted(departed, null)
+        val departed = LocalTime.of(13, 0)
+        markDeparted(departed, null, null)
         expectNoAttendanceStatuses()
     }
 
     @Test
     fun `post child departs - departing twice is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildDeparted()
+        givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(14, 0))
 
-        assertThrows<Conflict> { markDeparted(roundedTimeNow(), null) }
+        assertThrows<BadRequest> { markDeparted(LocalTime.of(15, 0), null, null) }
     }
 
     @Test
@@ -505,8 +282,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = HelsinkiDateTime.now().minusDays(1).minusHours(1),
-                departed = HelsinkiDateTime.now().minusDays(1).minusMinutes(1)
+                arrived = mockClock.now().minusDays(1).minusHours(1),
+                departed = mockClock.now().minusDays(1).minusMinutes(1)
             )
         }
         givenChildPlacement(PlacementType.PRESCHOOL)
@@ -646,8 +423,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun givenChildPresent(
-        arrived: LocalTime = roundedTimeNow().minusHours(1),
-        date: LocalDate = LocalDate.now()
+        arrived: LocalTime = roundedNow.minusHours(1),
+        date: LocalDate = mockClock.today()
     ) {
         db.transaction {
             it.insertTestChildAttendance(
@@ -662,15 +439,15 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun givenChildDeparted(
-        arrived: LocalTime = roundedTimeNow().minusHours(1),
-        departed: LocalTime = roundedTimeNow().minusMinutes(10)
+        arrived: LocalTime = roundedNow.minusHours(1),
+        departed: LocalTime = roundedNow.minusMinutes(10)
     ) {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = HelsinkiDateTime.now().withTime(arrived),
-                departed = HelsinkiDateTime.now().withTime(departed)
+                arrived = mockClock.now().withTime(arrived),
+                departed = mockClock.now().withTime(departed)
             )
         }
         val child = expectOneAttendanceStatus()
@@ -694,7 +471,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         childAttendanceController.getAttendanceStatuses(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id
         )
 
@@ -714,7 +491,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         childAttendanceController.postArrival(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
             testChild_1.id,
             ChildAttendanceController.ArrivalRequest(arrived)
@@ -725,30 +502,39 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         childAttendanceController.returnToComing(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
             testChild_1.id
         )
     }
 
-    private fun getDepartureInfo(): List<AbsenceThreshold> {
-        return childAttendanceController.getChildDeparture(
+    private fun getExpectedAbsencesOnDeparture(departed: LocalTime): Set<AbsenceCategory>? {
+        return childAttendanceController.getChildExpectedAbsencesOnDeparture(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
-            testChild_1.id
+            testChild_1.id,
+            ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed)
         )
     }
 
-    private fun markDeparted(departed: LocalTime, absenceType: AbsenceType?) {
+    private fun markDeparted(
+        departed: LocalTime,
+        absenceTypeNonbillable: AbsenceType?,
+        absenceTypeBillable: AbsenceType?
+    ) {
         childAttendanceController.postDeparture(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
             testChild_1.id,
-            ChildAttendanceController.DepartureRequest(departed, absenceType)
+            ChildAttendanceController.DepartureRequest(
+                departed = departed,
+                absenceTypeNonbillable = absenceTypeNonbillable,
+                absenceTypeBillable = absenceTypeBillable
+            )
         )
     }
 
@@ -756,7 +542,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         childAttendanceController.returnToPresent(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
             testChild_1.id
         )
@@ -766,12 +552,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         childAttendanceController.postFullDayAbsence(
             dbInstance(),
             mobileUser,
-            RealEvakaClock(),
+            mockClock,
             testDaycare.id,
             testChild_1.id,
             ChildAttendanceController.FullDayAbsenceRequest(absenceType)
         )
     }
-
-    private fun roundedTimeNow() = LocalTime.now(europeHelsinki).withSecond(0).withNano(0)
 }

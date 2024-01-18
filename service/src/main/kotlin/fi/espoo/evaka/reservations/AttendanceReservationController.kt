@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -274,6 +274,10 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @RequestBody body: ExpectedAbsencesRequest
     ): Set<AbsenceCategory>? {
+        if (!body.date.isBefore(clock.today())) {
+            return null
+        }
+
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
@@ -283,9 +287,13 @@ class AttendanceReservationController(
                         Action.Child.UPSERT_CHILD_DATE_PRESENCE,
                         body.childId
                     )
-                    if (body.date.isBefore(clock.today())) {
-                        getExpectedAbsenceCategories(tx, body.date, body.childId, body.attendances)
-                    } else null
+
+                    getExpectedAbsenceCategories(
+                        tx = tx,
+                        date = body.date,
+                        childId = body.childId,
+                        presenceTimes = body.attendances
+                    )
                 }
             }
             .also {

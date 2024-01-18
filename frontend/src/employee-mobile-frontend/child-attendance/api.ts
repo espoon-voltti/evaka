@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,11 +9,16 @@ import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceRangeRequest,
-  AbsenceThreshold,
   AttendanceChild,
-  ChildAttendanceStatusResponse
+  ChildAttendanceStatusResponse,
+  DepartureRequest,
+  ExpectedAbsencesOnDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
-import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import {
+  Absence,
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
 import {
   ConfirmedRangeDateUpdate,
   DailyChildReservationResult,
@@ -24,6 +29,7 @@ import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { parseReservationDto } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
@@ -204,36 +210,45 @@ export async function getFutureAbsencesByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getChildDeparture({
+export async function getChildExpectedAbsencesOnDeparture({
   unitId,
-  childId
+  childId,
+  departed
 }: {
   unitId: string
   childId: string
-}): Promise<AbsenceThreshold[]> {
+  departed: LocalTime
+}): Promise<AbsenceCategory[] | null> {
+  const body: JsonOf<ExpectedAbsencesOnDepartureRequest> = {
+    departed: departed.format()
+  }
   return client
-    .get<
-      JsonOf<AbsenceThreshold[]>
-    >(`/attendances/units/${unitId}/children/${childId}/departure`)
+    .post<
+      JsonOf<AbsenceCategory[] | null>
+    >(`/attendances/units/${unitId}/children/${childId}/departure/expected-absences`, body)
     .then((res) => res.data)
 }
 
 export async function createDeparture({
   unitId,
   childId,
-  absenceType,
+  absenceTypeNonbillable,
+  absenceTypeBillable,
   departed
 }: {
   unitId: string
   childId: string
-  absenceType: AbsenceType | null
-  departed: string
+  absenceTypeNonbillable: AbsenceType | null
+  absenceTypeBillable: AbsenceType | null
+  departed: LocalTime
 }): Promise<void> {
+  const body: JsonOf<DepartureRequest> = {
+    departed: departed.format(),
+    absenceTypeNonbillable,
+    absenceTypeBillable
+  }
   return client
-    .post(`/attendances/units/${unitId}/children/${childId}/departure`, {
-      absenceType,
-      departed
-    })
+    .post(`/attendances/units/${unitId}/children/${childId}/departure`, body)
     .then(() => undefined)
 }
 

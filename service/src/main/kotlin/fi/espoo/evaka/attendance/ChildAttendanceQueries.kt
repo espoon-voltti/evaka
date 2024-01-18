@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
@@ -73,11 +74,34 @@ fun Database.Read.getChildAttendance(
         .exactlyOneOrNull<ChildAttendance>()
 }
 
+fun Database.Read.getCompletedChildAttendanceTimes(
+    childId: ChildId,
+    unitId: DaycareId,
+    date: LocalDate
+): List<TimeRange> {
+    return createQuery<Any> {
+            sql(
+                """
+        SELECT (start_time, end_time)::timerange
+        FROM child_attendance
+        WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND date = ${bind(date)} AND end_time IS NOT NULL 
+    """
+            )
+        }
+        .toList()
+}
+
 data class OngoingAttendance(
     val id: ChildAttendanceId,
     val date: LocalDate,
     val startTime: LocalTime
-)
+) {
+    fun toTimeRange(departed: HelsinkiDateTime) =
+        TimeRange(
+            start = if (date.isBefore(departed.toLocalDate())) LocalTime.of(0, 0) else startTime,
+            end = departed.toLocalTime()
+        )
+}
 
 fun Database.Read.getChildOngoingAttendance(
     childId: ChildId,
@@ -307,7 +331,7 @@ WITH placed_children AS (
 )
 SELECT 
     a.child_id, 
-    jsonb_agg(jsonb_build_object('category', a.category)) AS absences
+    jsonb_agg(jsonb_build_object('category', a.category, 'type', a.absence_type)) AS absences
 FROM absence a
 WHERE a.child_id = ANY (SELECT child_id FROM placed_children) AND a.date = :date
 GROUP BY a.child_id

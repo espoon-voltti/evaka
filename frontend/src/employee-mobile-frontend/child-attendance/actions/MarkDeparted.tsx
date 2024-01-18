@@ -1,24 +1,31 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
-import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
+import { isValidTime } from 'lib-common/date'
+import {
+  AttendanceChild,
+  AttendanceTimes,
+  ChildAttendanceStatusResponse
+} from 'lib-common/generated/api-types/attendance'
+import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import {
   queryOrDefault,
   useMutationResult,
-  useQuery,
   useQueryResult
 } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -27,9 +34,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employeeMobile'
+import { featureFlags } from 'lib-customizations/employee'
 import { farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
@@ -43,41 +51,48 @@ import {
 } from '../../common/components'
 import { Translations, useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
+import { formatCategory } from '../../types'
 import DailyNote from '../DailyNote'
 import {
   attendanceStatusesQuery,
-  childDepartureQuery,
+  childExpectedAbsencesOnDepartureQuery,
   childrenQuery,
   createDepartureMutation
 } from '../queries'
 import { childAttendanceStatus, useChild } from '../utils'
 
 import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
-import { AbsentFrom } from './AbsentFrom'
+
+const AbsenceTitle = styled(Title)`
+  font-size: 18px;
+  font-style: normal;
+  font-weight: ${fontWeights.medium};
+  line-height: 27px;
+  letter-spacing: 0;
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 0;
+`
 
 function validateTime(
   i18n: Translations,
   time: string,
-  attendances: AttendanceTimes[] | undefined
+  attendances: AttendanceTimes[]
 ): string | undefined {
-  if (!attendances || attendances.length === 0) return undefined
-
   if (!isValidTime(time)) {
     return i18n.attendances.timeError
   }
 
-  try {
-    const latestArrival = attendances.sort((l, r) =>
-      l.arrived > r.arrived ? -1 : 1
-    )[0]
+  const arrived = attendances.find((a) => a.departed === null)?.arrived
 
+  if (!arrived) return undefined
+
+  try {
     const parsedTime = LocalTime.parse(time)
     const parsedTimestamp =
       LocalDate.todayInSystemTz().toHelsinkiDateTime(parsedTime)
-    if (!parsedTimestamp.isAfter(latestArrival.arrived)) {
-      return `${i18n.attendances.arrived} ${latestArrival.arrived
-        .toLocalTime()
-        .format()}`
+    if (!parsedTimestamp.isAfter(arrived)) {
+      return `${i18n.attendances.arrived} ${arrived.toLocalTime().format()}`
     }
   } catch (e) {
     return i18n.attendances.timeError
@@ -86,58 +101,67 @@ function validateTime(
   return undefined
 }
 
-export default React.memo(function MarkDeparted() {
+const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
+  unitId,
+  child,
+  attendanceStatus
+}: {
+  unitId: UUID
+  child: AttendanceChild
+  attendanceStatus: ChildAttendanceStatusResponse
+}) {
+  const childId = child.id
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-
-  const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
-  const childDepartureInfo = useQueryResult(
-    childDepartureQuery({ unitId, childId })
-  )
-
-  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceTypeWithNoAbsence | undefined
-  >(undefined)
-
-  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
+  const groupId = child.groupId
   const groupNotes = useQueryResult(
     queryOrDefault(groupNotesQuery, [])(groupId)
   )
 
-  const absentFrom = useMemo(
-    () =>
-      childDepartureInfo.map((thresholds) =>
-        thresholds
-          .filter((threshold) => time <= threshold.time)
-          .map(({ category }) => category)
-      ),
-    [childDepartureInfo, time]
+  const [time, setTime] = useState(() =>
+    HelsinkiDateTime.now().toLocalTime().format()
   )
 
-  const { data: attendanceStatuses, isError } = useQuery(
-    attendanceStatusesQuery(unitId)
+  const [selectedAbsenceTypeNonbillable, setSelectedAbsenceTypeNonbillable] =
+    useState<AbsenceTypeWithNoAbsence | undefined>(
+      attendanceStatus.absences.find((a) => a.category === 'NONBILLABLE')?.type
+    )
+  const [selectedAbsenceTypeBillable, setSelectedAbsenceTypeBillable] =
+    useState<AbsenceTypeWithNoAbsence | undefined>(
+      attendanceStatus.absences.find((a) => a.category === 'BILLABLE')?.type
+    )
+
+  const timeError = useMemo(
+    () => validateTime(i18n, time, attendanceStatus.attendances),
+    [i18n, time, attendanceStatus]
   )
-  const timeError = useMemo(() => {
-    if (attendanceStatuses && child.isSuccess) {
-      return validateTime(
-        i18n,
-        time,
-        childAttendanceStatus(child.value, attendanceStatuses).attendances
-      )
-    }
-    if (isError) return i18n.common.loadingFailed
-    return undefined
-  }, [attendanceStatuses, child, i18n, isError, time])
+
+  const expectedAbsences = useQueryResult(
+    queryOrDefault(
+      (departed: LocalTime) =>
+        childExpectedAbsencesOnDepartureQuery({ unitId, childId, departed }),
+      null
+    )(timeError === undefined ? LocalTime.tryParse(time) : null)
+  )
 
   const { mutateAsync: createDeparture } = useMutationResult(
     createDepartureMutation
   )
+
+  const formIsValid =
+    !timeError &&
+    expectedAbsences.isSuccess &&
+    (expectedAbsences.value?.includes('NONBILLABLE') !== true ||
+      selectedAbsenceTypeNonbillable !== undefined) &&
+    (expectedAbsences.value?.includes('BILLABLE') !== true ||
+      selectedAbsenceTypeBillable !== undefined)
+
+  const basicAbsenceTypes: AbsenceType[] = [
+    'OTHER_ABSENCE',
+    'SICKLEAVE',
+    'UNKNOWN_ABSENCE'
+  ]
 
   return (
     <TallContentArea
@@ -145,143 +169,187 @@ export default React.memo(function MarkDeparted() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(
-        combine(child, groupNotes, absentFrom),
-        ([child, groupNotes, absentFrom]) => (
-          <>
-            <div>
-              <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
-            </div>
-            <ContentArea
-              shadow
-              opaque={true}
-              paddingHorizontal="s"
-              paddingVertical="m"
-            >
-              <TimeWrapper>
-                <CustomTitle>
-                  {i18n.attendances.actions.markDeparted}
-                </CustomTitle>
-                <TimeInput
-                  onChange={setTime}
-                  value={time}
-                  data-qa="set-time"
-                  info={
-                    timeError
-                      ? { text: timeError, status: 'warning' }
-                      : undefined
-                  }
-                />
-              </TimeWrapper>
-              <Gap size="xs" />
-              {child && absentFrom.length > 0 ? (
+      {renderResult(groupNotes, (groupNotes) => (
+        <>
+          <div>
+            <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
+          </div>
+
+          <ContentArea
+            shadow
+            opaque={true}
+            paddingHorizontal="s"
+            paddingVertical="m"
+          >
+            <TimeWrapper>
+              <CustomTitle>{i18n.attendances.actions.markDeparted}</CustomTitle>
+              <TimeInput
+                onChange={setTime}
+                value={time}
+                data-qa="set-time"
+                info={
+                  timeError ? { text: timeError, status: 'warning' } : undefined
+                }
+              />
+            </TimeWrapper>
+
+            <Gap size="xs" />
+
+            {renderResult(expectedAbsences, (expectedAbsences) =>
+              expectedAbsences && expectedAbsences.length > 0 ? (
                 <FixedSpaceColumn>
-                  <AbsentFrom
-                    placementType={child.placementType}
-                    absentFrom={absentFrom}
-                  />
-                  <AbsenceSelector
-                    absenceTypes={[
-                      'OTHER_ABSENCE',
-                      'SICKLEAVE',
-                      'UNKNOWN_ABSENCE',
-                      'PLANNED_ABSENCE',
-                      ...(featureFlags.noAbsenceType
-                        ? (['NO_ABSENCE'] as const)
-                        : ([] as const))
-                    ]}
-                    selectedAbsenceType={selectedAbsenceType}
-                    setSelectedAbsenceType={setSelectedAbsenceType}
-                  />
-                  <Actions data-qa="absence-actions">
-                    <FixedSpaceRow fullWidth>
-                      <Button
-                        text={i18n.common.cancel}
-                        onClick={() => navigate(-1)}
+                  <AbsenceTitle size={2}>
+                    {i18n.attendances.absenceTitle}
+                  </AbsenceTitle>
+                  {expectedAbsences.includes('NONBILLABLE') && (
+                    <FixedSpaceColumn
+                      spacing="xs"
+                      data-qa="absence-NONBILLABLE"
+                    >
+                      <div>
+                        {formatCategory(
+                          'NONBILLABLE',
+                          child.placementType,
+                          i18n
+                        )}
+                      </div>
+                      <AbsenceSelector
+                        absenceTypes={[
+                          ...basicAbsenceTypes,
+                          ...attendanceStatus.absences
+                            .filter(
+                              (a) =>
+                                a.category === 'NONBILLABLE' &&
+                                !basicAbsenceTypes.includes(a.type)
+                            )
+                            .map((a) => a.type),
+                          ...(featureFlags.noAbsenceType
+                            ? (['NO_ABSENCE'] as const)
+                            : ([] as const))
+                        ]}
+                        selectedAbsenceType={selectedAbsenceTypeNonbillable}
+                        setSelectedAbsenceType={
+                          setSelectedAbsenceTypeNonbillable
+                        }
                       />
-                      {selectedAbsenceType !== undefined && !timeError ? (
-                        <AsyncButton
-                          primary
-                          text={i18n.common.confirm}
-                          onClick={() =>
-                            createDeparture({
-                              unitId,
-                              childId,
-                              absenceType:
-                                selectedAbsenceType === 'NO_ABSENCE'
-                                  ? null
-                                  : selectedAbsenceType,
-                              departed: time
-                            })
-                          }
-                          onSuccess={() => {
-                            navigate(-1)
-                          }}
-                          data-qa="mark-departed-with-absence-btn"
-                        />
-                      ) : (
-                        <Button
-                          primary
-                          text={i18n.common.confirm}
-                          disabled={true}
-                        />
-                      )}
-                    </FixedSpaceRow>
-                  </Actions>
+                    </FixedSpaceColumn>
+                  )}
+                  {expectedAbsences.includes('BILLABLE') && (
+                    <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
+                      <div>
+                        {formatCategory('BILLABLE', child.placementType, i18n)}
+                      </div>
+                      <AbsenceSelector
+                        absenceTypes={[
+                          ...basicAbsenceTypes,
+                          ...attendanceStatus.absences
+                            .filter(
+                              (a) =>
+                                a.category === 'BILLABLE' &&
+                                !basicAbsenceTypes.includes(a.type)
+                            )
+                            .map((a) => a.type),
+                          ...(featureFlags.noAbsenceType
+                            ? (['NO_ABSENCE'] as const)
+                            : ([] as const))
+                        ]}
+                        selectedAbsenceType={selectedAbsenceTypeBillable}
+                        setSelectedAbsenceType={setSelectedAbsenceTypeBillable}
+                      />
+                    </FixedSpaceColumn>
+                  )}
                 </FixedSpaceColumn>
-              ) : (
-                <Actions data-qa="non-absence-actions">
-                  <FixedSpaceRow fullWidth>
-                    <Button
-                      text={i18n.common.cancel}
-                      onClick={() => navigate(-1)}
-                    />
-                    <AsyncButton
-                      primary
-                      text={i18n.common.confirm}
-                      onClick={() =>
-                        createDeparture({
-                          unitId,
-                          childId,
-                          absenceType: null,
-                          departed: time
-                        })
-                      }
-                      onSuccess={() => {
-                        history.go(-2)
-                      }}
-                      data-qa="mark-departed-btn"
-                      disabled={timeError !== undefined}
-                    />
-                  </FixedSpaceRow>
-                </Actions>
-              )}
-            </ContentArea>
+              ) : null
+            )}
+
             <Gap size="s" />
-            <ContentArea
-              shadow
-              opaque={true}
-              paddingHorizontal="s"
-              paddingVertical="s"
-              blue
-            >
-              <DailyNotes>
-                <span>
-                  <RoundIcon
-                    content={farStickyNote}
-                    color={colors.main.m1}
-                    size="m"
-                  />
-                </span>
-                <DailyNote
-                  child={child ? child : undefined}
-                  groupNotes={groupNotes}
+
+            <Actions>
+              <FixedSpaceRow fullWidth>
+                <Button
+                  text={i18n.common.cancel}
+                  onClick={() => navigate(-1)}
                 />
-              </DailyNotes>
-            </ContentArea>
-          </>
-        )
-      )}
+                <AsyncButton
+                  primary
+                  text={i18n.common.confirm}
+                  disabled={!formIsValid}
+                  onClick={() => {
+                    if (!expectedAbsences.isSuccess) return undefined
+
+                    return createDeparture({
+                      unitId,
+                      childId,
+                      absenceTypeNonbillable:
+                        expectedAbsences.value?.includes('NONBILLABLE') &&
+                        selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
+                          ? selectedAbsenceTypeNonbillable ?? null
+                          : null,
+                      absenceTypeBillable:
+                        expectedAbsences.value?.includes('BILLABLE') &&
+                        selectedAbsenceTypeBillable !== 'NO_ABSENCE'
+                          ? selectedAbsenceTypeBillable ?? null
+                          : null,
+                      departed: LocalTime.parse(time)
+                    })
+                  }}
+                  onSuccess={() => {
+                    const absenceMarked = expectedAbsences
+                      .map((exp) => exp && exp.length > 0)
+                      .getOrElse(false)
+                    navigate(absenceMarked ? -1 : -2)
+                  }}
+                  data-qa="mark-departed-btn"
+                />
+              </FixedSpaceRow>
+            </Actions>
+          </ContentArea>
+
+          <Gap size="s" />
+
+          <ContentArea
+            shadow
+            opaque={true}
+            paddingHorizontal="s"
+            paddingVertical="s"
+            blue
+          >
+            <DailyNotes>
+              <span>
+                <RoundIcon
+                  content={farStickyNote}
+                  color={colors.main.m1}
+                  size="m"
+                />
+              </span>
+              <DailyNote
+                child={child ? child : undefined}
+                groupNotes={groupNotes}
+              />
+            </DailyNotes>
+          </ContentArea>
+        </>
+      ))}
     </TallContentArea>
+  )
+})
+
+export default React.memo(function MarkDeparted() {
+  const { childId, unitId } = useNonNullableParams<{
+    unitId: string
+    childId: string
+  }>()
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+
+  return renderResult(
+    combine(child, attendanceStatuses),
+    ([child, attendanceStatuses]) => (
+      <MarkDepartedInner
+        unitId={unitId}
+        child={child}
+        attendanceStatus={childAttendanceStatus(child, attendanceStatuses)}
+      />
+    )
   )
 })

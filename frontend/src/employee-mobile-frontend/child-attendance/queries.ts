@@ -4,6 +4,7 @@
 
 import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -22,7 +23,7 @@ import {
   returnToPresent,
   deleteChildImage,
   uploadChildImage,
-  getChildDeparture,
+  getChildExpectedAbsencesOnDeparture,
   getUnitConfirmedDayReservations,
   getUnitConfirmedDaysReservationStatistics
 } from './api'
@@ -38,11 +39,15 @@ const queryKeys = createQueryKeys('childAttendance', {
     childId
   ],
   attendanceStatuses: (unitId: string) => ['attendanceStatuses', unitId],
-  childDeparture: ({ unitId, childId }: { unitId: UUID; childId: UUID }) => [
-    'childDeparture',
+  childDeparture: ({
     unitId,
-    childId
-  ],
+    childId,
+    departed
+  }: {
+    unitId: UUID
+    childId: UUID
+    departed: LocalTime
+  }) => ['childDeparture', unitId, childId, departed],
   confirmedDayReservations: (unitId: string, examinationDate: LocalDate) => [
     'confirmedDayReservations',
     unitId,
@@ -70,10 +75,10 @@ export const attendanceStatusesQuery = query({
   }
 })
 
-export const childDepartureQuery = query({
-  api: getChildDeparture,
-  queryKey: ({ unitId, childId }) =>
-    queryKeys.childDeparture({ unitId, childId })
+export const childExpectedAbsencesOnDepartureQuery = query({
+  api: getChildExpectedAbsencesOnDeparture,
+  queryKey: ({ unitId, childId, departed }) =>
+    queryKeys.childDeparture({ unitId, childId, departed })
 })
 
 export const confirmedDayReservationsQuery = query({

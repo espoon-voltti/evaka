@@ -21,6 +21,7 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -204,6 +205,42 @@ fun getFutureAbsencesOfChild(
 ): List<Absence> {
     val period = DateRange(evakaClock.today().plusDays(1), null)
     return tx.getAbsencesOfChildByRange(childId, period)
+}
+
+/**
+ * Inserts/deletes absences to achieve the given state. Does not replace identical existing
+ * absences. Returns ids of inserted and deleted absences.
+ */
+fun setChildDateAbsences(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+    childId: ChildId,
+    date: LocalDate,
+    absences: Map<AbsenceCategory, AbsenceType>
+): Pair<List<AbsenceId>, List<AbsenceId>> {
+    val alreadyUpToDateCategories =
+        absences.entries.mapNotNull { (category, type) ->
+            category.takeIf { tx.absenceExists(date, childId, category, type) }
+        }
+    val deletedAbsences =
+        tx.deleteChildAbsences(
+            childId = childId,
+            date = date,
+            categories = AbsenceCategory.entries.toSet().minus(alreadyUpToDateCategories.toSet())
+        )
+
+    val insertedAbsences =
+        tx.insertAbsences(
+            now = now,
+            userId = userId,
+            absences =
+                absences
+                    .filterKeys { !alreadyUpToDateCategories.contains(it) }
+                    .map { (category, type) -> AbsenceUpsert(childId, date, category, type) }
+        )
+
+    return insertedAbsences to deletedAbsences
 }
 
 fun generateAbsencesFromIrregularDailyServiceTimes(

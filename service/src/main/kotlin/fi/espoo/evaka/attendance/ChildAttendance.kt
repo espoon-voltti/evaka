@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.placement.PlacementType
@@ -62,4 +63,4 @@ data class ChildAttendance(
 
 data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)
 
-data class ChildAbsence(val category: AbsenceCategory)
+data class ChildAbsence(val category: AbsenceCategory, val type: AbsenceType)

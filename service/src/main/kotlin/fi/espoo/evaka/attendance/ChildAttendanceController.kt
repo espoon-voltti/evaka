@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,17 +12,12 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.insertAbsences
+import fi.espoo.evaka.daycare.service.setChildDateAbsences
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesForChildren
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChildren
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.PREPARATORY
-import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.reservations.clearOldReservations
+import fi.espoo.evaka.reservations.getExpectedAbsenceCategories
 import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.reservations.getUnitReservations
 import fi.espoo.evaka.shared.ChildId
@@ -35,9 +30,10 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.Duration
+import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
@@ -49,17 +45,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-
-val preschoolStart: LocalTime = LocalTime.of(9, 0)
-val preschoolEnd: LocalTime = LocalTime.of(13, 0)
-val preschoolMinimumDuration: Duration = Duration.ofHours(1)
-
-val preparatoryStart: LocalTime = LocalTime.of(9, 0)
-val preparatoryEnd: LocalTime = LocalTime.of(14, 0)
-val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
-
-val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
-val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15)
 
 @RestController
 @RequestMapping("/attendances")
@@ -114,7 +99,7 @@ class ChildAttendanceController(
                             dailyNote = dailyNotes[child.id],
                             stickyNotes = stickyNotes[child.id] ?: emptyList(),
                             imageUrl = child.imageUrl,
-                            reservations = reservations[child.id] ?: listOf()
+                            reservations = reservations[child.id] ?: emptyList()
                         )
                     }
                 }
@@ -216,7 +201,6 @@ class ChildAttendanceController(
                     unitId
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-                tx.deleteAbsencesByDate(childId, clock.today())
                 try {
                     tx.insertAttendance(
                         childId = childId,
@@ -250,7 +234,6 @@ class ChildAttendanceController(
                     unitId
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-                tx.deleteAbsencesByDate(childId, clock.today())
 
                 val attendance = tx.getChildOngoingAttendance(childId, unitId)
                 if (attendance != null) tx.deleteAttendance(attendance.id)
@@ -259,14 +242,20 @@ class ChildAttendanceController(
         Audit.ChildAttendancesReturnToComing.log(targetId = childId, objectId = unitId)
     }
 
-    @GetMapping("/units/{unitId}/children/{childId}/departure")
-    fun getChildDeparture(
+    data class ExpectedAbsencesOnDepartureRequest(
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime
+    )
+
+    @PostMapping("/units/{unitId}/children/{childId}/departure/expected-absences")
+    fun getChildExpectedAbsencesOnDeparture(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId
-    ): List<AbsenceThreshold> {
+        @PathVariable childId: ChildId,
+        @RequestBody body: ExpectedAbsencesOnDepartureRequest
+    ): Set<AbsenceCategory>? {
+        val today = clock.today()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -276,23 +265,27 @@ class ChildAttendanceController(
                         Action.Unit.READ_CHILD_ATTENDANCES,
                         unitId
                     )
-                    val attendance = tx.getChildOngoingAttendance(childId, unitId)
-                    if (attendance == null) emptyList()
-                    else getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
+                    val ongoingAttendance =
+                        tx.getChildOngoingAttendance(childId, unitId)
+                            ?: throw BadRequest("Cannot depart, has not yet arrived")
+                    val attendanceTimesToday =
+                        tx.getCompletedChildAttendanceTimes(childId, unitId, today) +
+                            ongoingAttendance.toTimeRange(HelsinkiDateTime.of(today, body.departed))
+                    getExpectedAbsenceCategories(
+                        tx = tx,
+                        date = today,
+                        childId = childId,
+                        presenceTimes = attendanceTimesToday
+                    )
                 }
             }
-            .also {
-                Audit.ChildAttendancesDepartureRead.log(
-                    targetId = childId,
-                    objectId = unitId,
-                    meta = mapOf("count" to it.size)
-                )
-            }
+            .also { Audit.ChildAttendancesDepartureRead.log(targetId = childId, objectId = unitId) }
     }
 
     data class DepartureRequest(
-        @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
-        val absenceType: AbsenceType?
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
+        val absenceTypeNonbillable: AbsenceType?,
+        val absenceTypeBillable: AbsenceType?
     )
 
     @PostMapping("/units/{unitId}/children/{childId}/departure")
@@ -316,37 +309,37 @@ class ChildAttendanceController(
                 val now = clock.now()
                 val today = clock.today()
 
-                val attendance =
+                val ongoingAttendance =
                     tx.getChildOngoingAttendance(childId, unitId)
-                        ?: throw Conflict("Cannot depart, has not yet arrived")
+                        ?: throw BadRequest("Cannot depart, has not yet arrived")
 
-                val absentFrom =
-                    getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance).filter {
-                        body.departed <= it.time
-                    }
-                tx.deleteAbsencesByDate(childId, today)
-                if (absentFrom.isNotEmpty() && body.absenceType != null) {
-                    val absences =
-                        absentFrom.map { (careType, _) ->
-                            AbsenceUpsert(childId, today, careType, body.absenceType)
-                        }
-                    tx.insertAbsences(now, user.evakaUserId, absences)
-                } else if (body.absenceType != null) {
-                    throw BadRequest("Request defines absenceType but child was not absent.")
-                }
+                validateAndSetAbsences(
+                    tx = tx,
+                    now = now,
+                    user = user,
+                    unitId = unitId,
+                    childId = childId,
+                    ongoingAttendance = ongoingAttendance,
+                    departed = body.departed,
+                    absences =
+                        mapOfNotNullValues(
+                            AbsenceCategory.NONBILLABLE to body.absenceTypeNonbillable,
+                            AbsenceCategory.BILLABLE to body.absenceTypeBillable
+                        )
+                )
 
                 try {
-                    if (attendance.date == today) {
+                    if (ongoingAttendance.date == today) {
                         tx.updateAttendanceEnd(
-                            attendanceId = attendance.id,
+                            attendanceId = ongoingAttendance.id,
                             endTime = body.departed
                         )
                     } else {
                         tx.updateAttendanceEnd(
-                            attendanceId = attendance.id,
+                            attendanceId = ongoingAttendance.id,
                             endTime = LocalTime.of(23, 59)
                         )
-                        generateSequence(attendance.date.plusDays(1)) { it.plusDays(1) }
+                        generateSequence(ongoingAttendance.date.plusDays(1)) { it.plusDays(1) }
                             .takeWhile { it <= today }
                             .map { date ->
                                 Triple(
@@ -368,6 +361,37 @@ class ChildAttendanceController(
         Audit.ChildAttendancesDepartureCreate.log(targetId = childId, objectId = unitId)
     }
 
+    private fun validateAndSetAbsences(
+        tx: Database.Transaction,
+        now: HelsinkiDateTime,
+        user: AuthenticatedUser,
+        unitId: DaycareId,
+        childId: ChildId,
+        ongoingAttendance: OngoingAttendance,
+        departed: LocalTime,
+        absences: Map<AbsenceCategory, AbsenceType>
+    ) {
+        val today = now.toLocalDate()
+        val attendanceTimesToday =
+            tx.getCompletedChildAttendanceTimes(childId, unitId, today) +
+                ongoingAttendance.toTimeRange(HelsinkiDateTime.of(today, departed))
+        val expectedAbsences =
+            getExpectedAbsenceCategories(
+                tx = tx,
+                date = today,
+                childId = childId,
+                presenceTimes = attendanceTimesToday
+            )
+
+        // TODO: once calculation works properly for Tampere special cases this could be
+        //  changed to `expectedAbsences != null && absences.keys != expectedAbsences`
+        if (expectedAbsences != null && absences.keys.any { !expectedAbsences.contains(it) }) {
+            throw BadRequest("Absences in request do not match expected absences")
+        }
+
+        setChildDateAbsences(tx, now, user.evakaUserId, childId, now.toLocalDate(), absences)
+    }
+
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
     fun returnToPresent(
         db: Database,
@@ -386,7 +410,6 @@ class ChildAttendanceController(
                     unitId
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-                tx.deleteAbsencesByDate(childId, clock.today())
 
                 tx.getChildAttendance(childId, unitId, clock.now())?.let { attendance ->
                     tx.unsetAttendanceEndTime(attendance.id)
@@ -524,26 +547,6 @@ class ChildAttendanceController(
             meta = mapOf("from" to from, "to" to to)
         )
     }
-
-    private fun getPartialAbsenceThresholds(
-        tx: Database.Read,
-        clock: EvakaClock,
-        childId: ChildId,
-        unitId: DaycareId,
-        attendance: OngoingAttendance
-    ): List<AbsenceThreshold> {
-        if (!featureConfig.partialAbsenceThresholdsEnabled) {
-            return emptyList()
-        }
-        val today = clock.today()
-        val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, today)
-        val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, today)
-        return getPartialAbsenceThresholds(
-            placementBasics,
-            attendance.startTime,
-            childHasPaidServiceNeedToday
-        )
-    }
 }
 
 data class ChildPlacementBasics(val placementType: PlacementType, val dateOfBirth: LocalDate)
@@ -606,7 +609,7 @@ private fun getChildAttendanceStatus(
     absences: List<ChildAbsence>
 ): AttendanceStatus {
     if (attendances.isNotEmpty()) {
-        return if (attendances[0].departed == null) AttendanceStatus.PRESENT
+        return if (attendances.any { it.departed == null }) AttendanceStatus.PRESENT
         else AttendanceStatus.DEPARTED
     }
 
@@ -621,118 +624,3 @@ private fun isFullyAbsent(placementType: PlacementType, absences: List<ChildAbse
     val absenceCategories = absences.asSequence().map { it.category }.toSet()
     return placementType.absenceCategories() == absenceCategories
 }
-
-data class AbsenceThreshold(
-    val category: AbsenceCategory,
-    @ForceCodeGenType(String::class) val time: LocalTime
-)
-
-private fun getPartialAbsenceThresholds(
-    placementBasics: ChildPlacementBasics,
-    arrived: LocalTime,
-    childHasPaidServiceNeedToday: Boolean
-): List<AbsenceThreshold> {
-    val placementType = placementBasics.placementType
-
-    return listOfNotNull(
-        preschoolAbsenceThreshold(placementType, arrived),
-        preschoolDaycareAbsenceThreshold(placementType, arrived),
-        daycareAbsenceThreshold(placementType, arrived, childHasPaidServiceNeedToday)
-    )
-}
-
-private fun preschoolAbsenceThreshold(
-    placementType: PlacementType,
-    arrived: LocalTime
-): AbsenceThreshold? {
-    if (placementType in listOf(PRESCHOOL, PRESCHOOL_DAYCARE, PRESCHOOL_CLUB)) {
-        val threshold =
-            if (
-                arrived > preschoolEnd ||
-                    Duration.between(arrived, preschoolEnd) < preschoolMinimumDuration
-            ) {
-                LocalTime.of(23, 59)
-            } else {
-                minOf(maxOf(arrived, preschoolStart).plus(preschoolMinimumDuration), preschoolEnd)
-            }
-        return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
-    }
-
-    if (placementType in listOf(PREPARATORY, PREPARATORY_DAYCARE)) {
-        val threshold =
-            if (
-                arrived > preparatoryEnd ||
-                    Duration.between(arrived, preparatoryEnd) < preparatoryMinimumDuration
-            ) {
-                LocalTime.of(23, 59)
-            } else {
-                minOf(
-                    maxOf(arrived, preschoolStart).plus(preparatoryMinimumDuration),
-                    preparatoryEnd
-                )
-            }
-        return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
-    }
-
-    return null
-}
-
-private fun preschoolDaycareAbsenceThreshold(
-    placementType: PlacementType,
-    arrived: LocalTime
-): AbsenceThreshold? {
-    if (placementType == PRESCHOOL_DAYCARE || placementType == PRESCHOOL_CLUB) {
-        if (Duration.between(arrived, preschoolStart) > connectedDaycareBuffer) return null
-        if (Duration.between(arrived, preschoolEnd) < connectedDaycareBuffer) return null
-
-        val threshold = preschoolEnd.plus(connectedDaycareBuffer)
-        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
-    }
-
-    if (placementType == PREPARATORY_DAYCARE) {
-        if (Duration.between(arrived, preparatoryStart) > connectedDaycareBuffer) return null
-
-        val threshold = preparatoryEnd.plus(connectedDaycareBuffer)
-        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
-    }
-
-    return null
-}
-
-private fun daycareAbsenceThreshold(
-    placementType: PlacementType,
-    arrived: LocalTime,
-    childHasPaidServiceNeedToday: Boolean
-): AbsenceThreshold? {
-    if (
-        placementType in listOf(DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS) &&
-            childHasPaidServiceNeedToday
-    ) {
-        val threshold = arrived.plus(fiveYearOldFreeLimit)
-        return AbsenceThreshold(AbsenceCategory.BILLABLE, threshold)
-    }
-
-    return null
-}
-
-private fun Database.Read.childHasPaidServiceNeedToday(
-    childId: ChildId,
-    today: LocalDate
-): Boolean =
-    createQuery(
-            """
-SELECT EXISTS(
-    SELECT 1
-    FROM placement p  
-        LEFT JOIN service_need sn ON p.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :today
-        LEFT JOIN service_need_option sno ON sn.option_id = sno.id
-    WHERE
-        p.child_id = :childId
-        AND daterange(p.start_date, p.end_date, '[]') @> :today
-        AND sno.fee_coefficient > 0.0)
-    """
-                .trimIndent()
-        )
-        .bind("childId", childId)
-        .bind("today", today)
-        .exactlyOne<Boolean>()

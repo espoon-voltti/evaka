@@ -215,9 +215,20 @@ fun Database.Transaction.addMissingHolidayReservations(
     batch.execute()
 }
 
-fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate): List<AbsenceId> =
-    createUpdate("DELETE FROM absence WHERE child_id = :childId AND date = :date RETURNING id")
-        .bind("childId", childId)
+fun Database.Transaction.deleteChildAbsences(
+    childId: ChildId,
+    date: LocalDate,
+    categories: Set<AbsenceCategory> = AbsenceCategory.entries.toSet()
+): List<AbsenceId> =
+    createUpdate<Any> {
+            sql(
+                """
+DELETE FROM absence
+WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND category = ANY(${bind(categories)})
+RETURNING id
+    """
+            )
+        }
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
         .toList<AbsenceId>()
@@ -337,6 +348,27 @@ AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
         )
         .bind("range", range)
         .execute()
+}
+
+fun Database.Read.absenceExists(
+    date: LocalDate,
+    childId: ChildId,
+    category: AbsenceCategory,
+    type: AbsenceType
+): Boolean {
+    return createQuery<Any> {
+            sql(
+                """
+SELECT exists(
+    SELECT 1 FROM absence
+    WHERE child_id = ${bind(childId)} 
+        AND date = ${bind(date)} 
+        AND category = ${bind(category)} 
+        AND absence_type = ${bind(type)}
+)"""
+            )
+        }
+        .exactlyOne()
 }
 
 fun Database.Read.getGroupName(groupId: GroupId): String? {

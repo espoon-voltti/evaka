@@ -219,7 +219,6 @@ val testFeatureConfig =
         assistanceDecisionMakerRoles = null,
         preschoolAssistanceDecisionMakerRoles = null,
         requestedStartUpperLimit = 14,
-        partialAbsenceThresholdsEnabled = true,
         postOffice = "ESPOO",
         municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
         serviceWorkerMessageAccountName =
