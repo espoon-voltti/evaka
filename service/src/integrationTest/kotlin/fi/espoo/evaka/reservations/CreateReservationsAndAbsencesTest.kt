@@ -12,16 +12,20 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestHoliday
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -34,11 +38,6 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.snDaycareContractDays15
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
@@ -57,14 +56,30 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     private val endTime: LocalTime = LocalTime.of(17, 0)
     private val queryRange = FiniteDateRange(monday.minusDays(10), monday.plusDays(10))
 
-    private val citizenUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
-    private val employeeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf())
-
     private val citizenReservationThresholdHours: Long = 150
+
+    private lateinit var daycare: DevDaycare
+    private lateinit var employee: DevEmployee
+    private lateinit var adult: DevPerson
+    private lateinit var child: DevPerson
 
     @BeforeEach
     fun before() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        val area = DevCareArea()
+        daycare = DevDaycare(areaId = area.id)
+        employee = DevEmployee()
+
+        child = DevPerson()
+        adult = DevPerson()
+
+        db.transaction {
+            it.insertServiceNeedOptions()
+            it.insert(area)
+            it.insert(daycare)
+            it.insert(employee)
+            it.insert(adult, DevPersonType.ADULT)
+            it.insert(child, DevPersonType.CHILD)
+        }
     }
 
     @Test
@@ -72,12 +87,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
 
         // when
@@ -85,15 +100,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
@@ -104,7 +119,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 2 reservations are added
         val reservations =
-            db.read { it.getReservationsCitizen(monday, testAdult_1.id, queryRange) }
+            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
                 .flatMap {
                     it.children.mapNotNull { child ->
                         child.reservations.takeIf { it.isNotEmpty() }
@@ -118,20 +133,20 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 type = PlacementType.PRESCHOOL,
                 startDate = monday,
                 endDate = monday
             )
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 startDate = tuesday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
 
         // when
@@ -139,21 +154,21 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         // Only tuesday has a placement that requires reservations
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = wednesday,
                         TimeRange(startTime, endTime),
                     )
@@ -167,7 +182,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -183,14 +198,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     @Test
     fun `reservation is not added if user is not guardian of the child`() {
         // given
+        val child2 = DevPerson()
         db.transaction {
+            it.insert(child2, DevPersonType.CHILD)
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
+            it.insertGuardian(guardianId = adult.id, childId = child2.id)
         }
 
         // when
@@ -198,15 +215,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
@@ -220,7 +237,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -237,12 +254,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday.minusDays(1),
                 endDate = monday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
 
         // when
@@ -250,15 +267,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday.minusDays(1),
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     )
@@ -272,7 +289,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -290,12 +307,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestHoliday(tuesday)
         }
 
@@ -304,15 +321,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
@@ -326,7 +343,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -344,23 +361,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
         }
 
@@ -369,10 +386,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
@@ -386,7 +403,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -400,7 +417,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // and 1st absence has been removed
         val absences =
-            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
         assertEquals(1, absences.size)
         assertEquals(tuesday, absences.first().date)
     }
@@ -410,25 +427,25 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
             it.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = tuesday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                    createdBy = EvakaUserId(adult.id.raw)
                 )
             )
         }
@@ -438,14 +455,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                     ),
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                     )
                 ),
@@ -458,7 +475,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -467,7 +484,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // and no absences exist
         val absences =
-            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
         assertEquals(listOf(), absences)
     }
 
@@ -479,8 +496,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             // monday: no service need
             // tuesday: contract days
             tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = monday,
                     endDate = unlockedDate
                 )
@@ -489,10 +506,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         placementId = placementId,
                         period = FiniteDateRange(tuesday, unlockedDate),
                         optionId = snDaycareContractDays15.id,
-                        confirmedBy = employeeUser.evakaUserId,
+                        confirmedBy = employee.evakaUserId,
                     )
                 }
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            tx.insertGuardian(guardianId = adult.id, childId = child.id)
         }
 
         // when
@@ -500,18 +517,18 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Absent(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                     ),
                     DailyReservationRequest.Absent(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                     ),
                     DailyReservationRequest.Absent(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = unlockedDate,
                     )
                 ),
@@ -524,7 +541,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange.copy(end = unlockedDate.plusDays(2))
                     )
                 }
@@ -545,31 +562,31 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.FREE_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = wednesday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.FREE_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
         }
 
@@ -578,20 +595,20 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = wednesday,
                     )
                 ),
@@ -604,7 +621,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -618,7 +635,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // and 1st absence has been removed
         val absences =
-            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, wednesday)) }
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, wednesday)) }
         assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
         assertEquals(
             listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE),
@@ -635,20 +652,20 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = wednesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            it.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            it.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
         }
 
         dailyServiceTimesController.postDailyServiceTimes(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf()),
+            employee.user(setOf()),
             MockEvakaClock(HelsinkiDateTime.of(monday.minusDays(1), LocalTime.of(12, 0))),
-            testChild_1.id,
+            child.id,
             DailyServiceTimesValue.IrregularTimes(
                 validityPeriod = DateRange(monday, null),
                 // absences are generated for null days
@@ -667,19 +684,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Absent(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                     ),
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = wednesday,
                     ),
                 ),
@@ -692,7 +709,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -716,24 +733,24 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     )
@@ -747,10 +764,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(LocalTime.of(12, 0), endTime),
                     )
@@ -764,7 +781,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -786,18 +803,18 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 type = PlacementType.PRESCHOOL, // <-- reservations are not required
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = EvakaUserId(adult.id.raw)
             )
         }
 
@@ -806,10 +823,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Present(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                     )
                 ),
@@ -819,9 +836,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then
         val data =
-            db.read {
-                it.getReservationsCitizen(monday, testAdult_1.id, FiniteDateRange(monday, monday))
-            }
+            db.read { it.getReservationsCitizen(monday, adult.id, FiniteDateRange(monday, monday)) }
         val reservations =
             data.flatMap { dailyData -> dailyData.children.flatMap { child -> child.reservations } }
         val absences =
@@ -839,12 +854,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday)
         }
 
@@ -853,10 +868,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Present(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                     )
                 ),
@@ -869,7 +884,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         holidayPeriod,
                     )
                 }
@@ -892,12 +907,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
         }
 
@@ -908,10 +923,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 createReservationsAndAbsences(
                     it,
                     mondayNoon,
-                    citizenUser,
+                    adult.user(CitizenAuthLevel.STRONG),
                     listOf(
                         DailyReservationRequest.Present(
-                            childId = testChild_1.id,
+                            childId = child.id,
                             date = holidayPeriodStart,
                         )
                     ),
@@ -926,10 +941,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 createReservationsAndAbsences(
                     it,
                     mondayNoon,
-                    citizenUser,
+                    adult.user(CitizenAuthLevel.STRONG),
                     listOf(
                         DailyReservationRequest.Present(
-                            childId = testChild_1.id,
+                            childId = child.id,
                             date = holidayPeriodEnd.plusDays(1),
                         )
                     ),
@@ -948,23 +963,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
-                citizenUser.evakaUserId,
+                adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
                     AbsenceInsert(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     ),
                     AbsenceInsert(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     )
@@ -977,19 +992,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart.plusDays(2),
                         TimeRange(startTime, endTime),
                     )
@@ -1003,7 +1018,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                 it.getReservationsCitizen(
                     monday,
-                    testAdult_1.id,
+                    adult.id,
                     holidayPeriod,
                 )
             }
@@ -1030,19 +1045,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 type = PlacementType.PRESCHOOL, // <-- reservations not required
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
-                citizenUser.evakaUserId,
+                adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
                     AbsenceInsert(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     )
@@ -1055,10 +1070,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Present(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                     ),
                 ),
@@ -1071,7 +1086,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                 it.getReservationsCitizen(
                     monday,
-                    testAdult_1.id,
+                    adult.id,
                     holidayPeriod,
                 )
             }
@@ -1098,21 +1113,21 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 type = PlacementType.DAYCARE,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = holidayPeriodStart,
                     startTime = null,
                     endTime = null,
-                    createdBy = citizenUser.evakaUserId,
+                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 )
             )
         }
@@ -1122,10 +1137,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Nothing(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                     ),
                 ),
@@ -1138,7 +1153,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                 it.getReservationsCitizen(
                     monday,
-                    testAdult_1.id,
+                    adult.id,
                     holidayPeriod,
                 )
             }
@@ -1149,7 +1164,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 }
             }
 
-        assertEquals(listOf(testChild_1.id to Reservation.NoTimes), allReservations)
+        assertEquals(listOf(child.id to Reservation.NoTimes), allReservations)
     }
 
     @Test
@@ -1161,18 +1176,18 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insertAbsences(
-                citizenUser.evakaUserId,
+                adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
                     AbsenceInsert(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     )
@@ -1185,10 +1200,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                employeeUser,
+                employee.user(setOf()),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     )
@@ -1202,7 +1217,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                 it.getReservationsCitizen(
                     monday,
-                    testAdult_1.id,
+                    adult.id,
                     holidayPeriod,
                 )
             }
@@ -1233,21 +1248,21 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = monday.plusYears(1)
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday.minusDays(1))
             it.insert(
                 // NoTimes reservation
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = holidayPeriodStart,
                     startTime = null,
                     endTime = null,
-                    createdBy = citizenUser.evakaUserId
+                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId
                 )
             )
         }
@@ -1257,10 +1272,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                employeeUser,
+                employee.user(setOf()),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = holidayPeriodStart,
                         TimeRange(startTime, endTime),
                     )
@@ -1274,7 +1289,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         holidayPeriod,
                     )
                 }
@@ -1293,23 +1308,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employeeUser.id.raw)
+                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
             )
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employeeUser.id.raw)
+                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
             )
         }
 
@@ -1318,15 +1333,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                citizenUser,
+                adult.user(CitizenAuthLevel.STRONG),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     ),
@@ -1340,7 +1355,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -1353,7 +1368,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // and absence has not been removed
         val absences =
-            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
         assertEquals(2, absences.size)
     }
 
@@ -1362,23 +1377,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // given
         db.transaction {
             it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
+                childId = child.id,
+                unitId = daycare.id,
                 startDate = monday,
                 endDate = tuesday
             )
-            it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employeeUser.id.raw)
+                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
             )
             it.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employeeUser.id.raw)
+                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
             )
         }
 
@@ -1387,15 +1402,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 mondayNoon,
-                employeeUser,
+                employee.user(setOf()),
                 listOf(
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     ),
@@ -1409,7 +1424,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             db.read {
                     it.getReservationsCitizen(
                         monday,
-                        testAdult_1.id,
+                        adult.id,
                         queryRange,
                     )
                 }
@@ -1422,7 +1437,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // and absences have been removed
         val absences =
-            db.read { it.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday)) }
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
         assertEquals(0, absences.size)
     }
 }
