@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.Presence
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.placement.PlacementType
@@ -76,6 +77,56 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
         }
+    }
+
+    @Test
+    fun `creating absences removes reservations from the unconfirmed range`() {
+        val confirmedDate = today
+        val unconfirmedDate = today.plusDays(14)
+
+        db.transaction { tx ->
+            listOf(confirmedDate, unconfirmedDate).forEach { date ->
+                tx.insert(
+                    DevReservation(
+                        childId = child1.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = employee.evakaUserId
+                    )
+                )
+            }
+        }
+
+        upsertAbsences(
+            listOf(
+                AbsenceUpsert(
+                    childId = child1.id,
+                    date = confirmedDate,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    category = AbsenceCategory.BILLABLE
+                ),
+                AbsenceUpsert(
+                    childId = child1.id,
+                    date = unconfirmedDate,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    category = AbsenceCategory.BILLABLE
+                )
+            )
+        )
+
+        // Confirmed reservation was kept, unconfirmed was removed
+        assertEquals(
+            listOf(
+                Reservation(
+                    childId = child1.id,
+                    date = confirmedDate,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0)
+                )
+            ),
+            getAllReservations()
+        )
     }
 
     @Test
@@ -355,6 +406,16 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
             // We're not interested in IDs
             .map { it.copy(id = mockId) }
+    }
+
+    private fun upsertAbsences(absences: List<AbsenceUpsert>) {
+        absenceController.upsertAbsences(
+            dbInstance(),
+            employee.user(setOf()),
+            MockEvakaClock(now),
+            absences,
+            group.id
+        )
     }
 
     private fun addPresences(absences: List<Presence>) {
