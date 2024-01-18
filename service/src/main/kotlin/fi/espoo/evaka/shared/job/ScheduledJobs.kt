@@ -8,7 +8,6 @@ import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
-import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attachment.getOrphanAttachments
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
@@ -158,7 +157,6 @@ class ScheduledJobs(
     private val vardaUpdateService: VardaUpdateService,
     private val vardaResetService: VardaResetService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
-    private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
