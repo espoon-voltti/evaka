@@ -252,8 +252,14 @@ fun createReservationsAndAbsences(
             }
 
     val deletedAbsences =
-        if (isCitizen) tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
-        else tx.clearOldAbsences(validated.map { it.childId to it.date })
+        if (isCitizen) {
+            tx.clearOldCitizenEditableAbsences(
+                validated.map { it.childId to it.date },
+                reservableRange
+            )
+        } else {
+            tx.clearOldAbsences(validated.map { it.childId to it.date })
+        }
 
     // Keep old reservations in the confirmed range if absences are added on top of them
     val (absenceRequests, otherRequests) =
