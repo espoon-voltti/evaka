@@ -24,6 +24,7 @@ export default toRequestHandler(async (req, res) => {
     const data = await getCitizenDetails(req, req.user.id)
     res.status(200).send({
       loggedIn: true,
+      antiCsrfToken: req.session.antiCsrfToken,
       user: data,
       apiVersion: appCommit,
       authLevel: getAuthLevel(req.user)
