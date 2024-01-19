@@ -168,7 +168,9 @@ AND notification.device = ${bind(device)}
                 )
             )
         } catch (e: WebPush.SubscriptionExpired) {
-            logger.error("Subscription expired for device $device -> deleting", e)
+            logger.warn(
+                "Subscription expired for device $device (HTTP status ${e.status}) -> deleting"
+            )
             dbc.transaction { it.deletePushSubscription(device) }
         }
     }
