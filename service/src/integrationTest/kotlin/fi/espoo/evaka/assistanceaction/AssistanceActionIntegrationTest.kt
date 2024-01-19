@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -43,6 +43,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val testDaycareId = testDaycare.id
+
+    private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
 
     @BeforeEach
     fun beforeEach() {
@@ -192,7 +194,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
-        val placementStartDate = LocalDate.now()
+        val placementStartDate = clock.today()
         val placementEndDate = placementStartDate.plusYears(1)
         givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
 
@@ -236,7 +238,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
-        val placementStartDate = LocalDate.now()
+        val placementStartDate = clock.today()
         val placementEndDate = placementStartDate.plusYears(1)
         givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
 
@@ -312,7 +314,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
-        val placementStartDate = LocalDate.now()
+        val placementStartDate = clock.today()
         val placementEndDate = placementStartDate.plusYears(1)
         givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
         val id1 = givenAssistanceAction(placementStartDate, placementStartDate.plusMonths(1))
@@ -345,7 +347,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val today = LocalDate.now()
+        val today = clock.today()
         val daycarePlacementStart = today.minusYears(1)
         val daycarePlacementEnd = today.minusDays(1)
         val preschoolPeriodFirstDate = daycarePlacementEnd.plusDays(1)
@@ -409,7 +411,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             it.insertDaycareAclRow(testDaycare2.id, testDecisionMaker_2.id, UserRole.STAFF)
         }
 
-        val today = LocalDate.now()
+        val today = clock.today()
         givenAssistanceAction(today, today, testChild_1.id)
 
         givenPlacement(today, today, PlacementType.DAYCARE)
@@ -433,7 +435,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
-        val today = LocalDate.now()
+        val today = clock.today()
         givenPlacement(today, today, PlacementType.DAYCARE)
 
         givenAssistanceAction(today, today, testChild_1.id)
@@ -443,7 +445,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(1, assistanceActions.size)
     }
 
-    private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
+    private fun testDate(day: Int) = clock.today().withMonth(1).withDayOfMonth(day)
 
     private fun givenAssistanceAction(
         startDate: LocalDate,
@@ -485,24 +487,23 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.createAssistanceAction(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             testChild_1.id,
             request
         )
 
     private fun getAssistanceActions(child: ChildId, user: AuthenticatedUser = assistanceWorker) =
-        controller
-            .getChildAssistance(dbInstance(), user, RealEvakaClock(), child)
-            .assistanceActions
-            .map { it.action }
+        controller.getChildAssistance(dbInstance(), user, clock, child).assistanceActions.map {
+            it.action
+        }
 
     private fun updateAssistanceAction(
         id: AssistanceActionId,
         request: AssistanceActionRequest,
         employee: AuthenticatedUser.Employee = assistanceWorker
     ): AssistanceAction =
-        controller.updateAssistanceAction(dbInstance(), employee, RealEvakaClock(), id, request)
+        controller.updateAssistanceAction(dbInstance(), employee, clock, id, request)
 
     private fun deleteAssistanceAction(id: AssistanceActionId) =
-        controller.deleteAssistanceAction(dbInstance(), assistanceWorker, RealEvakaClock(), id)
+        controller.deleteAssistanceAction(dbInstance(), assistanceWorker, clock, id)
 }
