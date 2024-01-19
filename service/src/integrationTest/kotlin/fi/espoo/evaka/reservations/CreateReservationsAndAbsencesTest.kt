@@ -9,7 +9,9 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -1172,15 +1174,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
-            it.insertAbsences(
+            it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     ),
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
                         absenceType = AbsenceType.OTHER_ABSENCE,
@@ -1255,10 +1257,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
-            it.insertAbsences(
+            it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
@@ -1385,10 +1387,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
-            it.insertAbsences(
+            it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 listOf(
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,

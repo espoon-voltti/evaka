@@ -5,12 +5,12 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
-import fi.espoo.evaka.reservations.AbsenceInsert
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
 import fi.espoo.evaka.reservations.getReservableRange
-import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -161,7 +161,7 @@ class HolidayPeriodControllerCitizen(
                 val absences =
                     body.fixedPeriods.entries.flatMap { (childId, period) ->
                         period?.dates()?.map {
-                            AbsenceInsert(
+                            FullDayAbsenseUpsert(
                                 childId = childId,
                                 date = it,
                                 absenceType = questionnaire.absenceType,
@@ -180,7 +180,7 @@ class HolidayPeriodControllerCitizen(
                         tx.clearOldCitizenEditableAbsences(it, reservableRange)
                     }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.insertAbsences(user.evakaUserId, absences)
+                tx.upsertFullDayAbsences(user.evakaUserId, absences)
                 tx.insertQuestionnaireAnswers(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->

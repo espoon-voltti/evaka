@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -96,6 +97,56 @@ fun Database.Transaction.upsertGeneratedAbsences(
             .bindKotlin(absence)
             .bind("userId", AuthenticatedUser.SystemInternalUser.evakaUserId)
             .bind("now", now)
+            .add()
+    }
+
+    return batch.executeAndReturn().toList<AbsenceId>()
+}
+
+data class FullDayAbsenseUpsert(
+    val childId: ChildId,
+    val date: LocalDate,
+    val absenceType: AbsenceType,
+    val questionnaireId: HolidayQuestionnaireId? = null
+)
+
+/**
+ * Creates absences for all absences categories of the child's placement on the given date ("full
+ * day absence"). Does nothing if an absence already exists on the given date.
+ */
+fun Database.Transaction.upsertFullDayAbsences(
+    userId: EvakaUserId,
+    absenceInserts: List<FullDayAbsenseUpsert>
+): List<AbsenceId> {
+    val batch =
+        prepareBatch(
+            """
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
+        SELECT
+            :childId,
+            :date,
+            category,
+            :absenceType,
+            :userId,
+            :questionnaireId
+        FROM (
+            SELECT unnest(absence_categories(type)) AS category
+            FROM placement
+            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
+        ) care_type
+        ON CONFLICT DO NOTHING
+        RETURNING id
+        """
+                .trimIndent()
+        )
+
+    absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
+        batch
+            .bind("childId", childId)
+            .bind("date", date)
+            .bind("absenceType", absenceType)
+            .bind("userId", userId)
+            .bind("questionnaireId", questionnaireId)
             .add()
     }
 

@@ -13,9 +13,11 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
@@ -287,7 +289,7 @@ fun createReservationsAndAbsences(
     val absences =
         validated.filterIsInstance<DailyReservationRequest.Absent>().map {
             val hasContractDays = contractDayRanges[it.childId]?.includes(it.date) ?: false
-            AbsenceInsert(
+            FullDayAbsenseUpsert(
                 it.childId,
                 it.date,
                 if (hasContractDays && reservableRange.includes(it.date))
@@ -297,7 +299,7 @@ fun createReservationsAndAbsences(
         }
     val upsertedAbsences =
         if (absences.isNotEmpty()) {
-            tx.insertAbsences(userId, absences)
+            tx.upsertFullDayAbsences(userId, absences)
         } else {
             emptyList()
         }

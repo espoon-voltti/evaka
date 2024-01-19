@@ -16,7 +16,9 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -279,11 +281,11 @@ class ReservationControllerCitizen(
                             )
                         }
                     val insertedAbsences =
-                        tx.insertAbsences(
+                        tx.upsertFullDayAbsences(
                             user.evakaUserId,
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { date ->
-                                    AbsenceInsert(
+                                    FullDayAbsenseUpsert(
                                         childId,
                                         date,
                                         if (
