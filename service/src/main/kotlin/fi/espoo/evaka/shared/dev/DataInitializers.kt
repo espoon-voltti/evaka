@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.createPersonMessageAccount
+import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -76,6 +77,8 @@ import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -1585,3 +1588,14 @@ VALUES (:id, :childId, :validDuring, :type, :modified, :modifiedBy)
 """
         )
         .let(::OtherAssistanceMeasureId)
+
+fun Database.Transaction.insertTestUser(
+    employee: DevEmployee,
+    unitRoles: Map<DaycareId, UserRole> = mapOf(),
+    groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf()
+): AuthenticatedUser.Employee {
+    val id = insert(employee)
+    unitRoles.forEach { (daycareId, role) -> insertDaycareAclRow(daycareId, id, role) }
+    groupAcl.forEach { (daycareId, groups) -> insertDaycareGroupAcl(daycareId, id, groups) }
+    return AuthenticatedUser.Employee(checkNotNull(getEmployeeUser(id)))
+}
