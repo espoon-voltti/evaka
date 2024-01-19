@@ -1176,6 +1176,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
+                HelsinkiDateTime.now(),
                 listOf(
                     FullDayAbsenseUpsert(
                         childId = child.id,
@@ -1259,6 +1260,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
+                HelsinkiDateTime.now(),
                 listOf(
                     FullDayAbsenseUpsert(
                         childId = child.id,
@@ -1389,6 +1391,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
+                HelsinkiDateTime.now(),
                 listOf(
                     FullDayAbsenseUpsert(
                         childId = child.id,

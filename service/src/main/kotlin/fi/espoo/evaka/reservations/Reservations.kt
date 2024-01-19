@@ -301,7 +301,7 @@ fun createReservationsAndAbsences(
         }
     val upsertedAbsences =
         if (absences.isNotEmpty()) {
-            tx.upsertFullDayAbsences(userId, absences)
+            tx.upsertFullDayAbsences(userId, now, absences)
         } else {
             emptyList()
         }

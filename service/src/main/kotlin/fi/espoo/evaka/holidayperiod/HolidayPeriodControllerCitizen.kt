@@ -180,7 +180,7 @@ class HolidayPeriodControllerCitizen(
                         tx.clearOldCitizenEditableAbsences(it, reservableRange)
                     }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.upsertFullDayAbsences(user.evakaUserId, absences)
+                tx.upsertFullDayAbsences(user.evakaUserId, now, absences)
                 tx.insertQuestionnaireAnswers(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->

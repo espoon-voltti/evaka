@@ -236,6 +236,8 @@ class ReservationControllerCitizen(
             throw BadRequest("Invalid absence type")
         }
 
+        val now = clock.now()
+
         val (deletedAbsences, deletedReservations, insertedAbsences) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -254,10 +256,7 @@ class ReservationControllerCitizen(
                     }
 
                     val reservableRange =
-                        getReservableRange(
-                            clock.now(),
-                            featureConfig.citizenReservationThresholdHours
-                        )
+                        getReservableRange(now, featureConfig.citizenReservationThresholdHours)
                     val childContractDays =
                         body.dateRange.intersection(reservableRange)?.let { range ->
                             tx.getReservationContractDayRanges(body.childIds, range)
@@ -283,6 +282,7 @@ class ReservationControllerCitizen(
                     val insertedAbsences =
                         tx.upsertFullDayAbsences(
                             user.evakaUserId,
+                            now,
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { date ->
                                     FullDayAbsenseUpsert(

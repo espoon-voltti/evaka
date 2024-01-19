@@ -117,17 +117,19 @@ data class FullDayAbsenseUpsert(
  */
 fun Database.Transaction.upsertFullDayAbsences(
     userId: EvakaUserId,
+    now: HelsinkiDateTime,
     absenceInserts: List<FullDayAbsenseUpsert>
 ): List<AbsenceId> {
     val batch =
         prepareBatch(
             """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_at, modified_by, questionnaire_id)
         SELECT
             :childId,
             :date,
             category,
             :absenceType,
+            :now,
             :userId,
             :questionnaireId
         FROM (
@@ -143,10 +145,11 @@ fun Database.Transaction.upsertFullDayAbsences(
 
     absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
         batch
+            .bind("now", now)
+            .bind("userId", userId)
             .bind("childId", childId)
             .bind("date", date)
             .bind("absenceType", absenceType)
-            .bind("userId", userId)
             .bind("questionnaireId", questionnaireId)
             .add()
     }

@@ -57,6 +57,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
         db.transaction { tx ->
             tx.upsertFullDayAbsences(
                 EvakaUserId(testAdult_1.id.raw),
+                now,
                 listOf(
                     // Outside holiday period
                     FullDayAbsenseUpsert(
@@ -74,6 +75,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
             tx.upsertFullDayAbsences(
                 EvakaUserId(testDecisionMaker_1.id.raw),
+                now,
                 listOf(
                     // Inside holiday period, but marked by employee
                     FullDayAbsenseUpsert(
