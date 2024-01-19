@@ -6,7 +6,6 @@ package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.AssistanceController
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
@@ -15,12 +14,15 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -48,7 +50,16 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testArea2)
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(testChild_2, DevPersonType.CHILD)
+        }
     }
 
     @Test
