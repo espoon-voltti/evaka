@@ -37,11 +37,12 @@ fun Database.Transaction.insertAbsences(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     absences: List<AbsenceUpsert>
-) {
+): List<AbsenceId> {
     val sql =
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
         VALUES (:childId, :date, :category, :absenceType, :userId, :now)
+        RETURNING id
         """
 
     val batch = prepareBatch(sql)
@@ -49,7 +50,7 @@ fun Database.Transaction.insertAbsences(
         batch.bindKotlin(absence).bind("userId", userId).bind("now", now).add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn().toList()
 }
 
 /** Updates the details if an absence already exists */

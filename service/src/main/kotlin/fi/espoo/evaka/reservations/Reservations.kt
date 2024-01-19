@@ -13,10 +13,12 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.daycare.service.insertAbsences
 import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
@@ -415,7 +417,12 @@ fun upsertChildDatePresence(
                 if (type == null || identicalAbsenceExists) {
                     null
                 } else {
-                    tx.insertAbsence(userId, input.date, input.childId, category, type)
+                    tx.insertAbsences(
+                            now,
+                            userId,
+                            listOf(AbsenceUpsert(input.childId, input.date, category, type))
+                        )
+                        .first()
                 }
 
             insertedAbsence to deletedAbsence
@@ -541,23 +548,4 @@ private fun Database.Transaction.deleteAbsenceOfCategory(
             )
         }
         .exactlyOneOrNull()
-}
-
-private fun Database.Transaction.insertAbsence(
-    userId: EvakaUserId,
-    date: LocalDate,
-    childId: ChildId,
-    category: AbsenceCategory,
-    type: AbsenceType
-): AbsenceId {
-    return createQuery<Any> {
-            sql(
-                """
-            INSERT INTO absence (date, child_id, category, absence_type, modified_by, questionnaire_id)
-            VALUES (${bind(date)}, ${bind(childId)}, ${bind(category)}, ${bind(type)}, ${bind(userId)}, NULL)
-            RETURNING id
-    """
-            )
-        }
-        .exactlyOne()
 }
