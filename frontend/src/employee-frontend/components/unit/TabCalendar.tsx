@@ -70,14 +70,13 @@ const TopHorizontalLine = styled(HorizontalLine)`
 
 const getWeekDateRange = (date: LocalDate) => {
   const start = date.startOfWeek()
-  const end = start.addWeeks(1).subDays(1)
+  const end = start.endOfWeek()
   return new FiniteDateRange(start, end)
 }
 
 const getMonthRange = (date: LocalDate) => {
   const start = date.startOfMonth().startOfWeek()
-  const lastDayOfMoth = date.addMonths(1).startOfMonth().subDays(1)
-  const end = lastDayOfMoth.startOfWeek().addWeeks(1).subDays(1)
+  const end = date.lastDayOfMonth().endOfWeek()
   return new FiniteDateRange(start, end)
 }
 
