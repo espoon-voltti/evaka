@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.assistanceaction
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.AssistanceController
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -15,11 +13,14 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -32,8 +33,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var controller: AssistanceController
+
     private val assistanceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -47,7 +52,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `post first assistance action, no action types`() {
         val assistanceAction =
-            whenPostAssistanceActionThenExpectSuccess(
+            createAssistanceAction(
                 AssistanceActionRequest(startDate = testDate(10), endDate = testDate(20))
             )
 
@@ -70,7 +75,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             db.transaction { it.getAssistanceActionOptions() }.map { it.value }.toSet()
 
         val assistanceAction =
-            whenPostAssistanceActionThenExpectSuccess(
+            createAssistanceAction(
                 AssistanceActionRequest(
                     startDate = testDate(10),
                     endDate = testDate(20),
@@ -95,7 +100,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `post assistance action, no overlap`() {
         givenAssistanceAction(testDate(1), testDate(15))
-        whenPostAssistanceActionThenExpectSuccess(
+        createAssistanceAction(
             AssistanceActionRequest(startDate = testDate(16), endDate = testDate(30))
         )
 
@@ -112,34 +117,37 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `post assistance action, fully encloses previous - responds 409`() {
         givenAssistanceAction(testDate(10), testDate(20))
-        whenPostAssistanceActionThenExpectError(
-            AssistanceActionRequest(startDate = testDate(1), endDate = testDate(30)),
-            409
-        )
+        assertThrows<Conflict> {
+            createAssistanceAction(
+                AssistanceActionRequest(startDate = testDate(1), endDate = testDate(30))
+            )
+        }
     }
 
     @Test
     fun `post assistance action, starts on same day, ends later - responds 409`() {
         givenAssistanceAction(testDate(10), testDate(20))
-        whenPostAssistanceActionThenExpectError(
-            AssistanceActionRequest(startDate = testDate(10), endDate = testDate(25)),
-            409
-        )
+        assertThrows<Conflict> {
+            createAssistanceAction(
+                AssistanceActionRequest(startDate = testDate(10), endDate = testDate(25)),
+            )
+        }
     }
 
     @Test
     fun `post assistance action, overlaps start of previous - responds 409`() {
         givenAssistanceAction(testDate(10), testDate(20))
-        whenPostAssistanceActionThenExpectError(
-            AssistanceActionRequest(startDate = testDate(1), endDate = testDate(10)),
-            409
-        )
+        assertThrows<Conflict> {
+            createAssistanceAction(
+                AssistanceActionRequest(startDate = testDate(1), endDate = testDate(10)),
+            )
+        }
     }
 
     @Test
     fun `post assistance action, overlaps end of previous - previous gets shortened`() {
         givenAssistanceAction(testDate(10), testDate(20))
-        whenPostAssistanceActionThenExpectSuccess(
+        createAssistanceAction(
             AssistanceActionRequest(startDate = testDate(20), endDate = testDate(30))
         )
 
@@ -156,7 +164,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `post assistance action, is within previous - previous gets shortened`() {
         givenAssistanceAction(testDate(10), testDate(20))
-        whenPostAssistanceActionThenExpectSuccess(
+        createAssistanceAction(
             AssistanceActionRequest(startDate = testDate(11), endDate = testDate(15))
         )
 
@@ -200,8 +208,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             testChild_2.id
         )
 
-        val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, assistanceActions.size)
         with(assistanceActions[0]) {
             assertEquals(testChild_1.id, childId)
@@ -237,7 +244,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val id2 =
             givenAssistanceAction(placementStartDate.plusDays(10), placementEndDate.plusDays(20))
         val updated =
-            whenPutAssistanceActionThenExpectSuccess(
+            updateAssistanceAction(
                 id2,
                 AssistanceActionRequest(
                     startDate = placementStartDate.plusDays(9),
@@ -250,7 +257,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(placementStartDate.plusDays(9), updated.startDate)
         assertEquals(placementStartDate.plusDays(22), updated.endDate)
 
-        val fetched = whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
+        val fetched = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
         assertEquals(2, fetched.size)
         assertTrue(
             fetched.any {
@@ -270,11 +277,12 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `update assistance action, not found responds 404`() {
-        whenPutAssistanceActionThenExpectError(
-            AssistanceActionId(UUID.randomUUID()),
-            AssistanceActionRequest(startDate = testDate(9), endDate = testDate(22)),
-            404
-        )
+        assertThrows<NotFound> {
+            updateAssistanceAction(
+                AssistanceActionId(UUID.randomUUID()),
+                AssistanceActionRequest(startDate = testDate(9), endDate = testDate(22)),
+            )
+        }
     }
 
     @Test
@@ -282,11 +290,12 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(testDate(1), testDate(5))
         val id2 = givenAssistanceAction(testDate(10), testDate(20))
 
-        whenPutAssistanceActionThenExpectError(
-            id2,
-            AssistanceActionRequest(startDate = testDate(5), endDate = testDate(22)),
-            409
-        )
+        assertThrows<Conflict> {
+            updateAssistanceAction(
+                id2,
+                AssistanceActionRequest(startDate = testDate(5), endDate = testDate(22)),
+            )
+        }
     }
 
     @Test
@@ -309,17 +318,16 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val id1 = givenAssistanceAction(placementStartDate, placementStartDate.plusMonths(1))
         val id2 = givenAssistanceAction(placementStartDate.plusMonths(2), placementEndDate)
 
-        whenDeleteAssistanceActionThenExpectSuccess(id2)
+        deleteAssistanceAction(id2)
 
-        val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
         assertEquals(id1, assistanceActions.first().id)
     }
 
     @Test
     fun `delete assistance action, not found responds 404`() {
-        whenDeleteAssistanceActionThenExpectError(AssistanceActionId(UUID.randomUUID()), 404)
+        assertThrows<NotFound> { deleteAssistanceAction(AssistanceActionId(UUID.randomUUID())) }
     }
 
     @Test
@@ -374,8 +382,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 testChild_1.id
             )
 
-        val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoEmployee)
+        val assistanceActions = getAssistanceActions(testChild_1.id, veoEmployee)
         assertEquals(3, assistanceActions.size)
 
         assertEquals(
@@ -388,7 +395,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
         // Admin sees all
-        assertEquals(3, whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, admin).size)
+        assertEquals(3, getAssistanceActions(testChild_1.id, admin).size)
     }
 
     @Test
@@ -406,11 +413,10 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(today, today, testChild_1.id)
 
         givenPlacement(today, today, PlacementType.DAYCARE)
-        val sameUnitAssistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, sameUnitEmployee)
+        val sameUnitAssistanceActions = getAssistanceActions(testChild_1.id, sameUnitEmployee)
         assertEquals(1, sameUnitAssistanceActions.size)
 
-        whenGetAssistanceActionsThenExpect403(testChild_1.id, differentUnitEmployee)
+        assertThrows<Forbidden> { getAssistanceActions(testChild_1.id, differentUnitEmployee) }
     }
 
     @Test
@@ -433,8 +439,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         givenAssistanceAction(today, today, testChild_1.id)
 
         givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
-        val assistanceActions =
-            whenGetAssistanceActionsThenExpectSuccess(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
     }
 
@@ -476,101 +481,28 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         }
     }
 
-    private fun whenPostAssistanceActionThenExpectSuccess(
-        request: AssistanceActionRequest
-    ): AssistanceAction {
-        val (_, res, result) =
-            http
-                .post("/children/${testChild_1.id}/assistance-actions")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(assistanceWorker)
-                .responseObject<AssistanceAction>(jsonMapper)
+    private fun createAssistanceAction(request: AssistanceActionRequest): AssistanceAction =
+        controller.createAssistanceAction(
+            dbInstance(),
+            assistanceWorker,
+            RealEvakaClock(),
+            testChild_1.id,
+            request
+        )
 
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
+    private fun getAssistanceActions(child: ChildId, user: AuthenticatedUser = assistanceWorker) =
+        controller
+            .getChildAssistance(dbInstance(), user, RealEvakaClock(), child)
+            .assistanceActions
+            .map { it.action }
 
-    private fun whenPostAssistanceActionThenExpectError(
-        request: AssistanceActionRequest,
-        status: Int
-    ) {
-        val (_, res, _) =
-            http
-                .post("/children/${testChild_1.id}/assistance-actions")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(assistanceWorker)
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun whenGetAssistanceActionsThenExpectSuccess(
-        childId: ChildId,
-        user: AuthenticatedUser = assistanceWorker
-    ): List<AssistanceAction> {
-        val (_, res, result) =
-            http
-                .get("/children/$childId/assistance")
-                .asUser(user)
-                .responseObject<AssistanceController.AssistanceResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get().assistanceActions.map { it.action }
-    }
-
-    private fun whenGetAssistanceActionsThenExpect403(
-        childId: ChildId,
-        user: AuthenticatedUser = assistanceWorker
-    ) {
-        val (_, res, _) =
-            http
-                .get("/children/$childId/assistance")
-                .asUser(user)
-                .responseObject<AssistanceController.AssistanceResponse>(jsonMapper)
-
-        assertEquals(403, res.statusCode)
-    }
-
-    private fun whenPutAssistanceActionThenExpectSuccess(
+    private fun updateAssistanceAction(
         id: AssistanceActionId,
         request: AssistanceActionRequest,
         employee: AuthenticatedUser.Employee = assistanceWorker
-    ): AssistanceAction {
-        val (_, res, result) =
-            http
-                .put("/assistance-actions/$id")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(employee)
-                .responseObject<AssistanceAction>(jsonMapper)
+    ): AssistanceAction =
+        controller.updateAssistanceAction(dbInstance(), employee, RealEvakaClock(), id, request)
 
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun whenPutAssistanceActionThenExpectError(
-        id: AssistanceActionId,
-        request: AssistanceActionRequest,
-        status: Int
-    ) {
-        val (_, res, _) =
-            http
-                .put("/assistance-actions/$id")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(assistanceWorker)
-                .response()
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun whenDeleteAssistanceActionThenExpectSuccess(id: AssistanceActionId) {
-        val (_, res, _) = http.delete("/assistance-actions/$id").asUser(assistanceWorker).response()
-
-        assertEquals(200, res.statusCode)
-    }
-
-    private fun whenDeleteAssistanceActionThenExpectError(id: AssistanceActionId, status: Int) {
-        val (_, res, _) = http.delete("/assistance-actions/$id").asUser(assistanceWorker).response()
-
-        assertEquals(status, res.statusCode)
-    }
+    private fun deleteAssistanceAction(id: AssistanceActionId) =
+        controller.deleteAssistanceAction(dbInstance(), assistanceWorker, RealEvakaClock(), id)
 }
