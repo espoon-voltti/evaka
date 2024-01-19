@@ -154,6 +154,14 @@ class SfiMessagesSoapClient(
                                 matkapuhelin = sfiEnv.contactPerson.phone
                                 sahkoposti = sfiEnv.contactPerson.email
                             }
+                        osoite =
+                            Osoite().apply {
+                                nimi = sfiEnv.contactOrganization.name
+                                lahiosoite = sfiEnv.contactOrganization.streetAddress
+                                postinumero = sfiEnv.contactOrganization.postalCode
+                                postitoimipaikka = sfiEnv.contactOrganization.postOffice
+                                maa = "FI"
+                            }
                     }
                 kysely =
                     KyselyWS2A().apply {

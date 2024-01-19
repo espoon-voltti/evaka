@@ -19,3 +19,10 @@ evaka:
     municipality_code: "049"
     organizer_oid: "1.2.246.562.10.90008375488"
     organizer_id: "299"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Espoo"
+        street_address: "Karaportti 1 PL 302"
+        postal_code: "02070"
+        post_office: "Espoo"
