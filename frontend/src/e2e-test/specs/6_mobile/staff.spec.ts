@@ -44,7 +44,7 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
   nav = new MobileNav(page)
 
   mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)

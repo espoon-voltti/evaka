@@ -103,7 +103,7 @@ beforeEach(async () => {
 })
 
 const initPages = async (
-  mockedTime: Date,
+  mockedTime: HelsinkiDateTime,
   featureFlags: Partial<FeatureFlags> = {}
 ) => {
   page = await Page.open({
@@ -120,7 +120,7 @@ const initPages = async (
 
 describe('Realtime staff attendance page', () => {
   test('Staff member can be marked as arrived and departed', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
     const arrivalTime = '05:59'
     const departureTime = '12:45'
 
@@ -139,7 +139,7 @@ describe('Realtime staff attendance page', () => {
       `Paikalla ${arrivalTime}–`
     ])
 
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 13, 30).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 13, 30))
     await staffAttendancePage.assertPresentStaffCount(1)
 
     await staffAttendancePage.selectTab('present')
@@ -156,7 +156,7 @@ describe('Realtime staff attendance page', () => {
 
   test('Staff member cannot use departure time that is before last arrival time', async () => {
     const arrivalTime = '05:59'
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -189,7 +189,7 @@ describe('Realtime staff attendance page', () => {
   })
 
   test('Staff member cannot use arrival time that is before last departure time', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -222,7 +222,7 @@ describe('Realtime staff attendance page', () => {
   })
 
   test('Staff member can use arrival time that is equal to last departure time', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -254,9 +254,7 @@ describe('Realtime staff attendance page', () => {
 
   test('Staff member cannot be marked as arrived on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
-    await initPages(
-      HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -269,7 +267,7 @@ describe('Realtime staff attendance page', () => {
   })
 
   test('Staff arrival page behaves correctly with different time values when no plan exists', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -306,7 +304,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 7:30
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -353,7 +351,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 8:30
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
@@ -406,7 +404,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 15:30
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30))
 
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
@@ -452,7 +450,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 16:30
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30))
 
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
@@ -507,7 +505,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 14:02
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
@@ -554,7 +552,7 @@ describe('Realtime staff attendance page', () => {
       .save()
 
     // Now it is 14:02
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
@@ -573,7 +571,7 @@ describe('Realtime staff attendance page', () => {
       'Paikalla 08:02–14:02'
     )
 
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 0))
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
@@ -600,7 +598,7 @@ describe('Realtime staff attendance page', () => {
       })
       .save()
 
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4))
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
@@ -621,7 +619,7 @@ describe('Realtime staff attendance page', () => {
     )
 
     // Clock is now 14:02
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
@@ -642,7 +640,7 @@ describe('Realtime staff attendance page', () => {
   })
 
   test('New external staff member can be added and marked as departed', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0))
 
     const name = 'Nomen Estomen'
     const arrivalTime = '03:20'
@@ -666,7 +664,7 @@ describe('Realtime staff attendance page', () => {
   })
 
   test('External staff member cannot use departure time that is before arrival', async () => {
-    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0).toSystemTzDate())
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0))
 
     const name = 'Nomen Estomen'
     const arrivalTime = '08:00'
@@ -694,9 +692,7 @@ describe('Realtime staff attendance page', () => {
 
   test('New external staff member cannot be added on a non-operational day', async () => {
     const saturday = LocalDate.of(2022, 5, 7)
-    await initPages(
-      HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)))
 
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.assertMarkNewExternalStaffDisabled()
@@ -720,10 +716,9 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate(),
-      { staffAttendanceTypes: false }
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
+      staffAttendanceTypes: false
+    })
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
@@ -757,9 +752,7 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
@@ -796,9 +789,7 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
@@ -834,9 +825,7 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
@@ -870,9 +859,7 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.editButton.click()
@@ -900,9 +887,7 @@ describe('Realtime staff attendance edit page', () => {
       })
       .save()
 
-    await initPages(
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(2, 0)).toSystemTzDate()
-    )
+    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(2, 0)))
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)

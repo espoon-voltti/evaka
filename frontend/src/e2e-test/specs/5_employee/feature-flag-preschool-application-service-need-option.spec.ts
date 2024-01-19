@@ -35,7 +35,7 @@ beforeEach(async () => {
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
-    mockedTime: now.toSystemTzDate(),
+    mockedTime: now,
     employeeCustomizations: {
       featureFlags: {
         preschoolApplication: {

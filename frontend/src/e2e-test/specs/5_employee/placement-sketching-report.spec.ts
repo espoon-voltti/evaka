@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import {
@@ -36,7 +37,9 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   const admin = (await Fixture.employeeAdmin().save()).data
 
-  page = await Page.open({ mockedTime: mockToday.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
   await employeeLogin(page, admin)
 })
 

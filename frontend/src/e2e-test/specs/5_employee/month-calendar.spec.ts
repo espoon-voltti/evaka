@@ -40,7 +40,7 @@ beforeEach(async () => {
   ).save()
 
   page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)).toSystemTzDate()
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))
   })
   await employeeLogin(page, unitSupervisor.data)
   unitPage = new UnitPage(page)

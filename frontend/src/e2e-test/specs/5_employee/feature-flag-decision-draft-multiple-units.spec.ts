@@ -46,7 +46,7 @@ beforeEach(async () => {
   await Fixture.feeThresholds().save()
 
   page = await Page.open({
-    mockedTime: mockedTime.toSystemTzDate(),
+    mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
       featureFlags: { decisionDraftMultipleUnits: true }
     }

@@ -93,9 +93,7 @@ describe('Non SSN children report', () => {
     const admin = await Fixture.employeeAdmin().save()
 
     const page = await Page.open({
-      mockedTime: mockedToday
-        .toHelsinkiDateTime(LocalTime.of(8, 0))
-        .toSystemTzDate(),
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
       employeeCustomizations: {
         featureFlags: { personDuplicate: true }
       }
@@ -109,9 +107,7 @@ describe('Non SSN children report', () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
     const page = await Page.open({
-      mockedTime: mockedToday
-        .toHelsinkiDateTime(LocalTime.of(8, 0))
-        .toSystemTzDate()
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
     const report = await navigateToReport(page, financeAdmin.data)
@@ -122,9 +118,7 @@ describe('Non SSN children report', () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
 
     const page = await Page.open({
-      mockedTime: mockedToday
-        .toHelsinkiDateTime(LocalTime.of(8, 0))
-        .toSystemTzDate(),
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
       employeeCustomizations: {
         featureFlags: { personDuplicate: true }
       }

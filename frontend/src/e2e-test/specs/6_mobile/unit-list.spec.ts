@@ -40,7 +40,7 @@ beforeEach(async () => {
     })
     .save()
 
-  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow })
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.data.id)
     .withDaycareAcl(fixtures.preschoolFixture.id, 'UNIT_SUPERVISOR')

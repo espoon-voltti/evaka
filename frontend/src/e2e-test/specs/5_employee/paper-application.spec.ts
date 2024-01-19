@@ -29,7 +29,7 @@ beforeEach(async () => {
   await insertDaycareGroupFixtures([daycareGroupFixture])
   const admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
   await employeeLogin(page, admin.data)
 
   childInformationPage = new ChildInformationPage(page)

@@ -90,7 +90,7 @@ describe('curriculum document with person duplicate', () => {
     })
     const documentId = await insertVasuDocument(duplicate.data.id, templateId)
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
     const vasuPage = new VasuPage(page)
@@ -112,7 +112,7 @@ describe('curriculum document with person duplicate', () => {
       preschoolTemplateId
     )
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
@@ -135,7 +135,7 @@ describe('curriculum document with person duplicate', () => {
     })
     const documentId = await insertVasuDocument(child.data.id, templateId)
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, preschoolSupervisor.data)
     await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
     const vasuPage = new VasuPage(page)
@@ -157,7 +157,7 @@ describe('curriculum document with person duplicate', () => {
     })
     await insertVasuDocument(child.data.id, preschoolTemplateId)
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, preschoolSupervisor.data)
     await page.goto(
       `${config.employeeUrl}/child-information/${duplicate.data.id}`
@@ -193,7 +193,7 @@ describe('curriculum document with person duplicate', () => {
       preschoolTemplateId
     )
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, admin.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)

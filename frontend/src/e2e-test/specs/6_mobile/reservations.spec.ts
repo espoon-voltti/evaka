@@ -376,10 +376,7 @@ describe('when unit is open every day', () => {
 
 const loginToMobile = async (today: LocalDate, unitId: UUID) => {
   const page = await Page.open({
-    mockedTime: HelsinkiDateTime.fromLocal(
-      today,
-      LocalTime.of(14, 50)
-    ).toSystemTzDate()
+    mockedTime: HelsinkiDateTime.fromLocal(today, LocalTime.of(14, 50))
   })
   await page.goto(await pairMobileDevice(unitId))
   return page

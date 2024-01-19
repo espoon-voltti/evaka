@@ -57,7 +57,7 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture.id
   )
 
-  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)

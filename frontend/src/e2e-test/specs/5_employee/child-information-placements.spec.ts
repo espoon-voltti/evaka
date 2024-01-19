@@ -193,7 +193,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
 
   async function openPage() {
     return await Page.open({
-      mockedTime: mockedTime.toSystemTzDate(),
+      mockedTime,
       employeeCustomizations: { featureFlags: { placementGuarantee: true } }
     })
   }
@@ -242,7 +242,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
 
   async function openPage() {
     return await Page.open({
-      mockedTime: mockedTime.toSystemTzDate(),
+      mockedTime,
       employeeCustomizations: { featureFlags: { placementGuarantee: false } }
     })
   }

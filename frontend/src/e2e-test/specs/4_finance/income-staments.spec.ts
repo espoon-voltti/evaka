@@ -39,7 +39,7 @@ beforeEach(async () => {
 
   page = await Page.open({
     acceptDownloads: true,
-    mockedTime: now.toSystemTzDate()
+    mockedTime: now
   })
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()

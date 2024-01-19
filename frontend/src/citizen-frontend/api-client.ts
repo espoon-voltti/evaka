@@ -4,7 +4,7 @@
 
 import axios, { AxiosError } from 'axios'
 
-import { isAutomatedTest, mockNow } from 'lib-common/utils/helpers'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 export const API_URL = '/api/application'
 
@@ -14,7 +14,10 @@ export const client = axios.create({
 
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
-    const mockedTime = mockNow()?.toISOString()
+    const mockedTime =
+      typeof window !== 'undefined'
+        ? window.evaka?.mockedTime?.toISOString()
+        : undefined
     if (mockedTime) {
       config.headers.set('EvakaMockedTime', mockedTime)
     }

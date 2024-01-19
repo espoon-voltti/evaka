@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -60,7 +61,9 @@ beforeEach(async () => {
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
-    mockedTime: LocalDate.of(2022, 12, 1).toSystemTzDate()
+    mockedTime: LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
+      LocalTime.of(12, 0)
+    )
   })
   await employeeLogin(page, admin.data)
 })

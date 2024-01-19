@@ -105,7 +105,7 @@ describe('Value decisions', () => {
   beforeEach(async () => {
     page = await Page.open({
       acceptDownloads: true,
-      mockedTime: now.toSystemTzDate()
+      mockedTime: now
     })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
@@ -234,7 +234,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
           financeDecisionHandlerSelect: true
         }
       },
-      mockedTime: now.toSystemTzDate()
+      mockedTime: now
     })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()

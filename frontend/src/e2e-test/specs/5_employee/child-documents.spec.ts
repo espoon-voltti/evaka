@@ -55,7 +55,7 @@ describe('Employee - Child documents', () => {
   test('Full basic workflow for hojks', async () => {
     // Admin creates a template
 
-    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    page = await Page.open({ mockedTime: now })
     await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     const nav = new EmployeeNav(page)
@@ -90,7 +90,7 @@ describe('Employee - Child documents', () => {
     // End of admin creates a template
 
     // Unit supervisor creates a child document
-    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     await page.goto(
       `${config.employeeUrl}/child-information/${childFixture.id}`
@@ -146,7 +146,7 @@ describe('Employee - Child documents', () => {
 
     // go to next status twice
     const later = now.addHours(1)
-    page = await Page.open({ mockedTime: later.toSystemTzDate() })
+    page = await Page.open({ mockedTime: later })
     await employeeLogin(page, unitSupervisor)
     await page.goto(documentUrl)
     childDocument = new ChildDocumentPage(page)
@@ -175,7 +175,7 @@ describe('Employee - Child documents', () => {
       .save()
 
     // Unit supervisor creates a child document
-    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
     await page.goto(
       `${config.employeeUrl}/child-information/${childFixture.id}`
