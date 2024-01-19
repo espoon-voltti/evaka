@@ -55,6 +55,7 @@ import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 import { client } from '../../../api/client'
 import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
+import { DayOfWeek } from '../../../types'
 import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
 import { unitGroupDetailsQuery } from '../queries'
@@ -116,7 +117,7 @@ async function deleteCalendarEvent(id: UUID): Promise<Result<void>> {
   }
 }
 
-const EventsContainer = styled.div`
+const EventsWeekContainer = styled.div`
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
@@ -124,13 +125,13 @@ const EventsContainer = styled.div`
   word-wrap: break-word;
 `
 
-const EventDay = styled.div<{ isToday: boolean }>`
+const EventDay = styled.div<{ $isToday: boolean; $isOtherMonth: boolean }>`
   height: 100%;
   border: ${(p) => `1px solid ${p.theme.colors.grayscale.g15}`};
   padding: ${defaultMargins.s} 0;
 
   ${(p) =>
-    p.isToday
+    p.$isToday
       ? `
     z-index: 5;
     border-top: 4px solid ${p.theme.colors.status.success};
@@ -153,10 +154,20 @@ const EventDay = styled.div<{ isToday: boolean }>`
   }
 
   ${(p) =>
-    p.isToday
+    p.$isToday
       ? `
       h4 {
         color: ${p.theme.colors.main.m1};
+        font-weight: ${fontWeights.medium};
+      }
+  `
+      : ''}
+
+  ${(p) =>
+    p.$isOtherMonth
+      ? `
+      h4 {
+        color: ${p.theme.colors.grayscale.g35};
         font-weight: ${fontWeights.medium};
       }
   `
@@ -222,16 +233,20 @@ const getShortAttendees = (
 
 export default React.memo(function CalendarEventsSection({
   unitId,
-  weekDateRange,
+  selectedDate,
+  dateRange,
+  operationalDays,
   groupId
 }: {
   unitId: UUID
-  weekDateRange: FiniteDateRange
+  selectedDate: LocalDate
+  dateRange: FiniteDateRange
+  operationalDays: DayOfWeek[]
   groupId: UUID | null // null means all groups
 }) {
   const [events, reloadEvents] = useApiState(
-    () => getCalendarEvents(unitId, weekDateRange),
-    [unitId, weekDateRange]
+    () => getCalendarEvents(unitId, dateRange),
+    [unitId, dateRange]
   )
 
   const { calendarEventId } = useParams<{ calendarEventId: UUID }>()
@@ -255,6 +270,28 @@ export default React.memo(function CalendarEventsSection({
 
     return event
   }, [calendarEventId, events, navigate, unitId])
+
+  const datesByWeeks: LocalDate[][] = useMemo(
+    () =>
+      Array.from(dateRange.dates()).reduce((acc, date) => {
+        if (!operationalDays.includes(date.getIsoDayOfWeek() as DayOfWeek)) {
+          return acc
+        }
+        const lastWeek = acc.length > 0 ? acc[acc.length - 1] : undefined
+        const lastDate = lastWeek ? lastWeek[lastWeek.length - 1] : undefined
+        if (
+          lastWeek &&
+          lastDate &&
+          date.getIsoWeek() === lastDate.getIsoWeek()
+        ) {
+          lastWeek.push(date)
+        } else {
+          acc.push([date])
+        }
+        return acc
+      }, [] as LocalDate[][]),
+    [dateRange, operationalDays]
+  )
 
   return (
     <div>
@@ -293,62 +330,73 @@ export default React.memo(function CalendarEventsSection({
       </FlexRow>
       <Gap size="s" />
       {renderResult(events, (events) => (
-        <EventsContainer>
-          {Array.from(weekDateRange.dates()).map((day) => (
-            <EventDay
-              key={day.formatIso()}
-              isToday={LocalDate.todayInHelsinkiTz().isEqual(day)}
-              data-qa={`calendar-event-day-${day.formatIso()}`}
-            >
-              <H4 noMargin>
-                {i18n.common.datetime.weekdaysShort[day.getIsoDayOfWeek() - 1]}{' '}
-                {day.format('d.M.')}
-              </H4>
-              <Gap size="xs" />
-              <FixedSpaceColumn spacing="s">
-                {sortBy(
-                  events
-                    .filter(({ period }) => period.includes(day))
-                    .map((event) => ({
-                      event,
-                      specifier: getShortAttendees(
-                        unitInformation
-                          .map(({ daycare }) => daycare.name)
-                          .getOrElse(''),
-                        event.groups,
-                        event.individualChildren,
-                        groupId
-                      )
-                    }))
-                    .filter(({ specifier }) =>
-                      // if all groups selected: only show events applicable for daycare, NOT group events
-                      // if specific group selected: show daycare-wide events and group's events
-                      groupId === null
-                        ? specifier.type === 'daycare'
-                        : specifier.type === 'daycare' ||
-                          ((specifier.type === 'group' ||
-                            specifier.type === 'partial-group') &&
-                            specifier.matchers.some((id) => id === groupId))
-                    ),
-                  ({ specifier }) =>
-                    ['unit', 'group', 'partial-group'].indexOf(specifier.type)
-                ).map(({ event, specifier }) => (
-                  <EventLinkContainer
-                    className={`type-${specifier.type}`}
-                    key={event.id}
-                  >
-                    <Link
-                      to={`/units/${unitId}/calendar/events/${event.id}`}
-                      data-qa="event"
-                    >
-                      <Bold>{specifier.text}:</Bold> {event.title}
-                    </Link>
-                  </EventLinkContainer>
-                ))}
-              </FixedSpaceColumn>
-            </EventDay>
+        <div>
+          {datesByWeeks.map((datesInWeek, i) => (
+            <EventsWeekContainer key={i}>
+              {datesInWeek.map((day) => (
+                <EventDay
+                  key={day.formatIso()}
+                  $isToday={LocalDate.todayInHelsinkiTz().isEqual(day)}
+                  $isOtherMonth={day.month !== selectedDate.month}
+                  data-qa={`calendar-event-day-${day.formatIso()}`}
+                >
+                  <H4 noMargin>
+                    {
+                      i18n.common.datetime.weekdaysShort[
+                        day.getIsoDayOfWeek() - 1
+                      ]
+                    }{' '}
+                    {day.format('d.M.')}
+                  </H4>
+                  <Gap size="xs" />
+                  <FixedSpaceColumn spacing="s">
+                    {sortBy(
+                      events
+                        .filter(({ period }) => period.includes(day))
+                        .map((event) => ({
+                          event,
+                          specifier: getShortAttendees(
+                            unitInformation
+                              .map(({ daycare }) => daycare.name)
+                              .getOrElse(''),
+                            event.groups,
+                            event.individualChildren,
+                            groupId
+                          )
+                        }))
+                        .filter(({ specifier }) =>
+                          // if all groups selected: only show events applicable for daycare, NOT group events
+                          // if specific group selected: show daycare-wide events and group's events
+                          groupId === null
+                            ? specifier.type === 'daycare'
+                            : specifier.type === 'daycare' ||
+                              ((specifier.type === 'group' ||
+                                specifier.type === 'partial-group') &&
+                                specifier.matchers.some((id) => id === groupId))
+                        ),
+                      ({ specifier }) =>
+                        ['unit', 'group', 'partial-group'].indexOf(
+                          specifier.type
+                        )
+                    ).map(({ event, specifier }) => (
+                      <EventLinkContainer
+                        className={`type-${specifier.type}`}
+                        key={event.id}
+                      >
+                        <Link
+                          to={`/units/${unitId}/calendar/events/${event.id}`}
+                          data-qa="event"
+                        >
+                          <Bold>{specifier.text}:</Bold> {event.title}
+                        </Link>
+                      </EventLinkContainer>
+                    ))}
+                  </FixedSpaceColumn>
+                </EventDay>
+              ))}
+            </EventsWeekContainer>
           ))}
-        </EventsContainer>
+        </div>
       ))}
     </div>
   )
