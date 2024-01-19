@@ -9,11 +9,17 @@ import fi.espoo.evaka.assistance.AssistanceController
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
@@ -21,14 +27,6 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -41,24 +39,31 @@ import org.springframework.beans.factory.annotation.Autowired
 class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: AssistanceController
 
-    private val assistanceWorker =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
-    private val testDaycareId = testDaycare.id
+    private lateinit var daycare: DaycareId
+    private lateinit var daycare2: DaycareId
+    private lateinit var decisionMaker: EmployeeId
+    private lateinit var decisionMaker2: EmployeeId
+    private lateinit var child: ChildId
+    private lateinit var child2: ChildId
+    private lateinit var assistanceWorker: AuthenticatedUser.Employee
+    private lateinit var admin: AuthenticatedUser.Employee
 
     private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testArea2)
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insert(testChild_2, DevPersonType.CHILD)
+            val area = tx.insert(DevCareArea())
+            val area2 = tx.insert(DevCareArea(name = "Test Area 2", shortName = "test_area2"))
+            decisionMaker = tx.insert(DevEmployee())
+            decisionMaker2 = tx.insert(DevEmployee())
+            daycare = tx.insert(DevDaycare(areaId = area))
+            daycare2 = tx.insert(DevDaycare(areaId = area2))
+            child = tx.insert(DevPerson(), DevPersonType.CHILD)
+            child2 = tx.insert(DevPerson(), DevPersonType.CHILD)
+            assistanceWorker =
+                AuthenticatedUser.Employee(decisionMaker, setOf(UserRole.SERVICE_WORKER))
+            admin = AuthenticatedUser.Employee(decisionMaker, setOf(UserRole.ADMIN))
         }
     }
 
@@ -72,7 +77,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(
             AssistanceAction(
                 id = assistanceAction.id,
-                childId = testChild_1.id,
+                childId = child,
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = emptySet(),
@@ -100,7 +105,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(
             AssistanceAction(
                 id = assistanceAction.id,
-                childId = testChild_1.id,
+                childId = child,
                 startDate = testDate(10),
                 endDate = testDate(20),
                 actions = allActionTypes,
@@ -117,7 +122,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             AssistanceActionRequest(startDate = testDate(16), endDate = testDate(30))
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
@@ -164,7 +169,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             AssistanceActionRequest(startDate = testDate(20), endDate = testDate(30))
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(19) }
@@ -181,7 +186,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             AssistanceActionRequest(startDate = testDate(11), endDate = testDate(15))
         )
 
-        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
         assertEquals(2, assistanceActions.size)
         assertTrue(
             assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(10) }
@@ -195,13 +200,13 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `get assistance actions`() {
         val veoInPlacementUnit =
             AuthenticatedUser.Employee(
-                testDecisionMaker_1.id,
+                decisionMaker,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
             )
         db.transaction {
             it.insertDaycareAclRow(
-                testDaycareId,
-                testDecisionMaker_1.id,
+                daycare,
+                decisionMaker,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
@@ -209,27 +214,27 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val placementEndDate = placementStartDate.plusYears(1)
         givenPlacement(placementStartDate, placementEndDate, PlacementType.DAYCARE)
 
-        givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5), testChild_1.id)
+        givenAssistanceAction(placementStartDate, placementStartDate.plusDays(5), child)
         givenAssistanceAction(
             placementStartDate.plusDays(25),
             placementStartDate.plusDays(30),
-            testChild_1.id
+            child
         )
         givenAssistanceAction(
             placementStartDate.plusDays(25),
             placementStartDate.plusDays(30),
-            testChild_2.id
+            child2
         )
 
-        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(child, veoInPlacementUnit)
         assertEquals(2, assistanceActions.size)
         with(assistanceActions[0]) {
-            assertEquals(testChild_1.id, childId)
+            assertEquals(child, childId)
             assertEquals(placementStartDate.plusDays(25), startDate)
             assertEquals(placementStartDate.plusDays(30), endDate)
         }
         with(assistanceActions[1]) {
-            assertEquals(testChild_1.id, childId)
+            assertEquals(child, childId)
             assertEquals(placementStartDate, startDate)
             assertEquals(placementStartDate.plusDays(5), endDate)
         }
@@ -239,13 +244,13 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `update assistance action`() {
         val veoInPlacementUnit =
             AuthenticatedUser.Employee(
-                testDecisionMaker_1.id,
+                decisionMaker,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
             )
         db.transaction {
             it.insertDaycareAclRow(
-                testDaycareId,
-                testDecisionMaker_1.id,
+                daycare,
+                decisionMaker,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
@@ -270,7 +275,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(placementStartDate.plusDays(9), updated.startDate)
         assertEquals(placementStartDate.plusDays(22), updated.endDate)
 
-        val fetched = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
+        val fetched = getAssistanceActions(child, veoInPlacementUnit)
         assertEquals(2, fetched.size)
         assertTrue(
             fetched.any {
@@ -315,13 +320,13 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `delete assistance action`() {
         val veoInPlacementUnit =
             AuthenticatedUser.Employee(
-                testDecisionMaker_1.id,
+                decisionMaker,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
             )
         db.transaction {
             it.insertDaycareAclRow(
-                testDaycareId,
-                testDecisionMaker_1.id,
+                daycare,
+                decisionMaker,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
@@ -333,7 +338,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         deleteAssistanceAction(id2)
 
-        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(child, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
         assertEquals(id1, assistanceActions.first().id)
     }
@@ -347,13 +352,13 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `if child is in preschool, show VEO all assistance info`() {
         val veoEmployee =
             AuthenticatedUser.Employee(
-                testDecisionMaker_1.id,
+                decisionMaker,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
             )
         db.transaction {
             it.insertDaycareAclRow(
-                testDaycareId,
-                testDecisionMaker_1.id,
+                daycare,
+                decisionMaker,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
@@ -380,22 +385,22 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             givenAssistanceAction(
                 daycarePlacementStart,
                 daycarePlacementEnd.minusDays(1),
-                testChild_1.id
+                child
             )
 
         // Overlaps first preschool placement
         val assistanceOverlappingPreschool =
-            givenAssistanceAction(daycarePlacementEnd, preschoolPeriodFirstDate, testChild_1.id)
+            givenAssistanceAction(daycarePlacementEnd, preschoolPeriodFirstDate, child)
 
         // Completely after any daycare placement
         val assistanceDuringPreschool =
             givenAssistanceAction(
                 preschoolPeriodFirstDate.plusDays(1),
                 preschoolPeriodFirstDate.plusYears(1),
-                testChild_1.id
+                child
             )
 
-        val assistanceActions = getAssistanceActions(testChild_1.id, veoEmployee)
+        val assistanceActions = getAssistanceActions(child, veoEmployee)
         assertEquals(3, assistanceActions.size)
 
         assertEquals(
@@ -408,51 +413,51 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
         // Admin sees all
-        assertEquals(3, getAssistanceActions(testChild_1.id, admin).size)
+        assertEquals(3, getAssistanceActions(child, admin).size)
     }
 
     @Test
     fun `before preschool show assistance action only to employees in same unit as child`() {
         val sameUnitEmployee =
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.STAFF))
+            AuthenticatedUser.Employee(decisionMaker, setOf(UserRole.STAFF))
         val differentUnitEmployee =
-            AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.STAFF))
+            AuthenticatedUser.Employee(decisionMaker2, setOf(UserRole.STAFF))
         db.transaction {
-            it.insertDaycareAclRow(testDaycareId, testDecisionMaker_1.id, UserRole.STAFF)
-            it.insertDaycareAclRow(testDaycare2.id, testDecisionMaker_2.id, UserRole.STAFF)
+            it.insertDaycareAclRow(daycare, decisionMaker, UserRole.STAFF)
+            it.insertDaycareAclRow(daycare2, decisionMaker2, UserRole.STAFF)
         }
 
         val today = clock.today()
-        givenAssistanceAction(today, today, testChild_1.id)
+        givenAssistanceAction(today, today, child)
 
         givenPlacement(today, today, PlacementType.DAYCARE)
-        val sameUnitAssistanceActions = getAssistanceActions(testChild_1.id, sameUnitEmployee)
+        val sameUnitAssistanceActions = getAssistanceActions(child, sameUnitEmployee)
         assertEquals(1, sameUnitAssistanceActions.size)
 
-        assertThrows<Forbidden> { getAssistanceActions(testChild_1.id, differentUnitEmployee) }
+        assertThrows<Forbidden> { getAssistanceActions(child, differentUnitEmployee) }
     }
 
     @Test
     fun `if child will be in preschool, show pre preschool assistance actions`() {
         val veoInPlacementUnit =
             AuthenticatedUser.Employee(
-                testDecisionMaker_1.id,
+                decisionMaker,
                 setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
             )
         db.transaction {
             it.insertDaycareAclRow(
-                testDaycareId,
-                testDecisionMaker_1.id,
+                daycare,
+                decisionMaker,
                 UserRole.SPECIAL_EDUCATION_TEACHER
             )
         }
         val today = clock.today()
         givenPlacement(today, today, PlacementType.DAYCARE)
 
-        givenAssistanceAction(today, today, testChild_1.id)
+        givenAssistanceAction(today, today, child)
 
         givenPlacement(today.plusDays(1), today.plusDays(1), PlacementType.PRESCHOOL)
-        val assistanceActions = getAssistanceActions(testChild_1.id, veoInPlacementUnit)
+        val assistanceActions = getAssistanceActions(child, veoInPlacementUnit)
         assertEquals(1, assistanceActions.size)
     }
 
@@ -461,7 +466,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private fun givenAssistanceAction(
         startDate: LocalDate,
         endDate: LocalDate,
-        childId: ChildId = testChild_1.id
+        childId: ChildId = child
     ): AssistanceActionId {
         return db.transaction {
             it.insert(
@@ -479,7 +484,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         startDate: LocalDate,
         endDate: LocalDate,
         type: PlacementType,
-        childId: ChildId = testChild_1.id
+        childId: ChildId = child
     ): PlacementId {
         return db.transaction {
             it.insert(
@@ -488,7 +493,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = startDate,
                     endDate = endDate,
                     type = type,
-                    unitId = testDaycareId
+                    unitId = daycare
                 )
             )
         }
@@ -499,7 +504,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             dbInstance(),
             assistanceWorker,
             clock,
-            testChild_1.id,
+            child,
             request
         )
 
