@@ -5758,6 +5758,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"date-fns@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "date-fns@npm:3.3.0"
+  checksum: e93a99f0a447e26e01aeb099ee711abbced3b62f40e28c84effd09e69788f93587f2daec43950ead417faeebbd94afddc335bfd442c34443b03f09dfc0022ff8
+  languageName: node
+  linkType: hard
+
 "debug@npm:2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
@@ -6861,7 +6868,7 @@ __metadata:
     core-js: "npm:^3.35.0"
     css-loader: "npm:^6.9.0"
     csstype: "npm:^3.1.2"
-    date-fns: "npm:^2.30.0"
+    date-fns: "npm:^3.3.0"
     date-fns-tz: "npm:^2.0.0"
     downshift: "npm:^8.3.1"
     esbuild: "npm:^0.19.2"
