@@ -1593,6 +1593,7 @@ export class Fixture {
       id: uuidv4(),
       daycareHoursPerWeek: 0,
       contractDaysPerMonth: null,
+      daycareHoursPerMonth: null,
       defaultOption: false,
       feeCoefficient: 0.0,
       feeDescriptionFi: `Test service need option ${id}`,

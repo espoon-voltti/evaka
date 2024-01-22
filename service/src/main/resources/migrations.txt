@@ -373,3 +373,4 @@ V373__calendar_event_time_reservation.sql
 V374__daycare_preschool_and_preparatory_times.sql
 V375__absence_modified_at_drop_default.sql
 V376__departed_automatically.sql
+V377__service_need_option_hours_per_month.sql

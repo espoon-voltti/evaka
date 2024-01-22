@@ -50,6 +50,7 @@ export interface ServiceNeedCreateRequest {
 export interface ServiceNeedOption {
   active: boolean
   contractDaysPerMonth: number | null
+  daycareHoursPerMonth: number | null
   daycareHoursPerWeek: number
   defaultOption: boolean
   feeCoefficient: number
