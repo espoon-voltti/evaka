@@ -15,12 +15,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.utils.writerFor
 import fi.espoo.voltti.logging.loggers.error
-import java.lang.RuntimeException
 import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
 import mu.KotlinLogging
+import org.springframework.http.HttpStatus
 
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,
@@ -138,7 +138,8 @@ class WebPush(env: WebPushEnv) {
 
     private val logger = KotlinLogging.logger {}
 
-    class SubscriptionExpired(cause: Throwable) : RuntimeException("Subscription expired", cause)
+    class SubscriptionExpired(val status: HttpStatus, cause: Throwable) :
+        RuntimeException("Subscription expired (HTTP $status)", cause)
 
     fun getValidToken(tx: Database.Transaction, clock: EvakaClock, endpoint: URI): VapidJwt =
         tx.getOrRefreshToken(
@@ -183,10 +184,10 @@ class WebPush(env: WebPushEnv) {
                     "url" to request.url,
                     "body" to request.body.asString(contentType = null),
                 )
-            logger.error(e, meta) { "Web push failed, status ${e.response.statusCode}" }
             if (e.response.statusCode == 404 || e.response.statusCode == 410) {
-                throw SubscriptionExpired(e)
+                throw SubscriptionExpired(HttpStatus.valueOf(e.response.statusCode), e)
             }
+            logger.error(e, meta) { "Web push failed, status ${e.response.statusCode}" }
             throw e
         }
     }
