@@ -127,7 +127,7 @@ AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = :daycar
 fun Database.Transaction.insertDaycareGroupAcl(
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    groupIds: List<GroupId>
+    groupIds: Collection<GroupId>
 ) =
     prepareBatch(
             """
