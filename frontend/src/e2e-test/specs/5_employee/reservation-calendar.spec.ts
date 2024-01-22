@@ -611,12 +611,12 @@ describe('Unit group calendar for shift care unit', () => {
     await childReservations
       .reservationCells(child1Fixture.id, nextFriday)
       .nth(0)
-      .assertTextEquals('09:00\n17:00')
+      .assertTextEquals('09:00\n17:00*')
     await calendarPage.nextWeek.click()
     await childReservations
       .reservationCells(child1Fixture.id, nextWeekMonday)
       .nth(0)
-      .assertTextEquals('08:00\n16:00')
+      .assertTextEquals('08:00\n16:00*')
   })
 
   test('Employee sees attendances along reservations', async () => {
@@ -677,11 +677,11 @@ describe('Unit group calendar for shift care unit', () => {
 
     await waitUntilEqual(
       () => childReservations.getReservation(startDate, 0),
-      ['00:00', '12:00']
+      ['00:00', '12:00*']
     )
     await waitUntilEqual(
       () => childReservations.getReservation(startDate, 1),
-      ['20:00', '23:59']
+      ['20:00', '23:59*']
     )
 
     await waitUntilEqual(

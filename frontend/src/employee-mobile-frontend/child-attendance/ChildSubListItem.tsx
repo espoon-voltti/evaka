@@ -115,7 +115,7 @@ export default React.memo(function ChildSubListItem({
     if (reservationData.outOnBackupPlacement)
       return [i18n.attendances.confirmedDays.inOtherUnit]
 
-    const [withTimes, noTimes] = partition(
+    const [withTimes] = partition(
       reservationData.reservations,
       reservationHasTimes
     )
@@ -127,7 +127,7 @@ export default React.memo(function ChildSubListItem({
       )
 
     if (reservationData.isInHolidayPeriod) {
-      if (noTimes.length > 0)
+      if (reservationData.reservations.length === 0)
         return [i18n.attendances.confirmedDays.noHolidayReservation]
     }
 

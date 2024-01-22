@@ -131,8 +131,8 @@ test('Add two reservations for tomorrow then update one and remove other', async
 
   let reservations = reservationsTable.reservationCells(childId, date)
   await reservations.assertCount(2)
-  await reservations.nth(0).assertTextEquals('09:00\n16:00')
-  await reservations.nth(1).assertTextEquals('20:30\n23:59 ')
+  await reservations.nth(0).assertTextEquals('09:00\n16:00*')
+  await reservations.nth(1).assertTextEquals('20:30\n23:59 *')
   await reservationsTable
     .endTimeOutsideOpeningHoursWarning(childId, date, 1)
     .waitUntilVisible()
@@ -145,7 +145,7 @@ test('Add two reservations for tomorrow then update one and remove other', async
 
   reservations = reservationsTable.reservationCells(childId, date)
   await reservations.assertCount(1)
-  await reservations.nth(0).assertTextEquals('10:15\n16:00')
+  await reservations.nth(0).assertTextEquals('10:15\n16:00*')
 })
 
 test('Add two attendances for yesterday then update one and remove other', async () => {
@@ -223,11 +223,11 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('09:00\n13:00')
+    .assertTextEquals('09:00\n13:00*')
   await reservationsTable
     .reservationCells(childId, date)
     .nth(1)
-    .assertTextEquals('14:00\n17:00')
+    .assertTextEquals('14:00\n17:00*')
 
   // reservation times are not shown if fully absent
   await reservationsTable.openChildDateModal(childId, date)
