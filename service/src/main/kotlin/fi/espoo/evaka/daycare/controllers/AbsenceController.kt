@@ -18,8 +18,11 @@ import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
 import fi.espoo.evaka.daycare.service.getFutureAbsencesOfChild
 import fi.espoo.evaka.daycare.service.getGroupMonthCalendar
 import fi.espoo.evaka.daycare.service.upsertAbsences
+import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
+import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -37,7 +40,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/absences")
-class AbsenceController(private val accessControl: AccessControl) {
+class AbsenceController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping("/{groupId}")
     fun groupMonthCalendar(
         db: Database,
@@ -80,22 +86,51 @@ class AbsenceController(private val accessControl: AccessControl) {
 
         val upserted =
             db.connect { dbc ->
-                dbc.transaction {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Group.CREATE_ABSENCES,
                         groupId
                     )
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Child.CREATE_ABSENCE,
                         children
                     )
-                    it.upsertAbsences(clock.now(), user.evakaUserId, absences)
+
+                    // Delete reservations in the unconfirmed range that are now covered by
+                    // absences.
+                    //
+                    // This is not entirely accurate: If the child's service need has billable and
+                    // non-billable parts (e.g. PRESCHOOL_DAYCARE) and only billable or non-billable
+                    // absence is added, then the reservation's time should be adjusted instead of
+                    // just deleting the reservation.
+                    //
+                    // Example:
+                    // - Add reservation 8-16
+                    // - Add absence for the billable category
+                    // - Reservation should adjusted to be 9-13 (or whatever the unit's preschool
+                    //   hours are)
+                    //
+                    // Just deleting the reservations is good enough for now, let's fix it later if
+                    // needed.
+                    //
+                    val reservableRange =
+                        getReservableRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours
+                        )
+                    tx.clearOldReservations(
+                        absences
+                            .filter { reservableRange.includes(it.date) }
+                            .map { it.childId to it.date }
+                    )
+
+                    tx.upsertAbsences(clock.now(), user.evakaUserId, absences)
                 }
             }
         Audit.AbsenceUpsert.log(

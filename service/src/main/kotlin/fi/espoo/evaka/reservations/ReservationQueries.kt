@@ -9,7 +9,6 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -29,52 +28,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
-
-data class AbsenceInsert(
-    val childId: ChildId,
-    val date: LocalDate,
-    val absenceType: AbsenceType,
-    val questionnaireId: HolidayQuestionnaireId? = null
-)
-
-fun Database.Transaction.insertAbsences(
-    userId: EvakaUserId,
-    absenceInserts: List<AbsenceInsert>
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
-        SELECT
-            :childId,
-            :date,
-            category,
-            :absenceType,
-            :userId,
-            :questionnaireId
-        FROM (
-            SELECT unnest(absence_categories(type)) AS category
-            FROM placement
-            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
-        ) care_type
-        ON CONFLICT DO NOTHING
-        RETURNING id
-        """
-                .trimIndent()
-        )
-
-    absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
-        batch
-            .bind("childId", childId)
-            .bind("date", date)
-            .bind("absenceType", absenceType)
-            .bind("userId", userId)
-            .bind("questionnaireId", questionnaireId)
-            .add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
 
 fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
     questionnaireId: HolidayQuestionnaireId,

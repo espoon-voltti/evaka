@@ -2023,6 +2023,11 @@ data class DevPerson(
             invoicingPostOffice = this.invoicingPostOffice,
             ophPersonOid = this.ophPersonOid
         )
+
+    val evakaUserId: EvakaUserId
+        get() = EvakaUserId(id.raw)
+
+    fun user(authLevel: CitizenAuthLevel) = AuthenticatedUser.Citizen(id, authLevel)
 }
 
 data class DevParentship(
@@ -2044,7 +2049,12 @@ data class DevEmployee(
     val roles: Set<UserRole> = setOf(),
     val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val active: Boolean = true
-)
+) {
+    val evakaUserId: EvakaUserId
+        get() = EvakaUserId(id.raw)
+
+    fun user(globalRoles: Set<UserRole>) = AuthenticatedUser.Employee(id, globalRoles)
+}
 
 data class DevMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),

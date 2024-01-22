@@ -22,6 +22,8 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.reservations.clearOldReservations
+import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.reservations.getUnitReservations
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -441,8 +443,7 @@ class ChildAttendanceController(
 
     data class AbsenceRangeRequest(
         val absenceType: AbsenceType,
-        val startDate: LocalDate,
-        val endDate: LocalDate
+        val range: FiniteDateRange,
     )
 
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
@@ -465,8 +466,19 @@ class ChildAttendanceController(
                     unitId
                 )
                 val typeOnDates =
-                    tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
+                    tx.fetchChildPlacementTypeDates(
+                        childId,
+                        unitId,
+                        body.range.start,
+                        body.range.end
+                    )
 
+                // Delete reservations from unconfirmed range
+                val reservableRange =
+                    getReservableRange(clock.now(), featureConfig.citizenReservationThresholdHours)
+                body.range.intersection(reservableRange)?.let { unconfirmedRange ->
+                    tx.clearOldReservations(unconfirmedRange.dates().map { childId to it }.toList())
+                }
                 try {
                     for ((date, placementType) in typeOnDates) {
                         tx.deleteAbsencesByDate(childId, date)

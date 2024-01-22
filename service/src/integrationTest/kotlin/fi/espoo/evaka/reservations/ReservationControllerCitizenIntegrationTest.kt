@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
@@ -19,17 +20,17 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -39,7 +40,6 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -49,19 +49,9 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
-import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testRoundTheClockDaycare
 import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -75,6 +65,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
+    private val beforeThreshold = HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))
+    private val afterThreshold = HelsinkiDateTime.of(mockToday.plusDays(7), LocalTime.of(21, 0))
 
     private val monday = LocalDate.of(2021, 11, 15)
     private val tuesday = monday.plusDays(1)
@@ -88,39 +80,47 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private val startTime = LocalTime.of(9, 0)
     private val endTime = LocalTime.of(17, 0)
 
-    private val testStaffId = EmployeeId(UUID.randomUUID())
-
-    private lateinit var testChild1PlacementId: PlacementId
-
     @BeforeEach
     fun before() {
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)
+        }
+    }
 
-            tx.insert(testArea)
-            tx.insert(testDaycare)
+    @Test
+    fun `get reservations returns correct children every day in range`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
 
-            tx.insert(testDecisionMaker_1)
-            tx.insert(DevEmployee(testStaffId))
+        val adult = DevPerson()
+        val child1 = DevPerson(dateOfBirth = LocalDate.of(2015, 1, 1))
+        val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 1, 1))
+        val child3 = DevPerson(dateOfBirth = LocalDate.of(2017, 1, 1))
 
-            tx.insert(testAdult_1, DevPersonType.ADULT)
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
 
-            listOf(testChild_1, testChild_2).forEach { child ->
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2, child3).forEach { child ->
                 tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
             }
 
-            testChild1PlacementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    type = PlacementType.PRESCHOOL_DAYCARE,
-                    startDate = monday,
-                    endDate = tuesday
-                )
             tx.insertTestPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                childId = child1.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+            tx.insertTestPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
                     type = PlacementType.DAYCARE,
                     startDate = fridayLastWeek,
                     endDate = tuesday
@@ -128,43 +128,37 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 .also { placementId ->
                     // contract days on monday and tuesday
                     tx.insertTestServiceNeed(
-                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        confirmedBy = employee.evakaUserId,
                         placementId = placementId,
                         period = FiniteDateRange(monday, tuesday),
                         optionId = snDaycareContractDays10.id,
                         shiftCare = ShiftCareType.NONE
                     )
                 }
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
-        }
-    }
-
-    @Test
-    fun `get reservations returns correct children every day in range`() {
-        db.transaction { tx ->
-            tx.insertTestHoliday(wednesday)
-
-            tx.insert(testChild_3, DevPersonType.CHILD)
 
             // Fixed schedule (PRESCHOOL)
             tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
+                childId = child3.id,
+                unitId = daycare.id,
                 type = PlacementType.PRESCHOOL,
                 startDate = monday,
                 endDate = thursday
             )
 
+            // Holiday on wednesday
+            tx.insertTestHoliday(wednesday)
+
             // Term break on thursday
             tx.insertPreschoolTerm(
                 preschoolTerm2021.copy(termBreaks = DateSet.of(FiniteDateRange(thursday, thursday)))
             )
-
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
         }
 
-        val res = getReservations(FiniteDateRange(sundayLastWeek, thursday))
+        val res =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(sundayLastWeek, thursday)
+            )
 
         assertEquals(
             ReservationsResponse(
@@ -177,27 +171,27 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     // Sorted by date of birth, oldest child first
                     listOf(
                         ReservationChild(
-                            id = testChild_2.id,
-                            firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName,
-                            preferredName = "",
-                            duplicateOf = null,
-                            imageId = null,
-                            upcomingPlacementType = PlacementType.DAYCARE,
-                        ),
-                        ReservationChild(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
+                            id = child1.id,
+                            firstName = child1.firstName,
+                            lastName = child1.lastName,
                             preferredName = "",
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                         ),
                         ReservationChild(
-                            id = testChild_3.id,
-                            firstName = testChild_3.firstName,
-                            lastName = testChild_3.lastName,
+                            id = child2.id,
+                            firstName = child2.firstName,
+                            lastName = child2.lastName,
+                            preferredName = "",
+                            duplicateOf = null,
+                            imageId = null,
+                            upcomingPlacementType = PlacementType.DAYCARE,
+                        ),
+                        ReservationChild(
+                            id = child3.id,
+                            firstName = child3.firstName,
+                            lastName = child3.lastName,
                             preferredName = "",
                             duplicateOf = null,
                             imageId = null,
@@ -218,25 +212,25 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                         dayChild(
-                                            testChild_1.id,
+                                            child1.id,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
+                                                    daycare.operationTimes[0]!!
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_2.id,
+                                            child2.id,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
+                                                    daycare.operationTimes[0]!!
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_3.id,
+                                            child3.id,
                                             scheduleType = ScheduleType.FIXED_SCHEDULE,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
+                                                    daycare.operationTimes[0]!!
                                                 )
                                         )
                                     )
@@ -248,25 +242,25 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                         dayChild(
-                                            testChild_1.id,
+                                            child1.id,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
+                                                    daycare.operationTimes[1]!!
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_2.id,
+                                            child2.id,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
+                                                    daycare.operationTimes[1]!!
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_3.id,
+                                            child3.id,
                                             scheduleType = ScheduleType.FIXED_SCHEDULE,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
+                                                    daycare.operationTimes[1]!!
                                                 )
                                         )
                                     )
@@ -283,12 +277,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                     dayChild(
-                                        testChild_3.id,
+                                        child3.id,
                                         scheduleType = ScheduleType.TERM_BREAK,
                                         reservableTimeRange =
-                                            ReservableTimeRange.Normal(
-                                                testDaycare.operationTimes[0]!!
-                                            )
+                                            ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                                     )
                                 )
                         )
@@ -300,51 +292,69 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `get reservations returns correct children every day in range with children in shift care`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
         val roundTheClockDaycare =
-            testRoundTheClockDaycare.copy(
-                id = DaycareId(UUID.randomUUID()),
+            DevDaycare(
+                areaId = area.id,
                 enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                roundTheClock = true,
+                operationTimes = allWeekOpTimes,
             )
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child1 = DevPerson(dateOfBirth = LocalDate.of(2015, 1, 1))
+        val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 1, 1))
 
         db.transaction { tx ->
-            tx.insertTestHoliday(tuesday)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(roundTheClockDaycare)
+            tx.insert(employee)
 
-            listOf(testChild_3, testChild_4).forEach { child ->
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2).forEach { child ->
                 tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
             }
 
             // Normal shift care
-            tx.insert(roundTheClockDaycare)
             tx.insertTestPlacement(
-                childId = testChild_3.id,
+                childId = child1.id,
                 unitId = roundTheClockDaycare.id,
                 type = PlacementType.DAYCARE,
                 startDate = sundayLastWeek,
                 endDate = tuesday
             )
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
 
             // Intermittent shift care
             tx.insertTestPlacement(
-                    childId = testChild_4.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     type = PlacementType.DAYCARE,
                     startDate = sundayLastWeek,
                     endDate = wednesday
                 )
                 .also { placementId ->
                     tx.insertTestServiceNeed(
-                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        confirmedBy = employee.evakaUserId,
                         placementId = placementId,
                         period = FiniteDateRange(sundayLastWeek, tuesday),
                         optionId = snDaycareFullDay35.id,
                         shiftCare = ShiftCareType.INTERMITTENT,
                     )
                 }
-            tx.insertGuardian(guardianId = testAdult_1.id, childId = testChild_4.id)
+
+            tx.insertTestHoliday(tuesday)
         }
 
-        val res = getReservations(FiniteDateRange(sundayLastWeek, wednesday))
+        val res =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(sundayLastWeek, wednesday)
+            )
 
         assertEquals(
             ReservationsResponse(
@@ -357,36 +367,18 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     // Sorted by date of birth, oldest child first
                     listOf(
                         ReservationChild(
-                            id = testChild_2.id,
-                            firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName,
+                            id = child1.id,
+                            firstName = child1.firstName,
+                            lastName = child1.lastName,
                             preferredName = "",
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
                         ),
                         ReservationChild(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            preferredName = "",
-                            duplicateOf = null,
-                            imageId = null,
-                            upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
-                        ),
-                        ReservationChild(
-                            id = testChild_3.id,
-                            firstName = testChild_3.firstName,
-                            lastName = testChild_3.lastName,
-                            preferredName = "",
-                            duplicateOf = null,
-                            imageId = null,
-                            upcomingPlacementType = PlacementType.DAYCARE,
-                        ),
-                        ReservationChild(
-                            id = testChild_4.id,
-                            firstName = testChild_4.firstName,
-                            lastName = testChild_4.lastName,
+                            id = child2.id,
+                            firstName = child2.firstName,
+                            lastName = child2.lastName,
                             preferredName = "",
                             duplicateOf = null,
                             imageId = null,
@@ -402,7 +394,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         // Sunday, only shift care is eligible
                                         dayChild(
-                                            testChild_3.id,
+                                            child1.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
@@ -410,7 +402,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_4.id,
+                                            child2.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
@@ -427,21 +419,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             children =
                                 listOf(
                                         dayChild(
-                                            testChild_1.id,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
-                                                )
-                                        ),
-                                        dayChild(
-                                            testChild_2.id,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
-                                                )
-                                        ),
-                                        dayChild(
-                                            testChild_3.id,
+                                            child1.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
@@ -449,11 +427,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_4.id,
+                                            child2.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
-                                                    testDaycare.operationTimes[0]!!
+                                                    daycare.operationTimes[0]!!
                                                 )
                                         ),
                                     )
@@ -466,15 +444,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                         // Holiday, only shift care is eligible
                                         dayChild(
-                                            testChild_3.id,
+                                            child1.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
+                                                    daycare.operationTimes[1]!!
                                                 )
                                         ),
                                         dayChild(
-                                            testChild_4.id,
+                                            child2.id,
                                             shiftCare = true,
                                             reservableTimeRange =
                                                 ReservableTimeRange.IntermittentShiftCare(
@@ -492,12 +470,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 listOf(
                                     // Intermittent shift care ended on Tuesday
                                     dayChild(
-                                        testChild_4.id,
+                                        child2.id,
                                         shiftCare = false,
                                         reservableTimeRange =
-                                            ReservableTimeRange.Normal(
-                                                testDaycare.operationTimes[2]!!
-                                            )
+                                            ReservableTimeRange.Normal(daycare.operationTimes[2]!!)
                                     ),
                                 )
                         )
@@ -513,15 +489,39 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             DailyServiceTimesController(
                 AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
             )
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
-            tx.insertDaycareAclRow(testDaycare.id, testDecisionMaker_1.id, UserRole.UNIT_SUPERVISOR)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+            tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
         }
 
         dailyServiceTimesController.postDailyServiceTimes(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf()),
+            employee.user(setOf()),
             MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
-            testChild_1.id,
+            child.id,
             DailyServiceTimesValue.IrregularTimes(
                 validityPeriod = DateRange(mockToday.plusDays(1), null),
                 monday = null,
@@ -534,7 +534,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
         )
 
-        val res = getReservations(FiniteDateRange(monday, tuesday))
+        val res =
+            getReservations(adult.user(CitizenAuthLevel.WEAK), FiniteDateRange(monday, tuesday))
 
         assertEquals(
             ReservationsResponse(
@@ -547,22 +548,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     // Sorted by date of birth, oldest child first
                     listOf(
                         ReservationChild(
-                            id = testChild_2.id,
-                            firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName,
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
                             preferredName = "",
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
-                        ),
-                        ReservationChild(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            preferredName = "",
-                            duplicateOf = null,
-                            imageId = null,
-                            upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
                         ),
                     ),
                 days =
@@ -572,49 +564,29 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(
-                                            testChild_1.id,
-                                            absence =
-                                                AbsenceInfo(
-                                                    AbsenceType.OTHER_ABSENCE,
-                                                    editable = false
-                                                ),
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
-                                                )
-                                        ),
-                                        dayChild(
-                                            testChild_2.id,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[0]!!
-                                                )
-                                        ),
-                                    )
-                                    .sortedBy { it.childId }
+                                    dayChild(
+                                        child.id,
+                                        absence =
+                                            AbsenceInfo(
+                                                AbsenceType.OTHER_ABSENCE,
+                                                editable = false
+                                            ),
+                                        reservableTimeRange =
+                                            ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
+                                    ),
+                                )
                         ),
                         ReservationResponseDay(
                             date = tuesday,
                             holiday = false,
                             children =
                                 listOf(
-                                        dayChild(
-                                            testChild_1.id,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
-                                                )
-                                        ),
-                                        dayChild(
-                                            testChild_2.id,
-                                            reservableTimeRange =
-                                                ReservableTimeRange.Normal(
-                                                    testDaycare.operationTimes[1]!!
-                                                )
-                                        ),
-                                    )
-                                    .sortedBy { it.childId }
+                                    dayChild(
+                                        child.id,
+                                        reservableTimeRange =
+                                            ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
+                                    ),
+                                )
                         ),
                     )
             ),
@@ -624,8 +596,45 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `adding reservations works in a basic case`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2).forEach { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
+            }
+
+            tx.insertTestPlacement(
+                childId = child1.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+            tx.insertTestPlacement(
+                childId = child2.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = fridayLastWeek,
+                endDate = tuesday
+            )
+        }
+
         postReservations(
-            listOf(testChild_1.id, testChild_2.id).flatMap { child ->
+            adult.user(CitizenAuthLevel.WEAK),
+            listOf(child1.id, child2.id).flatMap { child ->
                 listOf(
                     DailyReservationRequest.Reservations(
                         child,
@@ -641,28 +650,29 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             }
         )
 
-        val res = getReservations(FiniteDateRange(monday, wednesday))
+        val res =
+            getReservations(adult.user(CitizenAuthLevel.WEAK), FiniteDateRange(monday, wednesday))
 
         assertEquals(
             listOf(
                 ReservationChild(
-                    id = testChild_2.id,
-                    firstName = testChild_2.firstName,
-                    lastName = testChild_2.lastName,
+                    id = child1.id,
+                    firstName = child1.firstName,
+                    lastName = child1.lastName,
+                    preferredName = "",
+                    duplicateOf = null,
+                    imageId = null,
+                    upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                ),
+                ReservationChild(
+                    id = child2.id,
+                    firstName = child2.firstName,
+                    lastName = child2.lastName,
                     preferredName = "",
                     duplicateOf = null,
                     imageId = null,
                     upcomingPlacementType = PlacementType.DAYCARE,
                 ),
-                ReservationChild(
-                    id = testChild_1.id,
-                    firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName,
-                    preferredName = "",
-                    duplicateOf = null,
-                    imageId = null,
-                    upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
-                )
             ),
             res.children
         )
@@ -674,16 +684,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
+                            child1.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                         ),
                         dayChild(
-                            testChild_2.id,
+                            child2.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -696,16 +706,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
+                            child1.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         ),
                         dayChild(
-                            testChild_2.id,
+                            child2.id,
                             reservations = listOf(Reservation.Times(startTime, endTime)),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -721,21 +731,49 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `adding a reservation and an absence works`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+        }
+
         postReservations(
+            adult.user(CitizenAuthLevel.WEAK),
             listOf(
                 DailyReservationRequest.Reservations(
-                    testChild_1.id,
+                    child.id,
                     monday,
                     TimeRange(startTime, endTime),
                 ),
                 DailyReservationRequest.Absent(
-                    testChild_1.id,
+                    child.id,
                     tuesday,
                 )
             )
         )
 
-        val res = getReservations(FiniteDateRange(monday, wednesday))
+        val res =
+            getReservations(adult.user(CitizenAuthLevel.WEAK), FiniteDateRange(monday, wednesday))
 
         assertEquals(3, res.days.size)
 
@@ -743,19 +781,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(monday, day.date)
             assertEquals(
                 listOf(
-                        dayChild(
-                            testChild_1.id,
-                            reservations = listOf(Reservation.Times(startTime, endTime)),
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
-                        ),
-                        dayChild(
-                            testChild_2.id,
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
-                        )
+                    dayChild(
+                        child.id,
+                        reservations = listOf(Reservation.Times(startTime, endTime)),
+                        reservableTimeRange =
+                            ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                     )
-                    .sortedBy { it.childId },
+                ),
                 day.children
             )
         }
@@ -765,16 +797,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
+                            child.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
-                        ),
-                        dayChild(
-                            testChild_2.id,
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -790,52 +817,125 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `adding reservations fails if past citizen reservation threshold setting`() {
-        val request =
-            listOf(testChild_1.id, testChild_2.id).flatMap { child ->
-                listOf(
-                    DailyReservationRequest.Reservations(
-                        child,
-                        mockToday,
-                        TimeRange(startTime, endTime),
-                    ),
-                    DailyReservationRequest.Reservations(
-                        child,
-                        mockToday.plusDays(1),
-                        TimeRange(startTime, endTime),
-                    )
-                )
-            }
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
 
-        assertThrows<BadRequest> { postReservations(request) }
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+        }
+
+        val request =
+            listOf(
+                DailyReservationRequest.Reservations(
+                    child.id,
+                    mockToday,
+                    TimeRange(startTime, endTime),
+                ),
+                DailyReservationRequest.Reservations(
+                    child.id,
+                    mockToday.plusDays(1),
+                    TimeRange(startTime, endTime),
+                )
+            )
+
+        assertThrows<BadRequest> { postReservations(adult.user(CitizenAuthLevel.WEAK), request) }
+            .also { exception -> assertEquals("Some days are not reservable", exception.message) }
     }
 
     @Test
     fun `adding absences works`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            listOf(child1, child2).forEach { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insertGuardian(adult.id, child.id)
+            }
+
+            tx.insertTestPlacement(
+                childId = child1.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+            tx.insertTestPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = fridayLastWeek,
+                    endDate = tuesday
+                )
+                .also { placementId ->
+                    // contract days on monday and tuesday
+                    tx.insertTestServiceNeed(
+                        confirmedBy = employee.evakaUserId,
+                        placementId = placementId,
+                        period = FiniteDateRange(monday, tuesday),
+                        optionId = snDaycareContractDays10.id,
+                        shiftCare = ShiftCareType.NONE
+                    )
+                }
+        }
+
         val request =
             AbsenceRequest(
-                childIds = setOf(testChild_1.id, testChild_2.id),
+                childIds = setOf(child1.id, child2.id),
                 dateRange = FiniteDateRange(fridayLastWeek, wednesday),
                 absenceType = AbsenceType.OTHER_ABSENCE
             )
-        postAbsences(request)
+        postAbsences(adult.user(CitizenAuthLevel.WEAK), request)
 
-        val res = getReservations(FiniteDateRange(fridayLastWeek, wednesday))
+        val res =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(fridayLastWeek, wednesday)
+            )
         assertEquals(6, res.days.size)
 
         res.days[0].let { day ->
             assertEquals(fridayLastWeek, day.date)
             assertEquals(
                 listOf(
-                        dayChild(
-                            testChild_2.id,
-                            // no contract days -> OTHER_ABSENCE was kept
-                            absence =
-                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
-                        )
+                    dayChild(
+                        child2.id,
+                        // no contract days -> OTHER_ABSENCE was kept
+                        absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                        reservableTimeRange =
+                            ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                     )
-                    .sortedBy { it.childId },
+                ),
                 day.children
             )
         }
@@ -855,19 +955,19 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
+                            child1.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         ),
                         dayChild(
-                            testChild_2.id,
+                            child2.id,
                             absence =
                                 // contract days -> OTHER_ABSENCE changed to PLANNED_ABSENCE
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -880,19 +980,19 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
+                            child1.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         ),
                         dayChild(
-                            testChild_2.id,
+                            child2.id,
                             absence =
                                 // contract days -> OTHER_ABSENCE changed to PLANNED_ABSENCE
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -906,11 +1006,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         }
 
         // PRESCHOOL_DAYCARE generates two absences per day (nonbillable and billable)
-        assertAbsenceCounts(testChild_1.id, listOf(monday to 2, tuesday to 2))
+        assertAbsenceCounts(child1.id, listOf(monday to 2, tuesday to 2))
 
         // DAYCARE generates one absence per day
         assertAbsenceCounts(
-            testChild_2.id,
+            child2.id,
             listOf(
                 fridayLastWeek to 1,
                 // TODO: Absences are also generated for the weekend even though the unit is closed.
@@ -925,19 +1025,41 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `cannot add absences to the past`() {
-        assertThrows<BadRequest> {
-            postAbsences(
-                AbsenceRequest(
-                    childIds = setOf(testChild_1.id, testChild_2.id),
-                    dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday.plusDays(1)),
-                    absenceType = AbsenceType.OTHER_ABSENCE
-                )
-            )
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
         }
+
+        assertThrows<BadRequest> {
+                postAbsences(
+                    adult.user(CitizenAuthLevel.WEAK),
+                    AbsenceRequest(
+                        childIds = setOf(child.id),
+                        dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday.plusDays(1)),
+                        absenceType = AbsenceType.OTHER_ABSENCE
+                    )
+                )
+            }
+            .also { exception ->
+                assertEquals("Cannot mark absences for past days", exception.message)
+            }
     }
 
     @Test
     fun `cannot add prohibited absence types`() {
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+        }
+
         listOf(
                 AbsenceType.FREE_ABSENCE,
                 AbsenceType.UNAUTHORIZED_ABSENCE,
@@ -947,38 +1069,73 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
             .forEach { absenceType ->
                 assertThrows<BadRequest> {
-                    postAbsences(
-                        AbsenceRequest(
-                            childIds = setOf(testChild_1.id, testChild_2.id),
-                            dateRange = FiniteDateRange(monday, monday),
-                            absenceType = absenceType
+                        postAbsences(
+                            adult.user(CitizenAuthLevel.WEAK),
+                            AbsenceRequest(
+                                childIds = setOf(child.id),
+                                dateRange = FiniteDateRange(monday, monday),
+                                absenceType = absenceType
+                            )
                         )
-                    )
-                }
+                    }
+                    .also { exception -> assertEquals("Invalid absence type", exception.message) }
             }
     }
 
     @Test
     fun `citizen cannot override an absence that was added by staff`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = monday,
+                    endDate = tuesday
+                )
+                .let { placementId ->
+                    tx.insertTestServiceNeed(
+                        confirmedBy = employee.evakaUserId,
+                        placementId = placementId,
+                        period = FiniteDateRange(monday, tuesday),
+                        optionId = snDaycareContractDays10.id
+                    )
+                }
+
             tx.insertTestAbsence(
-                childId = testChild_2.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testStaffId.raw)
+                modifiedBy = employee.evakaUserId,
             )
         }
 
         val request =
             AbsenceRequest(
-                childIds = setOf(testChild_2.id),
+                childIds = setOf(child.id),
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.OTHER_ABSENCE
             )
-        postAbsences(request)
+        postAbsences(adult.user(CitizenAuthLevel.WEAK), request)
 
-        val res = getReservations(FiniteDateRange(monday, tuesday))
+        val res =
+            getReservations(adult.user(CitizenAuthLevel.WEAK), FiniteDateRange(monday, tuesday))
         assertEquals(2, res.days.size)
 
         res.days[0].let { day ->
@@ -986,16 +1143,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
-                        ),
-                        dayChild(
-                            testChild_2.id,
+                            child.id,
                             absence =
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = false),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[0]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                         ),
                     )
                     .sortedBy { it.childId },
@@ -1008,17 +1160,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             assertEquals(
                 listOf(
                         dayChild(
-                            testChild_1.id,
-                            reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
-                        ),
-                        dayChild(
-                            testChild_2.id,
+                            child.id,
                             absence =
                                 // contract days -> OTHER_ABSENCE changed to PLANNED_ABSENCE
                                 AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true),
                             reservableTimeRange =
-                                ReservableTimeRange.Normal(testDaycare.operationTimes[1]!!)
+                                ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
                     )
                     .sortedBy { it.childId },
@@ -1026,49 +1173,72 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             )
         }
 
-        assertAbsenceCounts(testChild_2.id, listOf(monday to 1, tuesday to 1))
+        assertAbsenceCounts(child.id, listOf(monday to 1, tuesday to 1))
     }
 
     @Test
     fun `citizen can override billable planned absence in contract day placement with sick leave before threshold`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId = testChild1PlacementId,
-                period = FiniteDateRange(monday, tuesday),
-                optionId = snPreschoolDaycareContractDays13.id,
-                shiftCare = ShiftCareType.NONE
-            )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = monday,
+                    endDate = tuesday
+                )
+                .let { placementId ->
+                    tx.insertTestServiceNeed(
+                        confirmedBy = employee.evakaUserId,
+                        placementId = placementId,
+                        period = FiniteDateRange(monday, tuesday),
+                        optionId = snPreschoolDaycareContractDays13.id
+                    )
+                }
+
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.NONBILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId,
             )
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId,
             )
         }
 
         postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
             AbsenceRequest(
-                childIds = setOf(testChild_1.id),
+                childIds = setOf(child.id),
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(15, 0)))
+            mockNow = beforeThreshold
         )
 
         assertThat(
-                db.read { tx ->
-                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
-                }
+                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
@@ -1081,37 +1251,59 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `citizen can override billable planned absence in non contract day placement with sick leave after threshold`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = monday,
+                endDate = tuesday
+            )
+
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.NONBILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId,
             )
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId,
             )
         }
 
         postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
             AbsenceRequest(
-                childIds = setOf(testChild_1.id),
+                childIds = setOf(child.id),
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+            mockNow = afterThreshold
         )
 
         assertThat(
-                db.read { tx ->
-                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
-                }
+                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
@@ -1124,44 +1316,67 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `citizen cannot override billable planned absence in contract day placement with sick leave after threshold`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId = testChild1PlacementId,
-                period = FiniteDateRange(monday, tuesday),
-                optionId = snPreschoolDaycareContractDays13.id,
-                shiftCare = ShiftCareType.NONE
-            )
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = monday,
+                    endDate = tuesday
+                )
+                .let { placementId ->
+                    tx.insertTestServiceNeed(
+                        confirmedBy = employee.evakaUserId,
+                        placementId = placementId,
+                        period = FiniteDateRange(monday, tuesday),
+                        optionId = snPreschoolDaycareContractDays13.id,
+                    )
+                }
+
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.NONBILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId
             )
             tx.insertTestAbsence(
-                childId = testChild_1.id,
+                childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = EvakaUserId(testAdult_1.id.raw)
+                modifiedBy = adult.evakaUserId
             )
         }
 
         postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
             AbsenceRequest(
-                childIds = setOf(testChild_1.id),
+                childIds = setOf(child.id),
                 dateRange = FiniteDateRange(monday, tuesday),
                 absenceType = AbsenceType.SICKLEAVE
             ),
-            clock =
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 11, 8), LocalTime.of(21, 0)))
+            mockNow = afterThreshold
         )
 
         assertThat(
-                db.read { tx ->
-                    tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(monday, tuesday))
-                }
+                db.read { tx -> tx.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
             )
             .extracting({ it.date }, { it.absenceType }, { it.category })
             .containsExactlyInAnyOrder(
@@ -1174,23 +1389,197 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @Test
     fun `cannot add absences to day which already contains attendance`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
             tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
+                unitId = daycare.id,
+                childId = child.id,
                 arrived = HelsinkiDateTime.of(mockToday, LocalTime.of(9, 0, 0)),
                 departed = HelsinkiDateTime.of(mockToday, LocalTime.of(11, 0, 0)),
             )
         }
         assertThrows<BadRequest> {
-            postAbsences(
-                AbsenceRequest(
-                    childIds = setOf(testChild_1.id, testChild_2.id),
-                    dateRange = FiniteDateRange(mockToday, mockToday),
-                    absenceType = AbsenceType.SICKLEAVE
+                postAbsences(
+                    adult.user(CitizenAuthLevel.WEAK),
+                    AbsenceRequest(
+                        childIds = setOf(child.id, child.id),
+                        dateRange = FiniteDateRange(mockToday, mockToday),
+                        absenceType = AbsenceType.SICKLEAVE
+                    )
+                )
+            }
+            .also { exception ->
+                assertEquals("ATTENDANCE_ALREADY_EXISTS", exception.errorCode)
+                assertEquals("Attendance already exists for given dates", exception.message)
+            }
+    }
+
+    @Test
+    fun `adding a reservation before threshold removes absences on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insertTestAbsence(
+                childId = child.id,
+                date = monday,
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.OTHER_ABSENCE,
+                modifiedBy = adult.evakaUserId,
+            )
+        }
+
+        postReservations(
+            adult.user(CitizenAuthLevel.WEAK),
+            listOf(
+                DailyReservationRequest.Reservations(
+                    child.id,
+                    monday,
+                    TimeRange(startTime, endTime),
+                ),
+            ),
+            mockNow = beforeThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf())
+    }
+
+    @Test
+    fun `adding an absence before threshold removes reservations on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = adult.evakaUserId,
                 )
             )
         }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, monday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            ),
+            mockNow = beforeThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf(monday to 1))
+        assertReservationCounts(child.id, listOf())
+    }
+
+    @Test
+    fun `adding an absence after threshold keeps reservations on the same day`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val child = DevPerson()
+        val adult = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                childId = child.id,
+                unitId = daycare.id,
+                type = PlacementType.DAYCARE,
+                startDate = monday,
+                endDate = monday
+            )
+
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = startTime,
+                    endTime = endTime,
+                    createdBy = adult.evakaUserId,
+                )
+            )
+        }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, monday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            ),
+            mockNow = afterThreshold
+        )
+
+        assertAbsenceCounts(child.id, listOf(monday to 1))
+        assertReservationCounts(child.id, listOf(monday to 1))
     }
 
     private fun dayChild(
@@ -1212,32 +1601,41 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             reservableTimeRange
         )
 
-    private fun postReservations(request: List<DailyReservationRequest>) {
+    private fun postReservations(
+        user: AuthenticatedUser.Citizen,
+        request: List<DailyReservationRequest>,
+        mockNow: HelsinkiDateTime = beforeThreshold,
+    ) {
         reservationControllerCitizen.postReservations(
             dbInstance(),
-            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(0, 0))),
+            user,
+            MockEvakaClock(mockNow),
             request
         )
     }
 
     private fun postAbsences(
+        user: AuthenticatedUser.Citizen,
         request: AbsenceRequest,
-        clock: EvakaClock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0)))
+        mockNow: HelsinkiDateTime = beforeThreshold
     ) {
         reservationControllerCitizen.postAbsences(
             dbInstance(),
-            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            clock,
+            user,
+            MockEvakaClock(mockNow),
             request,
         )
     }
 
-    private fun getReservations(range: FiniteDateRange): ReservationsResponse {
+    private fun getReservations(
+        user: AuthenticatedUser.Citizen,
+        range: FiniteDateRange,
+        mockNow: HelsinkiDateTime = beforeThreshold
+    ): ReservationsResponse {
         return reservationControllerCitizen.getReservations(
             dbInstance(),
-            AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-            MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
+            user,
+            MockEvakaClock(mockNow),
             range.start,
             range.end,
         )
@@ -1249,19 +1647,42 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val expected = counts.map { QueryResult(it.first, it.second) }
         val actual =
             db.read {
-                it.createQuery(
-                        """
-                SELECT date, COUNT(category) as count
-                FROM absence WHERE
-                child_id = :childId
-                GROUP BY date
-                ORDER BY date
-            """
-                    )
-                    .bind("childId", childId)
+                it.createQuery<Any> {
+                        sql(
+                            """
+                            SELECT date, COUNT(category) as count
+                            FROM absence WHERE
+                            child_id = ${bind(childId)}
+                            GROUP BY date
+                            ORDER BY date
+                            """
+                        )
+                    }
                     .toList<QueryResult>()
             }
 
+        assertEquals(expected, actual)
+    }
+
+    private fun assertReservationCounts(childId: ChildId, counts: List<Pair<LocalDate, Int>>) {
+        data class QueryResult(val date: LocalDate, val count: Int)
+
+        val expected = counts.map { QueryResult(it.first, it.second) }
+        val actual =
+            db.read {
+                it.createQuery<Any> {
+                        sql(
+                            """
+                            SELECT date, COUNT(*) as count
+                            FROM attendance_reservation
+                            WHERE child_id = ${bind(childId)}
+                            GROUP BY date
+                            ORDER BY date
+                            """
+                        )
+                    }
+                    .toList<QueryResult>()
+            }
         assertEquals(expected, actual)
     }
 }

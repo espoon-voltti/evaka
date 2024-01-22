@@ -371,3 +371,4 @@ V371__drop_child_discussion_table.sql
 V372__partner_modifier_column.sql
 V373__calendar_event_time_reservation.sql
 V374__daycare_preschool_and_preparatory_times.sql
+V375__absence_modified_at_drop_default.sql

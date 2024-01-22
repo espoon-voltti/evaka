@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
+import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
@@ -25,8 +26,7 @@ import { UUID } from '../../types'
 */
 export interface AbsenceRangeRequest {
   absenceType: AbsenceType
-  endDate: LocalDate
-  startDate: LocalDate
+  range: FiniteDateRange
 }
 
 /**

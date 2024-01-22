@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -36,11 +37,12 @@ fun Database.Transaction.insertAbsences(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     absences: List<AbsenceUpsert>
-) {
+): List<AbsenceId> {
     val sql =
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
         VALUES (:childId, :date, :category, :absenceType, :userId, :now)
+        RETURNING id
         """
 
     val batch = prepareBatch(sql)
@@ -48,7 +50,7 @@ fun Database.Transaction.insertAbsences(
         batch.bindKotlin(absence).bind("userId", userId).bind("now", now).add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn().toList()
 }
 
 /** Updates the details if an absence already exists */
@@ -96,6 +98,59 @@ fun Database.Transaction.upsertGeneratedAbsences(
             .bindKotlin(absence)
             .bind("userId", AuthenticatedUser.SystemInternalUser.evakaUserId)
             .bind("now", now)
+            .add()
+    }
+
+    return batch.executeAndReturn().toList<AbsenceId>()
+}
+
+data class FullDayAbsenseUpsert(
+    val childId: ChildId,
+    val date: LocalDate,
+    val absenceType: AbsenceType,
+    val questionnaireId: HolidayQuestionnaireId? = null
+)
+
+/**
+ * Creates absences for all absences categories of the child's placement on the given date ("full
+ * day absence"). Does nothing if an absence already exists on the given date.
+ */
+fun Database.Transaction.upsertFullDayAbsences(
+    userId: EvakaUserId,
+    now: HelsinkiDateTime,
+    absenceInserts: List<FullDayAbsenseUpsert>
+): List<AbsenceId> {
+    val batch =
+        prepareBatch(
+            """
+        INSERT INTO absence (child_id, date, category, absence_type, modified_at, modified_by, questionnaire_id)
+        SELECT
+            :childId,
+            :date,
+            category,
+            :absenceType,
+            :now,
+            :userId,
+            :questionnaireId
+        FROM (
+            SELECT unnest(absence_categories(type)) AS category
+            FROM placement
+            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
+        ) care_type
+        ON CONFLICT DO NOTHING
+        RETURNING id
+        """
+                .trimIndent()
+        )
+
+    absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
+        batch
+            .bind("now", now)
+            .bind("userId", userId)
+            .bind("childId", childId)
+            .bind("date", date)
+            .bind("absenceType", absenceType)
+            .bind("questionnaireId", questionnaireId)
             .add()
     }
 
@@ -218,7 +273,7 @@ RETURNING id
  */
 fun Database.Transaction.clearOldCitizenEditableAbsences(
     childDatePairs: List<Pair<ChildId, LocalDate>>,
-    reservableRange: FiniteDateRange? = null
+    reservableRange: FiniteDateRange
 ): List<AbsenceId> {
     val batch =
         prepareBatch(
@@ -227,14 +282,14 @@ DELETE FROM absence a
 WHERE child_id = :childId
 AND date = :date
 AND absence_type <> 'FREE_ABSENCE'::absence_type
-${if (reservableRange != null) """
+-- Planned absences cannot be deleted from confirmed range if the child has a contract days service need
 AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE' OR NOT EXISTS (
     SELECT
     FROM service_need_option sno
     JOIN service_need sn ON sn.option_id = sno.id AND a.date BETWEEN sn.start_date AND sn.end_date
     JOIN placement p ON p.id = sn.placement_id AND p.child_id = a.child_id AND a.date BETWEEN p.start_date AND p.end_date
     WHERE sno.contract_days_per_month IS NOT NULL
-))""" else ""}
+))
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """

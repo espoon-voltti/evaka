@@ -6,9 +6,9 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.reservations.AbsenceInsert
-import fi.espoo.evaka.reservations.insertAbsences
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -55,24 +55,30 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `existing reservations and absences are deleted when a holiday period is created`() {
         db.transaction { tx ->
-            tx.insertAbsences(
+            tx.upsertFullDayAbsences(
                 EvakaUserId(testAdult_1.id.raw),
+                now,
                 listOf(
                     // Outside holiday period
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart.minusDays(1),
                         AbsenceType.OTHER_ABSENCE
                     ),
                     // Inside holiday period
-                    AbsenceInsert(testChild_1.id, holidayPeriodStart, AbsenceType.OTHER_ABSENCE)
+                    FullDayAbsenseUpsert(
+                        testChild_1.id,
+                        holidayPeriodStart,
+                        AbsenceType.OTHER_ABSENCE
+                    )
                 )
             )
-            tx.insertAbsences(
+            tx.upsertFullDayAbsences(
                 EvakaUserId(testDecisionMaker_1.id.raw),
+                now,
                 listOf(
                     // Inside holiday period, but marked by employee
-                    AbsenceInsert(
+                    FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart.plusDays(1),
                         AbsenceType.OTHER_ABSENCE

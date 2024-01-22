@@ -16,7 +16,9 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.daycare.service.AbsenceType.SICKLEAVE
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
@@ -198,14 +200,6 @@ class ReservationControllerCitizen(
                         children
                     )
 
-                    val reservableRange =
-                        getReservableRange(
-                            clock.now(),
-                            featureConfig.citizenReservationThresholdHours,
-                        )
-                    if (!body.all { request -> reservableRange.includes(request.date) }) {
-                        throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
-                    }
                     createReservationsAndAbsences(
                         tx,
                         clock.now(),
@@ -242,7 +236,9 @@ class ReservationControllerCitizen(
             throw BadRequest("Invalid absence type")
         }
 
-        val (deleted, inserted) =
+        val now = clock.now()
+
+        val (deletedAbsences, deletedReservations, insertedAbsences) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -260,28 +256,36 @@ class ReservationControllerCitizen(
                     }
 
                     val reservableRange =
-                        getReservableRange(
-                            clock.now(),
-                            featureConfig.citizenReservationThresholdHours
-                        )
+                        getReservableRange(now, featureConfig.citizenReservationThresholdHours)
                     val childContractDays =
                         body.dateRange.intersection(reservableRange)?.let { range ->
                             tx.getReservationContractDayRanges(body.childIds, range)
                         } ?: emptyMap()
 
-                    val deleted =
+                    val deletedAbsences =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { childId to it }
                             },
                             reservableRange = reservableRange
                         )
-                    val inserted =
-                        tx.insertAbsences(
+                    // Delete reservations on days in the reservable range. Reservations in the
+                    // closed range are kept.
+                    val deletedReservations =
+                        body.dateRange.intersection(reservableRange)?.dates()?.let { dates ->
+                            tx.clearOldReservations(
+                                body.childIds.flatMap { childId ->
+                                    dates.map { date -> childId to date }
+                                }
+                            )
+                        }
+                    val insertedAbsences =
+                        tx.upsertFullDayAbsences(
                             user.evakaUserId,
+                            now,
                             body.childIds.flatMap { childId ->
                                 body.dateRange.dates().map { date ->
-                                    AbsenceInsert(
+                                    FullDayAbsenseUpsert(
                                         childId,
                                         date,
                                         if (
@@ -302,13 +306,17 @@ class ReservationControllerCitizen(
                                 }
                             }
                         )
-                    Pair(deleted, inserted)
+                    Triple(deletedAbsences, deletedReservations, insertedAbsences)
                 }
             }
         Audit.AbsenceCitizenCreate.log(
             targetId = body.childIds,
-            objectId = inserted,
-            meta = mapOf("deleted" to deleted)
+            objectId = insertedAbsences,
+            meta =
+                mapOf(
+                    "deletedAbsences" to deletedAbsences,
+                    "deletedReservations" to deletedReservations
+                )
         )
     }
 }

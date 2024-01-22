@@ -1,0 +1,1 @@
+ALTER TABLE absence ALTER COLUMN modified_at DROP DEFAULT;

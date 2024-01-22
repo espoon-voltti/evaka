@@ -13,9 +13,13 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceUpsert
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.daycare.service.insertAbsences
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
@@ -149,6 +153,11 @@ fun createReservationsAndAbsences(
             else -> throw BadRequest("Invalid user type")
         }
 
+    val reservableRange = getReservableRange(now, citizenReservationThresholdHours)
+    if (isCitizen && !requests.all { request -> reservableRange.includes(request.date) }) {
+        throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+    }
+
     val today = now.toLocalDate()
     val reservationsRange = reservationRequestRange(requests)
     val clubTerms = tx.getClubTerms()
@@ -165,8 +174,6 @@ fun createReservationsAndAbsences(
     val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
     val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
     val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
-
-    val reservableRange = getReservableRange(now, citizenReservationThresholdHours)
 
     val isReservableChild = { req: DailyReservationRequest ->
         placements[req.childId]
@@ -249,9 +256,25 @@ fun createReservationsAndAbsences(
             }
 
     val deletedAbsences =
-        if (isCitizen) tx.clearOldCitizenEditableAbsences(validated.map { it.childId to it.date })
-        else tx.clearOldAbsences(validated.map { it.childId to it.date })
-    val deletedReservations = tx.clearOldReservations(validated.map { it.childId to it.date })
+        if (isCitizen) {
+            tx.clearOldCitizenEditableAbsences(
+                validated.map { it.childId to it.date },
+                reservableRange
+            )
+        } else {
+            tx.clearOldAbsences(validated.map { it.childId to it.date })
+        }
+
+    // Keep old reservations in the confirmed range if absences are added on top of them
+    val (absenceRequests, otherRequests) =
+        validated.partition { it is DailyReservationRequest.Absent }
+    val deletedReservations =
+        tx.clearOldReservations(
+            absenceRequests
+                .filter { reservableRange.includes(it.date) }
+                .map { it.childId to it.date } + otherRequests.map { it.childId to it.date }
+        )
+
     val upsertedReservations =
         tx.insertValidReservations(
             user.evakaUserId,
@@ -268,7 +291,7 @@ fun createReservationsAndAbsences(
     val absences =
         validated.filterIsInstance<DailyReservationRequest.Absent>().map {
             val hasContractDays = contractDayRanges[it.childId]?.includes(it.date) ?: false
-            AbsenceInsert(
+            FullDayAbsenseUpsert(
                 it.childId,
                 it.date,
                 if (hasContractDays && reservableRange.includes(it.date))
@@ -278,7 +301,7 @@ fun createReservationsAndAbsences(
         }
     val upsertedAbsences =
         if (absences.isNotEmpty()) {
-            tx.insertAbsences(userId, absences)
+            tx.upsertFullDayAbsences(userId, now, absences)
         } else {
             emptyList()
         }
@@ -394,7 +417,12 @@ fun upsertChildDatePresence(
                 if (type == null || identicalAbsenceExists) {
                     null
                 } else {
-                    tx.insertAbsence(userId, input.date, input.childId, category, type)
+                    tx.insertAbsences(
+                            now,
+                            userId,
+                            listOf(AbsenceUpsert(input.childId, input.date, category, type))
+                        )
+                        .first()
                 }
 
             insertedAbsence to deletedAbsence
@@ -520,23 +548,4 @@ private fun Database.Transaction.deleteAbsenceOfCategory(
             )
         }
         .exactlyOneOrNull()
-}
-
-private fun Database.Transaction.insertAbsence(
-    userId: EvakaUserId,
-    date: LocalDate,
-    childId: ChildId,
-    category: AbsenceCategory,
-    type: AbsenceType
-): AbsenceId {
-    return createQuery<Any> {
-            sql(
-                """
-            INSERT INTO absence (date, child_id, category, absence_type, modified_by, questionnaire_id)
-            VALUES (${bind(date)}, ${bind(childId)}, ${bind(category)}, ${bind(type)}, ${bind(userId)}, NULL)
-            RETURNING id
-    """
-            )
-        }
-        .exactlyOne()
 }

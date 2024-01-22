@@ -5,12 +5,14 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
-import fi.espoo.evaka.reservations.AbsenceInsert
+import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteAbsencesCreatedFromQuestionnaire
-import fi.espoo.evaka.reservations.insertAbsences
+import fi.espoo.evaka.reservations.getReservableRange
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -34,7 +36,10 @@ data class ActiveQuestionnaire(
 
 @RestController
 @RequestMapping("/citizen/holiday-period")
-class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
+class HolidayPeriodControllerCitizen(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
@@ -112,6 +117,8 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodsBody
     ) {
+        val now = clock.now()
+        val today = now.toLocalDate()
         val childIds = body.fixedPeriods.keys
 
         db.connect { dbc ->
@@ -125,13 +132,13 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 )
                 val questionnaire =
                     tx.getFixedPeriodQuestionnaire(id)?.also {
-                        if (!it.active.includes(clock.today()))
+                        if (!it.active.includes(today))
                             throw BadRequest("Questionnaire is not open")
                     } ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren =
                         tx.getChildrenWithContinuousPlacement(
-                            clock.today(),
+                            today,
                             user.id,
                             questionnaire.conditions.continuousPlacement
                         )
@@ -154,7 +161,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 val absences =
                     body.fixedPeriods.entries.flatMap { (childId, period) ->
                         period?.dates()?.map {
-                            AbsenceInsert(
+                            FullDayAbsenseUpsert(
                                 childId = childId,
                                 date = it,
                                 absenceType = questionnaire.absenceType,
@@ -163,14 +170,17 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                         } ?: emptySequence()
                     }
 
+                val reservableRange =
+                    getReservableRange(now, featureConfig.citizenReservationThresholdHours)
+
                 absences
                     .map { absence -> absence.childId to absence.date }
                     .let {
                         tx.clearOldReservations(it)
-                        tx.clearOldCitizenEditableAbsences(it)
+                        tx.clearOldCitizenEditableAbsences(it, reservableRange)
                     }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.insertAbsences(user.evakaUserId, absences)
+                tx.upsertFullDayAbsences(user.evakaUserId, now, absences)
                 tx.insertQuestionnaireAnswers(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->
