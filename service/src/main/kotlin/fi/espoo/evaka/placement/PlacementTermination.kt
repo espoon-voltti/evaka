@@ -217,9 +217,21 @@ fun terminateBilledDaycare(
                 tx.updatePlacementType(placementId = placement.id, type = newPlacementType)
             }
         } else {
-            tx.updatePlacementEndDate(placement.id, terminationDate)
+            tx.movePlacementEndDateEarlier(
+                Placement(
+                    id = placement.id,
+                    type = placement.type,
+                    childId = placement.childId,
+                    unitId = placement.unitId,
+                    startDate = placement.startDate,
+                    endDate = placement.endDate,
+                    terminationRequestedDate = placement.terminationRequestedDate,
+                    terminationRequestedBy = placement.terminatedBy?.id,
+                    placeGuarantee = false
+                ),
+                terminationDate
+            )
             tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
-            tx.deleteServiceNeedsFromPlacementAfter(placement.id, terminationDate)
             if (adjacentPlacement != null) {
                 tx.updatePlacementStartDate(adjacentPlacement.id, terminationDate.plusDays(1))
             } else {

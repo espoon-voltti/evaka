@@ -393,7 +393,7 @@ fun generateSchoolYearDateRanges(startingFrom: LocalDate) =
             )
         }
 
-private fun Database.Transaction.movePlacementStartDateLater(
+fun Database.Transaction.movePlacementStartDateLater(
     placement: Placement,
     newStartDate: LocalDate
 ) {
@@ -409,10 +409,7 @@ private fun Database.Transaction.movePlacementStartDateLater(
     updatePlacementStartDate(placement.id, newStartDate)
 }
 
-private fun Database.Transaction.movePlacementEndDateEarlier(
-    placement: Placement,
-    newEndDate: LocalDate
-) {
+fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEndDate: LocalDate) {
     if (newEndDate.isAfter(placement.endDate))
         throw IllegalArgumentException("Use this method only for shortening placement")
 
