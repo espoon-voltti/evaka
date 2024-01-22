@@ -89,7 +89,7 @@ describe('child document with person duplicate', () => {
       })
       .save()
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-documents/${document.data.id}`)
     const childDocumentPage = new ChildDocumentPage(page)
@@ -134,7 +134,7 @@ describe('child document with person duplicate', () => {
       })
       .save()
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)
@@ -186,7 +186,7 @@ describe('child document with person duplicate', () => {
       })
       .save()
 
-    const page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    const page = await Page.open({ mockedTime })
     await employeeLogin(page, admin.data)
     await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
     const childInformationPage = new ChildInformationPage(page)

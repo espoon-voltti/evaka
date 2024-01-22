@@ -87,7 +87,7 @@ beforeEach(async () => {
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
-    mockedTime: mockToday.toSystemTzDate()
+    mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
   await employeeLogin(page, admin.data)
 

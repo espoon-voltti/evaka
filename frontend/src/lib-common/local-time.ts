@@ -8,7 +8,7 @@ import isInteger from 'lodash/isInteger'
 import { isValidTime } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
 import { Ordered } from './ordered'
-import { isAutomatedTest, mockNow } from './utils/helpers'
+import { isAutomatedTest } from './utils/helpers'
 
 // ISO local time with nanosecond precision
 const isoPattern = /^(\d{2}):(\d{2}):(\d{2})(?:.(\d{9}))?$/
@@ -90,7 +90,10 @@ export default class LocalTime implements Ordered<LocalTime> {
    * Current time in system (= browser local) timezone.
    */
   static nowInSystemTz(): LocalTime {
-    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    const timestamp =
+      (isAutomatedTest && typeof window !== 'undefined'
+        ? window.evaka?.mockedTime
+        : undefined) ?? new Date()
     return LocalTime.of(
       timestamp.getHours(),
       timestamp.getMinutes(),

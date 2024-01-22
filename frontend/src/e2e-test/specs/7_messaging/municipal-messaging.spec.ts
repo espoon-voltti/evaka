@@ -121,17 +121,17 @@ beforeEach(async () => {
 })
 
 async function openMessagingPage(mockedTime: HelsinkiDateTime) {
-  messagingPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  messagingPage = await Page.open({ mockedTime })
   await employeeLogin(messagingPage, messenger)
 }
 
 async function openStaffPage(mockedTime: HelsinkiDateTime) {
-  staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  staffPage = await Page.open({ mockedTime })
   await employeeLogin(staffPage, staff)
 }
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  citizenPage = await Page.open({ mockedTime })
   await enduserLogin(citizenPage)
 }
 

@@ -46,7 +46,7 @@ beforeEach(async () => {
   await insertConfirmedDaysTestData()
 
   const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
 
   await page.goto(mobileSignupUrl)
 

@@ -49,9 +49,7 @@ describe('Missing head of family report', () => {
       .save()
 
     const page = await Page.open({
-      mockedTime: mockedToday
-        .toHelsinkiDateTime(LocalTime.of(8, 0))
-        .toSystemTzDate(),
+      mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
       employeeCustomizations: {
         featureFlags: { personDuplicate: true }
       }

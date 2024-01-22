@@ -40,7 +40,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   decisionMaker = (await Fixture.employeeServiceWorker().save()).data
 
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
   header = new CitizenHeader(page)
   citizenDecisionsPage = new CitizenDecisionsPage(page)
   await enduserLogin(page)

@@ -70,7 +70,7 @@ beforeEach(async () => {
   )
   await insertBackupCareFixtures([backupCareFixture])
 
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
   await employeeLogin(page, unitSupervisor.data)
   const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(fixtures.daycareFixture.id)

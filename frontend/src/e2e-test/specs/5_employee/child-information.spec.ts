@@ -4,6 +4,7 @@
 
 import { EmployeeDetail } from 'e2e-test/dev-api/types'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -72,7 +73,9 @@ beforeEach(async () => {
   // is up to date or will return wrong results
   await forceFullVtjRefresh(childId)
 
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
@@ -218,7 +221,7 @@ describe('Child Information - daily service times', () => {
 
     // Status changes to active tomorrow
     const pageTomorrow = await Page.open({
-      mockedTime: tomorrowDate.toSystemTzDate()
+      mockedTime: tomorrowDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await employeeLogin(pageTomorrow, admin)
     await pageTomorrow.goto(
@@ -475,7 +478,9 @@ describe('Child information - guardian information', () => {
     const unitSupervisor: EmployeeDetail = (
       await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
     ).data
-    page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+    page = await Page.open({
+      mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
     await employeeLogin(page, unitSupervisor)
     await page.goto(config.employeeUrl + '/child-information/' + childId)
     childInformationPage = new ChildInformationPage(page)

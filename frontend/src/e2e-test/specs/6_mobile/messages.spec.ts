@@ -200,7 +200,7 @@ beforeEach(async () => {
     }
   ])
 
-  page = await Page.open({ mockedTime: mockedDateAt11.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedDateAt11 })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
@@ -213,7 +213,7 @@ beforeEach(async () => {
 })
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  citizenPage = await Page.open({ mockedTime })
   await enduserLogin(citizenPage)
 }
 
@@ -488,7 +488,7 @@ describe('Messages page', () => {
     // Add child's guardians to block list
     const admin = (await Fixture.employeeAdmin().save()).data
     const adminPage = await Page.open({
-      mockedTime: mockedDateAt10.toSystemTzDate()
+      mockedTime: mockedDateAt10
     })
     await employeeLogin(adminPage, admin)
     await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)

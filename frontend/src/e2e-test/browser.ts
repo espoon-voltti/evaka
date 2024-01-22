@@ -12,6 +12,7 @@ import playwright, {
   Page
 } from 'playwright'
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import {
   CitizenCustomizations,
@@ -83,7 +84,7 @@ window.evaka = window.evaka ?? {}
 window.evaka.automatedTest = true
 ${
   mockedTime
-    ? `window.evaka.mockedTime = new Date('${mockedTime.toISOString()}')`
+    ? `window.evaka.mockedTime = new Date('${mockedTime.toString()}')`
     : ''
 }
 ${override('citizenCustomizations')}
@@ -181,7 +182,7 @@ function configurePage(page: Page) {
 }
 
 export interface EvakaBrowserContextOptions {
-  mockedTime?: Date
+  mockedTime?: HelsinkiDateTime
   citizenCustomizations?: DeepPartial<JsonOf<CitizenCustomizations>>
   employeeCustomizations?: DeepPartial<JsonOf<EmployeeCustomizations>>
   employeeMobileCustomizations?: DeepPartial<

@@ -52,7 +52,7 @@ async function openCalendarPage(
   page = await Page.open({
     viewport,
     screen: viewport,
-    mockedTime: today.toSystemTzDate(),
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     citizenCustomizations: {
       featureFlags: options?.featureFlags
     }
@@ -892,7 +892,7 @@ describe('Citizen calendar child visibility', () => {
     ])
 
     page = await Page.open({
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page)
     header = new CitizenHeader(page, 'desktop')
@@ -1029,7 +1029,7 @@ describe('Citizen calendar visibility', () => {
     ])
 
     page = await Page.open({
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page)
 
@@ -1048,7 +1048,7 @@ describe('Citizen calendar visibility', () => {
     ])
 
     page = await Page.open({
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
     await enduserLogin(page)
@@ -1070,7 +1070,7 @@ describe('Citizen calendar visibility', () => {
     ])
 
     page = await Page.open({
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
     await enduserLogin(page)
@@ -1104,7 +1104,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
       )
     ])
     page = await Page.open({
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page)
   })

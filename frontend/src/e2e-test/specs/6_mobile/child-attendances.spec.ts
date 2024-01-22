@@ -71,7 +71,7 @@ beforeEach(async () => {
     .with({ roles: ['ADMIN'] })
     .save()
 
-  page = await Page.open({ mockedTime: now.toSystemTzDate() })
+  page = await Page.open({ mockedTime: now })
 
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)

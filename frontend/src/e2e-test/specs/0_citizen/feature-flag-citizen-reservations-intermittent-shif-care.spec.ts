@@ -204,7 +204,7 @@ async function openCalendarPage(
   const page = await Page.open({
     viewport,
     screen: viewport,
-    mockedTime: time.toSystemTzDate(),
+    mockedTime: time,
     citizenCustomizations: {
       featureFlags: { intermittentShiftCare: true }
     }

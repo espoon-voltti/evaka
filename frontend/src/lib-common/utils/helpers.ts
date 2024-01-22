@@ -50,9 +50,15 @@ declare global {
   }
 }
 
+/**
+ * @deprecated use HelsinkiDateTime.now() instead
+ */
 export const mockNow = (): Date | undefined =>
   typeof window !== 'undefined' ? window.evaka?.mockedTime : undefined
 
+/**
+ * @deprecated use LocalDate.todayInHelsinkiTz() or LocalDate.todayInSystemTz() instead
+ */
 export function mockToday(): LocalDate | undefined {
   const mockedTime = mockNow()
   return mockedTime ? LocalDate.fromSystemTzDate(mockedTime) : undefined

@@ -125,24 +125,24 @@ beforeEach(async () => {
 })
 
 async function initStaffPage(mockedTime: HelsinkiDateTime) {
-  staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  staffPage = await Page.open({ mockedTime })
   await employeeLogin(staffPage, staff)
 }
 
 async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
   unitSupervisorPage = await Page.open({
-    mockedTime: mockedTime.toSystemTzDate()
+    mockedTime: mockedTime
   })
   await employeeLogin(unitSupervisorPage, unitSupervisor)
 }
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  citizenPage = await Page.open({ mockedTime })
   await enduserLogin(citizenPage)
 }
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  citizenPage = await Page.open({ mockedTime })
   await enduserLoginWeak(citizenPage)
 }
 

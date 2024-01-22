@@ -98,7 +98,7 @@ const navigateToTestView = async ({
   intermittentShiftCareEnabled?: boolean
 } = {}) => {
   page = await Page.open({
-    mockedTime: today.toSystemTzDate(),
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
       featureFlags: {
         intermittentShiftCare: intermittentShiftCareEnabled

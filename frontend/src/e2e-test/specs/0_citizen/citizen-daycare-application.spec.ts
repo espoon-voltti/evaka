@@ -43,7 +43,7 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
@@ -254,7 +254,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const otherGuardianPage = await Page.open({
-      mockedTime: mockedNow.toSystemTzDate()
+      mockedTime: mockedNow
     })
     await enduserLogin(
       otherGuardianPage,

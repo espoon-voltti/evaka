@@ -35,7 +35,7 @@ import { DateFormat, DateFormatWithWeekday, locales } from './date'
 import HelsinkiDateTime from './helsinki-date-time'
 import LocalTime from './local-time'
 import { Ordered } from './ordered'
-import { isAutomatedTest, mockNow } from './utils/helpers'
+import { isAutomatedTest } from './utils/helpers'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
 const fiPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/
@@ -153,7 +153,10 @@ export default class LocalDate implements Ordered<LocalDate> {
   }
   isToday(): boolean {
     return isAutomatedTest
-      ? isSameDay(mockNow() ?? new Date(), this.toSystemTzDate())
+      ? isSameDay(
+          LocalDate.todayInSystemTz().toSystemTzDate(),
+          this.toSystemTzDate()
+        )
       : isToday(this.toSystemTzDate())
   }
   isWeekend(): boolean {
@@ -210,7 +213,10 @@ export default class LocalDate implements Ordered<LocalDate> {
    * Current date in system (= browser local) timezone.
    */
   static todayInSystemTz(): LocalDate {
-    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    const timestamp =
+      (isAutomatedTest && typeof window !== 'undefined'
+        ? window.evaka?.mockedTime
+        : undefined) ?? new Date()
     return LocalDate.fromSystemTzDate(timestamp)
   }
   /**

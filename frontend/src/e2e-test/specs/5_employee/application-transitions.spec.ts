@@ -54,7 +54,9 @@ beforeEach(async () => {
   await insertDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
-  page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
   applicationWorkbench = new ApplicationWorkbenchPage(page)
   applicationReadView = new ApplicationReadView(page)
 })
@@ -723,7 +725,9 @@ describe('Application transitions', () => {
       const page = await Page.open({
         mockedTime:
           addDays !== 0
-            ? LocalDate.todayInSystemTz().addDays(addDays).toSystemTzDate()
+            ? LocalDate.todayInSystemTz()
+                .addDays(addDays)
+                .toHelsinkiDateTime(LocalTime.of(12, 0))
             : undefined
       })
 

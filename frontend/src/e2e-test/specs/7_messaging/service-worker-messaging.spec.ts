@@ -58,7 +58,7 @@ beforeEach(async () => {
 })
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
-  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  citizenPage = await Page.open({ mockedTime })
   await enduserLogin(citizenPage)
 }
 
@@ -66,7 +66,7 @@ async function openStaffPage(
   mockedTime: HelsinkiDateTime,
   employee: EmployeeDetail
 ) {
-  staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+  staffPage = await Page.open({ mockedTime })
   await employeeLogin(staffPage, employee)
   await staffPage.goto(config.employeeUrl)
 }

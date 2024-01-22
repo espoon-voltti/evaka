@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
@@ -135,7 +136,7 @@ describe.each(e)('Citizen calendar (%s)', (env) => {
     page = await Page.open({
       viewport,
       screen: viewport,
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     await enduserLogin(page)
     header = new CitizenHeader(page, env)

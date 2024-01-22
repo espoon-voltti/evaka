@@ -74,7 +74,7 @@ beforeEach(async () => {
     fixtures.enduserGuardianFixture.id
   )
 
-  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
   await enduserLogin(page)
 })

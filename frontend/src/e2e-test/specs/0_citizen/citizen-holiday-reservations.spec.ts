@@ -4,6 +4,7 @@
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
@@ -78,7 +79,9 @@ async function assertCalendarDayRange(
 
 beforeEach(async () => {
   await resetDatabase()
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
 
   daycare = await Fixture.daycare()
     .with(daycareFixture)

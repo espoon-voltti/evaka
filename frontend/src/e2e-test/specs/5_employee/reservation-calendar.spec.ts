@@ -135,7 +135,9 @@ const insertTestDataAndLogin = async ({
     })
     .save()
 
-  page = await Page.open({ mockedTime: mockedToday.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
   await employeeLogin(page, unitSupervisor)
 }
 

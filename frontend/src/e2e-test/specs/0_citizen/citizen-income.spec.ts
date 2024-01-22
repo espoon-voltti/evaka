@@ -110,7 +110,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     page = await Page.open({
       viewport,
       screen: viewport,
-      mockedTime: today.toSystemTzDate()
+      mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
   })
 

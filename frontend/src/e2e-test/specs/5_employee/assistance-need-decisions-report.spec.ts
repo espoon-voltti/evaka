@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -65,7 +66,9 @@ beforeEach(async () => {
 
 describe('Assistance need decisions report', () => {
   beforeEach(async () => {
-    page = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
+    page = await Page.open({
+      mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
   })
 
   const baseReportRow = {

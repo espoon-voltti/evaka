@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import {
@@ -65,7 +66,7 @@ beforeEach(async () => {
   ])
 
   activeRelationshipPage = await Page.open({
-    mockedTime: mockedNow.toSystemTzDate()
+    mockedTime: mockedNow
   })
   await enduserLogin(activeRelationshipPage)
   activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
@@ -73,7 +74,7 @@ beforeEach(async () => {
 
 async function openEndedRelationshipPage() {
   const endedRelationshipPage = await Page.open({
-    mockedTime: mockedDate.addDays(1).toSystemTzDate()
+    mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
   })
   await enduserLogin(endedRelationshipPage)
   const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
@@ -234,7 +235,7 @@ test('Foster parent can receive and reply to messages', async () => {
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
   await upsertMessageAccounts()
   let unitSupervisorPage = await Page.open({
-    mockedTime: mockedNow.subMinutes(1).toSystemTzDate()
+    mockedTime: mockedNow.subMinutes(1)
   })
   await employeeLogin(unitSupervisorPage, unitSupervisor.data)
 
@@ -257,7 +258,7 @@ test('Foster parent can receive and reply to messages', async () => {
   await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
   unitSupervisorPage = await Page.open({
-    mockedTime: mockedNow.addMinutes(1).toSystemTzDate()
+    mockedTime: mockedNow.addMinutes(1)
   })
   await employeeLogin(unitSupervisorPage, unitSupervisor.data)
   messagesPage = new MessagesPage(unitSupervisorPage)

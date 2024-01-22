@@ -40,7 +40,7 @@ beforeEach(async () => {
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
-  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow })
   await employeeLogin(page, financeAdmin.data)
 })
 

@@ -31,7 +31,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open({
-    mockedTime: now.toSystemTzDate()
+    mockedTime: now
   })
   await enduserLogin(page)
   header = new CitizenHeader(page)

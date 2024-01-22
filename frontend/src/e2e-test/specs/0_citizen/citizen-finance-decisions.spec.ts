@@ -90,7 +90,7 @@ const parsePersonNames = (persons: PersonDetail[]) =>
 
 describe('Citizen finance decisions', () => {
   test('Head of family sees their decisions with strong auth', async () => {
-    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     await enduserLogin(page)
@@ -114,7 +114,7 @@ describe('Citizen finance decisions', () => {
   })
 
   test('Partner sees their decisions with strong auth', async () => {
-    page = await Page.open({ mockedTime: now.toSystemTzDate() })
+    page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     await enduserLogin(page, partner.ssn)

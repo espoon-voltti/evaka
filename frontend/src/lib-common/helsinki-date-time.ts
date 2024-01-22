@@ -15,7 +15,7 @@ import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import LocalDate from './local-date'
 import LocalTime from './local-time'
 import { Ordered } from './ordered'
-import { isAutomatedTest, mockNow } from './utils/helpers'
+import { isAutomatedTest } from './utils/helpers'
 
 const EUROPE_HELSINKI = 'Europe/Helsinki'
 
@@ -206,7 +206,10 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
    * Current timestamp in Europe/Helsinki timezone.
    */
   static now(): HelsinkiDateTime {
-    const timestamp = (isAutomatedTest ? mockNow() : undefined) ?? new Date()
+    const timestamp =
+      (isAutomatedTest && typeof window !== 'undefined'
+        ? window.evaka?.mockedTime
+        : undefined) ?? new Date()
     return HelsinkiDateTime.fromSystemTzDate(timestamp)
   }
 

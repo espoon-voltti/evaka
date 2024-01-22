@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import { getApplication, resetDatabase } from '../../dev-api'
 import {
@@ -29,7 +30,9 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  page = await Page.open({
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
