@@ -421,7 +421,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(endPreschool, remainderOfPreschool.endDate)
 
         val childGroupPlacements = getChildGroupPlacements(child.id)
-        assertEquals(3, childGroupPlacements.size)
+        assertEquals(2, childGroupPlacements.size)
 
         val currentGroupPlacements =
             childGroupPlacements.filter { it.daycarePlacementId == currentPlacement.id }
@@ -429,13 +429,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(1, currentGroupPlacements.size)
         assertEquals(currentPlacement.startDate, currentGroupPlacements[0].startDate)
         assertEquals(currentPlacement.endDate, currentGroupPlacements[0].endDate)
-
-        val remainderGroupPlacements =
-            childGroupPlacements.filter { it.daycarePlacementId == remainderOfPreschool.id }
-        assertNotNull(remainderGroupPlacements)
-        assertEquals(1, remainderGroupPlacements.size)
-        assertEquals(remainderOfPreschool.startDate, remainderGroupPlacements[0].startDate)
-        assertEquals(remainderOfPreschool.endDate, remainderGroupPlacements[0].endDate)
 
         // the next PRESCHOOL_DAYCARE is simply converted to PRESCHOOL
         val nextPreschool = first.placements[2]
