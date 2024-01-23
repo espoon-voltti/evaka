@@ -4,14 +4,17 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
@@ -19,16 +22,17 @@ import fi.espoo.evaka.testRoundTheClockDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private lateinit var employee1Id: EmployeeId
-    private lateinit var employee2Id: EmployeeId
-    private lateinit var employee3Id: EmployeeId
-    private lateinit var employee4Id: EmployeeId
+    private val employee1Id: EmployeeId = EmployeeId(UUID.randomUUID())
+    private val employee2Id: EmployeeId = EmployeeId(UUID.randomUUID())
+    private val employee3Id: EmployeeId = EmployeeId(UUID.randomUUID())
+    private val employee4Id: EmployeeId = EmployeeId(UUID.randomUUID())
     private val group1 = DevDaycareGroup(daycareId = testDaycare.id, name = "Koirat")
     private val group2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kissat")
     private val group3 = DevDaycareGroup(daycareId = testDaycare.id, name = "Tyhjät")
@@ -45,27 +49,22 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             tx.insert(group2)
             tx.insert(group3)
             tx.insert(roundTheClockGroup)
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("One", "in group 1")
-                .withGroupAccess(testDaycare.id, group1.id)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd { employee1Id = employeeId }
-                .addEmployee()
-                .withName("Two", "in group 2")
-                .withGroupAccess(testDaycare.id, group2.id)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd { employee2Id = employeeId }
-                .addEmployee()
-                .withName("Three", "in group 1")
-                .withGroupAccess(testDaycare.id, group1.id)
-                .withScopedRole(UserRole.SPECIAL_EDUCATION_TEACHER, testDaycare.id)
-                .saveAnd { employee3Id = employeeId }
-                .addEmployee()
-                .withName("Four", "in group 2")
-                .withGroupAccess(testDaycare.id, group2.id)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd { employee4Id = employeeId }
+
+            tx.insert(DevEmployee(id = employee1Id, firstName = "One", lastName = "in group 1"))
+            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(group1.id, employee1Id)
+
+            tx.insert(DevEmployee(id = employee2Id, firstName = "Two", lastName = "in group 2"))
+            tx.insertDaycareAclRow(testDaycare.id, employee2Id, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(group2.id, employee2Id)
+
+            tx.insert(DevEmployee(id = employee3Id, firstName = "Three", lastName = "in group 1"))
+            tx.insertDaycareAclRow(testDaycare.id, employee3Id, UserRole.SPECIAL_EDUCATION_TEACHER)
+            tx.insertEmployeeToDaycareGroupAcl(group1.id, employee3Id)
+
+            tx.insert(DevEmployee(id = employee4Id, firstName = "Four", lastName = "in group 2"))
+            tx.insertDaycareAclRow(testDaycare.id, employee4Id, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(group2.id, employee4Id)
         }
     }
 
@@ -198,10 +197,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
-                .addStaffAttendancePlan()
-                .withTime(arrival, plannedDeparture)
-                .save()
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -230,10 +232,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 .bind("id", id)
                 .execute()
 
-            FixtureBuilder.EmployeeFixture(tx, startOfToday.toLocalDate(), employee1Id)
-                .addStaffAttendancePlan()
-                .withTime(arrival, plannedDeparture)
-                .save()
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
 
             tx.addMissingStaffAttendanceDepartures(startOfToday)
 
@@ -254,10 +259,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
-                .addStaffAttendancePlan()
-                .withTime(arrival, plannedDeparture)
-                .save()
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -278,10 +286,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
-            FixtureBuilder.EmployeeFixture(tx, today, employee1Id)
-                .addStaffAttendancePlan()
-                .withTime(arrival, plannedDeparture)
-                .save()
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
 
             tx.addMissingStaffAttendanceDepartures(now)
 
@@ -338,10 +349,13 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             tx.markStaffArrival(employee1Id, group1.id, plannedDeparture, BigDecimal(7.0))
 
-            FixtureBuilder.EmployeeFixture(tx, now.toLocalDate(), employee1Id)
-                .addStaffAttendancePlan()
-                .withTime(plannedArrival, plannedDeparture)
-                .save()
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = plannedArrival,
+                    endTime = plannedDeparture,
+                )
+            )
 
             tx.addMissingStaffAttendanceDepartures(now)
 

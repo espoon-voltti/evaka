@@ -48,6 +48,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 export interface CareArea {
@@ -100,8 +101,9 @@ export interface Daycare {
 export interface ChildAttendance {
   childId: UUID
   unitId: UUID
-  arrived: HelsinkiDateTime
-  departed: HelsinkiDateTime | null
+  date: LocalDate
+  arrived: LocalTime
+  departed: LocalTime | null
 }
 
 export interface DaycareGroup {

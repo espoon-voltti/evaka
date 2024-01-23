@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.varda
 
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -30,8 +29,11 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
+import fi.espoo.evaka.shared.dev.upsertServiceNeedOption
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -106,7 +108,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     @Test
     fun `hasVardaServiceNeeds works`() {
         val since = HelsinkiDateTime.now()
-        val snId = createServiceNeed(db, since, option = snDefaultDaycare)
+        val snId = createServiceNeed(db, option = snDefaultDaycare)
         val childId = testChild_1.id
 
         assertEquals(false, db.read { it.hasVardaServiceNeeds(childId) })
@@ -137,7 +139,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId =
             createServiceNeed(
                 db,
-                since,
                 option,
                 child = testChild_1,
                 fromDays = snStartDate,
@@ -177,7 +178,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snEndDate = LocalDate.of(2018, 11, 30)
         createServiceNeed(
             db,
-            since,
             option,
             child = testChild_1,
             fromDays = snStartDate,
@@ -208,7 +208,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `calculateEvakaVsVardaServiceNeedChangesByChild excludes if hours per week is 0`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultPreschool.copy(updated = since)
-        createServiceNeed(db, since, option)
+        createServiceNeed(db, option)
 
         val diffs =
             calculateEvakaVsVardaServiceNeedChangesByChild(
@@ -223,7 +223,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need from purchased daycare`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, since, option, unitId = testPurchasedDaycare.id)
+        val snId = createServiceNeed(db, option, unitId = testPurchasedDaycare.id)
         val childId =
             db.read { it.getChildIdByServiceNeedId(snId) }
                 ?: throw Exception("Created service need not found?!?")
@@ -258,7 +258,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snStartDate = since.minusDays(10).toLocalDate()
         val snEndDate = since.toLocalDate()
         val changedServiceNeedId =
-            createServiceNeed(db, since, option, fromDays = snStartDate, toDays = snEndDate)
+            createServiceNeed(db, option, fromDays = snStartDate, toDays = snEndDate)
         createFeeDecision(
             db,
             testChild_1,
@@ -350,7 +350,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val startDate = since.minusDays(100).toLocalDate()
         val endDate = since.minusDays(90).toLocalDate()
         val startDate2 = endDate.plusDays(1)
-        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
+        val snId1 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate, endDate)
         val fdId1 =
             createFeeDecision(
                 db,
@@ -360,7 +360,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 since.toInstant()
             )
 
-        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate2)
+        val snId2 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate2)
         val fdId2 =
             createFeeDecision(
                 db,
@@ -391,8 +391,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
 
         val lastFeedecisionCutoffDate = LocalDate.of(2019, 8, 31)
-        val snId =
-            createServiceNeed(db, since, snDefaultDaycare, testChild_1, lastFeedecisionCutoffDate)
+        val snId = createServiceNeed(db, snDefaultDaycare, testChild_1, lastFeedecisionCutoffDate)
         createFeeDecision(
             db,
             testChild_1,
@@ -413,7 +412,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 lastFeedecisionCutoffDate,
@@ -437,7 +435,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val startDate = since.minusDays(100).toLocalDate()
         val endDate = since.minusDays(90).toLocalDate()
         val startDate2 = endDate.plusDays(1)
-        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
+        val snId1 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate, endDate)
         val vd1 =
             createVoucherDecision(
                 db,
@@ -452,7 +450,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 VoucherValueDecisionStatus.SENT
             )
 
-        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate2)
+        val snId2 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate2)
         val vd2 =
             createVoucherDecision(
                 db,
@@ -502,7 +500,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId1 =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 lastVoucherCutoffDate,
@@ -533,7 +530,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId1 =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 lastVoucherCutoffDate,
@@ -628,7 +624,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -647,7 +642,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -667,7 +661,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -687,7 +680,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val id =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 since.minusDays(100).toLocalDate(),
@@ -697,7 +689,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             )
         createServiceNeed(
             db,
-            since,
             snDefaultPreschool,
             testChild_1,
             since.minusDays(80).toLocalDate(),
@@ -707,7 +698,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
         createServiceNeed(
             db,
-            since,
             snDefaultClub,
             testChild_1,
             since.minusDays(60).toLocalDate(),
@@ -728,7 +718,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val id =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 since.minusDays(100).toLocalDate(),
@@ -748,7 +737,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             since.plusDays(100).toLocalDate(),
@@ -767,7 +755,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val since = HelsinkiDateTime.now()
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare.copy(daycareHoursPerWeek = 0),
             testChild_1,
             since.minusDays(100).toLocalDate(),
@@ -815,7 +802,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -881,7 +867,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -955,7 +940,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -996,7 +980,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -1048,7 +1031,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -1089,7 +1071,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -1146,7 +1127,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -1191,7 +1171,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             )
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
@@ -1225,7 +1204,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val adult = testAdult_1
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
@@ -1274,7 +1252,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val adult = testAdult_1
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
@@ -1322,7 +1299,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val adult = testAdult_1
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
@@ -1347,7 +1323,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val adult = testAdult_1
         createServiceNeed(
             db,
-            since,
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
@@ -1515,7 +1490,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 testChild_1,
                 serviceNeedPeriod.start,
@@ -1585,7 +1559,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val snId =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 child,
                 serviceNeedPeriod.start,
@@ -1647,7 +1620,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val id =
             createServiceNeed(
                 db,
-                since,
                 snDefaultDaycare,
                 child,
                 serviceNeedPeriod.start,
@@ -1759,7 +1731,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
     private fun createServiceNeed(
         db: Database.Connection,
-        updated: HelsinkiDateTime,
         option: ServiceNeedOption,
         child: DevPerson = testChild_1,
         fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(),
@@ -1767,28 +1738,28 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         placementType: PlacementType = PlacementType.DAYCARE,
         unitId: DaycareId = testDaycare.id
     ): ServiceNeedId {
-        val serviceNeedId = ServiceNeedId(UUID.randomUUID())
-        db.transaction { tx ->
-            FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
-                .addChild()
-                .usePerson(child)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(placementType)
-                        .toUnit(unitId)
-                        .fromDay(fromDays)
-                        .toDay(toDays)
-                        .saveAnd {
-                            addServiceNeed()
-                                .withId(serviceNeedId)
-                                .withUpdated(updated)
-                                .createdBy(EvakaUserId(testDecisionMaker_1.id.raw))
-                                .withOption(option)
-                                .save()
-                        }
-                }
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = unitId,
+                type = placementType,
+                startDate = fromDays,
+                endDate = toDays
+            )
+        val serviceNeed =
+            DevServiceNeed(
+                placementId = placement.id,
+                optionId = option.id,
+                startDate = fromDays,
+                endDate = toDays,
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+            )
+
+        return db.transaction { tx ->
+            tx.insert(placement)
+            tx.upsertServiceNeedOption(option)
+            tx.insert(serviceNeed)
         }
-        return serviceNeedId
     }
 
     private fun createFeeDecision(

@@ -1283,20 +1283,7 @@ RETURNING id
 
     @PostMapping("/service-need")
     fun createServiceNeeds(db: Database, @RequestBody serviceNeeds: List<DevServiceNeed>) {
-        db.connect { dbc ->
-            dbc.transaction {
-                serviceNeeds.forEach { sn ->
-                    it.insertTestServiceNeed(
-                        placementId = sn.placementId,
-                        period = FiniteDateRange(sn.startDate, sn.endDate),
-                        optionId = sn.optionId,
-                        shiftCare = sn.shiftCare,
-                        id = sn.id,
-                        confirmedBy = sn.confirmedBy
-                    )
-                }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> serviceNeeds.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/service-need-option")
@@ -1385,18 +1372,7 @@ RETURNING id
 
     @PostMapping("/attendances")
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                attendances.forEach {
-                    tx.insertTestChildAttendance(
-                        childId = it.childId,
-                        unitId = it.unitId,
-                        arrived = it.arrived,
-                        departed = it.departed
-                    )
-                }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
 
     data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: Instant?)
 
@@ -1937,8 +1913,9 @@ data class DevAssistanceNeedPreschoolDecision(
 data class DevChildAttendance(
     val childId: ChildId,
     val unitId: DaycareId,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?
+    val date: LocalDate,
+    val arrived: LocalTime,
+    val departed: LocalTime?
 )
 
 data class DevAssistanceAction(
@@ -2112,12 +2089,12 @@ data class DevApplicationForm(
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)
 
 data class DevServiceNeed(
-    val id: ServiceNeedId,
+    val id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
     val placementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val optionId: ServiceNeedOptionId,
-    val shiftCare: ShiftCareType,
+    val shiftCare: ShiftCareType = ShiftCareType.NONE,
     val confirmedBy: EvakaUserId,
     val confirmedAt: LocalDate? = null
 )
@@ -2133,13 +2110,13 @@ data class DevUpsertStaffOccupancyCoefficient(
 )
 
 data class DevStaffAttendance(
-    val id: StaffAttendanceRealtimeId,
+    val id: StaffAttendanceRealtimeId = StaffAttendanceRealtimeId(UUID.randomUUID()),
     val employeeId: EmployeeId,
-    val groupId: GroupId?,
+    val groupId: GroupId? = null,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val occupancyCoefficient: BigDecimal,
-    val type: StaffAttendanceType
+    val occupancyCoefficient: BigDecimal = BigDecimal(7),
+    val type: StaffAttendanceType = StaffAttendanceType.PRESENT
 )
 
 data class DevDailyServiceTimes(

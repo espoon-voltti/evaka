@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
@@ -15,12 +14,14 @@ import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevEmployeePin
 import fi.espoo.evaka.shared.dev.DevStaffAttendance
+import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -77,21 +78,19 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee present in one daycare unit should not be present in another`() {
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withGroupAccess(testDaycare2.id, groupId2)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withScopedRole(UserRole.STAFF, testDaycare2.id)
-                .saveAnd {
-                    tx.markStaffArrival(
-                        employeeId,
-                        groupId,
-                        HelsinkiDateTime.of(today, LocalTime.of(8, 0, 0)),
-                        BigDecimal(7.0)
-                    )
-                }
+            val employee = DevEmployee()
+            tx.insert(employee)
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareAclRow(testDaycare2.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insertDaycareGroupAcl(testDaycare2.id, employee.id, listOf(groupId2))
+
+            tx.markStaffArrival(
+                employee.id,
+                groupId,
+                HelsinkiDateTime.of(today, LocalTime.of(8, 0, 0)),
+                BigDecimal(7.0)
+            )
         }
 
         val attnInDaycare1 = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
@@ -104,22 +103,19 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee with no planned attendances can be marked as arrived`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd { employeeId = this.employeeId }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -131,23 +127,20 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee with no planned attendances can be marked as departed`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd { employeeId = this.employeeId }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -155,7 +148,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -167,26 +160,27 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee arriving at planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
-        markArrival(plannedStart, employeeId, pinCode, groupId, plannedStart.toLocalTime(), null)
+        markArrival(plannedStart, employee.id, pinCode, groupId, plannedStart.toLocalTime(), null)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(plannedStart, it.attendances.first().arrived)
@@ -198,27 +192,28 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee departing at planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
-        markArrival(plannedStart, employeeId, pinCode, groupId, plannedStart.toLocalTime(), null)
-        markDeparture(plannedEnd, employeeId, pinCode, groupId, plannedEnd.toLocalTime(), null)
+        markArrival(plannedStart, employee.id, pinCode, groupId, plannedStart.toLocalTime(), null)
+        markDeparture(plannedEnd, employee.id, pinCode, groupId, plannedEnd.toLocalTime(), null)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(plannedStart, it.attendances.first().arrived)
@@ -230,27 +225,28 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee arriving within 5 minutes of planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(5)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -262,28 +258,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee departing within 5 minutes of planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.minusMinutes(5)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.plusMinutes(5)
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -291,7 +288,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -303,25 +300,26 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee arriving 20 minutes before planned time requires a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
         assertThrows<BadRequest> {
-            markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         }
     }
 
@@ -329,25 +327,21 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     fun `last_login should update when Employee is marked as arrived`() {
         val pinCode = "1212"
         val initialLastLogin = HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0, 0))
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee(lastLogin = initialLastLogin)
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withLastLogin(initialLastLogin)
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd { employeeId = this.employeeId }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
         }
 
-        val lastLoginBeforeArrival = db.read { db -> db.getEmployeeLastLogin(employeeId) }
+        val lastLoginBeforeArrival = db.read { db -> db.getEmployeeLastLogin(employee.id) }
         assertEquals(initialLastLogin, lastLoginBeforeArrival)
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
 
-        val lastLogin = db.read { db -> db.getEmployeeLastLogin(employeeId) }
+        val lastLogin = db.read { db -> db.getEmployeeLastLogin(employee.id) }
         assertEquals(arrivalTime, lastLogin)
     }
 
@@ -357,27 +351,28 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
     fun testStaffArrivalBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), type)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -392,74 +387,77 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
     fun testStaffArrivalBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
         assertThrows<BadRequest> {
-            markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), type)
         }
     }
 
     @Test
     fun `Employee arriving 35 minutes after planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(35)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
     }
 
     @Test
     fun `Employee arriving 20 minutes after planned time can be marked arrived with JUSTIFIED_CHANGE`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(20)
         markArrival(
             arrivalTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             arrivalTime.toLocalTime(),
@@ -467,7 +465,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -482,27 +480,28 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
     fun testStaffArrivalAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(20)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), type)
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(2, it.attendances.size)
             assertEquals(plannedStart, it.attendances.first().arrived)
@@ -520,53 +519,55 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["PRESENT", "OVERTIME"])
     fun testStaffArrivalAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(16, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(20)
         assertThrows<BadRequest> {
-            markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), type)
         }
     }
 
     @Test
     fun `Employee departing without reason before planned time is possible`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.minusMinutes(6)
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -577,28 +578,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee departing 20 minutes before planned time can be marked departed with JUSTIFIED_CHANGE`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd,
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.minusMinutes(20)
         markDeparture(
             plannedEnd,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -606,7 +608,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -618,28 +620,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee arriving 90min minutes after planned time does not produce an attendance for the preceding time`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart.plusMinutes(90)
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
 
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(groupId, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -654,28 +657,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["OTHER_WORK", "TRAINING"])
     fun testStaffDepartureBeforePlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.minusMinutes(20)
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -683,7 +687,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(2, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -702,29 +706,30 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["PRESENT", "OVERTIME"])
     fun testStaffDepartureBeforePlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.minusMinutes(20)
         assertThrows<BadRequest> {
             markDeparture(
                 departureTime,
-                employeeId,
+                employee.id,
                 pinCode,
                 groupId,
                 departureTime.toLocalTime(),
@@ -736,28 +741,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee departing 20 minutes after planned time does not require a type`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.plusMinutes(20)
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -771,28 +777,29 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["OVERTIME", "JUSTIFIED_CHANGE"])
     fun testStaffDepartureAfterPlanStartWithAllowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.plusMinutes(20)
         markDeparture(
             departureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             departureTime.toLocalTime(),
@@ -800,7 +807,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
@@ -815,29 +822,30 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @EnumSource(names = ["PRESENT", "OTHER_WORK", "TRAINING"])
     fun testStaffDepartureAfterPlanStartWithUnallowedType(type: StaffAttendanceType) {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val arrivalTime = plannedStart
-        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
         val departureTime = plannedEnd.plusMinutes(20)
         assertThrows<BadRequest> {
             markDeparture(
                 departureTime,
-                employeeId,
+                employee.id,
                 pinCode,
                 groupId,
                 departureTime.toLocalTime(),
@@ -849,26 +857,27 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `Employee arriving and departing multiple times during same work day`() {
         val pinCode = "1212"
-        lateinit var employeeId: EmployeeId
+        val employee = DevEmployee()
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(14, 0))
         db.transaction { tx ->
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("Pekka", "in both units")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withPinCode(pinCode)
-                .saveAnd {
-                    employeeId = this.employeeId
-                    addAttendancePlan().withTime(plannedStart, plannedEnd).save()
-                }
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee.id,
+                    startTime = plannedStart,
+                    endTime = plannedEnd
+                )
+            )
         }
 
         val firstArrivalTime = plannedStart.minusMinutes(20)
         markArrival(
             firstArrivalTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             firstArrivalTime.toLocalTime(),
@@ -877,7 +886,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val firstDepartureTime = firstArrivalTime.plusHours(1)
         markDeparture(
             firstDepartureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             firstDepartureTime.toLocalTime(),
@@ -886,7 +895,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val secondArrivalTime = firstDepartureTime.plusHours(1)
         markArrival(
             secondArrivalTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             secondArrivalTime.toLocalTime(),
@@ -895,7 +904,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val secondDepartureTime = secondArrivalTime.plusHours(1)
         markDeparture(
             secondDepartureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             secondDepartureTime.toLocalTime(),
@@ -904,7 +913,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val thirdArrivalTime = secondDepartureTime.plusHours(1)
         markArrival(
             thirdArrivalTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             thirdArrivalTime.toLocalTime(),
@@ -913,7 +922,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val thirdDepartureTime = thirdArrivalTime.plusMinutes(15)
         markDeparture(
             thirdDepartureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             thirdDepartureTime.toLocalTime(),
@@ -922,7 +931,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val fourthArrivalTime = thirdDepartureTime.plusMinutes(30)
         markArrival(
             fourthArrivalTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             fourthArrivalTime.toLocalTime(),
@@ -931,7 +940,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val fourthDepartureTime = plannedEnd.minusMinutes(5)
         markDeparture(
             fourthDepartureTime,
-            employeeId,
+            employee.id,
             pinCode,
             groupId,
             fourthDepartureTime.toLocalTime(),
@@ -940,7 +949,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         assertEquals(1, attendances.staff.size)
         attendances.staff.first().let {
-            assertEquals(employeeId, it.employeeId)
+            assertEquals(employee.id, it.employeeId)
             assertEquals(null, it.present)
             assertEquals(6, it.attendances.size)
             assertEquals(firstArrivalTime, it.attendances[0].arrived)

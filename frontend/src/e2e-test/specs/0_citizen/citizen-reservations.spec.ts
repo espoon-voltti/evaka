@@ -695,7 +695,8 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       .with({
         childId: enduserChildFixtureKaarina.id,
         unitId: daycareFixture.id,
-        arrived: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
+        date: today,
+        arrived: LocalTime.of(8, 0),
         departed: null
       })
       .save()
@@ -716,8 +717,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       .with({
         childId: enduserChildFixtureKaarina.id,
         unitId: daycareFixture.id,
-        arrived: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
-        departed: today.toHelsinkiDateTime(LocalTime.of(15, 30))
+        date: today,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 30)
       })
       .save()
 
@@ -743,8 +745,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         .with({
           childId: enduserChildFixtureKaarina.id,
           unitId: daycareFixture.id,
-          arrived: today.toHelsinkiDateTime(LocalTime.of(start, 0)),
-          departed: today.toHelsinkiDateTime(LocalTime.of(end, 0))
+          date: today,
+          arrived: LocalTime.of(start, 0),
+          departed: LocalTime.of(end, 0)
         })
         .save()
     }
