@@ -9,7 +9,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
-import fi.espoo.evaka.shared.AttendanceId
+import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -28,7 +28,7 @@ fun Database.Transaction.insertAttendance(
     date: LocalDate,
     startTime: LocalTime,
     endTime: LocalTime? = null
-): AttendanceId {
+): ChildAttendanceId {
     // language=sql
     val sql =
         """
@@ -45,7 +45,7 @@ fun Database.Transaction.insertAttendance(
         .bind("startTime", startTime.withSecond(0).withNano(0))
         .bind("endTime", endTime?.withSecond(0)?.withNano(0))
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<AttendanceId>()
+        .exactlyOne<ChildAttendanceId>()
 }
 
 fun Database.Read.getChildAttendance(
@@ -73,7 +73,11 @@ fun Database.Read.getChildAttendance(
         .exactlyOneOrNull<ChildAttendance>()
 }
 
-data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
+data class OngoingAttendance(
+    val id: ChildAttendanceId,
+    val date: LocalDate,
+    val startTime: LocalTime
+)
 
 fun Database.Read.getChildOngoingAttendance(
     childId: ChildId,
@@ -348,20 +352,20 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
         .toList<LocalDate>()
 }
 
-fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {
+fun Database.Transaction.unsetAttendanceEndTime(attendanceId: ChildAttendanceId) {
     createUpdate("UPDATE child_attendance SET end_time = NULL WHERE id = :id")
         .bind("id", attendanceId)
         .execute()
 }
 
-fun Database.Transaction.updateAttendanceEnd(attendanceId: AttendanceId, endTime: LocalTime) {
+fun Database.Transaction.updateAttendanceEnd(attendanceId: ChildAttendanceId, endTime: LocalTime) {
     createUpdate("UPDATE child_attendance SET end_time = :endTime WHERE id = :id")
         .bind("id", attendanceId)
         .bind("endTime", endTime)
         .execute()
 }
 
-fun Database.Transaction.deleteAttendance(id: AttendanceId) {
+fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
     // language=sql
     val sql =
         """
@@ -393,14 +397,14 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
 fun Database.Transaction.deleteAttendancesByDate(
     childId: ChildId,
     date: LocalDate
-): List<AttendanceId> =
+): List<ChildAttendanceId> =
     createUpdate(
             "DELETE FROM child_attendance WHERE child_id = :childId AND date = :date RETURNING id"
         )
         .bind("childId", childId)
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
-        .toList<AttendanceId>()
+        .toList<ChildAttendanceId>()
 
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(
     childId: ChildId,

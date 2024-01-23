@@ -34,12 +34,12 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -1093,7 +1093,7 @@ fun Database.Transaction.insertTestChildAttendance(
         .also { batch ->
             attendances.forEach { (date, startTime, endTime) ->
                 batch
-                    .bind("id", AttendanceId(UUID.randomUUID()))
+                    .bind("id", ChildAttendanceId(UUID.randomUUID()))
                     .bind("childId", childId)
                     .bind("unitId", unitId)
                     .bind("date", date)
@@ -1618,4 +1618,4 @@ INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
 VALUES (:childId, :unitId, :date, :arrived, :departed)
 """
         )
-        .let(::AttendanceId)
+        .let(::ChildAttendanceId)

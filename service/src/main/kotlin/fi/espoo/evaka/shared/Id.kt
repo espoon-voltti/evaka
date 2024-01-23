@@ -38,7 +38,7 @@ sealed interface DatabaseTable {
 
     sealed class Attachment : DatabaseTable
 
-    sealed class Attendance : DatabaseTable
+    sealed class ChildAttendance : DatabaseTable
 
     sealed class AttendanceReservation : DatabaseTable
 
@@ -204,7 +204,7 @@ typealias AssistanceNeedVoucherCoefficientId = Id<DatabaseTable.AssistanceNeedVo
 
 typealias AttachmentId = Id<DatabaseTable.Attachment>
 
-typealias AttendanceId = Id<DatabaseTable.Attendance>
+typealias ChildAttendanceId = Id<DatabaseTable.ChildAttendance>
 
 typealias AttendanceReservationId = Id<DatabaseTable.AttendanceReservation>
 
