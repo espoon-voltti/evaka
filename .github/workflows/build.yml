@@ -36,20 +36,20 @@ jobs:
   lint-shell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: espoon-voltti/voltti-actions/shellcheck@v1
 
   check-licenses:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v1
 
   keycloak:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -85,7 +85,7 @@ jobs:
   frontend-common:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -146,12 +146,12 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache fortawesome
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: fortawesome
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: fortawesome-${{ hashFiles('frontend/setup-pro-icons.sh') }}
@@ -214,11 +214,11 @@ jobs:
       - frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Login to GitHub Container Registry
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -250,7 +250,7 @@ jobs:
   api-gateway:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -304,7 +304,7 @@ jobs:
   service:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -362,7 +362,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -407,7 +407,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -420,13 +420,13 @@ jobs:
       - name: Login to Amazon ECR
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
 
       - name: Cache dependency check database
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: dependency-check-data
           key: dependency-check-data-${{ github.run_id }}-${{ github.run_attempt }}
@@ -455,11 +455,11 @@ jobs:
         test_chunk_count: [4] # must max value of above list
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -486,7 +486,7 @@ jobs:
           ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
 
       - name: Store test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results-${{ matrix.test_chunk_number }}
@@ -510,18 +510,18 @@ jobs:
     env:
       PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -556,7 +556,7 @@ jobs:
 
       - name: Store screenshots and logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-test-results-${{ matrix.test_chunk_number }}
           path: |
@@ -583,7 +583,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
 
@@ -624,7 +624,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -634,7 +634,7 @@ jobs:
         id: metadata
         env:
           DOCKER_METADATA_PR_HEAD_SHA: "true"
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             evaka/dummy
