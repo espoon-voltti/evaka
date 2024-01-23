@@ -17,6 +17,7 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
+  AbsenceCategory,
   AclUpdate,
   CreateDaycareResponse,
   CreateGroupRequest,
@@ -48,6 +49,7 @@ import {
 import {
   ChildDatePresence,
   DailyReservationRequest,
+  ExpectedAbsencesRequest,
   UnitAttendanceReservations
 } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
@@ -879,4 +881,22 @@ export async function postChildDatePresence(
     }))
   }
   await client.post('/attendance-reservations/child-date', body)
+}
+
+export async function getChildDateExpectedAbsences(
+  data: ExpectedAbsencesRequest
+): Promise<AbsenceCategory[] | null> {
+  const body: JsonOf<ExpectedAbsencesRequest> = {
+    ...data,
+    date: data.date.formatIso(),
+    attendances: data.attendances.map((a) => ({
+      start: a.start.formatIso(),
+      end: a.end.formatIso()
+    }))
+  }
+  const result = await client.post<AbsenceCategory[] | null>(
+    '/attendance-reservations/child-date/expected-absences',
+    body
+  )
+  return result.data
 }

@@ -497,6 +497,46 @@ export class ChildDatePresenceModal extends Modal {
   nonbillableAbsenceRemove = this.findByDataQa(
     'nonbillable-absence'
   ).findByDataQa('remove-btn')
+
+  #absenceWarnings = this.findByDataQa('absence-warnings')
+  #warningMissingNonbillableAbsence = this.findByDataQa(
+    'missing-nonbillable-absence'
+  )
+  #warningExtraNonbillableAbsence = this.findByDataQa(
+    'extra-nonbillable-absence'
+  )
+  #warningMissingBillableAbsence = this.findByDataQa('missing-billable-absence')
+  #warningExtraBillableAbsence = this.findByDataQa('extra-billable-absence')
+  async assertWarnings(
+    expectedWarnings: (
+      | 'missing-nonbillable-absence'
+      | 'extra-nonbillable-absence'
+      | 'missing-billable-absence'
+      | 'extra-billable-absence'
+    )[]
+  ) {
+    await this.#absenceWarnings.waitUntilAttached()
+    if (expectedWarnings.includes('missing-nonbillable-absence')) {
+      await this.#warningMissingNonbillableAbsence.waitUntilVisible()
+    } else {
+      await this.#warningMissingNonbillableAbsence.waitUntilHidden()
+    }
+    if (expectedWarnings.includes('extra-nonbillable-absence')) {
+      await this.#warningExtraNonbillableAbsence.waitUntilVisible()
+    } else {
+      await this.#warningExtraNonbillableAbsence.waitUntilHidden()
+    }
+    if (expectedWarnings.includes('missing-billable-absence')) {
+      await this.#warningMissingBillableAbsence.waitUntilVisible()
+    } else {
+      await this.#warningMissingBillableAbsence.waitUntilHidden()
+    }
+    if (expectedWarnings.includes('extra-billable-absence')) {
+      await this.#warningExtraBillableAbsence.waitUntilVisible()
+    } else {
+      await this.#warningExtraBillableAbsence.waitUntilHidden()
+    }
+  }
 }
 
 export class ReservationModal extends Modal {

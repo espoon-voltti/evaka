@@ -39,7 +39,9 @@ import {
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -57,7 +59,10 @@ import colors from 'lib-customizations/common'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
-import { upsertChildDatePresenceMutation } from '../queries'
+import {
+  childDateExpectedAbsencesQuery,
+  upsertChildDatePresenceMutation
+} from '../queries'
 
 export interface ChildDateEditorTarget {
   date: LocalDate
@@ -207,6 +212,27 @@ export default React.memo(function ChildDateModal({
   const reservationElems = useFormElems(reservations)
   const attendanceElems = useFormElems(attendances)
 
+  const expectedAbsences = useQueryResult(
+    queryOrDefault(
+      (attendances: TimeRange[]) =>
+        childDateExpectedAbsencesQuery({
+          childId: child.id,
+          date,
+          attendances
+        }),
+      null
+    )(
+      date.isBefore(LocalDate.todayInHelsinkiTz()) &&
+        attendances.isValid() &&
+        attendances.value().every(({ endTime }) => endTime !== null)
+        ? attendances.value().map((a) => ({
+            start: a.startTime,
+            end: a.endTime!
+          }))
+        : null
+    )
+  )
+
   return (
     <MutateFormModal
       title={date.formatExotic('EEEEEE d.M.yyyy')}
@@ -345,6 +371,50 @@ export default React.memo(function ChildDateModal({
             otherAbsence={nonBillableAbsence.value()}
           />
         )}
+        {expectedAbsences.isSuccess && expectedAbsences.value !== null && (
+          <FixedSpaceColumn data-qa="absence-warnings">
+            {expectedAbsences.value.includes('NONBILLABLE') &&
+              nonBillableAbsence.value() === undefined && (
+                <AbsenceWarning
+                  data-qa="missing-nonbillable-absence"
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .missingNonbillableAbsence
+                  }
+                />
+              )}
+            {!expectedAbsences.value.includes('NONBILLABLE') &&
+              nonBillableAbsence.value() !== undefined && (
+                <AbsenceWarning
+                  data-qa="extra-nonbillable-absence"
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .extraNonbillableAbsence
+                  }
+                />
+              )}
+            {expectedAbsences.value.includes('BILLABLE') &&
+              billableAbsence.value() === undefined && (
+                <AbsenceWarning
+                  data-qa="missing-billable-absence"
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .missingBillableAbsence
+                  }
+                />
+              )}
+            {!expectedAbsences.value.includes('BILLABLE') &&
+              billableAbsence.value() !== undefined && (
+                <AbsenceWarning
+                  data-qa="extra-billable-absence"
+                  message={
+                    i18n.unit.attendanceReservations.childDateModal
+                      .extraBillableAbsence
+                  }
+                />
+              )}
+          </FixedSpaceColumn>
+        )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
@@ -428,6 +498,27 @@ const AbsenceForm = React.memo(function AbsenceForm({
         onClick={() => bind.update((s) => ({ ...s, domValue: '' }))}
       />
     </FixedSpaceRow>
+  )
+})
+
+const AbsenceWarning = React.memo(function AbsenceWarning({
+  message,
+  ['data-qa']: dataQa
+}: {
+  message: string
+  'data-qa': string
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <div>
+      <AlertBox
+        data-qa={dataQa}
+        title={i18n.unit.attendanceReservations.childDateModal.absenceWarning}
+        message={message}
+        thin
+        noMargin
+      />
+    </div>
   )
 })
 

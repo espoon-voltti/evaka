@@ -251,11 +251,47 @@ class AttendanceReservationController(
                     targetId = body.childId,
                     meta =
                         mapOf(
+                            "date" to body.date,
                             "insertedReservations" to result.insertedReservations,
                             "deletedReservations" to result.deletedReservations,
                             "insertedAttendances" to result.insertedAttendances,
                             "deletedAttendances" to result.deletedAttendances,
                         )
+                )
+            }
+    }
+
+    data class ExpectedAbsencesRequest(
+        val childId: ChildId,
+        val date: LocalDate,
+        val attendances: List<TimeRange>
+    )
+
+    @PostMapping("/child-date/expected-absences")
+    fun getExpectedAbsences(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ExpectedAbsencesRequest
+    ): Set<AbsenceCategory>? {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPSERT_CHILD_DATE_PRESENCE,
+                        body.childId
+                    )
+                    if (body.date.isBefore(clock.today())) {
+                        getExpectedAbsenceCategories(tx, body.date, body.childId, body.attendances)
+                    } else null
+                }
+            }
+            .also {
+                Audit.ChildDatePresenceExpectedAbsencesCheck.log(
+                    targetId = body.childId,
+                    meta = mapOf("date" to body.date)
                 )
             }
     }

@@ -31,7 +31,7 @@ let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
 let reservationsTable: UnitChildReservationsTable
 
-const today = LocalDate.of(2024, 1, 3) // Wed
+const today = LocalDate.of(2023, 9, 13) // Wed
 
 beforeEach(async () => {
   await resetDatabase()
@@ -43,6 +43,7 @@ const setupTestData = async ({
   placementType?: PlacementType
 } = {}) => {
   await insertDefaultServiceNeedOptions()
+  await Fixture.preschoolTerm().save()
   daycareServiceNeedOptionId = (
     await Fixture.serviceNeedOption()
       .with({ validPlacementType: 'DAYCARE' })
@@ -279,6 +280,56 @@ test('Add absence for child in daycare for yesterday', async () => {
     .reservationCells(childId, date)
     .nth(0)
     .assertTextEquals('Poissaolo')
+})
+
+test('Absence warnings for child in daycare', async () => {
+  await setupTestData({ placementType: 'DAYCARE' })
+  await navigateToTestView()
+  const date = today.subDays(1)
+
+  const modal = await reservationsTable.openChildDateModal(childId, date)
+
+  await modal.assertWarnings(['missing-billable-absence'])
+
+  await modal.addBillableAbsenceBtn.click()
+  await modal.assertWarnings([])
+
+  await modal.addAttendanceBtn.click()
+  await modal.attendanceStart(0).fill('08:55')
+  await modal.attendanceEnd(0).fill('13:05')
+  await modal.assertWarnings(['extra-billable-absence'])
+})
+
+test('Absence warnings for child in preschool daycare', async () => {
+  await setupTestData({ placementType: 'PRESCHOOL_DAYCARE' })
+  await navigateToTestView()
+  const date = today.subDays(1)
+
+  const modal = await reservationsTable.openChildDateModal(childId, date)
+
+  await modal.assertWarnings([
+    'missing-nonbillable-absence',
+    'missing-billable-absence'
+  ])
+
+  await modal.addNonbillableAbsenceBtn.click()
+  await modal.assertWarnings(['missing-billable-absence'])
+  await modal.addBillableAbsenceBtn.click()
+  await modal.assertWarnings([])
+
+  await modal.addAttendanceBtn.click()
+  await modal.attendanceStart(0).fill('08:55')
+  await modal.attendanceEnd(0).fill('13:05')
+  await modal.assertWarnings(['extra-nonbillable-absence'])
+
+  await modal.attendanceEnd(0).fill('15:00')
+  await modal.assertWarnings([
+    'extra-nonbillable-absence',
+    'extra-billable-absence'
+  ])
+
+  await modal.attendanceStart(0).fill('12:30')
+  await modal.assertWarnings(['extra-billable-absence'])
 })
 
 test('Intermittent shift care outside opening times', async () => {

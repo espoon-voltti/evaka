@@ -145,6 +145,7 @@ enum class Audit(
     ChildDailyServiceTimeNotificationsRead,
     ChildDailyServiceTimeNotificationsDismiss,
     ChildDatePresenceUpsert,
+    ChildDatePresenceExpectedAbsencesCheck,
     ChildDocumentCreate,
     ChildDocumentDelete,
     ChildDocumentMarkRead,

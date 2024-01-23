@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -25,6 +26,7 @@ import {
   createGroupPlacement,
   deleteGroup,
   deleteGroupPlacement,
+  getChildDateExpectedAbsences,
   getDaycare,
   getDaycareGroups,
   getDaycares,
@@ -89,6 +91,11 @@ export const queryKeys = createQueryKeys('unit', {
     'unitAttendanceReservations',
     unitId,
     { dateRange, includeNonOperationalDays }
+  ],
+
+  expectedAbsences: (input: ExpectedAbsencesRequest) => [
+    'expectedAbsences',
+    input
   ]
 })
 
@@ -224,6 +231,11 @@ export const updateBackupCareMutation = mutation({
 export const unitAttendanceReservationsQuery = query({
   api: getUnitAttendanceReservations,
   queryKey: queryKeys.unitAttendanceReservationsRange
+})
+
+export const childDateExpectedAbsencesQuery = query({
+  api: getChildDateExpectedAbsences,
+  queryKey: queryKeys.expectedAbsences
 })
 
 export const upsertChildDatePresenceMutation = mutation({
