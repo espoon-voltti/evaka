@@ -364,7 +364,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = testChild_1.id,
                             reservations =
                                 listOf(
-                                    ReservationDto.Times(
+                                    ReservationResponse.Times(
                                         startTime = LocalTime.of(8, 0),
                                         endTime = LocalTime.of(16, 0),
                                         true
@@ -423,7 +423,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
                         childId = testChild_1.id,
-                        reservations = listOf(ReservationDto.NoTimes(true)),
+                        reservations = listOf(ReservationResponse.NoTimes(true)),
                         attendances = emptyList(),
                         absenceBillable = null,
                         absenceNonbillable = null,
@@ -512,7 +512,11 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_6.id,
                         reservations =
                             listOf(
-                                ReservationDto.Times(LocalTime.of(9, 0), LocalTime.of(15, 0), true)
+                                ReservationResponse.Times(
+                                    LocalTime.of(9, 0),
+                                    LocalTime.of(15, 0),
+                                    true
+                                )
                             ),
                         attendances = emptyList(),
                         absenceBillable = null,
@@ -658,7 +662,11 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     reservations =
                         listOf(
-                            ReservationDto.Times(LocalTime.of(19, 0), LocalTime.of(23, 59), true)
+                            ReservationResponse.Times(
+                                LocalTime.of(19, 0),
+                                LocalTime.of(23, 59),
+                                true
+                            )
                         ),
                     attendances = listOf(OpenTimeRange(LocalTime.of(19, 10), LocalTime.of(23, 59))),
                     absenceBillable = null,
@@ -680,8 +688,12 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     reservations =
                         listOf(
-                            ReservationDto.Times(LocalTime.of(0, 0), LocalTime.of(8, 0), true),
-                            ReservationDto.Times(LocalTime.of(17, 30), LocalTime.of(23, 59), true),
+                            ReservationResponse.Times(LocalTime.of(0, 0), LocalTime.of(8, 0), true),
+                            ReservationResponse.Times(
+                                LocalTime.of(17, 30),
+                                LocalTime.of(23, 59),
+                                true
+                            ),
                         ),
                     attendances =
                         listOf(
@@ -706,7 +718,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 UnitAttendanceReservations.ChildRecordOfDay(
                     childId = testChild_1.id,
                     reservations =
-                        listOf(ReservationDto.Times(LocalTime.of(0, 0), LocalTime.of(9, 30), true)),
+                        listOf(
+                            ReservationResponse.Times(LocalTime.of(0, 0), LocalTime.of(9, 30), true)
+                        ),
                     attendances = emptyList(),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -875,12 +889,12 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(9, 0),
                             endTime = LocalTime.of(17, 0),
                             true
                         ),
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(22, 0),
                             endTime = LocalTime.of(23, 59),
                             true
@@ -934,12 +948,12 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(9, 0),
                             endTime = LocalTime.of(17, 0),
                             true
                         ),
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(21, 30),
                             endTime = LocalTime.of(23, 59),
                             true
@@ -1248,12 +1262,12 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_1.id,
                 reservations =
                     listOf(
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(12, 0),
                             true
                         ),
-                        ReservationDto.Times(
+                        ReservationResponse.Times(
                             startTime = LocalTime.of(13, 0),
                             endTime = LocalTime.of(16, 0),
                             true

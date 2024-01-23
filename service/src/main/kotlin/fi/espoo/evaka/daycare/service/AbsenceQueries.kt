@@ -8,7 +8,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reservations.ReservationDto
+import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -507,7 +507,7 @@ AND daterange(bc.start_date, bc.end_date, '[]') && :period
         .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
-    val reservation: ReservationDto,
+    val reservation: ReservationResponse,
     val createdByEvakaUserType: EvakaUserType,
     val created: HelsinkiDateTime
 )
@@ -539,7 +539,7 @@ AND EXISTS (
             val date: LocalDate = column("date")
             val reservation =
                 ChildReservation(
-                    ReservationDto.fromLocalTimes(
+                    ReservationResponse.fromLocalTimes(
                         column("start_time"),
                         column("end_time"),
                         column("staff_created")

@@ -5,7 +5,7 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceInfo,
-  ReservationDto,
+  ReservationResponse,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
@@ -2210,7 +2210,7 @@ describe('resetTimes', () => {
         (date) => !date.isWeekend()
       )
 
-      const r: ReservationDto = {
+      const r: ReservationResponse = {
         type: 'TIMES',
         startTime: LocalTime.of(8, 0),
         endTime: LocalTime.of(16, 0),
@@ -2617,7 +2617,7 @@ describe('resetTimes', () => {
     })
 
     it('Open holiday period + reservations + absences + employee-marked absences', () => {
-      const r: ReservationDto = { type: 'NO_TIMES', staffCreated: false }
+      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
@@ -2809,7 +2809,7 @@ describe('resetTimes', () => {
     })
 
     it('Closed holiday period + reservations + absences + employee-marked absences', () => {
-      const r: ReservationDto = { type: 'NO_TIMES', staffCreated: false }
+      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 

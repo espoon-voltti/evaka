@@ -619,8 +619,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, reservations.size)
         reservations.first().let { (date, reservation) ->
             assertEquals(monday, date)
-            assertTrue { reservation is ReservationDto.Times }
-            assertEquals(reservation3.start, (reservation as ReservationDto.Times).startTime)
+            assertTrue { reservation is ReservationResponse.Times }
+            assertEquals(reservation3.start, (reservation as ReservationResponse.Times).startTime)
             assertEquals(reservation3.end, reservation.endTime)
         }
     }
@@ -999,12 +999,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(monday, reservations[0].first)
         assertEquals(
             LocalTime.of(12, 0),
-            (reservations[0].second[0] as ReservationDto.Times).startTime
+            (reservations[0].second[0] as ReservationResponse.Times).startTime
         )
         assertEquals(tuesday, reservations[1].first)
         assertEquals(
             LocalTime.of(9, 0),
-            (reservations[1].second[0] as ReservationDto.Times).startTime
+            (reservations[1].second[0] as ReservationResponse.Times).startTime
         )
     }
 
@@ -1104,7 +1104,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, dailyReservations.size)
         dailyReservations.first().let { (date, reservations) ->
             assertEquals(holidayPeriodStart, date)
-            assertEquals(listOf(ReservationDto.NoTimes(false)), reservations)
+            assertEquals(listOf(ReservationResponse.NoTimes(false)), reservations)
         }
     }
 
@@ -1376,7 +1376,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 }
             }
 
-        assertEquals(listOf(child.id to ReservationDto.NoTimes(false)), allReservations)
+        assertEquals(listOf(child.id to ReservationResponse.NoTimes(false)), allReservations)
     }
 
     @Test
@@ -1447,7 +1447,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, allReservations.size)
         allReservations.first().let { (date, reservations) ->
             assertEquals(holidayPeriodStart, date)
-            assertEquals(listOf(ReservationDto.Times(startTime, endTime, false)), reservations)
+            assertEquals(listOf(ReservationResponse.Times(startTime, endTime, false)), reservations)
         }
         assertEquals(0, absenceDates.size)
     }
@@ -1512,7 +1512,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, allReservations.size)
         allReservations.first().let { (date, reservations) ->
             assertEquals(holidayPeriodStart, date)
-            assertEquals(listOf(ReservationDto.Times(startTime, endTime, false)), reservations)
+            assertEquals(listOf(ReservationResponse.Times(startTime, endTime, false)), reservations)
         }
     }
 

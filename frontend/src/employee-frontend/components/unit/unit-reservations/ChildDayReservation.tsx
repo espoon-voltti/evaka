@@ -20,7 +20,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  ReservationDto,
+  ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -39,7 +39,7 @@ interface Props {
   date: LocalDate
   reservationIndex: number
   dateInfo: UnitDateInfo
-  reservation: ReservationDto | undefined
+  reservation: ReservationResponse | undefined
   absence: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean

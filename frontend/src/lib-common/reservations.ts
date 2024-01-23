@@ -6,7 +6,7 @@ import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
 import {
   OpenTimeRange,
   Reservation,
-  ReservationDto
+  ReservationResponse
 } from './generated/api-types/reservations'
 import { JsonOf } from './json'
 import LocalTime from './local-time'
@@ -70,8 +70,8 @@ export function validateTimeRange(
 }
 
 export function parseReservationDto(
-  reservation: JsonOf<ReservationDto>
-): ReservationDto {
+  reservation: JsonOf<ReservationResponse>
+): ReservationResponse {
   if (reservation.type === 'TIMES') {
     return {
       ...reservation,

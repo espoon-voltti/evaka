@@ -685,13 +685,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             child1.id,
-                            reservations = listOf(ReservationDto.Times(startTime, endTime, false)),
+                            reservations =
+                                listOf(ReservationResponse.Times(startTime, endTime, false)),
                             reservableTimeRange =
                                 ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                         ),
                         dayChild(
                             child2.id,
-                            reservations = listOf(ReservationDto.Times(startTime, endTime, false)),
+                            reservations =
+                                listOf(ReservationResponse.Times(startTime, endTime, false)),
                             reservableTimeRange =
                                 ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                         )
@@ -707,13 +709,15 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             child1.id,
-                            reservations = listOf(ReservationDto.Times(startTime, endTime, false)),
+                            reservations =
+                                listOf(ReservationResponse.Times(startTime, endTime, false)),
                             reservableTimeRange =
                                 ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         ),
                         dayChild(
                             child2.id,
-                            reservations = listOf(ReservationDto.Times(startTime, endTime, false)),
+                            reservations =
+                                listOf(ReservationResponse.Times(startTime, endTime, false)),
                             reservableTimeRange =
                                 ReservableTimeRange.Normal(daycare.operationTimes[1]!!)
                         )
@@ -783,7 +787,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                     dayChild(
                         child.id,
-                        reservations = listOf(ReservationDto.Times(startTime, endTime, false)),
+                        reservations = listOf(ReservationResponse.Times(startTime, endTime, false)),
                         reservableTimeRange =
                             ReservableTimeRange.Normal(daycare.operationTimes[0]!!)
                     )
@@ -1588,7 +1592,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         scheduleType: ScheduleType = ScheduleType.RESERVATION_REQUIRED,
         shiftCare: Boolean = false,
         absence: AbsenceInfo? = null,
-        reservations: List<ReservationDto> = emptyList(),
+        reservations: List<ReservationResponse> = emptyList(),
         attendances: List<OpenTimeRange> = emptyList(),
     ) =
         ReservationResponseDayChild(

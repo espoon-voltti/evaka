@@ -72,7 +72,7 @@ export interface ChildRecordOfDay {
   groupId: UUID | null
   inOtherUnit: boolean
   possibleAbsenceCategories: AbsenceCategory[]
-  reservations: ReservationDto[]
+  reservations: ReservationResponse[]
   scheduleType: ScheduleType
 }
 
@@ -86,7 +86,7 @@ export interface ChildReservationInfo {
   groupId: UUID | null
   isInHolidayPeriod: boolean
   outOnBackupPlacement: boolean
-  reservations: ReservationDto[]
+  reservations: ReservationResponse[]
   scheduleType: ScheduleType
 }
 
@@ -97,7 +97,7 @@ export interface ConfirmedRangeDate {
   absenceType: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
   date: LocalDate
-  reservations: ReservationDto[]
+  reservations: ReservationResponse[]
   scheduleType: ScheduleType
 }
 
@@ -280,9 +280,17 @@ export interface ReservationChildInfo {
   preferredName: string
 }
 
-export namespace ReservationDto {
+/**
+* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
+*/
+export interface ReservationGroup {
+  id: UUID
+  name: string
+}
+
+export namespace ReservationResponse {
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservationDto.NoTimes
+  * Generated from fi.espoo.evaka.reservations.ReservationResponse.NoTimes
   */
   export interface NoTimes {
     type: 'NO_TIMES'
@@ -290,7 +298,7 @@ export namespace ReservationDto {
   }
   
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservationDto.Times
+  * Generated from fi.espoo.evaka.reservations.ReservationResponse.Times
   */
   export interface Times {
     type: 'TIMES'
@@ -301,18 +309,10 @@ export namespace ReservationDto {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationDto
+* Generated from fi.espoo.evaka.reservations.ReservationResponse
 */
-export type ReservationDto = ReservationDto.NoTimes | ReservationDto.Times
+export type ReservationResponse = ReservationResponse.NoTimes | ReservationResponse.Times
 
-
-/**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
-*/
-export interface ReservationGroup {
-  id: UUID
-  name: string
-}
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservationResponseDay
@@ -331,7 +331,7 @@ export interface ReservationResponseDayChild {
   attendances: OpenTimeRange[]
   childId: UUID
   reservableTimeRange: ReservableTimeRange
-  reservations: ReservationDto[]
+  reservations: ReservationResponse[]
   scheduleType: ScheduleType
   shiftCare: boolean
 }

@@ -15,7 +15,7 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
-import fi.espoo.evaka.reservations.ReservationDto
+import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
@@ -300,7 +300,7 @@ private fun supplementReservationsWithDailyServiceTimes(
             .flatMap { (date, reservations) ->
                 reservations.mapNotNull { res ->
                     when (res.reservation) {
-                        is ReservationDto.Times ->
+                        is ReservationResponse.Times ->
                             HelsinkiDateTimeRange.of(
                                 date,
                                 res.reservation.startTime.withNano(0).withSecond(0),
@@ -308,7 +308,7 @@ private fun supplementReservationsWithDailyServiceTimes(
                             )
 
                         // Reserved but no times -> use daily service times
-                        is ReservationDto.NoTimes -> null
+                        is ReservationResponse.NoTimes -> null
                     }
                 }
             }

@@ -17,7 +17,7 @@ import { DailyServiceTimesValue } from './dailyservicetimes'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
-import { ReservationDto } from './reservations'
+import { ReservationResponse } from './reservations'
 import { ScheduleType } from './placement'
 import { UUID } from '../../types'
 
@@ -71,7 +71,7 @@ export interface AttendanceChild {
   lastName: string
   placementType: PlacementType
   preferredName: string
-  reservations: ReservationDto[]
+  reservations: ReservationResponse[]
   scheduleType: ScheduleType
   stickyNotes: ChildStickyNote[]
 }

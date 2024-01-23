@@ -147,7 +147,7 @@ private data class ReservationRow(
 fun Database.Read.getUnitReservations(
     unitId: DaycareId,
     date: LocalDate
-): Map<ChildId, List<ReservationDto>> =
+): Map<ChildId, List<ReservationResponse>> =
     createQuery(
             """
     WITH placed_children AS (
@@ -174,7 +174,11 @@ fun Database.Read.getUnitReservations(
             rows
                 .map {
                     it.childId to
-                        ReservationDto.fromLocalTimes(it.startTime, it.endTime, it.staffCreated)
+                        ReservationResponse.fromLocalTimes(
+                            it.startTime,
+                            it.endTime,
+                            it.staffCreated
+                        )
                 }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { (_, value) -> value.sorted() }
@@ -222,8 +226,8 @@ fun Database.Read.getReservationDatesForChildrenInRange(
 fun Database.Read.getReservationsForChildInRange(
     childId: ChildId,
     range: FiniteDateRange
-): Map<LocalDate, List<ReservationDto>> {
-    data class ReservationWithDate(val date: LocalDate, val reservation: ReservationDto)
+): Map<LocalDate, List<ReservationResponse>> {
+    data class ReservationWithDate(val date: LocalDate, val reservation: ReservationResponse)
     return createQuery(
             """
                 SELECT ar.date, 
@@ -242,7 +246,7 @@ WHERE between_start_and_end(:range, ar.date)
         .toList {
             ReservationWithDate(
                 column("date"),
-                ReservationDto.fromLocalTimes(
+                ReservationResponse.fromLocalTimes(
                     column("start_time"),
                     column("end_time"),
                     column("staff_created")
@@ -259,7 +263,7 @@ data class ChildDailyData(
     val childId: ChildId,
     val absence: AbsenceType?,
     val absenceEditable: Boolean,
-    val reservations: List<ReservationDto>,
+    val reservations: List<ReservationResponse>,
     val attendances: List<OpenTimeRange>
 )
 

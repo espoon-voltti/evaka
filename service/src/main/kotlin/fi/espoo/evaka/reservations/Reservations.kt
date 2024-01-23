@@ -117,40 +117,22 @@ sealed class Reservation : Comparable<Reservation> {
             else -> throw IllegalStateException("Unknown reservation type")
         }
     }
-
-    companion object {
-        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?) =
-            if (startTime != null && endTime != null) {
-                Times(startTime, endTime)
-            } else if (startTime == null && endTime == null) {
-                NoTimes
-            } else {
-                throw IllegalArgumentException("Both start and end times must be null or not null")
-            }
-    }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class ReservationDto : Comparable<ReservationDto> {
-    @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationDto()
+sealed class ReservationResponse : Comparable<ReservationResponse> {
+    @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()
 
     @JsonTypeName("TIMES")
     data class Times(val startTime: LocalTime, val endTime: LocalTime, val staffCreated: Boolean) :
-        ReservationDto() {
-        init {
-            if (endTime != LocalTime.of(0, 0) && startTime > endTime) {
-                throw IllegalArgumentException("Times must be in order")
-            }
-        }
-    }
+        ReservationResponse()
 
-    override fun compareTo(other: ReservationDto): Int {
+    override fun compareTo(other: ReservationResponse): Int {
         return when {
-            this is ReservationDto.Times && other is ReservationDto.Times ->
-                this.startTime.compareTo(other.startTime)
-            this is ReservationDto.NoTimes && other is ReservationDto.NoTimes -> 0
-            this is ReservationDto.NoTimes && other is ReservationDto.Times -> -1
-            this is ReservationDto.Times && other is ReservationDto.NoTimes -> 1
+            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is NoTimes && other is NoTimes -> 0
+            this is NoTimes && other is Times -> -1
+            this is Times && other is NoTimes -> 1
             else -> throw IllegalStateException("Unknown reservation type")
         }
     }
@@ -158,9 +140,9 @@ sealed class ReservationDto : Comparable<ReservationDto> {
     companion object {
         fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?, staffCreated: Boolean) =
             if (startTime != null && endTime != null) {
-                ReservationDto.Times(startTime, endTime, staffCreated)
+                Times(startTime, endTime, staffCreated)
             } else if (startTime == null && endTime == null) {
-                ReservationDto.NoTimes(staffCreated)
+                NoTimes(staffCreated)
             } else {
                 throw IllegalArgumentException("Both start and end times must be null or not null")
             }

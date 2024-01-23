@@ -417,7 +417,7 @@ class AttendanceReservationController(
 
     data class ChildReservationInfo(
         val childId: ChildId,
-        val reservations: List<ReservationDto>,
+        val reservations: List<ReservationResponse>,
         val groupId: GroupId?,
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
@@ -625,7 +625,7 @@ class AttendanceReservationController(
 data class ConfirmedRangeDate(
     val date: LocalDate,
     val scheduleType: ScheduleType,
-    val reservations: List<ReservationDto>,
+    val reservations: List<ReservationResponse>,
     val absenceType: AbsenceType?,
     val dailyServiceTimes: DailyServiceTimesValue?
 )
@@ -652,7 +652,7 @@ data class UnitAttendanceReservations(
 
     data class ChildRecordOfDay(
         val childId: ChildId,
-        val reservations: List<ReservationDto>,
+        val reservations: List<ReservationResponse>,
         val attendances: List<OpenTimeRange>,
         // TODO
         //        val absenceBillable: AbsenceTypeAndCreator?,
@@ -873,7 +873,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
 
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
-    val reservations: Map<LocalDate, List<ReservationDto>>,
+    val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<OpenTimeRange>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
 )
@@ -897,8 +897,8 @@ private data class ReservationTimesForDate(
 ) {
     fun toReservationTimes() =
         when {
-            startTime == null || endTime == null -> ReservationDto.NoTimes(staffCreated)
-            else -> ReservationDto.Times(startTime, endTime, staffCreated)
+            startTime == null || endTime == null -> ReservationResponse.NoTimes(staffCreated)
+            else -> ReservationResponse.Times(startTime, endTime, staffCreated)
         }
 }
 
