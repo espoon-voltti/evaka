@@ -120,5 +120,6 @@ export function getAttachmentUrl(
   attachmentId: UUID,
   requestedFilename: string
 ): string {
-  return `${API_URL}/attachments/${attachmentId}/download/${requestedFilename}`
+  const encodedFilename = encodeURIComponent(requestedFilename)
+  return `${API_URL}/attachments/${attachmentId}/download/${encodedFilename}`
 }
