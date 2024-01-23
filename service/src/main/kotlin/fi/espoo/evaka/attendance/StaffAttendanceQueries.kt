@@ -30,9 +30,10 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.arrived AS attendance_arrived,
         att.departed AS attendance_departed,
         att.type AS attendance_type,
+        att.departed_automatically AS attendance_departed_automatically,
         coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
         coalesce((
-            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type) ORDER BY a.arrived)
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically) ORDER BY a.arrived)
             FROM staff_attendance_realtime a
             LEFT JOIN daycare_group dg ON dg.id = a.group_id
             WHERE e.id = a.employee_id AND (dg.daycare_id = :unitId OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
@@ -57,7 +58,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         GROUP BY employee_id
     ) dgacl ON true
     LEFT JOIN LATERAL (
-        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type
+        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type, sa.departed_automatically
         FROM staff_attendance_realtime sa
         JOIN daycare_group dg ON dg.id = sa.group_id
         WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
@@ -485,7 +486,8 @@ WITH missing_planned_departures AS (
                 AND plan.end_time < :now
 )
 UPDATE staff_attendance_realtime realtime
-SET departed = missing_planned_departures.planned_departure
+SET departed = missing_planned_departures.planned_departure,
+    departed_automatically = true
 FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
 """
         )
@@ -497,7 +499,8 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
             // language=SQL
             """
 UPDATE staff_attendance_realtime a
-SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END
+SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END,
+    departed_automatically = true
 FROM daycare_group g
 JOIN daycare d ON g.daycare_id = d.id
 WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
@@ -512,7 +515,8 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
             // language=SQL
             """
 UPDATE staff_attendance_external a
-SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END
+SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END,
+    departed_automatically = true
 FROM daycare_group g
 JOIN daycare d ON g.daycare_id = d.id
 WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
@@ -521,6 +525,36 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
         )
         .bind("startOfDay", now.atStartOfDay())
         .bind("defaultDepartureTime", defaultDepartureTime)
+        .execute()
+
+    createUpdate(
+            // language=SQL
+            """
+UPDATE staff_attendance_realtime a
+SET departed = a.arrived + interval '12 hours',
+    departed_automatically = true
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+        """
+                .trimIndent()
+        )
+        .bind("now", now)
+        .execute()
+
+    createUpdate(
+            // language=SQL
+            """
+UPDATE staff_attendance_external a
+SET departed = a.arrived + interval '12 hours',
+    departed_automatically = true
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+        """
+                .trimIndent()
+        )
+        .bind("now", now)
         .execute()
 }
 

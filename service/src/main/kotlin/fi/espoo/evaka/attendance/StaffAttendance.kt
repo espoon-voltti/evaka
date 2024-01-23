@@ -81,7 +81,8 @@ data class StaffMemberAttendance(
     val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val type: StaffAttendanceType
+    val type: StaffAttendanceType,
+    val departedAutomatically: Boolean
 )
 
 data class ExternalAttendance(
