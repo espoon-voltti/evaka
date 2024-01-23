@@ -890,9 +890,8 @@ export async function getChildDateExpectedAbsences(
     ...data,
     date: data.date.formatIso(),
     attendances: data.attendances.map((a) => ({
-      ...a,
-      startTime: a.startTime.formatIso(),
-      endTime: a.endTime?.formatIso() ?? null
+      start: a.start.formatIso(),
+      end: a.end.formatIso()
     }))
   }
   const result = await client.post<AbsenceCategory[] | null>(

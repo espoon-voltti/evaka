@@ -176,7 +176,7 @@ export interface DayReservationStatisticsResult {
 * Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ExpectedAbsencesRequest
 */
 export interface ExpectedAbsencesRequest {
-  attendances: OpenTimeRange[]
+  attendances: TimeRange[]
   childId: UUID
   date: LocalDate
 }

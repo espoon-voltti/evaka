@@ -24,13 +24,8 @@ fun getExpectedAbsenceCategories(
     tx: Database.Read,
     date: LocalDate,
     childId: ChildId,
-    presenceTimes: List<OpenTimeRange>
+    presenceTimes: List<TimeRange>
 ): Set<AbsenceCategory>? {
-    if (presenceTimes.any { it.endTime == null }) {
-        // result is undetermined while some attendance is still open
-        return null
-    }
-
     val placement =
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
             ?: throw BadRequest("child has no placement")
@@ -38,7 +33,7 @@ fun getExpectedAbsenceCategories(
 
     return getExpectedAbsenceCategories(
         date = date,
-        presenceTimes = presenceTimes.map { TimeRange(it.startTime, it.endTime!!) },
+        presenceTimes = presenceTimes,
         placementType = placement.type,
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,

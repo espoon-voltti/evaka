@@ -264,7 +264,7 @@ class AttendanceReservationController(
     data class ExpectedAbsencesRequest(
         val childId: ChildId,
         val date: LocalDate,
-        val attendances: List<OpenTimeRange>
+        val attendances: List<TimeRange>
     )
 
     @PostMapping("/child-date/expected-absences")
