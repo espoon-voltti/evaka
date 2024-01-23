@@ -172,6 +172,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         val persons =
             attendances
                 .groupBy { EmployeeKey(it.employeeId, it.firstName, it.lastName) }
+                .asSequence()
+                .sortedWith(compareBy({ it.key.id }, { it.key.firstName }, { it.key.lastName }))
                 .map { (employee, attendances) ->
                     val employeePlans = plans[employee.id]
                     val convertedEmployeeNumber = employeeIdToNumber[employee.id]!!
@@ -274,6 +276,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                             )
                     )
                 }
+                .toList()
 
         val response =
             GetStampedWorkingTimeEventsResponse(
