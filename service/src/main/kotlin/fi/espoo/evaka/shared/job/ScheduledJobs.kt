@@ -323,5 +323,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
+        db.transaction {
+            attachmentService.scheduleOrphanAttachmentDeletion(it, clock, dryRun = true)
+        }
 }
