@@ -8,7 +8,9 @@ import { evakaServiceUrl } from './config.js'
 import {
   createAuthHeader,
   createIntegrationAuthHeader,
-  EvakaSessionUser
+  EvakaSessionUser,
+  integrationUserHeader,
+  createUserHeader
 } from './auth/index.js'
 
 export const client = axios.create({
@@ -48,6 +50,7 @@ export type ServiceRequestHeader =
   | 'Authorization'
   | 'X-Request-ID'
   | 'EvakaMockedTime'
+  | 'X-User'
 
 export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
 
@@ -55,12 +58,20 @@ export function createServiceRequestHeaders(
   req: express.Request | undefined,
   user: EvakaSessionUser | undefined | null = req?.user
 ) {
-  const headers: ServiceRequestHeaders = {}
+  let headers: ServiceRequestHeaders = {}
   if (req?.path.startsWith('/integration/')) {
-    headers.Authorization = createIntegrationAuthHeader()
+    headers = {
+      // TODO: Use empty JWT
+      Authorization: createIntegrationAuthHeader(),
+      'X-User': integrationUserHeader
+    }
   }
   if (user) {
-    headers.Authorization = createAuthHeader(user)
+    headers = {
+      // TODO: Use empty JWT
+      Authorization: createAuthHeader(user),
+      'X-User': createUserHeader(user)
+    }
   }
   if (req?.traceId) {
     headers['X-Request-ID'] = req.traceId

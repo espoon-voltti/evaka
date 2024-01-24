@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared.auth
 
+import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.voltti.auth.getDecodedJwt
 import fi.espoo.voltti.logging.MdcKey
@@ -26,13 +28,19 @@ class JwtToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
         response: HttpServletResponse,
         chain: FilterChain
     ) {
-        val user = request.getDecodedJwt()?.toAuthenticatedUser()
-
-        if (user != null) {
-            request.setAuthenticatedUser(user)
-            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash)
-            MdcKey.USER_ID.set(user.rawId().toString())
-            MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
+        val decodedJwt = request.getDecodedJwt()
+        if (decodedJwt != null) {
+            // JWT is valid => the request came from apigw
+            val user =
+                request.getHeader("X-User")?.let { jsonMapper().readValue<AuthenticatedUser>(it) }
+                    // TODO: Remove this fallback when apigw has been deployed to production
+                    ?: decodedJwt.toAuthenticatedUser()
+            if (user != null) {
+                request.setAuthenticatedUser(user)
+                tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash)
+                MdcKey.USER_ID.set(user.rawId().toString())
+                MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
+            }
         }
         try {
             chain.doFilter(request, response)

@@ -30,7 +30,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     }
 
     @Test
-    fun `a valid JWT token is required in API requests`() {
+    fun `a valid JWT token and user header are required in API requests`() {
         val (_, res, _) = http.get("/daycares").responseString()
         assertEquals(401, res.statusCode)
 
