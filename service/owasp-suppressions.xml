@@ -9,13 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
         <notes><![CDATA[
-        An issue was discovered jackson-databind thru 2.15.2 allows attackers to cause a denial of service or other unspecified impacts via crafted object that uses cyclic dependencies.
-        IGNORED UNTIL FIX IS RELEASED
-        ]]></notes>
-        <cve>CVE-2023-35116</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
         Thymeleaf through 3.1.1.RELEASE, as used in spring-boot-admin (aka Spring Boot Admin) through 3.1.1 and other products, allows sandbox bypass via crafted HTML. This may be relevant for SSTI (Server Side Template Injection) and code execution in spring-boot-admin if MailNotifier is enabled and there is write access to environment variables via the UI.
         ]]></notes>
         <cve>CVE-2023-38286</cve>
@@ -39,17 +32,5 @@ SPDX-License-Identifier: LGPL-2.1-or-later
        ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.flywaydb/flyway\-database\-postgresql@.*$</packageUrl>
         <cpe>cpe:/a:postgresql:postgresql</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        In Spring Framework versions 6.0.0 - 6.0.13, it is possible for a user to provide specially crafted HTTP requests that may cause a denial-of-service (DoS) condition
-       ]]></notes>
-        <cve>CVE-2023-34053</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        In Spring Boot versions 2.7.0 - 2.7.17, 3.0.0-3.0.12 and 3.1.0-3.1.5, it is possible for a user to provide specially crafted HTTP requests that may cause a denial-of-service (DoS) condition. Specifically, an application is vulnerable when all of the following are true: the application uses Spring MVC or Spring WebFlux
-       ]]></notes>
-        <cve>CVE-2023-34055</cve>
     </suppress>
 </suppressions>

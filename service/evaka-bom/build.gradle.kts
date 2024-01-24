@@ -28,18 +28,9 @@ dependencies {
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
         api("net.logstash.logback:logstash-logback-encoder:7.4")
         api("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0")
-        api("org.apache.commons:commons-pool2:2.12.0")
         api("org.apache.commons:commons-text:1.11.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
         api("org.apache.tika:tika-core:2.9.0")
-        // --- only needed for CVE fix
-        api("org.apache.tomcat.embed:tomcat-embed-core:10.1.16")
-        api("org.apache.tomcat.embed:tomcat-embed-el:10.1.16")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:10.1.16")
-        api("ch.qos.logback:logback-access:1.4.14")
-        api("ch.qos.logback:logback-classic:1.4.14")
-        api("ch.qos.logback:logback-core:1.4.14")
-        // ---
         api("org.apache.wss4j:wss4j-ws-security-dom:3.0.1")
         api(libs.bouncycastle.bcpkix)
         api(libs.bouncycastle.bcprov)
@@ -65,7 +56,6 @@ dependencies {
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
-    api(platform("io.netty:netty-bom:4.1.100.Final")) // only needed for CVE fix
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     api(platform("org.jdbi:jdbi3-bom:3.43.0"))
     api(platform(libs.kotlin.bom))
