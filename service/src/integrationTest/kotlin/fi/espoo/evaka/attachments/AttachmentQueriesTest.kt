@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.attachments
 
-import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentType
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class AttachmentQueriesTest : FullApplicationTest(resetDbBeforeEach = true) {
+class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var guardian: AuthenticatedUser.Citizen
     private lateinit var admin: AuthenticatedUser.Employee
 
