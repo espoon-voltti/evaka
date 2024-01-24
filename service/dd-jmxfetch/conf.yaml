@@ -115,20 +115,6 @@ instances:
               alias: hikari.connections.total
               metric_type: gauge
       - include:
-          domain: org.apache.commons.pool2
-          type: GenericObjectPool
-          name: jedis
-          attribute:
-            NumIdle:
-              alias: jedis.clients.idle
-              metric_type: gauge
-            NumActive:
-              alias: jedis.clients.active
-              metric_type: gauge
-            MaxTotal:
-              alias: jedis.clients.total
-              metric_type: gauge
-      - include:
           domain: metrics
           type: gauges
           name: asyncJobWorkersActive.jobType.AsyncJob.pool.main
