@@ -8,6 +8,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.SfiContactOrganizationEnv
 import fi.espoo.evaka.SfiContactPersonEnv
 import fi.espoo.evaka.SfiEnv
 import fi.espoo.evaka.SfiPrintingEnv
@@ -123,6 +124,13 @@ class SoapStackIntegrationTest {
                     name = "contact-name",
                     phone = "contact-phone",
                     email = "contact-email"
+                ),
+            contactOrganization =
+                SfiContactOrganizationEnv(
+                    name = "contact-organization-name",
+                    streetAddress = "contact-organization-street-address",
+                    postalCode = "contact-organization-postal-code",
+                    postOffice = "contact-organization-post-office"
                 )
         )
 

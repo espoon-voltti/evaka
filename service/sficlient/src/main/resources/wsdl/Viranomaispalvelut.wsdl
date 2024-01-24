@@ -12,100 +12,96 @@ but these might change at a later date.
 Equivalent source: https://palveluhallinta.suomi.fi/en/tuki/artikkelit/5c71aeaf46e7410049a6d8ad
 -->
 
-<wsdl:definitions name="Viranomaispalvelut" targetNamespace="http://www.suomi.fi/asiointitili" xmlns:tns="http://www.suomi.fi/asiointitili" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+<wsdl:definitions xmlns:tns="http://www.suomi.fi/asiointitili" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="Viranomaispalvelut" targetNamespace="http://www.suomi.fi/asiointitili">
     <wsdl:types>
-        <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:import schemaLocation="Viranomaispalvelut.xsd" namespace="http://www.suomi.fi/asiointitili" />
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+            <xsd:import schemaLocation="Viranomaispalvelut.xsd" namespace="http://www.suomi.fi/asiointitili"/>
         </xsd:schema>
     </wsdl:types>
-
     <wsdl:message name="Viranomaispalvelut_HaeAsiakkaita_Pyynto">
-        <wsdl:part element="tns:HaeAsiakkaita" name="parameters" />
+        <wsdl:part element="tns:HaeAsiakkaita" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_HaeAsiakkaita_Vastaus">
-        <wsdl:part element="tns:HaeAsiakkaitaResponse" name="parameters" />
+        <wsdl:part element="tns:HaeAsiakkaitaResponse" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_LisaaKohteita_Pyynto">
-        <wsdl:part element="tns:LisaaKohteita" name="parameters" />
+        <wsdl:part element="tns:LisaaKohteita" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_LisaaKohteita_Vastaus">
-        <wsdl:part element="tns:LisaaKohteitaResponse" name="parameters" />
+        <wsdl:part element="tns:LisaaKohteitaResponse" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_HaeTilaTieto_Pyynto">
-        <wsdl:part element="tns:HaeTilaTieto" name="parameters" />
+        <wsdl:part element="tns:HaeTilaTieto" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_HaeTilaTieto_Vastaus">
-        <wsdl:part element="tns:HaeTilaTietoResponse" name="parameters" />
+        <wsdl:part element="tns:HaeTilaTietoResponse" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_LahetaViesti_Pyynto">
-        <wsdl:part element="tns:LahetaViesti" name="parameters" />
+        <wsdl:part element="tns:LahetaViesti" name="parameters"/>
     </wsdl:message>
     <wsdl:message name="Viranomaispalvelut_LahetaViesti_Vastaus">
-        <wsdl:part element="tns:LahetaViestiResponse" name="parameters" />
+        <wsdl:part element="tns:LahetaViestiResponse" name="parameters"/>
     </wsdl:message>
-
     <wsdl:portType name="Viranomaispalvelut">
         <wsdl:operation name="HaeAsiakkaita">
-            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaita" message="tns:Viranomaispalvelut_HaeAsiakkaita_Pyynto" />
-            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaitaResponse" message="tns:Viranomaispalvelut_HaeAsiakkaita_Vastaus" />
+            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaita" message="tns:Viranomaispalvelut_HaeAsiakkaita_Pyynto"/>
+            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaitaResponse" message="tns:Viranomaispalvelut_HaeAsiakkaita_Vastaus"/>
         </wsdl:operation>
         <wsdl:operation name="LisaaKohteita">
-            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteita" message="tns:Viranomaispalvelut_LisaaKohteita_Pyynto" />
-            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteitaResponse" message="tns:Viranomaispalvelut_LisaaKohteita_Vastaus" />
+            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteita" message="tns:Viranomaispalvelut_LisaaKohteita_Pyynto"/>
+            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteitaResponse" message="tns:Viranomaispalvelut_LisaaKohteita_Vastaus"/>
         </wsdl:operation>
         <wsdl:operation name="HaeTilaTieto">
-            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTieto" message="tns:Viranomaispalvelut_HaeTilaTieto_Pyynto" />
-            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTietoResponse" message="tns:Viranomaispalvelut_HaeTilaTieto_Vastaus" />
+            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTieto" message="tns:Viranomaispalvelut_HaeTilaTieto_Pyynto"/>
+            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTietoResponse" message="tns:Viranomaispalvelut_HaeTilaTieto_Vastaus"/>
         </wsdl:operation>
         <wsdl:operation name="LahetaViesti">
-            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViesti" message="tns:Viranomaispalvelut_LahetaViesti_Pyynto" />
-            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViestiResponse" message="tns:Viranomaispalvelut_LahetaViesti_Vastaus" />
+            <wsdl:input wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViesti" message="tns:Viranomaispalvelut_LahetaViesti_Pyynto"/>
+            <wsdl:output wsaw:Action="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViestiResponse" message="tns:Viranomaispalvelut_LahetaViesti_Vastaus"/>
         </wsdl:operation>
     </wsdl:portType>
-
     <wsdl:binding name="ViranomaispalvelutSoap" type="tns:Viranomaispalvelut">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <wsdl:operation name="HaeAsiakkaita">
-            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaita" style="document" />
+            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeAsiakkaita" style="document"/>
             <wsdl:input>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="LisaaKohteita">
-            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteita" style="document" />
+            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LisaaKohteita" style="document"/>
             <wsdl:input>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="HaeTilaTieto">
-            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTieto" style="document" />
+            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/HaeTilaTieto" style="document"/>
             <wsdl:input>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="LahetaViesti">
-            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViesti" style="document" />
+            <soap:operation soapAction="http://www.suomi.fi/asiointitili/Viranomaispalvelut/LahetaViesti" style="document"/>
             <wsdl:input>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap:body use="literal" />
+                <soap:body use="literal"/>
             </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
-
     <wsdl:service name="ViranomaispalvelutService">
         <wsdl:port binding="tns:ViranomaispalvelutSoap" name="ViranomaispalvelutPort">
-            <soap:address location="http://it1.integraatiopalvelu.fi/InternalServices/Viestinvalitys/ViranomaispalvelutWSInterfaceNonSigned" />
+            <soap:address location="https://qat.integraatiopalvelu.fi/Asiointitili/ViranomaispalvelutWSInterfaceNonSigned"/>
         </wsdl:port>
     </wsdl:service>
 </wsdl:definitions>

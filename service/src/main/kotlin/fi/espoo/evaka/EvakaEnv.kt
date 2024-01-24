@@ -574,7 +574,14 @@ data class SfiEnv(
      *
      * Not mandatory, but used e.g. to communicate about errors
      */
-    val contactPerson: SfiContactPersonEnv
+    val contactPerson: SfiContactPersonEnv,
+
+    /**
+     * Contact details for the organization making API requests.
+     *
+     * Mandatory for paper posting testing
+     */
+    val contactOrganization: SfiContactOrganizationEnv
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -648,7 +655,8 @@ data class SfiEnv(
                         "fi.espoo.evaka.msg.sfi.message.certificateCommonName"
                     ),
                 printing = SfiPrintingEnv.fromEnvironment(env),
-                contactPerson = SfiContactPersonEnv.fromEnvironment(env)
+                contactPerson = SfiContactPersonEnv.fromEnvironment(env),
+                contactOrganization = SfiContactOrganizationEnv.fromEnvironment(env)
             )
     }
 }
@@ -727,6 +735,24 @@ data class SfiContactPersonEnv(val name: String?, val email: String?, val phone:
                         "evaka.integration.sfi.contact_person.email",
                         "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail"
                     )
+            )
+    }
+}
+
+data class SfiContactOrganizationEnv(
+    val name: String?,
+    val streetAddress: String?,
+    val postalCode: String?,
+    val postOffice: String?
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            SfiContactOrganizationEnv(
+                name = env.lookup("evaka.integration.sfi.contact_organization.name"),
+                streetAddress =
+                    env.lookup("evaka.integration.sfi.contact_organization.street_address"),
+                postalCode = env.lookup("evaka.integration.sfi.contact_organization.postal_code"),
+                postOffice = env.lookup("evaka.integration.sfi.contact_organization.post_office")
             )
     }
 }
