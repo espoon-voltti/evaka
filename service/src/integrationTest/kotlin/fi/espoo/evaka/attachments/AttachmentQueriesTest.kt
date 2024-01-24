@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,6 +38,8 @@ class AttachmentQueriesTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private lateinit var application: AttachmentParent.Application
     private lateinit var income: AttachmentParent.Income
+
+    private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
 
     @BeforeEach
     fun beforeEach() {
@@ -133,6 +136,7 @@ class AttachmentQueriesTest : FullApplicationTest(resetDbBeforeEach = true) {
     ) =
         insertAttachment(
             user,
+            clock.now(),
             "dummy-name",
             "text/plain",
             parent,

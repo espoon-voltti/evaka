@@ -35,6 +35,7 @@ class AttachmentService(
     fun saveOrphanAttachment(
         dbc: Database.Connection,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         fileName: String,
         bytes: ByteArray,
         contentType: String,
@@ -42,7 +43,14 @@ class AttachmentService(
     ): AttachmentId {
         val id =
             dbc.transaction { tx ->
-                tx.insertAttachment(user, fileName, contentType, AttachmentParent.None, type = type)
+                tx.insertAttachment(
+                    user,
+                    clock.now(),
+                    fileName,
+                    contentType,
+                    AttachmentParent.None,
+                    type = type
+                )
             }
         dbc.close() // avoid hogging the connection while we access S3
         documentClient.upload(

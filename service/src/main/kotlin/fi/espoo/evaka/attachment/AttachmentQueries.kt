@@ -86,6 +86,7 @@ data class AttachmentForeignKeys(
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
+    now: HelsinkiDateTime,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
@@ -97,11 +98,12 @@ fun Database.Transaction.insertAttachment(
     require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
     val sql =
         """
-        INSERT INTO attachment (name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-        VALUES (:name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
+        INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
+        VALUES (:now, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
         RETURNING id
         """
     return this.createUpdate(sql)
+        .bind("now", now)
         .bind("name", name)
         .bind("contentType", contentType)
         .bindKotlin(AttachmentForeignKeys(attachTo))

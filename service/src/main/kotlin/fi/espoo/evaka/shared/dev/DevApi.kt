@@ -1167,6 +1167,7 @@ RETURNING id
     @PostMapping("/pedagogical-document-attachment/{pedagogicalDocumentId}")
     fun createPedagogicalDocumentAttachment(
         db: Database,
+        clock: EvakaClock,
         @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
         @RequestParam employeeId: EmployeeId,
         @RequestPart("file") file: MultipartFile
@@ -1176,6 +1177,7 @@ RETURNING id
                     val id =
                         tx.insertAttachment(
                             AuthenticatedUser.Employee(employeeId, emptySet()),
+                            clock.now(),
                             file.name,
                             file.contentType ?: "image/jpeg",
                             AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),

@@ -79,6 +79,7 @@ class AttachmentsController(
                 handleFileUpload(
                     dbc,
                     user,
+                    clock,
                     AttachmentParent.Application(applicationId),
                     file,
                     type
@@ -119,6 +120,7 @@ class AttachmentsController(
                 handleFileUpload(
                     dbc,
                     user,
+                    clock,
                     AttachmentParent.IncomeStatement(incomeStatementId),
                     file
                 )
@@ -159,7 +161,7 @@ class AttachmentsController(
                     if (incomeId != null) AttachmentParent.Income(incomeId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, attachTo, file)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncome.log(
@@ -192,7 +194,7 @@ class AttachmentsController(
                         accountId
                     )
                 }
-                handleFileUpload(dbc, user, AttachmentParent.MessageDraft(draftId), file)
+                handleFileUpload(dbc, user, clock, AttachmentParent.MessageDraft(draftId), file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForMessageDraft.log(
@@ -227,6 +229,7 @@ class AttachmentsController(
                 handleFileUpload(
                     dbc,
                     user,
+                    clock,
                     AttachmentParent.PedagogicalDocument(documentId),
                     file
                 ) { tx ->
@@ -273,7 +276,7 @@ class AttachmentsController(
                     )
                 }
 
-                handleFileUpload(dbc, user, attachTo, file, type) { tx ->
+                handleFileUpload(dbc, user, clock, attachTo, file, type) { tx ->
                     stateService.reCalculateDueDate(tx, clock.today(), applicationId)
                 }
             }
@@ -320,7 +323,7 @@ class AttachmentsController(
                         AttachmentParent.IncomeStatement(incomeStatementId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, attachTo, file)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
@@ -358,7 +361,7 @@ class AttachmentsController(
                     if (feeAlterationId != null) AttachmentParent.FeeAlteration(feeAlterationId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, attachTo, file)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForFeeAlteration.log(
@@ -409,6 +412,7 @@ class AttachmentsController(
     private fun handleFileUpload(
         dbc: Database.Connection,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         attachTo: AttachmentParent,
         file: MultipartFile,
         type: AttachmentType? = null,
@@ -438,6 +442,7 @@ class AttachmentsController(
             attachmentsService.saveOrphanAttachment(
                 dbc,
                 user,
+                clock,
                 fileName = fileName,
                 bytes = file.bytes,
                 contentType = contentType,

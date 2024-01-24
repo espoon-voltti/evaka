@@ -113,6 +113,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                 )
             tx.insertAttachment(
                 user,
+                clock.now(),
                 "test.pdf",
                 "application/pdf",
                 AttachmentParent.Application(applicationId),

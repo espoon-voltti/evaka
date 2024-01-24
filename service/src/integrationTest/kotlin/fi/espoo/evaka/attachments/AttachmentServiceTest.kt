@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.net.URI
 import java.time.Duration
@@ -83,6 +84,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `if saving an orphan attachment fails the file upload, an orphan row is still created`() {
+        val clock = MockEvakaClock(2023, 1, 1, 12, 0)
         val user = AuthenticatedUser.SystemInternalUser
         val errorMessage = "Expected failure"
         val attachmentService =
@@ -96,6 +98,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             attachmentService.saveOrphanAttachment(
                 db,
                 user,
+                clock,
                 "test.pdf",
                 byteArrayOf(0x11),
                 "text/plain"
@@ -106,6 +109,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `if deleting an attachment file fails, the database row is not deleted`() {
+        val clock = MockEvakaClock(2023, 1, 1, 12, 0)
         val errorMessage = "Expected failure"
         val attachmentService =
             createAttachmentService(
@@ -117,7 +121,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (attachment, parent) =
             db.transaction {
                 val parent = it.insertTestIncome()
-                Pair(it.insertTestAttachment(parent), parent)
+                Pair(it.insertTestAttachment(clock, parent), parent)
             }
         assertThrows<Exception>(errorMessage) { attachmentService.deleteAttachment(db, attachment) }
         assertEquals(parent, db.read { it.getAttachment(attachment) }?.attachedTo)
@@ -125,6 +129,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `scheduled orphan deletion deletes old orphans but not attachments with a parent`() {
+        val clock = MockEvakaClock(2023, 1, 1, 12, 0)
         val attachmentService =
             createAttachmentService(
                 MockDocumentService(uploadFn = { error("Unexpected upload") }, deleteFn = {})
@@ -132,12 +137,10 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (incomeAttachment, orphanAttachment) =
             db.transaction {
                 Pair(
-                    it.insertTestAttachment(it.insertTestIncome()),
-                    it.insertTestAttachment(AttachmentParent.None)
+                    it.insertTestAttachment(clock, it.insertTestIncome()),
+                    it.insertTestAttachment(clock, AttachmentParent.None)
                 )
             }
-        val clock = MockEvakaClock(2023, 1, 1, 12, 0)
-        db.transaction { it.execute("UPDATE attachment SET created = ?", clock.now()) }
         clock.tick(Duration.ofDays(1) + Duration.ofSeconds(1))
         db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
         clock.tick(Duration.ofSeconds(1))
@@ -157,9 +160,13 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-    private fun Database.Transaction.insertTestAttachment(parent: AttachmentParent) =
+    private fun Database.Transaction.insertTestAttachment(
+        clock: EvakaClock,
+        parent: AttachmentParent
+    ) =
         insertAttachment(
             AuthenticatedUser.SystemInternalUser,
+            clock.now(),
             "test.pdf",
             "text/plain",
             parent,
