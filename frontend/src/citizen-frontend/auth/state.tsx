@@ -19,7 +19,7 @@ import {
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { client } from '../api-client'
+import { client, setAntiCsrfToken } from '../api-client'
 
 import { getAuthStatus } from './api'
 
@@ -53,6 +53,15 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
     () => idleTracker(client, refreshAuthStatus, { thresholdInMinutes: 20 }),
     [refreshAuthStatus]
   )
+
+  useEffect(() => {
+    const status = authStatus.getOrElse(undefined)
+    if (status?.loggedIn) {
+      setAntiCsrfToken(status.antiCsrfToken)
+    } else {
+      setAntiCsrfToken(undefined)
+    }
+  }, [authStatus])
 
   const value = useMemo(
     () => ({

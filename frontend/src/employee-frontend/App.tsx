@@ -5,7 +5,7 @@
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Navigate, createBrowserRouter, Outlet } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
@@ -17,7 +17,7 @@ import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { getAuthStatus } from './api/auth'
-import { client } from './api/client'
+import { client, setAntiCsrfToken } from './api/client'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
@@ -107,7 +107,7 @@ import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
-import { QueryClientProvider, queryClient } from './query'
+import { queryClient, QueryClientProvider } from './query'
 import StateProvider from './state/StateProvider'
 import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
@@ -935,10 +935,17 @@ function useAuthStatus(): AuthStatusWithRefresh {
   const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
 
   const refreshAuthStatus = useCallback(
-    () => getAuthStatus().then(setAuthStatus),
+    () =>
+      getAuthStatus().then((response) => {
+        if (response?.loggedIn) {
+          setAntiCsrfToken(response.antiCsrfToken)
+        } else {
+          setAntiCsrfToken(undefined)
+        }
+        setAuthStatus(response)
+      }),
     []
   )
-
   useEffect(() => {
     void refreshAuthStatus()
   }, [refreshAuthStatus])

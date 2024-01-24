@@ -118,14 +118,9 @@ The project uses Helmet to set sane default headers and remove unsafe headers se
 are already set at the proxy, but helmet was chosen to be kept with a default setting to incorporate possible additions
 that don't get updated to the proxy.
 
-### XSRF Protection
+### CSRF Protection
 
-After login an `XSRF-TOKEN` cookie is set with a random token value. The csurf middleware check all incoming traffic
-with HTTP POST methods for headers containing the token. Axios HTTP client automatically recognizes this cookie and
-send a `X-XSRF-TOKEN` header with the cookie value.
-
-Since the domain of the service is shared among multiple services all with different sessions and XSRF cookies. Some
-requests might fail when browsing multiple application simultaneously.
+After login a random token value is generated and stored in the session. This value is returned in the auth status call and Axios HTTP client is configured in the frontend to send it in the `x-evaka-csrf` custom header. A csrf middleware checks that all incoming state-modifying requests include this custom header with the exactly same value that is in the session.
 
 ### Session handling
 

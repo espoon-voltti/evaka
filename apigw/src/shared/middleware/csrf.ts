@@ -2,29 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import csurf from 'csurf'
 import express from 'express'
-import { SessionType } from '../session.js'
-import { useSecureCookies } from '../config.js'
 
-// Middleware that does XSRF header checks
-export const csrf = csurf({ cookie: false })
-
-export function csrfCookieName(sessionType: SessionType): string {
-  return sessionType === 'enduser' ? 'XSRF-TOKEN' : 'evaka.employee.xsrf'
+const requiresCsrfCheck = (req: express.Request) => {
+  switch (req.method) {
+    case 'GET':
+    case 'HEAD':
+    case 'OPTIONS':
+      return false
+    default:
+      return true
+  }
 }
 
-// Returns a middleware that sets XSRF cookie that the frontend should use in
-// requests. This only needs to be done in the "entry point" URL, which is called
-// before any other requests for a page are done
-export function csrfCookie(sessionType: SessionType): express.RequestHandler {
-  return (req, res, next) => {
-    const cookieName = csrfCookieName(sessionType)
-    res.cookie(cookieName, req.csrfToken(), {
-      httpOnly: false, // the entire point is to be readable from JS
-      secure: useSecureCookies,
-      sameSite: 'lax'
-    })
-    next()
+export class InvalidAntiCsrfToken extends Error {
+  constructor() {
+    super('Invalid anti-CSRF token')
+    this.name = 'InvalidAntiCsrfToken'
   }
+}
+
+// Middleware that does CSRF header checks
+export const csrf: express.RequestHandler = (req, res, next) => {
+  if (requiresCsrfCheck(req)) {
+    const sessionToken = req.session?.antiCsrfToken
+    const headerToken = req.header('x-evaka-csrf')
+    if (!sessionToken || !headerToken || sessionToken !== headerToken)
+      return next(new InvalidAntiCsrfToken())
+  }
+  next()
 }

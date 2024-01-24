@@ -15,7 +15,7 @@ import { fromCallback } from '../../shared/promise-utils.js'
 import { appCommit } from '../../shared/config.js'
 import { logout } from '../../shared/auth/index.js'
 
-interface AuthStatus {
+export interface AuthStatus {
   loggedIn: boolean
   antiCsrfToken?: string
   user?: EmployeeUser | MobileUser

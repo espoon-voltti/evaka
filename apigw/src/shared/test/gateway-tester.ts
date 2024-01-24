@@ -13,7 +13,6 @@ import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
 import { Config, evakaServiceUrl } from '../config.js'
 import { sessionCookie, SessionType } from '../session.js'
-import { csrfCookieName } from '../middleware/csrf.js'
 import { CitizenUser, EmployeeUser } from '../service-client.js'
 import { MockRedisClient } from './mock-redis-client.js'
 import { enduserGwRouter } from '../../enduser/app.js'
@@ -26,6 +25,7 @@ export class GatewayTester {
   public readonly nockScope: nock.Scope
 
   private readonly baseUrl: string
+  public antiCsrfToken: string | undefined
 
   private constructor(
     private readonly server: http.Server,
@@ -40,9 +40,12 @@ export class GatewayTester {
     this.client.interceptors.request.use(async (config) =>
       includeCookiesInRequest(this.baseUrl, this.cookies, config)
     )
-    this.client.interceptors.request.use(async (config) =>
-      includeXsrfTokenInRequest(this.baseUrl, this.cookies, sessionType, config)
-    )
+    this.client.interceptors.request.use(async (config) => {
+      if (this.antiCsrfToken) {
+        config.headers.set('x-evaka-csrf', this.antiCsrfToken)
+      }
+      return config
+    })
     this.client.interceptors.response.use((res) =>
       storeCookiesFromResponse(this.baseUrl, this.cookies, res)
     )
@@ -81,6 +84,7 @@ export class GatewayTester {
   public async afterEach(): Promise<void> {
     nock.cleanAll()
     await this.cookies.removeAllCookies()
+    delete this.antiCsrfToken
   }
 
   public async stop(): Promise<void> {
@@ -178,18 +182,4 @@ async function storeCookiesFromResponse(
     await cookies.setCookie(cookie, url)
   }
   return res
-}
-
-async function includeXsrfTokenInRequest(
-  baseUrl: string,
-  cookies: CookieJar,
-  sessionType: SessionType,
-  config: InternalAxiosRequestConfig
-): Promise<InternalAxiosRequestConfig> {
-  const cookie = (await cookies.getCookies(baseUrl)).find(
-    ({ key }) => key === csrfCookieName(sessionType)
-  )
-  if (!cookie) return config
-  config.headers.set('X-XSRF-TOKEN', cookie.value)
-  return config
 }

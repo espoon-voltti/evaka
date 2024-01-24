@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
-import { csrfCookieName } from '../../shared/middleware/csrf.js'
 import { EmployeeUser } from '../../shared/service-client.js'
 import { configFromEnv } from '../../shared/config.js'
+import { AuthStatus } from '../routes/auth-status.js'
 
 const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
@@ -24,13 +24,14 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
   afterEach(async () => tester.afterEach())
   afterAll(async () => tester?.stop())
 
-  async function setupCsrfToken() {
+  async function setupAntiCsrfToken() {
     tester.nockScope.get(`/system/employee/${mockUser.id}`).reply(200, mockUser)
-    await tester.client.get('/api/internal/auth/status')
+    const response = await tester.client.get('/api/internal/auth/status')
+    const authStatus = response.data as AuthStatus
     tester.nockScope.done()
 
-    const csrfToken = await tester.getCookie(csrfCookieName('employee'))
-    expect(csrfToken).toBeTruthy()
+    expect(authStatus.antiCsrfToken).toBeTruthy()
+    tester.antiCsrfToken = authStatus.antiCsrfToken
   }
 
   it('should fail POST to a proxied API when there is no CSRF token', async () => {
@@ -50,7 +51,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
     expect(res.status).toBe(200)
   })
   it('should pass POST to a proxied API after CSRF token has been set up by the auth/status endpoint', async () => {
-    await setupCsrfToken()
+    await setupAntiCsrfToken()
 
     tester.nockScope.post('/some-proxied-api').reply(200)
     const res = await tester.client.post('/api/internal/some-proxied-api')
@@ -58,7 +59,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
     expect(res.status).toBe(200)
   })
   it('should not check CSRF if a session is not available', async () => {
-    await setupCsrfToken()
+    await setupAntiCsrfToken()
     await tester.expireSession()
 
     const res = await tester.client.post(
