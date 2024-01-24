@@ -114,8 +114,9 @@ data class ServiceNeedOption(
     val occupancyCoefficientUnder3y: BigDecimal,
     val realizedOccupancyCoefficient: BigDecimal,
     val realizedOccupancyCoefficientUnder3y: BigDecimal,
-    val daycareHoursPerWeek: Int,
+    val daycareHoursPerWeek: Int, // Used only for Varda
     val contractDaysPerMonth: Int?,
+    val daycareHoursPerMonth: Int?,
     val partDay: Boolean,
     val partWeek: Boolean,
     val feeDescriptionFi: String,

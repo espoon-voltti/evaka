@@ -485,6 +485,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     realizedOccupancyCoefficientUnder3y = BigDecimal.ONE,
                     daycareHoursPerWeek = 40,
                     contractDaysPerMonth = null,
+                    daycareHoursPerMonth = null,
                     partDay = false,
                     partWeek = false,
                     feeDescriptionFi = "",

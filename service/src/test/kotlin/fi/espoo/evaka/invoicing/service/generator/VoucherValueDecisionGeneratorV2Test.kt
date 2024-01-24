@@ -164,6 +164,7 @@ private val snDaycareFullDay35 =
         realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
         daycareHoursPerWeek = 35,
         contractDaysPerMonth = null,
+        daycareHoursPerMonth = null,
         partDay = false,
         partWeek = false,
         feeDescriptionFi = "Kokopäiväinen, vähintään 35h",
