@@ -5,7 +5,9 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.attachment.getAttachment
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
@@ -19,7 +21,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
@@ -31,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.ResponseEntity
 import org.springframework.mock.web.MockMultipartFile
 
 class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -55,7 +56,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private val user =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = testChild_1.id
-    private val clock = RealEvakaClock()
+    private val clock = MockEvakaClock(2019, 1, 10, 12, 0)
 
     private val testFeeAlteration =
         FeeAlteration(
@@ -185,7 +186,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     }
 
     @Test
-    fun `attachment gets deleted on fee alteration deletion`() {
+    fun `attachment gets orphaned on fee alteration deletion`() {
         db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
         val attachmentId = uploadAttachment(testFeeAlterationId)
 
@@ -201,8 +202,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         )
 
         deleteFeeAlteration(testFeeAlterationId)
-
-        assertThrows<NotFound> { getAttachment(attachmentId) }
+        val attachment = db.read { tx -> tx.getAttachment(attachmentId) }
+        assertEquals(AttachmentParent.None, attachment?.attachedTo)
     }
 
     private fun createFeeAlteration(body: FeeAlteration) {
@@ -216,12 +217,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun getFeeAlterations(
         personId: PersonId
     ): List<FeeAlterationController.FeeAlterationWithPermittedActions> {
-        return feeAlterationController.getFeeAlterations(
-            dbInstance(),
-            user,
-            RealEvakaClock(),
-            personId
-        )
+        return feeAlterationController.getFeeAlterations(dbInstance(), user, clock, personId)
     }
 
     private fun deleteFeeAlteration(id: FeeAlterationId) {
@@ -232,19 +228,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         return attachmentsController.uploadFeeAlterationAttachment(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
-        )
-    }
-
-    private fun getAttachment(id: AttachmentId): ResponseEntity<Any> {
-        return attachmentsController.getAttachment(
-            dbInstance(),
-            user,
-            RealEvakaClock(),
-            id,
-            "evaka-logo.png"
         )
     }
 }

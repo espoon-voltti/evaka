@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
-class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
+class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
     @Autowired private lateinit var s3Client: S3Client
 
     @Autowired private lateinit var s3Presigner: S3Presigner
@@ -29,13 +29,13 @@ class DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = f
     @BeforeEach
     fun beforeEach() {
         documentClient =
-            DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = true))
+            S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = true))
     }
 
     @Test
     fun `redirects when not proxying through nginx`() {
         val documentClientNoProxy =
-            DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = false))
+            S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = false))
         documentClientNoProxy.upload(
             bucketEnv.data,
             Document("test", byteArrayOf(0x11, 0x22, 0x33), "text/plain")

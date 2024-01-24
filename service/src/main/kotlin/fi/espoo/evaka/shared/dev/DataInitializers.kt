@@ -585,7 +585,7 @@ fun Database.Transaction.insert(income: DevIncome): IncomeId =
         .let(::IncomeId)
 
 data class DevIncomeStatement(
-    val id: IncomeStatementId,
+    val id: IncomeStatementId = IncomeStatementId(UUID.randomUUID()),
     val personId: PersonId,
     val startDate: LocalDate,
     val type: IncomeStatementType,
@@ -605,7 +605,7 @@ RETURNING id
         .let(::IncomeStatementId)
 
 data class DevFeeAlteration(
-    val id: FeeAlterationId,
+    val id: FeeAlterationId = FeeAlterationId(UUID.randomUUID()),
     val personId: PersonId,
     val type: FeeAlterationType,
     val amount: Double,

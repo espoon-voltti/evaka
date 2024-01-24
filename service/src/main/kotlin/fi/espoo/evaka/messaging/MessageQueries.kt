@@ -1485,11 +1485,6 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThrea
         }
         .execute()
 
-    this.createUpdate<Any> {
-            sql("DELETE FROM attachment WHERE message_content_id = ${bind(contentId)}")
-        }
-        .execute()
-
     if (deleteThreads) {
         this.createUpdate<Any> {
                 sql(

@@ -13,7 +13,6 @@ import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
 import fi.espoo.evaka.messaging.getMessageAccountIdsByContentId
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentTypePattern
-import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentTypeAndExtension
 import fi.espoo.evaka.shared.ApplicationId
@@ -31,7 +30,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.util.UUID
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -49,6 +47,7 @@ class AttachmentsController(
     private val stateService: ApplicationStateService,
     private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService,
     private val accessControl: AccessControl,
+    private val attachmentsService: AttachmentService,
     evakaEnv: EvakaEnv,
     bucketEnv: BucketEnv
 ) {
@@ -78,18 +77,15 @@ class AttachmentsController(
                     )
                 }
                 handleFileUpload(
-                        dbc,
-                        user,
-                        AttachmentParent.Application(applicationId),
-                        file,
-                        defaultAllowedAttachmentContentTypes,
-                        type
-                    )
-                    .also {
-                        dbc.transaction { tx ->
-                            stateService.reCalculateDueDate(tx, clock.today(), applicationId)
-                        }
-                    }
+                    dbc,
+                    user,
+                    clock,
+                    AttachmentParent.Application(applicationId),
+                    file,
+                    type
+                ) { tx ->
+                    stateService.reCalculateDueDate(tx, clock.today(), applicationId)
+                }
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForApplication.log(
@@ -124,9 +120,9 @@ class AttachmentsController(
                 handleFileUpload(
                     dbc,
                     user,
+                    clock,
                     AttachmentParent.IncomeStatement(incomeStatementId),
-                    file,
-                    defaultAllowedAttachmentContentTypes
+                    file
                 )
             }
             .also { attachmentId ->
@@ -165,7 +161,7 @@ class AttachmentsController(
                     if (incomeId != null) AttachmentParent.Income(incomeId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncome.log(
@@ -198,13 +194,7 @@ class AttachmentsController(
                         accountId
                     )
                 }
-                handleFileUpload(
-                    dbc,
-                    user,
-                    AttachmentParent.MessageDraft(draftId),
-                    file,
-                    defaultAllowedAttachmentContentTypes
-                )
+                handleFileUpload(dbc, user, clock, AttachmentParent.MessageDraft(draftId), file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForMessageDraft.log(
@@ -239,9 +229,9 @@ class AttachmentsController(
                 handleFileUpload(
                     dbc,
                     user,
+                    clock,
                     AttachmentParent.PedagogicalDocument(documentId),
-                    file,
-                    pedagogicalDocumentAllowedAttachmentContentTypes
+                    file
                 ) { tx ->
                     pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                         tx,
@@ -286,16 +276,7 @@ class AttachmentsController(
                     )
                 }
 
-                checkAttachmentCount(dbc, attachTo, user)
-
-                handleFileUpload(
-                    dbc,
-                    user,
-                    attachTo,
-                    file,
-                    defaultAllowedAttachmentContentTypes,
-                    type
-                ) { tx ->
+                handleFileUpload(dbc, user, clock, attachTo, file, type) { tx ->
                     stateService.reCalculateDueDate(tx, clock.today(), applicationId)
                 }
             }
@@ -342,8 +323,7 @@ class AttachmentsController(
                         AttachmentParent.IncomeStatement(incomeStatementId)
                     else AttachmentParent.None
 
-                checkAttachmentCount(dbc, attachTo, user)
-                handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
@@ -381,7 +361,7 @@ class AttachmentsController(
                     if (feeAlterationId != null) AttachmentParent.FeeAlteration(feeAlterationId)
                     else AttachmentParent.None
 
-                handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+                handleFileUpload(dbc, user, clock, attachTo, file)
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForFeeAlteration.log(
@@ -400,28 +380,21 @@ class AttachmentsController(
         val count =
             db.read {
                 when (attachTo) {
-                    AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)
-                    is AttachmentParent.Application ->
-                        it.userApplicationAttachmentCount(attachTo.applicationId, user.evakaUserId)
-                    is AttachmentParent.IncomeStatement ->
-                        it.userIncomeStatementAttachmentCount(
-                            attachTo.incomeStatementId,
-                            user.evakaUserId
-                        )
-                    is AttachmentParent.Income ->
-                        it.userIncomeAttachmentCount(attachTo.incomeId, user.evakaUserId)
-                    is AttachmentParent.PedagogicalDocument ->
-                        it.userPedagogicalDocumentCount(
-                            attachTo.pedagogicalDocumentId,
-                            user.evakaUserId
-                        )
+                    is AttachmentParent.None,
+                    is AttachmentParent.Application,
+                    is AttachmentParent.IncomeStatement,
+                    is AttachmentParent.Income,
+                    is AttachmentParent.PedagogicalDocument, ->
+                        it.userAttachmentCount(user.evakaUserId, attachTo)
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
                     is AttachmentParent.FeeAlteration -> Integer.MAX_VALUE
                 }
             }
         if (count >= maxAttachmentsPerUser) {
-            throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
+            throw Forbidden(
+                "Too many uploaded files for ${user.evakaUserId}: $maxAttachmentsPerUser"
+            )
         }
     }
 
@@ -437,34 +410,48 @@ class AttachmentsController(
             .last()
 
     private fun handleFileUpload(
-        db: Database.Connection,
+        dbc: Database.Connection,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         attachTo: AttachmentParent,
         file: MultipartFile,
-        allowedContentTypes: List<ContentTypePattern>,
         type: AttachmentType? = null,
         onSuccess: ((tx: Database.Transaction) -> Unit)? = null
     ): AttachmentId {
-        val fileName = getAndCheckFileName(file)
-        val contentType =
-            checkFileContentTypeAndExtension(
-                file.inputStream,
-                getFileExtension(fileName),
-                allowedContentTypes
-            )
-
-        val id = AttachmentId(UUID.randomUUID())
-        db.transaction { tx ->
-            tx.insertAttachment(user, id, fileName, contentType, attachTo, type = type)
-            documentClient.upload(
-                filesBucket,
-                Document(name = id.toString(), bytes = file.bytes, contentType = contentType)
-            )
-            if (onSuccess != null) {
-                onSuccess(tx)
-            }
+        if (user is AuthenticatedUser.Citizen) {
+            checkAttachmentCount(dbc, attachTo, user)
         }
 
+        val allowedContentTypes =
+            when (attachTo) {
+                is AttachmentParent.PedagogicalDocument ->
+                    pedagogicalDocumentAllowedAttachmentContentTypes
+                else -> defaultAllowedAttachmentContentTypes
+            }
+        val fileName = getAndCheckFileName(file)
+        val contentType =
+            file.inputStream.use { stream ->
+                checkFileContentTypeAndExtension(
+                    stream,
+                    getFileExtension(fileName),
+                    allowedContentTypes
+                )
+            }
+
+        val id =
+            attachmentsService.saveOrphanAttachment(
+                dbc,
+                user,
+                clock,
+                fileName = fileName,
+                bytes = file.bytes,
+                contentType = contentType,
+                type = type
+            )
+        dbc.transaction { tx ->
+            tx.associateOrphanAttachments(user.evakaUserId, attachTo, listOf(id))
+            onSuccess?.invoke(tx)
+        }
         return id
     }
 
@@ -505,8 +492,7 @@ class AttachmentsController(
                                 Action.Attachment.READ_INCOME_ATTACHMENT,
                                 attachment.id
                             )
-                        is AttachmentParent.IncomeStatement,
-                        is AttachmentParent.None ->
+                        is AttachmentParent.IncomeStatement ->
                             accessControl.requirePermissionFor(
                                 it,
                                 user,
@@ -554,6 +540,14 @@ class AttachmentsController(
                                 Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
                                 attachment.id
                             )
+                        is AttachmentParent.None ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_ORPHAN_ATTACHMENT,
+                                attachment.id
+                            )
                     }.exhaust()
                     attachment
                 }
@@ -582,82 +576,84 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                val attachment =
-                    it.getAttachment(attachmentId)
-                        ?: throw NotFound("Attachment $attachmentId not found")
-                when (attachment.attachedTo) {
-                    is AttachmentParent.Application ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
-                            attachment.id
-                        )
-                    is AttachmentParent.Income ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_INCOME_ATTACHMENT,
-                            attachment.id
-                        )
-                    is AttachmentParent.IncomeStatement,
-                    is AttachmentParent.None ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
-                            attachment.id
-                        )
-                    is AttachmentParent.MessageDraft -> {
-                        val accountId =
-                            it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                            accountId!!
-                        )
-                    }
-                    is AttachmentParent.MessageContent ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                            attachment.id
-                        )
-                    is AttachmentParent.PedagogicalDocument ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
-                            attachment.id
-                        )
-                    is AttachmentParent.FeeAlteration ->
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
-                            attachment.id
-                        )
-                }.exhaust()
-                deleteAttachment(it, attachment.id)
-                attachment
-            }
+            dbc.read {
+                    val attachment =
+                        it.getAttachment(attachmentId)
+                            ?: throw NotFound("Attachment $attachmentId not found")
+                    when (attachment.attachedTo) {
+                        is AttachmentParent.Application ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.Income ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_INCOME_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.IncomeStatement ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.MessageDraft -> {
+                            val accountId =
+                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS,
+                                accountId!!
+                            )
+                        }
+                        is AttachmentParent.MessageContent ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.PedagogicalDocument ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.FeeAlteration ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
+                                attachment.id
+                            )
+                        is AttachmentParent.None ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.DELETE_ORPHAN_ATTACHMENT,
+                                attachment.id
+                            )
+                    }.exhaust()
+                    attachment
+                }
+                .also { attachment -> attachmentsService.deleteAttachment(dbc, attachment.id) }
         }
         Audit.AttachmentsDelete.log(targetId = attachmentId)
-    }
-
-    fun deleteAttachment(tx: Database.Transaction, attachmentId: AttachmentId) {
-        tx.deleteAttachment(attachmentId)
-        documentClient.delete(filesBucket, "$attachmentId")
     }
 
     private val defaultAllowedAttachmentContentTypes =

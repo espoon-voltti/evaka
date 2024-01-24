@@ -6,10 +6,9 @@ package fi.espoo.evaka.invoicing.controller
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.attachment.associateIncomeAttachments
-import fi.espoo.evaka.attachment.deleteAttachment
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
 import fi.espoo.evaka.invoicing.data.getIncome
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
@@ -23,7 +22,6 @@ import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.getIncomeNotifications
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -52,16 +50,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/incomes")
 class IncomeController(
-    private val documentClient: DocumentService,
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     private val mapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl,
-    bucketEnv: BucketEnv
+    private val accessControl: AccessControl
 ) {
-    private val filesBucket = bucketEnv.attachments
-
     @GetMapping
     fun getIncome(
         db: Database,
@@ -138,9 +132,9 @@ class IncomeController(
                     val validIncome = validateIncome(income.copy(id = id), incomeTypes)
                     tx.splitEarlierIncome(validIncome.personId, period)
                     tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
-                    tx.associateIncomeAttachments(
+                    tx.associateOrphanAttachments(
                         user.evakaUserId,
-                        id,
+                        AttachmentParent.Income(id),
                         income.attachments.map { it.id }
                     )
                     asyncJobRunner.plan(
@@ -241,11 +235,6 @@ class IncomeController(
                         incomeId
                     ) ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
-
-                existing.attachments.map {
-                    tx.deleteAttachment(it.id)
-                    documentClient.delete(filesBucket, "${it.id}")
-                }
                 tx.deleteIncome(incomeId)
 
                 asyncJobRunner.plan(

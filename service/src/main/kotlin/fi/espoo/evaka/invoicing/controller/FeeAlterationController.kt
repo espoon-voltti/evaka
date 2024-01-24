@@ -5,15 +5,13 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.BucketEnv
-import fi.espoo.evaka.attachment.associateFeeAlterationAttachments
-import fi.espoo.evaka.attachment.deleteAttachment
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteFeeAlteration
 import fi.espoo.evaka.invoicing.data.getFeeAlteration
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsForPerson
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -40,12 +38,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl,
-    private val documentClient: DocumentService,
-    bucketEnv: BucketEnv
+    private val accessControl: AccessControl
 ) {
-    private val filesBucket = bucketEnv.attachments
-
     @GetMapping
     fun getFeeAlterations(
         db: Database,
@@ -109,9 +103,9 @@ class FeeAlterationController(
                     clock,
                     feeAlteration.copy(id = id, updatedBy = user.evakaUserId)
                 )
-                tx.associateFeeAlterationAttachments(
+                tx.associateOrphanAttachments(
                     user.evakaUserId,
-                    id,
+                    AttachmentParent.FeeAlteration(id),
                     feeAlteration.attachments.map { it.id }
                 )
                 asyncJobRunner.plan(
@@ -192,14 +186,6 @@ class FeeAlterationController(
                     feeAlterationId
                 )
                 val existing = tx.getFeeAlteration(feeAlterationId)
-
-                existing?.let { feeAlteration ->
-                    feeAlteration.attachments.map {
-                        tx.deleteAttachment(it.id)
-                        documentClient.delete(filesBucket, "${it.id}")
-                    }
-                }
-
                 tx.deleteFeeAlteration(feeAlterationId)
 
                 existing?.let {

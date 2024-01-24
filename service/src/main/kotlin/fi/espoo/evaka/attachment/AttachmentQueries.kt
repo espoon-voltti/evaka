@@ -6,280 +6,282 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.BadRequest
-import java.lang.IllegalArgumentException
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import kotlin.reflect.full.declaredMemberProperties
+
+data class AttachmentForeignKeys(
+    val applicationId: ApplicationId?,
+    val feeAlterationId: FeeAlterationId?,
+    val incomeId: IncomeId?,
+    val incomeStatementId: IncomeStatementId?,
+    val messageContentId: MessageContentId?,
+    val messageDraftId: MessageDraftId?,
+    val pedagogicalDocumentId: PedagogicalDocumentId?,
+) {
+    constructor(
+        parent: AttachmentParent
+    ) : this(
+        applicationId = (parent as? AttachmentParent.Application)?.applicationId,
+        feeAlterationId = (parent as? AttachmentParent.FeeAlteration)?.feeAlterationId,
+        incomeId = (parent as? AttachmentParent.Income)?.incomeId,
+        incomeStatementId = (parent as? AttachmentParent.IncomeStatement)?.incomeStatementId,
+        messageContentId = (parent as? AttachmentParent.MessageContent)?.messageContentId,
+        messageDraftId = (parent as? AttachmentParent.MessageDraft)?.draftId,
+        pedagogicalDocumentId =
+            (parent as? AttachmentParent.PedagogicalDocument)?.pedagogicalDocumentId,
+    )
+
+    init {
+        require(allIds().filterNotNull().size <= 1) { "Expected 0-1 ids, got $this" }
+    }
+
+    private fun allIds(): List<Id<*>?> =
+        listOf(
+            applicationId,
+            feeAlterationId,
+            incomeId,
+            incomeStatementId,
+            messageContentId,
+            messageDraftId,
+            pedagogicalDocumentId
+        )
+
+    fun parent(): AttachmentParent =
+        when {
+            applicationId != null -> AttachmentParent.Application(applicationId)
+            feeAlterationId != null -> AttachmentParent.FeeAlteration(feeAlterationId)
+            incomeId != null -> AttachmentParent.Income(incomeId)
+            incomeStatementId != null -> AttachmentParent.IncomeStatement(incomeStatementId)
+            messageContentId != null -> AttachmentParent.MessageContent(messageContentId)
+            messageDraftId != null -> AttachmentParent.MessageDraft(messageDraftId)
+            pedagogicalDocumentId != null ->
+                AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
+            allIds().all { it == null } -> AttachmentParent.None
+            else -> error("Unhandled AttachmentParent type")
+        }
+
+    companion object {
+        val idFieldCount = AttachmentForeignKeys(AttachmentParent.None).allIds().size
+
+        init {
+            check(AttachmentForeignKeys::class.declaredMemberProperties.size == idFieldCount) {
+                "AttachmentForeignKeys.allIds() must include all id fields"
+            }
+        }
+    }
+}
 
 fun Database.Transaction.insertAttachment(
     user: AuthenticatedUser,
-    id: AttachmentId,
+    now: HelsinkiDateTime,
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
     type: AttachmentType?
-) {
-    data class AttachmentParentColumn(
-        val applicationId: ApplicationId? = null,
-        val incomeStatementId: IncomeStatementId? = null,
-        val incomeId: IncomeId? = null,
-        val messageDraftId: MessageDraftId? = null,
-        val pedagogicalDocumentId: PedagogicalDocumentId? = null,
-        val feeAlterationId: FeeAlterationId? = null
-    )
-
-    // language=sql
+): AttachmentId {
+    check(AttachmentForeignKeys.idFieldCount == 7) {
+        "Unexpected AttachmentForeignKeys field count"
+    }
+    require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-        VALUES (:id, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
+        INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
+        VALUES (:now, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
+        RETURNING id
         """
-            .trimIndent()
-
-    this.createUpdate(sql)
-        .bind("id", id)
+    return this.createUpdate(sql)
+        .bind("now", now)
         .bind("name", name)
         .bind("contentType", contentType)
-        .bindKotlin(
-            when (attachTo) {
-                is AttachmentParent.Application ->
-                    AttachmentParentColumn(applicationId = attachTo.applicationId)
-                is AttachmentParent.IncomeStatement ->
-                    AttachmentParentColumn(incomeStatementId = attachTo.incomeStatementId)
-                is AttachmentParent.Income -> AttachmentParentColumn(incomeId = attachTo.incomeId)
-                is AttachmentParent.MessageDraft ->
-                    AttachmentParentColumn(messageDraftId = attachTo.draftId)
-                is AttachmentParent.None -> AttachmentParentColumn()
-                is AttachmentParent.MessageContent ->
-                    throw IllegalArgumentException("attachments are saved via draft")
-                is AttachmentParent.PedagogicalDocument ->
-                    AttachmentParentColumn(pedagogicalDocumentId = attachTo.pedagogicalDocumentId)
-                is AttachmentParent.FeeAlteration ->
-                    AttachmentParentColumn(feeAlterationId = attachTo.feeAlterationId)
-            }
-        )
+        .bindKotlin(AttachmentForeignKeys(attachTo))
         .bind("userId", user.evakaUserId)
         .bind("type", type ?: "")
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<AttachmentId>()
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
-    this.createQuery(
-            """
-        SELECT id, name, content_type, uploaded_by, application_id, income_statement_id, message_draft_id, message_content_id, pedagogical_document_id
+    createQuery<Any> {
+            check(AttachmentForeignKeys.idFieldCount == 7) {
+                "Unexpected AttachmentForeignKeys field count"
+            }
+            sql(
+                """
+        SELECT
+            id, name, content_type, uploaded_by,
+            application_id,
+            fee_alteration_id,
+            income_id,
+            income_statement_id,
+            message_content_id,
+            message_draft_id,
+            pedagogical_document_id
         FROM attachment
-        WHERE id = :id
+        WHERE id = ${bind(id)}
         """
-        )
-        .bind("id", id)
+            )
+        }
         .exactlyOneOrNull {
-            val applicationId = column<ApplicationId?>("application_id")
-            val incomeStatementId = column<IncomeStatementId?>("income_statement_id")
-            val messageDraftId = column<MessageDraftId?>("message_draft_id")
-            val messageContentId = column<MessageContentId?>("message_content_id")
-            val pedagogicalDocumentId = column<PedagogicalDocumentId?>("pedagogical_document_id")
-            val attachedTo =
-                if (applicationId != null) {
-                    AttachmentParent.Application(applicationId)
-                } else if (incomeStatementId != null) {
-                    AttachmentParent.IncomeStatement(incomeStatementId)
-                } else if (messageDraftId != null) {
-                    AttachmentParent.MessageDraft(messageDraftId)
-                } else if (messageContentId != null) {
-                    AttachmentParent.MessageContent(messageContentId)
-                } else if (pedagogicalDocumentId != null) {
-                    AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
-                } else {
-                    AttachmentParent.None
-                }
-
             Attachment(
                 id = column("id"),
                 name = column("name"),
                 contentType = column("content_type"),
-                attachedTo = attachedTo
+                attachedTo = row<AttachmentForeignKeys>().parent()
             )
         }
 
-fun Database.Transaction.deleteAttachment(id: AttachmentId) {
-    this.createUpdate("DELETE FROM attachment WHERE id = :id").bind("id", id).execute()
-}
-
-fun Database.Transaction.deleteAttachmentsByApplicationAndType(
+fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: AttachmentType,
     userId: EvakaUserId
-): List<AttachmentId> {
-    return this.createQuery(
+): List<AttachmentId> =
+    createQuery(
             """
-            DELETE FROM attachment 
+            UPDATE attachment
+            SET application_id = NULL
             WHERE application_id = :applicationId 
             AND type = :type 
             AND uploaded_by = :userId
             RETURNING id
         """
-                .trimIndent()
         )
         .bind("applicationId", applicationId)
         .bind("type", type)
         .bind("userId", userId)
         .toList<AttachmentId>()
-}
 
-fun Database.Transaction.associateAttachments(
-    personId: PersonId,
-    incomeStatementId: IncomeStatementId,
-    attachmentIds: List<AttachmentId>
-) {
-    val numRows =
-        createUpdate(
+/** Changes the parent of *all attachments* that match the given predicate */
+private fun Database.Transaction.changeParent(
+    newParent: AttachmentParent,
+    predicate: Predicate<DatabaseTable.Attachment>
+): Int =
+    createUpdate<DatabaseTable.Attachment> {
+            val fks = AttachmentForeignKeys(newParent)
+            check(AttachmentForeignKeys.idFieldCount == 7) {
+                "Unexpected AttachmentForeignKeys field count"
+            }
+            sql(
                 """
-        UPDATE attachment SET income_statement_id = :incomeStatementId
-        WHERE id = ANY(:attachmentIds)
-          AND income_statement_id IS NULL and application_id IS NULL
-          AND uploaded_by = :personId
-        """
-                    .trimIndent()
+UPDATE attachment
+SET
+    application_id = ${bind(fks.applicationId)},
+    fee_alteration_id = ${bind(fks.feeAlterationId)},
+    income_id = ${bind(fks.incomeId)},
+    income_statement_id = ${bind(fks.incomeStatementId)},
+    message_content_id = ${bind(fks.messageContentId)},
+    message_draft_id = ${bind(fks.messageDraftId)},
+    pedagogical_document_id = ${bind(fks.pedagogicalDocumentId)}
+WHERE ${predicate(predicate.forTable("attachment"))}
+"""
             )
-            .bind("incomeStatementId", incomeStatementId)
-            .bind("attachmentIds", attachmentIds)
-            .bind("personId", personId)
-            .execute()
-
-    if (numRows != attachmentIds.size) {
-        throw BadRequest("Cannot associate all requested attachments")
-    }
-}
-
-fun Database.Transaction.associateIncomeAttachments(
-    personId: EvakaUserId,
-    incomeId: IncomeId,
-    attachmentIds: List<AttachmentId>
-) {
-    val numRows =
-        createUpdate(
-                """
-        UPDATE attachment SET income_id = :incomeId
-        WHERE id = ANY(:attachmentIds)
-          AND income_id IS NULL
-          AND uploaded_by = :personId
-        """
-                    .trimIndent()
-            )
-            .bind("incomeId", incomeId)
-            .bind("attachmentIds", attachmentIds)
-            .bind("personId", personId)
-            .execute()
-
-    if (numRows < attachmentIds.size) {
-        throw BadRequest("Cannot associate all requested attachments")
-    }
-}
-
-fun Database.Transaction.dissociateAllPersonsAttachments(
-    personId: PersonId,
-    incomeStatementId: IncomeStatementId
-) {
-    createUpdate(
-            """
-        UPDATE attachment SET income_statement_id = NULL
-        WHERE income_statement_id = :incomeStatementId
-          AND uploaded_by = :personId
-        """
-                .trimIndent()
-        )
-        .bind("incomeStatementId", incomeStatementId)
-        .bind("personId", personId)
+        }
         .execute()
-}
 
-fun Database.Read.userUnparentedAttachmentCount(userId: EvakaUserId): Int {
-    return this.createQuery(
-            """
-        SELECT COUNT(*) FROM attachment
-        WHERE application_id IS NULL
-          AND income_statement_id IS NULL
-          AND uploaded_by = :userId
-        """
-        )
-        .bind("userId", userId)
-        .exactlyOne<Int>()
-}
-
-fun Database.Read.userApplicationAttachmentCount(
-    applicationId: ApplicationId,
-    userId: EvakaUserId
-): Int {
-    return this.createQuery(
-            "SELECT COUNT(*) FROM attachment WHERE application_id = :applicationId AND uploaded_by = :userId"
-        )
-        .bind("applicationId", applicationId)
-        .bind("userId", userId)
-        .exactlyOne<Int>()
-}
-
-fun Database.Read.userIncomeStatementAttachmentCount(
-    incomeStatementId: IncomeStatementId,
-    userId: EvakaUserId
-): Int {
-    return this.createQuery(
-            "SELECT COUNT(*) FROM attachment WHERE income_statement_id = :incomeStatementId AND uploaded_by = :userId"
-        )
-        .bind("incomeStatementId", incomeStatementId)
-        .bind("userId", userId)
-        .exactlyOne<Int>()
-}
-
-fun Database.Read.userIncomeAttachmentCount(incomeId: IncomeId, userId: EvakaUserId): Int {
-    return this.createQuery(
-            "SELECT COUNT(*) FROM attachment WHERE income_id = :incomeId AND uploaded_by = :userId"
-        )
-        .bind("incomeId", incomeId)
-        .bind("userId", userId)
-        .exactlyOne<Int>()
-}
-
-fun Database.Read.userPedagogicalDocumentCount(
-    pedagogicalDocumentId: PedagogicalDocumentId,
-    userId: EvakaUserId
-): Int {
-    return this.createQuery(
-            "SELECT COUNT(*) FROM attachment WHERE pedagogical_document_id = :pedagogicalDocumentId AND uploaded_by = :userId"
-        )
-        .bind("pedagogicalDocumentId", pedagogicalDocumentId)
-        .bind("userId", userId)
-        .exactlyOne<Int>()
-}
-
-fun Database.Transaction.associateFeeAlterationAttachments(
-    personId: EvakaUserId,
-    feeAlterationId: FeeAlterationId,
-    attachmentIds: List<AttachmentId>
+/**
+ * Associates *orphan* attachments with a new parent.
+ *
+ * If any of the given attachments is not found or already has a parent, this function fails with an
+ * error.
+ */
+fun Database.Transaction.associateOrphanAttachments(
+    uploadedBy: EvakaUserId,
+    newParent: AttachmentParent,
+    attachments: Collection<AttachmentId>
 ) {
+    val isOrphan = AttachmentParent.None.toPredicate()
     val numRows =
-        createUpdate(
-                """
-        UPDATE attachment SET fee_alteration_id = :feeAlterationId
-        WHERE id = ANY(:attachmentIds)
-          AND income_id IS NULL
-          AND uploaded_by = :personId
-        """
-                    .trimIndent()
-            )
-            .bind("feeAlterationId", feeAlterationId)
-            .bind("attachmentIds", attachmentIds)
-            .bind("personId", personId)
-            .execute()
-
-    if (numRows < attachmentIds.size) {
+        changeParent(
+            newParent = newParent,
+            Predicate<DatabaseTable.Attachment> {
+                    where(
+                        "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
+                    )
+                }
+                .and(isOrphan)
+        )
+    if (numRows != attachments.size) {
         throw BadRequest("Cannot associate all requested attachments")
     }
 }
+
+/** Dissociates all attachments from the given parent, so that they become orphans. */
+fun Database.Transaction.dissociateAttachmentsOfParent(
+    uploadedBy: EvakaUserId,
+    parent: AttachmentParent
+): Int =
+    changeParent(
+        newParent = AttachmentParent.None,
+        Predicate<DatabaseTable.Attachment> { where("$it.uploaded_by = ${bind(uploadedBy)}") }
+            .and(parent.toPredicate())
+    )
+
+private fun AttachmentParent.toPredicate() =
+    Predicate<DatabaseTable.Attachment> {
+        check(AttachmentForeignKeys.idFieldCount == 7) {
+            "Unexpected AttachmentForeignKeys field count"
+        }
+        when (this@toPredicate) {
+            is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
+            is AttachmentParent.FeeAlteration ->
+                where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
+            is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
+            is AttachmentParent.IncomeStatement ->
+                where("$it.income_statement_id = ${bind(incomeStatementId)}")
+            is AttachmentParent.MessageContent ->
+                where("$it.message_content_id = ${bind(messageContentId)}")
+            is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
+            is AttachmentParent.PedagogicalDocument ->
+                where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
+            is AttachmentParent.None ->
+                where(
+                    """
+$it.application_id IS NULL
+AND $it.fee_alteration_id IS NULL
+AND $it.income_id IS NULL
+AND $it.income_statement_id IS NULL
+AND $it.message_content_id IS NULL
+AND $it.message_draft_id IS NULL
+AND $it.pedagogical_document_id IS NULL
+            """
+                )
+        }
+    }
+
+fun Database.Read.userAttachmentCount(userId: EvakaUserId, parent: AttachmentParent): Int =
+    createQuery<Any> {
+            sql(
+                """
+SELECT count(*)
+FROM attachment
+WHERE uploaded_by = ${bind(userId)}
+AND ${predicate(parent.toPredicate().forTable("attachment"))}
+"""
+            )
+        }
+        .exactlyOne<Int>()
+
+fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<AttachmentId> =
+    createQuery<DatabaseTable.Attachment> {
+            sql(
+                """
+SELECT id
+FROM attachment
+WHERE created < ${bind(olderThan)}
+AND ${predicate(AttachmentParent.None.toPredicate().forTable("attachment"))}
+"""
+            )
+        }
+        .toList()

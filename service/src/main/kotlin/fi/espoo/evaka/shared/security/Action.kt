@@ -820,6 +820,7 @@ sealed interface Action {
 
     enum class Attachment(override vararg val defaultRules: ScopedActionRule<in AttachmentId>) :
         ScopedAction<AttachmentId> {
+        READ_ORPHAN_ATTACHMENT(IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         READ_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(),
@@ -839,6 +840,7 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment()
         ),
         READ_FEE_ALTERATION_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        DELETE_ORPHAN_ATTACHMENT(IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(),
