@@ -332,6 +332,19 @@ export class UnitStaffAttendancesTable extends Element {
       this.page.findByDataQa('staff-attendance-details-modal')
     )
   }
+
+  async assertTooltip(
+    row: number,
+    date: LocalDate,
+    expectedTooltipText: string
+  ): Promise<void> {
+    const cell = this.#attendanceCell(date, row)
+    await cell.hover()
+
+    await cell
+      .findByDataQa('attendance-tooltip')
+      .assertTextEquals(expectedTooltipText)
+  }
 }
 
 export class UnitChildReservationsTable extends Element {

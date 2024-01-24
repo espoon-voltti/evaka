@@ -2069,7 +2069,8 @@ export class Fixture {
       arrived: HelsinkiDateTime.now(),
       departed: null,
       occupancyCoefficient: 7,
-      type: 'PRESENT'
+      type: 'PRESENT',
+      departedAutomatically: false
     })
   }
 

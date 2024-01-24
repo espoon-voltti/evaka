@@ -255,6 +255,34 @@ describe('Realtime staff attendances', () => {
         attendances: [['07:00', '12:15']]
       })
     })
+
+    test('Automatically closed attendance is indicated', async () => {
+      const yesterday = mockedToday.subDays(1)
+
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          employeeId: groupStaff.id,
+          groupId,
+          type: 'OVERTIME',
+          arrived: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          departed: yesterday.toHelsinkiDateTime(LocalTime.of(20, 0)),
+          departedAutomatically: true
+        })
+        .save()
+
+      attendancesSection = await openAttendancesSection()
+      await attendancesSection.selectGroup(groupId)
+      const staffAttendances = attendancesSection.staffAttendances
+
+      await staffAttendances.assertTableRow({
+        rowIx: 0,
+        nth: 1,
+        name: staffName(groupStaff),
+        attendances: [['07:00', '20:00(*)']]
+      })
+
+      await staffAttendances.assertTooltip(0, yesterday, 'Automaattikatkaistu')
+    })
   })
   describe('Details modal', () => {
     let staffAttendances: UnitStaffAttendancesTable

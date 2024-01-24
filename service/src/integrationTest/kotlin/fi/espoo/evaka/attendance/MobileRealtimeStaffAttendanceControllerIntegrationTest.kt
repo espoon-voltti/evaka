@@ -1073,7 +1073,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                         departed = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
                         occupancyCoefficient = occupancyCoefficientSeven,
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
+                        departedAutomatically = false
                     )
                 )
             }
@@ -1087,7 +1088,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         arrived = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
                         departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
                         occupancyCoefficient = occupancyCoefficientSeven,
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
+                        departedAutomatically = false
                     )
                 )
             }

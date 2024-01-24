@@ -2100,7 +2100,8 @@ data class DevStaffAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal = BigDecimal(7),
-    val type: StaffAttendanceType = StaffAttendanceType.PRESENT
+    val type: StaffAttendanceType = StaffAttendanceType.PRESENT,
+    val departedAutomatically: Boolean = false
 )
 
 data class DevDailyServiceTimes(

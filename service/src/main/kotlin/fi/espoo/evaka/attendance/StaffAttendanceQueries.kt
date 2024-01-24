@@ -316,6 +316,7 @@ data class RawAttendance(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
+    val departedAutomatically: Boolean
 )
 
 fun Database.Read.getStaffAttendancesForDateRange(
@@ -334,7 +335,8 @@ SELECT
     sa.type,
     emp.first_name,
     emp.last_name,
-    soc.coefficient AS currentOccupancyCoefficient
+    soc.coefficient AS currentOccupancyCoefficient,
+    sa.departed_automatically
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
@@ -365,7 +367,8 @@ SELECT
     sa.type,
     emp.first_name,
     emp.last_name,
-    soc.coefficient AS currentOccupancyCoefficient
+    soc.coefficient AS currentOccupancyCoefficient,
+    sa.departed_automatically
 FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
@@ -396,7 +399,8 @@ SELECT
     sa.type,
     emp.first_name,
     emp.last_name,
-    0 AS currentOccupancyCoefficient
+    0 AS currentOccupancyCoefficient,
+    sa.departed_automatically
 FROM staff_attendance_realtime sa
 JOIN employee emp ON sa.employee_id = emp.id
 WHERE sa.employee_id = ANY(:employeeIds) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
@@ -441,7 +445,7 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
 ): List<ExternalAttendance> =
     createQuery(
             """
-    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient
+    SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
     FROM staff_attendance_external sae
     JOIN daycare_group dg on sae.group_id = dg.id
     WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && tstzrange(:start, :end)
