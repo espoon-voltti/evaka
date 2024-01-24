@@ -25,7 +25,6 @@ const machineUser: EvakaSessionUser = {
 }
 
 export type UserType =
-  | 'ENDUSER'
   | 'EMPLOYEE'
   | 'MOBILE'
   | 'SYSTEM'
@@ -33,7 +32,6 @@ export type UserType =
   | 'CITIZEN_WEAK'
 
 export type UserRole =
-  | 'ENDUSER'
   | 'CITIZEN_WEAK'
   | 'ADMIN'
   | 'DIRECTOR'

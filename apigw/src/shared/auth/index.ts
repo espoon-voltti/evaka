@@ -51,7 +51,6 @@ export function createUserHeader(user: EvakaSessionUser): string {
       switch (user.userType) {
         case 'CITIZEN_WEAK':
           return { type: 'citizen_weak', id: user.id }
-        case 'ENDUSER':
         case 'CITIZEN_STRONG':
           return { type: 'citizen', id: user.id }
         case 'EMPLOYEE':

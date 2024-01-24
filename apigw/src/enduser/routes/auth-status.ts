@@ -11,7 +11,6 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
   switch (user.userType) {
     case 'CITIZEN_WEAK':
       return 'WEAK'
-    case 'ENDUSER':
     case 'CITIZEN_STRONG':
       return 'STRONG'
     default:
