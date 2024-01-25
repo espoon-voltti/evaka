@@ -14,7 +14,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Success } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -98,17 +98,10 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const groupOptions = useMemo(
     () =>
-      selectedGroupId.type === 'all'
-        ? combine(staffMember, unitInfoResponse).map(
-            ([staffMember, unitInfoResponse]) => {
-              const groupIds = staffMember?.groupIds ?? []
-              return unitInfoResponse.groups
-                .filter((g) => groupIds.length === 0 || groupIds.includes(g.id))
-                .map(({ id }) => id)
-            }
-          )
-        : Success.of([]),
-    [selectedGroupId, staffMember, unitInfoResponse]
+      unitInfoResponse.map((unitInfoResponse) =>
+        unitInfoResponse.groups.map(({ id }) => id)
+      ),
+    [unitInfoResponse]
   )
 
   useEffect(() => {
