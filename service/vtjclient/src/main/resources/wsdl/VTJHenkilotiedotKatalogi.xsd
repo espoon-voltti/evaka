@@ -10,1295 +10,1638 @@ https://github.com/Opetushallitus/rajapinnat/blob/bc918e52057f0a7c2fba7549168a5d
 but these might change at a later date.
 -->
 
-<!-- Evaka: Retrieved from: https://vrk.fi/tekninen-toteutus -->
-<!-- Tekija: Vaestorekisterikeskus. Paivitetty viimeksi 6.10.2017-->
+<!-- Tekija: DVV. Paivitetty viimeksi 1.6.2023 -->
 <xs:schema xmlns="http://xml.vrk.fi/schema/vtj/henkilotiedot/1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xml.vrk.fi/schema/vtj/henkilotiedot/1">
-    <xs:annotation>
-        <xs:documentation>Tama skeema kuvaa vtj:n henkilotiedoissa esiintyvat xml-tietotyypit</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 6.10.2017 Lisatty AsukasLkmTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 26.9.2017 Tarkennettu EdunvalvontavaltuutusTietoTyypin kuvausta</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 7.3.2017 Teksti120Tyyppi, AsiaIdTyyppi, PaatosNumeroTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 7.12.2016 Lisatty HuollonjakokoodiTyyppi2</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 23.11.2016 Tarkennettu HuollonjakokoodiTyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 14.10.2016 Lisatty HuollettavaLkmTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 12.5.2016 Lisatty Kielikoodi3Tyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 20.4.2016 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 11.3.2016 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 27.1.2016 Lisatty SyntymavaltioUSATietokoodiTyyppi ja USAnKansalaisuusTietokoodiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 18.11.2015 Paivitetty KatuNumeroTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 11.9.2015 Paivitetty ValtioNimiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 9.6.2015 Lisatty VoimassaolotekstiTyyppi ja KieltokoodiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 5.6.2015 Lisatty KieltoTietoTyypin tyhja selite</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 4.5.2015. Lisatty uskontokuntalajiTyypiksi tyhja</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 26.3.2015. Pidennetty Postiosoitetyyppi 100 merkkiin</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 3.2.2015. Lisatty uskontokuntalajiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 23.4.2014 tarkennettu AsuinpaikkatunnusTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 2.12.2013. Lisatty PrakennustunnusTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 5.9.2013. Tarkennettu AsuinpaikanTunnusTyyppia ulkomailla asumisella</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 29.07.2013. Lisatty AsuinpaikanTunnusTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 29.05.2013. Lisatty PaattymistapaTekstiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 21.5.2013 Tarkennettu huostaanottotyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 11.12.2012. Lisatty IlmoitusSallittuTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 26.7.2012. Paivitetty HuollonjakokoodiTyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 9.3.2012. Tarkennettu AsuminenPysyvyysTekstiTyyppia</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 24.11.2011. Lisatty UlkomainenHenkiloTunnusTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 13.09.2011. Lisatty KieliTietokoodi2Tyyppi ja paivitetty paluukoodeja</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 08.02.2011. Lisatty EnemKieliKoodiTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 15.12.2010. Lisatty paluukoodi 0018, Henkilo on alle 15 vuotias</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 26.10.2009. Lisatty HuostaanottoTietoTyyppi</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 13.08.2009. Lisatty uudet tietotyypit, RakennusLkm, KiinteistoyksikkoLkm, Kayttotarkoituskoodi, Teksti100, HuoltajaLkm</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 16.03.2009. Tarkennettu HenkilosuhdelajikoodiTyyppia lisaamalla huoltosuhteen lajia kuvaavat koodit.</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 15.01.2009. Lisatty uusi tietotyyppi Viranomaiskoodi6Tyyppi.</xs:documentation>
-        <xs:documentation>Paivitetty viimeksi 11.06.2008. Lisatty tietotyyppiin PaluukoodiTekstiTyyppi uusi teksti Pakollinen hakuehto puuttuu. / Obligatoriskt sokkriteriet fattas.</xs:documentation>
-        <xs:documentation>Paivitetty 08.05.2008. Lisatty tietotyyppiin PaluukoodiTekstiTyyppi uusi arvo, 0017.</xs:documentation>
-        <xs:documentation>Paivitetty 22.11.2007. Lisatty uusi tietotyyppi EdunvalvontavaltuutusTietoTyyppi ja lisatty tietotyyppiin HenkilosuhdelajikoodiTyyppi lajikoodi 10.</xs:documentation>
-    </xs:annotation>
-    <!-- Tietotyypit aakkosjarjestyksessa -->
-    <xs:simpleType name="AanestysaluenumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Aanestysalueen tunniste. Perinteisesti on kaytetty muotoa, jossa aanestysalueet numeroidaan 1:sta ylospain, kaytetaan etunollia (esim. 001, 002). Joissain kunnissa aanestysalue on jaettu, jolloin numeron jalkeen kaytetaan jakokirjainta A, B, jne. Muoto numero tai iso kirjain 0-4 kertaa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9A-Zï¿½ï¿½ï¿½]{0,4})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AlkutapakoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Lajikoodin 02 henkilosuhteen solmimistapa. Mahdolliset arvot: tyhja, 1=kirkollinen vihkiminen, 2=siviilivihkiminen, 3=vihkitapa ei tiedossa, 4=parisuhteen rekisterointi, 5 = parisuhde avioliitoksi, 6 = avioliitto parisuhteeksi</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-            <xs:enumeration value="4"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AlkutapaTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Lajikoodin 02 henkilosuhteen (avioliitto tai rekisteroity parisuhde) solmimistapa selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AmmattiNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon ilmoittama ammatti. Muoto 0-35 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="35"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsiaIdTyyppi">
-        <xs:annotation>
-            <xs:documentation>Rekisterinpitajan tai muun viranomaisen asiaId tyyppi 0 - 15 numeroa, voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,15})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsiakasinfoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Sisaltaa tietoa asiakkaille vtj:n toiminnasta, mm. paivamaaran, kellonajan ja viestin, muoto: pp.kk.vvvv klo tt:mm teksti. Muoto 0-480 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="480"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsuinpaikkatunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Asuinpaikantunnus palautetaan muodossa nnnnnnnnnnOPHHHJ, jossa nnnnnnnnnn=VTJ-PRT, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-16 merkkia.Ulkomailla asuminen on 14 merkkiï¿½ 200+valtiokoodi+00000000.nk. laitososoitteen asuinpaikantunnusta ei nayteta.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="16"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsukasLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-4 numeroa. Henkilon kanssa samassa taloudessa asuvien alaikaisten lukumaara (kaikki, vakinaiset tai tilapaiset).</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,4})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsuminenPysyvyysTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, 1=vakinaista, 2=tilapaista</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="AsuminenPysyvyysTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, Vakinainen, Varaktig, Tilapï¿½inen, Tillfï¿½llig</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="EdunvalvontaTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto siita onko paamies edunvalvonnassa. Mahdolliset arvot: tyhja = henkilo ei ole vtj:ssa edunvalvonnassa, 1= henkilon on edunvalvonnassa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="EdunvalvontavaltuutusTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto siita onko paamiehella maistraatissa vahvistettu edunvalvontavaltuutus. Mahdolliset arvot: tyhja = henkilolla ei ole vtj:ssa edunvalvontavaltuutusta, 1= henkilolla on edunvalvontavaltuutus.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="EnemKieliKoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Enemmistï¿½n kieli. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="EntinenNimiLajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon entisen nimen laji. Mahdolliset arvot: tyhja, 05=Entinen sukunimi, 06=Entiset etunimet, 07=Viimeksi naimattomana ollessa ollut sukunimi, 08=Entinen valinimi, 09=Entinen kutsumanimi, 10=Korjattu sukunimi, 11=Korjatut etunimet, 12=Korjattu valinimi, 13=Korjattu kutsumanimi</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="05"/>
-            <xs:enumeration value="06"/>
-            <xs:enumeration value="07"/>
-            <xs:enumeration value="08"/>
-            <xs:enumeration value="09"/>
-            <xs:enumeration value="10"/>
-            <xs:enumeration value="11"/>
-            <xs:enumeration value="12"/>
-            <xs:enumeration value="13"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HakuperustePaluukoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 1-2 merkkia. Hakuperusteen paluukoodin arvot 0 = ei loytynyt, 1 = loytyi, 2 = mahdollinen tunnushakuperuste passiivi, 3 = tunnistuksen hakuperusteilla loytyi liikaa henkiloita, 4 = tunnushakuperustetta ei ole kaytetty.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="1"/>
-            <xs:maxLength value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HakuperustePaluuTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>HakuperustePaluukoodin arvot selvakielisena suomeksi, ruotsiksi tai englanniksi. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HenkilosuhdelajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilosuhteen lajia kuvaava koodi. Mahdolliset arvot: tyhja, 02 = avioliitto tai rekisteroity parisuhde, 03 = lapsi_vanhempi (myos ottolapsi), 04 = holhous (henkiloholhooja ja virkaholhooja), 05 = huostaanotto, 06 = huoltajuus, 07 = asumusero, 08 = kuolinpesa, 09 = oleskeluluvan saaneen alaikaisen lapsen edustaja, 10 = edunvalvontavaltuutus. Huoltotiedoissa 03 = vanhempi huoltajana, 06 = muu huoltaja, 36 = vanhempi maarayksenvaraisena huoltajana</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="02"/>
-            <xs:enumeration value="03"/>
-            <xs:enumeration value="04"/>
-            <xs:enumeration value="05"/>
-            <xs:enumeration value="06"/>
-            <xs:enumeration value="07"/>
-            <xs:enumeration value="08"/>
-            <xs:enumeration value="09"/>
-            <xs:enumeration value="10"/>
-            <xs:enumeration value="36"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HenkilosuhdelajiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilosuhteen lajikoodin esittaminen selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HenkilotunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 11 merkkia, syntymaaika ppkkvv, syntymavuosisadan ilmaiseva valimerkki [- tai + tai A], yksilonumero (3 numeroa), tarkistusmerkki (ABCDEFHJKLMNPRSTUVWXY tai numero)= pp paiva arvo valilta 01-31, kk kuukausi arvo valilta 01-12, vv vuosi 2 numeroa eli 00-99, yhden kerran - tai + tai A, 3 numeroa, 1 iso kirjain joukosta ABCDEFHJKLMNPRSTUVWXY tai numero. Voi olla myos tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="(((((0[1-9]|1[0-9]|2[0-9]|3[0-1])(01|03|05|07|08|10|12))|((0[1-9]|1[0-9]|2[0-9]|30)(04|06|09|11))|((0[1-9]|1[0-9]|2[0-9])(02)))[0-9]{2}[\-\+A][0-9]{3}[ABCDEFHJKLMNPRSTUVWXY0-9]))?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HetuSatuTiivisteTyyppi">
-        <xs:annotation>
-            <xs:documentation>HetuSatuTiiviste on varmenteen hakijan henkilotunnuksesta ja sahkoisesta asiointitunnuksesta laskennallisesti muodostettu tiiviste/tarkistussumma. Muoto 0-60 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="60"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuollettavaLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-1 numeroa. Huollettavien lukumaara.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuollonjakokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai mï¿½ï¿½rï¿½tty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (asuminen tai muu sopimus)</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuollonjakokoodiTyyppi2">
-        <xs:annotation>
-            <xs:documentation> Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai maaratty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (sopimus, muu kuin asuminen), 3 = huollon sisallosta on annettu mï¿½ï¿½rï¿½ys tai siitï¿½ on sovittu (vain asuminen),</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuollonjakoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Huollonjakokoodin esittaminen selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuoltajaLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-1 numeroa. Huoltajien lukumaara.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuoneistonumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Huoneiston tunnisteen numero-osa. Mahdolliset arvot: 3 numeroa 000 - 999 tai tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{3})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuonelkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-2 numeroa. Huoneistossa olevien huoneiden lukumaara.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,2})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuonelkmKeittiotyyppiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-6 merkkia. Huoneistossa olevien huoneiden lukumaara ja keittiotyypin lyhenne suomeksi tai ruotsiksi yhdessa, esim. 5H+K.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="6"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="HuostaanottoTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kertoo, onko lapsi otettu huostaan. Mahdolliset arvot: 0 = ei ole otettu huostaan, 1 = lapsi on otettu huostaan</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="IlmoitusSallittuTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto siitï¿½, onko henkilï¿½n sallittua ilmoittaa tietojen pï¿½ivitys Ilmoita Itse -palvelussa. Mahdolliset arvot: 0=ei ole sallittu, 1=on sallittu.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="JakokirjainTyyppi">
-        <xs:annotation>
-            <xs:documentation>Huoneiston tunnisteen jakokirjain. Jakokirjainta kaytetaan kun huoneisto on jaettu kahdeksi tai useammaksi huoneistoksi.
-                Mahdolliset arvot: yksi pieni kirjain joukosta a - ï¿½, tai tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([a-zï¿½ï¿½ï¿½]{1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="JarjestysnumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Avioliiton tai rekisteroidyn parisuhteen jarjestysnumero. Merkitaan: bl (tyhja), 1=aikajarjestyksessa ko. henkilon ensimmainen avioliitto tai parisuhde, 2=toinen jne. 3, 4, 5. Muoto 0-2 numeroa</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,2})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KansalaisuusLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-2 numeroa. Henkilon voimassaolevien kansalaisuuksien lukumaara.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,2})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KatuNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>0-100 merkkia, sen kadun nimi, jonka varrella rakennus sijaitsee</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KatunumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>0-13 merkkia, rakennuksen osoitteen katunumero mahdollisine tarkenteineen</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="13"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KatuosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>0-108 merkkia. Kiinteistoyksikon tai rakennuksen sijaintiosoitteen kadun nimi ja katunumero yhdessa valilyonnilla erotettuna.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="108"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KayntiosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>0-100 merkkia. Viranomaisen kayntiosoite.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KayttotarkoituskoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Rakennuksen paaasiallinen kayttotarkoitus Tilastokeskuksen vahvistaman luokituksen mukaisesti. Muoto 0-3 numeroa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="[0-9]{0,3}"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KielilajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko kysymyksessa henkilon aidinkieli vai asiointikieli. Mahdolliset arvot: tyhja, 1=aidinkieli, 2=asiointikieli.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KielikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Aidinkielen osalta ISO 639-1:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z 2 kertaa, 98=tieto selvakielisena, 99=tuntematon. Asiointikielen osalta mahdolliset arvot: fi (suomi) ja sv (ruotsi).</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([a-z]{2}|(98)|(99))?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Kielikoodi3Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Aidinkielen osalta ISO 639-2:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z 3 kertaa, 980=tieto selvakielisena, 990=tuntematon.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([a-z]{3}|(980)|(990))?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KieliNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon kielen nimi. Muoto 0-30 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KieliTietokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon aidinkielen perusteella paatelty tietokoodi. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KieliTietokoodi2Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon aidinkielen perusteella paatelty tietokoodi. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=saame, 4=muu</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-            <xs:enumeration value="4"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KieltokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kieltokoodi voi saada arvot tyhja, A=muuttoesto</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="A"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KieltoTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto kiellon voimassaolosta. Mahdolliset arvot: tyhja =ei voimassa, 1=kyseinen kielto on voimassa, 0= ei voimassa</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KiinteistoyksikkoLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-4 numeroa. Kiinteistoyksikoidenlukumaara (henkilon omistukset).</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,4})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KiinteistoyksikkotunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kiinteistoyksikkotunnus on max. 23 merkkia pitka merkkijono. Kiinteistoyksikkotunnus voi olla muodoltaan kiinteistotunnus (KKK-SSS-RRRR-YYYY) tai maaraalatunnus KKK-SSS-RRRR-YYYY-Xnnnn, missa KKK on kuntanumero, SSS on sijaintialuenro (kyla/k-osa), RRRR on ryhmanumero (talo/kortteli), YYYY on yksikkonumero (tila/tontti), X on tyyppikirjain ja nnnn on maaraalanumero. Voi olla myos tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="23"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KiinteistoyksikonNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kiinteistoyksikon nimi. Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KirkollinenToimitusTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto kirkollisen toimituksen suorittamisesta. Mahdolliset arvot: tyhja=kyseista kirkollista toimitusta ei ole suoritettu, 1=kyseinen kirkollinen toimitus on suoritettu.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KotimainenLahiosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>SoSo-sanomissa kaytetty vakinaisen ja tilapaisen kotimaisen osoitteen esitystapa. Kadun nimi, katunumero ja huoneistotunniste (porraskirjain, huoneistonumero, jakokirjain) esitetaan yhdessa merkkijonossa. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KotipaikkatunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kotipaikkatunnus palautetaan muodossa KKKSSSRRRRYYYYMRRROPHHHJ, jossa KKK=kuntanumero, SSS=sijaintialuenumero, RRRR=ryhmanumero, YYYY=yksikkonumero, M=tarkistusmerkki, RRR=rakennusnumero, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-24 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="24"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KunnanOsaaluekoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Se kunnan osa-alue, jonka kattamalla maantieteellisella alueella rakennus sijaitsee. Ns. hierarkisen osa-aluekoodiston mukainen osa-aluetunnus on muotoa STTPPP, jossa S=suuralueen numero, TT=tilastoalueen numero, PPP=pienalueen numero, koodi 999999=tuntematon (seuraa, mikali rakennuksen koordinaatit puuttuvat tai ovat selvasti vaarin). Muoto 0-6 numeroa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,6})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KuntaNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kunnan nimi. Muoto 0-30 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KuntanumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kuntanumero on Vaestorekisterikeskuksen antama 3-numeroinen juoksevasti numeroitu koodi, joka kattaa nykyiset kunnat, lakkautetut kunnat ja luovutetulle alueelle jaaneet kunnat. Kuntanumeron esitysmuotona kaytetaan aina 3-numeroista muotoa, mista johtuen koodit 001-099 ilmoitetaan etunollineen. Muoto 3 numeroa tai voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{3})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="KuollutTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto siita, onko henkilo elossa vai kuollut. Mahdolliset arvot: 1 = henkilo on kuollut, tyhja = henkilo on elossa</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="LiitonLajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto siita, onko henkilo avioliitossa tai rekisteroidyssa parisuhteessa. Mahdolliset arvot: 1 = avioliitto, 2=rekisteroity parisuhde, voi olla myos tyhja </xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="LiitonLajiSelvakielinenTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon liiton laji selvakielisena. Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="LisatietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Nimeen liittyy sen oikeinkirjoitusasua tasmentava lisatieto (nimea ei ole voitu rekisteroida VTJ:an sen oikeassa kirjoitusasussa). Mahdolliset arvot: tyhja, 1 = nimeen liittyy lisatieto</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="MuutostapaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon nimenmuutoksen tapa (nimenmuutoksen syy). Mahdolliset arvot: tyhja, 0=ulkomailla tapahtunut nimenmuutos, 1=etunimen muutos, 2=lapsen sukunimen muutos ilmoituksella, 4=viimeksi naimattomana ollut sukunimi takaisin, 5=sukunimi, joka oli naimisiin mennessa, takaisin, 6=ilmoitus sukunimen muutoksesta, 7=lapsi velvollinen ottamaan aidin nimen, 9=vaimon sukunimen muutos entiseksi nimeksi, A=etunimen lisays, B=jostakin etunimesta luopuminen, C=etunimien jarjestyksen vaihto, D=etunimen yhdysmerkin lisays tai poisto, E=ulkomailla tapahtunut etunimen muutos, F=henkilokohtaisen sukunimen ottaminen, G=henkilokohtaisesta sukunimesta luopuminen, M=muu etunimen muuttaminen ilmoituksella, N=kutsumanimen muutos, X=valinimen muutos</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="4"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-            <xs:enumeration value="7"/>
-            <xs:enumeration value="9"/>
-            <xs:enumeration value="A"/>
-            <xs:enumeration value="B"/>
-            <xs:enumeration value="C"/>
-            <xs:enumeration value="D"/>
-            <xs:enumeration value="E"/>
-            <xs:enumeration value="F"/>
-            <xs:enumeration value="G"/>
-            <xs:enumeration value="M"/>
-            <xs:enumeration value="N"/>
-            <xs:enumeration value="X"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="NimenLisatietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Selvitys nimen oikeaan kirjoitusasuun sisaltyvasta erikoismerkista. Merkinnan muoto on esim. "II:3:hattu_s", jossa roomalainen numero kertoo kuinka mones etunimi/sukunimi on kysymyksessa, numero kuinka mones kirjain osoitetussa nimessa ja viimeinen osa kertoo miten merkki kirjoitetaan. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Nimi100Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Nimen esittaminen muodossa 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="NykyinenNimiLajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon nykyisen nimen laji. Mahdolliset arvot: tyhja, 01=nykyinen sukunimi, 02=nykyiset etunimet, 03=nykyinen valinimi, 04=kutsumanimi, 14=patronyymi, 15=juridisen henkilon nimi</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="01"/>
-            <xs:enumeration value="02"/>
-            <xs:enumeration value="03"/>
-            <xs:enumeration value="04"/>
-            <xs:enumeration value="14"/>
-            <xs:enumeration value="15"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="OmistusTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto henkilon omistuksista (eim. kiinteistoyksikon ja/tai rakennuksen omistus).  Mahdolliset arvot: tyhja, 1=kylla, 2=ei</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="OttolapsisuhdeIlmoitusTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Ottolapsisuhteen ilmoitusteksti. Ottolapsi, suhteen alkamispv pp.kk.vvvv, Annettu ottolapseksi pp.kk.vvvv, Adoptivbarn, begynnelsedag for forhallandet pp.kk.vvvv, Given som adoptivbarn pp.kk.vvvv. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaatosNumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Rekisterinpitajan tai muun viranomaisen paatoksen numero 0 - 6 numeroa, voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,6})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaattymistapakoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Entisen avioliiton tai entisen rekisteroidyn parisuhteen paattymistapakoodi. Mahdolliset arvot: tyhja, 1 = avioliitto paattynyt avioeroon, 2 = avioliitto paattynyt puolison kuolemaan, 3 = avioliitto paattynyt peruutumiseen, 4 = avioliitto parisuhteeksi, 5 = avioliitto paattynyt, kun vihkiminen on julistettu
-                mitattomaksi, 6 = rekisteroity parisuhde paattynyt eroon, 7 = rekisteroity parisuhde paattynyt osapuolen kuolemaan, 8 = rekisteroity parisuhde paattynyt, kun rekisterointi on julistettu mitattomaksi, 9 = parisuhde avioliitoksi</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-            <xs:enumeration value="4"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-            <xs:enumeration value="7"/>
-            <xs:enumeration value="8"/>
-            <xs:enumeration value="9"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaattymistapaTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Lajikoodin 02 henkilosuhteen (avioliitto tai rekisteroity parisuhde) paattymistapa selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaivamaaraTyyppi">
-        <xs:annotation>
-            <xs:documentation>Paivamaara esitetaan kahdeksalla numerolla muodossa vvvvkkpp tai se voi myos olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{8})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaluukoodiTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Jarjestelman virhetilanteissa kaytettavaa paluukoodia vastaava teksti selvakielisena suomeksi. Muoto 0-200 merkkia.
-                0000 Haku onnistui
-                0001 Hakuperusteella (henkilotunnus, sahkoinen asiointitunnus, .. ) ei loydy tietoja vtj:sta.
-                0002 Hakuperusteena kaytetty (tai sovelluksen sahkoisella asiointitunnuksella etsima) henkilotunnus on passivoitu.
-                0003 Kysyvan sovelluksen lahettama tunnussana puuttuu, on virheellinen tai vanhentunut.
-                0004 Kysyvan sovelluksen lahettama kayttajatunnus puuttuu, on virheellinen tai vanhentunut.
-                0005 ILMOITUS -tiedossa oleva selvakielinen teksti ilmoittaa virheen tai muun ilmoitettavan asian. Selvakielisia teksteja ovat:
-                Sovellus tulostaa seuraavat paluukoodilla 0005:
-                Seuranta ei onnistu / Uppfoljningen misslyckades
-                Sukunimi on pakollinen annettava / Slaktnamn ar obligatoriskt
-                Etunimet on pakollinen annettava / Fornamn ar obligatoriskt
-                Syntymaaika on pakollinen annettava / Fodelsetid ar obligatoriskt
-                1. etunimi tuntematon nimihakemistolle / 1. fornamn okant for registret
-                2. etunimi tuntematon nimihakemistolle / 2. fornamn okant for registret
-                3. etunimi tuntematon nimihakemistolle / 3. fornamn okant for registret
-                Loytyi useampi kuin 1. / Hittades flera an 1.
-                Pakollinen hakuehto puuttuu. / Obligatoriskt sokkriteriet fattas.
-                0006 Hakuperusteella (henkilotunnus, sahkoinen asiointitunnus, .. ) ei loydy tietoja vtj:sta.
-                0007 Haettava henkilo on kuollut, joten tietoja ei voida palauttaa, ellei muuta ole sovittu.
-                0008 Kyselysanomassa on pyynto varmenteen sulkulistatarkistuksesta (SULKULISTATARKISTUS="YES"), mutta sita ei toistaiseksi suoriteta.
-                0009 Kyselysanomassa on pyynto varmenteen voimassaolotarkistuksesta (VOIMASSAOLOTARKISTUS="YES"), mutta sita ei toistaiseksi suoriteta.
-                0010 Kysyvan sovelluksen on sovittu kayttavan tunnistukseen sahkoista asiointitunnusta (Finuid, Satu). Sahkoisen asiointitunnuksen sisaltava varmenne kuitenkin puuttuu.
-                0011 Kysyvan sovelluksen on sovittu kayttavan tunnistukseen 'perinteista' kayttajatunnusta. Kayttajatunnusta ei kuitenkaan laheteta, vaan sen tilalla tule sahkoisen asiointitunnuksen (Finuid, Satu) sisaltama varmenne.
-                0012 Varmenteelle suoritetussa voimassaolotarkistuksessa on todettu varmenteen voimassaolon paattyneen.
-                0013 Varmenteelle suoritetussa sulkulistatarkistuksessa on todettu varmenteen olevan sulkulistalla.
-                0014 Varmenne ei ole varmenne ollenkaan tai se ei ole vrk:n hyvaksyma.
-                0015 Varmenne ei ole vrk:n hyvaksyma.
-                0016 Kysely- ja vastaussanomien vertailussa on todettu niiden tunnistetietojen eroavan.
-                0017 Hakuperusteella (henkilotunnus) ei loydy tietoja hollesta (Holhousasiain rekisteri).
-                0018 Henkilo on alle 15-vuotias
-                0019 Tietoja ei voida luovuttaa
-                -1500 Virheellinen tunnus/salasana pari
-                -1505 laskutustiedoissa jokin virhe
-                -1800 WebServicen sisainen virhe
-                -1805 Tunnistuksessa kaytettavan kyselysanoman validointivirhe, eli sanoma ei ole skeeman mukainen.
-                -1900 Tuotetta ei loydy
-                -1901 Tuotetta ei loydy
-                -1902 Sanoma ei ole validi (merkit)
-                - 1903 Sanoma ei ole validi (tunnistuksen hakuxml merkit)
-                - 1904 Sanoma ei ole validi (loppukayttaja puuttuu)
-            </xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="200"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PaluukoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 1-5 numeroa. Katso koodia vastaavat arvot seka ilmoitusteksti kohdasta PaluukoodiTekstiTyyppi.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="[0-9]{1,5}"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ParasOsoiteTietoTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vtj:n osoitetietojen palauttamisessa kaytetty tieto. Osoitteiden paremmuusjarjestys on: 1.vakinainen kotimainen osoite, 2.vakinainen ulkomainen osoite, 3.kotimainen postiosoite, 4. ulkomainen postiosoite, 5. tilapainen kotimainen osoite, 6. tilapainen ulkomainen osoite. Mahdolliset arvot: tyhja (tarkoittaa etta ko. osoite ei ole paras osoite), 1 (ko. osoite on paras osoite).</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PintaalaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Huoneiston pinta-ala taysina neliometreina, ilman etunollia. Muoto on 0-5 numeroa tai voi olla myos tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,5})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PoissaolokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kun luonnollinen henkilo, jolla on kotikunta Suomessa muuttaa vakinaisesti ulkomaille tai Suomen kansalainen syntyy poissaolevaan vaestoon, merkitaan hanelle poissaolon laatu. Ulkomaalainen, jolla on ollut kotikunta Suomessa, merkitaan vaestorekisterista poistetuksi ja Suomen kansalainen merkitaan poissaolevaan vaestoon. Poissaoleva vaesto = ne Suomen kansalaiset, jotka asuvat vakinaisesti ulkomailla. Mahdolliset arvot: tyhja, 0 = kotipaikka pohjoismaissa, 1 = kotipaikka muualla kuin pohjoismaissa, 5 = henkikirjoituksessa kahdesti tietymattomissa, 6 = syntynyt poissaolevaan vaestoon, 7 = rekisteroity poissaolevaan vaestoon, 8 = rekisteroity poissaolevaan vaestoon perustietojen siirrossa, 9 = ulkomaalainen, joka on poistettu vaestorekisterista</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-            <xs:enumeration value="7"/>
-            <xs:enumeration value="8"/>
-            <xs:enumeration value="9"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PoissaoloTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon poissaolokoodiin liittyva selvakielinen teksti. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PorraskirjainTyyppi">
-        <xs:annotation>
-            <xs:documentation>Porraskirjain on huoneiston tunnisteen kirjainosa. Se kertoo missa portaassa huoneisto sijaitsee. Mahdolliset arvot: yksi iso kirjain joukosta A - ï¿½ tai tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([A-Zï¿½ï¿½ï¿½]{1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PostinumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto on 5 numeroa tai voi olla myos tyhja. Postinumeron kaksi ensimmaista merkkia maarittelee, milla alueella postinumeron mukainen paikkakunta sijaitsee. Postinumeron kolme viimeista numeroa maarittelee, mihin postinumeroalueen sisalla olevaan osoitetoimipaikkaan lahetys lajitellaan. Postinumerot maarittelee Suomen Posti.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{5})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PostinumeroToimipaikkaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-56 merkkia. Kiinteistoyksikon tai rakennuksen sijaintiosoitteen postinumero ja postitoimipaikan nimi yhdessa valilyonnilla erotettuna.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="56"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PostiosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PostitoimipaikkaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Postitoimipaikan nimi. Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="PrakennustunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Pysyva rakennustunnus - VTJ-PRT on 10-merkkinen, 1-alkuinen numerosarja, jonka viimeinen merkki on aakkosnumeerinen tarkistemerkki. Kayttoonotto syyskuu 2014. Voi olla myos tyhja </xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{9}[0-9A-Z]{1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Rajoituskoodi3Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Tata tietotyyppia kaytetaan vain silloin kun palautetaan tietoa edunvalvonnasta, jossa rajoituskoodi on 3 (eli julistettu vajaavaltaiseksi).  Mahdolliset arvot: tyhja = henkilolla ei ole rajoituskoodin 3 mukaista edunvalvontaa, 3 = henkilolla on rajoituskoodin 3 mukainen edunvalvonta ja hanet on julistettu vajaavaltaiseksi.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="3"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="RajoituskoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko paamiehen toimintakelpoisuutta rajoitettu ja miten. Mahdolliset arvot: tyhja, 1=ei rajoitettu, 2=osittain rajoitettu, 3=julistettu vajaavaltaiseksi.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="RakennusLkmTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-4 numeroa. Rakennusten lukumaara (henkilon omistukset).</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,4})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="RakennustunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Rakennustunnus on kiinteistotunnus+tarkistusmerkki+rakennusnumero, KKK-SSS-RRRR-YYYY-T-nnn. Rakennustunnus on 23 merkkia pitka merkkijono, joka saa sisaltaa numeroita (merkit 1-18) ja isoja kirjaimia A-Z (merkki 15). Voi olla myos tyhja </xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="23"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SahkoinenAsiointitunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Sahkoinen asiointitunnus on muotoa NNNNNNNNT, jossa NNNNNNNN=juokseva numero valilta 10000001-89999999, ja T=tarkistusmerkki, joka muodostetaan samalla menetelmalla kuin henkilotunnuksen tarkistusmerkki. Muoto 8 numeroa ja 1 numero tai iso kirjain joukosta ABCDEFHJKLMNPRSTUVWXY. Voi olla myos tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{8}[ABCDEFHJKLMNPRSTUVWXY0-9]{1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SahkopostiLajikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Sahkopostin lajikoodi. Mahdolliset arvot: 2 numeroa tai voi olla tyhja. 99=henkilon ilmoittama sahkopostiosoite, 11=maistraatin sahkopostiosoite, 12=vaaliviranomaisen sahkopostiosoite.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{2})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SahkopostiosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>Sahkopostiosoite. Muoto 0-255 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="255"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Sailyttaa22TietokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Kertoo, onko selvitetty, etta henkilo sailyttaa Suomen kansalaisuuden tayttaessaan 22 vuotta. Mahdolliset arvot: tyhja, 1=on selvitetty ja sailyttaa</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SanomatunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SiviilisaatykoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon siviilisaaty. Mahdolliset arvot: tyhja, 0=ei tietoa, 1=naimaton, 2=avioliitossa, 3=asumuserossa, 4=eronnut, 5=leski, 6=rekisteroidyssa parisuhteessa, 7=eronnut rekisteroidysta parisuhteesta, 8=leski rekisteroidyn parisuhteen jalkeen</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-            <xs:enumeration value="4"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-            <xs:enumeration value="7"/>
-            <xs:enumeration value="8"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SiviilisaatySelvakielinenTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon siviilisaaty selvakielisena. Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SukupuolikoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon sukupuoli. Mahdolliset arvot: tyhja=puuttuu, 1=mies, 2=nainen</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SukupuoliTekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon sukupuoli selvakielisena. Mahdolliset arvot: 0-30 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SuomenKansalaisuusTietokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Suomen kansalaisuustietokoodi. Mahdolliset arvot: tyhja, 1=on Suomen kansalainen, 0=ei ole Suomen kansalainen</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="SyntymavaltioUSATietokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko syntynyt USA:ssa. Mahdolliset arvot: tyhja, 1=on syntynyt USA:ssa, 0=ei ole syntynyt USA:ssa</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="TehtavienjakokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Onko annettu maarays edunvalvojan tehtavien jaosta edunvalvojien kesken. Mahdolliset arvot: tyhja, 1=on annettu maarays tehtavien jaosta.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Teksti100Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Teksti120Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-120 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="120"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="TietojenPoimintaaikaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tietojen poiminta-aika on aika, jolloin tiedot on poimittu vtj:sta. Tietojen poiminta-ajan muoto on vvvvkkpphhmmss, jossa vvvv = vuosi neljalla numerolla, kk = kuukausi, pp = paiva, hh = tunnit kahdella numerolla, mm = minuutit, ss = sekunnit. Mahdolliset arvot: tyhja tai 14 numeroa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{14})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="TurvakieltokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tieto voimassaolevasta turvakiellosta. Mahdolliset arvot: 9=henkilolla on voimassaoleva turvakielto, voi olla myos tyhja (=ei ole voimassaolevaa turvakieltoa)</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="9"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UlkomainenHenkiloTunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Tunnuksen muoto 0-30 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UlkomainenLahiosoiteTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vakinaisen ja tilapaisen ulkomaisen osoitteen seka ulkomaisen postiosoitteen lahiosoitteen esittamiseen kaytetty tietotyyppi. Muoto 0-80 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="80"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UlkomainenPaikkakuntaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vakinaisen ja tilapaisen ulkomaisen osoitteen paikkakunta ja ulkomaisen postiosoitteen paikkakunta. Muoto 0-80 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="80"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UlkomainenPaikkakuntaJaValtioTyyppi">
-        <xs:annotation>
-            <xs:documentation>SoSo-sanomissa kaytetty vakinaisen ja tilapaisen ulkomaisen osoitteen paikkakunta/postitoimipaikka-tieto. Tahan kenttaan viedaan tietokannassa oleva ulkomaisen paikkakunnan/postitoimipaikan nimi ja valtion nimi pilkulla toisistaan erotettuna. Muoto 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UlkomainenSyntymapaikkaTyyppi">
-        <xs:annotation>
-            <xs:documentation>Ulkomaisen syntymapaikan paikkakunta. Muoto 0-50 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="50"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="USAnKansalaisuusTietokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Usan kansalaisuustietokoodi. Mahdolliset arvot: tyhja, 1=on USA:n kansalainen, 0=ei ole USA:n kansalainen</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="0"/>
-            <xs:enumeration value="1"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UskontokuntakoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Uskontokunnan koodi. Muoto 0-6 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="6"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UskontokuntaLajiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Henkilon uskontokuntalajin tyyppi. Mahdolliset arvot tyhja= ei tietoa, 1 = ei uskontokuntaa, 2 = evl, 3 = ort, 5 = saksalainen kirkko, 6 = Olaus Petri</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-            <xs:enumeration value="3"/>
-            <xs:enumeration value="5"/>
-            <xs:enumeration value="6"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="UskontokuntaNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Uskontokunnan nimi. Muoto 0-72 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="72"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="VaalipiirinumeroTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vaalipiirin numerotunnus. Muoto 0-2 numeroa.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{0,2})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Valtiokoodi2Tyyppi">
-        <xs:annotation>
-            <xs:documentation>ISO 3166-1-koodiston mukainen kaksikirjaiminen valtionimeen liittyva tunnus. Muoto kaksi kirjainta tai voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Valtiokoodi3Tyyppi">
-        <xs:annotation>
-            <xs:documentation>ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus. Muoto 3 numeroa tai voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{3})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ValtioNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Valtion nimi selvakielisena (lyhyt muoto) 0-100 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="100"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ValtioNimi30Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Valtion nimi selvakielisena 0-30 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="30"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ValtioPostinimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Valtion nimi kansainvalisessa postiliikenteessa. 0-20 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="20"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="VersioTyyppi">
-        <xs:annotation>
-            <xs:documentation>Muoto 0-10 merkkia</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="10"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ViranomainenNimiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Viranomaisen nimi. Muoto 0-72 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="72"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ViranomainenNimilyhenne15Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Viranomaisen nimilyhenne. Muoto 0-15 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="15"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ViranomainenNimilyhenne16Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Viranomaisen nimilyhenne. Muoto 0-16 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="16"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ViranomaiskoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Rekisterinpitajan tai muun viranomaisen koodina (viranomaiskoodi) palautetaan viranomaisnumeron kolme viimeista merkkia. Muoto: 3 numeroa tai voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{3})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="Viranomaiskoodi6Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Rekisterinpitajan tai muun viranomaisen koodina (viranomaiskoodi) palautetaan viranomaisnumero. Muoto: 6 numeroa tai voi olla tyhja.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{6})?"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="VuodenvaihdeTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vuodenvaihde aikavalilla 1.2.vvvv-31.12.vvvv vuodenvaihteen tietona vvvv-1/vvvv (vvvv=kuluva vuosi) ja aikavalilla 1.1.vvvv-31.1.vvvv vuodenvaihteen tietona vvvv-2/vvvv-1. eli tammikuussa naytetaan viela "edellisen edellista" vuodenvaihdetta ja 1.2. alkaen sitten edellista. Esitysmuoto esim. 2005/2006. Muoto 0-9 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="9"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="VoimassaolokoodiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vtj:n tietojen (esim. henkilotunnuksen/sahkoisen asiointitunnuksen/avioliiton/rekisteroidyn parisuhteen/henkilosuhteen) voimassaolo. Mahdolliset arvot: tyhja, 1=aktiivi, voimassa oleva, 2=passiivi, ei voimassa oleva, paattynyt.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="1"/>
-            <xs:enumeration value="2"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="VoimassaolotekstiTyyppi">
-        <xs:annotation>
-            <xs:documentation>Vtj:n tietojen (esim. ulkomaisen henkilonumeron) voimassaolo. Mahdolliset arvot: tyhja, Aktiivi, Passiivi, Aktiv, Passiv</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value=""/>
-            <xs:enumeration value="Aktiivi"/>
-            <xs:enumeration value="Passiivi"/>
-            <xs:enumeration value="Aktiv"/>
-            <xs:enumeration value="Passiv"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="YritysNimi80Tyyppi">
-        <xs:annotation>
-            <xs:documentation>Edunvalvojana toimivan yrityksen nimi. Muoto 0-80 merkkia.</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="0"/>
-            <xs:maxLength value="80"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="YtunnusTyyppi">
-        <xs:annotation>
-            <xs:documentation>Edunvalvojana toimivan yrityksen tai yhteison Y-tunnus. Muoto: 7 numeroa, valiviiva, numero tarkistusmerkkina tai voi olla tyhja</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:pattern value="([0-9]{7}\-[0-9]{1})?"/>
-        </xs:restriction>
-    </xs:simpleType>
+	<xs:annotation>
+		<xs:documentation>Tama skeema kuvaa vtj:n henkilotiedoissa esiintyvat xml-tietotyypit</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 1.6.2023 lisatty MuuttoilmoitusStatusTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 30.5.2023 lisatty PaattymistapakoodiTyyppiin arvo K ja P</xs:documentation>
+		<xs:documentation>Päivitetty viimeksi 3.1.2023 lisattiin HuollonOikeusTietotyyppiin tyhja arvo</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 3.10.2022 Paivitetty YksilointitunnusTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 31.1.2022 Lisatty useita etarekisterointiin liittyvia tietotyyppeja: EtarekisterointiTietolahdeTyyppi, EtarekisterointiYhteystietoKoodiTyyppi, YksilointitunnusTyyppi, TunnistuksenTapaTyyppi, TunnistuksenTieKtolahdeTyyppi, SukupuolikoodiMRZTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 21.1.2022 Lisatty HenkilotunnusTyyppi tietotyypin uudet valimerkit</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 26.10.2021 Lisatty LapsenAsuminenKoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 9.10.2020 Paivitetty LoytyykoTietoTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 10.6.2020 Lisatty ViroValtiokoodi3Tyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 19.12.2019 Lisatty HallintaLajikoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 21.10.2019 Lisatty HuollonAsuminenKoodiTyyppi, HuollonKestoTyyppi, HuoltajanLajiTyyppi, HuoltajanRooliTyyppi, HuollonOikeusKoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 4.10.2019 Lisatty HuollonOikeusTietoTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 23.9.2019 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 6.8.2019 Lisatty LapsiLkmTyyppi, LapsiLkmAlle18vTyyppi, LapsiLkmAlle18vElossaTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 10.4.2019 Lisatty RakennusluokkakoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 1.4.2019 Lisatty NimiUTF200Tyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 11.9.2018 Lisatty VaalilajiTyyppi, AanioikeusperustelajiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 22.5.2018 Lisatty EntinenNimiLkmTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 6.2.2018 Lisatty LoytyykoTietoTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 13.10.2017 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 6.10.2017 Lisatty AsukasLkmTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 26.9.2017 Tarkennettu EdunvalvontavaltuutusTietoTyypin kuvausta</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 7.3.2017 Teksti120Tyyppi, AsiaIdTyyppi, PaatosNumeroTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 7.12.2016 Lisatty HuollonjakokoodiTyyppi2</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 23.11.2016 Tarkennettu HuollonjakokoodiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 14.10.2016 Lisatty HuollettavaLkmTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 12.5.2016 Lisatty Kielikoodi3Tyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 20.4.2016 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 11.3.2016 Paivitetty PaluukoodiTekstiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 27.1.2016 Lisatty SyntymavaltioUSATietokoodiTyyppi ja USAnKansalaisuusTietokoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 18.11.2015 Paivitetty KatuNumeroTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 11.9.2015 Paivitetty ValtioNimiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 9.6.2015 Lisatty VoimassaolotekstiTyyppi ja KieltokoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 5.6.2015 Lisatty KieltoTietoTyypin tyhja selite</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 4.5.2015. Lisatty uskontokuntalajiTyypiksi tyhja</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 26.3.2015. Pidennetty Postiosoitetyyppi 100 merkkiin</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 3.2.2015. Lisatty uskontokuntalajiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 23.4.2014 tarkennettu AsuinpaikkatunnusTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 2.12.2013. Lisatty PrakennustunnusTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 5.9.2013. Tarkennettu AsuinpaikanTunnusTyyppia ulkomailla asumisella</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 29.07.2013. Lisatty AsuinpaikanTunnusTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 29.05.2013. Lisatty PaattymistapaTekstiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 21.5.2013 Tarkennettu huostaanottotyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 11.12.2012. Lisatty IlmoitusSallittuTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 26.7.2012. Paivitetty HuollonjakokoodiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 9.3.2012. Tarkennettu AsuminenPysyvyysTekstiTyyppia</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 24.11.2011. Lisatty UlkomainenHenkiloTunnusTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 13.09.2011. Lisatty KieliTietokoodi2Tyyppi ja paivitetty paluukoodeja</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 08.02.2011. Lisatty EnemKieliKoodiTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 15.12.2010. Lisatty paluukoodi 0018, Henkilo on alle 15 vuotias</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 26.10.2009. Lisatty HuostaanottoTietoTyyppi</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 13.08.2009. Lisatty uudet tietotyypit, RakennusLkm, KiinteistoyksikkoLkm, Kayttotarkoituskoodi, Teksti100, HuoltajaLkm</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 16.03.2009. Tarkennettu HenkilosuhdelajikoodiTyyppia lisaamalla huoltosuhteen lajia kuvaavat koodit.</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 15.01.2009. Lisatty uusi tietotyyppi Viranomaiskoodi6Tyyppi.</xs:documentation>
+		<xs:documentation>Paivitetty viimeksi 11.06.2008. Lisatty tietotyyppiin PaluukoodiTekstiTyyppi uusi teksti Pakollinen hakuehto puuttuu. / Obligatoriskt sokkriteriet fattas.</xs:documentation>
+		<xs:documentation>Paivitetty 08.05.2008. Lisatty tietotyyppiin PaluukoodiTekstiTyyppi uusi arvo, 0017.</xs:documentation>
+		<xs:documentation>Paivitetty 22.11.2007. Lisatty uusi tietotyyppi EdunvalvontavaltuutusTietoTyyppi ja lisatty tietotyyppiin HenkilosuhdelajikoodiTyyppi lajikoodi 10.</xs:documentation>
+	</xs:annotation>
+	<!-- Tietotyypit aakkosjarjestyksessa -->
+	<xs:simpleType name="AanestysaluenumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Aanestysalueen tunniste. Perinteisesti on kaytetty muotoa, jossa aanestysalueet numeroidaan 1:sta ylospain, kaytetaan etunollia (esim. 001, 002). Joissain kunnissa aanestysalue on jaettu, jolloin numeron jalkeen kaytetaan jakokirjainta A, B, jne. Muoto numero tai iso kirjain 0-4 kertaa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9A-ZÅÄÖ]{0,4})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AanioikeusperustelajiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Äänioikeusperuste. Mahdolliset arvot: 30 = Ilmoittautuminen, Eu-vaalit, 40 = Ilmoittautuminen, kansainvälinen järjestö</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="30"/>
+			<xs:enumeration value="40"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AlkutapakoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Lajikoodin 02 henkilosuhteen solmimistapa. Mahdolliset arvot: tyhja, 1=kirkollinen vihkiminen, 2=siviilivihkiminen, 3=vihkitapa ei tiedossa, 4=parisuhteen rekisterointi, 5 = parisuhde avioliitoksi, 6 = avioliitto parisuhteeksi</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AlkutapaTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Lajikoodin 02 henkilosuhteen (avioliitto tai rekisteroity parisuhde) solmimistapa selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AmmattiNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon ilmoittama ammatti. Muoto 0-35 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="35"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsiaIdTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rekisterinpitajan tai muun viranomaisen asiaId tyyppi 0 - 15 numeroa, voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,15})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsiakasinfoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Sisaltaa tietoa asiakkaille vtj:n toiminnasta, mm. paivamaaran, kellonajan ja viestin, muoto: pp.kk.vvvv klo tt:mm teksti. Muoto 0-480 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="480"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsuinpaikkatunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Asuinpaikantunnus palautetaan muodossa nnnnnnnnnnOPHHHJ, jossa nnnnnnnnnn=VTJ-PRT, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-16 merkkia.Ulkomailla asuminen on 14 merkkiä 200+valtiokoodi+00000000.nk. laitososoitteen asuinpaikantunnusta ei nayteta.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="16"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsukasLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-4 numeroa. Henkilon kanssa samassa taloudessa asuvien alaikaisten lukumaara (kaikki, vakinaiset tai tilapaiset).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,4})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsuminenPysyvyysTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, 1=vakinaista, 2=tilapaista</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AsuminenPysyvyysTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko asuminen vakinaista vai tilapaista. Mahdolliset arvot: tyhja, Vakinainen, Varaktig, Tilapäinen, Tillfällig</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EdunvalvontaTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita onko paamies edunvalvonnassa. Mahdolliset arvot: tyhja = henkilo ei ole vtj:ssa edunvalvonnassa, 1= henkilon on edunvalvonnassa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EdunvalvontavaltuutusTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita onko paamiehella maistraatissa vahvistettu edunvalvontavaltuutus. Mahdolliset arvot: tyhja = henkilolla ei ole vtj:ssa edunvalvontavaltuutusta, 1= henkilolla on edunvalvontavaltuutus.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnemKieliKoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Enemmistön kieli. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EntinenNimiLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon entisen nimen laji. Mahdolliset arvot: tyhja, 05=Entinen sukunimi, 06=Entiset etunimet, 07=Viimeksi naimattomana ollessa ollut sukunimi, 08=Entinen valinimi, 09=Entinen kutsumanimi, 10=Korjattu sukunimi, 11=Korjatut etunimet, 12=Korjattu valinimi, 13=Korjattu kutsumanimi</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="05"/>
+			<xs:enumeration value="06"/>
+			<xs:enumeration value="07"/>
+			<xs:enumeration value="08"/>
+			<xs:enumeration value="09"/>
+			<xs:enumeration value="10"/>
+			<xs:enumeration value="11"/>
+			<xs:enumeration value="12"/>
+			<xs:enumeration value="13"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EntinenNimiLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Henkilon entisten suku- ja etunimien lukumaara, ilman korjattuja nimia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EtarekisterointiTietolahdeTyyppi">
+		<xs:annotation>
+			<xs:documentation>Voi saada arvot sirulta, paatelty, virkalija_ilmoitettu, virkailija_asiakirja, itse_ilmoitettu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="120"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HakuperustePaluukoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 1-2 merkkia. Hakuperusteen paluukoodin arvot 0 = ei loytynyt, 1 = loytyi, 2 = mahdollinen tunnushakuperuste passiivi, 3 = tunnistuksen hakuperusteilla loytyi liikaa henkiloita, 4 = tunnushakuperustetta ei ole kaytetty.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HakuperustePaluuTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>HakuperustePaluukoodin arvot selvakielisena suomeksi, ruotsiksi tai englanniksi. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HallintaLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rakennuksen hallintalaji. Mahdolliset arvot: tyhja, 1 = varsinainen omistaja, 2 = omistajan edustaja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HenkilosuhdelajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilosuhteen lajia kuvaava koodi. Mahdolliset arvot: tyhja, 02 = avioliitto tai rekisteroity parisuhde, 03 = lapsi_vanhempi (myos ottolapsi), 04 = holhous (henkiloholhooja ja virkaholhooja), 05 = huostaanotto, 06 = huoltajuus, 07 = asumusero, 08 = kuolinpesa, 09 = oleskeluluvan saaneen alaikaisen lapsen edustaja, 10 = edunvalvontavaltuutus. Huoltotiedoissa 03 = vanhempi huoltajana, 06 = muu huoltaja, 36 = vanhempi maarayksenvaraisena huoltajana</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="02"/>
+			<xs:enumeration value="03"/>
+			<xs:enumeration value="04"/>
+			<xs:enumeration value="05"/>
+			<xs:enumeration value="06"/>
+			<xs:enumeration value="07"/>
+			<xs:enumeration value="08"/>
+			<xs:enumeration value="09"/>
+			<xs:enumeration value="10"/>
+			<xs:enumeration value="36"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HenkilosuhdelajiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilosuhteen lajikoodin esittaminen selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HenkilotunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 11 merkkia, syntymaaika ppkkvv, syntymavuosisadan ilmaiseva valimerkki [- tai + tai A, B, C, D, E, F, Y, X, W, V, U], yksilonumero (3 numeroa), tarkistusmerkki (ABCDEFHJKLMNPRSTUVWXY tai numero)= pp paiva arvo valilta 01-31, kk kuukausi arvo valilta 01-12, vv vuosi 2 numeroa eli 00-99, yhden kerran - tai + tai A, 3 numeroa, 1 iso kirjain joukosta ABCDEFHJKLMNPRSTUVWXY tai numero. Voi olla myos tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="(((((0[1-9]|1[0-9]|2[0-9]|3[0-1])(01|03|05|07|08|10|12))|((0[1-9]|1[0-9]|2[0-9]|30)(04|06|09|11))|((0[1-9]|1[0-9]|2[0-9])(02)))[0-9]{2}[\-\+ABCDEFYXWVU][0-9]{3}[ABCDEFHJKLMNPRSTUVWXY0-9]))?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HetuSatuTiivisteTyyppi">
+		<xs:annotation>
+			<xs:documentation>HetuSatuTiiviste on varmenteen hakijan henkilotunnuksesta ja sahkoisesta asiointitunnuksesta laskennallisesti muodostettu tiiviste/tarkistussumma. Muoto 0-60 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="60"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollettavaLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-1 numeroa. Huollettavien lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonAsuminenKoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huollon asuminen. Mahdolliset arvot: tyhja, 1=vanhempien luona, 2=aidin luona, 3=isan luona, 4=vuoroasuminen, 5=vuoroasuminen aidin/oheishuoltajan luona, 6=vuoroasuminen isan/oheishuoltajan luona, 7=vuoroasuminen vanhempien/oheishuoltajan luona, 8=oheishuoltajan/oheishuoltajien luona</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonjakokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai määrätty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu määräys tai siitä on sovittu (asuminen tai muu sopimus)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonjakokoodiTyyppi2">
+		<xs:annotation>
+			<xs:documentation> Kertoo, onko annettu maarays tehtavien jaosta huoltajien kesken tai onko huollon sisallosta sovittu tai maaratty tarkemmin. Mahdolliset arvot: tyhja, 1 = annettu maarays huoltajan tehtavien jaosta, 2 = huollon sisallosta on annettu määräys tai siitä on sovittu (sopimus, muu kuin asuminen), 3 = huollon sisallosta on annettu määräys tai siitä on sovittu (vain asuminen),</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonjakoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huollonjakokoodin esittaminen selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonKestoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huollon kesto. Mahdolliset arvot: tyhja, 1=toistaiseksi, 2=tilapäisesti</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonOikeusKoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huollon paatos- ja tiedonsaantioikeudet. Mahdolliset arvot: tyhja, P100=Nimet, P101=Etunimet, P102=Sukunimi, P200=Passi ja muut matkustusasiakirjat, P300=Sosiaali- ja terveyspalvelut, P301=Sosiaalipalvelut, P302=Terveyspalvelut, P400=Asuinpaikka, P401=Asuinpaikka Suomessa, P402=Asuinpaikan muutto ulkomaille, P500=Varhaiskasvatus ja koulutus, P501=Varhaiskasvatus, P502=Koulutus (sisaltaa esiopetuksen), P700=Muut asiat, P701=Uskonto, P702=Kansalaisuus, P703=Aidinkieli, T000=Kaikki lasta koskevat, T100=Sosiaali- ja terveyspalvelut, T101=Sosiaalipalvelut, T102=Terveyspalvelut, T200=Varhaiskasvatus ja koulutus, T201=Varhaiskasvatus, T202=Koulutus (sisaltaa esiopetuksen)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="P100"/>
+			<xs:enumeration value="P101"/>
+			<xs:enumeration value="P102"/>
+			<xs:enumeration value="P200"/>
+			<xs:enumeration value="P300"/>
+			<xs:enumeration value="P301"/>
+			<xs:enumeration value="P302"/>
+			<xs:enumeration value="P400"/>
+			<xs:enumeration value="P401"/>
+			<xs:enumeration value="P402"/>
+			<xs:enumeration value="P500"/>
+			<xs:enumeration value="P501"/>
+			<xs:enumeration value="P502"/>
+			<xs:enumeration value="P700"/>
+			<xs:enumeration value="P701"/>
+			<xs:enumeration value="P702"/>
+			<xs:enumeration value="P703"/>
+			<xs:enumeration value="T000"/>
+			<xs:enumeration value="T100"/>
+			<xs:enumeration value="T101"/>
+			<xs:enumeration value="T102"/>
+			<xs:enumeration value="T200"/>
+			<xs:enumeration value="T201"/>
+			<xs:enumeration value="T202"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuollonOikeusTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita, onko huollon paatos tai tiedonsaantioikeus. Mahdolliset arvot: 1=kylla, 2 = ei, 3 = ei tiedossa, on olemassa tarkempi selvakielinen sopimus/maarays</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuoltajaLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-1 numeroa. Huoltajien lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuoltajanLajiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huoltajan laji. Mahdolliset arvot: tyhja, 1=lakisaateinen huolto, 2=maarayksenvarainen huolto, 3=tiedonsaantioikeutettu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuoltajanRooliTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huoltajan rooli. Mahdolliset arvot: tyhja, 1=isa, 2=aiti, tyhja=muu huoltaja</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuoneistonumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huoneiston tunnisteen numero-osa. Mahdolliset arvot: 3 numeroa 000 - 999 tai tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{3})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuonelkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Huoneistossa olevien huoneiden lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuonelkmKeittiotyyppiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-6 merkkia. Huoneistossa olevien huoneiden lukumaara ja keittiotyypin lyhenne suomeksi tai ruotsiksi yhdessa, esim. 5H+K.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="6"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="HuostaanottoTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kertoo, onko lapsi otettu huostaan. Mahdolliset arvot: 0 = ei ole otettu huostaan, 1 = lapsi on otettu huostaan</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="IlmoitusSallittuTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siitä, onko henkilön sallittua ilmoittaa tietojen päivitys Ilmoita Itse -palvelussa. Mahdolliset arvot: 0=ei ole sallittu, 1=on sallittu.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="JakokirjainTyyppi">
+		<xs:annotation>
+			<xs:documentation>
+				Huoneiston tunnisteen jakokirjain. Jakokirjainta kaytetaan kun huoneisto on jaettu kahdeksi tai useammaksi huoneistoksi.
+				Mahdolliset arvot: yksi pieni kirjain joukosta a - ö, tai tyhja.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([a-zåäö]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="JarjestysnumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Avioliiton tai rekisteroidyn parisuhteen jarjestysnumero. Merkitaan: bl (tyhja), 1=aikajarjestyksessa ko. henkilon ensimmainen avioliitto tai parisuhde, 2=toinen jne. 3, 4, 5. Muoto 0-2 numeroa</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KansalaisuusLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Henkilon voimassaolevien kansalaisuuksien lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KatuNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>0-100 merkkia, sen kadun nimi, jonka varrella rakennus sijaitsee</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KatunumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>0-13 merkkia, rakennuksen osoitteen katunumero mahdollisine tarkenteineen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="13"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KatuosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>0-108 merkkia. Kiinteistoyksikon tai rakennuksen sijaintiosoitteen kadun nimi ja katunumero yhdessa valilyonnilla erotettuna.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="108"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KayntiosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>0-100 merkkia. Viranomaisen kayntiosoite.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KayttotarkoituskoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rakennuksen paaasiallinen kayttotarkoitus Tilastokeskuksen vahvistaman luokituksen mukaisesti. Muoto 0-3 numeroa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9]{0,3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KielilajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko kysymyksessa henkilon aidinkieli vai asiointikieli. Mahdolliset arvot: tyhja, 1=aidinkieli, 2=asiointikieli.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KielikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Aidinkielen osalta ISO 639-1:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z 2 kertaa, 98=tieto selvakielisena, 99=tuntematon. Asiointikielen osalta mahdolliset arvot: fi (suomi) ja sv (ruotsi).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([a-z]{2}|(98)|(99))?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Kielikoodi3Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Aidinkielen osalta ISO 639-2:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z 3 kertaa, 980=tieto selvakielisena, 990=tuntematon.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([a-z]{3}|(980)|(990))?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KieliNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon kielen nimi. Muoto 0-30 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KieliTietokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon aidinkielen perusteella paatelty tietokoodi. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=muu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KieliTietokoodi2Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon aidinkielen perusteella paatelty tietokoodi. Mahdolliset arvot: tyhja, 1=suomi, 2=ruotsi, 3=saame, 4=muu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KieltokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kieltokoodi voi saada arvot tyhja, A=muuttoesto</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="A"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KieltoTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto kiellon voimassaolosta. Mahdolliset arvot: tyhja =ei voimassa, 1=kyseinen kielto on voimassa, 0= ei voimassa</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KiinteistoyksikkoLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-4 numeroa. Kiinteistoyksikoidenlukumaara (henkilon omistukset).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,4})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KiinteistoyksikkotunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kiinteistoyksikkotunnus on max. 23 merkkia pitka merkkijono. Kiinteistoyksikkotunnus voi olla muodoltaan kiinteistotunnus (KKK-SSS-RRRR-YYYY) tai maaraalatunnus KKK-SSS-RRRR-YYYY-Xnnnn, missa KKK on kuntanumero, SSS on sijaintialuenro (kyla/k-osa), RRRR on ryhmanumero (talo/kortteli), YYYY on yksikkonumero (tila/tontti), X on tyyppikirjain ja nnnn on maaraalanumero. Voi olla myos tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="23"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KiinteistoyksikonNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kiinteistoyksikon nimi. Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KirkollinenToimitusTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto kirkollisen toimituksen suorittamisesta. Mahdolliset arvot: tyhja=kyseista kirkollista toimitusta ei ole suoritettu, 1=kyseinen kirkollinen toimitus on suoritettu.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KotimainenLahiosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>SoSo-sanomissa kaytetty vakinaisen ja tilapaisen kotimaisen osoitteen esitystapa. Kadun nimi, katunumero ja huoneistotunniste (porraskirjain, huoneistonumero, jakokirjain) esitetaan yhdessa merkkijonossa. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KotipaikkatunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kotipaikkatunnus palautetaan muodossa KKKSSSRRRRYYYYMRRROPHHHJ, jossa KKK=kuntanumero, SSS=sijaintialuenumero, RRRR=ryhmanumero, YYYY=yksikkonumero, M=tarkistusmerkki, RRR=rakennusnumero, O=osoitenumero, P=porraskirjain, HHH=huoneiston numero, J=huoneiston jakokirjain. Muoto 0-24 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="24"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KunnanOsaaluekoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Se kunnan osa-alue, jonka kattamalla maantieteellisella alueella rakennus sijaitsee. Ns. hierarkisen osa-aluekoodiston mukainen osa-aluetunnus on muotoa STTPPP, jossa S=suuralueen numero, TT=tilastoalueen numero, PPP=pienalueen numero, koodi 999999=tuntematon (seuraa, mikali rakennuksen koordinaatit puuttuvat tai ovat selvasti vaarin). Muoto 0-6 numeroa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,6})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KuntaNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kunnan nimi. Muoto 0-30 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KuntanumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kuntanumero on Vaestorekisterikeskuksen antama 3-numeroinen juoksevasti numeroitu koodi, joka kattaa nykyiset kunnat, lakkautetut kunnat ja luovutetulle alueelle jaaneet kunnat. Kuntanumeron esitysmuotona kaytetaan aina 3-numeroista muotoa, mista johtuen koodit 001-099 ilmoitetaan etunollineen. Muoto 3 numeroa tai voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{3})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="KuollutTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita, onko henkilo elossa vai kuollut. Mahdolliset arvot: 1 = henkilo on kuollut, tyhja = henkilo on elossa</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LapsenAsuminenKoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Lapsen asumistieto, joka on sovittu tai päätetty huollosta. Mahdolliset arvot: tyhja, 1=vanhempien luona, 2=aidin luona, 3=isan luona, 4=vuoroasuminen, 5=vuoroasuminen aidin tai oheishuoltajan luona, 6 = vuoroasuminen isan tai oheishuoltajan luona, 7=vuoroasumien vanhempien ja oheishuoltajan luona, 8= oheishuoltajan tai oheishuoltajien luona</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LapsiLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Lasten lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LapsiLkmAlle18vTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Alaikaisten lasten lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LapsiLkmAlle18vElossaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-2 numeroa. Alaikaisten, elossaolevien lasten lukumaara.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LiitonLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita, onko henkilo avioliitossa tai rekisteroidyssa parisuhteessa. Mahdolliset arvot: 1 = avioliitto, 2=rekisteroity parisuhde, voi olla myos tyhja </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LiitonLajiSelvakielinenTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon liiton laji selvakielisena. Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LisatietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Nimeen liittyy sen oikeinkirjoitusasua tasmentava lisatieto (nimea ei ole voitu rekisteroida VTJ:an sen oikeassa kirjoitusasussa). Mahdolliset arvot: tyhja, 1 = nimeen liittyy lisatieto</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LoytyykoTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto siita, onko henkilolla kyseista tietoa vaestotietojarjestelmassa. Mahdolliset arvot: tyhja, 1=kylla, 0=ei</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MuutostapaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon nimenmuutoksen tapa (nimenmuutoksen syy). Mahdolliset arvot: tyhja, 0=ulkomailla tapahtunut nimenmuutos, 1=etunimen muutos, 2=lapsen sukunimen muutos ilmoituksella, 4=viimeksi naimattomana ollut sukunimi takaisin, 5=sukunimi, joka oli naimisiin mennessa, takaisin, 6=ilmoitus sukunimen muutoksesta, 7=lapsi velvollinen ottamaan aidin nimen, 9=vaimon sukunimen muutos entiseksi nimeksi, A=etunimen lisays, B=jostakin etunimesta luopuminen, C=etunimien jarjestyksen vaihto, D=etunimen yhdysmerkin lisays tai poisto, E=ulkomailla tapahtunut etunimen muutos, F=henkilokohtaisen sukunimen ottaminen, G=henkilokohtaisesta sukunimesta luopuminen, M=muu etunimen muuttaminen ilmoituksella, N=kutsumanimen muutos, X=valinimen muutos</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="9"/>
+			<xs:enumeration value="A"/>
+			<xs:enumeration value="B"/>
+			<xs:enumeration value="C"/>
+			<xs:enumeration value="D"/>
+			<xs:enumeration value="E"/>
+			<xs:enumeration value="F"/>
+			<xs:enumeration value="G"/>
+			<xs:enumeration value="M"/>
+			<xs:enumeration value="N"/>
+			<xs:enumeration value="X"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MuuttoilmoitusStatusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon muuttoilmoituksen status. Mahdolliset arvot: tyhja, 1=Avoin, 2=Rekisteroity, 3=Hylatty, 4=Hyvaksytty (ei viela rekisteroity), 5=Selvityksessa, 6=Korjattu, 7=Hyvaksyttavissa, 8=Puolesta ilmoitettu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NimenLisatietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Selvitys nimen oikeaan kirjoitusasuun sisaltyvasta erikoismerkista. Merkinnan muoto on esim. "II:3:hattu_s", jossa roomalainen numero kertoo kuinka mones etunimi/sukunimi on kysymyksessa, numero kuinka mones kirjain osoitetussa nimessa ja viimeinen osa kertoo miten merkki kirjoitetaan. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Nimi100Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Nimen esittaminen muodossa 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Nimi100ItseilmoitettuTyyppi">
+		<xs:annotation>
+			<xs:documentation>Nimen esittaminen muodossa 0-100 merkkia. Tarkempi kuvaus merkistosta myohemmin.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Nimi100MRZTyyppi">
+		<xs:annotation>
+			<xs:documentation>Nimen esittaminen muodossa 0-100 merkkia. Isot kirjaimet A-Z, numerot 0-9</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NimiUTF200Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Nimen esittaminen muodossa 0-200 merkkia. Tarkempi kuvaus merkistosta myohemmin.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NimiLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon nimen laji. Mahdolliset arvot: tyhja, 01=Nykyinen sukunimi, 02=Nykyiset etunimet, 03=Nykyinen valinimi, 04=Kutsumanimi, 05=Entinen sukunimi, 06=Entiset etunimet, 07=Viimeksi naimattomana ollessa ollut sukunimi, 08=Entinen valinimi, 09=Entinen kutsumanimi, 10=Korjattu sukunimi, 11=Korjatut etunimet, 12=Korjattu valinimi, 13=Korjattu kutsumanimi, 14=patronyymi, 15=Juridisen henkilon nimi</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="01"/>
+			<xs:enumeration value="02"/>
+			<xs:enumeration value="03"/>
+			<xs:enumeration value="04"/>
+			<xs:enumeration value="05"/>
+			<xs:enumeration value="06"/>
+			<xs:enumeration value="07"/>
+			<xs:enumeration value="08"/>
+			<xs:enumeration value="09"/>
+			<xs:enumeration value="10"/>
+			<xs:enumeration value="11"/>
+			<xs:enumeration value="12"/>
+			<xs:enumeration value="13"/>
+			<xs:enumeration value="14"/>
+			<xs:enumeration value="15"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="NykyinenNimiLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon nykyisen nimen laji. Mahdolliset arvot: tyhja, 01=nykyinen sukunimi, 02=nykyiset etunimet, 03=nykyinen valinimi, 04=kutsumanimi, 14=patronyymi, 15=juridisen henkilon nimi</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="01"/>
+			<xs:enumeration value="02"/>
+			<xs:enumeration value="03"/>
+			<xs:enumeration value="04"/>
+			<xs:enumeration value="14"/>
+			<xs:enumeration value="15"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OmistusTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto henkilon omistuksista (eim. kiinteistoyksikon ja/tai rakennuksen omistus).  Mahdolliset arvot: tyhja, 1=kylla, 2=ei</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OttolapsisuhdeIlmoitusTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Ottolapsisuhteen ilmoitusteksti. Ottolapsi, suhteen alkamispv pp.kk.vvvv, Annettu ottolapseksi pp.kk.vvvv, Adoptivbarn, begynnelsedag for forhallandet pp.kk.vvvv, Given som adoptivbarn pp.kk.vvvv. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaatosNumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rekisterinpitajan tai muun viranomaisen paatoksen numero 0 - 6 numeroa, voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,6})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaattymistapakoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>
+				Entisen avioliiton tai entisen rekisteroidyn parisuhteen paattymistapakoodi. Mahdolliset arvot: tyhja, 1 = avioliitto paattynyt avioeroon, 2 = avioliitto paattynyt puolison kuolemaan, 3 = avioliitto paattynyt peruutumiseen, 4 = avioliitto parisuhteeksi, 5 = avioliitto paattynyt, kun vihkiminen on julistettu
+				mitattomaksi, 6 = rekisteroity parisuhde paattynyt eroon, 7 = rekisteroity parisuhde paattynyt osapuolen kuolemaan, 8 = rekisteroity parisuhde paattynyt, kun rekisterointi on julistettu mitattomaksi, 9 = parisuhde avioliitoksi, K = avioliitto kumottu, P = parisuhde kumottu
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+			<xs:enumeration value="9"/>
+			<xs:enumeration value="K"/>
+			<xs:enumeration value="P"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaattymistapaTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Lajikoodin 02 henkilosuhteen (avioliitto tai rekisteroity parisuhde) paattymistapa selvakielisena. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaivamaaraTyyppi">
+		<xs:annotation>
+			<xs:documentation>Paivamaara esitetaan kahdeksalla numerolla muodossa vvvvkkpp tai se voi myos olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{8})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaluukoodiTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>
+				Jarjestelman virhetilanteissa kaytettavaa paluukoodia vastaava teksti selvakielisena suomeksi. Muoto 0-200 merkkia.
+				0000 Haku onnistui
+				0001 Hakuperusteella ei loydy tietoja vtj:sta.
+				0002 Hakuperusteena käytetty henkilötunnus tai asiointitunnus on passivoitu
+				0003 Kysyvan sovelluksen lahettama tunnussana puuttuu, on virheellinen tai vanhentunut.
+				0004 Kysyvan sovelluksen lahettama kayttajatunnus puuttuu, on virheellinen tai vanhentunut.
+				0005 ILMOITUS -tiedossa oleva selvakielinen teksti ilmoittaa virheen tai muun ilmoitettavan asian. Selvakielisia teksteja ovat:
+				Sovellus tulostaa seuraavat paluukoodilla 0005:
+				Seuranta ei onnistu / Uppfoljningen misslyckades
+				Sukunimi on pakollinen annettava / Slaktnamn ar obligatoriskt
+				Etunimet on pakollinen annettava / Fornamn ar obligatoriskt
+				Syntymaaika on pakollinen annettava / Fodelsetid ar obligatoriskt
+				1. etunimi tuntematon nimihakemistolle / 1. fornamn okant for registret
+				2. etunimi tuntematon nimihakemistolle / 2. fornamn okant for registret
+				3. etunimi tuntematon nimihakemistolle / 3. fornamn okant for registret
+				Loytyi useampi kuin 1. / Hittades flera an 1.
+				Pakollinen hakuehto puuttuu. / Obligatoriskt sokkriteriet fattas.
+				0006 Hakuperusteella (henkilotunnus, sahkoinen asiointitunnus, .. ) ei loydy tietoja vtj:sta.
+				0007 Haettava henkilo on kuollut, joten tietoja ei voida palauttaa, ellei muuta ole sovittu.
+				0008 Kyselysanomassa on pyynto varmenteen sulkulistatarkistuksesta (SULKULISTATARKISTUS="YES"), mutta sita ei toistaiseksi suoriteta.
+				0009 Kyselysanomassa on pyynto varmenteen voimassaolotarkistuksesta (VOIMASSAOLOTARKISTUS="YES"), mutta sita ei toistaiseksi suoriteta.
+				0010 Kysyvan sovelluksen on sovittu kayttavan tunnistukseen sahkoista asiointitunnusta (Finuid, Satu). Sahkoisen asiointitunnuksen sisaltava varmenne kuitenkin puuttuu.
+				0011 Kysyvan sovelluksen on sovittu kayttavan tunnistukseen 'perinteista' kayttajatunnusta. Kayttajatunnusta ei kuitenkaan laheteta, vaan sen tilalla tule sahkoisen asiointitunnuksen (Finuid, Satu) sisaltama varmenne.
+				0012 Varmenteelle suoritetussa voimassaolotarkistuksessa on todettu varmenteen voimassaolon paattyneen.
+				0013 Varmenteelle suoritetussa sulkulistatarkistuksessa on todettu varmenteen olevan sulkulistalla.
+				0014 Varmenne ei ole varmenne ollenkaan tai se ei ole vrk:n hyvaksyma.
+				0015 Varmenne ei ole vrk:n hyvaksyma.
+				0016 Kysely- ja vastaussanomien vertailussa on todettu niiden tunnistetietojen eroavan.
+				0017 Hakuperusteella (henkilotunnus) ei loydy tietoja hollesta (Holhousasiain rekisteri).
+				0018 Henkilo on alle 15-vuotias
+				0019 Tietoja ei voida luovuttaa
+				-1500 Virheellinen tunnus/salasana pari
+				-1505 laskutustiedoissa jokin virhe
+				-1800 WebServicen sisainen virhe
+				-1805 Tunnistuksessa kaytettavan kyselysanoman validointivirhe, eli sanoma ei ole skeeman mukainen.
+				-1900 Tuotetta ei loydy
+				-1901 Tuotetta ei loydy
+				-1902 Sanoma ei ole validi (merkit)
+				-1903 Sanoma ei ole validi (tunnistuksen hakuxml merkit)
+				-1904 Sanoma ei ole validi (loppukayttaja puuttuu)
+				-1905 Sanoman käsittely ei onnistunut (laskutustietovirhe)
+				-1906 Sanoman käsittely ei onnistunut (muu odottamaton virhe)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PaluukoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 1-5 numeroa. Katso koodia vastaavat arvot seka ilmoitusteksti kohdasta PaluukoodiTekstiTyyppi.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9]{1,5}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ParasOsoiteTietoTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vtj:n osoitetietojen palauttamisessa kaytetty tieto. Osoitteiden paremmuusjarjestys on: 1.vakinainen kotimainen osoite, 2.vakinainen ulkomainen osoite, 3.kotimainen postiosoite, 4. ulkomainen postiosoite, 5. tilapainen kotimainen osoite, 6. tilapainen ulkomainen osoite. Mahdolliset arvot: tyhja (tarkoittaa etta ko. osoite ei ole paras osoite), 1 (ko. osoite on paras osoite).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PintaalaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Huoneiston pinta-ala taysina neliometreina, ilman etunollia. Muoto on 0-5 numeroa tai voi olla myos tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,5})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PoissaolokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kun luonnollinen henkilo, jolla on kotikunta Suomessa muuttaa vakinaisesti ulkomaille tai Suomen kansalainen syntyy poissaolevaan vaestoon, merkitaan hanelle poissaolon laatu. Ulkomaalainen, jolla on ollut kotikunta Suomessa, merkitaan vaestorekisterista poistetuksi ja Suomen kansalainen merkitaan poissaolevaan vaestoon. Poissaoleva vaesto = ne Suomen kansalaiset, jotka asuvat vakinaisesti ulkomailla. Mahdolliset arvot: tyhja, 0 = kotipaikka pohjoismaissa, 1 = kotipaikka muualla kuin pohjoismaissa, 5 = henkikirjoituksessa kahdesti tietymattomissa, 6 = syntynyt poissaolevaan vaestoon, 7 = rekisteroity poissaolevaan vaestoon, 8 = rekisteroity poissaolevaan vaestoon perustietojen siirrossa, 9 = ulkomaalainen, joka on poistettu vaestorekisterista</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+			<xs:enumeration value="9"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PoissaoloTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon poissaolokoodiin liittyva selvakielinen teksti. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PorraskirjainTyyppi">
+		<xs:annotation>
+			<xs:documentation>Porraskirjain on huoneiston tunnisteen kirjainosa. Se kertoo missa portaassa huoneisto sijaitsee. Mahdolliset arvot: yksi iso kirjain joukosta A - Ö tai tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([A-ZÅÄÖ]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PostinumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto on 5 numeroa tai voi olla myos tyhja. Postinumeron kaksi ensimmaista merkkia maarittelee, milla alueella postinumeron mukainen paikkakunta sijaitsee. Postinumeron kolme viimeista numeroa maarittelee, mihin postinumeroalueen sisalla olevaan osoitetoimipaikkaan lahetys lajitellaan. Postinumerot maarittelee Suomen Posti.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{5})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PostinumeroToimipaikkaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-56 merkkia. Kiinteistoyksikon tai rakennuksen sijaintiosoitteen postinumero ja postitoimipaikan nimi yhdessa valilyonnilla erotettuna.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="56"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PostiosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PostitoimipaikkaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Postitoimipaikan nimi. Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PrakennustunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Pysyva rakennustunnus - VTJ-PRT on 10-merkkinen, 1-alkuinen numerosarja, jonka viimeinen merkki on aakkosnumeerinen tarkistemerkki. Kayttoonotto syyskuu 2014. Voi olla myos tyhja </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{9}[0-9A-Z]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Rajoituskoodi3Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Tata tietotyyppia kaytetaan vain silloin kun palautetaan tietoa edunvalvonnasta, jossa rajoituskoodi on 3 (eli julistettu vajaavaltaiseksi).  Mahdolliset arvot: tyhja = henkilolla ei ole rajoituskoodin 3 mukaista edunvalvontaa, 3 = henkilolla on rajoituskoodin 3 mukainen edunvalvonta ja hanet on julistettu vajaavaltaiseksi.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RajoituskoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko paamiehen toimintakelpoisuutta rajoitettu ja miten. Mahdolliset arvot: tyhja, 1=ei rajoitettu, 2=osittain rajoitettu, 3=julistettu vajaavaltaiseksi.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RakennusLkmTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-4 numeroa. Rakennusten lukumaara (henkilon omistukset).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,4})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RakennusluokkakoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rakennuksen paaasiallinen rakennusluokka Tilastokeskuksen vahvistaman luokituksen mukaisesti. Muoto 0-4 numeroa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9]{0,4}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RakennustunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rakennustunnus on kiinteistotunnus+tarkistusmerkki+rakennusnumero, KKK-SSS-RRRR-YYYY-T-nnn. Rakennustunnus on 23 merkkia pitka merkkijono, joka saa sisaltaa numeroita (merkit 1-18) ja isoja kirjaimia A-Z (merkki 15). Voi olla myos tyhja </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="23"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SahkoinenAsiointitunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Sahkoinen asiointitunnus on muotoa NNNNNNNNT, jossa NNNNNNNN=juokseva numero valilta 10000001-89999999, ja T=tarkistusmerkki, joka muodostetaan samalla menetelmalla kuin henkilotunnuksen tarkistusmerkki. Muoto 8 numeroa ja 1 numero tai iso kirjain joukosta ABCDEFHJKLMNPRSTUVWXY. Voi olla myos tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{8}[ABCDEFHJKLMNPRSTUVWXY0-9]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SahkopostiLajikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Sahkopostin lajikoodi. Mahdolliset arvot: 2 numeroa tai voi olla tyhja. 99=henkilon ilmoittama sahkopostiosoite, 11=maistraatin sahkopostiosoite, 12=vaaliviranomaisen sahkopostiosoite.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SahkopostiosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>Sahkopostiosoite. Muoto 0-255 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="255"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Sailyttaa22TietokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Kertoo, onko selvitetty, etta henkilo sailyttaa Suomen kansalaisuuden tayttaessaan 22 vuotta. Mahdolliset arvot: tyhja, 1=on selvitetty ja sailyttaa</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SanomatunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SiviilisaatykoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon siviilisaaty. Mahdolliset arvot: tyhja, 0=ei tietoa, 1=naimaton, 2=avioliitossa, 3=asumuserossa, 4=eronnut, 5=leski, 6=rekisteroidyssa parisuhteessa, 7=eronnut rekisteroidysta parisuhteesta, 8=leski rekisteroidyn parisuhteen jalkeen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SiviilisaatySelvakielinenTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon siviilisaaty selvakielisena. Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SukupuolikoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon sukupuoli. Mahdolliset arvot: tyhja=puuttuu, 1=mies, 2=nainen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SukupuolikoodiMRZTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon sukupuoli. Mahdolliset arvot: tyhja=puuttuu, 1=mies, 2=nainen, X=muu</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="X"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SukupuoliTekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon sukupuoli selvakielisena. Mahdolliset arvot: 0-30 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SuomenKansalaisuusTietokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Suomen kansalaisuustietokoodi. Mahdolliset arvot: tyhja, 1=on Suomen kansalainen, 0=ei ole Suomen kansalainen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SyntymavaltioUSATietokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko syntynyt USA:ssa. Mahdolliset arvot: tyhja, 1=on syntynyt USA:ssa, 0=ei ole syntynyt USA:ssa</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TehtavienjakokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Onko annettu maarays edunvalvojan tehtavien jaosta edunvalvojien kesken. Mahdolliset arvot: tyhja, 1=on annettu maarays tehtavien jaosta.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Teksti100Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Teksti120Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-120 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="120"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Teksti200Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-200 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TietojenPoimintaaikaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tietojen poiminta-aika on aika, jolloin tiedot on poimittu vtj:sta. Tietojen poiminta-ajan muoto on vvvvkkpphhmmss, jossa vvvv = vuosi neljalla numerolla, kk = kuukausi, pp = paiva, hh = tunnit kahdella numerolla, mm = minuutit, ss = sekunnit. Mahdolliset arvot: tyhja tai 14 numeroa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{14})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TunnistuksenTapaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Voi saada arvot etarekisteroity, kasvokkain, syntyma, valillisesti (kela-eessi)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="120"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TunnistuksenTietolahdeTyyppi">
+		<xs:annotation>
+			<xs:documentation>Voi saada arvot asiakirja (virallinen), muu (henkilo itse) ja viranomainen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="120"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TurvakieltokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tieto voimassaolevasta turvakiellosta. Mahdolliset arvot: 9=henkilolla on voimassaoleva turvakielto, voi olla myos tyhja (=ei ole voimassaolevaa turvakieltoa)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="9"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UlkomainenHenkiloTunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Tunnuksen muoto 0-30 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UlkomainenLahiosoiteTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vakinaisen ja tilapaisen ulkomaisen osoitteen seka ulkomaisen postiosoitteen lahiosoitteen esittamiseen kaytetty tietotyyppi. Muoto 0-80 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="80"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UlkomainenPaikkakuntaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vakinaisen ja tilapaisen ulkomaisen osoitteen paikkakunta ja ulkomaisen postiosoitteen paikkakunta. Muoto 0-80 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="80"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UlkomainenPaikkakuntaJaValtioTyyppi">
+		<xs:annotation>
+			<xs:documentation>SoSo-sanomissa kaytetty vakinaisen ja tilapaisen ulkomaisen osoitteen paikkakunta/postitoimipaikka-tieto. Tahan kenttaan viedaan tietokannassa oleva ulkomaisen paikkakunnan/postitoimipaikan nimi ja valtion nimi pilkulla toisistaan erotettuna. Muoto 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UlkomainenSyntymapaikkaTyyppi">
+		<xs:annotation>
+			<xs:documentation>Ulkomaisen syntymapaikan paikkakunta. Muoto 0-50 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="USAnKansalaisuusTietokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Usan kansalaisuustietokoodi. Mahdolliset arvot: tyhja, 1=on USA:n kansalainen, 0=ei ole USA:n kansalainen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UskontokuntakoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Uskontokunnan koodi. Muoto 0-6 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="6"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UskontokuntaLajiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon uskontokuntalajin tyyppi. Mahdolliset arvot tyhja= ei tietoa, 1 = ei uskontokuntaa, 2 = evl, 3 = ort, 5 = saksalainen kirkko, 6 = Olaus Petri</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UskontokuntaNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Uskontokunnan nimi. Muoto 0-72 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="72"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VaalilajiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vaalilaji. Mahdolliset arvot: Eduskunta = Edukauntavaalit, Europarlamentti = Europarlamenttivaalit, Kunta-maakunta = Kunta- ja/tai maakuntavaalit, Presidentti = Presidentinvaalit </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Eduskunta"/>
+			<xs:enumeration value="Europarlamentti"/>
+			<xs:enumeration value="Kunta-maakunta"/>
+			<xs:enumeration value="Presidentti"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VaalipiirinumeroTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vaalipiirin numerotunnus. Muoto 0-2 numeroa.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{0,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Valtiokoodi2Tyyppi">
+		<xs:annotation>
+			<xs:documentation>ISO 3166-1-koodiston mukainen kaksikirjaiminen valtionimeen liittyva tunnus. Muoto kaksi kirjainta tai voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Valtiokoodi3Tyyppi">
+		<xs:annotation>
+			<xs:documentation>ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus. Muoto 3 numeroa tai voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{3})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ValtioNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Valtion nimi selvakielisena (lyhyt muoto) 0-100 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="100"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ValtioNimi30Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Valtion nimi selvakielisena 0-30 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="30"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ValtioPostinimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Valtion nimi kansainvalisessa postiliikenteessa. 0-20 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VersioTyyppi">
+		<xs:annotation>
+			<xs:documentation>Muoto 0-10 merkkia</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViranomainenNimiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Viranomaisen nimi. Muoto 0-72 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="72"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViranomainenNimilyhenne15Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Viranomaisen nimilyhenne. Muoto 0-15 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="15"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViranomainenNimilyhenne16Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Viranomaisen nimilyhenne. Muoto 0-16 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="16"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViranomaiskoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Rekisterinpitajan tai muun viranomaisen koodina (viranomaiskoodi) palautetaan viranomaisnumeron kolme viimeista merkkia. Muoto: 3 numeroa tai voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{3})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Viranomaiskoodi6Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Rekisterinpitajan tai muun viranomaisen koodina (viranomaiskoodi) palautetaan viranomaisnumero. Muoto: 6 numeroa tai voi olla tyhja.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{6})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ViroValtiokoodi3Tyyppi">
+		<xs:annotation>
+			<xs:documentation>ISO 3166-1 koodiston mukainen kolmenumeroinen Viron valtioon liittyvä tunnus. Mahdolliset arvot: 233</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="233"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VuodenvaihdeTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vuodenvaihde aikavalilla 1.2.vvvv-31.12.vvvv vuodenvaihteen tietona vvvv-1/vvvv (vvvv=kuluva vuosi) ja aikavalilla 1.1.vvvv-31.1.vvvv vuodenvaihteen tietona vvvv-2/vvvv-1. eli tammikuussa naytetaan viela "edellisen edellista" vuodenvaihdetta ja 1.2. alkaen sitten edellista. Esitysmuoto esim. 2005/2006. Muoto 0-9 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="9"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VoimassaolokoodiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vtj:n tietojen (esim. henkilotunnuksen/sahkoisen asiointitunnuksen/avioliiton/rekisteroidyn parisuhteen/henkilosuhteen) voimassaolo. Mahdolliset arvot: tyhja, 1=aktiivi, voimassa oleva, 2=passiivi, ei voimassa oleva, paattynyt.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VoimassaolotekstiTyyppi">
+		<xs:annotation>
+			<xs:documentation>Vtj:n tietojen (esim. ulkomaisen henkilonumeron) voimassaolo. Mahdolliset arvot: tyhja, Aktiivi, Passiivi, Aktiv, Passiv</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=""/>
+			<xs:enumeration value="Aktiivi"/>
+			<xs:enumeration value="Passiivi"/>
+			<xs:enumeration value="Aktiv"/>
+			<xs:enumeration value="Passiv"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="YksilointitunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Henkilon yksilointitunnus muodossa NNNNNVNNNNT, jossa N = Heksadesimaaliluku (0-9, A-F), V = valimerkki, T = tarkistemerkki (modulus 31 desimaaliluvuksi muutetusta heksadesimaaliluvusta).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9A-F]{5}[T\-]{1}[0-9A-F]{4}[0-9ABCDEFHJKLMNPRSTUVWXY]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="YritysNimi80Tyyppi">
+		<xs:annotation>
+			<xs:documentation>Edunvalvojana toimivan yrityksen nimi. Muoto 0-80 merkkia.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0"/>
+			<xs:maxLength value="80"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="YtunnusTyyppi">
+		<xs:annotation>
+			<xs:documentation>Edunvalvojana toimivan yrityksen tai yhteison Y-tunnus. Muoto: 7 numeroa, valiviiva, numero tarkistusmerkkina tai voi olla tyhja</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9]{7}\-[0-9]{1})?"/>
+		</xs:restriction>
+	</xs:simpleType>
 </xs:schema>
