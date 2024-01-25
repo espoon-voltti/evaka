@@ -148,7 +148,10 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
                     SELECT pl.unit_id, pl.child_id, dgp.daycare_group_id AS group_id, pl.id AS placement_id, pl.type AS placement_type
                     FROM placement pl
                     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :date
-                    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date
+                    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date AND NOT EXISTS (
+                        SELECT 1 FROM backup_care bc
+                        WHERE daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = pl.child_id
+                    )
                 ) pl USING (unit_id, child_id)
                 LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
                 LEFT JOIN service_need_option sno on sn.option_id = sno.id
