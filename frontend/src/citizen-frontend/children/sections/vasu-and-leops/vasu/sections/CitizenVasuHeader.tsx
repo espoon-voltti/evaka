@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { VasuDocument } from 'lib-common/generated/api-types/vasu'
+import { tabletMin } from 'lib-components/breakpoints'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -15,9 +16,12 @@ import { useTranslation } from '../../../../../localization'
 import { VasuStateChip } from '../components/VasuStateChip'
 
 const HeaderSection = styled(ContentArea)`
-  display: flex;
-  justify-content: space-between;
   padding: ${defaultMargins.L};
+
+  @media (min-width: ${tabletMin}) {
+    display: flex;
+    justify-content: space-between;
+  }
 `
 const Titles = styled.div`
   ${H1} {
@@ -30,8 +34,14 @@ const Titles = styled.div`
 const StateAndConfidentiality = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  text-align: end;
+  @media (min-width: ${tabletMin}) {
+    align-items: flex-end;
+    text-align: end;
+    margin-top: 0;
+  }
+  align-items: flex-start;
+  text-align: start;
+  margin-top: ${defaultMargins.m};
 `
 const Confidential = styled.div`
   margin-top: ${defaultMargins.xs};
