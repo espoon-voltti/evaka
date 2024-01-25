@@ -12,6 +12,7 @@ import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
 import { fromCallback } from '../promise-utils.js'
 import { Sessions } from '../session.js'
+import { randomBytes } from 'node:crypto'
 
 const auditEventGatewayId =
   (gatewayRole === 'enduser' && 'eugw') ||
@@ -127,6 +128,10 @@ export const login = async (
   await fromCallback<void>((cb) => req.logIn(user, cb))
   // Passport has now regenerated the active session and saved it, so we have a
   // guarantee that the session ID has changed and Redis has stored the new session data
+
+  req.session.antiCsrfToken = (
+    await fromCallback<Buffer>((cb) => randomBytes(32, cb))
+  ).toString('base64')
 }
 
 export const logout = async (

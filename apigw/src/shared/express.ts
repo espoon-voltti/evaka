@@ -51,6 +51,7 @@ export class InvalidRequest extends BaseError {}
 // Use TS interface merging to add fields to express req.session
 declare module 'express-session' {
   interface SessionData {
+    antiCsrfToken?: string
     idpProvider?: string | null
     logoutToken?: LogoutToken
     employeeIdToken?: string
