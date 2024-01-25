@@ -137,22 +137,25 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
                 JOIN daycare dc ON dc.id = ca.unit_id
                 JOIN person ch ON ch.id = ca.child_id
                 JOIN (
-                    SELECT bc.unit_id, child_id, group_id, pl.id AS placement_id, pl.type AS placement_type
+                    -- children with backup care in this unit
+                    SELECT bc.child_id, bc.group_id, pl.id AS placement_id, pl.type AS placement_type
                     FROM backup_care bc
-                    JOIN placement pl USING (child_id)
-                    WHERE daterange(bc.start_date, bc.end_date, '[]') @> :date
-                    AND daterange(pl.start_date, pl.end_date, '[]') @> :date
-
+                    JOIN placement pl ON pl.child_id = bc.child_id
+                    WHERE bc.unit_id = :unitId
+                        AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+                        AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+        
                     UNION ALL
-
-                    SELECT pl.unit_id, pl.child_id, dgp.daycare_group_id AS group_id, pl.id AS placement_id, pl.type AS placement_type
+        
+                    -- children placed into this unit without backup care
+                    SELECT pl.child_id, dgp.daycare_group_id AS group_id, pl.id AS placement_id, pl.type AS placement_type
                     FROM placement pl
                     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :date
-                    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date AND NOT EXISTS (
+                    WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :date AND NOT EXISTS (
                         SELECT 1 FROM backup_care bc
                         WHERE daterange(bc.start_date, bc.end_date, '[]') @> :date AND bc.child_id = pl.child_id
                     )
-                ) pl USING (unit_id, child_id)
+                ) pl ON pl.child_id = ca.child_id
                 LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
                 LEFT JOIN service_need_option sno on sn.option_id = sno.id
                 LEFT JOIN service_need_option default_sno on placement_type = default_sno.valid_placement_type AND default_sno.default_option
@@ -161,26 +164,35 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             GROUP BY pl.group_id
         ), staff AS (
             SELECT sa.group_id as group_id, SUM(sa.capacity) AS capacity
-            FROM daycare_group g
-            JOIN daycare ON g.daycare_id = daycare.id
-            JOIN (
+            FROM (
                 SELECT sa.group_id, 7 * sa.count AS capacity, FALSE AS realtime
                 FROM staff_attendance sa
-                WHERE sa.date = :date
+                    JOIN daycare_group dg ON dg.id = sa.group_id
+                    JOIN daycare dc ON dc.id = dg.daycare_id
+                WHERE sa.date = :date AND dc.id = :unitId
+                  AND daterange(dg.start_date, dg.end_date, '[]') @> :date
+                  AND NOT 'REALTIME_STAFF_ATTENDANCE' = ANY(dc.enabled_pilot_features)
         
                 UNION ALL
         
                 SELECT sa.group_id, sa.occupancy_coefficient AS capacity, TRUE AS realtime
                 FROM staff_attendance_realtime sa
-                WHERE sa.departed IS NULL
+                    JOIN daycare_group dg ON dg.id = sa.group_id
+                    JOIN daycare dc ON dc.id = dg.daycare_id
+                WHERE sa.departed IS NULL AND dc.id = :unitId
+                  AND daterange(dg.start_date, dg.end_date, '[]') @> :date
+                  AND 'REALTIME_STAFF_ATTENDANCE' = ANY(dc.enabled_pilot_features)
         
                 UNION ALL
         
                 SELECT sa.group_id, sa.occupancy_coefficient AS capacity, TRUE AS realtime
                 FROM staff_attendance_external sa
-                WHERE sa.departed IS NULL
-            ) sa ON sa.group_id = g.id AND realtime = ('REALTIME_STAFF_ATTENDANCE' = ANY(daycare.enabled_pilot_features))
-            WHERE g.daycare_id = :unitId AND daterange(g.start_date, g.end_date, '[]') @> :date
+                    JOIN daycare_group dg ON dg.id = sa.group_id
+                    JOIN daycare dc ON dc.id = dg.daycare_id
+                WHERE sa.departed IS NULL AND dc.id = :unitId
+                  AND daterange(dg.start_date, dg.end_date, '[]') @> :date
+                  AND 'REALTIME_STAFF_ATTENDANCE' = ANY(dc.enabled_pilot_features)
+            ) sa
             GROUP BY sa.group_id
         )
         SELECT
@@ -197,7 +209,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             JOIN daycare_group g ON u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
             LEFT JOIN child c ON c.group_id = g.id
             LEFT JOIN staff s ON s.group_id = g.id
-        WHERE u.id = :unitId
+        WHERE u.id = :unitId;
         """
             .trimIndent()
 
