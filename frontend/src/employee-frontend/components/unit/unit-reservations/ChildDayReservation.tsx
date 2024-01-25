@@ -41,6 +41,7 @@ interface Props {
   dateInfo: UnitDateInfo
   reservation: ReservationResponse | undefined
   absence: AbsenceType | null
+  absenceStaffCreated: boolean | undefined
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
@@ -55,6 +56,7 @@ export default React.memo(function ChildDayReservation({
   dateInfo,
   reservation,
   absence,
+  absenceStaffCreated,
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
@@ -102,7 +104,7 @@ export default React.memo(function ChildDayReservation({
           </TimeCell>
         ) : absence ? (
           reservationIndex === 0 ? (
-            <AbsenceDay type={absence} />
+            <AbsenceDay type={absence} staffCreated={!!absenceStaffCreated} />
           ) : null
         ) : reservation && reservation.type === 'TIMES' ? (
           <ReservationTooltip

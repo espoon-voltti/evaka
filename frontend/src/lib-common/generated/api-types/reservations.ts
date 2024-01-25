@@ -35,6 +35,14 @@ export interface AbsenceRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.AbsenceTypeResponse
+*/
+export interface AbsenceTypeResponse {
+  absenceType: AbsenceType
+  staffCreated: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Child
 */
 export interface Child {
@@ -63,8 +71,8 @@ export interface ChildDatePresence {
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
 */
 export interface ChildRecordOfDay {
-  absenceBillable: AbsenceType | null
-  absenceNonbillable: AbsenceType | null
+  absenceBillable: AbsenceTypeResponse | null
+  absenceNonbillable: AbsenceTypeResponse | null
   attendances: OpenTimeRange[]
   backupGroupId: UUID | null
   childId: UUID

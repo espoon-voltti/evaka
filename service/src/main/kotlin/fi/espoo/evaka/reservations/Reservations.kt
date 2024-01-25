@@ -130,6 +130,8 @@ sealed class Reservation : Comparable<Reservation> {
     }
 }
 
+data class AbsenceTypeResponse(val absenceType: AbsenceType, val staffCreated: Boolean)
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class ReservationResponse : Comparable<ReservationResponse> {
     @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()

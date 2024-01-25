@@ -401,7 +401,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = testChild_1.id,
                             reservations = emptyList(),
                             attendances = emptyList(),
-                            absenceBillable = AbsenceType.OTHER_ABSENCE,
+                            absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                             absenceNonbillable = null,
                             possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
                             dailyServiceTimes = null,
@@ -902,8 +902,8 @@ class AttendanceReservationsControllerIntegrationTest :
                     ),
                 attendances =
                     listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), endTime = null)),
-                absenceBillable = AbsenceType.OTHER_ABSENCE,
-                absenceNonbillable = AbsenceType.OTHER_ABSENCE,
+                absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
+                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
                 dailyServiceTimes = null,
@@ -966,8 +966,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             endTime = LocalTime.of(17, 0)
                         )
                     ),
-                absenceBillable = AbsenceType.FORCE_MAJEURE,
-                absenceNonbillable = AbsenceType.OTHER_ABSENCE,
+                absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true),
+                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
                 dailyServiceTimes = null,

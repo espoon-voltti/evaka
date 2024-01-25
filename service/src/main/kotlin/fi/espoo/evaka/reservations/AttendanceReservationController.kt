@@ -654,11 +654,8 @@ data class UnitAttendanceReservations(
         val childId: ChildId,
         val reservations: List<ReservationResponse>,
         val attendances: List<OpenTimeRange>,
-        // TODO
-        //        val absenceBillable: AbsenceTypeAndCreator?,
-        //        val absenceNonbillable: AbsenceTypeAndCreator?,
-        val absenceBillable: AbsenceType?,
-        val absenceNonbillable: AbsenceType?,
+        val absenceBillable: AbsenceTypeResponse?,
+        val absenceNonbillable: AbsenceTypeResponse?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val groupId: GroupId?,
@@ -875,7 +872,7 @@ private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<OpenTimeRange>>,
-    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
+    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>
 )
 
 private data class ChildDataQueryResult(
@@ -912,7 +909,7 @@ private data class AttendanceTimesForDate(
 
 private data class AbsenceForDate(
     val date: LocalDate,
-    val type: AbsenceType,
+    @Json val absenceTypeResponse: AbsenceTypeResponse,
     val category: AbsenceCategory
 )
 
@@ -953,10 +950,14 @@ SELECT
     coalesce((
         SELECT jsonb_agg(json_build_object(
             'date', a.date,
-            'type', a.absence_type,
-            'category', a.category
+            'category', a.category,
+            'absenceTypeResponse', json_build_object(
+                'absenceType', a.absence_type,
+                'staffCreated', eu.type = 'EMPLOYEE'
+            )
         ) ORDER BY a.date)
         FROM absence a
+        JOIN evaka_user eu ON a.modified_by = eu.id 
         WHERE a.child_id = p.id AND between_start_and_end(:dateRange, a.date)
     ), '[]'::jsonb) AS absences
 FROM person p
@@ -992,7 +993,7 @@ WHERE p.id = ANY(:childIds)
                     row.absences
                         .groupBy(
                             keySelector = { it.date },
-                            valueTransform = { it.category to it.type }
+                            valueTransform = { it.category to it.absenceTypeResponse }
                         )
                         .mapValues { it.value.toMap() },
             )

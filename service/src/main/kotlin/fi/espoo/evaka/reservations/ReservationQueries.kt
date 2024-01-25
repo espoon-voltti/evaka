@@ -574,7 +574,7 @@ SELECT pcd.child_id,
        -- absence roll up
        (SELECT coalesce(jsonb_agg(json_build_object(
                'category', s.category)), '[]'::jsonb)
-        FROM (SELECT ab.category, eu.type = 'EMPLOYEE' as staff_created
+        FROM (SELECT ab.category
               FROM absence ab
               JOIN evaka_user eu ON ab.modified_by = eu.id
               WHERE ab.child_id = pcd.child_id
