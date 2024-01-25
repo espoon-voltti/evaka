@@ -230,7 +230,7 @@ fun Database.Read.getReservationsForChildInRange(
     data class ReservationWithDate(val date: LocalDate, val reservation: ReservationResponse)
     return createQuery(
             """
-                SELECT ar.date, 
+SELECT ar.date, 
        ar.start_time, 
        ar.end_time, 
        eu.type = 'EMPLOYEE' as staff_created
@@ -567,7 +567,7 @@ SELECT pcd.child_id,
                'staffCreated', s.staff_created)), '[]'::jsonb)
         FROM (select ar.start_time, ar.end_time, eu.type = 'EMPLOYEE' as staff_created
                 FROM attendance_reservation ar
-                LEFT JOIN evaka_user eu ON ar.created_by = eu.id
+                JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id
                 AND ar.date = :examinationDate) s)
            AS reservations,
@@ -576,7 +576,7 @@ SELECT pcd.child_id,
                'category', s.category)), '[]'::jsonb)
         FROM (SELECT ab.category, eu.type = 'EMPLOYEE' as staff_created
               FROM absence ab
-              LEFT JOIN evaka_user eu ON ab.modified_by = eu.id
+              JOIN evaka_user eu ON ab.modified_by = eu.id
               WHERE ab.child_id = pcd.child_id
                 AND ab.date = :examinationDate) s)
            AS absences

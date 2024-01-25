@@ -14,7 +14,7 @@ import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
-import fi.espoo.evaka.reservations.ReservationResponse
+import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
@@ -586,7 +586,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         reservations =
                                             listOf(
                                                 ChildReservation(
-                                                    reservation = ReservationResponse.NoTimes(true),
+                                                    reservation = Reservation.NoTimes,
                                                     created =
                                                         HelsinkiDateTime.of(
                                                             placementStart,
@@ -611,10 +611,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                             listOf(
                                                 ChildReservation(
                                                     reservation =
-                                                        ReservationResponse.Times(
+                                                        Reservation.Times(
                                                             LocalTime.of(8, 0),
-                                                            LocalTime.of(16, 0),
-                                                            true
+                                                            LocalTime.of(16, 0)
                                                         ),
                                                     created =
                                                         HelsinkiDateTime.of(

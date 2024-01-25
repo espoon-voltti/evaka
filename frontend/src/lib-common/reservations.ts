@@ -69,6 +69,19 @@ export function validateTimeRange(
   return { startTime, endTime }
 }
 
+export function parseReservation(
+  reservation: JsonOf<Reservation>
+): Reservation {
+  if (reservation.type === 'TIMES') {
+    return {
+      ...reservation,
+      startTime: LocalTime.parseIso(reservation.startTime),
+      endTime: LocalTime.parseIso(reservation.endTime)
+    }
+  } else {
+    return reservation
+  }
+}
 export function parseReservationDto(
   reservation: JsonOf<ReservationResponse>
 ): ReservationResponse {

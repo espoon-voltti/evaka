@@ -244,7 +244,6 @@ describe('Child confirmed reservations', () => {
       }
     ]
 
-    await page.page.pause()
     for (const childItem of expectedChildItems) {
       await confirmedReservationPage.assertChildDetails(
         childItem.date,
@@ -394,17 +393,6 @@ async function insertConfirmedDaysTestData() {
       end: LocalTime.of(16, 45)
     }
   }).save()
-
-  // await Fixture.attendanceReservation({
-  //   type: 'RESERVATIONS',
-  //   childId: enduserChildFixturePorriHatterRestricted.id,
-  //   date: LocalDate.of(2022, 5, 19),
-  //   reservation: { start: null, end: LocalTime.of(13, 45) },
-  //   secondReservation: {
-  //     start: LocalTime.of(14, 30),
-  //     end: LocalTime.of(16, 45)
-  //   }
-  // }).save()
 }
 
 async function insertTestHolidayPeriod(period: FiniteDateRange) {

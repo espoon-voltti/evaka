@@ -117,6 +117,17 @@ sealed class Reservation : Comparable<Reservation> {
             else -> throw IllegalStateException("Unknown reservation type")
         }
     }
+
+    companion object {
+        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?) =
+            if (startTime != null && endTime != null) {
+                Times(startTime, endTime)
+            } else if (startTime == null && endTime == null) {
+                NoTimes
+            } else {
+                throw IllegalArgumentException("Both start and end times must be null or not null")
+            }
+    }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")

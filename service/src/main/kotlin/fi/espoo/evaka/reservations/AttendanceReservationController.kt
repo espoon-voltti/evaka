@@ -938,7 +938,9 @@ SELECT
             'endTime', ar.end_time,
             'staffCreated', eu.type = 'EMPLOYEE'
         ) ORDER BY ar.date, ar.start_time)
-        FROM attendance_reservation ar LEFT JOIN evaka_user eu ON ar.created_by = eu.id WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
+        FROM attendance_reservation ar 
+        JOIN evaka_user eu ON ar.created_by = eu.id
+        WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
     ), '[]'::jsonb) AS reservations,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
