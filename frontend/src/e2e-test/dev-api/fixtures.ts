@@ -1855,8 +1855,9 @@ export class Fixture {
     return new ChildAttendanceBuilder({
       childId: 'not set',
       unitId: 'not set',
-      arrived: HelsinkiDateTime.now(),
-      departed: HelsinkiDateTime.now()
+      date: LocalDate.todayInHelsinkiTz(),
+      arrived: LocalTime.nowInHelsinkiTz(),
+      departed: LocalTime.nowInHelsinkiTz()
     })
   }
 

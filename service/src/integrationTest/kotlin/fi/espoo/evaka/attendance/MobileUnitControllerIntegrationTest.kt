@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import com.github.kittinunf.fuel.jackson.responseObject
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -17,8 +16,11 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
@@ -118,28 +120,23 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertAttendance(testChild_5.id, testDaycare.id, today, LocalTime.of(10, 15, 0))
             tx.insertAttendance(testChild_6.id, testDaycare.id, today, LocalTime.of(10, 30, 0))
 
-            FixtureBuilder(tx)
-                .addEmployee()
-                .withName("One", "in group 1")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd {
-                    tx.markStaffArrival(employeeId, groupId, now.minusDays(1), BigDecimal(7.0))
-                }
-                .addEmployee()
-                .withName("Two", "in group 1")
-                .withGroupAccess(testDaycare.id, groupId)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd {
-                    tx.markStaffArrival(employeeId, groupId, now.minusDays(1), BigDecimal(7.0))
-                }
-                .addEmployee()
-                .withName("Three", "in group 2")
-                .withGroupAccess(testDaycare.id, groupId2)
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .saveAnd {
-                    tx.markStaffArrival(employeeId, groupId, now.minusDays(1), BigDecimal(7.0))
-                }
+            val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
+            tx.insert(employee1)
+            tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId))
+            tx.markStaffArrival(employee1.id, groupId, now.minusDays(1), BigDecimal(7.0))
+
+            val employee2 = DevEmployee(firstName = "Two", lastName = "in group 1")
+            tx.insert(employee2)
+            tx.insertDaycareAclRow(testDaycare.id, employee2.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee2.id, listOf(groupId))
+            tx.markStaffArrival(employee2.id, groupId, now.minusDays(1), BigDecimal(7.0))
+
+            val employee3 = DevEmployee(firstName = "Three", lastName = "in group 2")
+            tx.insert(employee3)
+            tx.insertDaycareAclRow(testDaycare.id, employee3.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee3.id, listOf(groupId2))
+            tx.markStaffArrival(employee3.id, groupId2, now.minusDays(1), BigDecimal(7.0))
         }
     }
 

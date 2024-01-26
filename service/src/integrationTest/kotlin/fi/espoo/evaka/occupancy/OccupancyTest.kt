@@ -4,8 +4,9 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -16,17 +17,26 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
+import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -62,21 +72,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val familyGroup1: GroupId = GroupId(UUID.randomUUID())
     private val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
-    private val openingDaycare: DaycareId = DaycareId(UUID.randomUUID())
-    private val openingDaycareGroup: GroupId = GroupId(UUID.randomUUID())
-
-    private val closedDaycare: DaycareId = DaycareId(UUID.randomUUID())
-    private val closedDaycareGroup: GroupId = GroupId(UUID.randomUUID())
-
-    private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employeeId2 = EmployeeId(UUID.randomUUID())
-
     @BeforeEach
     fun setUp() {
         db.transaction {
             it.insertServiceNeedOptions()
-            it.insert(DevEmployee(id = employeeId))
-            it.insert(DevEmployee(id = employeeId2))
 
             it.insert(DevCareArea(id = careArea1, name = "1", shortName = "1"))
             it.insert(DevCareArea(id = careArea2, name = "2", shortName = "2"))
@@ -107,48 +106,30 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2))
             it.insertTestCaretakers(groupId = familyGroup1, amount = 3.0)
             it.insertTestCaretakers(groupId = familyGroup2, amount = 3.0)
-
-            it.insert(
-                DevDaycare(
-                    id = openingDaycare,
-                    areaId = careArea1,
-                    openingDate = today.plusWeeks(1),
-                    closingDate = null,
-                    providerType = ProviderType.MUNICIPAL,
-                    type =
-                        setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
-                )
-            )
-            it.insert(DevDaycareGroup(id = openingDaycareGroup, daycareId = openingDaycare))
-            it.insertTestCaretakers(groupId = openingDaycareGroup, amount = 3.0)
-
-            it.insert(
-                DevDaycare(
-                    id = closedDaycare,
-                    areaId = careArea1,
-                    openingDate = null,
-                    closingDate = today.minusWeeks(1),
-                    providerType = ProviderType.MUNICIPAL,
-                    type =
-                        setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
-                )
-            )
-            it.insert(DevDaycareGroup(id = closedDaycareGroup, daycareId = closedDaycare))
-            it.insertTestCaretakers(groupId = closedDaycareGroup, amount = 3.0)
         }
     }
 
     @Test
     fun `calculateDailyUnitOccupancyValues smoke test`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
         }
 
         db.read {
@@ -190,15 +171,25 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues smoke test`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
         }
 
         db.read { tx ->
@@ -220,19 +211,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun Database.Transaction.addRealtimeAttendanceToday(
+    private fun realtimeAttendanceToday(
         employeeId: EmployeeId,
         minusDaysFromNow: Long = 0,
         type: StaffAttendanceType = StaffAttendanceType.PRESENT
     ) =
-        FixtureBuilder.EmployeeFixture(this, today, employeeId)
-            .addRealtimeAttendance()
-            .inGroup(daycareGroup1)
-            .withCoefficient(BigDecimal(7))
-            .withType(type)
-            .arriving(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)))
-            .departing(HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39)))
-            .save()
+        DevStaffAttendance(
+            employeeId = employeeId,
+            groupId = daycareGroup1,
+            type = type,
+            arrived = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)),
+            departed = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39)),
+        )
 
     private fun assertRealtimeAttendances(
         expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>
@@ -275,17 +265,31 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with realtime staff attendance`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId)
+        val employee = DevEmployee()
+        val attendance = realtimeAttendanceToday(employee.id)
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance)
         }
 
         assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 1.0, 14.3)))
@@ -310,18 +314,33 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with realtime staff attendance for one employee & two days`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId, 1)
-            tx.addRealtimeAttendanceToday(employeeId)
+        val employee = DevEmployee()
+        val attendance1 = realtimeAttendanceToday(employee.id, 1)
+        val attendance2 = realtimeAttendanceToday(employee.id)
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance1)
+            tx.insert(attendance2)
         }
 
         assertRealtimeAttendances(
@@ -334,18 +353,34 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with realtime staff attendance for two employees & one day`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId)
-            tx.addRealtimeAttendanceToday(employeeId2)
+        val employee1 = DevEmployee()
+        val employee2 = DevEmployee()
+        val attendances =
+            listOf(realtimeAttendanceToday(employee1.id), realtimeAttendanceToday(employee2.id))
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee1)
+            tx.insert(employee2)
+            attendances.forEach { tx.insert(it) }
         }
 
         db.read { tx ->
@@ -367,20 +402,40 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with realtime staff attendance for two days & two employees`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId, 1)
-            tx.addRealtimeAttendanceToday(employeeId)
-            tx.addRealtimeAttendanceToday(employeeId2, 1)
-            tx.addRealtimeAttendanceToday(employeeId2)
+        val employee1 = DevEmployee()
+        val employee2 = DevEmployee()
+        val attendances =
+            listOf(
+                realtimeAttendanceToday(employee1.id, 1),
+                realtimeAttendanceToday(employee1.id),
+                realtimeAttendanceToday(employee2.id, 1),
+                realtimeAttendanceToday(employee2.id)
+            )
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+
+            tx.insert(employee1)
+            tx.insert(employee2)
+            attendances.forEach { tx.insert(it) }
         }
 
         assertRealtimeAttendances(
@@ -393,24 +448,42 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues for realtime attendance for half occupancy coefficient`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
-                .addRealtimeAttendance()
-                .inGroup(daycareGroup1)
-                .withCoefficient(BigDecimal(defaultOccupancyCoefficient / 2.0))
-                .withType(StaffAttendanceType.PRESENT)
-                .arriving(LocalTime.of(16, 21))
-                .departing(today.plusDays(1), LocalTime.of(0, 0)) // At work for 7 hours 39 minutes
-                .save()
+        val employee = DevEmployee()
+        val attendance =
+            DevStaffAttendance(
+                employeeId = employee.id,
+                groupId = daycareGroup1,
+                occupancyCoefficient = BigDecimal(defaultOccupancyCoefficient / 2.0),
+                arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 21)),
+                departed =
+                    HelsinkiDateTime.of(
+                        today.plusDays(1),
+                        LocalTime.of(0, 0)
+                    ), // At work for 7 hours 39 minutes
+            )
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance)
         }
 
         assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, 0.5, 28.6)))
@@ -418,23 +491,38 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues for realtime attendance without departing time and staff attendance`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
-                .addRealtimeAttendance()
-                .inGroup(daycareGroup1)
-                .withCoefficient(BigDecimal(3.5))
-                .withType(StaffAttendanceType.PRESENT)
-                .arriving(LocalTime.of(16, 15))
-                .save()
+        val employee = DevEmployee()
+        val attendance =
+            DevStaffAttendance(
+                employeeId = employee.id,
+                groupId = daycareGroup1,
+                occupancyCoefficient = BigDecimal(3.5),
+                arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 15)),
+                departed = null,
+            )
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance)
         }
 
         assertRealtimeAttendances(listOf(today to OccupancyValues(1.0, 0.0, 1, null, null)))
@@ -442,25 +530,45 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with both realtime staff attendance and another staff attendance count`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId)
-            // not included because of no departure time
-            FixtureBuilder.EmployeeFixture(tx, today, employeeId2)
-                .addRealtimeAttendance()
-                .inGroup(daycareGroup1)
-                .withCoefficient(BigDecimal(7))
-                .withType(StaffAttendanceType.PRESENT)
-                .arriving(HelsinkiDateTime.of(today, LocalTime.of(8, 0)))
-                .save()
+        val employee1 = DevEmployee()
+        val employee2 = DevEmployee()
+        val attendances =
+            listOf(
+                realtimeAttendanceToday(employee1.id),
+
+                // not included because of no departure time
+                DevStaffAttendance(
+                    employeeId = employee2.id,
+                    groupId = daycareGroup1,
+                    arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                    departed = null
+                ),
+            )
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+
+            tx.insert(employee1)
+            tx.insert(employee2)
+            attendances.forEach { tx.insert(it) }
 
             // this is ignored
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 5.0)
@@ -471,17 +579,33 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues with realtime staff attendance one day and non-realtime the other`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(2),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(2),
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId, 1)
+        val employee = DevEmployee()
+        val attendance = realtimeAttendanceToday(employee.id, 1)
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+
+            tx.insert(employee)
+            tx.insert(attendance)
+
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 2.0)
         }
 
@@ -498,17 +622,31 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(
         type: StaffAttendanceType
     ) {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(0)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today,
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today,
+                endDate = today
+            )
 
-            tx.addRealtimeAttendanceToday(employeeId, 0, type)
+        val employee = DevEmployee()
+        val attendance = realtimeAttendanceToday(employee.id, 0, type)
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance)
         }
 
         val (expectedCaretakers, expectedPercentage) =
@@ -527,22 +665,29 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `realizedOccupancyCoefficientUnder3y is used for realized occupancy of a child under 3 years`() {
+        val employee = DevEmployee()
+        val child = DevPerson(dateOfBirth = today.minusYears(2))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.DAYCARE_PART_TIME,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(2).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE_PART_TIME)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd {
-                        addServiceNeed()
-                            .createdBy(EvakaUserId(employeeId.raw))
-                            .withOption(
-                                snDaycareContractDays10
-                            ) // realizedOccupancyCoefficientUnder3y = 1.25
-                            .save()
-                    }
-            }
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    optionId = snDaycareContractDays10.id,
+                    startDate = today.minusDays(1),
+                    endDate = today,
+                    confirmedBy = employee.evakaUserId
+                )
+            )
         }
 
         db.read { tx ->
@@ -558,22 +703,28 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `realizedOccupancyCoefficient used for realized occupancy of a child over 3 years`() {
+        val employee = DevEmployee()
+        val child = DevPerson(dateOfBirth = today.minusYears(3).minusDays(1))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3, 0, 1).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE_PART_TIME)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd {
-                        addServiceNeed()
-                            .createdBy(EvakaUserId(employeeId.raw))
-                            .withOption(
-                                snDaycareContractDays10
-                            ) // realizedOccupancyCoefficient = 0.5
-                            .save()
-                    }
-            }
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    optionId = snDaycareContractDays10.id,
+                    startDate = today.minusDays(1),
+                    endDate = today,
+                    confirmedBy = employee.evakaUserId
+                )
+            )
         }
 
         db.read { tx ->
@@ -589,15 +740,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `confirmed occupancy for a child under 3 year old is 1,75`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.DAYCARE_PART_TIME,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE_PART_TIME)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -613,15 +767,17 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `occupancy is 1,75 when unit is family unit`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = familyUnitInArea2,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(familyUnitInArea2)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -631,10 +787,17 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `daycare occupancy with default service need for a child over 3 year old is 1,0`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -644,10 +807,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `part time daycare occupancy with default service need for a child over 3 year old is 0,54`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.DAYCARE_PART_TIME,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -657,10 +828,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `preschool occupancy with default service need is 0,5`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(6).minusMonths(5))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.PRESCHOOL,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(6, 5).saveAnd {
-                addPlacement().ofType(PlacementType.PRESCHOOL).toUnit(daycareInArea1).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -670,10 +849,18 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `preschool daycare occupancy with default service need is 1,0`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(6).minusMonths(5))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(6, 5).saveAnd {
-                addPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
         }
 
         db.read { tx ->
@@ -683,19 +870,30 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `occupancy is based on service need`() {
+        val employee = DevEmployee()
+        val child = DevPerson(dateOfBirth = today.minusYears(6).minusMonths(5))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(6, 5).saveAnd {
-                // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
-                addPlacement()
-                    .ofType(PlacementType.PRESCHOOL_DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .saveAnd {
-                        addServiceNeed()
-                            .createdBy(EvakaUserId(employeeId.raw))
-                            .withOption(snDefaultPartDayDaycare.id)
-                            .save()
-                    }
-            }
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    optionId = snDefaultPartDayDaycare.id,
+                    startDate = today,
+                    endDate = today,
+                    confirmedBy = employee.evakaUserId
+                )
+            )
         }
 
         db.read { tx ->
@@ -705,22 +903,24 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `occupancy is multiplied by assistance factor`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(3))
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(0)
-                    .toDay(1)
-                    .save()
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        capacityFactor = 2.0,
-                        validDuring = today.plusDays(1).toFiniteDateRange()
-                    )
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycareInArea1,
+                    startDate = today,
+                    endDate = today.plusDays(1)
                 )
-            }
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = child.id,
+                    capacityFactor = 2.0,
+                    validDuring = today.plusDays(1).toFiniteDateRange()
+                )
+            )
         }
 
         db.read { tx ->
@@ -744,9 +944,24 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `placement plan affects only planned occupancy`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(3))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
+                    status = ApplicationStatus.WAITING_DECISION,
+                    type = ApplicationType.DAYCARE,
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        startDate = today,
+                        endDate = today,
+                    )
+                }
         }
 
         db.read { tx ->
@@ -761,20 +976,27 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         expectedSums: Map<Int, Double>
     ) {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(6).saveAnd {
-                addPlacementPlan()
-                    .ofType(PlacementType.PRESCHOOL_DAYCARE)
-                    .fromDay(preschool.first)
-                    .toDay(preschool.last)
-                    .withPreschoolDaycareDates(
-                        FiniteDateRange(
-                            today.plusDays(preschoolDaycare.first.toLong()),
-                            today.plusDays(preschoolDaycare.last.toLong())
-                        )
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(6))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    guardianId = guardian.id,
+                    childId = child.id,
+                    status = ApplicationStatus.WAITING_DECISION,
+                    type = ApplicationType.PRESCHOOL,
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        startDate = today.plusDays(preschool.first.toLong()),
+                        endDate = today.plusDays(preschool.last.toLong()),
+                        preschoolDaycareStartDate = today.plusDays(preschoolDaycare.first.toLong()),
+                        preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
                     )
-                    .toUnit(daycareInArea1)
-                    .save()
-            }
+                }
         }
         db.read { tx ->
             expectedSums.forEach { (day, expectedSum) ->
@@ -865,13 +1087,25 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `deleted placement plan has no effect`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacementPlan()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .asDeleted()
-                    .save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(3))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = ApplicationType.DAYCARE,
+                    status = ApplicationStatus.WAITING_DECISION
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        startDate = today,
+                        endDate = today,
+                        deleted = true
+                    )
+                }
         }
 
         db.read { tx ->
@@ -883,10 +1117,32 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `if placement plan is to different unit than overlapping placement then both are counted to planned occupancy`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-                addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(3))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = ApplicationType.DAYCARE,
+                    status = ApplicationStatus.WAITING_DECISION
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        startDate = today,
+                        endDate = today,
+                    )
+                }
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = familyUnitInArea2,
+                    startDate = today,
+                    endDate = today
+                )
+            )
         }
 
         db.read { tx ->
@@ -898,10 +1154,33 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `if placement plan is to same unit as overlapping placement then the maximum is counted to planned occupancy - test 1`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).save()
-                addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(3))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = ApplicationType.DAYCARE,
+                    status = ApplicationStatus.WAITING_DECISION
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        startDate = today,
+                        endDate = today,
+                    )
+                }
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycareInArea1,
+                    type = PlacementType.DAYCARE_PART_TIME,
+                    startDate = today,
+                    endDate = today
+                )
+            )
         }
 
         db.read { tx ->
@@ -913,13 +1192,33 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `if placement plan is to same unit as overlapping placement then the maximum is counted to planned occupancy - test 2`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(3).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-                addPlacementPlan()
-                    .ofType(PlacementType.DAYCARE_PART_TIME)
-                    .toUnit(daycareInArea1)
-                    .save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(3))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = ApplicationType.DAYCARE,
+                    status = ApplicationStatus.WAITING_DECISION
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        type = PlacementType.DAYCARE_PART_TIME,
+                        startDate = today,
+                        endDate = today,
+                    )
+                }
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycareInArea1,
+                    startDate = today,
+                    endDate = today
+                )
+            )
         }
 
         db.read { tx ->
@@ -931,15 +1230,27 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `preschool placement plan with separate daycare period is handled correctly`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(6).saveAnd {
-                addPlacementPlan()
-                    .ofType(PlacementType.PRESCHOOL_DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(today.minusDays(1))
-                    .toDay(today.plusDays(1))
-                    .withPreschoolDaycareDates(FiniteDateRange(today, today))
-                    .save()
-            }
+            val guardian = DevPerson()
+            val child = DevPerson(dateOfBirth = today.minusYears(6))
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = ApplicationType.PRESCHOOL,
+                    status = ApplicationStatus.WAITING_DECISION
+                )
+                .also { applicationId ->
+                    tx.insertTestPlacementPlan(
+                        applicationId = applicationId,
+                        unitId = daycareInArea1,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        startDate = today.minusDays(1),
+                        endDate = today.plusDays(1),
+                        preschoolDaycareStartDate = today,
+                        preschoolDaycareEndDate = today
+                    )
+                }
         }
 
         db.read { tx ->
@@ -963,15 +1274,25 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `realized occupancy uses staff attendance for caretaker count`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(2),
+                endDate = today.plusDays(1)
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(2),
+                endDate = today.plusDays(1)
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-2)
-                    .toDay(1)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
 
             tx.insertTestStaffAttendance(
                 groupId = daycareGroup1,
@@ -1034,25 +1355,41 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `realized occupancy does not count absent children`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(2),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(2),
+                endDate = today
+            )
+        val absences =
+            listOf(
+                DevAbsence(
+                    childId = child.id,
+                    date = today.minusDays(1),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                ),
+                DevAbsence(
+                    childId = child.id,
+                    date = today,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-2)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-                addAbsence()
-                    .ofType(AbsenceType.SICKLEAVE)
-                    .onDay(-1)
-                    .forCategories(AbsenceCategory.BILLABLE)
-                    .save()
-                addAbsence()
-                    .ofType(AbsenceType.PLANNED_ABSENCE)
-                    .onDay(0)
-                    .forCategories(AbsenceCategory.BILLABLE)
-                    .save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            absences.forEach { tx.insert(it) }
 
             FiniteDateRange(today.minusDays(2), today).dates().forEach { date ->
                 tx.insertTestStaffAttendance(groupId = daycareGroup1, date = date, count = 3.0)
@@ -1096,11 +1433,25 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `when child is in backup care the realized occupancy is taken from backup location`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today,
+                endDate = today
+            )
+        val backupCare =
+            DevBackupCare(
+                childId = child.id,
+                unitId = familyUnitInArea2,
+                groupId = familyGroup2,
+                period = FiniteDateRange(today, today)
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
-                addBackupCare().toUnit(familyUnitInArea2).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(backupCare)
 
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 3.0)
             tx.insertTestStaffAttendance(groupId = daycareGroup2, date = today, count = 3.0)
@@ -1118,13 +1469,34 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `child can be in backup care within same unit`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = familyUnitInArea2,
+                startDate = today,
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = familyGroup1,
+                startDate = today,
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).saveAnd {
-                    addGroupPlacement().toGroup(familyGroup1).save()
-                }
-                addBackupCare().toUnit(familyUnitInArea2).toGroup(familyGroup2).save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = familyUnitInArea2,
+                    groupId = familyGroup2,
+                    period = FiniteDateRange(today, today)
+                )
+            )
 
             tx.insertTestStaffAttendance(groupId = familyGroup1, date = today, count = 3.0)
             tx.insertTestStaffAttendance(groupId = familyGroup2, date = today, count = 3.0)
@@ -1170,21 +1542,27 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `reduceDailyOccupancyValues merges periods`() {
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement1 =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.DAYCARE,
+                startDate = today.minusDays(3),
+                endDate = today.plusDays(5)
+            )
+        val placement2 =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                type = PlacementType.DAYCARE_PART_TIME,
+                startDate = today.plusDays(6),
+                endDate = today.plusDays(10)
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-3)
-                    .toDay(5)
-                    .save()
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE_PART_TIME)
-                    .toUnit(daycareInArea1)
-                    .fromDay(6)
-                    .toDay(10)
-                    .save()
-            }
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(placement2)
         }
 
         db.read { tx ->
@@ -1240,28 +1618,46 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyUnitOccupancyValues should filter with provider type`() {
+        val child1 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement1 =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement1 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement1.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
+        val child2 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement2 =
+            DevPlacement(
+                childId = child2.id,
+                unitId = familyUnitInArea2,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement2 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement2.id,
+                daycareGroupId = familyGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
         db.transaction { tx ->
-            FixtureBuilder(tx, today)
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(daycareInArea1)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-                }
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(familyUnitInArea2)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(familyGroup1).save() }
-                }
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(groupPlacement1)
+
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(placement2)
+            tx.insert(groupPlacement2)
         }
 
         db.read {
@@ -1297,28 +1693,46 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyUnitOccupancyValues should filter with unit type`() {
+        val child1 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement1 =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement1 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement1.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
+        val child2 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement2 =
+            DevPlacement(
+                childId = child2.id,
+                unitId = familyUnitInArea2,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement2 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement2.id,
+                daycareGroupId = familyGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
         db.transaction { tx ->
-            FixtureBuilder(tx, today)
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(daycareInArea1)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-                }
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(familyUnitInArea2)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(familyGroup1).save() }
-                }
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(groupPlacement1)
+
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(placement2)
+            tx.insert(groupPlacement2)
         }
 
         db.read {
@@ -1356,28 +1770,45 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues should filter with provider type`() {
+        val child1 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement1 =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement1 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement1.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
+        val child2 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement2 =
+            DevPlacement(
+                childId = child2.id,
+                unitId = familyUnitInArea2,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement2 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement2.id,
+                daycareGroupId = familyGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today)
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(daycareInArea1)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-                }
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(familyUnitInArea2)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(familyGroup1).save() }
-                }
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(groupPlacement1)
+
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(placement2)
+            tx.insert(groupPlacement2)
         }
 
         db.read {
@@ -1413,28 +1844,45 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues should filter with unit type`() {
+        val child1 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement1 =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement1 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement1.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+
+        val child2 = DevPerson(dateOfBirth = today.minusYears(3))
+        val placement2 =
+            DevPlacement(
+                childId = child2.id,
+                unitId = familyUnitInArea2,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement2 =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement2.id,
+                daycareGroupId = familyGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
         db.transaction { tx ->
-            FixtureBuilder(tx, today)
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(daycareInArea1)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-                }
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement()
-                        .ofType(PlacementType.DAYCARE)
-                        .toUnit(familyUnitInArea2)
-                        .fromDay(-1)
-                        .toDay(0)
-                        .saveAnd { addGroupPlacement().toGroup(familyGroup1).save() }
-                }
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(placement1)
+            tx.insert(groupPlacement1)
+
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(placement2)
+            tx.insert(groupPlacement2)
         }
 
         db.read {
@@ -1473,24 +1921,36 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `calculateDailyGroupOccupancyValues should split overnight staff attendances to the respective days`() {
-        db.transaction { tx ->
-            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
-                addPlacement()
-                    .ofType(PlacementType.DAYCARE)
-                    .toUnit(daycareInArea1)
-                    .fromDay(-1)
-                    .toDay(0)
-                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
-            }
+        val child = DevPerson(dateOfBirth = today.minusYears(4))
+        val placement =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareInArea1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
+        val groupPlacement =
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placement.id,
+                daycareGroupId = daycareGroup1,
+                startDate = today.minusDays(1),
+                endDate = today
+            )
 
-            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
-                .addRealtimeAttendance()
-                .inGroup(daycareGroup1)
-                .withCoefficient(BigDecimal(7))
-                .withType(StaffAttendanceType.PRESENT)
-                .arriving(HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(21, 0)))
-                .departing(HelsinkiDateTime.of(today, LocalTime.of(4, 45)))
-                .save()
+        val employee = DevEmployee()
+        val attendance =
+            DevStaffAttendance(
+                employeeId = employee.id,
+                groupId = daycareGroup1,
+                arrived = HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(21, 0)),
+                departed = HelsinkiDateTime.of(today, LocalTime.of(4, 45)),
+            )
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(placement)
+            tx.insert(groupPlacement)
+            tx.insert(employee)
+            tx.insert(attendance)
         }
 
         assertRealtimeAttendances(

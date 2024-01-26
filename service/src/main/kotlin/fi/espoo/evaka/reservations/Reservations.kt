@@ -24,8 +24,8 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.AbsenceId
-import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
+import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -357,8 +357,8 @@ data class ChildDatePresence(
 data class UpsertChildDatePresenceResult(
     val insertedReservations: List<AttendanceReservationId>,
     val deletedReservations: List<AttendanceReservationId>,
-    val insertedAttendances: List<AttendanceId>,
-    val deletedAttendances: List<AttendanceId>,
+    val insertedAttendances: List<ChildAttendanceId>,
+    val deletedAttendances: List<ChildAttendanceId>,
     val insertedAbsences: List<AbsenceId>,
     val deletedAbsences: List<AbsenceId>,
 )

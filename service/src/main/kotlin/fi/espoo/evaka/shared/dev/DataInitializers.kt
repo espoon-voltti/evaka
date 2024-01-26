@@ -34,12 +34,12 @@ import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -1004,10 +1004,10 @@ fun Database.Transaction.insertTestStaffAttendance(
 data class DevStaffAttendancePlan(
     val id: StaffAttendancePlanId = StaffAttendancePlanId(UUID.randomUUID()),
     val employeeId: EmployeeId,
-    val type: StaffAttendanceType,
+    val type: StaffAttendanceType = StaffAttendanceType.PRESENT,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
-    val description: String?
+    val description: String? = null
 )
 
 fun Database.Transaction.insert(staffAttendancePlan: DevStaffAttendancePlan) =
@@ -1093,7 +1093,7 @@ fun Database.Transaction.insertTestChildAttendance(
         .also { batch ->
             attendances.forEach { (date, startTime, endTime) ->
                 batch
-                    .bind("id", AttendanceId(UUID.randomUUID()))
+                    .bind("id", ChildAttendanceId(UUID.randomUUID()))
                     .bind("childId", childId)
                     .bind("unitId", unitId)
                     .bind("date", date)
@@ -1599,3 +1599,23 @@ fun Database.Transaction.insertTestUser(
     groupAcl.forEach { (daycareId, groups) -> insertDaycareGroupAcl(daycareId, id, groups) }
     return AuthenticatedUser.Employee(checkNotNull(getEmployeeUser(id)))
 }
+
+fun Database.Transaction.insert(serviceNeed: DevServiceNeed) =
+    insertTestDataRow(
+            serviceNeed,
+            """
+INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, confirmed_by, confirmed_at)
+VALUES (:id, :optionId, :placementId, :startDate, :endDate, :shiftCare, :confirmedBy, :confirmedAt)
+"""
+        )
+        .let(::ServiceNeedId)
+
+fun Database.Transaction.insert(childAttendance: DevChildAttendance) =
+    insertTestDataRow(
+            childAttendance,
+            """
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
+VALUES (:childId, :unitId, :date, :arrived, :departed)
+"""
+        )
+        .let(::ChildAttendanceId)

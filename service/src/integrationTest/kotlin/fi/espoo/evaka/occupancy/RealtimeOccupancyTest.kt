@@ -4,11 +4,9 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.ExternalStaffArrival
 import fi.espoo.evaka.attendance.ExternalStaffDeparture
-import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
@@ -16,8 +14,17 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
+import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -49,67 +56,115 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `occupancy is calculated from attendances`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, date)
-                .addChild()
-                .withAge(2, 10)
-                .saveAnd {
-                    addPlacement().toUnit(testDaycare.id).save()
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(LocalTime.of(7, 45))
-                        .departing(LocalTime.of(16, 30))
-                        .save()
-                }
-                .addChild()
-                .withAge(2, 11)
-                .saveAnd {
-                    addPlacement().toUnit(testDaycare.id).save()
-                    tx.insert(
-                        DevAssistanceFactor(
-                            childId = childId,
-                            validDuring = date.toFiniteDateRange(),
-                            capacityFactor = 2.0,
-                        )
-                    )
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(LocalTime.of(8, 15))
-                        .departing(LocalTime.of(16, 30))
-                        .save()
-                }
-                .addChild()
-                .withAge(3)
-                .saveAnd {
-                    addPlacement().toUnit(testDaycare.id).save()
-                    addAttendance().inUnit(testDaycare.id).arriving(LocalTime.of(8, 15)).save()
-                }
-                .addChild()
-                .withAge(2, 11)
-                .saveAnd {
-                    addPlacement().toUnit(testDaycare.id).saveAnd {
-                        addServiceNeed()
-                            .withOption(snDaycareContractDays10)
-                            .createdBy(EvakaUserId(testDecisionMaker_1.id.raw))
-                            .save()
-                    }
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(LocalTime.of(8, 30))
-                        .departing(LocalTime.of(16, 30))
-                        .save()
-                }
-                .addEmployee()
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withGroupAccess(testDaycare.id, groupId)
-                .saveAnd {
-                    addRealtimeAttendance()
-                        .inGroup(groupId)
-                        .arriving(LocalTime.of(7, 0))
-                        .departing(LocalTime.of(16, 45))
-                        .withCoefficient(occupancyCoefficientSeven)
-                        .withType(StaffAttendanceType.PRESENT)
-                        .save()
-                }
+            val child1 = DevPerson(dateOfBirth = date.minusYears(2).minusDays(10))
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = child1.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(7, 45),
+                    departed = LocalTime.of(16, 30),
+                )
+            )
+
+            val child2 = DevPerson(dateOfBirth = date.minusYears(2).minusDays(11))
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = child2.id,
+                    validDuring = date.toFiniteDateRange(),
+                    capacityFactor = 2.0,
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = child2.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 15),
+                    departed = LocalTime.of(16, 30),
+                )
+            )
+
+            val child3 = DevPerson(dateOfBirth = date.minusYears(3))
+            tx.insert(child3, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child3.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = child3.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 15),
+                    departed = null
+                )
+            )
+
+            val child4 = DevPerson(dateOfBirth = date.minusYears(2).minusMonths(11))
+            tx.insert(child4, DevPersonType.CHILD)
+            val placement4 =
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
+            tx.insert(placement4)
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement4.id,
+                    optionId = snDaycareContractDays10.id,
+                    startDate = date,
+                    endDate = date,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = child4.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 30),
+                    departed = LocalTime.of(16, 30),
+                )
+            )
+
+            val employee = DevEmployee()
+            tx.insert(employee)
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = employee.id,
+                    groupId = groupId,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(7, 0)),
+                    departed = HelsinkiDateTime.of(date, LocalTime.of(16, 45)),
+                    occupancyCoefficient = occupancyCoefficientSeven,
+                )
+            )
 
             tx.markExternalStaffArrival(
                     ExternalStaffArrival(
@@ -280,14 +335,17 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `child without placement gets capacity factor 1`() {
         db.transaction { tx ->
-            FixtureBuilder(tx, date).addChild().withAge(2, 10).saveAnd {
-                // addPlacement().toUnit(testDaycare.id).save()
-                addAttendance()
-                    .inUnit(testDaycare.id)
-                    .arriving(LocalTime.of(7, 45))
-                    .departing(LocalTime.of(16, 30))
-                    .save()
-            }
+            val child = DevPerson(dateOfBirth = date.minusYears(2).minusMonths(10))
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevChildAttendance(
+                    childId = child.id,
+                    unitId = testDaycare.id,
+                    date = date,
+                    arrived = LocalTime.of(7, 45),
+                    departed = LocalTime.of(16, 30),
+                )
+            )
         }
 
         val result = getRealtimeOccupancy()
@@ -315,57 +373,75 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `graph data shows no gaps for overnight attendances`() {
         val tomorrow = date.plusDays(1)
         db.transaction { tx ->
-            FixtureBuilder(tx, date)
-                .addChild()
-                .withAge(2, 10)
-                .saveAnd {
-                    addPlacement()
-                        .toUnit(testDaycare.id)
-                        .fromDay(date)
-                        .toDay(date.plusMonths(2))
-                        .save()
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(LocalTime.of(20, 45))
-                        .departing(LocalTime.of(23, 59))
-                        .save()
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(tomorrow, LocalTime.of(0, 0))
-                        .departing(tomorrow, LocalTime.of(8, 15))
-                        .save()
-                }
-                .addChild()
-                .withAge(4, 3)
-                .saveAnd {
-                    addPlacement()
-                        .toUnit(testDaycare.id)
-                        .fromDay(date)
-                        .toDay(date.plusMonths(2))
-                        .save()
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(LocalTime.of(21, 5))
-                        .departing(LocalTime.of(23, 59))
-                        .save()
-                    addAttendance()
-                        .inUnit(testDaycare.id)
-                        .arriving(tomorrow, LocalTime.of(0, 0))
-                        .departing(tomorrow, LocalTime.of(8, 50))
-                        .save()
-                }
-                .addEmployee()
-                .withScopedRole(UserRole.STAFF, testDaycare.id)
-                .withGroupAccess(testDaycare.id, groupId)
-                .saveAnd {
-                    addRealtimeAttendance()
-                        .inGroup(groupId)
-                        .arriving(LocalTime.of(19, 45))
-                        .departing(tomorrow, LocalTime.of(9, 0))
-                        .withCoefficient(occupancyCoefficientSeven)
-                        .withType(StaffAttendanceType.PRESENT)
-                        .save()
-                }
+            val child1 = DevPerson(dateOfBirth = date.minusYears(2).minusMonths(10))
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date.plusMonths(2)
+                )
+            )
+            listOf(
+                    DevChildAttendance(
+                        childId = child1.id,
+                        unitId = testDaycare.id,
+                        date = date,
+                        arrived = LocalTime.of(20, 45),
+                        departed = LocalTime.of(23, 59),
+                    ),
+                    DevChildAttendance(
+                        childId = child1.id,
+                        unitId = testDaycare.id,
+                        date = tomorrow,
+                        arrived = LocalTime.of(0, 0),
+                        departed = LocalTime.of(8, 15),
+                    )
+                )
+                .forEach { tx.insert(it) }
+
+            val child2 = DevPerson(dateOfBirth = date.minusYears(4).minusMonths(3))
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date.plusMonths(2)
+                )
+            )
+            listOf(
+                    DevChildAttendance(
+                        childId = child2.id,
+                        unitId = testDaycare.id,
+                        date = date,
+                        arrived = LocalTime.of(21, 5),
+                        departed = LocalTime.of(23, 59),
+                    ),
+                    DevChildAttendance(
+                        childId = child2.id,
+                        unitId = testDaycare.id,
+                        date = tomorrow,
+                        arrived = LocalTime.of(0, 0),
+                        departed = LocalTime.of(8, 50),
+                    )
+                )
+                .forEach { tx.insert(it) }
+
+            val employee = DevEmployee()
+            tx.insert(employee)
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = employee.id,
+                    groupId = groupId,
+                    arrived = HelsinkiDateTime.of(date, LocalTime.of(19, 45)),
+                    departed = HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)),
+                    occupancyCoefficient = occupancyCoefficientSeven,
+                )
+            )
         }
 
         val result =

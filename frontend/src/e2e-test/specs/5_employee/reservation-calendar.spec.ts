@@ -4,7 +4,6 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -520,8 +519,9 @@ describe('Unit group calendar', () => {
           .with({
             childId: child1Fixture.id,
             unitId: daycare2Fixture.id,
-            arrived: HelsinkiDateTime.fromLocal(mockedToday, arrival),
-            departed: HelsinkiDateTime.fromLocal(mockedToday, departure)
+            date: mockedToday,
+            arrived: arrival,
+            departed: departure
           })
           .save()
       })
@@ -631,30 +631,35 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.selectRepetitionType('IRREGULAR')
 
     const startDate = mockedToday
-    const arrived = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(8, 30))
-    const departed = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(13, 30))
+    const arrived = LocalTime.of(8, 30)
+    const departed = LocalTime.of(13, 30)
 
     await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived: arrived,
-        departed: departed
+        date: startDate,
+        arrived,
+        departed
       })
       .save()
 
-    const arrived2 = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(18, 15))
-    const departed2 = HelsinkiDateTime.fromLocal(
-      startDate.addDays(1),
-      LocalTime.of(5, 30)
-    )
-
     await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived: arrived2,
-        departed: departed2
+        date: startDate,
+        arrived: LocalTime.of(18, 15),
+        departed: LocalTime.of(23, 59)
+      })
+      .save()
+    await Fixture.childAttendance()
+      .with({
+        childId: child1Fixture.id,
+        unitId: daycare2Fixture.id,
+        date: startDate.addDays(1),
+        arrived: LocalTime.of(0, 0),
+        departed: LocalTime.of(5, 30)
       })
       .save()
 
@@ -686,15 +691,15 @@ describe('Unit group calendar for shift care unit', () => {
 
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate, 0),
-      [arrived.toLocalTime().format(), departed.toLocalTime().format()]
+      [arrived.format(), departed.format()]
     )
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate, 1),
-      [arrived2.toLocalTime().format(), '23:59']
+      ['18:15', '23:59']
     )
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate.addDays(1), 0),
-      ['00:00', departed2.toLocalTime().format()]
+      ['00:00', '05:30']
     )
     await waitUntilEqual(
       () => childReservations.getAttendance(startDate.addDays(1), 1),
