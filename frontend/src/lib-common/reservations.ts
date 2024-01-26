@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
-import { OpenTimeRange, Reservation } from './generated/api-types/reservations'
+import {
+  OpenTimeRange,
+  Reservation,
+  ReservationResponse
+} from './generated/api-types/reservations'
 import { JsonOf } from './json'
 import LocalTime from './local-time'
 
@@ -68,6 +72,19 @@ export function validateTimeRange(
 export function parseReservation(
   reservation: JsonOf<Reservation>
 ): Reservation {
+  if (reservation.type === 'TIMES') {
+    return {
+      ...reservation,
+      startTime: LocalTime.parseIso(reservation.startTime),
+      endTime: LocalTime.parseIso(reservation.endTime)
+    }
+  } else {
+    return reservation
+  }
+}
+export function parseReservationDto(
+  reservation: JsonOf<ReservationResponse>
+): ReservationResponse {
   if (reservation.type === 'TIMES') {
     return {
       ...reservation,

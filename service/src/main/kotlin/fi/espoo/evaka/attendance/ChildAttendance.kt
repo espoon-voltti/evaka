@@ -10,7 +10,7 @@ import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
-import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -42,7 +42,7 @@ data class AttendanceChild(
     val dailyNote: ChildDailyNote?,
     val stickyNotes: List<ChildStickyNote>,
     val imageUrl: String?,
-    val reservations: List<Reservation>
+    val reservations: List<ReservationResponse>
 )
 
 enum class AttendanceStatus {

@@ -5,7 +5,7 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceInfo,
-  Reservation,
+  ReservationResponse,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
@@ -220,7 +220,8 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   startTime: LocalTime.of(8, 0),
-                  endTime: LocalTime.of(16, 0)
+                  endTime: LocalTime.of(16, 0),
+                  staffCreated: false
                 }
               ]
             },
@@ -231,7 +232,8 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   startTime: LocalTime.of(8, 0),
-                  endTime: LocalTime.of(16, 0)
+                  endTime: LocalTime.of(16, 0),
+                  staffCreated: false
                 }
               ]
             },
@@ -615,12 +617,12 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              reservations: [{ type: 'NO_TIMES' }]
+              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              reservations: [{ type: 'NO_TIMES' }]
+              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             }
           ]
         })
@@ -665,7 +667,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              reservations: [{ type: 'NO_TIMES' }]
+              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
@@ -1110,7 +1112,8 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   startTime: LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
-                  endTime: LocalTime.of(16, 0)
+                  endTime: LocalTime.of(16, 0),
+                  staffCreated: false
                 }
               ]
             },
@@ -1121,7 +1124,8 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   startTime: LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
-                  endTime: LocalTime.of(16, 0)
+                  endTime: LocalTime.of(16, 0),
+                  staffCreated: false
                 }
               ]
             },
@@ -1132,7 +1136,8 @@ describe('resetTimes', () => {
                 {
                   type: 'TIMES',
                   startTime: LocalTime.of(8, 15),
-                  endTime: LocalTime.of(16, 0)
+                  endTime: LocalTime.of(16, 0),
+                  staffCreated: false
                 }
               ]
             }
@@ -1780,12 +1785,12 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
-              reservations: [{ type: 'NO_TIMES' }]
+              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-2',
-              reservations: [{ type: 'NO_TIMES' }]
+              reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
@@ -1796,7 +1801,8 @@ describe('resetTimes', () => {
                       {
                         type: 'TIMES',
                         startTime: LocalTime.of(8, 15),
-                        endTime: LocalTime.of(16, 0)
+                        endTime: LocalTime.of(16, 0),
+                        staffCreated: false
                       }
                     ]
                   : []
@@ -1897,13 +1903,14 @@ describe('resetTimes', () => {
               scheduleType: 'RESERVATION_REQUIRED',
               reservations:
                 day.date.getIsoDayOfWeek() === 4
-                  ? [{ type: 'NO_TIMES' }]
+                  ? [{ type: 'NO_TIMES', staffCreated: false }]
                   : day.date.getIsoDayOfWeek() === 5
                     ? [
                         {
                           type: 'TIMES',
                           startTime: LocalTime.of(8, 0),
-                          endTime: LocalTime.of(16, 0)
+                          endTime: LocalTime.of(16, 0),
+                          staffCreated: false
                         }
                       ]
                     : [],
@@ -2203,10 +2210,11 @@ describe('resetTimes', () => {
         (date) => !date.isWeekend()
       )
 
-      const r: Reservation = {
+      const r: ReservationResponse = {
         type: 'TIMES',
         startTime: LocalTime.of(8, 0),
-        endTime: LocalTime.of(16, 0)
+        endTime: LocalTime.of(16, 0),
+        staffCreated: false
       }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const an: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
@@ -2609,7 +2617,7 @@ describe('resetTimes', () => {
     })
 
     it('Open holiday period + reservations + absences + employee-marked absences', () => {
-      const r: Reservation = { type: 'NO_TIMES' }
+      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
@@ -2801,7 +2809,7 @@ describe('resetTimes', () => {
     })
 
     it('Closed holiday period + reservations + absences + employee-marked absences', () => {
-      const r: Reservation = { type: 'NO_TIMES' }
+      const r: ReservationResponse = { type: 'NO_TIMES', staffCreated: false }
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 

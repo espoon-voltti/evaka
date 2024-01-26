@@ -24,7 +24,7 @@ import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { parseReservation } from 'lib-common/reservations'
+import { parseReservationDto } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
@@ -163,7 +163,7 @@ export async function getConfirmedRange(
         ...row,
         date: LocalDate.parseIso(row.date),
         reservations: row.reservations.map((reservation) =>
-          parseReservation(reservation)
+          parseReservationDto(reservation)
         ),
         dailyServiceTimes:
           row.dailyServiceTimes !== null
@@ -285,7 +285,7 @@ function deserializeChildren(
         modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
         expires: LocalDate.parseIso(note.expires)
       })),
-      reservations: child.reservations.map(parseReservation),
+      reservations: child.reservations.map(parseReservationDto),
       dailyServiceTimes: child.dailyServiceTimes
         ? parseDailyServiceTimes(child.dailyServiceTimes)
         : null
@@ -320,7 +320,7 @@ function deserializeUnitReservationConfirmedDayResult(
     ),
     childReservations: data.childReservations.map((childResult) => ({
       ...childResult,
-      reservations: childResult.reservations.map(parseReservation),
+      reservations: childResult.reservations.map(parseReservationDto),
       dailyServiceTimes: childResult.dailyServiceTimes
         ? parseDailyServiceTimes(childResult.dailyServiceTimes)
         : null

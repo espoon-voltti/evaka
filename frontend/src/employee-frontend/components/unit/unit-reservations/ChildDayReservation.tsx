@@ -20,7 +20,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  Reservation,
+  ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -39,7 +39,7 @@ interface Props {
   date: LocalDate
   reservationIndex: number
   dateInfo: UnitDateInfo
-  reservation: Reservation | undefined
+  reservation: ReservationResponse | undefined
   absence: AbsenceType | null
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
@@ -105,8 +105,13 @@ export default React.memo(function ChildDayReservation({
             <AbsenceDay type={absence} />
           ) : null
         ) : reservation && reservation.type === 'TIMES' ? (
-          <>
-            <ReservationTime
+          <ReservationTooltip
+            tooltip={
+              reservation.staffCreated &&
+              i18n.unit.attendanceReservations.createdByEmployee
+            }
+          >
+            <TimeCell
               data-qa="reservation-start"
               warning={unitIsNotOpenOnReservationStart}
             >
@@ -121,8 +126,8 @@ export default React.memo(function ChildDayReservation({
                   />
                 </>
               )}
-            </ReservationTime>
-            <ReservationTime
+            </TimeCell>
+            <TimeCell
               data-qa="reservation-end"
               warning={unitIsNotOpenOnReservationEnd}
             >
@@ -137,8 +142,9 @@ export default React.memo(function ChildDayReservation({
                   />
                 </>
               )}
-            </ReservationTime>
-          </>
+              {reservation.staffCreated && '*'}
+            </TimeCell>
+          </ReservationTooltip>
         ) : reservationIndex === 0 ? (
           dateInfo.isInHolidayPeriod &&
           scheduleType === 'RESERVATION_REQUIRED' &&
@@ -150,42 +156,42 @@ export default React.memo(function ChildDayReservation({
               }
               position="top"
             >
-              <ReservationTime warning data-qa="holiday-reservation-missing">
+              <TimeCell warning data-qa="holiday-reservation-missing">
                 {
                   i18n.unit.attendanceReservations
                     .missingHolidayReservationShort
                 }
-              </ReservationTime>
+              </TimeCell>
             </Tooltip>
           ) : scheduleType === 'TERM_BREAK' ? (
-            <ReservationTime data-qa="term-break">
+            <TimeCell data-qa="term-break">
               {i18n.unit.attendanceReservations.termBreak}
-            </ReservationTime>
+            </TimeCell>
           ) : serviceTimeOfDay ? (
             // daily service times
             <>
-              <ReservationTime data-qa="reservation-start">
+              <TimeCell data-qa="reservation-start">
                 {serviceTimeOfDay.start.format()}{' '}
                 {i18n.unit.attendanceReservations.serviceTimeIndicator}
-              </ReservationTime>
-              <ReservationTime data-qa="reservation-end">
+              </TimeCell>
+              <TimeCell data-qa="reservation-end">
                 {serviceTimeOfDay.end.format()}{' '}
                 {i18n.unit.attendanceReservations.serviceTimeIndicator}
-              </ReservationTime>
+              </TimeCell>
             </>
           ) : scheduleType === 'FIXED_SCHEDULE' ? (
-            <ReservationTime data-qa="fixed-schedule">
+            <TimeCell data-qa="fixed-schedule">
               {i18n.unit.attendanceReservations.fixedSchedule}
-            </ReservationTime>
+            </TimeCell>
           ) : reservation && reservation.type === 'NO_TIMES' ? (
-            <ReservationTime data-qa="reservation-no-times">
+            <TimeCell data-qa="reservation-no-times">
               {i18n.unit.attendanceReservations.reservationNoTimes}
-            </ReservationTime>
+            </TimeCell>
           ) : (
             // otherwise show missing reservation indicator
-            <ReservationTime warning data-qa="reservation-missing">
+            <TimeCell warning data-qa="reservation-missing">
               {i18n.unit.attendanceReservations.missingReservation}
-            </ReservationTime>
+            </TimeCell>
           )
         ) : null}
       </TimesRow>
@@ -215,4 +221,9 @@ export const ReservationDateCell = styled(DateCell)`
   }
 `
 
-const ReservationTime = styled(TimeCell)``
+const ReservationTooltip = styled(Tooltip)`
+  display: flex;
+  justify-content: space-evenly;
+  padding: 8px;
+  gap: 8px;
+`

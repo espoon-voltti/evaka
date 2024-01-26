@@ -130,6 +130,36 @@ sealed class Reservation : Comparable<Reservation> {
     }
 }
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class ReservationResponse : Comparable<ReservationResponse> {
+    @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()
+
+    @JsonTypeName("TIMES")
+    data class Times(val startTime: LocalTime, val endTime: LocalTime, val staffCreated: Boolean) :
+        ReservationResponse()
+
+    override fun compareTo(other: ReservationResponse): Int {
+        return when {
+            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is NoTimes && other is NoTimes -> 0
+            this is NoTimes && other is Times -> -1
+            this is Times && other is NoTimes -> 1
+            else -> throw IllegalStateException("Unknown reservation type")
+        }
+    }
+
+    companion object {
+        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?, staffCreated: Boolean) =
+            if (startTime != null && endTime != null) {
+                Times(startTime, endTime, staffCreated)
+            } else if (startTime == null && endTime == null) {
+                NoTimes(staffCreated)
+            } else {
+                throw IllegalArgumentException("Both start and end times must be null or not null")
+            }
+    }
+}
+
 data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
 
 data class CreateReservationsResult(

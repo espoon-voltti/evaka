@@ -417,7 +417,7 @@ class AttendanceReservationController(
 
     data class ChildReservationInfo(
         val childId: ChildId,
-        val reservations: List<Reservation>,
+        val reservations: List<ReservationResponse>,
         val groupId: GroupId?,
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
@@ -490,13 +490,14 @@ class AttendanceReservationController(
                                         ReservationTimesForDate(
                                                 startTime = it.start,
                                                 endTime = it.end,
-                                                date = examinationDate
+                                                date = examinationDate,
+                                                staffCreated = it.staffCreated
                                             )
                                             .toReservationTimes()
                                     }
-                                    .ifEmpty { listOf(Reservation.NoTimes) }
 
                             val absences = row.value.absences.map { it.category }.toSet()
+                            // TODO relay absence's staff created info to ChildReservationInfo
 
                             ChildReservationInfo(
                                 reservations = reservations,
@@ -624,7 +625,7 @@ class AttendanceReservationController(
 data class ConfirmedRangeDate(
     val date: LocalDate,
     val scheduleType: ScheduleType,
-    val reservations: List<Reservation>,
+    val reservations: List<ReservationResponse>,
     val absenceType: AbsenceType?,
     val dailyServiceTimes: DailyServiceTimesValue?
 )
@@ -651,8 +652,11 @@ data class UnitAttendanceReservations(
 
     data class ChildRecordOfDay(
         val childId: ChildId,
-        val reservations: List<Reservation>,
+        val reservations: List<ReservationResponse>,
         val attendances: List<OpenTimeRange>,
+        // TODO
+        //        val absenceBillable: AbsenceTypeAndCreator?,
+        //        val absenceNonbillable: AbsenceTypeAndCreator?,
         val absenceBillable: AbsenceType?,
         val absenceNonbillable: AbsenceType?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
@@ -869,7 +873,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
 
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
-    val reservations: Map<LocalDate, List<Reservation>>,
+    val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<OpenTimeRange>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceType>>
 )
@@ -888,12 +892,13 @@ private data class ChildDataQueryResult(
 private data class ReservationTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime?,
-    val endTime: LocalTime?
+    val endTime: LocalTime?,
+    val staffCreated: Boolean
 ) {
     fun toReservationTimes() =
         when {
-            startTime == null || endTime == null -> Reservation.NoTimes
-            else -> Reservation.Times(startTime, endTime)
+            startTime == null || endTime == null -> ReservationResponse.NoTimes(staffCreated)
+            else -> ReservationResponse.Times(startTime, endTime, staffCreated)
         }
 }
 
@@ -930,9 +935,12 @@ SELECT
         SELECT jsonb_agg(jsonb_build_object(
             'date', ar.date,
             'startTime', ar.start_time,
-            'endTime', ar.end_time
+            'endTime', ar.end_time,
+            'staffCreated', eu.type = 'EMPLOYEE'
         ) ORDER BY ar.date, ar.start_time)
-        FROM attendance_reservation ar WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
+        FROM attendance_reservation ar 
+        JOIN evaka_user eu ON ar.created_by = eu.id
+        WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
     ), '[]'::jsonb) AS reservations,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(

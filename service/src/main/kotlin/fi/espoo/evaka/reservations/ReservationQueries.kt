@@ -140,13 +140,14 @@ fun Database.Transaction.insertValidReservations(
 private data class ReservationRow(
     val childId: ChildId,
     val startTime: LocalTime?,
-    val endTime: LocalTime?
+    val endTime: LocalTime?,
+    val staffCreated: Boolean
 )
 
 fun Database.Read.getUnitReservations(
     unitId: DaycareId,
     date: LocalDate
-): Map<ChildId, List<Reservation>> =
+): Map<ChildId, List<ReservationResponse>> =
     createQuery(
             """
     WITH placed_children AS (
@@ -157,9 +158,11 @@ fun Database.Read.getUnitReservations(
     SELECT
         pc.child_id,
         ar.start_time,
-        ar.end_time
+        ar.end_time,
+        e.type = 'EMPLOYEE' as staff_created
     FROM placed_children pc
     JOIN attendance_reservation ar ON ar.child_id = pc.child_id 
+    JOIN evaka_user e ON ar.created_by = e.id
     WHERE ar.date = :date
     """
                 .trimIndent()
@@ -169,7 +172,14 @@ fun Database.Read.getUnitReservations(
         .mapTo<ReservationRow>()
         .useIterable { rows ->
             rows
-                .map { it.childId to Reservation.fromLocalTimes(it.startTime, it.endTime) }
+                .map {
+                    it.childId to
+                        ReservationResponse.fromLocalTimes(
+                            it.startTime,
+                            it.endTime,
+                            it.staffCreated
+                        )
+                }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { (_, value) -> value.sorted() }
         }
@@ -216,14 +226,19 @@ fun Database.Read.getReservationDatesForChildrenInRange(
 fun Database.Read.getReservationsForChildInRange(
     childId: ChildId,
     range: FiniteDateRange
-): Map<LocalDate, List<Reservation>> {
-    data class ReservationWithDate(val date: LocalDate, val reservation: Reservation)
+): Map<LocalDate, List<ReservationResponse>> {
+    data class ReservationWithDate(val date: LocalDate, val reservation: ReservationResponse)
     return createQuery(
             """
-        SELECT date, start_time, end_time
-        FROM attendance_reservation
-        WHERE between_start_and_end(:range, date)
-        AND child_id = :childId
+SELECT ar.date, 
+       ar.start_time, 
+       ar.end_time, 
+       eu.type = 'EMPLOYEE' as staff_created
+FROM attendance_reservation ar
+LEFT JOIN evaka_user eu ON ar.created_by = eu.id
+WHERE between_start_and_end(:range, ar.date)
+  AND ar.child_id = :childId
+
         """
         )
         .bind("range", range)
@@ -231,7 +246,11 @@ fun Database.Read.getReservationsForChildInRange(
         .toList {
             ReservationWithDate(
                 column("date"),
-                Reservation.fromLocalTimes(column("start_time"), column("end_time"))
+                ReservationResponse.fromLocalTimes(
+                    column("start_time"),
+                    column("end_time"),
+                    column("staff_created")
+                )
             )
         }
         .groupBy({ it.date }, { it.reservation })
@@ -244,7 +263,7 @@ data class ChildDailyData(
     val childId: ChildId,
     val absence: AbsenceType?,
     val absenceEditable: Boolean,
-    val reservations: List<Reservation>,
+    val reservations: List<ReservationResponse>,
     val attendances: List<OpenTimeRange>
 )
 
@@ -517,7 +536,11 @@ data class DailyChildReservationInfoRow(
 
 data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
 
-data class ConfirmedDayReservationInfo(val start: LocalTime?, val end: LocalTime?)
+data class ConfirmedDayReservationInfo(
+    val start: LocalTime?,
+    val end: LocalTime?,
+    val staffCreated: Boolean
+)
 
 fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
@@ -540,17 +563,20 @@ SELECT pcd.child_id,
         -- reservation roll up
         (SELECT coalesce(jsonb_agg(json_build_object(
                'start', s.start_time,
-               'end', s.end_time)), '[]'::jsonb)
-        FROM (select ar.start_time, ar.end_time
-              FROM attendance_reservation ar
+               'end', s.end_time,
+               'staffCreated', s.staff_created)), '[]'::jsonb)
+        FROM (select ar.start_time, ar.end_time, eu.type = 'EMPLOYEE' as staff_created
+                FROM attendance_reservation ar
+                JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id
                 AND ar.date = :examinationDate) s)
            AS reservations,
        -- absence roll up
        (SELECT coalesce(jsonb_agg(json_build_object(
                'category', s.category)), '[]'::jsonb)
-        FROM (SELECT ab.category
+        FROM (SELECT ab.category, eu.type = 'EMPLOYEE' as staff_created
               FROM absence ab
+              JOIN evaka_user eu ON ab.modified_by = eu.id
               WHERE ab.child_id = pcd.child_id
                 AND ab.date = :examinationDate) s)
            AS absences

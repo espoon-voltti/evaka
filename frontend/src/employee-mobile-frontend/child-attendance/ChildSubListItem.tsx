@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import partition from 'lodash/partition'
+import filter from 'lodash/filter'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -115,10 +115,7 @@ export default React.memo(function ChildSubListItem({
     if (reservationData.outOnBackupPlacement)
       return [i18n.attendances.confirmedDays.inOtherUnit]
 
-    const [withTimes, noTimes] = partition(
-      reservationData.reservations,
-      reservationHasTimes
-    )
+    const withTimes = filter(reservationData.reservations, reservationHasTimes)
 
     if (withTimes.length > 0)
       return withTimes.map(
@@ -127,7 +124,7 @@ export default React.memo(function ChildSubListItem({
       )
 
     if (reservationData.isInHolidayPeriod) {
-      if (noTimes.length > 0)
+      if (reservationData.reservations.length === 0)
         return [i18n.attendances.confirmedDays.noHolidayReservation]
     }
 
