@@ -23,13 +23,11 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   width: ${(props) => props.width};
   margin: ${(props) => (props.thin || props.noMargin ? '0' : '24px 0')};
   padding: ${(props) =>
-    props.thin
-      ? `${defaultMargins.xxs} ${defaultMargins.s}`
-      : defaultMargins.s};
+    props.thin ? `${defaultMargins.xs} ${defaultMargins.s}` : defaultMargins.s};
   border-style: solid;
   border-width: 1px;
   border-color: ${(props) => props.color};
-  border-radius: ${(props) => (props.thin ? '0' : '4px')};
+  border-radius: 4px;
 
   .message-container {
     display: flex;
@@ -49,7 +47,7 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   }
 
   .message-title {
-    font-weight: ${fontWeights.bold};
+    font-weight: ${fontWeights.semibold};
   }
 `
 
@@ -92,7 +90,7 @@ export const MessageBox = React.memo(function MessageBox({
         </div>
         <div>
           {!!title && <span className="message-title">{title}</span>}
-          {!!title && !!message && <Gap size="s" />}
+          {!!title && !!message && <Gap size={thin ? 'xxs' : 's'} />}
           {!!message &&
             (typeof message === 'string' ? <span>{message}</span> : message)}
         </div>
