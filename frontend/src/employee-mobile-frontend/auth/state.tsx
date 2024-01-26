@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useEffect, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import React, { createContext, useCallback, useMemo } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { MobileUser } from 'lib-common/api-types/employee-auth'
-import { idleTracker } from 'lib-common/utils/idleTracker'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { query, useQueryResult } from 'lib-common/query'
 
 import { renderResult } from '../async-rendering'
-import { client, setAntiCsrfToken } from '../client'
+import { setAntiCsrfToken } from '../client'
 
 import { getAuthStatus } from './api'
 
@@ -28,26 +28,29 @@ export const UserContext = createContext<UserState>({
   refreshAuthStatus: () => null
 })
 
+const authStatusQuery = query({
+  api: () =>
+    getAuthStatus().then((status) => {
+      setAntiCsrfToken(status.antiCsrfToken)
+      return status
+    }),
+  queryKey: () => ['auth-status']
+})
+
 export const UserContextProvider = React.memo(function UserContextProvider({
   children
 }: {
   children: React.ReactNode
 }) {
-  const [authStatus, refreshAuthStatus] = useApiState(getAuthStatus, [])
-
-  useEffect(
-    () => idleTracker(client, refreshAuthStatus, { thresholdInMinutes: 20 }),
-    [refreshAuthStatus]
+  const authStatus = useQueryResult(authStatusQuery())
+  const queryClient = useQueryClient()
+  const refreshAuthStatus = useCallback(
+    () =>
+      queryClient.invalidateQueries({
+        queryKey: authStatusQuery().queryKey
+      }),
+    [queryClient]
   )
-
-  useEffect(() => {
-    const status = authStatus.getOrElse(undefined)
-    if (status?.loggedIn) {
-      setAntiCsrfToken(status.antiCsrfToken)
-    } else {
-      setAntiCsrfToken(undefined)
-    }
-  }, [authStatus])
 
   const value = useMemo(
     () => ({
