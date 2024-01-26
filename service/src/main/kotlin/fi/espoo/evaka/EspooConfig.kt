@@ -6,7 +6,6 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
-import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
@@ -181,7 +180,6 @@ class EspooConfig {
             unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
             maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
             useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
-            enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
             curriculumDocumentPermissionToShareRequired = true,
             assistanceDecisionMakerRoles = null,
             preschoolAssistanceDecisionMakerRoles = null,

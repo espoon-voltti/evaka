@@ -28,7 +28,6 @@ import { UserContext } from '../state/user'
 import Assistance from './child-information/Assistance'
 import BackupCare from './child-information/BackupCare'
 import ChildApplications from './child-information/ChildApplications'
-import ChildConsentsSection from './child-information/ChildConsentsSection'
 import ChildDetails from './child-information/ChildDetails'
 import ChildDocumentsSection from './child-information/ChildDocumentsSection'
 import ChildIncome from './child-information/ChildIncome'
@@ -133,10 +132,6 @@ const components = {
   'message-blocklist': requireOneOfPermittedActions(
     MessageBlocklist,
     'READ_CHILD_RECIPIENTS'
-  ),
-  'child-consents': requireOneOfPermittedActions(
-    ChildConsentsSection,
-    'READ_CHILD_CONSENTS'
   )
 }
 
@@ -156,8 +151,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false },
-    { component: 'income', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'income', open: false }
   ],
   ['DIRECTOR']: [
     { component: 'family-contacts', open: false },
@@ -174,8 +168,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false },
-    { component: 'income', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'income', open: false }
   ],
   ['SERVICE_WORKER']: [
     { component: 'guardiansAndParents', open: false },
@@ -192,8 +185,7 @@ const layouts: Layouts<typeof components> = {
       component: 'pedagogicalDocuments',
       open: false
     },
-    { component: 'fee-alterations', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'fee-alterations', open: false }
   ],
   ['FINANCE_ADMIN']: [
     { component: 'income', open: true },
@@ -211,8 +203,7 @@ const layouts: Layouts<typeof components> = {
       open: false
     },
     { component: 'assistance', open: false },
-    { component: 'applications', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'applications', open: false }
   ],
   ['FINANCE_STAFF']: [
     { component: 'guardiansAndParents', open: false },
@@ -235,8 +226,7 @@ const layouts: Layouts<typeof components> = {
 
     { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'fee-alterations', open: false }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
@@ -253,8 +243,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'message-blocklist', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'fee-alterations', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
@@ -271,8 +260,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'guardiansAndParents', open: false },
     { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'fee-alterations', open: false }
   ],
   ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
     { component: 'guardiansAndParents', open: false },
@@ -289,8 +277,7 @@ const layouts: Layouts<typeof components> = {
 
     { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'child-consents', open: false }
+    { component: 'fee-alterations', open: false }
   ]
 }
 

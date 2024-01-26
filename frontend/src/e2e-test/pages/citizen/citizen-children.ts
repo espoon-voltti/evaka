@@ -6,7 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
-import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
+import { AsyncButton, Page, TextInput } from '../../utils/page'
 
 import { EnvType } from './citizen-header'
 
@@ -31,7 +31,6 @@ export class CitizenChildPage {
     collapsible:
       | 'service-need-and-daily-service-time'
       | 'termination'
-      | 'consents'
       | 'pedagogical-documents'
       | 'vasu'
   ) {
@@ -158,26 +157,6 @@ export class CitizenChildPage {
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')
     )
-  }
-
-  readonly evakaProfilePicYes = new Radio(
-    this.page.findByDataQa('consent-profilepic-yes')
-  )
-  readonly evakaProfilePicNo = new Radio(
-    this.page.findByDataQa('consent-profilepic-no')
-  )
-
-  #consentConfirmButton = this.page.findByDataQa('consent-confirm')
-
-  async saveConsent() {
-    await this.#consentConfirmButton.click()
-  }
-
-  async assertUnconsentedCount(count: number) {
-    await this.page
-      .findByDataQa('collapsible-consents')
-      .findByDataQa('count-indicator')
-      .assertTextEquals(count.toString())
   }
 
   readonly #vasuRowStateChip = (vasuId: string) =>

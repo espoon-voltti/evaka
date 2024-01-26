@@ -603,13 +603,6 @@ export interface DevDailyServiceTimeNotification {
   hasDeletedReservations: boolean
 }
 
-export interface DevChildConsent {
-  guardianId: UUID
-  childId: UUID
-  type: string
-  given: boolean
-}
-
 export interface DevPayment {
   id: UUID
   unitId: UUID

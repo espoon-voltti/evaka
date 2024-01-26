@@ -376,3 +376,4 @@ V376__departed_automatically.sql
 V377__service_need_option_hours_per_month.sql
 V378__attachments_parent_fks.sql
 V379__attachments_fk_indexes.sql
+V380__drop_child_consent.sql

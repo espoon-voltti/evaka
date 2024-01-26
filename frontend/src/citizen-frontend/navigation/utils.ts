@@ -11,7 +11,6 @@ import { UUID } from 'lib-common/types'
 import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
-import { childConsentNotificationsQuery } from '../children/sections/consents/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'
 import { unreadVasuDocumentsCountQuery } from '../children/sections/vasu-and-leops/queries'
 
@@ -19,10 +18,6 @@ const empty = {}
 
 export function useUnreadChildNotifications() {
   const loggedIn = useUser() !== undefined
-  const { data: childConsentNotifications = empty } = useQuery(
-    childConsentNotificationsQuery(),
-    { enabled: loggedIn }
-  )
   const { data: unreadPedagogicalDocumentsCount = empty } = useQuery(
     unreadPedagogicalDocumentsCountQuery(),
     { enabled: loggedIn }
@@ -46,11 +41,9 @@ export function useUnreadChildNotifications() {
     addCounts(unreadPedagogicalDocumentsCount)
     addCounts(unreadVasuDocumentsCount)
     addCounts(unreadChildDocumentsCount)
-    addCounts(childConsentNotifications)
 
     return counts
   }, [
-    childConsentNotifications,
     unreadPedagogicalDocumentsCount,
     unreadVasuDocumentsCount,
     unreadChildDocumentsCount

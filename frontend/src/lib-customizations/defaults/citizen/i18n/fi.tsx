@@ -2434,17 +2434,6 @@ export default {
         `Haluatko varmasti irtisanoa paikan niin, että lapsen viimeinen läsnäolopäivä on ${date}?\nPaikan irtisanomista ei voi peruuttaa.`,
       terminate: 'Irtisano paikka'
     },
-    consent: {
-      title: 'Luvat',
-      evakaProfilePicture: {
-        title: 'Lapsen profiilikuvan käyttö eVakassa',
-        description:
-          'Lapsen profiilikuvan näkyminen eVakassa lisää turvallisuutta päiväkodin arjessa. Lupaa kysytään huoltajan käyttöliittymässä vain kerran. Jos haluat myöhemmin muuttaa vastaustasi, ole yhteydessä henkilökuntaan.',
-        question: 'Lapsen profiilikuvaa saa käyttää eVakassa'
-      },
-      confirm: 'Vahvista',
-      unconsented: 'antamatta lupaa'
-    },
     pedagogicalDocuments: {
       title: 'Lapsen arkeen liittyviä dokumentteja',
       noDocuments: 'Ei dokumentteja',

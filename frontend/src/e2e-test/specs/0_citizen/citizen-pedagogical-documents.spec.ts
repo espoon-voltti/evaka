@@ -11,7 +11,6 @@ import {
   resetDatabase
 } from '../../dev-api'
 import {
-  addConsentsForChildren,
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -47,15 +46,6 @@ beforeEach(async () => {
       fixtures.daycareFixture.id
     )
   ])
-
-  await addConsentsForChildren(
-    [
-      fixtures.enduserChildFixtureJari.id,
-      fixtures.enduserChildFixtureKaarina.id,
-      fixtures.enduserChildFixturePorriHatterRestricted.id
-    ],
-    fixtures.enduserGuardianFixture.id
-  )
 
   page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page)

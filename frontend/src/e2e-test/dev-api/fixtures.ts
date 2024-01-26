@@ -65,7 +65,6 @@ import {
   DevAssistanceNeedPreschoolDecision,
   DevCalendarEvent,
   DevCalendarEventAttendee,
-  DevChildConsent,
   DevChildDocument,
   DevDailyServiceTime,
   DevDailyServiceTimeNotification,
@@ -122,7 +121,6 @@ import {
   upsertOccupancyCoefficient,
   insertDailyServiceTime,
   insertDailyServiceTimeNotification,
-  insertChildConsent,
   insertStaffAttendancePlan,
   insertCalendarEvent,
   insertCalendarEventAttendee,
@@ -2040,20 +2038,6 @@ export class Fixture {
     })
   }
 
-  static childConsent(
-    childId: string,
-    type: string,
-    guardianId: string,
-    given: boolean
-  ): ChildConsentBuilder {
-    return new ChildConsentBuilder({
-      childId,
-      type,
-      guardianId,
-      given
-    })
-  }
-
   static payment(): PaymentBuilder {
     return new PaymentBuilder({
       id: uuidv4(),
@@ -2821,17 +2805,6 @@ export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDaily
 
   copy() {
     return new DailyServiceTimeNotificationBuilder({ ...this.data })
-  }
-}
-
-export class ChildConsentBuilder extends FixtureBuilder<DevChildConsent> {
-  async save() {
-    await insertChildConsent(this.data)
-    return this
-  }
-
-  copy() {
-    return new ChildConsentBuilder({ ...this.data })
   }
 }
 

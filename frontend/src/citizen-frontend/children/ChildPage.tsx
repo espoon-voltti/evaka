@@ -18,7 +18,6 @@ import { renderResult } from '../async-rendering'
 
 import ChildHeader from './ChildHeader'
 import { childrenQuery } from './queries'
-import ChildConsentsSection from './sections/consents/ChildConsentsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
 import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-daily-service-time/ServiceNeedAndDailyServiceTimeSection'
@@ -59,8 +58,6 @@ export default React.memo(function ChildPage() {
                   <VasuAndLeopsSection childId={childId} />
                 </>
               )}
-              <Gap size="s" />
-              <ChildConsentsSection childId={childId} />
               <Gap size="s" />
               <PlacementTerminationSection childId={childId} />
             </>

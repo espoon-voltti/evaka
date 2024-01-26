@@ -2422,17 +2422,6 @@ const sv: Translations = {
         `Är du säker på att du vill säga upp platsen så att barnets sista närvarodag är den ${date}?\nUppsägning av platsen kan inte återkallas.`,
       terminate: 'Säg upp platsen'
     },
-    consent: {
-      title: 'Samtycken',
-      evakaProfilePicture: {
-        title: 'Samtycke till barns profilbild',
-        description:
-          'Att visa barnets profilbild i eVaka ökar säkerheten i dagvårdens verksamhet. Samtycket begärs endast en gång från vårdnadshavaren. Om du senare vill ändra svaret, kontakta enhetens personal.',
-        question: 'Barnets profilbild kan användas i eVaka'
-      },
-      confirm: 'Bekräfta',
-      unconsented: 'utan samtycke'
-    },
     pedagogicalDocuments: {
       title: 'Tillväxt och inlärning',
       noDocuments: 'Inga dokument',
