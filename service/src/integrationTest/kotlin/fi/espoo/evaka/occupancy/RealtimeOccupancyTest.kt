@@ -14,8 +14,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -153,9 +151,11 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             val employee = DevEmployee()
-            tx.insert(employee)
-            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                employee,
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(groupId))
+            )
             tx.insert(
                 DevStaffAttendance(
                     employeeId = employee.id,
@@ -430,9 +430,11 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
 
             val employee = DevEmployee()
-            tx.insert(employee)
-            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+            tx.insert(
+                employee,
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(groupId))
+            )
             tx.insert(
                 DevStaffAttendance(
                     employeeId = employee.id,
