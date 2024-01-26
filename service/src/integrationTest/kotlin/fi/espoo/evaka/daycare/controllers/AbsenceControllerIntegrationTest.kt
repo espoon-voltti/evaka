@@ -398,7 +398,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         return absenceController
             .absencesOfChild(
                 dbInstance(),
-                employee.user(setOf()),
+                employee.user,
                 MockEvakaClock(now),
                 childId,
                 today.year,
@@ -411,7 +411,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun upsertAbsences(absences: List<AbsenceUpsert>) {
         absenceController.upsertAbsences(
             dbInstance(),
-            employee.user(setOf()),
+            employee.user,
             MockEvakaClock(now),
             absences,
             group.id
@@ -421,7 +421,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun addPresences(absences: List<Presence>) {
         absenceController.addPresences(
             dbInstance(),
-            employee.user(setOf()),
+            employee.user,
             MockEvakaClock(now),
             group.id,
             absences
@@ -433,7 +433,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     ) {
         absenceController.deleteHolidayReservations(
             dbInstance(),
-            employee.user(setOf()),
+            employee.user,
             MockEvakaClock(now),
             group.id,
             deletions
