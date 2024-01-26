@@ -14,16 +14,16 @@ import java.util.UUID
 
 class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
     private data class AllFields(
-        val type: AuthenticatedUserType,
-        val id: UUID?,
+        val type: AuthenticatedUserType? = null,
+        val id: UUID? = null,
         val globalRoles: Set<UserRole> = emptySet(),
         val allScopedRoles: Set<UserRole> = emptySet(),
-        val employeeId: EmployeeId?
+        val employeeId: EmployeeId? = null
     )
 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
-        return when (user.type) {
+        return when (user.type!!) {
             AuthenticatedUserType.citizen ->
                 AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.STRONG)
             AuthenticatedUserType.citizen_weak ->

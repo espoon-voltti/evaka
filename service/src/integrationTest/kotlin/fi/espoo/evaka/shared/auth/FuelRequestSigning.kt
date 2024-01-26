@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.github.kittinunf.fuel.core.Request
 import java.security.KeyFactory
 import java.security.interfaces.RSAPrivateKey
@@ -14,19 +15,10 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import org.bouncycastle.util.encoders.Base64
 
-fun Request.asUser(user: AuthenticatedUser, clock: Clock? = Clock.systemDefaultZone()): Request {
-    val now = ZonedDateTime.now(clock)
-    val token =
-        user
-            .applyToJwt(
-                JWT.create()
-                    .withKeyId("integration-test")
-                    .withIssuer("integration-test")
-                    .withIssuedAt(now.toInstant())
-                    .withExpiresAt(now.plusHours(12).toInstant())
-            )
-            .sign(algorithm)
-    return this.header("Authorization", "Bearer $token")
+fun Request.asUser(user: AuthenticatedUser): Request {
+    this.header("Authorization", "Bearer $emptyJwt")
+    this.header("X-User", jsonMapper().writeValueAsString(user))
+    return this
 }
 
 private val privateKeyText =
@@ -88,4 +80,14 @@ private val algorithm: Algorithm by lazy {
     val kf = KeyFactory.getInstance("RSA")
     val pk = kf.generatePrivate(PKCS8EncodedKeySpec(Base64.decode(privateKeyText))) as RSAPrivateKey
     Algorithm.RSA256(null, pk)
+}
+
+private val emptyJwt: String by lazy {
+    val now = ZonedDateTime.now(Clock.systemDefaultZone())
+    JWT.create()
+        .withKeyId("integration-test")
+        .withIssuer("integration-test")
+        .withIssuedAt(now.toInstant())
+        .withExpiresAt(now.plusHours(12).toInstant())
+        .sign(algorithm)
 }

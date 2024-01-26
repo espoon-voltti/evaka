@@ -7,7 +7,7 @@ package fi.espoo.evaka.shared.config
 import com.auth0.jwt.interfaces.JWTVerifier
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.JwtToAuthenticatedUser
+import fi.espoo.evaka.shared.auth.RequestToAuthenticatedUser
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
 import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.voltti.auth.JwtTokenDecoder
@@ -41,8 +41,8 @@ class HttpFilterConfig {
         }
 
     @Bean
-    fun jwtToAuthenticatedUser(tracer: Tracer) =
-        FilterRegistrationBean(JwtToAuthenticatedUser(tracer)).apply {
+    fun requestToAuthenticatedUser(tracer: Tracer) =
+        FilterRegistrationBean(RequestToAuthenticatedUser(tracer)).apply {
             setName("jwtToAuthenticatedUser")
             urlPatterns = listOf("/*")
             order = -9

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.auth
 
-import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.interfaces.DecodedJWT
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -41,17 +40,3 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? =
             null -> null
         }
     }
-
-fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder =
-    jwt.withSubject(rawId().toString())
-        .withClaim("evaka_type", this.type.toString())
-        .also {
-            if (this is AuthenticatedUser.Employee) {
-                it.withClaim("scope", (globalRoles + allScopedRoles).joinToString(" "))
-            }
-        }
-        .also {
-            if (this is AuthenticatedUser.MobileDevice && employeeId != null) {
-                it.withClaim("evaka_employee_id", employeeId.toString())
-            }
-        }

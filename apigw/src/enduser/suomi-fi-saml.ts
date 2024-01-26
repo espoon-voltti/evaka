@@ -38,8 +38,8 @@ export function createSuomiFiStrategy(
     })
     return {
       id: person.id,
-      userType: 'ENDUSER',
-      globalRoles: ['END_USER'],
+      userType: 'CITIZEN_STRONG',
+      globalRoles: [],
       allScopedRoles: []
     }
   })

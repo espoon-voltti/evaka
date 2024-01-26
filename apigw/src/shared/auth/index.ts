@@ -94,12 +94,45 @@ export function createAuthHeader(user: EvakaSessionUser): string {
   return `Bearer ${createJwtToken(user)}`
 }
 
+export function createUserHeader(user: EvakaSessionUser): string {
+  return JSON.stringify(
+    ((): object => {
+      switch (user.userType) {
+        case 'CITIZEN_WEAK':
+          return { type: 'citizen_weak', id: user.id }
+        case 'ENDUSER':
+        case 'CITIZEN_STRONG':
+          return { type: 'citizen', id: user.id }
+        case 'EMPLOYEE':
+          return {
+            type: 'employee',
+            id: user.id,
+            globalRoles: user.globalRoles,
+            allScopedRoles: user.allScopedRoles
+          }
+        case 'MOBILE':
+          return {
+            type: 'mobile',
+            id: user.id,
+            employeeId: user.mobileEmployeeId
+          }
+        case 'SYSTEM':
+          return { type: 'system' }
+        case undefined:
+          throw new Error('User type is undefined')
+      }
+    })()
+  )
+}
+
 export function createIntegrationAuthHeader(): string {
   return `Bearer ${createJwt({
     sub: '00000000-0000-0000-0000-000000000000',
     evaka_type: 'integration'
   })}`
 }
+
+export const integrationUserHeader = JSON.stringify({ type: 'integration' })
 
 export function createLogoutToken(
   nameID: Required<Profile>['nameID'],
