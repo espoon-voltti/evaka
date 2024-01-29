@@ -26,7 +26,7 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
@@ -34,21 +34,21 @@ class AbsenceCalculatorTests {
             testGetExpectedAbsenceCategories(
                 date = termBreakDay,
                 placementType = PlacementType.PRESCHOOL,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
             )
         )
     }
@@ -59,7 +59,7 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
@@ -67,28 +67,28 @@ class AbsenceCalculatorTests {
             testGetExpectedAbsenceCategories(
                 date = termBreakDay,
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(13, 45)))
             )
         )
     }
@@ -99,7 +99,7 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
@@ -107,21 +107,21 @@ class AbsenceCalculatorTests {
             testGetExpectedAbsenceCategories(
                 date = termBreakDay,
                 placementType = PlacementType.PREPARATORY,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
             )
         )
     }
@@ -132,7 +132,7 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
@@ -140,28 +140,28 @@ class AbsenceCalculatorTests {
             testGetExpectedAbsenceCategories(
                 date = termBreakDay,
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(14, 45)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(14, 45)))
             )
         )
     }
@@ -172,21 +172,21 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 10)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 10)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30)))
             )
         )
     }
@@ -197,33 +197,33 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                presenceTimes = listOf()
+                attendanceTimes = listOf()
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 5)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 5)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                presenceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 30)))
+                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 30)))
             )
         )
     }
 
     private fun testGetExpectedAbsenceCategories(
         placementType: PlacementType,
-        presenceTimes: List<TimeRange>,
+        attendanceTimes: List<TimeRange>,
         date: LocalDate = today.minusDays(1)
     ): Set<AbsenceCategory>? =
         getExpectedAbsenceCategories(
             date = date,
-            presenceTimes = presenceTimes,
+            attendanceTimes = attendanceTimes,
             placementType = placementType,
             unitLanguage = Language.fi,
             dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),

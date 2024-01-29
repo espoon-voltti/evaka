@@ -292,7 +292,7 @@ class AttendanceReservationController(
                         tx = tx,
                         date = body.date,
                         childId = body.childId,
-                        presenceTimes = body.attendances
+                        attendanceTimes = body.attendances
                     )
                 }
             }

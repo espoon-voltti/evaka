@@ -418,13 +418,13 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun addPresences(absences: List<Presence>) {
+    private fun addPresences(presences: List<Presence>) {
         absenceController.addPresences(
             dbInstance(),
             employee.user(setOf()),
             MockEvakaClock(now),
             group.id,
-            absences
+            presences
         )
     }
 

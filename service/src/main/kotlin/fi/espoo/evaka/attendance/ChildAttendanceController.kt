@@ -275,7 +275,7 @@ class ChildAttendanceController(
                         tx = tx,
                         date = today,
                         childId = childId,
-                        presenceTimes = attendanceTimesToday
+                        attendanceTimes = attendanceTimesToday
                     )
                 }
             }
@@ -380,7 +380,7 @@ class ChildAttendanceController(
                 tx = tx,
                 date = today,
                 childId = childId,
-                presenceTimes = attendanceTimesToday
+                attendanceTimes = attendanceTimesToday
             )
 
         // TODO: once calculation works properly for Tampere special cases this could be
