@@ -3238,7 +3238,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^5.3.2"
     uuid: "npm:^9.0.0"
-    xml-crypto: "npm:^5.1.0"
+    xml-crypto: "npm:^6.0.0"
     xml2js: "npm:^0.6.0"
     zod: "npm:^3.22.3"
   languageName: unknown
@@ -7188,14 +7188,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "xml-crypto@npm:5.1.0"
+"xml-crypto@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "xml-crypto@npm:6.0.0"
   dependencies:
     "@xmldom/is-dom-node": "npm:^1.0.1"
     "@xmldom/xmldom": "npm:^0.8.10"
     xpath: "npm:^0.0.33"
-  checksum: be27e6ab4352b556b9995f18568ca476c007555718567c4489dcc4821877ef9ae238d29f85388a22addab67917b49a674210c8aae221bc50bee45185be00c5b6
+  checksum: bc8f634618e8c30844546cf7a19d3c80634f8134118a2d2b9b76f0bb094b745c53ad94214cd3577fba93327d5d992c7570903e4463ce078d9699e45008246400
   languageName: node
   linkType: hard
 
