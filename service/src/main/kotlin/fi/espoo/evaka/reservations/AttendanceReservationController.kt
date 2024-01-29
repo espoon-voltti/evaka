@@ -133,13 +133,17 @@ class AttendanceReservationController(
                                             UnitAttendanceReservations.ChildRecordOfDay(
                                                 childId = childData.child.id,
                                                 reservations =
-                                                    childData.reservations[date]?.takeIf {
-                                                        !placementStatus.backupOtherUnit
-                                                    } ?: emptyList(),
+                                                    childData.reservations[date]
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        }
+                                                        ?.sorted() ?: emptyList(),
                                                 attendances =
-                                                    childData.attendances[date]?.takeIf {
-                                                        !placementStatus.backupOtherUnit
-                                                    } ?: emptyList(),
+                                                    childData.attendances[date]
+                                                        ?.takeIf {
+                                                            !placementStatus.backupOtherUnit
+                                                        }
+                                                        ?.sortedBy { it.startTime } ?: emptyList(),
                                                 absenceBillable =
                                                     childData.absences[date]
                                                         ?.get(AbsenceCategory.BILLABLE)
@@ -976,7 +980,10 @@ WHERE p.id = ANY(:childIds)
                         lastName = row.lastName,
                         preferredName = row.preferredName,
                         dateOfBirth = row.dateOfBirth,
-                        serviceNeeds = serviceNeedInfos.filter { it.childId == row.id }
+                        serviceNeeds =
+                            serviceNeedInfos
+                                .filter { it.childId == row.id }
+                                .sortedBy { it.validDuring.start }
                     ),
                 reservations =
                     row.reservations.groupBy(
