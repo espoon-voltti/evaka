@@ -1,17 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
-  EmployeeWithDaycareRoles,
-  PagedEmployeesWithDaycareRoles
-} from 'lib-common/generated/api-types/pis'
+import { useQueryResult } from 'lib-common/query'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -19,10 +14,11 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
-import { searchEmployees } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
 import { EmployeeList } from './EmployeeList'
+import { searchEmployeesQuery } from './queries'
 
 const PAGE_SIZE = 50
 
@@ -48,32 +44,13 @@ const PaginationContainer = styled.div`
 export default React.memo(function EmployeesPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState<number>(1)
-  const [totalEmployees, setTotalEmployees] = useState<number>()
-  const [totalPages, setTotalPages] = useState<number>()
-  const [employees, setEmployees] =
-    useState<Result<EmployeeWithDaycareRoles[]>>()
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-  const setEmployeesResult = useCallback(
-    (result: Result<PagedEmployeesWithDaycareRoles>) => {
-      setEmployees(result.map((r) => r.data))
-      if (result.isSuccess) {
-        setTotalEmployees(result.value.total)
-        setTotalPages(result.value.pages)
-      }
-    },
-    [page] // eslint-disable-line react-hooks/exhaustive-deps
+  const employees = useQueryResult(
+    searchEmployeesQuery(page, PAGE_SIZE, debouncedSearchTerm)
   )
-
-  const loadEmployees = useRestApi(searchEmployees, setEmployeesResult)
-
-  useEffect(() => {
-    void loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)
-  }, [loadEmployees, page, debouncedSearchTerm])
-
-  useEffect(() => setPage(1), [searchTerm])
 
   return (
     <Container>
@@ -85,33 +62,35 @@ export default React.memo(function EmployeesPage() {
               data-qa="employee-name-filter"
               value={searchTerm}
               placeholder={i18n.employees.findByName}
-              onChange={setSearchTerm}
+              onChange={(s) => {
+                setSearchTerm(s)
+                setPage(1)
+              }}
               icon={faSearch}
               width="L"
             />
           </SearchBar>
           <PaginationContainer>
             <div>
-              {totalEmployees !== undefined
-                ? i18n.common.resultCount(totalEmployees)
+              {employees.isSuccess
+                ? i18n.common.resultCount(employees.value.total)
                 : null}
             </div>
             <Pagination
-              pages={totalPages}
+              pages={employees.map((res) => res.pages).getOrElse(1)}
               currentPage={page}
               setPage={setPage}
               label={i18n.common.page}
             />
           </PaginationContainer>
         </TopBar>
-        <EmployeeList
-          employees={employees}
-          onUpdate={() => loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)}
-        />
+        {renderResult(employees, (employees) => (
+          <EmployeeList employees={employees.data} />
+        ))}
         {employees?.isSuccess && (
           <PaginationContainer>
             <Pagination
-              pages={totalPages}
+              pages={employees.value.pages}
               currentPage={page}
               setPage={setPage}
               label={i18n.common.page}

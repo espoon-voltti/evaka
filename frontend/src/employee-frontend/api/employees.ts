@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -64,24 +64,21 @@ export async function isPinCodeLocked(): Promise<Result<boolean>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export function searchEmployees(
+export async function searchEmployees(
   page: number,
   pageSize: number,
   searchTerm?: string
-): Promise<Result<PagedEmployeesWithDaycareRoles>> {
+): Promise<PagedEmployeesWithDaycareRoles> {
   return client
     .post<JsonOf<PagedEmployeesWithDaycareRoles>>('/employee/search', {
       page,
       pageSize,
       searchTerm
     })
-    .then((res) =>
-      Success.of({
-        ...res.data,
-        data: res.data.data.map(deserializeEmployeeWithDaycareRoles)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then((res) => ({
+      ...res.data,
+      data: res.data.data.map(deserializeEmployeeWithDaycareRoles)
+    }))
 }
 
 export function getEmployeeDetails(
