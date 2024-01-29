@@ -36,7 +36,8 @@ const features: Features = {
     personDuplicate: false,
     citizenAttendanceSummary: false,
     intermittentShiftCare: false,
-    noAbsenceType: false
+    noAbsenceType: false,
+    monthlyTimeUsageSummary: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -61,7 +62,8 @@ const features: Features = {
     citizenAttendanceSummary: false,
     voucherUnitPayments: false,
     intermittentShiftCare: false,
-    noAbsenceType: false
+    noAbsenceType: false,
+    monthlyTimeUsageSummary: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -86,7 +88,8 @@ const features: Features = {
     citizenAttendanceSummary: false,
     voucherUnitPayments: false,
     intermittentShiftCare: false,
-    noAbsenceType: false
+    noAbsenceType: false,
+    monthlyTimeUsageSummary: false
   }
 }
 

@@ -9,7 +9,8 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
@@ -24,8 +25,13 @@ import { useQueryResult } from 'lib-common/query'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
+import {
+  ExpandingInfoBox,
+  InlineInfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
@@ -37,8 +43,9 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { CalendarWeek, groupByWeek } from './CalendarListView'
 import { HistoryOverlay } from './HistoryOverlay'
+import { getSummaryForMonth } from './MonthElem'
+import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
@@ -151,12 +158,36 @@ export default React.memo(function CalendarGridView({
             dayIsReservable={dayIsReservable}
             childImages={childImages}
             events={events}
+            childSummaries={getSummaryForMonth(childData, year, month)}
           />
         ))}
       </Container>
     </>
   )
 })
+
+interface CalendarWeek {
+  year: number
+  weekNumber: number
+  calendarDays: ReservationResponseDay[]
+}
+
+function groupByWeek(days: ReservationResponseDay[]): CalendarWeek[] {
+  const weeks: CalendarWeek[] = []
+  let currentWeek: CalendarWeek | undefined = undefined
+  days.forEach((d) => {
+    if (!currentWeek || currentWeek.weekNumber !== d.date.getIsoWeek()) {
+      currentWeek = {
+        year: d.date.year,
+        weekNumber: d.date.getIsoWeek(),
+        calendarDays: []
+      }
+      weeks.push(currentWeek)
+    }
+    currentWeek.calendarDays.push(d)
+  })
+  return weeks
+}
 
 interface MonthlyData {
   month: number
@@ -239,7 +270,8 @@ const Month = React.memo(function Month({
   includeWeekends,
   dayIsReservable,
   childImages,
-  events
+  events,
+  childSummaries
 }: {
   year: number
   month: number
@@ -252,13 +284,43 @@ const Month = React.memo(function Month({
   dayIsReservable: (date: LocalDate) => boolean
   childImages: ChildImageData[]
   events: CitizenCalendarEvent[]
+  childSummaries: MonthlyTimeSummary[]
 }) {
   const i18n = useTranslation()
+
+  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(false)
+  const onMonthlySummaryInfoClick = useCallback(
+    () => setMonthlySummaryInfoOpen((prev) => !prev),
+    []
+  )
+  const displaySummary =
+    featureFlags.monthlyTimeUsageSummary && childSummaries.length > 0
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
-      <MonthTitle>{`${
-        i18n.common.datetime.months[month - 1]
-      } ${year}`}</MonthTitle>
+      <MonthTitle>
+        {`${i18n.common.datetime.months[month - 1]} ${year}`}
+        {displaySummary && (
+          <InlineInfoButton
+            onClick={onMonthlySummaryInfoClick}
+            aria-label={i18n.common.openExpandingInfo}
+            margin="zero"
+            data-qa="sensitive-flag-info-button"
+            open={monthlySummaryInfoOpen}
+          />
+        )}
+      </MonthTitle>
+      {monthlySummaryInfoOpen && (
+        <MonthSummaryInfoBox
+          info={
+            <MonthlyHoursSummary
+              year={year}
+              month={month}
+              childSummaries={childSummaries}
+            />
+          }
+          close={() => setMonthlySummaryInfoOpen(false)}
+        />
+      )}
       <CalendarHeader includeWeekends={includeWeekends}>
         <HeadingCell />
         {(includeWeekends ? daysWithWeekends : daysWithoutWeekends).map((d) => (
@@ -500,6 +562,8 @@ const WeekNumber = styled(HeadingCell)`
 
 const MonthTitle = styled(H2).attrs({ noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
+  align-items: center;
+  display: flex;
 `
 
 const DayCell = styled.button<{
@@ -570,4 +634,9 @@ const DayCellDate = styled.div<{ inactive: boolean; holiday: boolean }>`
 
 const InactiveCell = styled.div`
   background-color: transparent;
+`
+
+const MonthSummaryInfoBox = styled(ExpandingInfoBox)`
+  margin: ${defaultMargins.s} 0 ${defaultMargins.xs};
+  width: 100%;
 `

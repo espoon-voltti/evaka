@@ -415,6 +415,13 @@ const en: Translations = {
     absentDisable: 'Mark as present',
     validationErrors: {
       range: 'Outside opening hours'
+    },
+    monthSummary: {
+      title: 'Attendance summary',
+      reserved: 'Reservations',
+      usedService: 'Realized',
+      minutes: 'min',
+      hours: 'h'
     }
   },
   messages: {

@@ -411,6 +411,13 @@ const sv: Translations = {
     absentDisable: 'Markera som närvarande',
     validationErrors: {
       range: 'Utanför enhetens öppettid'
+    },
+    monthSummary: {
+      title: 'Närvaro',
+      reserved: 'Reserverad tid',
+      usedService: 'Förverkligad tid',
+      minutes: 'min',
+      hours: 'h'
     }
   },
   messages: {
