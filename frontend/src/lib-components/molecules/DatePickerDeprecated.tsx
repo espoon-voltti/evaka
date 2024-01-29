@@ -122,7 +122,6 @@ interface DatePickerClearableProps extends CommonProps {
 
 const defaultProps: Partial<ReactDatePickerProps> = {
   popperPlacement: 'bottom',
-  popperModifiers: [{ name: 'preventOverflow' }],
   showMonthDropdown: true,
   showYearDropdown: true
 }
