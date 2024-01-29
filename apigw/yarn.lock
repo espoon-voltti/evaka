@@ -436,13 +436,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:6.0.0":
-  version: 6.0.0
-  resolution: "@datadog/native-appsec@npm:6.0.0"
+"@datadog/native-appsec@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@datadog/native-appsec@npm:7.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: a8a204c521504e7e66780d38e7ac9dff13449e946d48388cf2efd52c46e4a17cb0923946300ce376cf2f1b6bb143afe6ec543e917405a7470dfb1f7bcec9fc6e
+  checksum: ef72d89e9be686c4682e9e2b3cb89cf4ac1ce0130131b067a563a3687ae297740263b0640b3019b27fb6191c408e644f7e1376785b4e1bacf60e1897c433f63a
   languageName: node
   linkType: hard
 
@@ -2676,11 +2676,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "dd-trace@npm:5.0.0"
+"dd-trace@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "dd-trace@npm:5.2.0"
   dependencies:
-    "@datadog/native-appsec": "npm:6.0.0"
+    "@datadog/native-appsec": "npm:7.0.0"
     "@datadog/native-iast-rewriter": "npm:2.2.2"
     "@datadog/native-iast-taint-tracking": "npm:1.6.4"
     "@datadog/native-metrics": "npm:^2.0.0"
@@ -2691,17 +2691,14 @@ __metadata:
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.2"
     ignore: "npm:^5.2.4"
-    import-in-the-middle: "npm:^1.7.1"
+    import-in-the-middle: "npm:^1.7.3"
     int64-buffer: "npm:^0.1.9"
     ipaddr.js: "npm:^2.1.0"
     istanbul-lib-coverage: "npm:3.2.0"
     jest-docblock: "npm:^29.7.0"
     koalas: "npm:^1.0.2"
     limiter: "npm:1.1.5"
-    lodash.kebabcase: "npm:^4.1.1"
-    lodash.pick: "npm:^4.4.0"
     lodash.sortby: "npm:^4.7.0"
-    lodash.uniq: "npm:^4.5.0"
     lru-cache: "npm:^7.14.0"
     methods: "npm:^1.1.2"
     module-details-from-path: "npm:^1.0.3"
@@ -2714,7 +2711,7 @@ __metadata:
     retry: "npm:^0.13.1"
     semver: "npm:^7.5.4"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 82c803aa4b0f028ffb8c97c38d1ac22f9c9053c9bfae4debd39524a305ffb22aed44a6fc217e4a57a554b98d9ffafa24f35e2e1cd37b38b9d8fe7e9f9dab6d0e
+  checksum: c7162e93aa292f71a460697efbc173706431db746775e63d81ba4df4319c647743d1b210dc415e4dead30715189501ac727aee0e8d34084a09b800be266db190
   languageName: node
   linkType: hard
 
@@ -3204,7 +3201,7 @@ __metadata:
     cookie-parser: "npm:^1.4.6"
     csurf: "npm:^1.11.0"
     date-fns: "npm:^3.3.0"
-    dd-trace: "npm:^5.0.0"
+    dd-trace: "npm:^5.2.0"
     eslint: "npm:^8.56.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.1.2"
@@ -3962,15 +3959,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.7.1":
-  version: 1.7.2
-  resolution: "import-in-the-middle@npm:1.7.2"
+"import-in-the-middle@npm:^1.7.3":
+  version: 1.7.3
+  resolution: "import-in-the-middle@npm:1.7.3"
   dependencies:
     acorn: "npm:^8.8.2"
     acorn-import-assertions: "npm:^1.9.0"
     cjs-module-lexer: "npm:^1.2.2"
     module-details-from-path: "npm:^1.0.3"
-  checksum: 21d2e98047f1d37033a7f12a7518378ac023aaea9e6f1c865c1ff93f9b8c744687809030ce83141d56f05cc0d23c5ff75ae62be98c2af9e5f2df0f24495d7451
+  checksum: 7176dbb5c8b27bd9684a5ef0bf93c2929f98ee301a58ca75dd443a88f0cfe26fa1cfe80ca7326029cbc74701b61a3733623e019faa14acab1c1c393a89ac057b
   languageName: node
   linkType: hard
 
@@ -4879,13 +4876,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.kebabcase@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "lodash.kebabcase@npm:4.1.1"
-  checksum: d84ec5441ef8e5c718c50315f35b0a045a77c7e8ee3e54472c06dc31f6f3602e95551a16c0923d689198b51deb8902c4bbc54fc9b965b26c1f86e21df3a05f34
-  languageName: node
-  linkType: hard
-
 "lodash.memoize@npm:4.x":
   version: 4.1.2
   resolution: "lodash.memoize@npm:4.1.2"
@@ -4900,24 +4890,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.pick@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "lodash.pick@npm:4.4.0"
-  checksum: 5a76778aa1c245ce081d19c5a625a44cdf4853f421c8789ec962cb5d73dd21be7cf11ae3bc2123ff5f432326ed0176d674d22ca6e0e8f9eaba5b74b00f632c12
-  languageName: node
-  linkType: hard
-
 "lodash.sortby@npm:^4.7.0":
   version: 4.7.0
   resolution: "lodash.sortby@npm:4.7.0"
   checksum: 38df19ae28608af2c50ac342fc1f414508309d53e1d58ed9adfb2c3cd17c3af290058c0a0478028d932c5404df3d53349d19fa364ef6bed6145a6bc21320399e
-  languageName: node
-  linkType: hard
-
-"lodash.uniq@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.uniq@npm:4.5.0"
-  checksum: 86246ca64ac0755c612e5df6d93cfe92f9ecac2e5ff054b965efbbb1d9a647b6310969e78545006f70f52760554b03233ad0103324121ae31474c20d5f7a2812
   languageName: node
   linkType: hard
 
