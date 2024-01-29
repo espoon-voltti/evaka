@@ -17,7 +17,7 @@ dependencies {
         api(libs.fuel)
         api(libs.fuel.jackson)
         api("com.google.guava:guava:33.0.0-jre")
-        api("com.networknt:json-schema-validator:1.2.0")
+        api("com.networknt:json-schema-validator:1.3.0")
         api("com.zaxxer:HikariCP:5.1.0")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api("io.javalin:javalin:5.6.2")
