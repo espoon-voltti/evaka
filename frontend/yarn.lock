@@ -3420,9 +3420,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "@testing-library/jest-dom@npm:6.2.0"
+"@testing-library/jest-dom@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "@testing-library/jest-dom@npm:6.3.0"
   dependencies:
     "@adobe/css-tools": "npm:^4.3.2"
     "@babel/runtime": "npm:^7.9.2"
@@ -3434,11 +3434,14 @@ __metadata:
     redent: "npm:^3.0.0"
   peerDependencies:
     "@jest/globals": ">= 28"
+    "@types/bun": "*"
     "@types/jest": ">= 28"
     jest: ">= 28"
     vitest: ">= 0.32"
   peerDependenciesMeta:
     "@jest/globals":
+      optional: true
+    "@types/bun":
       optional: true
     "@types/jest":
       optional: true
@@ -3446,7 +3449,7 @@ __metadata:
       optional: true
     vitest:
       optional: true
-  checksum: 4af88d4b6208eda58fad47a520057893a381b972e7b043d7787c0111c887bdc82ed959bed07c21700f2816d4a1e315a519a0aabce120708ad7ba79577374f0fd
+  checksum: d96e552cfe5a72fa0a4c21655a9fabe6ffce6a066323c8a0f5847f39ff88229cd2455c9af41d3381b672d65469e74752d29e35dd04c15d8241a9f6a1e7cb78c6
   languageName: node
   linkType: hard
 
@@ -6856,7 +6859,7 @@ __metadata:
     "@sentry/react": "npm:^7.98.0"
     "@sentry/webpack-plugin": "npm:^2.10.0"
     "@tanstack/react-query": "npm:^5.17.0"
-    "@testing-library/jest-dom": "npm:^6.2.0"
+    "@testing-library/jest-dom": "npm:^6.3.0"
     "@testing-library/react": "npm:^14.1.0"
     "@testing-library/user-event": "npm:^14.5.1"
     "@types/jest": "npm:^29.5.2"
