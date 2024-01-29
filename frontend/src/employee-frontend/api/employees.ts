@@ -81,13 +81,12 @@ export async function searchEmployees(
     }))
 }
 
-export function getEmployeeDetails(
+export async function getEmployeeDetails(
   id: UUID
-): Promise<Result<EmployeeWithDaycareRoles>> {
+): Promise<EmployeeWithDaycareRoles> {
   return client
     .get<JsonOf<EmployeeWithDaycareRoles>>(`/employee/${id}/details`)
-    .then((res) => Success.of(deserializeEmployeeWithDaycareRoles(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => deserializeEmployeeWithDaycareRoles(res.data))
 }
 
 function deserializeEmployeeWithDaycareRoles(
@@ -101,16 +100,11 @@ function deserializeEmployeeWithDaycareRoles(
   }
 }
 
-export function updateEmployee(
+export async function updateEmployee(
   id: UUID,
   globalRoles: UserRole[]
-): Promise<Result<void>> {
-  return client
-    .put(`/employee/${id}`, {
-      globalRoles
-    })
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+): Promise<void> {
+  await client.put(`/employee/${id}`, { globalRoles })
 }
 
 export function activateEmployee(id: UUID): Promise<Result<void>> {

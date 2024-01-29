@@ -4155,7 +4155,7 @@ export const fi = {
     deactivate: 'Deaktivoi',
     deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
     editor: {
-      roles: 'Roolit'
+      roles: 'Järjestelmäroolit'
     }
   },
   financeBasics: {
