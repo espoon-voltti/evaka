@@ -107,96 +107,93 @@ const EmployeePage = React.memo(function EmployeePage({
   )
 
   return (
-    <Container>
-      <ReturnButton label={i18n.common.goBack} />
-      <ContentArea opaque>
-        <Title size={2}>
-          {employee.firstName} {employee.lastName}
-        </Title>
-        <span>{employee.email}</span>
+    <div>
+      <Title size={2}>
+        {employee.firstName} {employee.lastName}
+      </Title>
+      <span>{employee.email}</span>
 
-        <Gap />
+      <Gap />
 
-        <Title size={3}>{i18n.employees.editor.globalRoles}</Title>
-        {editingGlobalRoles ? (
-          <GlobalRolesForm
-            employee={employee}
-            onSuccess={() => setEditingGlobalRoles(false)}
-            onCancel={() => setEditingGlobalRoles(false)}
-          />
-        ) : (
-          <FixedSpaceColumn spacing="m">
-            <div>
-              {employee.globalRoles.length > 0
-                ? globalRoles
-                    .filter((r) => employee.globalRoles.includes(r))
-                    .map((r) => i18n.roles.adRoles[r])
-                    .join(', ')
-                : '-'}
-            </div>
-            <InlineButton
-              onClick={() => setEditingGlobalRoles(true)}
-              text={i18n.common.edit}
-            />
-          </FixedSpaceColumn>
-        )}
-
-        <Gap />
-
-        <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
-        <FlexRow justifyContent="space-between">
+      <Title size={3}>{i18n.employees.editor.globalRoles}</Title>
+      {editingGlobalRoles ? (
+        <GlobalRolesForm
+          employee={employee}
+          onSuccess={() => setEditingGlobalRoles(false)}
+          onCancel={() => setEditingGlobalRoles(false)}
+        />
+      ) : (
+        <FixedSpaceColumn spacing="m">
+          <div>
+            {employee.globalRoles.length > 0
+              ? globalRoles
+                  .filter((r) => employee.globalRoles.includes(r))
+                  .map((r) => i18n.roles.adRoles[r])
+                  .join(', ')
+              : '-'}
+          </div>
           <InlineButton
-            onClick={() => {
-              // TODO
-            }}
-            text={i18n.employees.editor.unitRoles.addRoles}
-            icon={faPlus}
+            onClick={() => setEditingGlobalRoles(true)}
+            text={i18n.common.edit}
           />
-          <ConfirmedMutation
-            buttonStyle="INLINE"
-            buttonText={i18n.employees.editor.unitRoles.deleteAll}
-            icon={faTimes}
-            confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
-            mutation={deleteEmployeeDaycareRolesMutation}
-            onClick={() => ({ employeeId: employee.id, daycareId: null })}
-          />
-        </FlexRow>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{i18n.employees.editor.unitRoles.unit}</Th>
-              <Th>{i18n.employees.editor.unitRoles.roles}</Th>
-              <Th />
+        </FixedSpaceColumn>
+      )}
+
+      <Gap />
+
+      <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
+      <FlexRow justifyContent="space-between">
+        <InlineButton
+          onClick={() => {
+            // TODO
+          }}
+          text={i18n.employees.editor.unitRoles.addRoles}
+          icon={faPlus}
+        />
+        <ConfirmedMutation
+          buttonStyle="INLINE"
+          buttonText={i18n.employees.editor.unitRoles.deleteAll}
+          icon={faTimes}
+          confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
+          mutation={deleteEmployeeDaycareRolesMutation}
+          onClick={() => ({ employeeId: employee.id, daycareId: null })}
+        />
+      </FlexRow>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.employees.editor.unitRoles.unit}</Th>
+            <Th>{i18n.employees.editor.unitRoles.roles}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {sortedRoles.map(({ daycareId, daycareName, role }) => (
+            <Tr key={`${daycareId}/${role}`}>
+              <Td>
+                <Link to={`units/${daycareId}`}>{daycareName}</Link>
+              </Td>
+              <Td>{i18n.roles.adRoles[role]}</Td>
+              <Td>
+                <ConfirmedMutation
+                  buttonStyle="ICON"
+                  icon={faTrash}
+                  buttonAltText={i18n.common.remove}
+                  confirmationTitle={
+                    i18n.employees.editor.unitRoles.deleteConfirm
+                  }
+                  mutation={deleteEmployeeDaycareRolesMutation}
+                  onClick={() => ({
+                    employeeId: employee.id,
+                    daycareId: daycareId
+                  })}
+                />
+              </Td>
             </Tr>
-          </Thead>
-          <Tbody>
-            {sortedRoles.map(({ daycareId, daycareName, role }) => (
-              <Tr key={`${daycareId}/${role}`}>
-                <Td>
-                  <Link to={`units/${daycareId}`}>{daycareName}</Link>
-                </Td>
-                <Td>{i18n.roles.adRoles[role]}</Td>
-                <Td>
-                  <ConfirmedMutation
-                    buttonStyle="ICON"
-                    icon={faTrash}
-                    buttonAltText={i18n.common.remove}
-                    confirmationTitle={
-                      i18n.employees.editor.unitRoles.deleteConfirm
-                    }
-                    mutation={deleteEmployeeDaycareRolesMutation}
-                    onClick={() => ({
-                      employeeId: employee.id,
-                      daycareId: daycareId
-                    })}
-                  />
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </ContentArea>
-    </Container>
+          ))}
+        </Tbody>
+      </Table>
+    </div>
   )
 })
 
