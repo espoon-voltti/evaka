@@ -21,12 +21,14 @@ import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployeeActive
 import fi.espoo.evaka.pis.updateEmployeeGlobalRoles
+import fi.espoo.evaka.pis.upsertEmployeeDaycareRoles
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
@@ -123,6 +125,44 @@ class EmployeeController(private val accessControl: AccessControl) {
             }
         }
         Audit.EmployeeUpdateGlobalRoles.log(targetId = id, meta = mapOf("globalRoles" to body))
+    }
+
+    data class UpsertEmployeeDaycareRolesRequest(
+        val daycareIds: List<DaycareId>,
+        val role: UserRole
+    ) {
+        init {
+            if (!role.isUnitScopedRole()) {
+                throw BadRequest("Role is not a scoped role")
+            }
+        }
+    }
+
+    @PutMapping("/{id}/daycare-roles")
+    fun upsertEmployeeDaycareRoles(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId,
+        @RequestBody body: UpsertEmployeeDaycareRolesRequest
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Employee.UPDATE_DAYCARE_ROLES,
+                    id
+                )
+
+                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role)
+            }
+        }
+        Audit.EmployeeUpdateDaycareRoles.log(
+            targetId = id,
+            meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role)
+        )
     }
 
     @DeleteMapping("/{id}/daycare-roles")

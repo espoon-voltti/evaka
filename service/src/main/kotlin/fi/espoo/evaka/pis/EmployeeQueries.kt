@@ -274,6 +274,25 @@ fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
         .bind("active", active)
         .updateExactlyOne()
 
+fun Database.Transaction.upsertEmployeeDaycareRoles(
+    id: EmployeeId,
+    daycareIds: List<DaycareId>,
+    role: UserRole
+) {
+    val batch =
+        prepareBatch(
+            """
+        INSERT INTO daycare_acl (daycare_id, employee_id, role) 
+        VALUES (:daycareId, :employeeId, :role)
+        ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = :role
+    """
+        )
+    daycareIds.forEach {
+        batch.bind("daycareId", it).bind("employeeId", id).bind("role", role).add()
+    }
+    batch.execute()
+}
+
 fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: List<UserRole>) {
     val updated =
         createUpdate<Any> {

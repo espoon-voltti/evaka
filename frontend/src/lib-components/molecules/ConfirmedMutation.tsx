@@ -67,17 +67,16 @@ function ConfirmedMutation_<Arg, Data>(
   }
   return (
     <div className={className}>
-      {props.buttonStyle === undefined ||
-        (props.buttonStyle === 'BUTTON' && (
-          <Button
-            text={props.buttonText}
-            onClick={openConfirmation}
-            primary={props.primary}
-            disabled={disabled}
-            data-qa={dataQa}
-            type="button"
-          />
-        ))}
+      {(props.buttonStyle === undefined || props.buttonStyle === 'BUTTON') && (
+        <Button
+          text={props.buttonText}
+          onClick={openConfirmation}
+          primary={props.primary}
+          disabled={disabled}
+          data-qa={dataQa}
+          type="button"
+        />
+      )}
       {props.buttonStyle === 'INLINE' && (
         <InlineButton
           text={props.buttonText}

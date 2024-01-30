@@ -87,6 +87,40 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `admin can upsert employee daycare roles`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val daycare2 = DevDaycare(areaId = careArea.id)
+        val daycare3 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(
+                employee,
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF)
+            )
+        }
+
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare2.id, daycare3.id),
+            UserRole.SPECIAL_EDUCATION_TEACHER
+        )
+
+        assertEquals(
+            setOf(
+                DaycareRole(daycare1.id, daycare1.name, UserRole.STAFF),
+                DaycareRole(daycare2.id, daycare2.name, UserRole.SPECIAL_EDUCATION_TEACHER),
+                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER),
+            ),
+            getEmployeeDetails(employee.id).daycareRoles.toSet()
+        )
+    }
+
+    @Test
     fun `admin can delete employee daycare role`() {
         val careArea = DevCareArea()
         val daycare1 = DevDaycare(areaId = careArea.id)
@@ -167,6 +201,15 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun createEmployee(employee: NewEmployee) =
         employeeController.createEmployee(dbInstance(), adminUser, clock, employee)
+
+    fun upsertEmployeeDaycareRoles(id: EmployeeId, daycareIds: List<DaycareId>, role: UserRole) =
+        employeeController.upsertEmployeeDaycareRoles(
+            dbInstance(),
+            adminUser,
+            clock,
+            id,
+            EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role)
+        )
 
     fun updateEmployeeGlobalRoles(id: EmployeeId, roles: List<UserRole>) =
         employeeController.updateEmployeeGlobalRoles(dbInstance(), adminUser, clock, id, roles)

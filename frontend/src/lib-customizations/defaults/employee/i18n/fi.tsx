@@ -4159,11 +4159,13 @@ export const fi = {
       unitRoles: {
         title: 'Luvitukset',
         unit: 'Yksikkö',
-        roles: 'Roolit yksikössä',
-        addRoles: 'Lisää luvituksia',
+        role: 'Rooli yksikössä',
         deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
         deleteAll: 'Poista kaikki luvitukset',
-        deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?'
+        deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
+        addRoles: 'Lisää luvituksia',
+        addRolesModalTitle: 'Uusi luvitus',
+        units: 'Yksiköt'
       }
     }
   },

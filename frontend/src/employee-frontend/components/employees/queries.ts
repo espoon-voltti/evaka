@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -12,7 +13,8 @@ import {
   deleteEmployeeDaycareRoles,
   getEmployeeDetails,
   searchEmployees,
-  updateEmployeeGlobalRoles
+  updateEmployeeGlobalRoles,
+  upsertEmployeeDaycareRoles
 } from '../../api/employees'
 import { createQueryKeys } from '../../query'
 
@@ -40,6 +42,15 @@ export const employeeDetailsQuery = query({
 export const updateEmployeeGlobalRolesMutation = mutation({
   api: (args: { id: UUID; globalRoles: UserRole[] }) =>
     updateEmployeeGlobalRoles(args.id, args.globalRoles),
+  invalidateQueryKeys: (args) => [
+    queryKeys.searchAll(),
+    queryKeys.byId(args.id)
+  ]
+})
+
+export const upsertEmployeeDaycareRolesMutation = mutation({
+  api: (args: { id: UUID; request: UpsertEmployeeDaycareRolesRequest }) =>
+    upsertEmployeeDaycareRoles(args.id, args.request),
   invalidateQueryKeys: (args) => [
     queryKeys.searchAll(),
     queryKeys.byId(args.id)

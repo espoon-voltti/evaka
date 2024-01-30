@@ -207,6 +207,7 @@ enum class Audit(
     EmployeeDeleteDaycareRoles(securityEvent = true, securityLevel = "high"),
     EmployeeLogin(securityEvent = true, securityLevel = "high"),
     EmployeeRead(securityEvent = true),
+    EmployeeUpdateDaycareRoles(securityEvent = true, securityLevel = "high"),
     EmployeeUpdateGlobalRoles(securityEvent = true, securityLevel = "high"),
     EmployeePreferredFirstNameRead,
     EmployeePreferredFirstNameUpdate,

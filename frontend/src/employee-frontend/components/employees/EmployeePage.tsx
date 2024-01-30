@@ -7,6 +7,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
 import { array, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
@@ -31,9 +32,12 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import { Unit } from '../../types/unit'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+import { unitsQuery } from '../unit/queries'
 
+import DaycareRolesModal from './DaycareRolesModal'
 import {
   deleteEmployeeDaycareRolesMutation,
   employeeDetailsQuery,
@@ -94,12 +98,15 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
 })
 
 const EmployeePage = React.memo(function EmployeePage({
-  employee
+  employee,
+  units
 }: {
   employee: EmployeeWithDaycareRoles
+  units: Unit[]
 }) {
   const { i18n } = useTranslation()
   const [editingGlobalRoles, setEditingGlobalRoles] = useState(false)
+  const [rolesModalOpen, setRolesModalOpen] = useState(false)
 
   const sortedRoles = useMemo(
     () => sortBy(employee.daycareRoles, ({ daycareName }) => daycareName),
@@ -108,6 +115,13 @@ const EmployeePage = React.memo(function EmployeePage({
 
   return (
     <div>
+      {rolesModalOpen && (
+        <DaycareRolesModal
+          employeeId={employee.id}
+          units={units}
+          onClose={() => setRolesModalOpen(false)}
+        />
+      )}
       <Title size={2}>
         {employee.firstName} {employee.lastName}
       </Title>
@@ -144,11 +158,10 @@ const EmployeePage = React.memo(function EmployeePage({
       <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
       <FlexRow justifyContent="space-between">
         <InlineButton
-          onClick={() => {
-            // TODO
-          }}
+          onClick={() => setRolesModalOpen(true)}
           text={i18n.employees.editor.unitRoles.addRoles}
           icon={faPlus}
+          disabled={editingGlobalRoles}
         />
         <ConfirmedMutation
           buttonStyle="INLINE"
@@ -157,13 +170,14 @@ const EmployeePage = React.memo(function EmployeePage({
           confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
           mutation={deleteEmployeeDaycareRolesMutation}
           onClick={() => ({ employeeId: employee.id, daycareId: null })}
+          disabled={editingGlobalRoles}
         />
       </FlexRow>
       <Table>
         <Thead>
           <Tr>
             <Th>{i18n.employees.editor.unitRoles.unit}</Th>
-            <Th>{i18n.employees.editor.unitRoles.roles}</Th>
+            <Th>{i18n.employees.editor.unitRoles.role}</Th>
             <Th />
           </Tr>
         </Thead>
@@ -187,6 +201,7 @@ const EmployeePage = React.memo(function EmployeePage({
                     employeeId: employee.id,
                     daycareId: daycareId
                   })}
+                  disabled={editingGlobalRoles}
                 />
               </Td>
             </Tr>
@@ -201,13 +216,14 @@ export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
   const { id } = useNonNullableParams<{ id: UUID }>()
   const employee = useQueryResult(employeeDetailsQuery(id))
+  const units = useQueryResult(unitsQuery())
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {renderResult(employee, (employee) => (
-          <EmployeePage employee={employee} />
+        {renderResult(combine(employee, units), ([employee, units]) => (
+          <EmployeePage employee={employee} units={units} />
         ))}
       </ContentArea>
     </Container>

@@ -612,3 +612,11 @@ export interface TemporaryEmployee {
   lastName: string
   pinCode: PinCode | null
 }
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.UpsertEmployeeDaycareRolesRequest
+*/
+export interface UpsertEmployeeDaycareRolesRequest {
+  daycareIds: UUID[]
+  role: UserRole
+}

@@ -9,7 +9,8 @@ import {
   EmployeePreferredFirstName,
   EmployeeSetPreferredFirstNameUpdateRequest,
   EmployeeWithDaycareRoles,
-  PagedEmployeesWithDaycareRoles
+  PagedEmployeesWithDaycareRoles,
+  UpsertEmployeeDaycareRolesRequest
 } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -105,6 +106,13 @@ export async function updateEmployeeGlobalRoles(
   globalRoles: UserRole[]
 ): Promise<void> {
   await client.put(`/employee/${id}/global-roles`, globalRoles)
+}
+
+export async function upsertEmployeeDaycareRoles(
+  id: UUID,
+  body: UpsertEmployeeDaycareRolesRequest
+): Promise<void> {
+  await client.put(`/employee/${id}/daycare-roles`, body)
 }
 
 export async function deleteEmployeeDaycareRoles(
