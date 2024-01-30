@@ -2030,7 +2030,8 @@ data class DevEmployee(
     val evakaUserId: EvakaUserId
         get() = EvakaUserId(id.raw)
 
-    fun user(globalRoles: Set<UserRole>) = AuthenticatedUser.Employee(id, globalRoles)
+    val user: AuthenticatedUser.Employee
+        get() = AuthenticatedUser.Employee(id, roles)
 }
 
 data class DevMobileDevice(

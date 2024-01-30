@@ -16,8 +16,6 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -121,21 +119,27 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertAttendance(testChild_6.id, testDaycare.id, today, LocalTime.of(10, 30, 0))
 
             val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
-            tx.insert(employee1)
-            tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId))
+            tx.insert(
+                employee1,
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(groupId))
+            )
             tx.markStaffArrival(employee1.id, groupId, now.minusDays(1), BigDecimal(7.0))
 
             val employee2 = DevEmployee(firstName = "Two", lastName = "in group 1")
-            tx.insert(employee2)
-            tx.insertDaycareAclRow(testDaycare.id, employee2.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee2.id, listOf(groupId))
+            tx.insert(
+                employee2,
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(groupId))
+            )
             tx.markStaffArrival(employee2.id, groupId, now.minusDays(1), BigDecimal(7.0))
 
             val employee3 = DevEmployee(firstName = "Three", lastName = "in group 2")
-            tx.insert(employee3)
-            tx.insertDaycareAclRow(testDaycare.id, employee3.id, UserRole.STAFF)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee3.id, listOf(groupId2))
+            tx.insert(
+                employee3,
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(groupId2))
+            )
             tx.markStaffArrival(employee3.id, groupId2, now.minusDays(1), BigDecimal(7.0))
         }
     }

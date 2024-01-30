@@ -23,7 +23,6 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.createPersonMessageAccount
-import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -242,6 +241,30 @@ RETURNING id
         )
         .let(::EmployeeId)
         .also { upsertEmployeeUser(it) }
+
+fun Database.Transaction.insert(
+    employee: DevEmployee,
+    unitRoles: Map<DaycareId, UserRole> = mapOf(),
+    groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf()
+) =
+    insertTestDataRow(
+            employee,
+            """
+INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
+VALUES (:id, :preferredFirstName, :firstName, :lastName, :email, :externalId, :employeeNumber, :roles::user_role[], :lastLogin, :active)
+RETURNING id
+"""
+        )
+        .let(::EmployeeId)
+        .also { employeeId ->
+            upsertEmployeeUser(employeeId)
+            unitRoles.forEach { (daycareId, role) ->
+                insertDaycareAclRow(daycareId, employeeId, role)
+            }
+            groupAcl.forEach { (daycareId, groups) ->
+                insertDaycareGroupAcl(daycareId, employeeId, groups)
+            }
+        }
 
 fun Database.Transaction.insert(device: DevMobileDevice) =
     insertTestDataRow(
@@ -1588,17 +1611,6 @@ VALUES (:id, :childId, :validDuring, :type, :modified, :modifiedBy)
 """
         )
         .let(::OtherAssistanceMeasureId)
-
-fun Database.Transaction.insertTestUser(
-    employee: DevEmployee,
-    unitRoles: Map<DaycareId, UserRole> = mapOf(),
-    groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf()
-): AuthenticatedUser.Employee {
-    val id = insert(employee)
-    unitRoles.forEach { (daycareId, role) -> insertDaycareAclRow(daycareId, id, role) }
-    groupAcl.forEach { (daycareId, groups) -> insertDaycareGroupAcl(daycareId, id, groups) }
-    return AuthenticatedUser.Employee(checkNotNull(getEmployeeUser(id)))
-}
 
 fun Database.Transaction.insert(serviceNeed: DevServiceNeed) =
     insertTestDataRow(

@@ -519,7 +519,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
         dailyServiceTimesController.postDailyServiceTimes(
             dbInstance(),
-            employee.user(setOf()),
+            employee.user,
             MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0))),
             child.id,
             DailyServiceTimesValue.IrregularTimes(

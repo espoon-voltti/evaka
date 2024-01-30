@@ -519,7 +519,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 afterThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = child.id,
@@ -589,7 +589,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 afterThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = child.id,
@@ -724,7 +724,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 afterThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = child.id,
@@ -870,7 +870,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         dailyServiceTimesController.postDailyServiceTimes(
             dbInstance(),
-            employee.user(setOf()),
+            employee.user,
             MockEvakaClock(HelsinkiDateTime.of(monday.minusDays(1), LocalTime.of(12, 0))),
             child.id,
             DailyServiceTimesValue.IrregularTimes(
@@ -1413,7 +1413,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 beforeThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = child.id,
@@ -1485,7 +1485,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 beforeThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = child.id,
@@ -1531,13 +1531,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
+                modifiedBy = EvakaUserId(employee.user.id.raw)
             )
             it.insertTestAbsence(
                 childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
+                modifiedBy = EvakaUserId(employee.user.id.raw)
             )
         }
 
@@ -1600,13 +1600,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 childId = child.id,
                 date = monday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
+                modifiedBy = EvakaUserId(employee.user.id.raw)
             )
             it.insertTestAbsence(
                 childId = child.id,
                 date = tuesday,
                 category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user(setOf()).id.raw)
+                modifiedBy = EvakaUserId(employee.user.id.raw)
             )
         }
 
@@ -1615,7 +1615,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             createReservationsAndAbsences(
                 it,
                 beforeThreshold,
-                employee.user(setOf()),
+                employee.user,
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = child.id,

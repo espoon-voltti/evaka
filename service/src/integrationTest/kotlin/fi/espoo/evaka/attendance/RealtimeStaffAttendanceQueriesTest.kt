@@ -9,12 +9,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.testDaycare
@@ -49,22 +47,26 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             tx.insert(group2)
             tx.insert(group3)
             tx.insert(roundTheClockGroup)
-
-            tx.insert(DevEmployee(id = employee1Id, firstName = "One", lastName = "in group 1"))
-            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
-            tx.insertEmployeeToDaycareGroupAcl(group1.id, employee1Id)
-
-            tx.insert(DevEmployee(id = employee2Id, firstName = "Two", lastName = "in group 2"))
-            tx.insertDaycareAclRow(testDaycare.id, employee2Id, UserRole.STAFF)
-            tx.insertEmployeeToDaycareGroupAcl(group2.id, employee2Id)
-
-            tx.insert(DevEmployee(id = employee3Id, firstName = "Three", lastName = "in group 1"))
-            tx.insertDaycareAclRow(testDaycare.id, employee3Id, UserRole.SPECIAL_EDUCATION_TEACHER)
-            tx.insertEmployeeToDaycareGroupAcl(group1.id, employee3Id)
-
-            tx.insert(DevEmployee(id = employee4Id, firstName = "Four", lastName = "in group 2"))
-            tx.insertDaycareAclRow(testDaycare.id, employee4Id, UserRole.STAFF)
-            tx.insertEmployeeToDaycareGroupAcl(group2.id, employee4Id)
+            tx.insert(
+                DevEmployee(id = employee1Id, firstName = "One", lastName = "in group 1"),
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(group1.id))
+            )
+            tx.insert(
+                DevEmployee(id = employee2Id, firstName = "Two", lastName = "in group 2"),
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(group2.id))
+            )
+            tx.insert(
+                DevEmployee(id = employee3Id, firstName = "Three", lastName = "in group 1"),
+                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
+                mapOf(testDaycare.id to listOf(group1.id))
+            )
+            tx.insert(
+                DevEmployee(id = employee4Id, firstName = "Four", lastName = "in group 2"),
+                mapOf(testDaycare.id to UserRole.STAFF),
+                mapOf(testDaycare.id to listOf(group2.id))
+            )
         }
     }
 
