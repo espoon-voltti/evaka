@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
+import fi.espoo.evaka.pis.deleteEmployeeDaycareRoles
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
@@ -18,9 +19,10 @@ import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.setEmployeePreferredFirstName
-import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.updateEmployeeActive
+import fi.espoo.evaka.pis.updateEmployeeGlobalRoles
 import fi.espoo.evaka.pis.upsertPinCode
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -98,24 +101,52 @@ class EmployeeController(private val accessControl: AccessControl) {
             .also { Audit.EmployeeRead.log(targetId = id) }
     }
 
-    data class EmployeeUpdate(val globalRoles: List<UserRole>)
-
-    @PutMapping("/{id}")
-    fun updateEmployee(
+    @PutMapping("/{id}/global-roles")
+    fun updateEmployeeGlobalRoles(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId,
-        @RequestBody body: EmployeeUpdate
+        @RequestBody body: List<UserRole>
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Employee.UPDATE, id)
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Employee.UPDATE_GLOBAL_ROLES,
+                    id
+                )
 
-                it.updateEmployee(id = id, globalRoles = body.globalRoles)
+                it.updateEmployeeGlobalRoles(id = id, globalRoles = body)
             }
         }
-        Audit.EmployeeUpdate.log(targetId = id, meta = mapOf("globalRoles" to body.globalRoles))
+        Audit.EmployeeUpdateGlobalRoles.log(targetId = id, meta = mapOf("globalRoles" to body))
+    }
+
+    @DeleteMapping("/{id}/daycare-roles")
+    fun deleteEmployeeDaycareRoles(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId,
+        @RequestParam(required = false) daycareId: DaycareId?
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Employee.DELETE_DAYCARE_ROLES,
+                    id
+                )
+
+                it.deleteEmployeeDaycareRoles(id, daycareId)
+            }
+        }
+        Audit.EmployeeDeleteDaycareRoles.log(targetId = id, meta = mapOf("daycareId" to daycareId))
     }
 
     @PutMapping("/{id}/activate")

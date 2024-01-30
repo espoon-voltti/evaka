@@ -9,9 +9,10 @@ import { UUID } from 'lib-common/types'
 import {
   activateEmployee,
   deactivateEmployee,
+  deleteEmployeeDaycareRoles,
   getEmployeeDetails,
   searchEmployees,
-  updateEmployee
+  updateEmployeeGlobalRoles
 } from '../../api/employees'
 import { createQueryKeys } from '../../query'
 
@@ -38,10 +39,19 @@ export const employeeDetailsQuery = query({
 
 export const updateEmployeeGlobalRolesMutation = mutation({
   api: (args: { id: UUID; globalRoles: UserRole[] }) =>
-    updateEmployee(args.id, args.globalRoles),
+    updateEmployeeGlobalRoles(args.id, args.globalRoles),
   invalidateQueryKeys: (args) => [
     queryKeys.searchAll(),
     queryKeys.byId(args.id)
+  ]
+})
+
+export const deleteEmployeeDaycareRolesMutation = mutation({
+  api: (args: { employeeId: UUID; daycareId: UUID | null }) =>
+    deleteEmployeeDaycareRoles(args.employeeId, args.daycareId),
+  invalidateQueryKeys: (args) => [
+    queryKeys.searchAll(),
+    queryKeys.byId(args.employeeId)
   ]
 })
 

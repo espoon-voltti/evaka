@@ -59,7 +59,7 @@ const StyledButton = styled.button<{ color?: string; iconRight?: boolean }>`
 `
 
 export interface InlineButtonProps extends BaseProps {
-  onClick: () => unknown
+  onClick: (e: React.MouseEvent) => unknown
   text: ReactNode
   altText?: string
   color?: string

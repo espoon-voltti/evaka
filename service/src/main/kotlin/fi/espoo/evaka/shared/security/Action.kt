@@ -1384,7 +1384,8 @@ sealed interface Action {
         ),
         READ_DETAILS(HasGlobalRole(ADMIN)),
         DELETE(HasGlobalRole(ADMIN)),
-        UPDATE(HasGlobalRole(ADMIN)),
+        UPDATE_GLOBAL_ROLES(HasGlobalRole(ADMIN)),
+        DELETE_DAYCARE_ROLES(HasGlobalRole(ADMIN)),
         ACTIVATE(HasGlobalRole(ADMIN)),
         DEACTIVATE(HasGlobalRole(ADMIN));
 

@@ -100,11 +100,20 @@ function deserializeEmployeeWithDaycareRoles(
   }
 }
 
-export async function updateEmployee(
+export async function updateEmployeeGlobalRoles(
   id: UUID,
   globalRoles: UserRole[]
 ): Promise<void> {
-  await client.put(`/employee/${id}`, { globalRoles })
+  await client.put(`/employee/${id}/global-roles`, globalRoles)
+}
+
+export async function deleteEmployeeDaycareRoles(
+  employeeId: UUID,
+  daycareId: UUID | null
+): Promise<void> {
+  await client.delete(`/employee/${employeeId}/daycare-roles`, {
+    params: { daycareId }
+  })
 }
 
 export function activateEmployee(id: UUID): Promise<Result<void>> {

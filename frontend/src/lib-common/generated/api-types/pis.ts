@@ -161,13 +161,6 @@ export interface EmployeeSetPreferredFirstNameUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeUpdate
-*/
-export interface EmployeeUpdate {
-  globalRoles: UserRole[]
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.EmployeeUser
 */
 export interface EmployeeUser {
