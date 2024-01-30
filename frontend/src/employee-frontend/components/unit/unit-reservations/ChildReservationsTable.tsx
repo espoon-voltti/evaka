@@ -214,7 +214,10 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                     reservationIndex={index}
                     dateInfo={dateInfo}
                     reservation={child.reservations[index]}
-                    absence={displayAbsence ? absence : null}
+                    absence={
+                      displayAbsence && absence ? absence.absenceType : null
+                    }
+                    absenceStaffCreated={absence?.staffCreated}
                     dailyServiceTimes={child.dailyServiceTimes}
                     inOtherUnit={child.inOtherUnit}
                     isInBackupGroup={

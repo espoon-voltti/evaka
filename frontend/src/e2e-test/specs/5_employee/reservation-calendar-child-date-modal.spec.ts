@@ -199,7 +199,7 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('P\nVuorotyö')
+    .assertTextEquals('P\nVuorotyö*')
 
   await reservationsTable.openChildDateModal(childId, date)
   await modal.nonbillableAbsenceRemove.click()
@@ -209,7 +209,7 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Sairaus')
+    .assertTextEquals('Sairaus*')
 
   // reservation times are shown if partially absent
   await reservationsTable.openChildDateModal(childId, date)
@@ -237,7 +237,7 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Sairaus')
+    .assertTextEquals('Sairaus*')
   await reservationsTable
     .reservationCells(childId, date)
     .nth(1)
@@ -259,7 +259,7 @@ test('Add absence for child in preschool for yesterday', async () => {
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Poissaolo')
+    .assertTextEquals('Poissaolo*')
 })
 
 test('Add absence for child in daycare for yesterday', async () => {
@@ -279,7 +279,7 @@ test('Add absence for child in daycare for yesterday', async () => {
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Poissaolo')
+    .assertTextEquals('Poissaolo*')
 })
 
 test('Absence warnings for child in daycare', async () => {

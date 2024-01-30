@@ -180,7 +180,9 @@ export default React.memo(function ChildDateModal({
         'BILLABLE'
       )
         ? {
-            domValue: childDayRecord.absenceBillable ?? '',
+            domValue: childDayRecord.absenceBillable
+              ? childDayRecord.absenceBillable.absenceType
+              : '',
             options: absenceOptions
           }
         : {
@@ -191,7 +193,9 @@ export default React.memo(function ChildDateModal({
         'NONBILLABLE'
       )
         ? {
-            domValue: childDayRecord.absenceNonbillable ?? '',
+            domValue: childDayRecord.absenceNonbillable
+              ? childDayRecord.absenceNonbillable.absenceType
+              : '',
             options: absenceOptions
           }
         : {
