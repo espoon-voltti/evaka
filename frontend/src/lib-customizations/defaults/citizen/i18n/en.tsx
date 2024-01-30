@@ -2179,17 +2179,6 @@ const en: Translations = {
         `Are you sure you want to terminate the agreement so that your child's last day of attendance is ${date}? Once completed, you cannot cancel the termination.`,
       terminate: 'Terminate the agreement'
     },
-    consent: {
-      title: 'Releases',
-      evakaProfilePicture: {
-        title: 'Child profile picture release',
-        description:
-          "Showing the child's profile picture on eVaka increases the safety of the day care unit's operations. The consent for the release is asked only once from the guardians. If you want to change the answer later, contact the unit's staff.",
-        question: "Child's profile picture may be used in eVaka"
-      },
-      confirm: 'Confirm',
-      unconsented: 'with unknown release status'
-    },
     pedagogicalDocuments: {
       title: 'Growth and learning',
       noDocuments: 'No documents',

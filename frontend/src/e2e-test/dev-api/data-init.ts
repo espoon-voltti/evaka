@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from 'lib-common/types'
-
 import {
   careAreaFixture,
   clubFixture,
@@ -180,18 +178,4 @@ export const initializeAreaAndPersonData = async (): Promise<
   ])
 
   return areaAndPersonFixtures
-}
-
-export const addConsentsForChildren = async (
-  childIds: UUID[],
-  guardianId: UUID
-) => {
-  for (const childId of childIds) {
-    await Fixture.childConsent(
-      childId,
-      'EVAKA_PROFILE_PICTURE',
-      guardianId,
-      true
-    ).save()
-  }
 }

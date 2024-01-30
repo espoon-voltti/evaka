@@ -31,7 +31,6 @@ import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
-import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
@@ -1467,22 +1466,6 @@ RETURNING id
             }
         }
 
-    @PostMapping("/child-consent")
-    fun addChildConsent(db: Database, @RequestBody body: DevChildConsent) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-                    INSERT INTO child_consent (given_by_guardian, given, type, child_id)
-                    VALUES (:guardianId, :given, :type, :childId)
-                    """
-                            .trimIndent()
-                    )
-                    .bindKotlin(body)
-                    .execute()
-            }
-        }
-
     @PostMapping("/payments")
     fun addPayment(db: Database, @RequestBody body: DevPayment) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
@@ -2141,13 +2124,6 @@ data class DevDailyServiceTimeNotification(
     val dailyServiceTimeId: DailyServiceTimesId,
     val dateFrom: LocalDate,
     val hasDeletedReservations: Boolean
-)
-
-data class DevChildConsent(
-    val guardianId: PersonId,
-    val childId: ChildId,
-    val type: ChildConsentType,
-    val given: Boolean
 )
 
 data class DevPayment(

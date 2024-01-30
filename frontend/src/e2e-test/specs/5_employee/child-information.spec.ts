@@ -26,7 +26,6 @@ import {
 import ChildInformationPage, {
   AdditionalInformationSection,
   BackupCaresSection,
-  ConsentsSection,
   DailyServiceTimeSection,
   FamilyContactsSection,
   GuardiansSection
@@ -489,55 +488,5 @@ describe('Child information - guardian information', () => {
     await section.assertGuardianExists(
       fixtures.familyWithTwoGuardians.guardian.id
     )
-  })
-})
-
-describe('Child information - consent', () => {
-  let section: ConsentsSection
-  beforeEach(async () => {
-    section = await childInformationPage.openCollapsible('consents')
-  })
-
-  test('profile photo consent can be consented to', async () => {
-    await section.evakaProfilePicYes.check()
-    await section.save()
-    await section.evakaProfilePicModifiedBy.assertTextEquals(
-      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
-    )
-    await page.reload()
-    section = await childInformationPage.openCollapsible('consents')
-    await section.evakaProfilePicYes.waitUntilChecked(true)
-    await section.evakaProfilePicNo.waitUntilChecked(false)
-    await section.evakaProfilePicModifiedBy.assertTextEquals(
-      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
-    )
-  })
-
-  test('profile photo consent can be not consented to', async () => {
-    await section.evakaProfilePicNo.check()
-    await section.save()
-
-    await section.evakaProfilePicModifiedBy.assertTextEquals(
-      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
-    )
-    await page.reload()
-    section = await childInformationPage.openCollapsible('consents')
-    await section.evakaProfilePicYes.waitUntilChecked(false)
-    await section.evakaProfilePicNo.waitUntilChecked(true)
-    await section.evakaProfilePicModifiedBy.assertTextEquals(
-      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
-    )
-  })
-
-  test('profile photo consent can be cleared', async () => {
-    await section.evakaProfilePicNo.check()
-    await section.save()
-    await section.evakaProfilePicModifiedBy.assertTextEquals(
-      `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
-    )
-    await section.evakaProfilePicClear.click()
-    await section.save()
-    await section.evakaProfilePicYes.waitUntilChecked(false)
-    await section.evakaProfilePicNo.waitUntilChecked(false)
   })
 })

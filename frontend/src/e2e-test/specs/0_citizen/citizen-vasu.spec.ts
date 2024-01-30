@@ -17,10 +17,7 @@ import {
   resetDatabase,
   revokeVasuSharingPermission
 } from '../../dev-api'
-import {
-  addConsentsForChildren,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
@@ -63,16 +60,6 @@ beforeEach(async () => {
   templateId = await insertVasuTemplateFixture()
   vasuDocId = await insertVasuDocument(child.id, templateId)
   await publishVasuDocument(vasuDocId)
-
-  await addConsentsForChildren(
-    [
-      fixtures.enduserChildFixtureKaarina.id,
-      fixtures.enduserChildFixtureJari.id,
-      fixtures.enduserChildFixturePorriHatterRestricted.id,
-      ...fixtures.familyWithTwoGuardians.children.map(({ id }) => id)
-    ],
-    fixtures.enduserGuardianFixture.id
-  )
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')

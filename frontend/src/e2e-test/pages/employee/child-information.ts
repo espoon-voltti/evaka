@@ -1178,27 +1178,6 @@ class ApplicationsSection extends Section {
   }
 }
 
-export class ConsentsSection extends Section {
-  readonly evakaProfilePicYes = new Radio(
-    this.page.findByDataQa('consent-profilepic-yes')
-  )
-  readonly evakaProfilePicNo = new Radio(
-    this.page.findByDataQa('consent-profilepic-no')
-  )
-  readonly evakaProfilePicModifiedBy = this.page.findByDataQa(
-    'consent-profilepic-modified-by'
-  )
-  readonly evakaProfilePicClear = this.page.findByDataQa(
-    'consent-profilepic-clear'
-  )
-
-  #confirmButton = this.page.findByDataQa('consent-confirm')
-
-  async save() {
-    await this.#confirmButton.click()
-  }
-}
-
 const collapsibles = {
   dailyServiceTimes: {
     selector: '[data-qa="child-daily-service-times-collapsible"]',
@@ -1247,10 +1226,6 @@ const collapsibles = {
   income: {
     selector: '[data-qa="income-collapsible"]',
     section: IncomeSection
-  },
-  consents: {
-    selector: '[data-qa="consents-collapsible"]',
-    section: ConsentsSection
   }
 }
 

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared
 
-import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.shared.auth.UserRole
 
 data class FeatureConfig(
@@ -93,14 +92,6 @@ data class FeatureConfig(
      * daily price divisor
      */
     val useContractDaysAsDailyFeeDivisor: Boolean,
-
-    /**
-     * Enabled child consent types
-     *
-     * All of the enabled child consent types. The consent section will be hidden if no consent type
-     * is enabled.
-     */
-    val enabledChildConsentTypes: Set<ChildConsentType>,
 
     /** Controls whether permission to share is required for curriculum documents */
     val curriculumDocumentPermissionToShareRequired: Boolean,

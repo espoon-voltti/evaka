@@ -11,7 +11,6 @@ import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.children.consent.ChildConsentType
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
@@ -214,7 +213,6 @@ val testFeatureConfig =
         unplannedAbsencesAreContractSurplusDays = true,
         maxContractDaySurplusThreshold = null,
         useContractDaysAsDailyFeeDivisor = true,
-        enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
         curriculumDocumentPermissionToShareRequired = true,
         assistanceDecisionMakerRoles = null,
         preschoolAssistanceDecisionMakerRoles = null,

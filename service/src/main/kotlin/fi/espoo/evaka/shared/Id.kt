@@ -54,8 +54,6 @@ sealed interface DatabaseTable {
 
     sealed class CalendarEventTime : DatabaseTable
 
-    sealed class ChildConsent : DatabaseTable
-
     sealed class ChildDailyNote : DatabaseTable
 
     sealed class ChildDocument : DatabaseTable
@@ -221,8 +219,6 @@ typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEvent>
 typealias CalendarEventId = Id<DatabaseTable.CalendarEventAttendee>
 
 typealias CalendarEventTimeId = Id<DatabaseTable.CalendarEventTime>
-
-typealias ChildConsentId = Id<DatabaseTable.ChildConsent>
 
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 

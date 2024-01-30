@@ -12,7 +12,6 @@ export type QueryKeyPrefix =
   | 'assistanceDecisions'
   | 'assistancePreschoolDecisions'
   | 'calendar'
-  | 'childConsents'
   | 'childDocuments'
   | 'children'
   | 'incomeStatements'

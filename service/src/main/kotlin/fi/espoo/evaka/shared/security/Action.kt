@@ -434,10 +434,6 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild()
             ),
-            INSERT_CHILD_CONSENTS(
-                IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
-            ),
             READ_SERVICE_NEEDS(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
@@ -529,8 +525,6 @@ sealed interface Action {
             READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
-            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self()),
-            READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
@@ -1254,14 +1248,6 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
-        ),
-        READ_CHILD_CONSENTS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
-        ),
-        UPSERT_CHILD_CONSENT(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(STAFF, SPECIAL_EDUCATION_TEACHER, UNIT_SUPERVISOR).inPlacementUnitOfChild()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
