@@ -206,14 +206,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <div th:text="${guardian.lastName}"></div>
                 <div th:text="${guardian.firstName}"></div>
               </th:block>
-              <th:block th:if="${sendAddress} != null">
-                <div th:text="${sendAddress.row1}"></div>
-                <div th:text="${sendAddress.row2}"></div>
-                <div
-                  th:if="${not #strings.isEmpty(sendAddress.row3)}"
-                  th:text="${sendAddress.row3}"
-                ></div>
-              </th:block>
             </address>
 
             <div class="layout-content" layout:fragment="content"></div>
