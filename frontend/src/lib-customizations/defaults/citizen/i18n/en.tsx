@@ -2144,7 +2144,10 @@ const en: Translations = {
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
+      PREPARATORY_DAYCARE_ONLY:
+        'Valmistavan opetuksen liittyvä varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE_ONLY: 'Esiopetuksen liittyvä varhaiskasvatus',
       PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',

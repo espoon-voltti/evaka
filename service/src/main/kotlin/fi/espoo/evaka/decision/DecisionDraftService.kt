@@ -30,7 +30,9 @@ fun createDecisionDrafts(
         when (placementPlan.type) {
             PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
             PlacementType.DAYCARE,
-            PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
+            PlacementType.DAYCARE_PART_TIME,
+            PlacementType.PRESCHOOL_DAYCARE_ONLY,
+            PlacementType.PREPARATORY_DAYCARE_ONLY -> planDaycareDecisionDrafts(placementPlan)
             PlacementType.PRESCHOOL,
             PlacementType.PRESCHOOL_DAYCARE,
             PlacementType.PRESCHOOL_CLUB,

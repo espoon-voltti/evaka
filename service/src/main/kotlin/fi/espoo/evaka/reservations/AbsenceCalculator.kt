@@ -153,6 +153,8 @@ fun getExpectedAbsenceCategories(
             }
         PlacementType.DAYCARE,
         PlacementType.DAYCARE_PART_TIME,
+        PlacementType.PRESCHOOL_DAYCARE_ONLY,
+        PlacementType.PREPARATORY_DAYCARE_ONLY,
         PlacementType.TEMPORARY_DAYCARE,
         PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
             setOfNotNull(

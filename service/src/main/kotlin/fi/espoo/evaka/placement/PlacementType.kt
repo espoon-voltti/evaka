@@ -18,9 +18,11 @@ enum class PlacementType : DatabaseEnum {
     DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     PRESCHOOL,
     PRESCHOOL_DAYCARE,
+    PRESCHOOL_DAYCARE_ONLY,
     PRESCHOOL_CLUB,
     PREPARATORY,
     PREPARATORY_DAYCARE,
+    PREPARATORY_DAYCARE_ONLY,
     TEMPORARY_DAYCARE,
     TEMPORARY_DAYCARE_PART_DAY,
     SCHOOL_SHIFT_CARE;
@@ -32,6 +34,8 @@ enum class PlacementType : DatabaseEnum {
             DAYCARE_PART_TIME,
             DAYCARE_FIVE_YEAR_OLDS,
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            PRESCHOOL_DAYCARE_ONLY,
+            PREPARATORY_DAYCARE_ONLY,
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY,
             SCHOOL_SHIFT_CARE -> false
@@ -51,9 +55,11 @@ enum class PlacementType : DatabaseEnum {
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> true
             PRESCHOOL -> false
             PRESCHOOL_DAYCARE -> true
+            PRESCHOOL_DAYCARE_ONLY -> true
             PRESCHOOL_CLUB -> true
             PREPARATORY -> false
             PREPARATORY_DAYCARE -> true
+            PREPARATORY_DAYCARE_ONLY -> true
             TEMPORARY_DAYCARE -> true
             TEMPORARY_DAYCARE_PART_DAY -> true
             SCHOOL_SHIFT_CARE -> false
@@ -67,6 +73,8 @@ enum class PlacementType : DatabaseEnum {
             SCHOOL_SHIFT_CARE -> setOf(AbsenceCategory.NONBILLABLE)
             DAYCARE,
             DAYCARE_PART_TIME,
+            PRESCHOOL_DAYCARE_ONLY,
+            PREPARATORY_DAYCARE_ONLY,
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
             PRESCHOOL_DAYCARE,
@@ -99,8 +107,10 @@ enum class PlacementType : DatabaseEnum {
                 preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) }
                     ?: ScheduleType.FIXED_SCHEDULE
             PRESCHOOL_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
+            PRESCHOOL_DAYCARE_ONLY -> ScheduleType.RESERVATION_REQUIRED
             PRESCHOOL_CLUB -> ScheduleType.RESERVATION_REQUIRED
             PREPARATORY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
+            PREPARATORY_DAYCARE_ONLY -> ScheduleType.RESERVATION_REQUIRED
             TEMPORARY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             TEMPORARY_DAYCARE_PART_DAY -> ScheduleType.RESERVATION_REQUIRED
             SCHOOL_SHIFT_CARE -> ScheduleType.RESERVATION_REQUIRED
@@ -110,9 +120,9 @@ enum class PlacementType : DatabaseEnum {
 
     companion object {
         val temporary = listOf(TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY)
-        val invoiced = values().filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
+        val invoiced = entries.filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
         val requiringAttendanceReservations =
-            values().filter { it != CLUB && it != PRESCHOOL && it != PREPARATORY }
+            entries.filter { it != CLUB && it != PRESCHOOL && it != PREPARATORY }
     }
 }
 

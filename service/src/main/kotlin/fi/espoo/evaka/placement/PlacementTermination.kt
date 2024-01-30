@@ -46,7 +46,9 @@ private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacem
         PlacementType.DAYCARE,
         PlacementType.DAYCARE_PART_TIME,
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> TerminatablePlacementType.DAYCARE
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+        PlacementType.PRESCHOOL_DAYCARE_ONLY,
+        PlacementType.PREPARATORY_DAYCARE_ONLY -> TerminatablePlacementType.DAYCARE
         PRESCHOOL,
         PRESCHOOL_DAYCARE,
         PRESCHOOL_CLUB -> TerminatablePlacementType.PRESCHOOL
@@ -90,6 +92,8 @@ fun mapToTerminatablePlacements(
                             PlacementType.DAYCARE_PART_TIME,
                             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                             PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+                            PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                            PlacementType.PREPARATORY_DAYCARE_ONLY,
                             PlacementType.TEMPORARY_DAYCARE,
                             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
                             PlacementType.SCHOOL_SHIFT_CARE ->
