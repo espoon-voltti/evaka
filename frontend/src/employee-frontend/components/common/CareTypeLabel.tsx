@@ -33,6 +33,8 @@ const placementTypeToCareTypeLabel = (
       return 'club'
     case 'DAYCARE':
     case 'DAYCARE_PART_TIME':
+    case 'PRESCHOOL_DAYCARE_ONLY':
+    case 'PREPARATORY_DAYCARE_ONLY':
       return 'daycare'
     case 'DAYCARE_FIVE_YEAR_OLDS':
     case 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS':

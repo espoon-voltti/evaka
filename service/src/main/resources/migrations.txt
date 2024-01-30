@@ -377,3 +377,5 @@ V377__service_need_option_hours_per_month.sql
 V378__attachments_parent_fks.sql
 V379__attachments_fk_indexes.sql
 V380__drop_child_consent.sql
+V381__placement_type_preschool_preparatory_only.sql
+V382__absence_categories_preschool_preparatory_only.sql

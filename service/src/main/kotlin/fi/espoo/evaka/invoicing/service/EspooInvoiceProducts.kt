@@ -49,10 +49,10 @@ object EspooInvoiceProducts {
     }
 
     fun findProduct(key: ProductKey) =
-        Product.values().find { it.key == key } ?: error("Product with key $key not found")
+        Product.entries.find { it.key == key } ?: error("Product with key $key not found")
 
     class Provider : InvoiceProductProvider {
-        override val products = Product.values().map { ProductWithName(it.key, it.nameFi) }
+        override val products = Product.entries.map { ProductWithName(it.key, it.nameFi) }
         override val dailyRefund = Product.ABSENCE.key
         override val partMonthSickLeave = Product.SICK_LEAVE_50.key
         override val fullMonthSickLeave = Product.SICK_LEAVE_100.key
@@ -73,8 +73,10 @@ object EspooInvoiceProducts {
                     PlacementType.TEMPORARY_DAYCARE,
                     PlacementType.TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
                     PlacementType.PRESCHOOL,
+                    PlacementType.PRESCHOOL_DAYCARE_ONLY,
                     PlacementType.PRESCHOOL_CLUB,
                     PlacementType.PREPARATORY,
+                    PlacementType.PREPARATORY_DAYCARE_ONLY,
                     PlacementType.CLUB,
                     PlacementType.SCHOOL_SHIFT_CARE ->
                         error("No product mapping found for placement type $placementType")

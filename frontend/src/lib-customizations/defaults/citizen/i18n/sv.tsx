@@ -2389,8 +2389,12 @@ const sv: Translations = {
       PREPARATORY: 'Förberedande undervisning',
       PREPARATORY_DAYCARE:
         'Förberedande undervisning och tillhörande småbarnspedagogik',
+      PREPARATORY_DAYCARE_ONLY:
+        'Förberedande undervisnings tillhörande småbarnspedagogik',
       PRESCHOOL_DAYCARE:
         'Förskoleundervisning och tillhörande småbarnspedagogik',
+      PRESCHOOL_DAYCARE_ONLY:
+        'Förskoleundervisnings tillhörande småbarnspedagogik',
       PRESCHOOL_CLUB: 'Esiopetuksen kerho (sv)',
       TEMPORARY_DAYCARE: 'Tillfällig småbarnspedagogik på heltid',
       TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig småbarnspedagogik på deltid',

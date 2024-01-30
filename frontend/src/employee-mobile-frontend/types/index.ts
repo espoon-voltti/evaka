@@ -39,6 +39,8 @@ export function formatCategory(
       return i18n.absences.careTypes.CLUB
     case 'DAYCARE':
     case 'DAYCARE_PART_TIME':
+    case 'PRESCHOOL_DAYCARE_ONLY':
+    case 'PREPARATORY_DAYCARE_ONLY':
     case 'TEMPORARY_DAYCARE':
     case 'TEMPORARY_DAYCARE_PART_DAY':
       return i18n.absences.careTypes.DAYCARE

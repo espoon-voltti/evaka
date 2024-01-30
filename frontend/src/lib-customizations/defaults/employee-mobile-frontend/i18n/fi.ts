@@ -41,9 +41,11 @@ export const fi = {
         '5-vuotiaiden osapäiväinen varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE_ONLY: 'Pelkkä liittyvä',
       PRESCHOOL_CLUB: 'Esiopetuksen kerho',
       PREPARATORY: 'Valmistava',
       PREPARATORY_DAYCARE: 'Valmistava',
+      PREPARATORY_DAYCARE_ONLY: 'Pelkkä liittyvä',
       TEMPORARY_DAYCARE: 'Väliaikainen',
       TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
