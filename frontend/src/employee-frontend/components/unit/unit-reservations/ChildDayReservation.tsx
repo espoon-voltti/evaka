@@ -13,11 +13,11 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import {
   AbsenceType,
   ChildServiceNeedInfo
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
+import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   ReservationResponse,

@@ -2,22 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.daycare.controllers
+package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceUpsert
-import fi.espoo.evaka.daycare.service.GroupMonthCalendar
-import fi.espoo.evaka.daycare.service.HolidayReservationCreate
-import fi.espoo.evaka.daycare.service.Presence
-import fi.espoo.evaka.daycare.service.addMissingHolidayReservations
-import fi.espoo.evaka.daycare.service.batchDeleteAbsences
-import fi.espoo.evaka.daycare.service.deleteAbsencesFromHolidayPeriodDates
-import fi.espoo.evaka.daycare.service.deleteChildAbsences
-import fi.espoo.evaka.daycare.service.getAbsencesOfChildByMonth
-import fi.espoo.evaka.daycare.service.getFutureAbsencesOfChild
-import fi.espoo.evaka.daycare.service.getGroupMonthCalendar
-import fi.espoo.evaka.daycare.service.upsertAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
 import fi.espoo.evaka.reservations.getReservableRange

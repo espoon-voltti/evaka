@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId

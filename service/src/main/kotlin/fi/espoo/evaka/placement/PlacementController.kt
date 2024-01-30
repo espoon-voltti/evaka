@@ -6,13 +6,13 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.deleteFutureNonGeneratedAbsencesByCategoryInRange
+import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.deleteFutureNonGeneratedAbsencesByCategoryInRange
-import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId

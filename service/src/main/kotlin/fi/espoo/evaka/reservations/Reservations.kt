@@ -6,19 +6,19 @@ package fi.espoo.evaka.reservations
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.FullDayAbsenseUpsert
+import fi.espoo.evaka.absence.clearOldAbsences
+import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.absence.getAbsenceDatesForChildrenInRange
+import fi.espoo.evaka.absence.setChildDateAbsences
+import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.attendance.deleteAttendancesByDate
 import fi.espoo.evaka.attendance.getChildPlacementTypes
 import fi.espoo.evaka.attendance.insertAttendance
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
-import fi.espoo.evaka.daycare.service.clearOldAbsences
-import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
-import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
-import fi.espoo.evaka.daycare.service.setChildDateAbsences
-import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType

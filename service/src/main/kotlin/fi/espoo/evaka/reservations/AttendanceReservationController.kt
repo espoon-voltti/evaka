@@ -5,6 +5,10 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.ChildServiceNeedInfo
+import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.attendance.deleteAbsencesByDate
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
@@ -14,10 +18,6 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
-import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.holidayperiod.HolidayPeriod
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange

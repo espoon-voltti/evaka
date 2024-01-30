@@ -8,7 +8,9 @@ import {
   AbsenceUpsert,
   GroupMonthCalendar,
   HolidayReservationsDelete,
-  Presence,
+  Presence
+} from 'lib-common/generated/api-types/absence'
+import {
   StaffAttendanceForDates,
   StaffAttendanceUpdate
 } from 'lib-common/generated/api-types/daycare'

@@ -5,7 +5,7 @@
 import {
   AbsenceCategory,
   AbsenceType
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Page, TextInput } from '../../utils/page'

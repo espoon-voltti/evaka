@@ -31,7 +31,7 @@ import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import {
   AbsenceCategory,
   AbsenceType
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 import {
   Child,
   ChildDatePresence,

@@ -6,13 +6,13 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ForceCodeGenType
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.AbsenceUpsert
+import fi.espoo.evaka.absence.insertAbsences
+import fi.espoo.evaka.absence.setChildDateAbsences
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.AbsenceUpsert
-import fi.espoo.evaka.daycare.service.insertAbsences
-import fi.espoo.evaka.daycare.service.setChildDateAbsences
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesForChildren
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForChildren
 import fi.espoo.evaka.placement.PlacementType

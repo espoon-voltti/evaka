@@ -5,8 +5,8 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.defaultOccupancyCoefficient
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.occupancy.workingDayHours

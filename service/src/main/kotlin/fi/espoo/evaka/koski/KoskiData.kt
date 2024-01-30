@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.KoskiStudyRightId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet

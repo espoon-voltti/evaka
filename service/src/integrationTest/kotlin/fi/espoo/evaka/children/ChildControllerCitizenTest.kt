@@ -5,8 +5,8 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType

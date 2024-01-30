@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.serviceneed
 
-import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId

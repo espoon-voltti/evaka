@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.holidayperiod
 
-import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.domain.FiniteDateRange

@@ -5,7 +5,7 @@
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { Absence } from 'lib-common/generated/api-types/daycare'
+import { Absence } from 'lib-common/generated/api-types/absence'
 import {
   DistinctiveParams,
   FeeDecision,

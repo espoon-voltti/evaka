@@ -19,18 +19,17 @@ import {
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/absence'
+import {
   AssistanceFactor,
   DaycareAssistance,
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
-import {
-  AbsenceCategory,
-  AbsenceType,
-  ClubTerm,
-  PreschoolTerm
-} from 'lib-common/generated/api-types/daycare'
+import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecision,
   FeeThresholds,

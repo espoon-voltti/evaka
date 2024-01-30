@@ -13,7 +13,7 @@ import {
   GroupMonthCalendarChild,
   GroupMonthCalendarDay,
   GroupMonthCalendarDayChild
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'

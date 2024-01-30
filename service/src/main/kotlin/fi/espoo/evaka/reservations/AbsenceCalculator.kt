@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.reservations
 
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.ChildId

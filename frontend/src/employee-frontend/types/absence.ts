@@ -9,7 +9,7 @@ import {
   GroupMonthCalendarChild,
   GroupMonthCalendarDay,
   GroupMonthCalendarDayChild
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'

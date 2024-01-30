@@ -7,7 +7,7 @@ import React, { useMemo } from 'react'
 import {
   AbsenceWithModifierInfo,
   ChildReservation
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 
