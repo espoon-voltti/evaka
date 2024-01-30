@@ -693,11 +693,6 @@ value class QuerySqlString(@Language("sql") private val sql: String) {
     override fun toString(): String = sql
 }
 
-@JvmInline
-value class PredicateSqlString(@Language("sql", prefix = "WHERE ") private val sql: String) {
-    override fun toString(): String = sql
-}
-
 open class SqlBuilder {
     protected var bindings: List<ValueBinding<out Any?>> = listOf()
 
@@ -725,9 +720,9 @@ open class SqlBuilder {
         return fragment.sql
     }
 
-    fun predicate(predicate: PredicateSql<*>): PredicateSqlString {
+    fun predicate(predicate: PredicateSql): PredicateSqlString {
         this.bindings += predicate.bindings
-        return PredicateSqlString("(${predicate.sql})")
+        return predicate.sql
     }
 
     /** A marker type used for bound parameters that can be used in a template string */
@@ -774,50 +769,6 @@ data class QuerySql<@Suppress("unused") in Tag>(
             check(!used) { "builder has already been used" }
             this.used = true
             return QuerySql(QuerySqlString(sql), bindings)
-        }
-    }
-}
-
-class Predicate<Tag>(val f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> PredicateSql<Tag>) {
-    fun forTable(tablePrefix: String): PredicateSql<Tag> =
-        PredicateSql.Builder<Tag>().run { (f)(tablePrefix) }
-
-    fun and(other: Predicate<Tag>): Predicate<Tag> = Predicate {
-        where("${predicate(forTable(it))} AND ${predicate(other.forTable(it))}")
-    }
-
-    fun or(other: Predicate<Tag>): Predicate<Tag> = Predicate {
-        where("${predicate(forTable(it))} OR ${predicate(other.forTable(it))}")
-    }
-
-    companion object {
-        fun <Tag> alwaysTrue(): Predicate<Tag> = Predicate { where("TRUE") }
-
-        fun <Tag> alwaysFalse(): Predicate<Tag> = Predicate { where("FALSE") }
-
-        fun <Tag> all(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
-            val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
-            where(if (sqlPredicates.isEmpty()) "TRUE" else sqlPredicates.joinToString(" AND "))
-        }
-
-        fun <Tag> any(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> = Predicate { table ->
-            val sqlPredicates = predicates.map { predicate(it.forTable(table)) }
-            where(if (sqlPredicates.isEmpty()) "FALSE" else sqlPredicates.joinToString(" OR "))
-        }
-    }
-}
-
-class PredicateSql<@Suppress("unused") in Tag>(
-    val sql: PredicateSqlString,
-    val bindings: List<ValueBinding<out Any?>>
-) {
-    class Builder<Tag> : SqlBuilder() {
-        private var used: Boolean = false
-
-        fun where(@Language("sql", prefix = "WHERE ") sql: String): PredicateSql<Tag> {
-            check(!used) { "builder has already been used" }
-            this.used = true
-            return PredicateSql(PredicateSqlString(sql), bindings)
         }
     }
 }

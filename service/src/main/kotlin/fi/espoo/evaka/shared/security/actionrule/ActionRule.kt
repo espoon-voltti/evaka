@@ -164,7 +164,7 @@ fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> =
         is AccessControlFilter.Some<Id<T>> -> Predicate { where("$it.id IN (${subquery(filter)})") }
     }
 
-fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql<T> =
+fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql =
     toPredicate().forTable(table)
 
 /** Converts a set of ids to an SQL predicate that checks that an id column value is in the set */
