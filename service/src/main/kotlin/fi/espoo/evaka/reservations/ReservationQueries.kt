@@ -261,8 +261,6 @@ data class DailyReservationData(val date: LocalDate, @Json val children: List<Ch
 @Json
 data class ChildDailyData(
     val childId: ChildId,
-    val absence: AbsenceType?,
-    val absenceEditable: Boolean,
     val reservations: List<ReservationResponse>,
     val attendances: List<OpenTimeRange>
 )
@@ -287,13 +285,11 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', c.child_id,
-                'absence', a.absence_type,
-                'absenceEditable', a.absence_editable,
                 'reservations', coalesce(ar.reservations, '[]'),
                 'attendances', coalesce(ca.attendances, '[]')
             )
         ) FILTER (
-            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
+            WHERE (ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
               AND EXISTS(
                 SELECT 1 FROM placement p
                 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
@@ -325,18 +321,6 @@ LEFT JOIN LATERAL (
         ) AS attendances
     FROM child_attendance ca WHERE ca.child_id = c.child_id AND ca.date = t::date
 ) ca ON true
-LEFT JOIN LATERAL (
-    SELECT
-        a.absence_type,
-        (a.absence_type <> 'FREE_ABSENCE' AND eu.type = 'CITIZEN') AS absence_editable
-    FROM absence a
-    JOIN evaka_user eu ON eu.id = a.modified_by
-    WHERE
-        a.child_id = c.child_id AND
-        a.date = t::date
-    ORDER BY a.category DESC
-    LIMIT 1
-) a ON true
 GROUP BY date
         """
                 .trimIndent()

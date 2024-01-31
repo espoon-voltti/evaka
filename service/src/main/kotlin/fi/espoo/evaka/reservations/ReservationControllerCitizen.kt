@@ -7,12 +7,14 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.absence.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.absence.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.absence.getAbsencesCitizen
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
 import fi.espoo.evaka.daycare.ClubTerm
@@ -78,21 +80,23 @@ class ReservationControllerCitizen(
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
 
-                    val reservationData =
-                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
                     val absences: Map<Pair<ChildId, LocalDate>, AbsenceInfo> =
-                        reservationData
-                            .flatMap { d ->
-                                d.children.mapNotNull { c ->
-                                    if (c.absence == null) null
-                                    else
-                                        Pair(
-                                            Pair(c.childId, d.date),
-                                            AbsenceInfo(c.absence, c.absenceEditable)
-                                        )
+                        tx.getAbsencesCitizen(clock.today(), user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, absences) ->
+                                // Show at most one absence per child per day. Taking the
+                                // nonbillable one is just a random choice without any real meaning.
+                                if (absences.size > 1) {
+                                    absences.first { it.category == AbsenceCategory.NONBILLABLE }
+                                } else {
+                                    absences.first()
                                 }
                             }
-                            .toMap()
+                            .mapValues { (_, absence) ->
+                                AbsenceInfo(absence.absenceType, absence.editableByCitizen())
+                            }
+                    val reservationData =
+                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
                         reservationData
                             .flatMap { d ->

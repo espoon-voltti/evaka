@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -495,6 +496,25 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         Predicate {
             where(
                 "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ${bind(childId)}"
+            )
+        }
+    )
+
+fun Database.Read.getAbsencesCitizen(
+    today: LocalDate,
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<Absence> =
+    getAbsences(
+        Predicate {
+            where(
+                """
+between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
+)
+"""
             )
         }
     )

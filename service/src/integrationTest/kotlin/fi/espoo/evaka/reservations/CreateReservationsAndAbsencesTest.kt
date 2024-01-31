@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
+import fi.espoo.evaka.absence.getAbsencesCitizen
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
@@ -746,13 +747,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // then 3 absences with correct types are added
         val absences =
             db.read {
-                    it.getReservationsCitizen(
+                    it.getAbsencesCitizen(
                         monday,
                         adult.id,
                         queryRange.copy(end = unlockedDate.plusDays(2))
                     )
                 }
-                .flatMap { day -> day.children.map { child -> day.date to child.absence } }
+                .map { absence -> absence.date to absence.absenceType }
 
         assertEquals(
             listOf(
@@ -914,16 +915,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // then 3 non-editable absences are left
         val absences =
             db.read {
-                    it.getReservationsCitizen(
+                    it.getAbsencesCitizen(
                         monday,
                         adult.id,
                         queryRange,
                     )
                 }
-                .flatMap { dailyData ->
-                    dailyData.children.map { child ->
-                        Triple(dailyData.date, child.absence, child.absenceEditable)
-                    }
+                .map { absence ->
+                    Triple(absence.date, absence.absenceType, absence.editableByCitizen())
                 }
         assertEquals(
             listOf(
@@ -1050,7 +1049,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         val reservations =
             data.flatMap { dailyData -> dailyData.children.flatMap { child -> child.reservations } }
         val absences =
-            data.flatMap { dailyData -> dailyData.children.map { child -> child.absence } }
+            db.read { it.getAbsencesCitizen(monday, adult.id, FiniteDateRange(monday, monday)) }
         assertEquals(0, reservations.size)
         assertEquals(0, absences.size)
     }
@@ -1238,11 +1237,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 dailyData.children.flatMap { child -> child.reservations }
             }
         val absenceDates =
-            reservationData.flatMap { dailyData ->
-                if (dailyData.children.any { child -> child.absence != null })
-                    listOf(dailyData.date)
-                else emptyList()
-            }
+            db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.map { it.date }
         assertEquals(0, allReservations.size)
         assertEquals(listOf(holidayPeriodStart, holidayPeriodStart.plusDays(1)), absenceDates)
     }
@@ -1307,11 +1302,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 dailyData.children.flatMap { child -> child.reservations }
             }
         val absenceDates =
-            reservationData.flatMap { dailyData ->
-                if (dailyData.children.any { child -> child.absence != null })
-                    listOf(dailyData.date)
-                else emptyList()
-            }
+            db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.map { it.date }
         assertEquals(0, allReservations.size)
         assertEquals(listOf(holidayPeriodStart), absenceDates)
     }
@@ -1439,11 +1430,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 dailyData.children.map { child -> dailyData.date to child.reservations }
             }
         val absenceDates =
-            reservationData.flatMap { dailyData ->
-                if (dailyData.children.any { child -> child.absence != null })
-                    listOf(dailyData.date)
-                else emptyList()
-            }
+            db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.map { it.date }
         assertEquals(1, allReservations.size)
         allReservations.first().let { (date, reservations) ->
             assertEquals(holidayPeriodStart, date)
