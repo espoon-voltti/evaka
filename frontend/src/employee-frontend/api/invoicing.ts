@@ -698,6 +698,15 @@ export async function createPaymentDrafts(): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
+export async function deletePayments(
+  paymentIds: string[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/payments/delete-drafts', paymentIds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getPayments(
   params: SearchPaymentsRequest
 ): Promise<Result<PagedPayments>> {

@@ -1718,7 +1718,8 @@ sealed interface Action {
 
     enum class Payment(override vararg val defaultRules: ScopedActionRule<in PaymentId>) :
         ScopedAction<PaymentId> {
-        SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+        SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

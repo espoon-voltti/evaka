@@ -198,6 +198,7 @@ export function usePaymentsState() {
     state,
     searchFilters,
     createPayments,
+    reloadPayments,
     sendPayments: send,
     onSendSuccess
   }

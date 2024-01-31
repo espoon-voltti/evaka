@@ -36,6 +36,7 @@ export default React.memo(function PaymentsPage() {
     },
     searchFilters,
     createPayments,
+    reloadPayments,
     sendPayments,
     onSendSuccess
   } = usePaymentsState()
@@ -62,6 +63,7 @@ export default React.memo(function PaymentsPage() {
       </ContentArea>
       <Actions
         actions={actions}
+        reloadPayments={reloadPayments}
         status={searchFilters.status}
         checkedPayments={checkedPayments}
       />

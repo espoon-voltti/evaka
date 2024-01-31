@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.PagedPayments
+import fi.espoo.evaka.invoicing.data.deleteDraftPayments
 import fi.espoo.evaka.invoicing.data.searchPayments
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.createPaymentDrafts
@@ -59,6 +60,28 @@ class PaymentController(
         val dueDate: LocalDate,
         val paymentIds: List<PaymentId>
     )
+
+    @PostMapping("/delete-drafts")
+    fun deleteDraftPayments(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody paymentIds: List<PaymentId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Payment.DELETE,
+                    paymentIds
+                )
+                it.deleteDraftPayments(paymentIds)
+            }
+        }
+        Audit.PaymentsDeleteDrafts.log(targetId = paymentIds)
+    }
 
     @PostMapping("/send")
     fun sendPayments(

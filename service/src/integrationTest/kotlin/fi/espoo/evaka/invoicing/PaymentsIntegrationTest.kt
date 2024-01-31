@@ -32,8 +32,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
@@ -47,17 +49,18 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.toValueDecisionServiceNeed
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var paymentController: PaymentController
 
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val janLast = LocalDate.of(2020, 1, 31)
@@ -130,7 +133,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `creating drafts fails if there are no freezed voucher reports`() {
-        createPaymentDrafts(janLast, expectedStatus = 400)
+        assertThrows<BadRequest> { createPaymentDrafts(janLast) }
     }
 
     @Test
@@ -171,6 +174,36 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(testVoucherDaycare2.id, payment.unit.id)
             assertEquals(134850 - 28800, payment.amount)
         }
+    }
+
+    @Test
+    fun `delete payment draft`() {
+        createVoucherDecision(
+            janFirst,
+            unitId = testVoucherDaycare.id,
+            headOfFamilyId = testAdult_1.id,
+            childId = testChild_1.id,
+            value = 87000,
+            coPayment = 28800
+        )
+        createVoucherDecision(
+            janFirst,
+            unitId = testVoucherDaycare2.id,
+            headOfFamilyId = testAdult_2.id,
+            childId = testChild_2.id,
+            value = 134850,
+            coPayment = 28800
+        )
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+
+        val draftIds = createPaymentDrafts(janLast)
+        deletePaymentDrafts(today = febFirst, listOf(draftIds[0]))
+
+        val payments = db.read { it.readPayments() }
+        assertEquals(draftIds.size - 1, payments.size)
+        payments.forEach { assert(it.id != draftIds[0]) }
     }
 
     @Test
@@ -351,14 +384,12 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return result.get()
     }
 
-    private fun createPaymentDrafts(today: LocalDate, expectedStatus: Int = 200): List<PaymentId> {
-        val (_, response, _) =
-            http
-                .post("/payments/create-drafts")
-                .asUser(financeUser)
-                .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
-                .response()
-        assertEquals(expectedStatus, response.statusCode)
+    private fun createPaymentDrafts(today: LocalDate): List<PaymentId> {
+        paymentController.createDrafts(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
+        )
 
         return db.read { tx ->
             @Suppress("DEPRECATION")
@@ -367,24 +398,26 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
+    private fun deletePaymentDrafts(today: LocalDate, paymentIds: List<PaymentId>) {
+        paymentController.deleteDraftPayments(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
+            paymentIds
+        )
+    }
+
     private fun sendPayments(
         today: LocalDate,
         paymentDate: LocalDate,
         dueDate: LocalDate,
-        paymentIds: List<PaymentId>,
-        expectedStatus: Int = 200
+        paymentIds: List<PaymentId>
     ) {
-        val (_, response, _) =
-            http
-                .post("/payments/send")
-                .asUser(financeUser)
-                .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        PaymentController.SendPaymentsRequest(paymentDate, dueDate, paymentIds)
-                    )
-                )
-                .response()
-        assertEquals(expectedStatus, response.statusCode)
+        paymentController.sendPayments(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
+            PaymentController.SendPaymentsRequest(paymentDate, dueDate, paymentIds)
+        )
     }
 }

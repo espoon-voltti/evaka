@@ -51,4 +51,11 @@ describe('Payments', () => {
     await paymentsPage.setStatusFilter('SENT')
     await paymentsPage.assertPaymentCount(1)
   })
+
+  test('are deleted', async () => {
+    await paymentsPage.togglePayments(true)
+    await paymentsPage.assertPaymentCount(1)
+    await paymentsPage.deletePayments()
+    await paymentsPage.assertPaymentCount(0)
+  })
 })

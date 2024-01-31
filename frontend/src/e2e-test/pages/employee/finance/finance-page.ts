@@ -559,4 +559,8 @@ export class PaymentsPage {
     await sendButton.click()
     await modal.waitUntilHidden()
   }
+
+  async deletePayments() {
+    await this.page.findByDataQa('delete-payments').click()
+  }
 }

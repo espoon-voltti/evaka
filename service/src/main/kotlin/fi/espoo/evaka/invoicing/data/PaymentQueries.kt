@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.controller.PaymentSortParam
 import fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
 import fi.espoo.evaka.invoicing.domain.Payment
 import fi.espoo.evaka.invoicing.domain.PaymentDraft
+import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.shared.PaymentId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -133,6 +134,22 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
 fun Database.Read.getMaxPaymentNumber(): Long {
     @Suppress("DEPRECATION")
     return createQuery("SELECT max(number) FROM payment").exactlyOneOrNull<Long>() ?: 0
+}
+
+fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
+    if (draftIds.isEmpty()) return
+
+    createUpdate<Any> {
+            sql(
+                """
+            DELETE FROM payment
+            WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
+            AND id = ANY (${bind(draftIds)})
+        """
+                    .trimIndent()
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now: HelsinkiDateTime) {

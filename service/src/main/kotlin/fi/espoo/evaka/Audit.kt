@@ -351,6 +351,7 @@ enum class Audit(
     PartnersInDifferentAddressReportRead,
     PatuReportSend,
     PaymentsCreate,
+    PaymentsDeleteDrafts,
     PaymentsSend,
     PedagogicalDocumentCreate(securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentCountUnread,
