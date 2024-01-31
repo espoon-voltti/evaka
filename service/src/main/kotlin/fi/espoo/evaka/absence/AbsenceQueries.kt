@@ -591,7 +591,7 @@ AND EXISTS (
             val date: LocalDate = column("date")
             val reservation =
                 ChildReservation(
-                    Reservation.fromLocalTimes(column("start_time"), column("end_time")),
+                    Reservation.of(column("start_time"), column("end_time")),
                     column("created_by_evaka_user_type"),
                     column("created_date")
                 )

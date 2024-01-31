@@ -119,7 +119,7 @@ sealed class Reservation : Comparable<Reservation> {
     }
 
     companion object {
-        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?) =
+        fun of(startTime: LocalTime?, endTime: LocalTime?) =
             if (startTime != null && endTime != null) {
                 Times(startTime, endTime)
             } else if (startTime == null && endTime == null) {
@@ -151,16 +151,25 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     }
 
     companion object {
-        fun fromLocalTimes(startTime: LocalTime?, endTime: LocalTime?, staffCreated: Boolean) =
-            if (startTime != null && endTime != null) {
-                Times(startTime, endTime, staffCreated)
-            } else if (startTime == null && endTime == null) {
-                NoTimes(staffCreated)
-            } else {
-                throw IllegalArgumentException("Both start and end times must be null or not null")
+        fun from(reservationRow: ReservationRow) =
+            when (reservationRow.reservation) {
+                is Reservation.NoTimes -> NoTimes(reservationRow.staffCreated)
+                is Reservation.Times ->
+                    Times(
+                        reservationRow.reservation.startTime,
+                        reservationRow.reservation.endTime,
+                        reservationRow.staffCreated
+                    )
             }
     }
 }
+
+data class ReservationRow(
+    val date: LocalDate,
+    val childId: ChildId,
+    val reservation: Reservation,
+    val staffCreated: Boolean
+)
 
 data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
 
