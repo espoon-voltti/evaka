@@ -50,16 +50,6 @@ yarn lint
 yarn lint:fix
 ```
 
-## Generated JWTs for local testing
-
-If you need a JWT to test a service API locally, you can generate tokens for each gateway with:
-
-```bash
-NODE_ENV=local npx ts-node generate-jwts.ts
-```
-
-The JWTs by default includes all user roles, but you can edit the `generate-jwts.ts` to remove some of them, if you need to test that only certain roles are authorized to access an endpoint.
-
 ## Run with Docker
 
 To run with Docker Compose, check the instructions in [compose README](../compose/README.md).

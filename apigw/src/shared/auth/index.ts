@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import _ from 'lodash'
 import express, { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging.js'
 import { gatewayRole } from '../config.js'
-import { createJwt } from './jwt.js'
 import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
@@ -47,60 +45,12 @@ export interface EvakaSessionUser {
   mobileEmployeeId?: string | undefined
 }
 
-function createJwtToken(user: EvakaSessionUser): string {
-  const type =
-    user.userType ?? (gatewayRole === 'enduser' ? 'ENDUSER' : 'EMPLOYEE')
-
-  if (!user.id) {
-    throw new Error('User is missing an id')
-  }
-
-  const common = {
-    sub: user.id
-  } as const
-
-  switch (type) {
-    case 'ENDUSER':
-    case 'CITIZEN_STRONG':
-      return createJwt({ ...common, evaka_type: 'citizen' })
-    case 'CITIZEN_WEAK':
-      return createJwt({ ...common, evaka_type: 'citizen_weak' })
-    case 'MOBILE':
-      return createJwt({
-        ...common,
-        evaka_employee_id: user.mobileEmployeeId,
-        evaka_type: 'mobile'
-      })
-    case 'SYSTEM':
-      return createJwt({ ...common, evaka_type: 'system' })
-    case 'EMPLOYEE': {
-      const roles =
-        user.roles ??
-        _.concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
-      return createJwt({
-        ...common,
-        evaka_type: 'employee',
-        scope: roles
-          .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
-          .join(' ')
-      })
-    }
-    default:
-      throw new Error(`Unsupported user type ${type}`)
-  }
-}
-
-export function createAuthHeader(user: EvakaSessionUser): string {
-  return `Bearer ${createJwtToken(user)}`
-}
-
 export function createUserHeader(user: EvakaSessionUser): string {
   return JSON.stringify(
     ((): object => {
       switch (user.userType) {
         case 'CITIZEN_WEAK':
           return { type: 'citizen_weak', id: user.id }
-        case 'ENDUSER':
         case 'CITIZEN_STRONG':
           return { type: 'citizen', id: user.id }
         case 'EMPLOYEE':
@@ -123,13 +73,6 @@ export function createUserHeader(user: EvakaSessionUser): string {
       }
     })()
   )
-}
-
-export function createIntegrationAuthHeader(): string {
-  return `Bearer ${createJwt({
-    sub: '00000000-0000-0000-0000-000000000000',
-    evaka_type: 'integration'
-  })}`
 }
 
 export const integrationUserHeader = JSON.stringify({ type: 'integration' })

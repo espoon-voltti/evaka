@@ -7,22 +7,26 @@ import { readFileSync } from 'node:fs'
 import { jwtKid, jwtPrivateKey } from '../config.js'
 
 const privateKey = readFileSync(jwtPrivateKey)
+const jwtLifetimeSeconds = 60 * 60 // 1 hour
+let jwtToken: string | undefined
 
-export function createJwt(payload: {
-  sub: string
-  scope?: string
-  evaka_employee_id?: string
-  evaka_type:
-    | 'citizen'
-    | 'citizen_weak'
-    | 'employee'
-    | 'mobile'
-    | 'system'
-    | 'integration'
-}): string {
-  return jwt.sign(payload, privateKey, {
-    algorithm: 'RS256',
-    expiresIn: '48h',
-    keyid: jwtKid
-  })
+export function getJwt(): string {
+  if (!jwtToken) {
+    jwtToken = jwt.sign({}, privateKey, {
+      algorithm: 'RS256',
+      expiresIn: jwtLifetimeSeconds,
+      keyid: jwtKid
+    })
+
+    if (process.env.NODE_ENV !== 'test') {
+      // Calculate a new JWT one minute before the old one expires
+      setTimeout(
+        () => {
+          jwtToken = undefined
+        },
+        (jwtLifetimeSeconds - 60) * 1000
+      )
+    }
+  }
+  return jwtToken
 }
