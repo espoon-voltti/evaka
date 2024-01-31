@@ -23,10 +23,10 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
-import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
-import fi.espoo.evaka.shared.db.freeTextSearchQuery
+import fi.espoo.evaka.shared.db.freeTextSearchPredicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
@@ -183,62 +183,47 @@ fun Database.Read.fetchApplicationSummaries(
     authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization,
     canReadServiceWorkerNotes: Boolean
 ): PagedApplicationSummaries {
-    val params =
-        listOf(
-            Binding.of("page", page),
-            Binding.of("pageSize", pageSize),
-            Binding.of("area", areas),
-            Binding.of("units", units),
-            Binding.of(
-                "authorizedUnitsForApplicationsWithoutAssistanceNeed",
-                authorizedUnitsForApplicationsWithoutAssistanceNeed.ids
-            ),
-            Binding.of(
-                "authorizedUnitsForApplicationsWithAssistanceNeed",
-                authorizedUnitsForApplicationsWithAssistanceNeed.ids
-            ),
-            Binding.of("documentType", type.toApplicationType()),
-            Binding.of("preschoolType", preschoolType),
-            Binding.of("status", statuses),
-            Binding.of("periodStart", periodStart),
-            Binding.of("periodEnd", periodEnd)
-        )
-
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("child"), searchTerms)
-
-    val conditions =
-        listOfNotNull(
-            "a.status = ANY(:status::application_status_type[])",
-            if (areas.isNotEmpty()) "ca.short_name = ANY(:area)" else null,
-            if (basis.isNotEmpty()) {
-                basis.joinToString("\nAND ") { applicationBasis ->
-                    when (applicationBasis) {
-                        ApplicationBasis.ADDITIONAL_INFO ->
-                            """(
+    val predicates =
+        PredicateSql.allNotNull(
+            PredicateSql { where("a.status = ANY(${bind(statuses)})") },
+            if (areas.isNotEmpty()) PredicateSql { where("ca.short_name = ANY(${bind(areas)})") }
+            else null,
+            PredicateSql.all(
+                basis.map { applicationBasis ->
+                    PredicateSql {
+                        when (applicationBasis) {
+                            ApplicationBasis.ADDITIONAL_INFO ->
+                                where(
+                                    """
                             (a.document -> 'additionalDetails' ->> 'dietType') != '' OR 
                             (a.document -> 'additionalDetails' ->> 'otherInfo') != '' OR 
-                            (a.document -> 'additionalDetails' ->> 'allergyType') != '')
+                            (a.document -> 'additionalDetails' ->> 'allergyType') != ''
                     """
-                                .trimIndent()
-                        ApplicationBasis.SIBLING_BASIS ->
-                            "(a.document -> 'apply' ->> 'siblingBasis')::boolean = true"
-                        ApplicationBasis.ASSISTANCE_NEED ->
-                            "(a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
-                        ApplicationBasis.CLUB_CARE -> "was_on_club_care"
-                        ApplicationBasis.DAYCARE ->
-                            "(a.document ->> 'wasOnDaycare')::boolean = true"
-                        ApplicationBasis.EXTENDED_CARE ->
-                            "(a.document ->> 'extendedCare')::boolean = true"
-                        ApplicationBasis.DUPLICATE_APPLICATION -> "has_duplicates"
-                        ApplicationBasis.URGENT -> "(a.document ->> 'urgent')::boolean = true"
-                        ApplicationBasis.HAS_ATTACHMENTS ->
-                            "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                                )
+                            ApplicationBasis.SIBLING_BASIS ->
+                                where("(a.document -> 'apply' ->> 'siblingBasis')::boolean = true")
+                            ApplicationBasis.ASSISTANCE_NEED ->
+                                where(
+                                    "(a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
+                                )
+                            ApplicationBasis.CLUB_CARE -> where("was_on_club_care")
+                            ApplicationBasis.DAYCARE ->
+                                where("(a.document ->> 'wasOnDaycare')::boolean = true")
+                            ApplicationBasis.EXTENDED_CARE ->
+                                where("(a.document ->> 'extendedCare')::boolean = true")
+                            ApplicationBasis.DUPLICATE_APPLICATION -> where("has_duplicates")
+                            ApplicationBasis.URGENT ->
+                                where("(a.document ->> 'urgent')::boolean = true")
+                            ApplicationBasis.HAS_ATTACHMENTS ->
+                                where(
+                                    "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                                )
+                        }
                     }
                 }
-            } else {
-                null
-            },
-            if (type != ApplicationTypeToggle.ALL) "a.type = :documentType" else null,
+            ),
+            if (type != ApplicationTypeToggle.ALL) PredicateSql { where("a.type = ${bind(type)}") }
+            else null,
             if (type == ApplicationTypeToggle.PRESCHOOL) {
                 data class PreschoolFlags(
                     val preparatory: Boolean?,
@@ -246,129 +231,184 @@ fun Database.Read.fetchApplicationSummaries(
                     val additionalDaycareApplication: Boolean,
                     val serviceNeedOptionType: PlacementType? = null
                 )
-                when {
-                    preschoolType.isEmpty() -> "FALSE"
-                    else ->
-                        preschoolType.joinToString(
-                            separator = " OR ",
-                            prefix = "(",
-                            postfix = ")"
-                        ) {
-                            when (it) {
-                                PRESCHOOL_ONLY ->
-                                    PreschoolFlags(
-                                        preparatory = false,
-                                        connectedDaycare = false,
-                                        additionalDaycareApplication = false
-                                    )
-                                PRESCHOOL_DAYCARE ->
-                                    PreschoolFlags(
-                                        preparatory = false,
-                                        connectedDaycare = true,
-                                        additionalDaycareApplication = false,
-                                        serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE
-                                    )
-                                PRESCHOOL_CLUB ->
-                                    PreschoolFlags(
-                                        preparatory = false,
-                                        connectedDaycare = true,
-                                        additionalDaycareApplication = false,
-                                        serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB
-                                    )
-                                PREPARATORY_ONLY ->
-                                    PreschoolFlags(
-                                        preparatory = true,
-                                        connectedDaycare = false,
-                                        additionalDaycareApplication = false
-                                    )
-                                PREPARATORY_DAYCARE ->
-                                    PreschoolFlags(
-                                        preparatory = true,
-                                        connectedDaycare = true,
-                                        additionalDaycareApplication = false
-                                    )
-                                DAYCARE_ONLY ->
-                                    PreschoolFlags(
-                                        preparatory = null,
-                                        connectedDaycare = true,
-                                        additionalDaycareApplication = true
-                                    )
-                            }.run {
-                                listOfNotNull(
-                                        preparatory?.let {
+                PredicateSql.any(
+                    preschoolType.map {
+                        when (it) {
+                            PRESCHOOL_ONLY ->
+                                PreschoolFlags(
+                                    preparatory = false,
+                                    connectedDaycare = false,
+                                    additionalDaycareApplication = false
+                                )
+                            PRESCHOOL_DAYCARE ->
+                                PreschoolFlags(
+                                    preparatory = false,
+                                    connectedDaycare = true,
+                                    additionalDaycareApplication = false,
+                                    serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE
+                                )
+                            PRESCHOOL_CLUB ->
+                                PreschoolFlags(
+                                    preparatory = false,
+                                    connectedDaycare = true,
+                                    additionalDaycareApplication = false,
+                                    serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB
+                                )
+                            PREPARATORY_ONLY ->
+                                PreschoolFlags(
+                                    preparatory = true,
+                                    connectedDaycare = false,
+                                    additionalDaycareApplication = false
+                                )
+                            PREPARATORY_DAYCARE ->
+                                PreschoolFlags(
+                                    preparatory = true,
+                                    connectedDaycare = true,
+                                    additionalDaycareApplication = false
+                                )
+                            DAYCARE_ONLY ->
+                                PreschoolFlags(
+                                    preparatory = null,
+                                    connectedDaycare = true,
+                                    additionalDaycareApplication = true
+                                )
+                        }.run {
+                            PredicateSql.all(
+                                preparatory?.let {
+                                    PredicateSql {
+                                        where(
                                             "(a.document->'careDetails'->>'preparatory')::boolean = $preparatory"
-                                        },
-                                        "(a.document->>'connectedDaycare')::boolean = $connectedDaycare",
-                                        "a.additionalDaycareApplication = $additionalDaycareApplication",
-                                        serviceNeedOptionType?.let { pt ->
-                                            when (pt) {
-                                                PlacementType.PRESCHOOL_DAYCARE ->
-                                                    "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
-                                                PlacementType.PRESCHOOL_CLUB ->
-                                                    "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
-                                                else ->
-                                                    throw Error(
-                                                        "Unsupported preschool type: $serviceNeedOptionType"
-                                                    )
-                                            }
-                                        }
+                                        )
+                                    }
+                                } ?: PredicateSql.alwaysTrue(),
+                                PredicateSql {
+                                    where(
+                                        "(a.document->>'connectedDaycare')::boolean = $connectedDaycare"
                                     )
-                                    .joinToString(prefix = "(", separator = " AND ", postfix = ")")
-                            }
+                                },
+                                PredicateSql {
+                                    where(
+                                        "a.additionalDaycareApplication = $additionalDaycareApplication"
+                                    )
+                                },
+                                serviceNeedOptionType?.let { pt ->
+                                    when (pt) {
+                                        PlacementType.PRESCHOOL_DAYCARE ->
+                                            PredicateSql {
+                                                where(
+                                                    "(a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR a.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
+                                                )
+                                            }
+                                        PlacementType.PRESCHOOL_CLUB ->
+                                            PredicateSql {
+                                                where(
+                                                    "a.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
+                                                )
+                                            }
+                                        else ->
+                                            throw Error(
+                                                "Unsupported preschool type: $serviceNeedOptionType"
+                                            )
+                                    }
+                                } ?: PredicateSql.alwaysTrue()
+                            )
                         }
-                }
-            } else {
-                null
-            },
+                    }
+                )
+            } else null,
             if (distinctions.contains(ApplicationDistinctions.SECONDARY))
-                "pu.preferredUnits && :units"
-            else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
+                PredicateSql { where("pu.preferredUnits && ${bind(units)}") }
+            else if (units.isNotEmpty()) PredicateSql { where("d.id = ANY(${bind(units)})") }
+            else null,
             if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All)
-                "((a.document->'careDetails'->>'assistanceNeeded')::boolean = true OR pu.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)"
+                PredicateSql {
+                    where(
+                        "((a.document->'careDetails'->>'assistanceNeeded')::boolean = true OR pu.preferredUnits && ${bind(authorizedUnitsForApplicationsWithoutAssistanceNeed.ids)})"
+                    )
+                }
             else null,
             if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All)
-                "((a.document->'careDetails'->>'assistanceNeeded')::boolean = false OR pu.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)"
+                PredicateSql {
+                    where(
+                        "((a.document->'careDetails'->>'assistanceNeeded')::boolean = false OR pu.preferredUnits && ${bind(authorizedUnitsForApplicationsWithAssistanceNeed.ids)})"
+                    )
+                }
             else null,
             if (
                 (periodStart != null || periodEnd != null) &&
                     dateType.contains(ApplicationDateType.DUE)
             )
-                "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), a.dueDate)"
+                PredicateSql {
+                    where(
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.dueDate)"
+                    )
+                }
             else null,
             if (
                 (periodStart != null || periodEnd != null) &&
                     dateType.contains(ApplicationDateType.START)
             )
-                "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), (a.document ->> 'preferredStartDate')::date)"
+                PredicateSql {
+                    where(
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), (a.document ->> 'preferredStartDate')::date)"
+                    )
+                }
             else null,
             if (
                 (periodStart != null || periodEnd != null) &&
                     dateType.contains(ApplicationDateType.ARRIVAL)
             )
-                "between_start_and_end(daterange(:periodStart, :periodEnd, '[]'), a.sentdate)"
+                PredicateSql {
+                    where(
+                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.sentdate)"
+                    )
+                }
             else null,
-            if (searchTerms.isNotBlank()) freeTextQuery else null,
+            if (searchTerms.isNotBlank()) freeTextSearchPredicate(listOf("child"), searchTerms)
+            else null,
             when (transferApplications) {
-                TransferApplicationFilter.TRANSFER_ONLY -> "a.transferApplication"
-                TransferApplicationFilter.NO_TRANSFER -> "NOT a.transferApplication"
+                TransferApplicationFilter.TRANSFER_ONLY ->
+                    PredicateSql { where("a.transferApplication") }
+                TransferApplicationFilter.NO_TRANSFER ->
+                    PredicateSql { where("NOT a.transferApplication") }
                 else -> null
             },
             when (voucherApplications) {
                 VoucherApplicationFilter.VOUCHER_FIRST_CHOICE ->
-                    "d.provider_type = 'PRIVATE_SERVICE_VOUCHER'"
+                    PredicateSql { where("d.provider_type = 'PRIVATE_SERVICE_VOUCHER'") }
                 VoucherApplicationFilter.VOUCHER_ONLY ->
-                    "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                    PredicateSql {
+                        where(
+                            "pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                        )
+                    }
                 VoucherApplicationFilter.NO_VOUCHER ->
-                    "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                    PredicateSql {
+                        where(
+                            "NOT pu.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+                        )
+                    }
                 null -> null
             }
         )
 
-    val andWhere =
-        conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ")?.let { " AND $it" } ?: ""
-    // language=sql
-    val sql =
-        """
+    val orderBy =
+        when (sortBy) {
+            ApplicationSortColumn.APPLICATION_TYPE ->
+                "ORDER BY type $sortDir, last_name, first_name"
+            ApplicationSortColumn.CHILD_NAME -> "ORDER BY last_name $sortDir, first_name"
+            ApplicationSortColumn.DUE_DATE -> "ORDER BY duedate $sortDir, last_name, first_name"
+            ApplicationSortColumn.START_DATE ->
+                "ORDER BY preferredStartDate $sortDir, last_name, first_name"
+            ApplicationSortColumn.STATUS ->
+                "ORDER BY application_status $sortDir, last_name, first_name"
+            ApplicationSortColumn.UNIT_NAME -> "ORDER BY d.name $sortDir, last_name, first_name"
+        }.exhaust()
+
+    val applicationSummaries =
+        createQuery<Any> {
+                sql(
+                    """
         SELECT
             a.id,
             child.first_name,
@@ -439,13 +479,13 @@ fun Database.Read.fetchApplicationSummaries(
         LEFT JOIN LATERAL (
             SELECT EXISTS( SELECT 1 
             FROM placement p 
-            WHERE p.child_id = a.child_id AND p.type = 'CLUB'::placement_type AND p.start_date <= :today) AS was_on_club_care
+            WHERE p.child_id = a.child_id AND p.type = 'CLUB'::placement_type AND p.start_date <= ${bind(today)}) AS was_on_club_care
         ) club_care ON true
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
             JOIN placement ON daycare.id = placement.unit_id
-            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(:today, null, '[]')
+            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
             ORDER BY start_date
             LIMIT 1
         ) cpu ON true
@@ -453,32 +493,11 @@ fun Database.Read.fetchApplicationSummaries(
             SELECT COALESCE(array_agg(e::UUID) FILTER (WHERE e IS NOT NULL), '{}'::UUID[]) AS preferredUnits
             FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
         ) pu ON true
-        WHERE a.status != 'CREATED'::application_status_type $andWhere
+        WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
+        $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
         """
-            .trimIndent()
-
-    val orderedSql =
-        when (sortBy) {
-            ApplicationSortColumn.APPLICATION_TYPE ->
-                "$sql ORDER BY type $sortDir, last_name, first_name"
-            ApplicationSortColumn.CHILD_NAME -> "$sql ORDER BY last_name $sortDir, first_name"
-            ApplicationSortColumn.DUE_DATE ->
-                "$sql ORDER BY duedate $sortDir, last_name, first_name"
-            ApplicationSortColumn.START_DATE ->
-                "$sql ORDER BY preferredStartDate $sortDir, last_name, first_name"
-            ApplicationSortColumn.STATUS ->
-                "$sql ORDER BY application_status $sortDir, last_name, first_name"
-            ApplicationSortColumn.UNIT_NAME ->
-                "$sql ORDER BY d.name $sortDir, last_name, first_name"
-        }.exhaust()
-
-    val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
-
-    val applicationSummaries =
-        createQuery(paginatedSql)
-            .bind("today", today)
-            .addBindings(params)
-            .addBindings(freeTextParams)
+                )
+            }
             .mapToPaged(::PagedApplicationSummaries, pageSize, "total") {
                 val status = column<ApplicationStatus>("application_status")
                 ApplicationSummary(
