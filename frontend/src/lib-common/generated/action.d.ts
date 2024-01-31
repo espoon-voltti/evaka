@@ -327,7 +327,9 @@ export type Partnership =
   | 'RETRY'
   | 'UPDATE'
 
-export type Payment = 'SEND'
+export type Payment =
+  | 'DELETE'
+  | 'SEND'
 
 export type Person =
   | 'ADD_SSN'

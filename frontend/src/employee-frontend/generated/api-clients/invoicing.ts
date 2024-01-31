@@ -731,6 +731,23 @@ export async function createDrafts(): Promise<void> {
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.deleteDraftPayments
+*/
+export async function deleteDraftPayments(
+  request: {
+    body: UUID[]
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/payments/delete-drafts`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<UUID[]>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.PaymentController.searchPayments
 */
 export async function searchPayments(

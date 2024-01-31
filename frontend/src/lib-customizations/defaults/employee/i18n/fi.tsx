@@ -2837,7 +2837,9 @@ export const fi = {
       checked: (count: number) =>
         count === 1 ? `${count} rivi valittu` : `${count} riviä valittu`,
       sendPayments: (count: number) =>
-        count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`
+        count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`,
+      deletePayment: (count: number) =>
+        count === 1 ? 'Poista ${count} maksu' : 'Poista ${count} maksua'
     },
     status: {
       DRAFT: 'Luonnos',
