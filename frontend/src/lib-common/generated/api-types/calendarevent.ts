@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
 import { UUID } from '../../types'
@@ -24,6 +25,7 @@ export interface AttendingChild {
 * Generated from fi.espoo.evaka.calendarevent.CalendarEvent
 */
 export interface CalendarEvent {
+  contentModifiedAt: HelsinkiDateTime
   description: string
   groups: GroupInfo[]
   id: UUID

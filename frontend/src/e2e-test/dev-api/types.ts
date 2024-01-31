@@ -637,6 +637,7 @@ export interface DevCalendarEvent {
   title: string
   description: string
   period: FiniteDateRange
+  modifiedAt: HelsinkiDateTime
 }
 
 export interface DevCalendarEventAttendee {

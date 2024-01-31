@@ -485,7 +485,8 @@ test('Foster parent can see calendar events for foster children', async () => {
       id: groupEventId,
       title: 'Group-wide event',
       description: 'Whole group',
-      period: new FiniteDateRange(mockedDate, mockedDate)
+      period: new FiniteDateRange(mockedDate, mockedDate),
+      modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
     })
     .save()
   await Fixture.calendarEventAttendee()

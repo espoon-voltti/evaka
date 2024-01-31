@@ -1648,6 +1648,123 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
+    @Test
+    fun `content timestamp updated on all edits except reservation changes`() {
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = null,
+                title = "Unit-wide event",
+                description = "uwe",
+                period = FiniteDateRange(today, today.plusDays(3))
+            )
+        val eventId = calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
+        val newEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        val updateForm =
+            CalendarEventUpdateForm(
+                title = "Updated title",
+                description = form.description,
+                tree = form.tree
+            )
+        calendarEventController.modifyCalendarEvent(dbInstance(), admin, clock, eventId, updateForm)
+        val modifiedEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertThat(newEventData.contentModifiedAt < modifiedEventData.contentModifiedAt)
+
+        calendarEventController.updateCalendarEvent(
+            dbInstance(),
+            admin,
+            clock,
+            eventId,
+            updateForm.copy(tree = mapOf(groupId to setOf(testChild_1.id)))
+        )
+        val updatedEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertThat(modifiedEventData.contentModifiedAt < updatedEventData.contentModifiedAt)
+
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(1),
+                startTime = LocalTime.of(9, 0),
+                endTime = LocalTime.of(9, 30)
+            )
+        val eventTimeId =
+            calendarEventController.addCalendarEventTime(
+                dbInstance(),
+                admin,
+                clock,
+                eventId,
+                eventTimeForm
+            )
+        val timeAddedEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertThat(updatedEventData.contentModifiedAt < timeAddedEventData.contentModifiedAt)
+
+        val reservationForm =
+            CalendarEventTimeReservationForm(
+                calendarEventTimeId = eventTimeId,
+                childId = testChild_1.id
+            )
+
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            guardian,
+            clock,
+            reservationForm
+        )
+        val citizenReservedEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            citizenReservedEventData.contentModifiedAt
+        )
+
+        calendarEventController.deleteCalendarEventTimeReservation(
+            dbInstance(),
+            guardian,
+            clock,
+            eventTimeId,
+            testChild_1.id
+        )
+
+        val citizenCancelledEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            citizenCancelledEventData.contentModifiedAt
+        )
+
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm
+        )
+        val employeeReservedEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            employeeReservedEventData.contentModifiedAt
+        )
+
+        calendarEventController.deleteCalendarEventTime(dbInstance(), admin, clock, eventTimeId)
+        val deletedTimeEventData =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, eventId)
+
+        assertThat(
+            employeeReservedEventData.contentModifiedAt < deletedTimeEventData.contentModifiedAt
+        )
+    }
+
     private fun createCalendarEvent(
         form: CalendarEventForm,
         user: AuthenticatedUser.Employee = admin,

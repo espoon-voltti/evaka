@@ -25,6 +25,7 @@ import {
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -72,6 +73,7 @@ async function getCalendarEvents(
       data.map((event) => ({
         ...event,
         period: FiniteDateRange.parseJson(event.period),
+        contentModifiedAt: HelsinkiDateTime.parseIso(event.contentModifiedAt),
         times: event.times.map((time) => ({
           ...time,
           date: LocalDate.parseIso(time.date),

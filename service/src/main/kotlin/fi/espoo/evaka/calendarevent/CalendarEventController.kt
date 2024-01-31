@@ -205,7 +205,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEvent.UPDATE,
                         id
                     )
-                    tx.updateCalendarEvent(id, body)
+                    tx.updateCalendarEvent(id, clock.now(), body)
                 }
             }
             .also { Audit.CalendarEventUpdate.log(targetId = id) }
@@ -238,7 +238,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             childId = childId
                         )
                     }
-                    tx.updateCalendarEvent(id, body)
+                    tx.updateCalendarEvent(id, clock.now(), body)
                     tx.deleteCalendarEventAttendees(id)
                     tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }
@@ -263,7 +263,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEvent.UPDATE,
                         id
                     )
-                    tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
+                    val cetId = tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
+                    tx.setCalendarEventContentModifiedAt(id, clock.now())
+                    cetId
                 }
             }
             .also { Audit.CalendarEventTimeCreate.log(targetId = id) }
@@ -285,6 +287,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEventTime.DELETE,
                         id
                     )
+                    val calendarEventId = tx.getCalendarEventIdByTimeId(id)
+                    tx.setCalendarEventContentModifiedAt(calendarEventId!!, clock.now())
                     tx.deleteCalendarEventTime(id)
                 }
             }

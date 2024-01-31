@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -26,7 +27,8 @@ data class CalendarEvent(
     val title: String,
     val description: String,
     val period: FiniteDateRange,
-    @Json val times: Set<CalendarEventTime>
+    @Json val times: Set<CalendarEventTime>,
+    val contentModifiedAt: HelsinkiDateTime
 )
 
 data class CalendarEventTime(

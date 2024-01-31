@@ -1481,8 +1481,8 @@ fun Database.Transaction.insert(calendarEvent: DevCalendarEvent) =
     insertTestDataRow(
             calendarEvent,
             """
-INSERT INTO calendar_event (id, title, description, period)
-VALUES (:id, :title, :description, :period)
+INSERT INTO calendar_event (id, title, description, period, modified_at, content_modified_at)
+VALUES (:id, :title, :description, :period, :modifiedAt, :modifiedAt)
 RETURNING id
 """
         )

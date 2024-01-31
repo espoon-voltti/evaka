@@ -379,3 +379,4 @@ V379__attachments_fk_indexes.sql
 V380__drop_child_consent.sql
 V381__placement_type_preschool_preparatory_only.sql
 V382__absence_categories_preschool_preparatory_only.sql
+V383__calendar_event_timestamps.sql
