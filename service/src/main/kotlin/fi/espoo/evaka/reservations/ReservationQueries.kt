@@ -243,16 +243,31 @@ AND ar.child_id = ${bind(childId)}
         .groupBy { it.date }
         .mapValues { (_, value) -> value.map { ReservationResponse.from(it) } }
 
+fun Database.Read.getReservationsCitizen(
+    today: LocalDate,
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<ReservationRow> =
+    getReservations(
+        Predicate {
+            where(
+                """
+between_start_and_end(${bind(range)}, $it.date) AND
+$it.child_id = ANY (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
+    UNION
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
+)
+"""
+            )
+        }
+    )
+
 data class DailyReservationData(val date: LocalDate, @Json val children: List<ChildDailyData>)
 
-@Json
-data class ChildDailyData(
-    val childId: ChildId,
-    val reservations: List<ReservationResponse>,
-    val attendances: List<OpenTimeRange>
-)
+@Json data class ChildDailyData(val childId: ChildId, val attendances: List<OpenTimeRange>)
 
-fun Database.Read.getReservationsCitizen(
+fun Database.Read.getAttendancesCitizen(
     today: LocalDate,
     userId: PersonId,
     range: FiniteDateRange,
@@ -272,11 +287,10 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'childId', c.child_id,
-                'reservations', coalesce(ar.reservations, '[]'),
                 'attendances', coalesce(ca.attendances, '[]')
             )
         ) FILTER (
-            WHERE (ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
+            WHERE ca.attendances IS NOT NULL
               AND EXISTS(
                 SELECT 1 FROM placement p
                 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
@@ -286,18 +300,6 @@ SELECT
         '[]'
     ) AS children
 FROM generate_series(:start, :end, '1 day') t, children c
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            CASE WHEN ar.start_time IS NULL OR ar.end_time IS NULL THEN
-                jsonb_build_object('type', 'NO_TIMES')
-            ELSE
-                jsonb_build_object('type', 'TIMES', 'startTime', ar.start_time, 'endTime', ar.end_time)
-            END
-            ORDER BY ar.start_time
-        ) AS reservations
-    FROM attendance_reservation ar WHERE ar.child_id = c.child_id AND ar.date = t::date
-) ar ON true
 LEFT JOIN LATERAL (
     SELECT
         jsonb_agg(

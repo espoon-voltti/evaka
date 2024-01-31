@@ -95,18 +95,16 @@ class ReservationControllerCitizen(
                             .mapValues { (_, absence) ->
                                 AbsenceInfo(absence.absenceType, absence.editableByCitizen())
                             }
-                    val reservationData =
-                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
-                        reservationData
-                            .flatMap { d ->
-                                d.children.map { c ->
-                                    Pair(Pair(c.childId, d.date), c.reservations)
-                                }
+                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, reservations) ->
+                                reservations.map { ReservationResponse.from(it) }
                             }
-                            .toMap()
+                    val attendanceData =
+                        tx.getAttendancesCitizen(clock.today(), user.id, requestedRange)
                     val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
-                        reservationData
+                        attendanceData
                             .flatMap { d ->
                                 d.children.map { c -> Pair(Pair(c.childId, d.date), c.attendances) }
                             }
