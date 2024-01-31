@@ -640,7 +640,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 AbsenceWithModifierInfo(
                                                     category = AbsenceCategory.BILLABLE,
                                                     absenceType = AbsenceType.OTHER_ABSENCE,
-                                                    modifiedByType = EvakaUserType.EMPLOYEE,
+                                                    modifiedByStaff = true,
                                                     modifiedAt =
                                                         HelsinkiDateTime.of(
                                                             placementStart,
@@ -836,7 +836,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 AbsenceWithModifierInfo(
                     category = initialAbsence.category,
                     absenceType = initialAbsence.absenceType,
-                    modifiedByType = EvakaUserType.EMPLOYEE,
+                    modifiedByStaff = true,
                     modifiedAt = now,
                 )
             ),

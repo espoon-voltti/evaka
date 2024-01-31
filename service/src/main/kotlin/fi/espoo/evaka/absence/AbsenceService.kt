@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isOperationalDate
-import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -506,17 +505,16 @@ data class Absence(
     val date: LocalDate,
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
-    val modifiedByType: EvakaUserType,
+    val modifiedByStaff: Boolean,
     val modifiedAt: HelsinkiDateTime
 ) {
-    fun editableByCitizen(): Boolean =
-        absenceType != AbsenceType.FREE_ABSENCE && modifiedByType == EvakaUserType.CITIZEN
+    fun editableByCitizen(): Boolean = absenceType != AbsenceType.FREE_ABSENCE && !modifiedByStaff
 }
 
 data class AbsenceWithModifierInfo(
     val absenceType: AbsenceType,
     val category: AbsenceCategory,
-    val modifiedByType: EvakaUserType,
+    val modifiedByStaff: Boolean,
     val modifiedAt: HelsinkiDateTime
 ) {
     companion object {
@@ -524,7 +522,7 @@ data class AbsenceWithModifierInfo(
             AbsenceWithModifierInfo(
                 absence.absenceType,
                 absence.category,
-                absence.modifiedByType,
+                absence.modifiedByStaff,
                 absence.modifiedAt
             )
     }

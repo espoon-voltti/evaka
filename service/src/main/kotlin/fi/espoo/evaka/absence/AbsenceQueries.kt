@@ -465,7 +465,7 @@ SELECT
     a.date,
     a.absence_type,
     a.category,
-    eu.type AS modified_by_type,
+    eu.type <> 'CITIZEN' AS modified_by_staff,
     a.modified_at
 FROM absence a
 JOIN evaka_user eu ON eu.id = a.modified_by

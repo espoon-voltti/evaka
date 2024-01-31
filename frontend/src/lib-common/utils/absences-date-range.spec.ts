@@ -13,7 +13,7 @@ import { groupAbsencesByDateRange } from './absences'
 
 const base = {
   childId: uniqueId(),
-  modifiedByType: 'EMPLOYEE' as const,
+  modifiedByStaff: true,
   modifiedAt: HelsinkiDateTime.now()
 }
 

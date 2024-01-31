@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -188,7 +187,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = firstAbsenceDate,
                     category = AbsenceCategory.NONBILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    modifiedByType = EvakaUserType.SYSTEM,
+                    modifiedByStaff = true,
                     modifiedAt = now
                 ),
                 Absence(
@@ -196,7 +195,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = lastAbsenceDate,
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    modifiedByType = EvakaUserType.SYSTEM,
+                    modifiedByStaff = true,
                     modifiedAt = now
                 ),
             ),
@@ -209,7 +208,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = firstAbsenceDate,
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    modifiedByType = EvakaUserType.SYSTEM,
+                    modifiedByStaff = true,
                     modifiedAt = now
                 ),
             ),
@@ -386,7 +385,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate,
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    modifiedByType = EvakaUserType.SYSTEM,
+                    modifiedByStaff = true,
                     modifiedAt = now
                 ),
             ),
