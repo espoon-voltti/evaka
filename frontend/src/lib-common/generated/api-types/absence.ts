@@ -23,7 +23,8 @@ export interface Absence {
   category: AbsenceCategory
   childId: UUID
   date: LocalDate
-  id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedByType: EvakaUserType
 }
 
 /**

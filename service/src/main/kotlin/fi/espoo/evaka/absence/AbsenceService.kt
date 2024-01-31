@@ -154,7 +154,8 @@ fun getGroupMonthCalendar(
                                                 isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
                                                 childAbsences.isEmpty(),
-                                        absences = childAbsences,
+                                        absences =
+                                            childAbsences.map { AbsenceWithModifierInfo.from(it) },
                                         reservations = childReservations,
                                         dailyServiceTimes =
                                             (dailyServiceTimes[child.id]?.map { it.times }
@@ -501,19 +502,33 @@ data class ChildServiceNeedInfo(
 data class AbsencePlacement(val dateRange: FiniteDateRange, val type: PlacementType)
 
 data class Absence(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
-    val category: AbsenceCategory,
-    val absenceType: AbsenceType
-)
-
-data class AbsenceWithModifierInfo(
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByType: EvakaUserType,
     val modifiedAt: HelsinkiDateTime
-)
+) {
+    fun editableByCitizen(): Boolean =
+        absenceType != AbsenceType.FREE_ABSENCE && modifiedByType == EvakaUserType.CITIZEN
+}
+
+data class AbsenceWithModifierInfo(
+    val absenceType: AbsenceType,
+    val category: AbsenceCategory,
+    val modifiedByType: EvakaUserType,
+    val modifiedAt: HelsinkiDateTime
+) {
+    companion object {
+        fun from(absence: Absence): AbsenceWithModifierInfo =
+            AbsenceWithModifierInfo(
+                absence.absenceType,
+                absence.category,
+                absence.modifiedByType,
+                absence.modifiedAt
+            )
+    }
+}
 
 enum class AbsenceType : DatabaseEnum {
     /** A normal absence that has been informed to the staff */
