@@ -11,7 +11,6 @@ proxy_set_header X-Request-ID $request_id;
 proxy_set_header Connection "";
 
 # Prevent forwarding of sensitive headers
-proxy_set_header Authorization "";
 proxy_set_header X-User "";
 
 # Actual caching headers should be set by downstream API Gateways;
