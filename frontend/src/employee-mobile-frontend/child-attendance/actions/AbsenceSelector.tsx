@@ -15,9 +15,7 @@ export type AbsenceTypeWithNoAbsence = AbsenceType | 'NO_ABSENCE'
 interface Props {
   absenceTypes: AbsenceTypeWithNoAbsence[]
   selectedAbsenceType: AbsenceTypeWithNoAbsence | undefined
-  setSelectedAbsenceType: React.Dispatch<
-    React.SetStateAction<AbsenceTypeWithNoAbsence | undefined>
-  >
+  setSelectedAbsenceType: (type: AbsenceTypeWithNoAbsence) => void
 }
 
 export default function AbsenceSelector({
@@ -28,20 +26,18 @@ export default function AbsenceSelector({
   const { i18n } = useTranslation()
 
   return (
-    <Fragment>
-      <ChipWrapper>
-        {absenceTypes.map((absenceType) => (
-          <Fragment key={absenceType}>
-            <ChoiceChip
-              text={i18n.absences.absenceTypes[absenceType]}
-              selected={selectedAbsenceType === absenceType}
-              onChange={() => setSelectedAbsenceType(absenceType)}
-              data-qa={`mark-absent-${absenceType}`}
-            />
-            <Gap horizontal size="xxs" />
-          </Fragment>
-        ))}
-      </ChipWrapper>
-    </Fragment>
+    <ChipWrapper margin="xxs">
+      {absenceTypes.map((absenceType) => (
+        <Fragment key={absenceType}>
+          <ChoiceChip
+            text={i18n.absences.absenceTypes[absenceType]}
+            selected={selectedAbsenceType === absenceType}
+            onChange={() => setSelectedAbsenceType(absenceType)}
+            data-qa={`mark-absent-${absenceType}`}
+          />
+          <Gap horizontal size="xxs" />
+        </Fragment>
+      ))}
+    </ChipWrapper>
   )
 }

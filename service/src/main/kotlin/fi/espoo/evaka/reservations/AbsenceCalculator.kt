@@ -24,7 +24,7 @@ fun getExpectedAbsenceCategories(
     tx: Database.Read,
     date: LocalDate,
     childId: ChildId,
-    presenceTimes: List<TimeRange>
+    attendanceTimes: List<TimeRange>
 ): Set<AbsenceCategory>? {
     val placement =
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
@@ -33,7 +33,7 @@ fun getExpectedAbsenceCategories(
 
     return getExpectedAbsenceCategories(
         date = date,
-        presenceTimes = presenceTimes,
+        attendanceTimes = attendanceTimes,
         placementType = placement.type,
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,
@@ -45,14 +45,14 @@ fun getExpectedAbsenceCategories(
 // null return value means that absences should not be deducted from reservations or attendances
 fun getExpectedAbsenceCategories(
     date: LocalDate,
-    presenceTimes: List<TimeRange>,
+    attendanceTimes: List<TimeRange>,
     placementType: PlacementType,
     unitLanguage: Language,
     dailyPreschoolTime: TimeRange?,
     dailyPreparatoryTime: TimeRange?,
     preschoolTerms: List<PreschoolTerm>
 ): Set<AbsenceCategory>? {
-    val presences = presenceTimes.map { HelsinkiDateTimeRange.of(date, it.start, it.end) }
+    val presences = attendanceTimes.map { HelsinkiDateTimeRange.of(date, it.start, it.end) }
 
     val preschoolEducationOnGoing =
         preschoolTerms.any {

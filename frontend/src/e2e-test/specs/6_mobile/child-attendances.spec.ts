@@ -1,19 +1,20 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
+import { BrowserContextOptions } from 'playwright'
+
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { EvakaBrowserContextOptions } from '../../browser'
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   daycare2Fixture,
   daycareFixture,
   daycareGroupFixture,
-  EmployeeBuilder,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserChildFixturePorriHatterRestricted,
@@ -34,10 +35,9 @@ let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let childAttendancePage: ChildAttendancePage
-let employee: EmployeeBuilder
 
-const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
-const today = now.toLocalDate()
+let now = HelsinkiDateTime.of(2024, 5, 17, 13, 0, 0)
+let today = now.toLocalDate()
 
 const group2 = {
   id: uuidv4(),
@@ -46,9 +46,19 @@ const group2 = {
   startDate: LocalDate.of(2021, 1, 1)
 }
 
+const openPage = async (
+  options?: BrowserContextOptions & EvakaBrowserContextOptions
+) => {
+  page = await Page.open(options ?? { mockedTime: now })
+  listPage = new MobileListPage(page)
+  childPage = new MobileChildPage(page)
+  childAttendancePage = new ChildAttendancePage(page)
+}
+
 beforeEach(async () => {
   await resetDatabase()
   await insertDefaultServiceNeedOptions()
+  await Fixture.preschoolTerm().save()
 
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
@@ -67,15 +77,9 @@ beforeEach(async () => {
   await Fixture.person().with(enduserChildFixturePorriHatterRestricted).save()
   await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
 
-  employee = await Fixture.employee()
+  await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
-
-  page = await Page.open({ mockedTime: now })
-
-  listPage = new MobileListPage(page)
-  childPage = new MobileChildPage(page)
-  childAttendancePage = new ChildAttendancePage(page)
 })
 
 async function createPlacements(
@@ -88,8 +92,8 @@ async function createPlacements(
       childId,
       unitId: daycareFixture.id,
       type: placementType,
-      startDate: LocalDate.of(2021, 5, 1),
-      endDate: LocalDate.of(2022, 8, 31)
+      startDate: today.subMonths(3),
+      endDate: today.addMonths(3)
     })
     .save()
   await Fixture.groupPlacement()
@@ -118,10 +122,11 @@ const createPlacementAndReload = async (
   return daycarePlacementFixture
 }
 
-const checkAbsenceTypeSelectionButtonsExistence = async (
-  absenceTypeButtonsExpectedToBeShown: boolean,
+const markChildArrivedAndDeparted = async (
   arrivalTime = '08:15',
-  departureTime = '16:00'
+  departureTime = '16:00',
+  nonBillableAbsenceExpected: boolean,
+  billableAbsenceExpected: boolean
 ) => {
   await listPage.selectChild(familyWithTwoGuardians.children[0].id)
   await childPage.markPresentLink.click()
@@ -133,79 +138,95 @@ const checkAbsenceTypeSelectionButtonsExistence = async (
 
   await childAttendancePage.setTime(departureTime)
 
-  if (absenceTypeButtonsExpectedToBeShown) {
-    await childAttendancePage.assertMarkAbsenceTypeButtonsAreShown(
-      'OTHER_ABSENCE'
-    )
-    await childAttendancePage.selectMarkAbsentByType('OTHER_ABSENCE')
-    await childAttendancePage.selectMarkDepartedWithAbsenceButton()
+  if (nonBillableAbsenceExpected) {
+    await childAttendancePage
+      .markAbsentByCategoryAndTypeButton('NONBILLABLE', 'OTHER_ABSENCE')
+      .click()
+  }
+  if (billableAbsenceExpected) {
+    await childAttendancePage
+      .markAbsentByCategoryAndTypeButton('BILLABLE', 'OTHER_ABSENCE')
+      .click()
+  }
+  await childAttendancePage.markDepartedButton.click()
+
+  if (nonBillableAbsenceExpected || billableAbsenceExpected) {
     await childAttendancePage.assertChildStatusLabelIsShown('Lähtenyt')
   } else {
-    await childAttendancePage.assertMarkAbsenceTypeButtonsNotShown()
-    await childAttendancePage.selectMarkDepartedButton()
     await childAttendancePage.assertNoChildrenPresentIndicatorIsShown()
   }
 }
 
 describe('Child mobile attendances', () => {
   test('Child a full day in daycare placement is not required to mark absence types', async () => {
+    await openPage()
     await createPlacementAndReload('DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
+    await markChildArrivedAndDeparted('08:00', '16:00', false, false)
   })
 
   test('Child a part day in daycare placement is not required to mark absence types', async () => {
-    await createPlacementAndReload('DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
+    await openPage()
+    await createPlacementAndReload('DAYCARE_PART_TIME')
+    await markChildArrivedAndDeparted('08:00', '11:00', false, false)
   })
 
   test('Child a full day in preschool placement is not required to mark absence types', async () => {
+    await openPage()
     await createPlacementAndReload('PRESCHOOL')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
+    await markChildArrivedAndDeparted('08:50', '12:58', false, false)
   })
 
-  test('Child a part day in preschool placement is not required to mark absence types', async () => {
+  test('Child in preschool placement for less than 1 hour is required to mark absence type', async () => {
+    await openPage()
     await createPlacementAndReload('PRESCHOOL')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
+    await markChildArrivedAndDeparted('12:10', '13:15', true, false)
   })
 
-  test('Child a full day in preschool daycare placement is not required to mark absence types', async () => {
+  test('Child in preschool daycare placement is not required to mark absence types', async () => {
+    await openPage()
     await createPlacementAndReload('PRESCHOOL_DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '16:00')
+    await markChildArrivedAndDeparted('08:00', '16:00', false, false)
   })
 
-  test('Child a part day in preschool daycare placement is not required to mark absence types', async () => {
+  test('Child in preschool daycare placement for preschool only is required to mark billable absence type', async () => {
+    await openPage()
     await createPlacementAndReload('PRESCHOOL_DAYCARE')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
+    await markChildArrivedAndDeparted('08:55', '13:05', false, true)
   })
 
-  test('Child a part day in 5yo daycare placement is not required to mark absence types if there is no paid service need set', async () => {
-    await createPlacementAndReload('DAYCARE_PART_TIME_FIVE_YEAR_OLDS')
-    await checkAbsenceTypeSelectionButtonsExistence(false, '08:00', '11:00')
+  test('Child in preschool daycare placement late for preschool is required to mark nonbillable absence type', async () => {
+    await openPage()
+    await createPlacementAndReload('PRESCHOOL_DAYCARE')
+    await markChildArrivedAndDeparted('12:35', '16:05', true, false)
   })
 
-  test('Child a part day in 5yo daycare placement is required to mark absence types if there is paid service need set', async () => {
-    const placement = await createPlacementAndReload(
-      'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-    )
-    const sno = await Fixture.serviceNeedOption()
-      .with({
-        validPlacementType: 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
-        feeCoefficient: 25.0,
-        daycareHoursPerWeek: 40
-      })
-      .save()
+  test('Child in preschool daycare placement for very short time is required to mark absence types', async () => {
+    await openPage()
+    await createPlacementAndReload('PRESCHOOL_DAYCARE')
+    await markChildArrivedAndDeparted('08:55', '09:05', true, true)
+  })
 
-    await Fixture.serviceNeed()
-      .with({
-        optionId: sno.data.id,
-        placementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate,
-        confirmedBy: employee.data.id! // eslint-disable-line
-      })
-      .save()
+  test('noAbsenceType feature flag allows marking no absence despite expected absence', async () => {
+    await openPage({
+      mockedTime: now,
+      employeeCustomizations: { featureFlags: { noAbsenceType: true } }
+    })
 
-    await checkAbsenceTypeSelectionButtonsExistence(true, '08:00', '11:00')
+    await createPlacementAndReload('PRESCHOOL_DAYCARE')
+    await listPage.selectChild(familyWithTwoGuardians.children[0].id)
+    await childPage.markPresentLink.click()
+    await childAttendancePage.setTime('07:00')
+    await childAttendancePage.selectMarkPresent()
+    await childAttendancePage.selectPresentTab()
+    await childAttendancePage.selectChildLink(0)
+    await childAttendancePage.selectMarkDepartedLink()
+    await childAttendancePage.setTime('08:55')
+
+    await childAttendancePage
+      .markAbsentByCategoryAndTypeButton('NONBILLABLE', 'NO_ABSENCE')
+      .click()
+    await childAttendancePage.markDepartedButton.click()
+    await childAttendancePage.assertChildStatusLabelIsShown('Lähtenyt')
   })
 })
 
@@ -226,6 +247,7 @@ const assertAttendanceCounts = async (
 
 describe('Child mobile attendance list', () => {
   test('Child can be marked as present and as departed', async () => {
+    await openPage()
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
@@ -246,7 +268,7 @@ describe('Child mobile attendance list', () => {
     await listPage.selectChild(child1)
     await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('14:00')
-    await childAttendancePage.selectMarkDepartedButton()
+    await childAttendancePage.markDepartedButton.click()
 
     await assertAttendanceCounts(2, 0, 1, 0, 3)
 
@@ -255,6 +277,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Child can be marked as absent for the whole day', async () => {
+    await openPage()
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
@@ -271,6 +294,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Child can be marked present and returned to coming', async () => {
+    await openPage()
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
@@ -292,6 +316,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('User can undo the whole flow of marking present at 08:30 and leaving at 16:00', async () => {
+    await openPage()
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
@@ -307,7 +332,7 @@ describe('Child mobile attendance list', () => {
     await listPage.selectChild(child)
     await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('16:00')
-    await childAttendancePage.selectMarkDepartedButton()
+    await childAttendancePage.markDepartedButton.click()
 
     await listPage.departedChildrenTab.click()
     await listPage.selectChild(child)
@@ -324,6 +349,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Child can have multiple attendances in one day', async () => {
+    await openPage()
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child)
 
@@ -339,7 +365,7 @@ describe('Child mobile attendance list', () => {
     await listPage.selectChild(child)
     await childPage.markDepartedLink.click()
     await childAttendancePage.setTime('15:00')
-    await childAttendancePage.selectMarkDepartedButton()
+    await childAttendancePage.markDepartedButton.click()
 
     await listPage.departedChildrenTab.click()
     await listPage.selectChild(child)
@@ -363,10 +389,11 @@ describe('Child mobile attendance list', () => {
     await childAttendancePage.setTime('15:15')
     await childAttendancePage.setTimeInfo.assertTextEquals('Saapui 15:15')
     await childAttendancePage.setTime('15:20')
-    await childAttendancePage.selectMarkDepartedButton()
+    await childAttendancePage.markDepartedButton.click()
   })
 
   test('Group selector works consistently', async () => {
+    await openPage()
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
@@ -392,6 +419,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Group name is visible only when all-group selected', async () => {
+    await openPage()
     const childId = enduserChildFixtureKaarina.id
     await createPlacements(childId)
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)
@@ -411,6 +439,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Child will not be visible in two groups at the same time', async () => {
+    await openPage()
     const childId = enduserChildFixtureKaarina.id
 
     await Fixture.daycare()
@@ -428,11 +457,11 @@ describe('Child mobile attendance list', () => {
         .save()
     ).data
 
-    const placement1StartDate = LocalDate.of(2022, 1, 1)
-    const placement1EndDate = LocalDate.of(2022, 4, 30)
+    const placement1StartDate = today.subMonths(5)
+    const placement1EndDate = today.subMonths(1)
 
-    const placement2StartDate = LocalDate.of(2022, 5, 1)
-    const placement2EndDate = LocalDate.of(2022, 6, 30)
+    const placement2StartDate = placement1EndDate.addDays(1)
+    const placement2EndDate = today.addMonths(3)
 
     const daycarePlacementFixture = await Fixture.placement()
       .with({
@@ -478,25 +507,7 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Fixed schedule child\'s "reservation" is correct', async () => {
-    const term = new FiniteDateRange(
-      LocalDate.of(2021, 8, 15),
-      LocalDate.of(2022, 5, 31)
-    )
-
-    // Term break today
-    await Fixture.preschoolTerm()
-      .with({
-        finnishPreschool: term,
-        swedishPreschool: term,
-        extendedTerm: term,
-        applicationPeriod: new FiniteDateRange(
-          LocalDate.of(2022, 1, 10),
-          LocalDate.of(2022, 1, 20)
-        ),
-        termBreaks: []
-      })
-      .save()
-
+    await openPage()
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child, daycareGroupFixture.id, 'PRESCHOOL')
 
@@ -509,24 +520,10 @@ describe('Child mobile attendance list', () => {
   })
 
   test('Term break child is shown in absent list', async () => {
-    const term = new FiniteDateRange(
-      LocalDate.of(2021, 8, 15),
-      LocalDate.of(2022, 5, 31)
-    )
-
-    // Term break today
-    await Fixture.preschoolTerm()
-      .with({
-        finnishPreschool: term,
-        swedishPreschool: term,
-        extendedTerm: term,
-        applicationPeriod: new FiniteDateRange(
-          LocalDate.of(2022, 1, 10),
-          LocalDate.of(2022, 1, 20)
-        ),
-        termBreaks: [new FiniteDateRange(today, today)]
-      })
-      .save()
+    // change mocked now to be during term break
+    now = HelsinkiDateTime.of(2024, 1, 1, 13, 0, 0)
+    today = now.toLocalDate()
+    await openPage({ mockedTime: now })
 
     const child = enduserChildFixtureKaarina.id
     await createPlacements(child, daycareGroupFixture.id, 'PRESCHOOL')
@@ -543,6 +540,7 @@ describe('Child mobile attendance list', () => {
 
 describe('Notes on child departure page', () => {
   test('All group notes are shown on the child departure page', async () => {
+    await openPage()
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)
     await createPlacements(enduserChildFixturePorriHatterRestricted.id)

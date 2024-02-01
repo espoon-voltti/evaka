@@ -13,12 +13,11 @@ import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
 import fi.espoo.evaka.daycare.service.clearOldAbsences
 import fi.espoo.evaka.daycare.service.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.daycare.service.getAbsenceDatesForChildrenInRange
-import fi.espoo.evaka.daycare.service.insertAbsences
+import fi.espoo.evaka.daycare.service.setChildDateAbsences
 import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
@@ -35,6 +34,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -422,51 +422,26 @@ fun upsertChildDatePresence(
             )
         }
 
-    val absenceChanges =
-        AbsenceCategory.entries.map { category ->
-            val type =
-                when (category) {
-                    AbsenceCategory.BILLABLE -> input.absenceBillable
-                    AbsenceCategory.NONBILLABLE -> input.absenceNonbillable
-                }
-            val identicalAbsenceExists =
-                type != null &&
-                    tx.absenceExists(
-                        date = input.date,
-                        childId = input.childId,
-                        category = category,
-                        type = type
-                    )
-            val deletedAbsence =
-                if (identicalAbsenceExists) {
-                    // do not delete and replace identical absence so that metadata is not lost
-                    null
-                } else {
-                    tx.deleteAbsenceOfCategory(input.date, input.childId, category)
-                }
-
-            val insertedAbsence =
-                if (type == null || identicalAbsenceExists) {
-                    null
-                } else {
-                    tx.insertAbsences(
-                            now,
-                            userId,
-                            listOf(AbsenceUpsert(input.childId, input.date, category, type))
-                        )
-                        .first()
-                }
-
-            insertedAbsence to deletedAbsence
-        }
+    val (insertedAbsences, deletedAbsences) =
+        setChildDateAbsences(
+            tx,
+            now,
+            userId,
+            input.childId,
+            input.date,
+            mapOfNotNullValues(
+                AbsenceCategory.NONBILLABLE to input.absenceNonbillable,
+                AbsenceCategory.BILLABLE to input.absenceBillable
+            )
+        )
 
     return UpsertChildDatePresenceResult(
         insertedReservations = insertedReservations,
         deletedReservations = deletedReservations,
         insertedAttendances = insertedAttendances,
         deletedAttendances = deletedAttendances,
-        insertedAbsences = absenceChanges.mapNotNull { it.first },
-        deletedAbsences = absenceChanges.mapNotNull { it.second }
+        insertedAbsences = insertedAbsences,
+        deletedAbsences = deletedAbsences
     )
 }
 
@@ -541,43 +516,4 @@ private fun Database.Transaction.insertReservation(
             )
         }
         .exactlyOne<AttendanceReservationId>()
-}
-
-private fun Database.Read.absenceExists(
-    date: LocalDate,
-    childId: ChildId,
-    category: AbsenceCategory,
-    type: AbsenceType
-): Boolean {
-    return createQuery<Any> {
-            sql(
-                """
-        SELECT exists(
-            SELECT 1 FROM absence
-            WHERE child_id = ${bind(childId)} 
-                AND date = ${bind(date)} 
-                AND category = ${bind(category)} 
-                AND absence_type = ${bind(type)}
-        )
-    """
-            )
-        }
-        .exactlyOne()
-}
-
-private fun Database.Transaction.deleteAbsenceOfCategory(
-    date: LocalDate,
-    childId: ChildId,
-    category: AbsenceCategory
-): AbsenceId? {
-    return createQuery<Any>() {
-            sql(
-                """
-            DELETE FROM absence
-            WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND category = ${bind(category)}
-            RETURNING id
-    """
-            )
-        }
-        .exactlyOneOrNull()
 }
