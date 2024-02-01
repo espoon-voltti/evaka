@@ -51,9 +51,6 @@ import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.EmployeeChildAclConfig
 import fi.espoo.evaka.shared.security.PilotFeature
-import fi.espoo.evaka.shared.security.employeeChildAclViaApplication
-import fi.espoo.evaka.shared.security.employeeChildAclViaBackupCare
-import fi.espoo.evaka.shared.security.employeeChildAclViaPlacement
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
@@ -113,17 +110,15 @@ SELECT EXISTS (
      */
     private fun <T : Id<*>> ruleViaChildAcl(
         cfg: EmployeeChildAclConfig,
-        idChildQuery: QuerySql.Builder<T>.() -> QuerySql<T>
+        idChildQuery:
+            QuerySql.Builder<T>.(
+                user: AuthenticatedUser.Employee, now: HelsinkiDateTime
+            ) -> QuerySql<T>
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(
             this,
             Query { user, now ->
-                val aclQueries =
-                    listOfNotNull(
-                        if (cfg.placement) employeeChildAclViaPlacement(user.id, now) else null,
-                        if (cfg.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
-                        if (cfg.application) employeeChildAclViaApplication(user.id) else null
-                    )
+                val aclQueries = cfg.aclQueries(user, now)
                 union(
                     all = true,
                     aclQueries.map { aclQuery ->
@@ -131,7 +126,7 @@ SELECT EXISTS (
                             sql(
                                 """
 SELECT target.id, acl.role, acl.unit_id
-FROM (${subquery { idChildQuery() }}) target
+FROM (${subquery { idChildQuery(user, now) }}) target
 JOIN (${subquery(aclQuery)}) acl USING (child_id)
 """
                             )
@@ -267,377 +262,387 @@ ${if (onlyAllowDeletedForTypes != null) "AND (a.type = ANY(${bind(onlyAllowDelet
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceAction(hidePastAssistance: Boolean) =
-        rule<AssistanceActionId> { user, now ->
+    fun inPlacementUnitOfChildOfAssistanceAction(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceActionId>(cfg) { _, now ->
             sql(
                 """
-SELECT aa.id, role, acl.daycare_id AS unit_id
+SELECT aa.id, child_id
 FROM assistance_action aa
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = aa.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = aa.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = aa.child_id
                 AND aa.end_date >= p.start_date
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND aa.end_date >= ${bind(now.toLocalDate())}"""
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceFactor(hidePastAssistance: Boolean) =
-        rule<AssistanceFactorId> { user, now ->
+    fun inPlacementUnitOfChildOfAssistanceFactor(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceFactorId>(cfg) { _, now ->
             sql(
                 """
-SELECT af.id, role, acl.daycare_id AS unit_id
+SELECT af.id, child_id
 FROM assistance_factor af
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = af.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = af.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = af.child_id
                 AND NOT af.valid_during << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedDecision(hidePastAssistance: Boolean) =
-        rule<AssistanceNeedDecisionId> { user, now ->
+    fun inPlacementUnitOfChildOfAssistanceNeedDecision(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
             sql(
                 """
-SELECT ad.id, role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = ad.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = ad.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = ad.child_id
                 AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(hidePastAssistance: Boolean) =
-        rule<AssistanceNeedDecisionId> { user, now ->
+    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
             sql(
                 """
-SELECT ad.id, role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)} AND ad.status = 'ACCEPTED'""" +
+WHERE ad.status = 'ACCEPTED'""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+AND CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = ad.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = ad.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = ad.child_id
                 AND NOT ad.validity_period << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
-AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())} 
+AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}
             """
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
             sql(
                 """
-SELECT apd.id, role, acl.daycare_id AS unit_id
+SELECT apd.id, child_id
 FROM assistance_need_preschool_decision apd
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)} AND apd.status = 'ACCEPTED'
+WHERE apd.status = 'ACCEPTED'
             """
             )
         }
 
-    fun inPlacementUnitOfChildOfDaycareAssistance(hidePastAssistance: Boolean) =
-        rule<DaycareAssistanceId> { user, now ->
+    fun inPlacementUnitOfChildOfDaycareAssistance(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<DaycareAssistanceId>(cfg) { _, now ->
             sql(
                 """
-SELECT da.id, role, acl.daycare_id AS unit_id
+SELECT da.id, child_id
 FROM daycare_assistance da
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = da.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = da.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = da.child_id
                 AND NOT da.valid_during << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(hidePastAssistance: Boolean) =
-        rule<OtherAssistanceMeasureId> { user, now ->
+    fun inPlacementUnitOfChildOfOtherAssistanceMeasure(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<OtherAssistanceMeasureId>(cfg) { _, now ->
             sql(
                 """
-SELECT oam.id, role, acl.daycare_id AS unit_id
+SELECT oam.id, child_id
 FROM other_assistance_measure oam
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = oam.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = oam.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = oam.child_id
                 AND NOT oam.valid_during << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
             )
         }
 
-    fun inPlacementUnitOfChildOfPreschoolAssistance(hidePastAssistance: Boolean) =
-        rule<PreschoolAssistanceId> { user, now ->
+    fun inPlacementUnitOfChildOfPreschoolAssistance(
+        hidePastAssistance: Boolean,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<PreschoolAssistanceId>(cfg) { _, now ->
             sql(
                 """
-SELECT pa.id, role, acl.daycare_id AS unit_id
+SELECT pa.id, child_id
 FROM preschool_assistance pa
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}""" +
+""" +
                     if (hidePastAssistance)
                         """
-AND CASE 
+WHERE CASE
         WHEN EXISTS (
-            SELECT true 
+            SELECT true
             FROM placement p
-            WHERE p.child_id = pa.child_id 
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB') 
+            WHERE p.child_id = pa.child_id
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')
                 AND p.start_date <=  ${bind(now.toLocalDate())})
             THEN EXISTS (
                 SELECT true
                 FROM PLACEMENT p
                 WHERE p.child_id = pa.child_id
                 AND NOT pa.valid_during << daterange(p.start_date, p.end_date, '[]')
-                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB')) 
-        ELSE TRUE 
+                AND p.type in ('PRESCHOOL', 'PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'))
+        ELSE TRUE
      END
 AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
                     else ""
             )
         }
 
-    fun inSelectedUnitOfAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { user, now ->
-            sql(
-                """
-SELECT ad.id, role, acl.daycare_id AS unit_id
+    fun inSelectedUnitOfAssistanceNeedDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, _ ->
+            sql("""
+SELECT ad.id, child_id
 FROM assistance_need_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+""")
         }
 
     // For Tampere
-    fun andIsDecisionMakerForAssistanceNeedDecision() =
-        rule<AssistanceNeedDecisionId> { user, now ->
+    fun andIsDecisionMakerForAssistanceNeedDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { user, _ ->
             sql(
                 """
-SELECT ad.id, acl.role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE ad.decision_maker_employee_id = ${bind(user.id)}
   AND ad.sent_for_decision IS NOT NULL
             """
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
             sql(
                 """
-SELECT ad.id, role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_preschool_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
             """
             )
         }
 
-    fun inSelectedUnitOfAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+    fun inSelectedUnitOfAssistanceNeedPreschoolDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
             sql(
                 """
-SELECT ad.id, role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_preschool_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
             """
             )
         }
 
     // For Tampere
-    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision() =
-        rule<AssistanceNeedPreschoolDecisionId> { user, now ->
+    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { user, _ ->
             sql(
                 """
-SELECT ad.id, acl.role, acl.daycare_id AS unit_id
+SELECT ad.id, child_id
 FROM assistance_need_preschool_decision ad
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 WHERE ad.decision_maker_employee_id = ${bind(user.id)}
   AND ad.sent_for_decision IS NOT NULL
             """
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement() =
-        rule<AssistanceNeedVoucherCoefficientId> { user, now ->
+    fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AssistanceNeedVoucherCoefficientId>(cfg) { _, _ ->
             sql(
                 """
-SELECT avc.id, role, acl.daycare_id AS unit_id
+SELECT avc.id, child_id
 FROM assistance_need_voucher_coefficient avc
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)} AND EXISTS(
+WHERE EXISTS(
     SELECT 1 FROM placement p
     JOIN daycare pd ON pd.id = p.unit_id
-    WHERE p.child_id = acl.child_id
+    WHERE p.child_id = avc.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
             """
             )
         }
 
-    fun inPlacementUnitOfChildOfBackupCare() =
-        rule<BackupCareId> { user, now ->
-            sql(
-                """
-SELECT bc.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfBackupCare(cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()) =
+        ruleViaChildAcl<BackupCareId>(cfg) { _, _ ->
+            sql("""
+SELECT bc.id, child_id
 FROM backup_care bc
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
-    fun inPlacementUnitOfChildOfBackupPickup() =
-        rule<BackupPickupId> { user, now ->
-            sql(
-                """
-SELECT bp.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfBackupPickup(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<BackupPickupId>(cfg) { _, _ ->
+            sql("""
+SELECT bp.id, child_id
 FROM backup_pickup bp
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
-    fun inPlacementUnitOfChild() =
+    fun inPlacementUnitOfChild(cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()) =
         rule<ChildId> { user, now ->
-            sql(
-                """
-SELECT child_id AS id, role, acl.daycare_id AS unit_id
-FROM employee_child_daycare_acl(${bind(now.toLocalDate())}) acl
-WHERE employee_id = ${bind(user.id)}
-            """
+            union(
+                all = true,
+                cfg.aclQueries(user, now).map { aclQuery ->
+                    QuerySql.of {
+                        sql(
+                            """
+SELECT acl.child_id AS id, acl.role, acl.unit_id
+FROM (${subquery(aclQuery)}) acl
+"""
+                        )
+                    }
+                }
             )
         }
 
     fun inPlacementUnitOfChildOfChildDailyNote(
         cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
     ) =
-        ruleViaChildAcl<ChildDailyNoteId>(cfg) {
+        ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
             sql("""
 SELECT child_daily_note.id, child_id
 FROM child_daily_note
 """)
         }
 
-    fun inPlacementUnitOfChildOfChildStickyNote() =
-        rule<ChildStickyNoteId> { user, now ->
-            sql(
-                """
-SELECT csn.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfChildStickyNote(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<ChildStickyNoteId>(cfg) { _, _ ->
+            sql("""
+SELECT csn.id, child_id
 FROM child_sticky_note csn
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
-    fun inPlacementUnitOfChildOfChildImage() =
-        rule<ChildImageId> { user, now ->
-            sql(
-                """
-SELECT img.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfChildImage(cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()) =
+        ruleViaChildAcl<ChildImageId>(cfg) { _, _ ->
+            sql("""
+SELECT img.id, child_id
 FROM child_images img
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
     fun inPlacementUnitOfChildOfDecision() =
@@ -676,27 +681,25 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfPedagogicalDocument() =
-        rule<PedagogicalDocumentId> { user, now ->
-            sql(
-                """
-SELECT pd.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfPedagogicalDocument(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<PedagogicalDocumentId>(cfg) { _, _ ->
+            sql("""
+SELECT pd.id, child_id
 FROM pedagogical_document pd
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
-    fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment() =
-        rule<AttachmentId> { user, now ->
+    fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<AttachmentId>(cfg) { _, _ ->
             sql(
                 """
-SELECT attachment.id, role, acl.daycare_id AS unit_id
+SELECT attachment.id, pd.child_id
 FROM attachment
 JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
             """
             )
         }
@@ -752,15 +755,15 @@ WHERE employee_id = ${bind(user.id)}
     fun inPlacementUnitOfChildOfChildDocument(
         editable: Boolean = false,
         deletable: Boolean = false,
-        publishable: Boolean = false
+        publishable: Boolean = false,
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
     ) =
-        rule<ChildDocumentId> { user, now ->
+        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
                 """
-SELECT child_document.id AS id, role, acl.daycare_id AS unit_id
+SELECT child_document.id AS id, child_id
 FROM child_document
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
+WHERE TRUE
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
@@ -768,16 +771,17 @@ ${if (publishable) "AND status <> 'COMPLETED'" else ""}
             )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument() =
-        rule<ChildDocumentId> { user, now ->
+    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
                 """
-SELECT child_document.id AS id, role, acl.daycare_id AS unit_id
+SELECT child_document.id AS id, person.duplicate_of AS child_id
 FROM child_document
 JOIN document_template ON document_template.id = child_document.template_id
 JOIN person ON person.id = child_document.child_id
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
-WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
+WHERE document_template.type = 'HOJKS'
             """
             )
         }
@@ -785,23 +789,24 @@ WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
     fun inPlacementUnitOfChildOfVasuDocument(
         cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
     ) =
-        ruleViaChildAcl<VasuDocumentId>(cfg) {
+        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
             sql("""
 SELECT curriculum_document.id, child_id
 FROM curriculum_document
 """)
         }
 
-    fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument() =
-        rule<VasuDocumentId> { user, now ->
+    fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
             sql(
                 """
-SELECT cd.id AS id, role, acl.daycare_id AS unit_id
+SELECT cd.id AS id, person.id AS child_id
 FROM curriculum_document cd
 JOIN curriculum_template ct ON ct.id = cd.template_id
 JOIN person ON person.duplicate_of = cd.child_id
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.id
-WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
+WHERE ct.type = 'DAYCARE' AND cd.created = (
     SELECT max(curriculum_document.created)
     FROM curriculum_document
     JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
@@ -811,41 +816,40 @@ WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
             )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument() =
-        rule<VasuDocumentId> { user, now ->
+    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
             sql(
                 """
-SELECT curriculum_document.id AS id, role, acl.daycare_id AS unit_id
+SELECT curriculum_document.id AS id, person.duplicate_of AS child_id
 FROM curriculum_document
 JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
 JOIN person ON person.id = curriculum_document.child_id
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
-WHERE employee_id = ${bind(user.id)} AND curriculum_template.type = 'PRESCHOOL'
+WHERE curriculum_template.type = 'PRESCHOOL'
             """
             )
         }
 
-    fun inPlacementUnitOfChildOfDailyServiceTime() =
-        rule<DailyServiceTimesId> { user, now ->
-            sql(
-                """
-SELECT dst.id, role, acl.daycare_id AS unit_id
+    fun inPlacementUnitOfChildOfDailyServiceTime(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<DailyServiceTimesId>(cfg) { _, _ ->
+            sql("""
+SELECT dst.id, child_id
 FROM daily_service_time dst
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-            """
-            )
+            """)
         }
 
-    fun inPlacementUnitOfChildOfFutureDailyServiceTime() =
-        rule<DailyServiceTimesId> { user, now ->
+    fun inPlacementUnitOfChildOfFutureDailyServiceTime(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
+        ruleViaChildAcl<DailyServiceTimesId>(cfg) { _, now ->
             sql(
                 """
-SELECT dst.id, role, acl.daycare_id AS unit_id
+SELECT dst.id, child_id
 FROM daily_service_time dst
-JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
-WHERE employee_id = ${bind(user.id)}
-  AND lower(dst.validity_period) > ${bind(now.toLocalDate())}
+WHERE lower(dst.validity_period) > ${bind(now.toLocalDate())}
             """
             )
         }
@@ -950,19 +954,28 @@ AND attachment.type = 'EXTENDED_CARE'
             )
         }
 
-    fun inPlacementUnitOfChildWithServiceVoucherPlacement() =
+    fun inPlacementUnitOfChildWithServiceVoucherPlacement(
+        cfg: EmployeeChildAclConfig = EmployeeChildAclConfig()
+    ) =
         rule<ChildId> { user, now ->
-            sql(
-                """
-SELECT child_id AS id, role, acl.daycare_id AS unit_id
-FROM employee_child_daycare_acl(${bind(now.toLocalDate())}) acl
-WHERE employee_id = ${bind(user.id)} AND EXISTS(
+            union(
+                all = true,
+                cfg.aclQueries(user, now).map { aclQuery ->
+                    QuerySql.of {
+                        sql(
+                            """
+SELECT acl.child_id AS id, acl.role, acl.unit_id
+FROM (${subquery(aclQuery)}) acl
+WHERE EXISTS (
     SELECT 1 FROM placement p
     JOIN daycare pd ON pd.id = p.unit_id
     WHERE p.child_id = acl.child_id
       AND pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 )
-            """
+"""
+                        )
+                    }
+                }
             )
         }
 

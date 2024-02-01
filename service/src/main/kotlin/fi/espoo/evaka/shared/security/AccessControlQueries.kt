@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
@@ -21,6 +22,18 @@ data class EmployeeChildAclConfig(
             "At least one access mechanism must be enabled"
         }
     }
+
+    /**
+     * Returns a list of ACL queries based on this configuration.
+     *
+     * The queries return (child_id, unit_id, role) rows for the given user.
+     */
+    fun aclQueries(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) =
+        listOfNotNull(
+            if (this.placement) employeeChildAclViaPlacement(user.id, now) else null,
+            if (this.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
+            if (this.application) employeeChildAclViaApplication(user.id) else null
+        )
 }
 
 fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) =
