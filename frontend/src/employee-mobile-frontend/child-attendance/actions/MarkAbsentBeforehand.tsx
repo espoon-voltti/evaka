@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'

@@ -13,10 +13,8 @@ import React, {
 import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
-import {
-  GroupMonthCalendarDay,
-  StaffAttendanceForDates
-} from 'lib-common/generated/api-types/daycare'
+import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
+import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { formatDecimal, stringToNumber } from 'lib-common/utils/number'

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

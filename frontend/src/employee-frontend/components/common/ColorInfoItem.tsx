@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { absenceColors } from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'

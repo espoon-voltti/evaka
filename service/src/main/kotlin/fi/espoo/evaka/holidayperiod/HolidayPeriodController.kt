@@ -5,7 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.service.deleteAllCitizenEditableAbsencesInRange
+import fi.espoo.evaka.absence.deleteAllCitizenEditableAbsencesInRange
 import fi.espoo.evaka.reservations.deleteAllCitizenReservationsInRange
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser

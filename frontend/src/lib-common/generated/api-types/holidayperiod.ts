@@ -7,7 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
-import { AbsenceType } from './daycare'
+import { AbsenceType } from './absence'
 import { Translatable } from './shared'
 import { UUID } from '../../types'
 

@@ -12,7 +12,7 @@ import { localDateRange } from 'lib-common/form/fields'
 import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import {
   AbsenceRequest,
   ReservationChild,

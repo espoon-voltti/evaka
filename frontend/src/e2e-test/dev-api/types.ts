@@ -6,6 +6,10 @@ import { IncomeEffect, IncomeValue } from 'lib-common/api-types/income'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/absence'
+import {
   ApplicationForm,
   ApplicationOrigin,
   ApplicationStatus,
@@ -17,11 +21,7 @@ import {
 } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
-import {
-  AbsenceCategory,
-  AbsenceType,
-  Language
-} from 'lib-common/generated/api-types/daycare'
+import { Language } from 'lib-common/generated/api-types/daycare'
 import {
   DecisionStatus,
   DecisionType

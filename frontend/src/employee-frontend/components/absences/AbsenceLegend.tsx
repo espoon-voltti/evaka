@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'

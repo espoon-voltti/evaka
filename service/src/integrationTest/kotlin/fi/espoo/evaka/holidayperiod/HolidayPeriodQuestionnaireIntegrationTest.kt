@@ -5,7 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Translatable
 import java.time.LocalDate

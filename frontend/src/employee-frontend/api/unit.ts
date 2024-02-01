@@ -11,13 +11,13 @@ import {
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
+import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import {
   ApplicationUnitSummary,
   UnitApplications
 } from 'lib-common/generated/api-types/application'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
-  AbsenceCategory,
   AclUpdate,
   CreateDaycareResponse,
   CreateGroupRequest,

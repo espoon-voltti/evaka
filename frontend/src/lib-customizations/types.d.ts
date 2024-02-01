@@ -5,16 +5,14 @@
 import 'react'
 import type { LatLngExpression } from 'leaflet'
 
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
   PreschoolAssistanceLevel
 } from 'lib-common/generated/api-types/assistance'
-import {
-  AbsenceType,
-  ProviderType
-} from 'lib-common/generated/api-types/daycare'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import {
   PlacementPlanRejectReason,

@@ -8,12 +8,12 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { isValidTime } from 'lib-common/date'
+import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import {
   AttendanceChild,
   AttendanceTimes,
   ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
-import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'

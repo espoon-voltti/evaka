@@ -6,8 +6,8 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.LocalTimeRange
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.children.Group
-import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser

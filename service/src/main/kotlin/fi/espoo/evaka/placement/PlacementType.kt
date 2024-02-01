@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
-import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import java.time.LocalDate
 

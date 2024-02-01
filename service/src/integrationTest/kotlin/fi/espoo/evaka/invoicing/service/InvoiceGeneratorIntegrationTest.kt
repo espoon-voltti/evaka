@@ -6,10 +6,10 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.AbsenceUpsert
-import fi.espoo.evaka.daycare.service.insertAbsences
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.AbsenceUpsert
+import fi.espoo.evaka.absence.insertAbsences
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture

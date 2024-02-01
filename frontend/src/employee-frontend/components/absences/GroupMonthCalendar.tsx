@@ -16,7 +16,7 @@ import { useBoolean } from 'lib-common/form/hooks'
 import {
   AbsenceCategory,
   GroupMonthCalendar
-} from 'lib-common/generated/api-types/daycare'
+} from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'

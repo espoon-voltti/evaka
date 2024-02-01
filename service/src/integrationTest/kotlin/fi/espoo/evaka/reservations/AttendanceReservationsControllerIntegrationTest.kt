@@ -5,14 +5,14 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.assistance.AssistanceFactorUpdate
 import fi.espoo.evaka.assistance.insertAssistanceFactor
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType

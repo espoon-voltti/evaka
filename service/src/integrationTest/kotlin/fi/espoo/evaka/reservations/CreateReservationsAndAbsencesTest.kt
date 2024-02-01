@@ -5,13 +5,13 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.FullDayAbsenseUpsert
+import fi.espoo.evaka.absence.getAbsencesOfChildByRange
+import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
-import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
-import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.pis.service.insertGuardian

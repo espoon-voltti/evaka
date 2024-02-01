@@ -5,9 +5,9 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.FullDayAbsenseUpsert
-import fi.espoo.evaka.daycare.service.upsertFullDayAbsences
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.FullDayAbsenseUpsert
+import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser

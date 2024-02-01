@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
+import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

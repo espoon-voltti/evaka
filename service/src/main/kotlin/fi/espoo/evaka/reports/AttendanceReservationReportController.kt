@@ -6,10 +6,10 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId

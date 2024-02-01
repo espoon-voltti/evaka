@@ -5,7 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.dev.insertTestAbsence

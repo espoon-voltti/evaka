@@ -28,7 +28,7 @@ import {
   useFormUnion
 } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
-import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { Absence, AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   ConfirmedRangeDate,

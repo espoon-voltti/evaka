@@ -8,17 +8,17 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  Absence,
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/absence'
+import {
   AbsenceRangeRequest,
   AttendanceChild,
   ChildAttendanceStatusResponse,
   DepartureRequest,
   ExpectedAbsencesOnDepartureRequest
 } from 'lib-common/generated/api-types/attendance'
-import {
-  Absence,
-  AbsenceCategory,
-  AbsenceType
-} from 'lib-common/generated/api-types/daycare'
 import {
   ConfirmedRangeDateUpdate,
   DailyChildReservationResult,

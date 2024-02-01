@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.daycare.service
+package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.allWeekOpTimes

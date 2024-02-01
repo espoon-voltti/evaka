@@ -6,11 +6,11 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
 import fi.espoo.evaka.attendance.upsertOccupancyCoefficient
 import fi.espoo.evaka.daycare.removeDaycareAclForRole
-import fi.espoo.evaka.daycare.service.getDaycareIdByGroup
 import fi.espoo.evaka.messaging.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee

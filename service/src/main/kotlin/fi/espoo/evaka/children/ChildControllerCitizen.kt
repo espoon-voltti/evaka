@@ -5,11 +5,11 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.placement.getPlacementSummary
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
