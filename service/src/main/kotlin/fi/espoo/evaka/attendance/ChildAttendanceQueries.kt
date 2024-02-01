@@ -11,10 +11,12 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -49,29 +51,28 @@ fun Database.Transaction.insertAttendance(
         .exactlyOne<ChildAttendanceId>()
 }
 
-fun Database.Read.getChildAttendance(
+fun Database.Read.getChildAttendanceId(
     childId: ChildId,
     unitId: DaycareId,
     now: HelsinkiDateTime
-): ChildAttendance? {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, unit_id, (date + start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived, (date + end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
+): ChildAttendanceId? {
+    return createQuery<Any> {
+            sql(
+                """
+        SELECT id
         FROM child_attendance
         WHERE child_id = :childId AND unit_id = :unitId
         AND (end_time IS NULL OR (date = :date AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND :departedThreshold < end_time))))
         ORDER BY date, start_time DESC
         LIMIT 1
-        """
-            .trimIndent()
-
-    return createQuery(sql)
+"""
+            )
+        }
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", now.toLocalDate())
         .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
-        .exactlyOneOrNull<ChildAttendance>()
+        .exactlyOneOrNull()
 }
 
 fun Database.Read.getCompletedChildAttendanceTimes(
@@ -463,3 +464,37 @@ fun Database.Read.childrenHaveAttendanceInRange(
         }
         .exactlyOne()
 }
+
+fun Database.Read.getChildAttendances(
+    where: Predicate<DatabaseTable.ChildAttendance>
+): List<ChildAttendanceRow> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT child_id, unit_id, date, start_time, end_time
+FROM child_attendance ca
+WHERE ${predicate(where.forTable("ca"))}
+"""
+            )
+        }
+        .toList()
+
+fun Database.Read.getChildAttendancesCitizen(
+    today: LocalDate,
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<ChildAttendanceRow> =
+    getChildAttendances(
+        Predicate {
+            where(
+                """
+between_start_and_end(${bind(range)}, $it.date) AND
+$it.child_id IN (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
+)
+"""
+            )
+        }
+    )

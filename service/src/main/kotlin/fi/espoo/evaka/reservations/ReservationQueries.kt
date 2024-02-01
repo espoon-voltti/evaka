@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -262,64 +261,6 @@ $it.child_id = ANY (
             )
         }
     )
-
-data class DailyReservationData(val date: LocalDate, @Json val children: List<ChildDailyData>)
-
-@Json data class ChildDailyData(val childId: ChildId, val attendances: List<OpenTimeRange>)
-
-fun Database.Read.getAttendancesCitizen(
-    today: LocalDate,
-    userId: PersonId,
-    range: FiniteDateRange,
-): List<DailyReservationData> {
-    if (range.durationInDays() > 450) throw BadRequest("Range too long")
-
-    return createQuery(
-            """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
-    UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
-)
-SELECT
-    t::date AS date,
-    coalesce(
-        jsonb_agg(
-            jsonb_build_object(
-                'childId', c.child_id,
-                'attendances', coalesce(ca.attendances, '[]')
-            )
-        ) FILTER (
-            WHERE ca.attendances IS NOT NULL
-              AND EXISTS(
-                SELECT 1 FROM placement p
-                JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-                WHERE c.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
-              )
-        ),
-        '[]'
-    ) AS children
-FROM generate_series(:start, :end, '1 day') t, children c
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            jsonb_build_object(
-                'startTime', to_char(ca.start_time, 'HH24:MI'),
-                'endTime', to_char(ca.end_time, 'HH24:MI')
-            ) ORDER BY ca.start_time ASC
-        ) AS attendances
-    FROM child_attendance ca WHERE ca.child_id = c.child_id AND ca.date = t::date
-) ca ON true
-GROUP BY date
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .bind("start", range.start)
-        .bind("end", range.end)
-        .toList<DailyReservationData>()
-}
 
 data class ReservationChild(
     val id: ChildId,

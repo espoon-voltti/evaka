@@ -17,6 +17,7 @@ import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.getAbsencesCitizen
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
+import fi.espoo.evaka.attendance.getChildAttendancesCitizen
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
@@ -101,15 +102,12 @@ class ReservationControllerCitizen(
                             .mapValues { (_, reservations) ->
                                 reservations.map { ReservationResponse.from(it) }
                             }
-                    val attendanceData =
-                        tx.getAttendancesCitizen(clock.today(), user.id, requestedRange)
                     val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
-                        attendanceData
-                            .flatMap { d ->
-                                d.children.map { c -> Pair(Pair(c.childId, d.date), c.attendances) }
+                        tx.getChildAttendancesCitizen(clock.today(), user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, attendances) ->
+                                attendances.map { OpenTimeRange(it.startTime, it.endTime) }
                             }
-                            .toMap()
-
                     val reservableRange =
                         getReservableRange(
                             clock.now(),

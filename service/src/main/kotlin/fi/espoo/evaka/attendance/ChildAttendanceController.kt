@@ -411,8 +411,8 @@ class ChildAttendanceController(
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                tx.getChildAttendance(childId, unitId, clock.now())?.let { attendance ->
-                    tx.unsetAttendanceEndTime(attendance.id)
+                tx.getChildAttendanceId(childId, unitId, clock.now())?.also {
+                    tx.unsetAttendanceEndTime(it)
                 }
             }
         }
@@ -444,7 +444,7 @@ class ChildAttendanceController(
                 )
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                val attendance = tx.getChildAttendance(childId, unitId, clock.now())
+                val attendance = tx.getChildAttendanceId(childId, unitId, clock.now())
                 if (attendance != null) {
                     throw Conflict("Cannot add full day absence, child already has attendance")
                 }
