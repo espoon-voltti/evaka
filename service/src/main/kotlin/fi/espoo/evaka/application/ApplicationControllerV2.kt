@@ -32,9 +32,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -118,7 +116,6 @@ enum class VoucherApplicationFilter {
 @RestController
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
-    private val acl: AccessControlList,
     private val accessControl: AccessControl,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
@@ -222,19 +219,6 @@ class ApplicationControllerV2(
         if (body.pageSize != null && body.pageSize > maxPageSize)
             throw BadRequest("Maximum page size is $maxPageSize")
 
-        // TODO: convert to new action model
-        val authorizedUnitsForApplicationsWithAssistanceNeed =
-            acl.getAuthorizedUnits(user = user, roles = setOf(UserRole.SPECIAL_EDUCATION_TEACHER))
-        val authorizedUnitsForApplicationsWithoutAssistanceNeed =
-            acl.getAuthorizedUnits(user = user, roles = setOf(UserRole.SERVICE_WORKER))
-
-        if (
-            authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() &&
-                authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()
-        ) {
-            throw Forbidden("application search not allowed for any unit")
-        }
-
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val canReadServiceWorkerNotes =
@@ -244,6 +228,25 @@ class ApplicationControllerV2(
                             clock,
                             Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES
                         )
+
+                    val readWithoutAssistanceNeed =
+                        accessControl.getAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Application.READ
+                        )
+                    val readWithAssistanceNeed =
+                        accessControl.getAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Application.READ_IF_HAS_ASSISTANCE_NEED
+                        )
+
+                    if (readWithoutAssistanceNeed == null && readWithAssistanceNeed == null) {
+                        throw Forbidden()
+                    }
 
                     tx.fetchApplicationSummaries(
                         today = clock.today(),
@@ -278,10 +281,8 @@ class ApplicationControllerV2(
                         transferApplications =
                             body.transferApplications ?: TransferApplicationFilter.ALL,
                         voucherApplications = body.voucherApplications,
-                        authorizedUnitsForApplicationsWithoutAssistanceNeed =
-                            authorizedUnitsForApplicationsWithoutAssistanceNeed,
-                        authorizedUnitsForApplicationsWithAssistanceNeed =
-                            authorizedUnitsForApplicationsWithAssistanceNeed,
+                        readWithoutAssistanceNeed = readWithoutAssistanceNeed,
+                        readWithAssistanceNeed = readWithAssistanceNeed,
                         canReadServiceWorkerNotes = canReadServiceWorkerNotes
                     )
                 }

@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.Row
@@ -179,10 +178,18 @@ fun Database.Read.fetchApplicationSummaries(
     searchTerms: String = "",
     transferApplications: TransferApplicationFilter,
     voucherApplications: VoucherApplicationFilter?,
-    authorizedUnitsForApplicationsWithoutAssistanceNeed: AclAuthorization,
-    authorizedUnitsForApplicationsWithAssistanceNeed: AclAuthorization,
+    readWithAssistanceNeed: AccessControlFilter<ApplicationId>?,
+    readWithoutAssistanceNeed: AccessControlFilter<ApplicationId>?,
     canReadServiceWorkerNotes: Boolean
 ): PagedApplicationSummaries {
+    val assistanceNeeded = { value: Boolean ->
+        PredicateSql {
+            where(
+                "(a.document->'careDetails'->>'assistanceNeeded')::boolean = $value" // intentionally inlined parameter
+            )
+        }
+    }
+
     val predicates =
         PredicateSql.allNotNull(
             PredicateSql { where("a.status = ANY(${bind(statuses)})") },
@@ -320,20 +327,12 @@ fun Database.Read.fetchApplicationSummaries(
                 PredicateSql { where("pu.preferredUnits && ${bind(units)}") }
             else if (units.isNotEmpty()) PredicateSql { where("d.id = ANY(${bind(units)})") }
             else null,
-            if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All)
-                PredicateSql {
-                    where(
-                        "((a.document->'careDetails'->>'assistanceNeeded')::boolean = true OR pu.preferredUnits && ${bind(authorizedUnitsForApplicationsWithoutAssistanceNeed.ids)})"
-                    )
-                }
-            else null,
-            if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All)
-                PredicateSql {
-                    where(
-                        "((a.document->'careDetails'->>'assistanceNeeded')::boolean = false OR pu.preferredUnits && ${bind(authorizedUnitsForApplicationsWithAssistanceNeed.ids)})"
-                    )
-                }
-            else null,
+            PredicateSql.any(
+                assistanceNeeded(true)
+                    .and(readWithAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse()),
+                assistanceNeeded(false)
+                    .and(readWithoutAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse()),
+            ),
             if (
                 (periodStart != null || periodEnd != null) &&
                     dateType.contains(ApplicationDateType.DUE)

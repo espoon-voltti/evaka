@@ -12,7 +12,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -20,6 +19,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDefaultDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -90,8 +90,8 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                     periodEnd = null,
                     transferApplications = TransferApplicationFilter.ALL,
                     voucherApplications = null,
-                    authorizedUnitsForApplicationsWithAssistanceNeed = AclAuthorization.All,
-                    authorizedUnitsForApplicationsWithoutAssistanceNeed = AclAuthorization.All,
+                    readWithAssistanceNeed = AccessControlFilter.PermitAll,
+                    readWithoutAssistanceNeed = AccessControlFilter.PermitAll,
                     canReadServiceWorkerNotes = true
                 )
             }
