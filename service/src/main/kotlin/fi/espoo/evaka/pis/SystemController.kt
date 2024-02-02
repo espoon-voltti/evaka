@@ -185,9 +185,9 @@ class SystemController(
                                     ),
                                 finance =
                                     permittedGlobalActions.contains(Action.Global.FINANCE_PAGE),
-                                holidayPeriods =
+                                holidayAndTermPeriods =
                                     permittedGlobalActions.contains(
-                                        Action.Global.HOLIDAY_PERIODS_PAGE
+                                        Action.Global.HOLIDAY_AND_TERM_PERIODS_PAGE
                                     ),
                                 messages =
                                     permittedGlobalActions.contains(Action.Global.MESSAGES_PAGE),

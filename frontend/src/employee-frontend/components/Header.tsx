@@ -377,13 +377,13 @@ export default React.memo(function Header() {
                   {i18n.vasuTemplates.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.holidayPeriods && (
+              {user?.accessibleFeatures.holidayAndTermPeriods && (
                 <Link
                   to="/holiday-periods"
                   onClick={closeUserPopup}
                   data-qa="user-popup-holiday-periods"
                 >
-                  {i18n.titles.holidayPeriods}
+                  {i18n.titles.holidayAndTermPeriods}
                 </Link>
               )}
               {user?.accessibleFeatures.settings && (

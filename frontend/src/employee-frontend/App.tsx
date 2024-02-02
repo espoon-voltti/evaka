@@ -857,7 +857,7 @@ export default createBrowserRouter(
         {
           path: '/holiday-periods',
           element: (
-            <EmployeeRoute title="holidayPeriods">
+            <EmployeeRoute title="holidayAndTermPeriods">
               <HolidayPeriodsPage />
             </EmployeeRoute>
           )
@@ -865,7 +865,7 @@ export default createBrowserRouter(
         {
           path: '/holiday-periods/:id',
           element: (
-            <EmployeeRoute title="holidayPeriods">
+            <EmployeeRoute title="holidayAndTermPeriods">
               <HolidayPeriodEditor />
             </EmployeeRoute>
           )
