@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GatewayTester } from '../../shared/test/gateway-tester.js'
-import { csrfCookieName } from '../../shared/middleware/csrf.js'
 import { CitizenUser } from '../../shared/service-client.js'
 import { configFromEnv } from '../../shared/config.js'
+import { AuthStatus } from '../routes/auth-status.js'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
@@ -20,13 +20,14 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
   afterEach(async () => tester.afterEach())
   afterAll(async () => tester?.stop())
 
-  async function setupCsrfToken() {
+  async function setupAntiCsrfToken() {
     tester.nockScope.get(`/system/citizen/${mockUser.id}`).reply(200, mockUser)
-    await tester.client.get('/api/application/auth/status')
+    const response = await tester.client.get('/api/application/auth/status')
+    const authStatus = response.data as AuthStatus
     tester.nockScope.done()
 
-    const csrfToken = await tester.getCookie(csrfCookieName('enduser'))
-    expect(csrfToken).toBeTruthy()
+    expect(authStatus.antiCsrfToken).toBeTruthy()
+    tester.antiCsrfToken = authStatus.antiCsrfToken
   }
 
   it('should fail a POST to a proxied API when there is no CSRF token', async () => {
@@ -46,7 +47,7 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
     expect(res.status).toBe(200)
   })
   it('should pass a POST to a proxied API after CSRF token has been set up by the auth/status endpoint', async () => {
-    await setupCsrfToken()
+    await setupAntiCsrfToken()
 
     tester.nockScope.post('/citizen/applications').reply(200)
     const res = await tester.client.post(
@@ -56,7 +57,7 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
     expect(res.status).toBe(200)
   })
   it('should not check CSRF if a session is not available', async () => {
-    await setupCsrfToken()
+    await setupAntiCsrfToken()
     await tester.expireSession()
 
     const res = await tester.client.post(

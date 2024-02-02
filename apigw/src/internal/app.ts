@@ -14,7 +14,7 @@ import {
   enableDevApi,
   titaniaConfig
 } from '../shared/config.js'
-import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
+import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
 import createSamlRouter from '../shared/routes/saml.js'
@@ -119,13 +119,7 @@ export function internalGwRouter(
 
   router.use(checkMobileEmployeeIdToken(redisClient))
 
-  router.get(
-    '/auth/status',
-    refreshMobileSession,
-    csrf,
-    csrfCookie('employee'),
-    authStatus(sessions)
-  )
+  router.get('/auth/status', refreshMobileSession, authStatus(sessions))
   router.all('/public/*', createProxy())
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })

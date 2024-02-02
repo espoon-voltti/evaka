@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import { CitizenUserResponse } from 'lib-common/generated/api-types/pis'
 import { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
+import { JsonOf } from 'lib-common/json'
 
 import { client } from '../api-client'
 
@@ -18,9 +18,6 @@ export type AuthStatus =
       authLevel: CitizenAuthLevel
     }
 
-export function getAuthStatus(): Promise<Result<AuthStatus>> {
-  return client
-    .get<AuthStatus>('/auth/status')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+export async function getAuthStatus(): Promise<AuthStatus> {
+  return (await client.get<JsonOf<AuthStatus>>('/auth/status')).data
 }

@@ -7,7 +7,7 @@ import express from 'express'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth/index.js'
 import { createSuomiFiStrategy } from './suomi-fi-saml.js'
-import { csrf, csrfCookie } from '../shared/middleware/csrf.js'
+import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { sessionSupport } from '../shared/session.js'
@@ -82,7 +82,7 @@ export function enduserGwRouter(
       defaultPageUrl: '/'
     })
   )
-  router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
+  router.get('/auth/status', authStatus)
   router.use(requireAuthentication)
   router.use(csrf)
   router.use(routes)

@@ -2,10 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getCitizenDetails } from '../../shared/service-client.js'
+import { CitizenUser, getCitizenDetails } from '../../shared/service-client.js'
 import { toRequestHandler } from '../../shared/express.js'
 import { appCommit } from '../../shared/config.js'
 import { EvakaSessionUser } from '../../shared/auth/index.js'
+
+export interface AuthStatus {
+  loggedIn: boolean
+  antiCsrfToken?: string
+  user?: CitizenUser
+  apiVersion: string
+  authLevel?: 'STRONG' | 'WEAK'
+}
 
 const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
   switch (user.userType) {
@@ -19,16 +27,18 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
 }
 
 export default toRequestHandler(async (req, res) => {
+  let status: AuthStatus
   if (req.user && req.user.id) {
     const data = await getCitizenDetails(req, req.user.id)
-    res.status(200).send({
+    status = {
       loggedIn: true,
       antiCsrfToken: req.session.antiCsrfToken,
       user: data,
       apiVersion: appCommit,
       authLevel: getAuthLevel(req.user)
-    })
+    }
   } else {
-    res.status(200).send({ loggedIn: false, apiVersion: appCommit })
+    status = { loggedIn: false, apiVersion: appCommit }
   }
+  res.status(200).send(status)
 })

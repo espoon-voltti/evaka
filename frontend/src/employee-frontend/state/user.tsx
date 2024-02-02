@@ -2,11 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, createContext } from 'react'
+import React, { createContext, useCallback, useMemo } from 'react'
 
+import { setAntiCsrfToken } from 'employee-frontend/api/client'
 import { AdRole, User } from 'lib-common/api-types/employee-auth'
+import { query, useQuery } from 'lib-common/query'
+
+import { getAuthStatus } from '../api/auth'
 
 export interface UserState {
+  loaded: boolean
+  apiVersion: string | undefined
   loggedIn: boolean
   user: User | undefined
   roles: AdRole[]
@@ -14,31 +20,41 @@ export interface UserState {
 }
 
 export const UserContext = createContext<UserState>({
+  loaded: false,
+  apiVersion: undefined,
   loggedIn: false,
   user: undefined,
   roles: [],
   refreshAuthStatus: () => undefined
 })
 
+const authStatusQuery = query({
+  api: () =>
+    getAuthStatus().then((status) => {
+      setAntiCsrfToken(status.antiCsrfToken)
+      return status
+    }),
+  queryKey: () => ['auth-status']
+})
+
 export const UserContextProvider = React.memo(function UserContextProvider({
-  children,
-  user,
-  roles,
-  refreshAuthStatus
+  children
 }: {
   children: React.JSX.Element
-  user: User | undefined
-  roles: AdRole[] | undefined
-  refreshAuthStatus: () => void
 }) {
+  const { data: authStatus, refetch } = useQuery(authStatusQuery())
+  const refreshAuthStatus = useCallback(() => void refetch(), [refetch])
+
   const value = useMemo(
     () => ({
-      loggedIn: !!user,
-      user,
-      roles: (user && roles) ?? [],
+      loaded: !!authStatus,
+      apiVersion: authStatus?.apiVersion,
+      loggedIn: authStatus?.loggedIn ?? false,
+      user: authStatus?.user,
+      roles: authStatus?.roles ?? [],
       refreshAuthStatus
     }),
-    [user, roles, refreshAuthStatus]
+    [authStatus, refreshAuthStatus]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 })

@@ -16,12 +16,12 @@ import { JsonOf } from 'lib-common/json'
 
 import { client } from '../client'
 
-export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {
+export async function getAuthStatus(): Promise<AuthStatus<MobileUser>> {
   return client
     .get<JsonOf<AuthStatus<User | MobileUser>>>('/auth/status')
     .then(({ data: { user, ...status } }) => {
       if (user?.userType === 'MOBILE') {
-        return Success.of({ user, ...status })
+        return { user, ...status }
       } else {
         if (user) {
           Sentry.captureMessage(
@@ -29,10 +29,9 @@ export async function getAuthStatus(): Promise<Result<AuthStatus<MobileUser>>> {
             'error'
           )
         }
-        return Success.of({ ...status, loggedIn: false })
+        return { ...status, loggedIn: false }
       }
     })
-    .catch((e) => Failure.fromError(e))
 }
 
 export function pinLogin(

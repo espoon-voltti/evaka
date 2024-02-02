@@ -4,9 +4,9 @@
 
 import { ErrorRequestHandler } from 'express'
 import { logError } from '../logging.js'
-import { csrfCookieName } from './csrf.js'
 import { InvalidRequest } from '../express.js'
 import { debug } from '../config.js'
+import { InvalidAntiCsrfToken } from './csrf.js'
 
 interface LogResponse {
   message: string | null
@@ -15,20 +15,12 @@ interface LogResponse {
 
 export const errorHandler: (v: boolean) => ErrorRequestHandler =
   (includeErrorMessage: boolean) => (error, req, res, next) => {
-    // https://github.com/expressjs/csurf#custom-error-handling
-    if (error.code === 'EBADCSRFTOKEN') {
-      logError(
-        'CSRF token error',
-        req,
-        {
-          enduserXsrfCookie: req.cookies[csrfCookieName('enduser')],
-          employeeXsrfCookie: req.cookies[csrfCookieName('employee')],
-          xsrfHeader: req.header('x-xsrf-token')
-        },
-        error
-      )
+    if (error instanceof InvalidAntiCsrfToken) {
+      logError('Anti-CSRF token error', req, error)
       if (!res.headersSent) {
-        res.status(403).send({ message: 'CSRF token error' } as LogResponse)
+        res
+          .status(403)
+          .send({ message: 'Anti-CSRF token error' } as LogResponse)
       }
       return
     }

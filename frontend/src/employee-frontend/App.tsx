@@ -4,20 +4,16 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Navigate, createBrowserRouter, Outlet } from 'react-router-dom'
+import React, { useContext } from 'react'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
-import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
-import { idleTracker } from 'lib-common/utils/idleTracker'
 import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 
-import { getAuthStatus } from './api/auth'
-import { client } from './api/client'
 import ApplicationPage from './components/ApplicationPage'
 import ChildInformation from './components/ChildInformation'
 import EmployeeRoute from './components/EmployeeRoute'
@@ -107,7 +103,7 @@ import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
-import { QueryClientProvider, queryClient } from './query'
+import { queryClient, QueryClientProvider } from './query'
 import StateProvider from './state/StateProvider'
 import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
@@ -116,11 +112,6 @@ import { hasRole } from './utils/roles'
 
 function App() {
   const { i18n } = useTranslation()
-  const { authStatus, refreshAuthStatus } = useAuthStatus()
-
-  if (authStatus === undefined) {
-    return null
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -132,22 +123,9 @@ function App() {
                 <ErrorPage basePath="/employee" labels={i18n.errorPage} />
               )}
             >
-              <UserContextProvider
-                user={authStatus.user}
-                roles={authStatus.roles}
-                refreshAuthStatus={refreshAuthStatus}
-              >
+              <UserContextProvider>
                 <StateProvider>
-                  <Header />
-                  <Notifications apiVersion={authStatus.apiVersion} />
-
-                  {/* the matched route element will be inserted at <Outlet /> */}
-                  <Outlet />
-
-                  <Footer />
-                  <ErrorMessage />
-                  <LoginErrorModal />
-                  <PairingModal />
+                  <Content />
                 </StateProvider>
               </UserContextProvider>
             </ErrorBoundary>
@@ -157,6 +135,27 @@ function App() {
     </QueryClientProvider>
   )
 }
+
+const Content = React.memo(function Content() {
+  const { apiVersion, loaded } = useContext(UserContext)
+
+  if (!loaded) return null
+
+  return (
+    <>
+      <Header />
+      <Notifications apiVersion={apiVersion} />
+
+      {/* the matched route element will be inserted at <Outlet /> */}
+      <Outlet />
+
+      <Footer />
+      <ErrorMessage />
+      <LoginErrorModal />
+      <PairingModal />
+    </>
+  )
+})
 
 // This implements the default behavior from styled-components v5
 // TODO: Prefix all custom props with $, then remove this
@@ -923,41 +922,6 @@ function RedirectToMainPage() {
     return <Navigate replace to="/welcome" />
   } else {
     return <Navigate replace to="/search" />
-  }
-}
-
-interface AuthStatusWithRefresh {
-  authStatus: AuthStatus<User> | undefined
-  refreshAuthStatus: () => void
-}
-
-function useAuthStatus(): AuthStatusWithRefresh {
-  const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
-
-  const refreshAuthStatus = useCallback(
-    () => getAuthStatus().then(setAuthStatus),
-    []
-  )
-
-  useEffect(() => {
-    void refreshAuthStatus()
-  }, [refreshAuthStatus])
-
-  useEffect(
-    () =>
-      idleTracker(
-        client,
-        () => {
-          void refreshAuthStatus()
-        },
-        { thresholdInMinutes: 20 }
-      ),
-    [refreshAuthStatus]
-  )
-
-  return {
-    authStatus,
-    refreshAuthStatus
   }
 }
 
