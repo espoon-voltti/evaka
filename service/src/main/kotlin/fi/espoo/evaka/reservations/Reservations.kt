@@ -216,7 +216,7 @@ fun createReservationsAndAbsences(
     val holidayPeriods = tx.getHolidayPeriodsInRange(reservationsRange)
 
     val childIds = requests.map { it.childId }.toSet()
-    val placements = tx.getReservationPlacements(childIds, reservationsRange)
+    val placements = tx.getReservationPlacements(childIds, reservationsRange.asDateRange())
     val contractDayRanges = tx.getReservationContractDayRanges(childIds, reservationsRange)
     val childReservationDates =
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)

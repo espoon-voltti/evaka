@@ -262,20 +262,19 @@ $it.child_id = ANY (
         }
     )
 
-data class ReservationChild(
+data class ReservationChildRow(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String,
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
-    val upcomingPlacementType: PlacementType?,
 )
 
 fun Database.Read.getReservationChildren(
     guardianId: PersonId,
     today: LocalDate
-): List<ReservationChild> {
+): List<ReservationChildRow> {
     return createQuery(
             """
 WITH children AS (
@@ -289,13 +288,7 @@ SELECT
     p.last_name,
     p.preferred_name,
     p.duplicate_of,
-    ci.id AS image_id,
-    (
-        SELECT type FROM placement
-        WHERE child_id = p.id AND :today <= end_date
-        ORDER BY start_date
-        LIMIT 1
-    ) AS upcoming_placement_type
+    ci.id AS image_id
 FROM person p
 LEFT JOIN child_images ci ON ci.child_id = p.id
 WHERE p.id = ANY (SELECT child_id FROM children)
@@ -304,7 +297,7 @@ ORDER BY p.date_of_birth, p.duplicate_of
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .toList<ReservationChild>()
+        .toList<ReservationChildRow>()
 }
 
 data class ReservationPlacement(
@@ -334,32 +327,31 @@ data class ReservationPlacementRow(
 
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
-): Map<ChildId, List<ReservationPlacement>> {
-    val sql =
-        """
+    range: DateRange
+): Map<ChildId, List<ReservationPlacement>> =
+    createQuery<Any> {
+            sql(
+                """
 SELECT
     pl.child_id,
-    pl.id as placement_id,
-    daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
+    pl.id AS placement_id,
+    daterange(pl.start_date, pl.end_date, '[]') AS range,
     pl.type,
     u.operation_times,
     sn.shift_care AS shift_care_type,
     sno.daycare_hours_per_month,
-    daterange(sn.start_date, sn.end_date, '[]') * :range AS service_need_range
+    CASE WHEN sn IS NOT NULL THEN daterange(sn.start_date, sn.end_date, '[]') END AS service_need_range
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
-LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
+LEFT JOIN service_need sn ON sn.placement_id = pl.id
 LEFT JOIN service_need_option sno ON sno.id = sn.option_id
 WHERE
-    pl.child_id = ANY (:childIds) AND
-    daterange(pl.start_date, pl.end_date, '[]') && :range AND
+    pl.child_id = ANY (${bind(childIds)}) AND
+    daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-
-    return createQuery(sql)
-        .bind("childIds", childIds)
-        .bind("range", range)
+            )
+        }
         .toList<ReservationPlacementRow>()
         .groupBy { it.placementId }
         .map { (_, rows) ->
@@ -383,7 +375,6 @@ WHERE
             )
         }
         .groupBy { it.childId }
-}
 
 data class ReservationBackupPlacement(
     val childId: ChildId,

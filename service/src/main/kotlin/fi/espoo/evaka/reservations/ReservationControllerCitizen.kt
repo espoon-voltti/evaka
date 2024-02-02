@@ -22,13 +22,17 @@ import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -78,7 +82,12 @@ class ReservationControllerCitizen(
                     val clubTerms = tx.getClubTerms()
                     val children = tx.getReservationChildren(user.id, today)
                     val childIds = children.map { it.id }.toSet()
-                    val placements = tx.getReservationPlacements(childIds, requestedRange)
+                    val placements =
+                        tx.getReservationPlacements(
+                            childIds,
+                            // Include all future placements for upcomingPlacementType computation
+                            DateRange(minOf(today, requestedRange.start), null)
+                        )
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
 
@@ -194,7 +203,10 @@ class ReservationControllerCitizen(
                             .toList()
 
                     ReservationsResponse(
-                        children = children.filter { placements.containsKey(it.id) },
+                        children =
+                            children
+                                .filter { placements.containsKey(it.id) }
+                                .map { ReservationChild.from(it, placements[it.id], today) },
                         days = days,
                         reservableRange = reservableRange
                     )
@@ -404,6 +416,33 @@ data class ReservationsResponse(
     val days: List<ReservationResponseDay>,
     val reservableRange: FiniteDateRange
 )
+
+data class ReservationChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val duplicateOf: PersonId?,
+    val imageId: ChildImageId?,
+    val upcomingPlacementType: PlacementType?,
+) {
+    companion object {
+        fun from(
+            row: ReservationChildRow,
+            placements: List<ReservationPlacement>?,
+            today: LocalDate
+        ) =
+            ReservationChild(
+                id = row.id,
+                firstName = row.firstName,
+                lastName = row.lastName,
+                preferredName = row.preferredName,
+                duplicateOf = row.duplicateOf,
+                imageId = row.imageId,
+                upcomingPlacementType = placements?.find { it.range.end >= today }?.type
+            )
+    }
+}
 
 data class ReservationResponseDay(
     val date: LocalDate,
