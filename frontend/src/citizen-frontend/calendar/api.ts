@@ -67,7 +67,17 @@ export async function getReservations(
               startTime: LocalTime.parseIso(r.startTime),
               endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null
             })),
-            reservations: child.reservations.map(parseReservationDto)
+            reservations: child.reservations.map(parseReservationDto),
+            usedService:
+              child.usedService !== null && child.usedService.type === 'RANGES'
+                ? {
+                    ...child.usedService,
+                    ranges: child.usedService.ranges.map((r) => ({
+                      start: LocalTime.parseIso(r.start),
+                      end: LocalTime.parseIso(r.end)
+                    }))
+                  }
+                : child.usedService
           }))
         })
       ),

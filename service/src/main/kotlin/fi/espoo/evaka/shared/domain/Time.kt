@@ -301,4 +301,17 @@ data class TimeRange(val start: LocalTime, val end: LocalTime) {
     fun toDbString(): String {
         return "(${this.start},${this.end})"
     }
+
+    // The end time is exclusive, e.g. duration of range 08:00-09:00 is 60 minutes instead of 61
+    fun durationInMinutes(): Int {
+        return this.end.hour * 60 + this.end.minute - this.start.hour * 60 - this.start.minute
+    }
+
+    fun intersects(other: TimeRange): Boolean {
+        return this.start < other.end && other.start < this.end
+    }
+
+    fun isAdjacentTo(other: TimeRange): Boolean {
+        return this.end == other.start || other.end == this.start
+    }
 }

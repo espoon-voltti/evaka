@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.math.roundToInt
 
 private fun TimeRange.convertMidnightEndTime() =
     if (this.end == LocalTime.of(0, 0)) {
@@ -150,6 +151,13 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
         }
     }
 
+    fun asTimeRange(): TimeRange? {
+        return when (this) {
+            is NoTimes -> null
+            is Times -> TimeRange(startTime, endTime)
+        }
+    }
+
     companion object {
         fun from(reservationRow: ReservationRow) =
             when (reservationRow.reservation) {
@@ -171,7 +179,9 @@ data class ReservationRow(
     val staffCreated: Boolean
 )
 
-data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?)
+data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) {
+    fun asTimeRange(): TimeRange? = endTime?.let { TimeRange(startTime, it) }
+}
 
 data class CreateReservationsResult(
     val deletedAbsences: List<AbsenceId>,
@@ -525,4 +535,45 @@ private fun Database.Transaction.insertReservation(
             )
         }
         .exactlyOne<AttendanceReservationId>()
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed interface UsedService {
+    val durationInMinutes: Int
+
+    @JsonTypeName("RANGES")
+    data class Ranges(val ranges: List<TimeRange>) : UsedService {
+        override val durationInMinutes: Int
+            get() = ranges.sumOf { it.durationInMinutes() }
+    }
+
+    @JsonTypeName("AVERAGE") data class Average(override val durationInMinutes: Int) : UsedService
+
+    companion object {
+        fun compute(
+            serviceNeedHours: Int,
+            reservations: List<TimeRange>,
+            attendances: List<TimeRange>
+        ): UsedService {
+            if (reservations.isEmpty() && attendances.isEmpty()) {
+                val daysInMonth = 21
+                return Average((serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt())
+            }
+
+            val result = mutableListOf<TimeRange>()
+            (reservations + attendances)
+                .sortedBy { it.start }
+                .forEach {
+                    val last = result.lastOrNull()
+                    if (last == null || (!it.intersects(last) && !it.isAdjacentTo(last))) {
+                        result.add(it)
+                    } else {
+                        result[result.lastIndex] =
+                            TimeRange(minOf(it.start, last.start), maxOf(it.end, last.end))
+                    }
+                }
+
+            return Ranges(result)
+        }
+    }
 }

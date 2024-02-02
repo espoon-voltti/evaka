@@ -315,7 +315,11 @@ data class ReservationPlacement(
     val serviceNeeds: List<ReservationServiceNeed>
 )
 
-data class ReservationServiceNeed(val range: FiniteDateRange, val shiftCareType: ShiftCareType)
+data class ReservationServiceNeed(
+    val range: FiniteDateRange,
+    val shiftCareType: ShiftCareType,
+    val daycareHoursPerMonth: Int?
+)
 
 data class ReservationPlacementRow(
     val childId: ChildId,
@@ -323,8 +327,9 @@ data class ReservationPlacementRow(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
-    val serviceNeedRange: FiniteDateRange?,
     val shiftCareType: ShiftCareType?,
+    val daycareHoursPerMonth: Int?,
+    val serviceNeedRange: FiniteDateRange?,
 )
 
 fun Database.Read.getReservationPlacements(
@@ -339,11 +344,13 @@ SELECT
     daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
     pl.type,
     u.operation_times,
-    sn.shift_care as shift_care_type,
+    sn.shift_care AS shift_care_type,
+    sno.daycare_hours_per_month,
     daterange(sn.start_date, sn.end_date, '[]') * :range AS service_need_range
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
 LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
+LEFT JOIN service_need_option sno ON sno.id = sn.option_id
 WHERE
     pl.child_id = ANY (:childIds) AND
     daterange(pl.start_date, pl.end_date, '[]') && :range AND
@@ -368,7 +375,8 @@ WHERE
                             else
                                 ReservationServiceNeed(
                                     range = it.serviceNeedRange,
-                                    shiftCareType = it.shiftCareType
+                                    shiftCareType = it.shiftCareType,
+                                    daycareHoursPerMonth = it.daycareHoursPerMonth
                                 )
                         }
                         .toList()

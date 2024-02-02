@@ -667,6 +667,31 @@ val snDaycareContractDays10 =
         active = true
     )
 
+val snDaycareHours120 =
+    ServiceNeedOption(
+        id = ServiceNeedOptionId(UUID.randomUUID()),
+        nameFi = "Päivähoito 120 h/kk",
+        nameSv = "Päivähoito 120 h/kk",
+        nameEn = "Päivähoito 120 h/kk",
+        validPlacementType = PlacementType.DAYCARE,
+        defaultOption = false,
+        feeCoefficient = BigDecimal("0.7"),
+        occupancyCoefficient = BigDecimal("0.8"),
+        occupancyCoefficientUnder3y = BigDecimal("1.22"),
+        realizedOccupancyCoefficient = BigDecimal("1.25"),
+        realizedOccupancyCoefficientUnder3y = BigDecimal("1.25"),
+        daycareHoursPerWeek = 20,
+        contractDaysPerMonth = null,
+        daycareHoursPerMonth = 120,
+        partDay = false,
+        partWeek = true,
+        feeDescriptionFi = "",
+        feeDescriptionSv = "",
+        voucherValueDescriptionFi = "",
+        voucherValueDescriptionSv = "",
+        active = true
+    )
+
 val snDefaultSchoolShiftcare =
     ServiceNeedOption(
         id = ServiceNeedOptionId(UUID.randomUUID()),

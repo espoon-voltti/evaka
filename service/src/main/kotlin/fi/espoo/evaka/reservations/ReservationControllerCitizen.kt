@@ -63,6 +63,7 @@ class ReservationControllerCitizen(
                 throw BadRequest("Invalid date range $from - $to")
             }
 
+        val today = clock.today()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -75,14 +76,14 @@ class ReservationControllerCitizen(
                     val holidays = tx.getHolidays(requestedRange)
                     val preschoolTerms = tx.getPreschoolTerms()
                     val clubTerms = tx.getClubTerms()
-                    val children = tx.getReservationChildren(user.id, clock.today())
+                    val children = tx.getReservationChildren(user.id, today)
                     val childIds = children.map { it.id }.toSet()
                     val placements = tx.getReservationPlacements(childIds, requestedRange)
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
 
                     val absences: Map<Pair<ChildId, LocalDate>, AbsenceInfo> =
-                        tx.getAbsencesCitizen(clock.today(), user.id, requestedRange)
+                        tx.getAbsencesCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, absences) ->
                                 // Show at most one absence per child per day. Taking the
@@ -97,13 +98,13 @@ class ReservationControllerCitizen(
                                 AbsenceInfo(absence.absenceType, absence.editableByCitizen())
                             }
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
-                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
+                        tx.getReservationsCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, reservations) ->
                                 reservations.map { ReservationResponse.from(it) }
                             }
                     val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
-                        tx.getChildAttendancesCitizen(clock.today(), user.id, requestedRange)
+                        tx.getChildAttendancesCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, attendances) ->
                                 attendances.map { OpenTimeRange(it.startTime, it.endTime) }
@@ -145,16 +146,43 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
+                                                        val childReservations =
+                                                            reservations[key] ?: listOf()
+                                                        val childAttendances =
+                                                            attendances[key] ?: listOf()
+
+                                                        val isPast = date.isBefore(today)
+                                                        val hasEndedAttendances =
+                                                            childAttendances.any {
+                                                                it.endTime != null
+                                                            }
+                                                        val usedService =
+                                                            placementDay.daycareHoursPerMonth
+                                                                ?.takeIf {
+                                                                    isPast || hasEndedAttendances
+                                                                }
+                                                                ?.let { daycareHoursPerMonth ->
+                                                                    UsedService.compute(
+                                                                        daycareHoursPerMonth,
+                                                                        childReservations
+                                                                            .mapNotNull {
+                                                                                it.asTimeRange()
+                                                                            },
+                                                                        childAttendances
+                                                                            .mapNotNull {
+                                                                                it.asTimeRange()
+                                                                            }
+                                                                    )
+                                                                }
                                                         ReservationResponseDayChild(
                                                             childId = child.id,
                                                             scheduleType =
                                                                 placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
                                                             absence = absences[key],
-                                                            reservations =
-                                                                reservations[key] ?: listOf(),
-                                                            attendances =
-                                                                attendances[key] ?: listOf(),
+                                                            reservations = childReservations,
+                                                            attendances = childAttendances,
+                                                            usedService = usedService,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange
                                                         )
@@ -324,6 +352,7 @@ class ReservationControllerCitizen(
 data class PlacementDay(
     val scheduleType: ScheduleType,
     val shiftCare: Boolean,
+    val daycareHoursPerMonth: Int?,
     val reservableTimeRange: ReservableTimeRange
 )
 
@@ -357,6 +386,7 @@ private fun placementDay(
         PlacementDay(
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             shiftCare = shiftCare,
+            daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =
                 if (shiftCareType == ShiftCareType.INTERMITTENT) {
                     ReservableTimeRange.IntermittentShiftCare(operationTime)
@@ -388,6 +418,7 @@ data class ReservationResponseDayChild(
     val absence: AbsenceInfo?,
     val reservations: List<ReservationResponse>,
     val attendances: List<OpenTimeRange>,
+    val usedService: UsedService?,
     val reservableTimeRange: ReservableTimeRange
 )
 

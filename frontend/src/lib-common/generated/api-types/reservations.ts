@@ -342,6 +342,7 @@ export interface ReservationResponseDayChild {
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
   shiftCare: boolean
+  usedService: UsedService | null
 }
 
 /**
@@ -371,3 +372,28 @@ export interface UnitDateInfo {
   isInHolidayPeriod: boolean
   time: TimeRange | null
 }
+
+export namespace UsedService {
+  /**
+  * Generated from fi.espoo.evaka.reservations.UsedService.Average
+  */
+  export interface Average {
+    type: 'AVERAGE'
+    durationInMinutes: number
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.UsedService.Ranges
+  */
+  export interface Ranges {
+    type: 'RANGES'
+    durationInMinutes: number
+    ranges: TimeRange[]
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UsedService
+*/
+export type UsedService = UsedService.Average | UsedService.Ranges
+
