@@ -4,6 +4,7 @@
 
 import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
+  DatePicker,
   DatePickerDeprecated,
   Element,
   Modal,
@@ -36,7 +37,7 @@ export class UnitGroupsPage {
   }
 
   async setFilterStartDate(date: string) {
-    await new DatePickerDeprecated(
+    await new DatePicker(
       this.page.find('[data-qa="unit-filter-start-date"]')
     ).fill(date)
     await this.waitUntilLoaded()

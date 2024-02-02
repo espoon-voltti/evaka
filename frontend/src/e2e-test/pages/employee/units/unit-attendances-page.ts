@@ -12,7 +12,6 @@ import {
   AsyncButton,
   Checkbox,
   DatePicker,
-  DatePickerDeprecated,
   Element,
   Modal,
   Page,
@@ -193,7 +192,7 @@ export class UnitAttendancesSection {
   }
 
   async setFilterStartDate(date: LocalDate) {
-    await new DatePickerDeprecated(
+    await new DatePicker(
       this.page.find('[data-qa="unit-filter-start-date"]')
     ).fill(date.format())
     await this.waitUntilLoaded()
