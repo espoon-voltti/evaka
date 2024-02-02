@@ -183,6 +183,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                            monthSummaries = emptyList()
                         ),
                         ReservationChild(
                             id = child2.id,
@@ -192,6 +193,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
+                            monthSummaries = emptyList()
                         ),
                         ReservationChild(
                             id = child3.id,
@@ -201,6 +203,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.PRESCHOOL,
+                            monthSummaries = emptyList()
                         ),
                     ),
                 days =
@@ -353,6 +356,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
+                            monthSummaries = emptyList()
                         ),
                         ReservationChild(
                             id = child2.id,
@@ -362,6 +366,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
+                            monthSummaries = emptyList()
                         ),
                     ),
                 days =
@@ -722,6 +727,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             duplicateOf = null,
                             imageId = null,
                             upcomingPlacementType = PlacementType.DAYCARE,
+                            monthSummaries = emptyList()
                         ),
                     ),
                 days =
@@ -826,6 +832,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     duplicateOf = null,
                     imageId = null,
                     upcomingPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+                    monthSummaries = emptyList()
                 ),
                 ReservationChild(
                     id = child2.id,
@@ -835,6 +842,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     duplicateOf = null,
                     imageId = null,
                     upcomingPlacementType = PlacementType.DAYCARE,
+                    monthSummaries = emptyList()
                 ),
             ),
             res.children

@@ -204,9 +204,9 @@ class ReservationControllerCitizen(
 
                     ReservationsResponse(
                         children =
-                            children
-                                .filter { placements.containsKey(it.id) }
-                                .map { ReservationChild.from(it, placements[it.id], today) },
+                            children.map {
+                                ReservationChild.from(it, days, placements[it.id], today)
+                            },
                         days = days,
                         reservableRange = reservableRange
                     )
@@ -425,24 +425,79 @@ data class ReservationChild(
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
     val upcomingPlacementType: PlacementType?,
+    val monthSummaries: List<MonthSummary>
 ) {
     companion object {
         fun from(
-            row: ReservationChildRow,
+            child: ReservationChildRow,
+            days: List<ReservationResponseDay>,
             placements: List<ReservationPlacement>?,
             today: LocalDate
-        ) =
-            ReservationChild(
-                id = row.id,
-                firstName = row.firstName,
-                lastName = row.lastName,
-                preferredName = row.preferredName,
-                duplicateOf = row.duplicateOf,
-                imageId = row.imageId,
-                upcomingPlacementType = placements?.find { it.range.end >= today }?.type
+        ): ReservationChild {
+            val monthSummaries =
+                days
+                    .mapNotNull { day ->
+                        day.children.find { it.childId == child.id }?.let { day.date to it }
+                    }
+                    .groupBy(
+                        { (date, _) -> date.year to date.monthValue },
+                        { (_, childDay) -> childDay }
+                    )
+                    .mapNotNull { (yearMonth, childDays) ->
+                        val (year, month) = yearMonth
+                        val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
+
+                        // As per how the hour-based service needs are used in practice, there
+                        // should only be just one service need for the child for each month, so
+                        // we'll take the first one
+                        val daycareHoursPerMonth =
+                            placements
+                                ?.find { it.range.overlaps(monthRange) }
+                                ?.serviceNeeds
+                                ?.find { it.daycareHoursPerMonth != null }
+                                ?.daycareHoursPerMonth
+
+                        if (daycareHoursPerMonth == null) {
+                            // Not an hour-based service need, don't generate a summary at all
+                            return@mapNotNull null
+                        }
+
+                        MonthSummary(
+                            year = yearMonth.first,
+                            month = yearMonth.second,
+                            serviceNeedMinutes = daycareHoursPerMonth * 60,
+                            reservedMinutes =
+                                childDays.sumOf { day ->
+                                    day.reservations
+                                        .mapNotNull { it.asTimeRange() }
+                                        .sumOf { it.durationInMinutes() }
+                                },
+                            usedServiceMinutes =
+                                childDays.sumOf { it.usedService?.durationInMinutes ?: 0 }
+                        )
+                    }
+
+            return ReservationChild(
+                id = child.id,
+                firstName = child.firstName,
+                lastName = child.lastName,
+                preferredName = child.preferredName,
+                duplicateOf = child.duplicateOf,
+                imageId = child.imageId,
+                upcomingPlacementType = placements?.find { it.range.end >= today }?.type,
+                monthSummaries = monthSummaries
             )
+        }
     }
 }
+
+data class MonthSummary(
+    val year: Int,
+    val month: Int,
+    val serviceNeedMinutes: Int,
+    val reservedMinutes: Int,
+    val usedServiceMinutes: Int
+)
 
 data class ReservationResponseDay(
     val date: LocalDate,

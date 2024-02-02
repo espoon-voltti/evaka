@@ -200,6 +200,17 @@ export interface GroupReservationStatisticResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.MonthSummary
+*/
+export interface MonthSummary {
+  month: number
+  reservedMinutes: number
+  serviceNeedMinutes: number
+  usedServiceMinutes: number
+  year: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange
 */
 export interface OpenTimeRange {
@@ -273,6 +284,7 @@ export interface ReservationChild {
   id: UUID
   imageId: UUID | null
   lastName: string
+  monthSummaries: MonthSummary[]
   preferredName: string
   upcomingPlacementType: PlacementType | null
 }
