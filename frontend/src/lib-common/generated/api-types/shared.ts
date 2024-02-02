@@ -68,7 +68,7 @@ export interface EmployeeFeatures {
   employees: boolean
   finance: boolean
   financeBasics: boolean
-  holidayPeriods: boolean
+  holidayAndTermPeriods: boolean
   messages: boolean
   personSearch: boolean
   personalMobileDevice: boolean

@@ -29,6 +29,7 @@ export const fi = {
     feeDecisionDraft: 'Maksupäätösluonnos',
     holidayPeriod: 'Loma-aika',
     holidayPeriods: 'Loma-ajat',
+    holidayAndTermPeriods: 'Loma-ajat ja toimintakaudet',
     holidayQuestionnaire: 'Loma-aikakysely',
     groupCaretakers: 'Henkilökunnan tarve ryhmässä',
     incomeStatements: 'Tuloselvitykset',

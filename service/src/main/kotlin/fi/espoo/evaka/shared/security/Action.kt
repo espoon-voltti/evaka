@@ -96,7 +96,7 @@ sealed interface Action {
         EMPLOYEES_PAGE(HasGlobalRole(ADMIN)),
         FINANCE_BASICS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
-        HOLIDAY_PERIODS_PAGE(HasGlobalRole(ADMIN)),
+        HOLIDAY_AND_TERM_PERIODS_PAGE(HasGlobalRole(ADMIN)),
         MESSAGES_PAGE(
             HasGlobalRole(ADMIN, MESSAGING, SERVICE_WORKER),
             HasUnitRole(
