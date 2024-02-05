@@ -25,6 +25,8 @@ export const validPinoAccessLogMessage: PinoAccessLog = {
     id: '6',
     method: 'GET',
     url: '/api/grants/v1/grant-applications?associationId=43a8a9eb-9fff-4a6f-9aa1-6792a3024d74&periodId=a506303b-31e5-42c9-8ce0-7574d383c2a6',
+    params: {},
+    query: {},
     headers: {
       te: 'trailers',
       cookie:
