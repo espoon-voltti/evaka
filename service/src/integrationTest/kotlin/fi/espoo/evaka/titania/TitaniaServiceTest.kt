@@ -38,7 +38,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
             }
-        assertThat(response1).returns("OK") { it.message }
+        assertThat(response1).returns("OK") { it.updateWorkingTimeEventsResponse.message }
         val plans1 = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         assertThat(plans1).extracting<EmployeeId> { it.employeeId }.containsExactly(employeeId)
 
@@ -46,7 +46,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
             }
-        assertThat(response2).returns("OK") { it.message }
+        assertThat(response2).returns("OK") { it.updateWorkingTimeEventsResponse.message }
         val plans2 = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         assertThat(plans2).extracting<EmployeeId> { it.employeeId }.containsExactly(employeeId)
     }
@@ -456,6 +456,8 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val numbers = db.transaction { tx -> tx.getEmployeeIdsByNumbers(listOf("1234")) }
 
         assertThat(numbers).containsOnlyKeys("1234")
+
+        assertThat(response.createdEmployees).containsExactly(employees[0].id)
     }
 
     @Test
