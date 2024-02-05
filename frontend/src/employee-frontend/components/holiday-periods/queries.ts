@@ -18,12 +18,14 @@ import {
   updateFixedPeriodQuestionnaire,
   updateHolidayPeriod
 } from './api'
+import {getPreschoolTermsV2} from "../../api/applications";
 
 const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriods: () => ['holidayPeriods'],
   holidayPeriod: (id: string) => ['holidayPeriod', id],
   questionnaires: () => ['questionnaires'],
-  questionnaire: (id: string) => ['questionnaire', id]
+  questionnaire: (id: string) => ['questionnaire', id],
+  preschoolTerms: () => ['preschoolTerms']
 })
 
 export const holidayPeriodsQuery = query({
@@ -39,6 +41,11 @@ export const holidayPeriodQuery = query({
 export const questionnairesQuery = query({
   api: getQuestionnaires,
   queryKey: () => queryKeys.questionnaires()
+})
+
+export const preschoolTermsQuery = query({
+  api: getPreschoolTermsV2,
+  queryKey: () => queryKeys.preschoolTerms()
 })
 
 export const questionnaireQuery = query({
