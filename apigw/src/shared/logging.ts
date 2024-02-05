@@ -100,7 +100,7 @@ function log(
 
 const AUDIT_LOG_LEVEL = 45
 
-const AUDIT_LOGGER_OPTS = {
+const AUDIT_LOGGER_OPTS: pino.LoggerOptions<'audit'> = {
   name: 'audit',
   messageKey: 'description',
   customLevels: {
