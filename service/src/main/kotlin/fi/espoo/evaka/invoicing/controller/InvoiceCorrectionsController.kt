@@ -71,7 +71,8 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                             .toList<InvoiceCorrection>()
                     val permittedActions =
                         accessControl.getPermittedActions<
-                            InvoiceCorrectionId, Action.InvoiceCorrection
+                            InvoiceCorrectionId,
+                            Action.InvoiceCorrection
                         >(
                             tx,
                             user,

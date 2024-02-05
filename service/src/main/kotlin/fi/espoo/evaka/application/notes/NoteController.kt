@@ -60,7 +60,8 @@ class NoteController(private val accessControl: AccessControl) {
                     val notes = notesQuery(tx)
                     val permittedActions =
                         accessControl.getPermittedActions<
-                            ApplicationNoteId, Action.ApplicationNote
+                            ApplicationNoteId,
+                            Action.ApplicationNote
                         >(
                             tx,
                             user,
