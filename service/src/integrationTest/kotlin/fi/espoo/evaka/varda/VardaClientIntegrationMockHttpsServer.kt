@@ -14,19 +14,14 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 class VardaClientIntegrationMockHttpsServer(httpsPort: Int) : AutoCloseable {
     val app =
         Javalin.create { config ->
-                config.jetty.server {
-                    val server = Server()
+                config.router.apiBuilder { get("/") { it.result("ok") } }
+                config.jetty.modifyServer { server ->
                     val sslConnector = ServerConnector(server, getSslContextFactory())
                     sslConnector.port = httpsPort
                     server.connectors = arrayOf<Connector>(sslConnector)
-                    server
                 }
             }
             .start()
-
-    init {
-        app.routes { get("/") { it.result("ok") } }
-    }
 
     override fun close() {
         app.stop()

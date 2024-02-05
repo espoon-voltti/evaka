@@ -5,24 +5,24 @@
 package fi.espoo.evaka.webpush
 
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder
+import io.javalin.apibuilder.ApiBuilder.post
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class MockWebPushServer(port: Int) : AutoCloseable {
-    private val app = Javalin.create().start(port)
+    private val app =
+        Javalin.create { config ->
+                config.router.apiBuilder { post("/subscription/{id}", ::postNotification) }
+            }
+            .start(port)
 
     private val lock = ReentrantLock()
     private var capturedRequests: MutableMap<String, MutableList<CapturedRequest>> = mutableMapOf()
 
     val port
         get() = app.port()
-
-    init {
-        app.routes { ApiBuilder.post("/subscription/{id}", ::postNotification) }
-    }
 
     class CapturedRequest(val headers: Map<String, String>, val body: ByteArray)
 

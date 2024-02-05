@@ -29,7 +29,14 @@ private typealias Ssn = String
 data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
 
 class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoCloseable {
-    private val app = Javalin.create().start(port)
+    private val app =
+        Javalin.create { config ->
+                config.router.apiBuilder {
+                    put("/oppija", ::oppija)
+                    post("/oppija", ::oppija)
+                }
+            }
+            .start(port)
     private val logger = KotlinLogging.logger {}
 
     private val lock = ReentrantLock()
@@ -42,13 +49,6 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
 
     val port
         get() = app.port()
-
-    init {
-        app.routes {
-            put("/oppija", ::oppija)
-            post("/oppija", ::oppija)
-        }
-    }
 
     fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
         lock.withLock { HashMap(studyRights) }
