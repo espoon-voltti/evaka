@@ -27,7 +27,7 @@ import {
 } from './queries'
 import TermsSection from './TermsSection'
 
-export default React.memo(function HolidayPeriodsPage() {
+export default React.memo(function HolidayAndTermPeriodsPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

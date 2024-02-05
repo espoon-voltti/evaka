@@ -50,9 +50,9 @@ import EmployeesPage from './components/employees/EmployeesPage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import FeeDecisionsPage from './components/fee-decisions/FeeDecisionsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
-import HolidayPeriodEditor from './components/holiday-periods/HolidayPeriodEditor'
-import HolidayPeriodsPage from './components/holiday-periods/HolidayPeriodsPage'
-import QuestionnaireEditor from './components/holiday-periods/QuestionnaireEditor'
+import HolidayPeriodEditor from './components/holiday-term-periods/HolidayPeriodEditor'
+import HolidayAndTermPeriodsPage from './components/holiday-term-periods/HolidayAndTermPeriodsPage'
+import QuestionnaireEditor from './components/holiday-term-periods/QuestionnaireEditor'
 import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
@@ -858,7 +858,7 @@ export default createBrowserRouter(
           path: '/holiday-periods',
           element: (
             <EmployeeRoute title="holidayAndTermPeriods">
-              <HolidayPeriodsPage />
+              <HolidayAndTermPeriodsPage />
             </EmployeeRoute>
           )
         },

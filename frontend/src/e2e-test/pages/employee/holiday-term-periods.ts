@@ -4,7 +4,7 @@
 
 import { Checkbox, DatePicker, Page, Radio, TextInput } from '../../utils/page'
 
-export class HolidayPeriodsPage {
+export class HolidayAndTermPeriodsPage {
   constructor(private readonly page: Page) {}
 
   get visiblePeriods(): Promise<string[]> {
