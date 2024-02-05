@@ -7276,7 +7276,7 @@ __metadata:
     playwright: "npm:^1.41.1"
     polished: "npm:^4.2.2"
     postcss: "npm:^8.4.31"
-    postcss-loader: "npm:^8.0.0"
+    postcss-loader: "npm:^8.1.0"
     postcss-preset-env: "npm:^9.3.0"
     prettier: "npm:^3.2.2"
     punycode: "npm:^2.3.0"
@@ -10822,17 +10822,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "postcss-loader@npm:8.0.0"
+"postcss-loader@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "postcss-loader@npm:8.1.0"
   dependencies:
     cosmiconfig: "npm:^9.0.0"
     jiti: "npm:^1.20.0"
     semver: "npm:^7.5.4"
   peerDependencies:
+    "@rspack/core": 0.x || 1.x
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: efbb59d2b72884c9f8c2310f1401efc6c4b01f8ffb571e2c9b151243947053eab9096c143b9bf09ada7c310c914eac759d5cf30a7cf84875a0e7cba0bc6d6c75
+  peerDependenciesMeta:
+    "@rspack/core":
+      optional: true
+    webpack:
+      optional: true
+  checksum: 06040d1b3819bae0c1d6b209646e1e9c1924d7a6acb7dd8bde2fc6e57b0b330e5386eb11a62f81f6f80de15e57cdab49191125ab464debb721e94e6d39c1da2e
   languageName: node
   linkType: hard
 
