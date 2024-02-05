@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,7 +9,8 @@ import {
   EmployeePreferredFirstName,
   EmployeeSetPreferredFirstNameUpdateRequest,
   EmployeeWithDaycareRoles,
-  PagedEmployeesWithDaycareRoles
+  PagedEmployeesWithDaycareRoles,
+  UpsertEmployeeDaycareRolesRequest
 } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -64,33 +65,29 @@ export async function isPinCodeLocked(): Promise<Result<boolean>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export function searchEmployees(
+export async function searchEmployees(
   page: number,
   pageSize: number,
   searchTerm?: string
-): Promise<Result<PagedEmployeesWithDaycareRoles>> {
+): Promise<PagedEmployeesWithDaycareRoles> {
   return client
     .post<JsonOf<PagedEmployeesWithDaycareRoles>>('/employee/search', {
       page,
       pageSize,
       searchTerm
     })
-    .then((res) =>
-      Success.of({
-        ...res.data,
-        data: res.data.data.map(deserializeEmployeeWithDaycareRoles)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then((res) => ({
+      ...res.data,
+      data: res.data.data.map(deserializeEmployeeWithDaycareRoles)
+    }))
 }
 
-export function getEmployeeDetails(
+export async function getEmployeeDetails(
   id: UUID
-): Promise<Result<EmployeeWithDaycareRoles>> {
+): Promise<EmployeeWithDaycareRoles> {
   return client
     .get<JsonOf<EmployeeWithDaycareRoles>>(`/employee/${id}/details`)
-    .then((res) => Success.of(deserializeEmployeeWithDaycareRoles(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => deserializeEmployeeWithDaycareRoles(res.data))
 }
 
 function deserializeEmployeeWithDaycareRoles(
@@ -104,16 +101,27 @@ function deserializeEmployeeWithDaycareRoles(
   }
 }
 
-export function updateEmployee(
+export async function updateEmployeeGlobalRoles(
   id: UUID,
   globalRoles: UserRole[]
-): Promise<Result<void>> {
-  return client
-    .put(`/employee/${id}`, {
-      globalRoles
-    })
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+): Promise<void> {
+  await client.put(`/employee/${id}/global-roles`, globalRoles)
+}
+
+export async function upsertEmployeeDaycareRoles(
+  id: UUID,
+  body: UpsertEmployeeDaycareRolesRequest
+): Promise<void> {
+  await client.put(`/employee/${id}/daycare-roles`, body)
+}
+
+export async function deleteEmployeeDaycareRoles(
+  employeeId: UUID,
+  daycareId: UUID | null
+): Promise<void> {
+  await client.delete(`/employee/${employeeId}/daycare-roles`, {
+    params: { daycareId }
+  })
 }
 
 export function activateEmployee(id: UUID): Promise<Result<void>> {

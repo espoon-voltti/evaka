@@ -10,6 +10,7 @@ export type QueryKeyPrefix =
   | 'applications'
   | 'childInformation'
   | 'documentTemplates'
+  | 'employees'
   | 'holidayPeriods'
   | 'reports'
   | 'timeline'

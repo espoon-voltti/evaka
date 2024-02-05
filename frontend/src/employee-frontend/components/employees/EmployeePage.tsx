@@ -1,106 +1,230 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import { faPlus, faTimes, faTrash } from 'Icons'
+import sortBy from 'lodash/sortBy'
+import React, { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
+import { array, value } from 'lib-common/form/form'
+import { useForm } from 'lib-common/form/hooks'
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { Gap } from 'lib-components/white-space'
 
-import { getEmployeeDetails, updateEmployee } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
+import { Unit } from '../../types/unit'
+import { renderResult } from '../async-rendering'
+import { FlexRow } from '../common/styled/containers'
+import { unitsQuery } from '../unit/queries'
 
-interface FormData {
-  globalRoles: UserRole[]
-}
+import DaycareRolesModal from './DaycareRolesModal'
+import {
+  deleteEmployeeDaycareRolesMutation,
+  employeeDetailsQuery,
+  updateEmployeeGlobalRolesMutation
+} from './queries'
 
-export default React.memo(function EmployeePage() {
+const globalRolesForm = array(value<UserRole>())
+
+const GlobalRolesForm = React.memo(function GlobalRolesForm({
+  employee,
+  onSuccess,
+  onCancel
+}: {
+  employee: EmployeeWithDaycareRoles
+  onSuccess: () => void
+  onCancel: () => void
+}) {
   const { i18n } = useTranslation()
-  const { id } = useNonNullableParams<{ id: string }>()
-  const [employee, setEmployee] = useState<Result<EmployeeWithDaycareRoles>>(
-    Loading.of()
+  const boundForm = useForm(
+    globalRolesForm,
+    () => employee.globalRoles,
+    i18n.validationError
   )
-  const [form, setForm] = useState<FormData | null>(null)
 
-  const loadEmployee = useRestApi(getEmployeeDetails, setEmployee)
+  return (
+    <FixedSpaceColumn spacing="m">
+      <FixedSpaceColumn spacing="xs">
+        {globalRoles.map((role) => (
+          <Checkbox
+            key={role}
+            label={i18n.roles.adRoles[role]}
+            checked={boundForm.value().includes(role)}
+            onChange={(checked) => {
+              if (checked) {
+                boundForm.update((prev) => [
+                  ...prev.filter((r) => r !== role),
+                  role
+                ])
+              } else {
+                boundForm.update((prev) => prev.filter((r) => r !== role))
+              }
+            }}
+          />
+        ))}
+      </FixedSpaceColumn>
+      <FixedSpaceRow>
+        <Button text={i18n.common.cancel} onClick={onCancel} />
+        <MutateButton
+          primary
+          text={i18n.common.save}
+          mutation={updateEmployeeGlobalRolesMutation}
+          onClick={() => ({ id: employee.id, globalRoles: boundForm.value() })}
+          onSuccess={onSuccess}
+        />
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
+  )
+})
 
-  useEffect(() => {
-    void loadEmployee(id)
-  }, [loadEmployee, id])
+const EmployeePage = React.memo(function EmployeePage({
+  employee,
+  units
+}: {
+  employee: EmployeeWithDaycareRoles
+  units: Unit[]
+}) {
+  const { i18n } = useTranslation()
+  const [editingGlobalRoles, setEditingGlobalRoles] = useState(false)
+  const [rolesModalOpen, setRolesModalOpen] = useState(false)
 
-  useEffect(() => {
-    if (employee.isSuccess && form === null) {
-      setForm({
-        globalRoles: [...employee.value.globalRoles]
-      })
-    }
-  }, [employee, form, setForm])
+  const sortedRoles = useMemo(
+    () => sortBy(employee.daycareRoles, ({ daycareName }) => daycareName),
+    [employee.daycareRoles]
+  )
+
+  return (
+    <div>
+      {rolesModalOpen && (
+        <DaycareRolesModal
+          employeeId={employee.id}
+          units={units}
+          onClose={() => setRolesModalOpen(false)}
+        />
+      )}
+      <Title size={2}>
+        {employee.firstName} {employee.lastName}
+      </Title>
+      <span>{employee.email}</span>
+
+      <Gap />
+
+      <Title size={3}>{i18n.employees.editor.globalRoles}</Title>
+      {editingGlobalRoles ? (
+        <GlobalRolesForm
+          employee={employee}
+          onSuccess={() => setEditingGlobalRoles(false)}
+          onCancel={() => setEditingGlobalRoles(false)}
+        />
+      ) : (
+        <FixedSpaceColumn spacing="m">
+          <div>
+            {employee.globalRoles.length > 0
+              ? globalRoles
+                  .filter((r) => employee.globalRoles.includes(r))
+                  .map((r) => i18n.roles.adRoles[r])
+                  .join(', ')
+              : '-'}
+          </div>
+          <InlineButton
+            onClick={() => setEditingGlobalRoles(true)}
+            text={i18n.common.edit}
+          />
+        </FixedSpaceColumn>
+      )}
+
+      <Gap />
+
+      <Title size={3}>{i18n.employees.editor.unitRoles.title}</Title>
+      <FlexRow justifyContent="space-between">
+        <InlineButton
+          onClick={() => setRolesModalOpen(true)}
+          text={i18n.employees.editor.unitRoles.addRoles}
+          icon={faPlus}
+          disabled={editingGlobalRoles}
+        />
+        <ConfirmedMutation
+          buttonStyle="INLINE"
+          buttonText={i18n.employees.editor.unitRoles.deleteAll}
+          icon={faTimes}
+          confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
+          mutation={deleteEmployeeDaycareRolesMutation}
+          onClick={() => ({ employeeId: employee.id, daycareId: null })}
+          disabled={editingGlobalRoles}
+        />
+      </FlexRow>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.employees.editor.unitRoles.unit}</Th>
+            <Th>{i18n.employees.editor.unitRoles.role}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {sortedRoles.map(({ daycareId, daycareName, role }) => (
+            <Tr key={`${daycareId}/${role}`}>
+              <Td>
+                <Link to={`units/${daycareId}`}>{daycareName}</Link>
+              </Td>
+              <Td>{i18n.roles.adRoles[role]}</Td>
+              <Td>
+                <ConfirmedMutation
+                  buttonStyle="ICON"
+                  icon={faTrash}
+                  buttonAltText={i18n.common.remove}
+                  confirmationTitle={
+                    i18n.employees.editor.unitRoles.deleteConfirm
+                  }
+                  mutation={deleteEmployeeDaycareRolesMutation}
+                  onClick={() => ({
+                    employeeId: employee.id,
+                    daycareId: daycareId
+                  })}
+                  disabled={editingGlobalRoles}
+                />
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </div>
+  )
+})
+
+export default React.memo(function EmployeePageLoader() {
+  const { i18n } = useTranslation()
+  const { id } = useNonNullableParams<{ id: UUID }>()
+  const employee = useQueryResult(employeeDetailsQuery(id))
+  const units = useQueryResult(unitsQuery())
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {employee.isLoading && <SpinnerSegment />}
-        {employee.isFailure && <ErrorSegment />}
-        {employee.isSuccess && form && (
-          <>
-            <Title size={2}>
-              {employee.value.firstName} {employee.value.lastName}
-            </Title>
-            <span>{employee.value.email}</span>
-
-            <Gap />
-
-            <Title size={3}>{i18n.employees.editor.roles}</Title>
-            <FixedSpaceColumn spacing="xs">
-              {globalRoles.map((role) => (
-                <Checkbox
-                  key={role}
-                  label={i18n.roles.adRoles[role]}
-                  checked={form.globalRoles.includes(role)}
-                  onChange={(checked) => {
-                    if (checked) {
-                      setForm({
-                        ...form,
-                        globalRoles: [...form.globalRoles, role]
-                      })
-                    } else {
-                      setForm({
-                        ...form,
-                        globalRoles: form.globalRoles.filter((r) => r !== role)
-                      })
-                    }
-                  }}
-                />
-              ))}
-            </FixedSpaceColumn>
-
-            <Gap />
-
-            <AsyncButton
-              primary
-              text={i18n.common.save}
-              onClick={() => updateEmployee(id, form.globalRoles)}
-              onSuccess={() => {
-                void loadEmployee(id)
-                setForm(null)
-              }}
-            />
-          </>
-        )}
+        {renderResult(combine(employee, units), ([employee, units]) => (
+          <EmployeePage employee={employee} units={units} />
+        ))}
       </ContentArea>
     </Container>
   )

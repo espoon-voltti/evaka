@@ -4155,7 +4155,18 @@ export const fi = {
     deactivate: 'Deaktivoi',
     deactivateConfirm: 'Haluatko deaktivoida käyttäjän?',
     editor: {
-      roles: 'Roolit'
+      globalRoles: 'Järjestelmäroolit',
+      unitRoles: {
+        title: 'Luvitukset',
+        unit: 'Yksikkö',
+        role: 'Rooli yksikössä',
+        deleteConfirm: 'Haluatko poistaa käyttäjän luvituksen?',
+        deleteAll: 'Poista kaikki luvitukset',
+        deleteAllConfirm: 'Haluatko poistaa käyttäjän kaikki luvitukset?',
+        addRoles: 'Lisää luvituksia',
+        addRolesModalTitle: 'Uusi luvitus',
+        units: 'Yksiköt'
+      }
     }
   },
   financeBasics: {

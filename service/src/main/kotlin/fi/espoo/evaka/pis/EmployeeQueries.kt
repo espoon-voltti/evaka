@@ -8,6 +8,7 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
@@ -49,7 +50,7 @@ data class DaycareRole(val daycareId: DaycareId, val daycareName: String, val ro
 data class DaycareGroupRole(
     val daycareId: DaycareId,
     val daycareName: String,
-    val groupId: DaycareId,
+    val groupId: GroupId,
     val groupName: String
 )
 
@@ -273,19 +274,69 @@ fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
         .bind("active", active)
         .updateExactlyOne()
 
-fun Database.Transaction.updateEmployee(id: EmployeeId, globalRoles: List<UserRole>) {
-    // language=SQL
-    val sql =
-        """
-UPDATE employee
-SET roles = :roles::user_role[]
-WHERE id = :id
+fun Database.Transaction.upsertEmployeeDaycareRoles(
+    id: EmployeeId,
+    daycareIds: List<DaycareId>,
+    role: UserRole
+) {
+    val batch =
+        prepareBatch(
+            """
+        INSERT INTO daycare_acl (daycare_id, employee_id, role) 
+        VALUES (:daycareId, :employeeId, :role)
+        ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = :role
     """
-            .trimIndent()
+        )
+    daycareIds.forEach {
+        batch.bind("daycareId", it).bind("employeeId", id).bind("role", role).add()
+    }
+    batch.execute()
+}
 
-    val updated = createUpdate(sql).bind("id", id).bind("roles", globalRoles).execute()
+fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: List<UserRole>) {
+    val updated =
+        createUpdate<Any> {
+                sql(
+                    """
+        UPDATE employee
+        SET roles = ${bind(globalRoles.distinct())}
+        WHERE id = ${bind(id)}
+    """
+                )
+            }
+            .execute()
 
     if (updated != 1) throw NotFound("employee $id not found")
+}
+
+fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) {
+    createUpdate<Any> {
+            sql(
+                """
+        DELETE FROM daycare_acl
+        WHERE 
+            employee_id = ${bind(id)}
+            ${if (daycareId != null) "AND daycare_id = ${bind(daycareId)}" else ""}
+    """
+            )
+        }
+        .execute()
+
+    createUpdate<Any> {
+            sql(
+                """
+        DELETE FROM daycare_group_acl
+        WHERE 
+            employee_id = ${bind(id)}
+            ${if (daycareId != null) """
+                AND daycare_group_id IN (
+                    SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}
+                )
+            """ else ""}
+    """
+            )
+        }
+        .execute()
 }
 
 data class PagedEmployeesWithDaycareRoles(
