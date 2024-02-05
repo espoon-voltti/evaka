@@ -205,7 +205,12 @@ class ReservationControllerCitizen(
                     ReservationsResponse(
                         children =
                             children.map {
-                                ReservationChild.from(it, days, placements[it.id], today)
+                                ReservationChild.from(
+                                    it,
+                                    days,
+                                    placements[it.id] ?: emptyList(),
+                                    today
+                                )
                             },
                         days = days,
                         reservableRange = reservableRange
@@ -431,51 +436,58 @@ data class ReservationChild(
         fun from(
             child: ReservationChildRow,
             days: List<ReservationResponseDay>,
-            placements: List<ReservationPlacement>?,
+            placements: List<ReservationPlacement>,
             today: LocalDate
         ): ReservationChild {
+            val hasHourBasedServiceNeeds =
+                placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
             val monthSummaries =
-                days
-                    .mapNotNull { day ->
-                        day.children.find { it.childId == child.id }?.let { day.date to it }
-                    }
-                    .groupBy(
-                        { (date, _) -> date.year to date.monthValue },
-                        { (_, childDay) -> childDay }
-                    )
-                    .mapNotNull { (yearMonth, childDays) ->
-                        val (year, month) = yearMonth
-                        val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
-
-                        // As per how the hour-based service needs are used in practice, there
-                        // should only be just one service need for the child for each month, so
-                        // we'll take the first one
-                        val daycareHoursPerMonth =
-                            placements
-                                ?.find { it.range.overlaps(monthRange) }
-                                ?.serviceNeeds
-                                ?.find { it.daycareHoursPerMonth != null }
-                                ?.daycareHoursPerMonth
-
-                        if (daycareHoursPerMonth == null) {
-                            // Not an hour-based service need, don't generate a summary at all
-                            return@mapNotNull null
+                if (hasHourBasedServiceNeeds) {
+                    days
+                        .mapNotNull { day ->
+                            day.children.find { it.childId == child.id }?.let { day.date to it }
                         }
-
-                        MonthSummary(
-                            year = yearMonth.first,
-                            month = yearMonth.second,
-                            serviceNeedMinutes = daycareHoursPerMonth * 60,
-                            reservedMinutes =
-                                childDays.sumOf { day ->
-                                    day.reservations
-                                        .mapNotNull { it.asTimeRange() }
-                                        .sumOf { it.durationInMinutes() }
-                                },
-                            usedServiceMinutes =
-                                childDays.sumOf { it.usedService?.durationInMinutes ?: 0 }
+                        .groupBy(
+                            { (date, _) -> date.year to date.monthValue },
+                            { (_, childDay) -> childDay }
                         )
-                    }
+                        .mapNotNull { (yearMonth, childDays) ->
+                            val (year, month) = yearMonth
+                            val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
+
+                            // As per how the hour-based service needs are used in practice, there
+                            // should only be just one service need for the child for each month, so
+                            // we'll take the first one
+                            val daycareHoursPerMonth =
+                                placements
+                                    .find { it.range.overlaps(monthRange) }
+                                    ?.serviceNeeds
+                                    ?.find { it.daycareHoursPerMonth != null }
+                                    ?.daycareHoursPerMonth
+
+                            if (daycareHoursPerMonth == null) {
+                                // Not an hour-based service need, don't generate a summary at all
+                                return@mapNotNull null
+                            }
+
+                            MonthSummary(
+                                year = yearMonth.first,
+                                month = yearMonth.second,
+                                serviceNeedMinutes = daycareHoursPerMonth * 60,
+                                reservedMinutes =
+                                    childDays.sumOf { day ->
+                                        day.reservations
+                                            .mapNotNull { it.asTimeRange() }
+                                            .sumOf { it.durationInMinutes() }
+                                    },
+                                usedServiceMinutes =
+                                    childDays.sumOf { it.usedService?.durationInMinutes ?: 0 }
+                            )
+                        }
+                } else {
+                    // No hour-based service needs, don't generate summaries
+                    emptyList()
+                }
 
             return ReservationChild(
                 id = child.id,
@@ -484,7 +496,7 @@ data class ReservationChild(
                 preferredName = child.preferredName,
                 duplicateOf = child.duplicateOf,
                 imageId = child.imageId,
-                upcomingPlacementType = placements?.find { it.range.end >= today }?.type,
+                upcomingPlacementType = placements.find { it.range.end >= today }?.type,
                 monthSummaries = monthSummaries
             )
         }
