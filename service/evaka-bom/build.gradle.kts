@@ -20,7 +20,7 @@ dependencies {
         api("com.networknt:json-schema-validator:1.3.0")
         api("com.zaxxer:HikariCP:5.1.0")
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
-        api("io.javalin:javalin:5.6.2")
+        api("io.javalin:javalin:6.0.1")
         api(libs.opentracing.api)
         api(libs.opentracing.util)
         api("jakarta.annotation:jakarta.annotation-api:2.1.1")
