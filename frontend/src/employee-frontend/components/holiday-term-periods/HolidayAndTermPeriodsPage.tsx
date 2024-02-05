@@ -19,13 +19,13 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import TermsSection from './TermsSection'
 import {
   deleteHolidayPeriodMutation,
   deleteQuestionnaireMutation,
   holidayPeriodsQuery,
   questionnairesQuery
 } from './queries'
-import TermsSection from './TermsSection'
 
 export default React.memo(function HolidayAndTermPeriodsPage() {
   const { i18n } = useTranslation()

@@ -4,6 +4,7 @@
 
 import { mutation, query } from 'lib-common/query'
 
+import { getPreschoolTermsV2 } from '../../api/applications'
 import { createQueryKeys } from '../../query'
 
 import {
@@ -18,7 +19,6 @@ import {
   updateFixedPeriodQuestionnaire,
   updateHolidayPeriod
 } from './api'
-import {getPreschoolTermsV2} from "../../api/applications";
 
 const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriods: () => ['holidayPeriods'],
