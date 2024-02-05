@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
@@ -91,21 +92,10 @@ class ReservationControllerCitizen(
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
 
-                    val absences: Map<Pair<ChildId, LocalDate>, AbsenceInfo> =
-                        tx.getAbsencesCitizen(today, user.id, requestedRange)
-                            .groupBy { it.childId to it.date }
-                            .mapValues { (_, absences) ->
-                                // Show at most one absence per child per day. Taking the
-                                // nonbillable one is just a random choice without any real meaning.
-                                if (absences.size > 1) {
-                                    absences.first { it.category == AbsenceCategory.NONBILLABLE }
-                                } else {
-                                    absences.first()
-                                }
-                            }
-                            .mapValues { (_, absence) ->
-                                AbsenceInfo(absence.absenceType, absence.editableByCitizen())
-                            }
+                    val absences: Map<Pair<ChildId, LocalDate>, List<Absence>> =
+                        tx.getAbsencesCitizen(today, user.id, requestedRange).groupBy {
+                            it.childId to it.date
+                        }
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
                         tx.getReservationsCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
@@ -155,6 +145,8 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
+                                                        val childAbsences =
+                                                            absences[key] ?: listOf()
                                                         val childReservations =
                                                             reservations[key] ?: listOf()
                                                         val childAttendances =
@@ -173,6 +165,10 @@ class ReservationControllerCitizen(
                                                                 ?.let { daycareHoursPerMonth ->
                                                                     UsedService.compute(
                                                                         daycareHoursPerMonth,
+                                                                        placementDay.placementType,
+                                                                        childAbsences.map {
+                                                                            it.category
+                                                                        },
                                                                         childReservations
                                                                             .mapNotNull {
                                                                                 it.asTimeRange()
@@ -188,7 +184,8 @@ class ReservationControllerCitizen(
                                                             scheduleType =
                                                                 placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
-                                                            absence = absences[key],
+                                                            absence =
+                                                                selectSingleAbsence(childAbsences),
                                                             reservations = childReservations,
                                                             attendances = childAttendances,
                                                             usedService = usedService,
@@ -367,6 +364,7 @@ class ReservationControllerCitizen(
 }
 
 data class PlacementDay(
+    val placementType: PlacementType,
     val scheduleType: ScheduleType,
     val shiftCare: Boolean,
     val daycareHoursPerMonth: Int?,
@@ -401,6 +399,7 @@ private fun placementDay(
 
     return if (operationTime != null || shiftCare) {
         PlacementDay(
+            placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             shiftCare = shiftCare,
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
@@ -415,6 +414,21 @@ private fun placementDay(
         null
     }
 }
+
+/**
+ * Show at most one absence per child per day. Taking the non-billable one is just a random choice
+ * without any real meaning.
+ */
+private fun selectSingleAbsence(absences: List<Absence>): AbsenceInfo? =
+    absences
+        .let {
+            if (it.size > 1) {
+                it.first { a -> a.category == AbsenceCategory.NONBILLABLE }
+            } else {
+                it.firstOrNull()
+            }
+        }
+        ?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
 
 data class ReservationsResponse(
     val children: List<ReservationChild>,

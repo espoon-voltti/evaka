@@ -552,12 +552,19 @@ sealed interface UsedService {
     companion object {
         fun compute(
             serviceNeedHours: Int,
+            placementType: PlacementType,
+            absences: List<AbsenceCategory>,
             reservations: List<TimeRange>,
             attendances: List<TimeRange>
         ): UsedService {
             if (reservations.isEmpty() && attendances.isEmpty()) {
-                val daysInMonth = 21
-                return Average((serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt())
+                val fullyAbsent = absences.toSet() == placementType.absenceCategories()
+                return if (fullyAbsent) {
+                    Ranges(emptyList())
+                } else {
+                    val daysInMonth = 21
+                    Average((serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt())
+                }
             }
 
             val result = mutableListOf<TimeRange>()
