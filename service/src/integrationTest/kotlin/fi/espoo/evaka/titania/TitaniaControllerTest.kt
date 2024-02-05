@@ -11,11 +11,15 @@ import fi.espoo.evaka.shared.auth.asUser
 import java.nio.charset.StandardCharsets
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert.assertEquals
 import org.skyscreamer.jsonassert.JSONCompareMode
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.core.io.ClassPathResource
 import org.springframework.util.StreamUtils
 
+@ExtendWith(OutputCaptureExtension::class)
 internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
@@ -107,5 +111,16 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                 .response()
 
         assertThat(res).returns(400) { it.statusCode }
+    }
+
+    @Test
+    fun `should log created employees`(capturedOutput: CapturedOutput) {
+        http
+            .put("/integration/titania/working-time-events")
+            .asUser(AuthenticatedUser.Integration)
+            .jsonBody(jsonMapper.writeValueAsString(titaniaUpdateRequestValidExampleData))
+            .response()
+
+        assertThat(capturedOutput).contains("\"eventCode\":\"EmployeeCreate\"")
     }
 }

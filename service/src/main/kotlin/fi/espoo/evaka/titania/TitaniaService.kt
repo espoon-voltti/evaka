@@ -28,13 +28,13 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
     fun updateWorkingTimeEvents(
         tx: Database.Transaction,
         request: UpdateWorkingTimeEventsRequest
-    ): UpdateWorkingTimeEventsResponse {
+    ): UpdateWorkingTimeEventsServiceResponse {
         logger.debug { "Titania request: $request" }
         val internal = updateWorkingTimeEventsInternal(tx, request)
         logger.debug { "Titania internal response: $internal" }
         val response = UpdateWorkingTimeEventsResponse.ok()
         logger.debug { "Titania response: $response" }
-        return response
+        return UpdateWorkingTimeEventsServiceResponse(response, internal.createdEmployees)
     }
 
     fun updateWorkingTimeEventsInternal(
@@ -74,7 +74,9 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                         active = true
                     )
                 }
-        val allEmployeeNumberToId = employeeNumberToId + tx.createEmployees(unknownEmployees)
+        val createdEmployees = tx.createEmployees(unknownEmployees)
+        val allEmployeeNumberToId = employeeNumberToId + createdEmployees
+
         val newPlans =
             persons
                 .sortedBy { it.first }
@@ -144,7 +146,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         logger.info { "Adding ${newPlans.size} new staff attendance plans" }
         tx.insertStaffAttendancePlans(newPlans)
 
-        return TitaniaUpdateResponse(deleted, newPlans)
+        return TitaniaUpdateResponse(deleted, newPlans, createdEmployees.values.toList())
     }
 
     fun getStampedWorkingTimeEvents(
@@ -345,7 +347,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
 data class TitaniaUpdateResponse(
     val deleted: List<StaffAttendancePlan>,
-    val inserted: List<StaffAttendancePlan>
+    val inserted: List<StaffAttendancePlan>,
+    val createdEmployees: List<EmployeeId>
 )
 
 interface TitaniaEmployeeIdConverter {

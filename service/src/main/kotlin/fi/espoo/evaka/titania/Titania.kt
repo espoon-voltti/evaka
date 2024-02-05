@@ -7,6 +7,7 @@ package fi.espoo.evaka.titania
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import org.springframework.http.HttpStatus
@@ -190,6 +191,11 @@ data class UpdateWorkingTimeEventsResponse(val message: String) {
         fun ok() = UpdateWorkingTimeEventsResponse("OK")
     }
 }
+
+data class UpdateWorkingTimeEventsServiceResponse(
+    val updateWorkingTimeEventsResponse: UpdateWorkingTimeEventsResponse,
+    val createdEmployees: List<EmployeeId>
+)
 
 @ExcludeCodeGen
 data class GetStampedWorkingTimeEventsRequest(
