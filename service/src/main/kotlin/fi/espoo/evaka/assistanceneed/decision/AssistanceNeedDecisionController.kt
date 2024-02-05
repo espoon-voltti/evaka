@@ -279,7 +279,8 @@ class AssistanceNeedDecisionController(
                     val decisions = tx.getAssistanceNeedDecisionsByChildId(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
-                            AssistanceNeedDecisionId, Action.AssistanceNeedDecision
+                            AssistanceNeedDecisionId,
+                            Action.AssistanceNeedDecision
                         >(
                             tx,
                             user,

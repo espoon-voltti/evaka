@@ -14,7 +14,8 @@ class MockVtjClientService : IVtjClientService {
     companion object {
         private var queryRequestResponse:
             ConcurrentHashMap<
-                Pair<String, IVtjClientService.RequestType>, VTJHenkiloVastaussanoma.Henkilo
+                Pair<String, IVtjClientService.RequestType>,
+                VTJHenkiloVastaussanoma.Henkilo
             > =
             ConcurrentHashMap()
 
