@@ -411,6 +411,7 @@ export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
   }
 }
 
+// TODO: refactor below function calls to leverage getPreschoolTermsV2()
 export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   try {
     const result = await client.get<JsonOf<PreschoolTerm[]>>(
@@ -420,4 +421,11 @@ export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   } catch (e) {
     return Failure.fromError(e)
   }
+}
+
+// For query client use (to be refactored and remove V2 from name)
+export async function getPreschoolTermsV2(): Promise<PreschoolTerm[]> {
+  return client
+    .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
+    .then((res) => res.data.map(deserializePreschoolTerm))
 }

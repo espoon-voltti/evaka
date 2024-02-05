@@ -48,6 +48,7 @@ export const fi = {
     personProfile: 'Aikuisen tiedot',
     personTimeline: 'Asiakkaan aikajana',
     personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
+    preschoolTerms: 'Esiopetuksen lukukaudet',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
     settings: 'Asetukset',
@@ -4455,6 +4456,14 @@ export const fi = {
     requiresStrongAuth: 'Vahva tunnistautuminen',
     conditionContinuousPlacement:
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
+  },
+  terms: {
+    term: 'Lukukausi',
+    finnishPreschool: 'Suomenkielinen esiopetus',
+    extendedPeriodStarts: 'Pidennetty lukukausi alkaa',
+    applicationPeriodStarts: 'Haku lukukaudelle alkaa',
+    termBreaks: 'Opetustauot',
+    confirmDelete: 'Haluatko varmasti poistaa lukukauden?'
   },
   preferredFirstName: {
     popupLink: 'Kutsumanimi',

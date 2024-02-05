@@ -13,7 +13,7 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H1, H2} from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -25,6 +25,7 @@ import {
   holidayPeriodsQuery,
   questionnairesQuery
 } from './queries'
+import TermsSection from './TermsSection'
 
 export default React.memo(function HolidayPeriodsPage() {
   const { i18n } = useTranslation()
@@ -186,6 +187,8 @@ export default React.memo(function HolidayPeriodsPage() {
             }}
           />
         )}
+
+        <TermsSection />
       </ContentArea>
     </Container>
   )
