@@ -5,7 +5,7 @@
 package fi.espoo.evaka.espoo.bi
 
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder
+import io.javalin.apibuilder.ApiBuilder.put
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
 import io.javalin.security.BasicAuthCredentials
@@ -13,17 +13,15 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class MockBiServer(private val credentials: BasicAuthCredentials?, port: Int) : AutoCloseable {
-    private val app = Javalin.create().start(port)
+    private val app =
+        Javalin.create { config -> config.router.apiBuilder { put("/report", ::putReport) } }
+            .start(port)
 
     private val lock = ReentrantLock()
     private var capturedRequests: MutableMap<String, CapturedRequest> = mutableMapOf()
 
     val port
         get() = app.port()
-
-    init {
-        app.routes { ApiBuilder.put("/report", ::putReport) }
-    }
 
     class CapturedRequest(val body: ByteArray)
 
