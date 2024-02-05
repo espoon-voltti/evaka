@@ -3185,7 +3185,7 @@ __metadata:
     pino-pretty: "npm:^10.3.0"
     prettier: "npm:^3.2.2"
     pump: "npm:^3.0.0"
-    query-string: "npm:^8.1.0"
+    query-string: "npm:^8.2.0"
     redis: "npm:^4.6.7"
     split2: "npm:^4.2.0"
     through2: "npm:^4.0.2"
@@ -5908,14 +5908,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"query-string@npm:^8.1.0":
-  version: 8.1.0
-  resolution: "query-string@npm:8.1.0"
+"query-string@npm:^8.2.0":
+  version: 8.2.0
+  resolution: "query-string@npm:8.2.0"
   dependencies:
     decode-uri-component: "npm:^0.4.1"
     filter-obj: "npm:^5.1.0"
     split-on-first: "npm:^3.0.0"
-  checksum: f693d77bc3e8c5cb7bda9c928e9c625bf8adacb1ebd63fd97c9ffd3f65c7df0cfc86aebf92588b5caddccfcb379bc7f4d81fcc4e64c64e4e75eabaca823c2293
+  checksum: a9a6d4aafd3444d67d5766c658cb0d64ea5a87fec683538deb1f95446089d1660c75c9accbb030ba384ab6d329bdffbb367279e55cc880c56789678e0a55dd9b
   languageName: node
   linkType: hard
 
