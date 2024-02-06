@@ -305,6 +305,8 @@ data class ReservationPlacement(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
+    val dailyPreschoolTime: TimeRange?,
+    val dailyPreparatoryTime: TimeRange?,
     val serviceNeeds: List<ReservationServiceNeed>
 )
 
@@ -320,6 +322,8 @@ data class ReservationPlacementRow(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
+    val dailyPreschoolTime: TimeRange?,
+    val dailyPreparatoryTime: TimeRange?,
     val shiftCareType: ShiftCareType?,
     val daycareHoursPerMonth: Int?,
     val serviceNeedRange: FiniteDateRange?,
@@ -338,6 +342,8 @@ SELECT
     daterange(pl.start_date, pl.end_date, '[]') AS range,
     pl.type,
     u.operation_times,
+    u.daily_preschool_time,
+    u.daily_preparatory_time,
     sn.shift_care AS shift_care_type,
     sno.daycare_hours_per_month,
     CASE WHEN sn IS NOT NULL THEN daterange(sn.start_date, sn.end_date, '[]') END AS service_need_range
@@ -360,6 +366,8 @@ WHERE
                 range = rows[0].range,
                 type = rows[0].type,
                 operationTimes = rows[0].operationTimes,
+                dailyPreschoolTime = rows[0].dailyPreschoolTime,
+                dailyPreparatoryTime = rows[0].dailyPreparatoryTime,
                 serviceNeeds =
                     rows
                         .mapNotNull {

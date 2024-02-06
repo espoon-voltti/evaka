@@ -362,7 +362,7 @@ export interface ReservationResponseDayChild {
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
   shiftCare: boolean
-  usedService: UsedService | null
+  usedService: UsedServiceResult | null
 }
 
 /**
@@ -393,31 +393,15 @@ export interface UnitDateInfo {
   time: TimeRange | null
 }
 
-
-export namespace UsedService {
-  /**
-  * Generated from fi.espoo.evaka.reservations.UsedService.Average
-  */
-  export interface Average {
-    type: 'AVERAGE'
-    durationInMinutes: number
-  }
-
-  /**
-  * Generated from fi.espoo.evaka.reservations.UsedService.Ranges
-  */
-  export interface Ranges {
-    type: 'RANGES'
-    durationInMinutes: number
-    ranges: TimeRange[]
-  }
-}
-
 /**
-* Generated from fi.espoo.evaka.reservations.UsedService
+* Generated from fi.espoo.evaka.reservations.UsedServiceResult
 */
-export type UsedService = UsedService.Average | UsedService.Ranges
-
+export interface UsedServiceResult {
+  attendedMinutes: number
+  reservedMinutes: number
+  usedServiceMinutes: number
+  usedServiceRanges: TimeRange[]
+}
 
 
 export function deserializeJsonAbsenceRequest(json: JsonOf<AbsenceRequest>): AbsenceRequest {
@@ -651,7 +635,7 @@ export function deserializeJsonReservationResponseDayChild(json: JsonOf<Reservat
     attendances: json.attendances.map(e => deserializeJsonOpenTimeRange(e)),
     reservableTimeRange: deserializeJsonReservableTimeRange(json.reservableTimeRange),
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
-    usedService: (json.usedService != null) ? deserializeJsonUsedService(json.usedService) : null
+    usedService: (json.usedService != null) ? deserializeJsonUsedServiceResult(json.usedService) : null
   }
 }
 
@@ -682,16 +666,9 @@ export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDat
 }
 
 
-
-export function deserializeJsonUsedServiceRanges(json: JsonOf<UsedService.Ranges>): UsedService.Ranges {
+export function deserializeJsonUsedServiceResult(json: JsonOf<UsedServiceResult>): UsedServiceResult {
   return {
     ...json,
     ranges: json.ranges.map(e => deserializeJsonTimeRange(e))
-  }
-}
-export function deserializeJsonUsedService(json: JsonOf<UsedService>): UsedService {
-  switch (json.type) {
-    case 'RANGES': return deserializeJsonUsedServiceRanges(json)
-    default: return json
   }
 }
