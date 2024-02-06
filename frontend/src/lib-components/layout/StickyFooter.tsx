@@ -5,17 +5,22 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { BaseProps } from '../utils'
 import { defaultMargins } from '../white-space'
 
 import Container from './Container'
 
 type Props = {
   children: React.ReactNode
-}
+} & BaseProps
 
-export default React.memo(function StickyFooter({ children }: Props) {
+export default React.memo(function StickyFooter({
+  children,
+  className,
+  'data-qa': dataQa
+}: Props) {
   return (
-    <Footer>
+    <Footer className={className} data-qa={dataQa}>
       <ContentContainer>{children}</ContentContainer>
     </Footer>
   )

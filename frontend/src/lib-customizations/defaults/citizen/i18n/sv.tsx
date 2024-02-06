@@ -44,6 +44,8 @@ const sv: Translations = {
     delete: 'Ta bort',
     edit: 'Redigera',
     add: 'Lägg till',
+    show: 'Visa',
+    hide: 'Gömma',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),

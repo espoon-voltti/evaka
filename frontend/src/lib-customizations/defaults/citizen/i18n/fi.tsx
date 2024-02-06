@@ -43,6 +43,8 @@ export default {
     delete: 'Poista',
     edit: 'Muokkaa',
     add: 'Lisää',
+    show: 'Näytä',
+    hide: 'Piilota',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),

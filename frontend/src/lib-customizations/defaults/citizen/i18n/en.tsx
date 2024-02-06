@@ -46,6 +46,8 @@ const en: Translations = {
     delete: 'Remove',
     edit: 'Edit',
     add: 'Add',
+    show: 'Show',
+    hide: 'Hide',
     yes,
     no,
     yesno: (value: boolean): string => (value ? yes : no),
