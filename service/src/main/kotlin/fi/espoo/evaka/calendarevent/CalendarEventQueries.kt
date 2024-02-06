@@ -9,6 +9,7 @@ import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -240,14 +241,15 @@ fun Database.Transaction.setCalendarEventContentModifiedAt(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime
 ) =
-    this.createUpdate(
-            """
+    this.createUpdate<DatabaseTable.CalendarEvent> {
+            sql(
+                """
 UPDATE calendar_event
 SET content_modified_at = :modifiedAt
 WHERE id = :eventId
         """
-                .trimIndent()
-        )
+            )
+        }
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .updateExactlyOne()
