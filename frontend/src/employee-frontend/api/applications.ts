@@ -420,7 +420,6 @@ export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   }
 }
 
-// For query client use (to be refactored and remove V2 from name)
 export async function getPreschoolTermsResult(): Promise<PreschoolTerm[]> {
   return client
     .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
