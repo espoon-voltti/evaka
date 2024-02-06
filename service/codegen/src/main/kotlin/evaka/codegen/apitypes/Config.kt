@@ -50,6 +50,10 @@ private val customClassesMapping: Map<String, TSMapping> =
             TSMapping("DateRange", "import DateRange from '../../date-range'"),
         "fi.espoo.evaka.shared.data.DateSet" to
             TSMapping("FiniteDateRange[]", "import FiniteDateRange from '../../finite-date-range'"),
+        "fi.espoo.evaka.shared.domain.LocalHm" to
+            TSMapping("LocalHm", "import LocalHm from '../../local-hm'"),
+        "fi.espoo.evaka.shared.domain.LocalHmRange" to
+            TSMapping("LocalHmRange", "import LocalHmRange from '../../local-hm-range'"),
         "fi.espoo.evaka.vasu.VasuQuestion" to
             TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
         "fi.espoo.evaka.messaging.MessageReceiver" to

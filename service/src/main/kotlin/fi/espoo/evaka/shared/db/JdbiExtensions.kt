@@ -15,7 +15,9 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.LocalHmRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.asLocalHm
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -302,6 +304,19 @@ val idColumnMapper =
 val helsinkiDateTimeColumnMapper = ColumnMapper { r, columnNumber, _ ->
     r.getObject(columnNumber, OffsetDateTime::class.java)?.let {
         HelsinkiDateTime.from(it.toInstant())
+    }
+}
+
+val localHmColumnMapper = PgObjectColumnMapper {
+    assert(it.type == "timerange" || it.type == "timerange_non_nullable_range")
+    it.value?.let { value -> LocalTime.parse(value).asLocalHm() }
+}
+
+val localHmRangeColumnMapper = PgObjectColumnMapper {
+    assert(it.type == "timerange" || it.type == "timerange_non_nullable_range")
+    it.value?.let { value ->
+        val parts = value.trim('(', ')').split(',')
+        LocalHmRange(LocalTime.parse(parts[0]).asLocalHm(), LocalTime.parse(parts[1]).asLocalHm())
     }
 }
 

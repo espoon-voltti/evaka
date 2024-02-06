@@ -102,6 +102,8 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         Id::class.java.isAssignableFrom(GenericTypes.getErasedType(type))
     }
     jdbi.register(helsinkiDateTimeColumnMapper)
+    jdbi.register(localHmColumnMapper)
+    jdbi.register(localHmRangeColumnMapper)
     jdbi.register(productKeyColumnMapper)
     jdbi.register(dateSetColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
