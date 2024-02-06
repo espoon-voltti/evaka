@@ -147,13 +147,14 @@ fun Database.Transaction.upsertStaffAttendance(
     arrivalTime: HelsinkiDateTime,
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal?,
-    type: StaffAttendanceType
+    type: StaffAttendanceType,
+    departedAutomatically: Boolean = false
 ): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
         createUpdate(
                 """
-            INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type)
-            VALUES (:employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
+            INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
+            VALUES (:employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type, :departedAutomatically)
             RETURNING id
         """
                     .trimIndent()
@@ -164,13 +165,14 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("departed", departureTime)
             .bind("occupancyCoefficient", occupancyCoefficient)
             .bind("type", type)
+            .bind("departedAutomatically", departedAutomatically)
             .executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceRealtimeId>()
     } else {
         createUpdate(
                 """
             UPDATE staff_attendance_realtime
-            SET group_id = :groupId, arrived = :arrived, departed = :departed, type = :type
+            SET group_id = :groupId, arrived = :arrived, departed = :departed, type = :type, departed_automatically = :departedAutomatically
             WHERE id = :id
         """
                     .trimIndent()
@@ -180,6 +182,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("type", type)
+            .bind("departedAutomatically", departedAutomatically)
             .updateExactlyOne()
             .let { attendanceId }
     }
@@ -243,7 +246,7 @@ fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDepartu
     createUpdate(
             """
     UPDATE staff_attendance_external 
-    SET departed = :departed
+    SET departed = :departed, departed_automatically = false
     WHERE id = :id AND departed IS NULL AND arrived < :departed
     """
                 .trimIndent()
@@ -257,13 +260,14 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     groupId: GroupId?,
     arrivalTime: HelsinkiDateTime,
     departureTime: HelsinkiDateTime?,
-    occupancyCoefficient: BigDecimal?
+    occupancyCoefficient: BigDecimal?,
+    departedAutomatically: Boolean = false
 ): StaffAttendanceExternalId {
     if (attendanceId == null) {
         return createUpdate(
                 """
-            INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient)
-            VALUES (:name, :groupId, :arrived, :departed, :occupancyCoefficient)
+            INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
+            VALUES (:name, :groupId, :arrived, :departed, :occupancyCoefficient, :departedAutomatically)
             RETURNING id
             """
                     .trimIndent()
@@ -273,13 +277,14 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("occupancyCoefficient", occupancyCoefficient)
+            .bind("departedAutomatically", departedAutomatically)
             .executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceExternalId>()
     } else {
         return createUpdate(
                 """
             UPDATE staff_attendance_external
-            SET name = :name, arrived = :arrived, departed = :departed
+            SET name = :name, arrived = :arrived, departed = :departed, departed_automatically = :departedAutomatically
             WHERE id = :id
             """
                     .trimIndent()
@@ -288,6 +293,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("name", name)
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
+            .bind("departedAutomatically", departedAutomatically)
             .updateExactlyOne()
             .let { attendanceId }
     }

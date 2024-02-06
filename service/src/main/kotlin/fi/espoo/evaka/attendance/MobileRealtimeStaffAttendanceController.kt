@@ -125,7 +125,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 attendance.arrived,
                                 attendance.departed,
                                 occupancyCoefficient,
-                                attendance.type
+                                attendance.type,
+                                false
                             )
                         }
                     }
@@ -191,7 +192,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             attendance.arrived,
                             attendance.departed,
                             occupancyCoefficient,
-                            attendance.type
+                            attendance.type,
+                            false
                         )
                     }
                 }
@@ -276,7 +278,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 occupancyCoefficient =
                                     occupancyCoefficients[attendance.groupId]
                                         ?: occupancyCoefficientZero,
-                                type = attendance.type
+                                type = attendance.type,
+                                departedAutomatically = false
                             )
                         }
 
