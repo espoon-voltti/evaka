@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as Sentry from '@sentry/browser'
 import { faChevronUp } from 'Icons'
+import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -148,6 +149,15 @@ export interface TreeNode {
   checked: boolean
   children: TreeNode[]
 }
+
+export const sortTreeByText = (tree: TreeNode[]): TreeNode[] =>
+  sortBy(
+    tree.map((node) => ({
+      ...node,
+      children: sortTreeByText(node.children)
+    })),
+    (node) => node.text
+  )
 
 interface TreeDropdownProps<N extends TreeNode> {
   tree: N[]

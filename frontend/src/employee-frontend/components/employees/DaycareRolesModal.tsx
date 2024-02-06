@@ -21,6 +21,7 @@ import { UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import TreeDropdown, {
+  sortTreeByText,
   TreeNode
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -73,26 +74,28 @@ export default React.memo(function DaycareRolesModal({
   const boundForm = useForm(
     form,
     () => ({
-      daycareTree: units.reduce<TreeNode[]>((acc, unit) => {
-        const unitNode: TreeNode = {
-          key: unit.id,
-          text: unit.name,
-          checked: false,
-          children: []
-        }
-        const careArea = acc.find((a) => a.key === unit.area.id)
-        if (careArea) {
-          careArea.children.push(unitNode)
-        } else {
-          acc.push({
-            key: unit.area.id,
-            text: unit.area.name,
+      daycareTree: sortTreeByText(
+        units.reduce<TreeNode[]>((acc, unit) => {
+          const unitNode: TreeNode = {
+            key: unit.id,
+            text: unit.name,
             checked: false,
-            children: [unitNode]
-          })
-        }
-        return acc
-      }, []),
+            children: []
+          }
+          const careArea = acc.find((a) => a.key === unit.area.id)
+          if (careArea) {
+            careArea.children.push(unitNode)
+          } else {
+            acc.push({
+              key: unit.area.id,
+              text: unit.area.name,
+              checked: false,
+              children: [unitNode]
+            })
+          }
+          return acc
+        }, [])
+      ),
       role: {
         domValue: scopedRoles[0],
         options: scopedRoles.map((r) => ({
