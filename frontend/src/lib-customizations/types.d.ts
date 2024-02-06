@@ -214,9 +214,9 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * Display monthly time usage summary in citizen calendar views
+   * Display time usage info in citizen calendar views
    */
-  monthlyTimeUsageSummary?: boolean
+  timeUsageInfo?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

@@ -293,8 +293,7 @@ const Month = React.memo(function Month({
     () => setMonthlySummaryInfoOpen((prev) => !prev),
     []
   )
-  const displaySummary =
-    featureFlags.monthlyTimeUsageSummary && childSummaries.length > 0
+  const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
       <MonthTitle>
@@ -304,7 +303,7 @@ const Month = React.memo(function Month({
             onClick={onMonthlySummaryInfoClick}
             aria-label={i18n.common.openExpandingInfo}
             margin="zero"
-            data-qa="sensitive-flag-info-button"
+            data-qa={`monthly-summary-info-button-${month}-${year}`}
             open={monthlySummaryInfoOpen}
           />
         )}
@@ -318,6 +317,7 @@ const Month = React.memo(function Month({
               childSummaries={childSummaries}
             />
           }
+          data-qa={`monthly-summary-info-container-${month}-${year}`}
           close={() => setMonthlySummaryInfoOpen(false)}
         />
       )}

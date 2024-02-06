@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 import styled from 'styled-components'
 
@@ -26,9 +30,9 @@ const HoursMinutes = ({ minutes }: { minutes: number }) => {
   const i18n = useTranslation()
   return (
     <>
-      {hours} {i18n.calendar.monthSummary.hours}{' '}
+      {hours} {i18n.calendar.monthSummary.hours}
       {!!extraMinutes &&
-        extraMinutes + ' ' + i18n.calendar.monthSummary.minutes}
+        ' ' + extraMinutes + ' ' + i18n.calendar.monthSummary.minutes}
     </>
   )
 }
@@ -53,12 +57,12 @@ export default React.memo(function MonthSummary({
   const i18n = useTranslation()
   return (
     <>
-      <Title>
+      <Title data-qa="monthly-summary-info-title">
         {i18n.calendar.monthSummary.title}{' '}
         {`${start.format('dd.MM.')} - ${end.format()}`}
       </Title>
       {childSummaries.map((summary, index) => (
-        <SummaryContainer key={index}>
+        <SummaryContainer key={index} data-qa="monthly-summary-info-text">
           <p>
             <strong>{summary.name}</strong>
           </p>

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useCallback, useState } from 'react'
 import styled, { css } from 'styled-components'
 
@@ -14,6 +18,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../localization'
@@ -71,17 +76,18 @@ export default React.memo(function MonthElem({
     () => setMonthlySummaryInfoOpen((prev) => !prev),
     []
   )
+  const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   return (
     <>
       <MonthSummaryContainer>
         <MonthTitle>
           {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
-          {childSummaries.length > 0 && (
+          {displaySummary && (
             <InlineInfoButton
               onClick={onMonthlySummaryInfoClick}
               aria-label={i18n.common.openExpandingInfo}
               margin="zero"
-              data-qa="sensitive-flag-info-button"
+              data-qa={`mobile-monthly-summary-info-button-${calendarMonth.monthNumber}-${calendarMonth.year}`}
               open={monthlySummaryInfoOpen}
             />
           )}
@@ -95,6 +101,7 @@ export default React.memo(function MonthElem({
                 childSummaries={childSummaries}
               />
             }
+            data-qa={`mobile-monthly-summary-info-container-${calendarMonth.monthNumber}-${calendarMonth.year}`}
             close={() => setMonthlySummaryInfoOpen(false)}
           />
         )}

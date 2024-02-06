@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendar } from 'Icons'
 import sum from 'lodash/sum'
