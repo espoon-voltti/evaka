@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.old.VardaResetService
 import fi.espoo.evaka.varda.old.VardaUpdateService
@@ -146,6 +147,10 @@ enum class ScheduledJob(
     ScheduleOrphanAttachmentDeletion(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+    ),
+    DatabaseSanityChecks(
+        ScheduledJobs::databaseSanityChecks,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45)))
     )
 }
 
@@ -326,4 +331,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction {
             attachmentService.scheduleOrphanAttachmentDeletion(it, clock, dryRun = true)
         }
+
+    fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) =
+        db.transaction { runSanityChecks(it, clock) }
 }
