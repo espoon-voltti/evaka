@@ -478,6 +478,13 @@ const AttendanceRow = React.memo(function AttendanceRow({
   const { i18n } = useTranslation()
   const today = LocalDate.todayInHelsinkiTz()
 
+  const attendanceTooltipText = (attendance: Attendance) =>
+    attendance.departedAutomatically ? (
+      <div>
+        <div>{i18n.unit.staffAttendance.departedAutomatically}</div>
+      </div>
+    ) : undefined
+
   return (
     <DayTr data-qa={`attendance-row-${rowIndex}`}>
       <NameTd partialRow={false} rowIndex={rowIndex}>
@@ -563,16 +570,26 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 </PlannedAttendanceTimes>
                 <AttendanceTimes data-qa="attendance-day">
                   {attendancesForToday.length > 0 ? (
-                    attendancesForToday.map((attendance, i) => (
-                      <AttendanceCell key={i}>
-                        <AttendanceTime data-qa="arrival-time">
-                          {renderTime(attendance.arrived, date)}
-                        </AttendanceTime>
-                        <AttendanceTime data-qa="departure-time">
-                          {renderTime(attendance.departed, date)}
-                        </AttendanceTime>
-                      </AttendanceCell>
-                    ))
+                    attendancesForToday.map((attendance, i) => {
+                      const tooltip = attendanceTooltipText(attendance)
+                      return (
+                        <Tooltip
+                          key={i}
+                          tooltip={tooltip}
+                          data-qa="attendance-tooltip"
+                        >
+                          <AttendanceCell>
+                            <AttendanceTime data-qa="arrival-time">
+                              {renderTime(attendance.arrived, date)}
+                            </AttendanceTime>
+                            <AttendanceTime data-qa="departure-time">
+                              {renderTime(attendance.departed, date)}
+                              {tooltip ? `(*)` : ''}
+                            </AttendanceTime>
+                          </AttendanceCell>
+                        </Tooltip>
+                      )
+                    })
                   ) : (
                     <AttendanceCell>
                       <AttendanceTime>{renderTime(null, date)}</AttendanceTime>

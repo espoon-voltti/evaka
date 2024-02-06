@@ -136,7 +136,8 @@ SELECT
     sa.type,
     emp.first_name,
     emp.last_name,
-    soc.coefficient AS currentOccupancyCoefficient
+    soc.coefficient AS currentOccupancyCoefficient,
+    sa.departed_automatically
 FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id

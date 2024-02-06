@@ -1075,8 +1075,8 @@ fun Database.Transaction.insert(
 ): StaffAttendanceRealtimeId {
     val sql =
         """
-INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
-VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
+INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
+VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type, :departedAutomatically)
 RETURNING id
     """
     return insertTestDataRow(staffAttendanceRealtime, sql).let(::StaffAttendanceRealtimeId)

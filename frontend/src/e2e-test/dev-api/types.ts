@@ -630,6 +630,7 @@ export interface DevRealtimeStaffAttendance {
   departed: HelsinkiDateTime | null
   occupancyCoefficient: number
   type: StaffAttendanceType
+  departedAutomatically: boolean
 }
 
 export interface DevCalendarEvent {

@@ -42,6 +42,7 @@ export interface ArrivalRequest {
 export interface Attendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  departedAutomatically: boolean
   groupId: UUID | null
   id: UUID
   occupancyCoefficient: number
@@ -158,6 +159,7 @@ export interface ExpectedAbsencesOnDepartureRequest {
 export interface ExternalAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
+  departedAutomatically: boolean
   groupId: UUID
   id: UUID
   name: string

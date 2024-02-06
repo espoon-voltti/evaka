@@ -2505,7 +2505,8 @@ export const fi = {
         name: 'Nimi',
         namePlaceholder: 'Sukunimi Etunimi',
         group: 'Ryhmä'
-      }
+      },
+      departedAutomatically: 'Automaattikatkaistu'
     },
     error: {
       placement: {

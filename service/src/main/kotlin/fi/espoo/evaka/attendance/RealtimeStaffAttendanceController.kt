@@ -99,7 +99,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.arrived,
                                                 att.departed,
                                                 att.occupancyCoefficient,
-                                                att.type
+                                                att.type,
+                                                att.departedAutomatically
                                             )
                                         },
                                 plannedAttendances = plannedAttendances[employeeId] ?: emptyList()
@@ -124,7 +125,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.arrived,
                                                 att.departed,
                                                 att.occupancyCoefficient,
-                                                att.type
+                                                att.type,
+                                                att.departedAutomatically
                                             )
                                         },
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
