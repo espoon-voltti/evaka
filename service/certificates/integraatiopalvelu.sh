@@ -75,6 +75,9 @@ mkdir -p ${CACHE_PATH}
 if [ "$ACTION" = "download" ]; then
     certificate_download "qat.integraatiopalvelu.fi_entrust_2023" # Valid from 2023-03-02 to 2024-02-29
     certificate_download "pr0.integraatiopalvelu.fi_entrust_2023" # Valid from 2023-03-09 to 2024-02-29
+
+    certificate_download "qat.integraatiopalvelu.fi_2024"
+    certificate_download "pr0.integraatiopalvelu.fi_2024"
 elif [ "$ACTION" = "truststore" ]; then
     if test -z "$TRUSTSTORE_PASSWORD"; then
         echo "Error: TRUSTSTORE_PASSWORD environment variable missing."
@@ -85,10 +88,17 @@ elif [ "$ACTION" = "truststore" ]; then
     fi
     mkdir -p truststore
     qa_filename="truststore/qa.p12"
+
     certificate_add "qat.integraatiopalvelu.fi_entrust_2023" "$qa_filename" # Valid from 2023-03-02 to 2024-02-29
 
+    certificate_add "qat.integraatiopalvelu.fi_2024" "$qa_filename"
+
     production_filename="truststore/production.p12"
+
     certificate_add "pr0.integraatiopalvelu.fi_entrust_2023" "$production_filename" # Valid from 2023-03-09 to 2024-02-29
+
+    certificate_add "pr0.integraatiopalvelu.fi_2024" "$production_filename"
+
 else
     echo "Usage: $0 download|truststore"
     echo "  download:   download certificates"
