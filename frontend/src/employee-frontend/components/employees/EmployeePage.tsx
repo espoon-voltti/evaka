@@ -185,7 +185,7 @@ const EmployeePage = React.memo(function EmployeePage({
           {sortedRoles.map(({ daycareId, daycareName, role }) => (
             <Tr key={`${daycareId}/${role}`}>
               <Td>
-                <Link to={`units/${daycareId}`}>{daycareName}</Link>
+                <Link to={`/units/${daycareId}`}>{daycareName}</Link>
               </Td>
               <Td>{i18n.roles.adRoles[role]}</Td>
               <Td>
