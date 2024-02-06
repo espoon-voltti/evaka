@@ -4,7 +4,7 @@
 
 import { mutation, query } from 'lib-common/query'
 
-import { getPreschoolTermsV2 } from '../../api/applications'
+import { getPreschoolTermsResult } from '../../api/applications'
 import { createQueryKeys } from '../../query'
 
 import {
@@ -44,7 +44,7 @@ export const questionnairesQuery = query({
 })
 
 export const preschoolTermsQuery = query({
-  api: getPreschoolTermsV2,
+  api: getPreschoolTermsResult,
   queryKey: () => queryKeys.preschoolTerms()
 })
 
