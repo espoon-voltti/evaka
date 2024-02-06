@@ -8,6 +8,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 
 enum class PlacementType : DatabaseEnum {
@@ -114,6 +115,28 @@ enum class PlacementType : DatabaseEnum {
             TEMPORARY_DAYCARE -> ScheduleType.RESERVATION_REQUIRED
             TEMPORARY_DAYCARE_PART_DAY -> ScheduleType.RESERVATION_REQUIRED
             SCHOOL_SHIFT_CARE -> ScheduleType.RESERVATION_REQUIRED
+        }
+
+    fun fixedScheduleRange(
+        dailyPreschoolTime: TimeRange?,
+        dailyPreparatoryTime: TimeRange?
+    ): TimeRange? =
+        when (this) {
+            CLUB,
+            DAYCARE,
+            DAYCARE_PART_TIME,
+            DAYCARE_FIVE_YEAR_OLDS,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            TEMPORARY_DAYCARE,
+            TEMPORARY_DAYCARE_PART_DAY,
+            SCHOOL_SHIFT_CARE -> null
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE,
+            PRESCHOOL_CLUB,
+            PRESCHOOL_DAYCARE_ONLY -> dailyPreschoolTime
+            PREPARATORY,
+            PREPARATORY_DAYCARE,
+            PREPARATORY_DAYCARE_ONLY -> dailyPreparatoryTime
         }
 
     override val sqlType: String = "placement_type"

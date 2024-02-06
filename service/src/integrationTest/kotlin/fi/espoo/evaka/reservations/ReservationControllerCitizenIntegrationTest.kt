@@ -575,13 +575,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         )
                                     ),
                                 usedService =
-                                    UsedService.Ranges(
-                                        listOf(
-                                            TimeRange(
-                                                LocalTime.of(9, 0),
-                                                LocalTime.of(16, 0),
+                                    UsedServiceResult(
+                                        reservedMinutes = 420,
+                                        attendedMinutes = 400,
+                                        usedServiceMinutes = 420,
+                                        usedServiceRanges =
+                                            listOf(
+                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0))
                                             )
-                                        )
                                     ),
                             ),
                         )
@@ -609,13 +610,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         )
                                     ),
                                 usedService =
-                                    UsedService.Ranges(
-                                        listOf(
-                                            TimeRange(
-                                                LocalTime.of(8, 45),
-                                                LocalTime.of(16, 20),
-                                            )
-                                        )
+                                    UsedServiceResult(
+                                        reservedMinutes = 420,
+                                        attendedMinutes = 455,
+                                        usedServiceMinutes = 455,
+                                        listOf(TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20)))
                                     ),
                             ),
                         )
@@ -636,13 +635,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         )
                                     ),
                                 usedService =
-                                    UsedService.Ranges(
-                                        listOf(
-                                            TimeRange(
-                                                LocalTime.of(8, 0),
-                                                LocalTime.of(16, 0),
-                                            )
-                                        )
+                                    UsedServiceResult(
+                                        reservedMinutes = 0,
+                                        attendedMinutes = 480,
+                                        usedServiceMinutes = 480,
+                                        listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
                                     ),
                             ),
                         )
@@ -656,7 +653,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 child.id,
                                 reservations = listOf(),
                                 attendances = listOf(),
-                                usedService = UsedService.Average((120.0 * 60 / 21).roundToInt()),
+                                usedService =
+                                    UsedServiceResult(
+                                        reservedMinutes = 0,
+                                        attendedMinutes = 0,
+                                        usedServiceMinutes = (120.0 * 60 / 21).roundToInt(),
+                                        usedServiceRanges = emptyList()
+                                    ),
                             ),
                         )
                 ),
@@ -1845,7 +1848,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         absence: AbsenceInfo? = null,
         reservations: List<ReservationResponse> = emptyList(),
         attendances: List<OpenTimeRange> = emptyList(),
-        usedService: UsedService? = null,
+        usedService: UsedServiceResult? = null,
     ) =
         ReservationResponseDayChild(
             childId,
