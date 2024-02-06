@@ -27,6 +27,8 @@ RUN mkdir -p /mnt/rootfs \
 
 ## Base containers ##
 
+ARG CACHE_BUST
+
 FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} as base
 
 USER root
