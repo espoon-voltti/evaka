@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.asLocalHmRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -171,11 +172,11 @@ class ReservationControllerCitizen(
                                                                         },
                                                                         childReservations
                                                                             .mapNotNull {
-                                                                                it.asTimeRange()
+                                                                                it.asLocalHmRange()
                                                                             },
                                                                         childAttendances
                                                                             .mapNotNull {
-                                                                                it.asTimeRange()
+                                                                                it.asLocalHmRange()
                                                                             }
                                                                     )
                                                                 }
@@ -492,7 +493,7 @@ data class ReservationChild(
                                 reservedMinutes =
                                     childDays.sumOf { day ->
                                         day.reservations
-                                            .mapNotNull { it.asTimeRange() }
+                                            .mapNotNull { it.asLocalHmRange() }
                                             .sumOf { it.durationInMinutes() }
                                     },
                                 usedServiceMinutes =

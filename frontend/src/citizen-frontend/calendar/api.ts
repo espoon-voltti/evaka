@@ -21,10 +21,13 @@ import {
   AbsenceRequest,
   DailyReservationRequest,
   ReservationResponseDay,
-  ReservationsResponse
+  ReservationsResponse,
+  UsedService
 } from 'lib-common/generated/api-types/reservations'
+import { TimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import LocalHmRange from 'lib-common/local-hm-range'
 import LocalTime from 'lib-common/local-time'
 import { parseReservationDto } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
@@ -69,15 +72,16 @@ export async function getReservations(
             })),
             reservations: child.reservations.map(parseReservationDto),
             usedService:
-              child.usedService !== null && child.usedService.type === 'RANGES'
-                ? {
-                    ...child.usedService,
-                    ranges: child.usedService.ranges.map((r) => ({
-                      start: LocalTime.parseIso(r.start),
-                      end: LocalTime.parseIso(r.end)
-                    }))
-                  }
-                : child.usedService
+              child.usedService !== null
+                ? child.usedService.type === 'RANGES'
+                  ? {
+                      ...child.usedService,
+                      ranges: child.usedService.ranges.map((r) =>
+                        LocalHmRange.parseJson(r)
+                      )
+                    }
+                  : child.usedService
+                : null
           }))
         })
       ),

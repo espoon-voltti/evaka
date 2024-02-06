@@ -43,6 +43,8 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.LocalHm
+import fi.espoo.evaka.shared.domain.LocalHmRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.AccessControl
@@ -567,9 +569,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedService.Ranges(
                                         listOf(
-                                            TimeRange(
-                                                LocalTime.of(9, 0),
-                                                LocalTime.of(16, 0),
+                                            LocalHmRange(
+                                                LocalHm(9, 0),
+                                                LocalHm(16, 0),
                                             )
                                         )
                                     ),
@@ -601,9 +603,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedService.Ranges(
                                         listOf(
-                                            TimeRange(
-                                                LocalTime.of(8, 45),
-                                                LocalTime.of(16, 20),
+                                            LocalHmRange(
+                                                LocalHm(8, 45),
+                                                LocalHm(16, 20),
                                             )
                                         )
                                     ),
@@ -628,9 +630,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedService.Ranges(
                                         listOf(
-                                            TimeRange(
-                                                LocalTime.of(8, 0),
-                                                LocalTime.of(16, 0),
+                                            LocalHmRange(
+                                                LocalHm(8, 0),
+                                                LocalHm(16, 0),
                                             )
                                         )
                                     ),

@@ -29,11 +29,14 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.LocalHmSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.LocalHmRange
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.asLocalHmRange
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
@@ -151,10 +154,10 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
         }
     }
 
-    fun asTimeRange(): TimeRange? {
+    fun asLocalHmRange(): LocalHmRange? {
         return when (this) {
             is NoTimes -> null
-            is Times -> TimeRange(startTime, endTime)
+            is Times -> TimeRange(startTime, endTime).asLocalHmRange()
         }
     }
 
@@ -187,8 +190,6 @@ data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) :
             else (endTime ?: LocalTime.MAX).compareTo(other.endTime ?: LocalTime.MAX)
         }
     }
-
-    fun asTimeRange(): TimeRange? = endTime?.let { TimeRange(startTime, it) }
 }
 
 data class CreateReservationsResult(
@@ -550,7 +551,7 @@ sealed interface UsedService {
     val durationInMinutes: Int
 
     @JsonTypeName("RANGES")
-    data class Ranges(val ranges: List<TimeRange>) : UsedService {
+    data class Ranges(val ranges: List<LocalHmRange>) : UsedService {
         override val durationInMinutes: Int
             get() = ranges.sumOf { it.durationInMinutes() }
     }
@@ -562,8 +563,8 @@ sealed interface UsedService {
             serviceNeedHours: Int,
             placementType: PlacementType,
             absences: List<AbsenceCategory>,
-            reservations: List<TimeRange>,
-            attendances: List<TimeRange>
+            reservations: List<LocalHmRange>,
+            attendances: List<LocalHmRange>
         ): UsedService {
             if (reservations.isEmpty() && attendances.isEmpty()) {
                 val fullyAbsent = absences.toSet() == placementType.absenceCategories()
@@ -575,20 +576,9 @@ sealed interface UsedService {
                 }
             }
 
-            val result = mutableListOf<TimeRange>()
-            (reservations + attendances)
-                .sortedBy { it.start }
-                .forEach {
-                    val last = result.lastOrNull()
-                    if (last == null || (!it.intersects(last) && !it.isAdjacentTo(last))) {
-                        result.add(it)
-                    } else {
-                        result[result.lastIndex] =
-                            TimeRange(minOf(it.start, last.start), maxOf(it.end, last.end))
-                    }
-                }
-
-            return Ranges(result)
+            return Ranges(
+                LocalHmSet.empty().addAll(reservations).addAll(attendances).ranges().toList()
+            )
         }
     }
 }

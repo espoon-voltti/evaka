@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
+import LocalHmRange from '../../local-hm-range'
 import LocalTime from '../../local-time'
 import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
@@ -400,7 +401,7 @@ export namespace UsedService {
   export interface Ranges {
     type: 'RANGES'
     durationInMinutes: number
-    ranges: TimeRange[]
+    ranges: LocalHmRange[]
   }
 }
 

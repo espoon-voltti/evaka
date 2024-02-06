@@ -6,21 +6,21 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.domain.TimeRange
-import java.time.LocalTime
+import fi.espoo.evaka.shared.domain.LocalHm
+import fi.espoo.evaka.shared.domain.LocalHmRange
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UsedServiceTests {
-    private fun range(h1: Int, h2: Int) = TimeRange(LocalTime.of(h1, 0), LocalTime.of(h2, 0))
+    private fun range(h1: Int, h2: Int) = LocalHmRange(LocalHm(h1, 0), LocalHm(h2, 0))
 
     private fun compute(
         serviceNeedHours: Int = 120,
         placementType: PlacementType = PlacementType.DAYCARE,
         absences: List<AbsenceCategory> = listOf(),
-        reservations: List<TimeRange> = listOf(),
-        attendances: List<TimeRange> = listOf()
+        reservations: List<LocalHmRange> = listOf(),
+        attendances: List<LocalHmRange> = listOf()
     ) = UsedService.compute(serviceNeedHours, placementType, absences, reservations, attendances)
 
     @Test
@@ -34,42 +34,45 @@ class UsedServiceTests {
     @Test
     fun `uses reservations if no attendances exist`() {
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 12))),
-            compute(reservations = listOf(range(9, 12)))
+            UsedService.Ranges(listOf(this.range(9, 12))),
+            compute(reservations = listOf(this.range(9, 12)))
         )
     }
 
     @Test
     fun `uses attendances if no reservations exist`() {
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 12))),
-            compute(attendances = listOf(range(9, 12)))
+            UsedService.Ranges(listOf(this.range(9, 12))),
+            compute(attendances = listOf(this.range(9, 12)))
         )
     }
 
     @Test
     fun `supports multiple distinct ranges`() {
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 12), range(17, 20))),
-            compute(reservations = listOf(range(9, 12), range(17, 20)))
+            UsedService.Ranges(listOf(this.range(9, 12), this.range(17, 20))),
+            compute(reservations = listOf(this.range(9, 12), this.range(17, 20)))
         )
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 12), range(17, 20))),
-            compute(reservations = listOf(range(9, 12)), attendances = listOf(range(17, 20)))
+            UsedService.Ranges(listOf(this.range(9, 12), this.range(17, 20))),
+            compute(
+                reservations = listOf(this.range(9, 12)),
+                attendances = listOf(this.range(17, 20))
+            )
         )
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 12), range(17, 20))),
-            compute(attendances = listOf(range(9, 12), range(17, 20)))
+            UsedService.Ranges(listOf(this.range(9, 12), this.range(17, 20))),
+            compute(attendances = listOf(this.range(9, 12), this.range(17, 20)))
         )
     }
 
     @Test
     fun `merges adjacent and overlapping ranges`() {
         assertEquals(
-            UsedService.Ranges(listOf(range(9, 15))),
+            UsedService.Ranges(listOf(this.range(9, 15))),
             compute(
-                reservations = listOf(range(9, 12)),
-                attendances = listOf(range(11, 14), range(14, 15))
+                reservations = listOf(this.range(9, 12)),
+                attendances = listOf(this.range(11, 14), this.range(14, 15))
             )
         )
     }
