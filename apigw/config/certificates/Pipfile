@@ -7,7 +7,7 @@ verify_ssl = true
 black = "==20.8b1"
 
 [packages]
-cryptography = "==41.0.6"
+cryptography = "==42.0.0"
 
 [requires]
 python_version = "3.8"
