@@ -38,6 +38,7 @@ export interface CitizenMessageBody {
   title: string
 }
 
+
 export namespace CitizenMessageThread {
   /**
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
@@ -50,7 +51,7 @@ export namespace CitizenMessageThread {
     sender: MessageAccount | null
     urgent: boolean
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
   */

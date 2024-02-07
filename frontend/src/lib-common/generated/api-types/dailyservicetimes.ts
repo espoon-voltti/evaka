@@ -52,6 +52,7 @@ export type DailyServiceTimesType =
   | 'IRREGULAR'
   | 'VARIABLE_TIME'
 
+
 export namespace DailyServiceTimesValue {
   /**
   * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.IrregularTimes
@@ -67,7 +68,7 @@ export namespace DailyServiceTimesValue {
     validityPeriod: DateRange
     wednesday: TimeRange | null
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.RegularTimes
   */
@@ -76,7 +77,7 @@ export namespace DailyServiceTimesValue {
     regularTimes: TimeRange
     validityPeriod: DateRange
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.VariableTimes
   */

@@ -141,3 +141,10 @@ export type UserRole =
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
   | 'MOBILE'
   | 'GROUP_STAFF'
+
+/**
+* Generated from fi.espoo.evaka.shared.controllers.Wrapper
+*/
+export interface Wrapper<T> {
+  data: T
+}

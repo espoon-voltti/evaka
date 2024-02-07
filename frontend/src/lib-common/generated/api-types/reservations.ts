@@ -126,6 +126,7 @@ export interface DailyChildReservationResult {
   children: Record<string, ReservationChildInfo>
 }
 
+
 export namespace DailyReservationRequest {
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absent
@@ -135,7 +136,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Nothing
   */
@@ -144,7 +145,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Present
   */
@@ -153,7 +154,7 @@ export namespace DailyReservationRequest {
     childId: UUID
     date: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
   */
@@ -227,6 +228,7 @@ export interface OperationalDay {
   dateInfo: UnitDateInfo
 }
 
+
 export namespace ReservableTimeRange {
   /**
   * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.IntermittentShiftCare
@@ -235,7 +237,7 @@ export namespace ReservableTimeRange {
     type: 'INTERMITTENT_SHIFT_CARE'
     placementUnitOperationTime: TimeRange | null
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.Normal
   */
@@ -251,6 +253,7 @@ export namespace ReservableTimeRange {
 export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | ReservableTimeRange.Normal
 
 
+
 export namespace Reservation {
   /**
   * Generated from fi.espoo.evaka.reservations.Reservation.NoTimes
@@ -258,7 +261,7 @@ export namespace Reservation {
   export interface NoTimes {
     type: 'NO_TIMES'
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.Reservation.Times
   */
@@ -308,6 +311,7 @@ export interface ReservationGroup {
   name: string
 }
 
+
 export namespace ReservationResponse {
   /**
   * Generated from fi.espoo.evaka.reservations.ReservationResponse.NoTimes
@@ -316,7 +320,7 @@ export namespace ReservationResponse {
     type: 'NO_TIMES'
     staffCreated: boolean
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.ReservationResponse.Times
   */
@@ -385,6 +389,7 @@ export interface UnitDateInfo {
   time: TimeRange | null
 }
 
+
 export namespace UsedService {
   /**
   * Generated from fi.espoo.evaka.reservations.UsedService.Average
@@ -393,7 +398,7 @@ export namespace UsedService {
     type: 'AVERAGE'
     durationInMinutes: number
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.reservations.UsedService.Ranges
   */

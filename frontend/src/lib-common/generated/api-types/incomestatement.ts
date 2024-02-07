@@ -82,6 +82,7 @@ export type IncomeSource =
   | 'INCOMES_REGISTER'
   | 'ATTACHMENTS'
 
+
 export namespace IncomeStatement {
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.ChildIncome
@@ -101,7 +102,7 @@ export namespace IncomeStatement {
     startDate: LocalDate
     updated: HelsinkiDateTime
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.HighestFee
   */
@@ -118,7 +119,7 @@ export namespace IncomeStatement {
     startDate: LocalDate
     updated: HelsinkiDateTime
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.Income
   */
@@ -163,6 +164,7 @@ export interface IncomeStatementAwaitingHandler {
   type: IncomeStatementType
 }
 
+
 export namespace IncomeStatementBody {
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.ChildIncome
@@ -174,7 +176,7 @@ export namespace IncomeStatementBody {
     otherInfo: string
     startDate: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.HighestFee
   */
@@ -183,7 +185,7 @@ export namespace IncomeStatementBody {
     endDate: LocalDate | null
     startDate: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.Income
   */

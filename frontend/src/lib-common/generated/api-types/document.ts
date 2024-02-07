@@ -11,6 +11,7 @@ import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { UUID } from '../../types'
 
+
 export namespace AnsweredQuestion {
   /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxAnswer
@@ -20,7 +21,7 @@ export namespace AnsweredQuestion {
     answer: boolean
     questionId: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxGroupAnswer
   */
@@ -29,7 +30,7 @@ export namespace AnsweredQuestion {
     answer: CheckboxGroupAnswerContent[]
     questionId: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
   */
@@ -38,7 +39,7 @@ export namespace AnsweredQuestion {
     answer: string | null
     questionId: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.StaticTextDisplayAnswer
   */
@@ -47,7 +48,7 @@ export namespace AnsweredQuestion {
     answer: never | null
     questionId: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.TextAnswer
   */
@@ -257,6 +258,7 @@ export interface ExportedDocumentTemplate {
   validity: DateRange
 }
 
+
 export namespace Question {
   /**
   * Generated from fi.espoo.evaka.document.Question.CheckboxGroupQuestion
@@ -268,7 +270,7 @@ export namespace Question {
     label: string
     options: CheckboxGroupQuestionOption[]
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.Question.CheckboxQuestion
   */
@@ -278,7 +280,7 @@ export namespace Question {
     infoText: string
     label: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.Question.RadioButtonGroupQuestion
   */
@@ -289,7 +291,7 @@ export namespace Question {
     label: string
     options: RadioButtonGroupQuestionOption[]
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.Question.StaticTextDisplayQuestion
   */
@@ -300,7 +302,7 @@ export namespace Question {
     label: string
     text: string
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.document.Question.TextQuestion
   */
