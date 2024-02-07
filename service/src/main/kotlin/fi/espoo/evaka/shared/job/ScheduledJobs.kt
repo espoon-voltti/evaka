@@ -14,6 +14,7 @@ import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
 import fi.espoo.evaka.document.childdocument.ChildDocumentService
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.invoicing.service.NewCustomerIncomeNotification
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
@@ -140,6 +141,13 @@ enum class ScheduledJob(
         ScheduledJobs::sendOutdatedIncomeNotifications,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45)))
     ),
+    SendNewCustomerIncomeNotification(
+        ScheduledJobs::sendNewCustomerIncomeNotifications,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 45 6 1 * *") // first day of month, 6:45
+        )
+    ),
     SendCalendarEventDigests(
         ScheduledJobs::sendCalendarEventDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
@@ -166,6 +174,7 @@ class ScheduledJobs(
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
+    private val newCustomerIncomeNotification: NewCustomerIncomeNotification,
     private val calendarEventNotificationService: CalendarEventNotificationService,
     private val financeDecisionGenerator: FinanceDecisionGenerator,
     private val childDocumentService: ChildDocumentService,
@@ -310,6 +319,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { tx ->
             val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications about outdated income")
+        }
+    }
+
+    fun sendNewCustomerIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = newCustomerIncomeNotification.scheduleNotifications(tx, clock)
+            logger.info("Scheduled $count notifications for new customer about income")
         }
     }
 

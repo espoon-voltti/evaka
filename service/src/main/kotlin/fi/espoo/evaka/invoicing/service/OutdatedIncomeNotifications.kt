@@ -142,7 +142,7 @@ class OutdatedIncomeNotifications(
                 emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
                 personId = msg.guardianId,
                 fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.outdatedIncomeNotification(msg.type, language),
+                content = emailMessageProvider.incomeNotification(msg.type, language),
                 traceId = msg.guardianId.toString()
             )
             ?.also { emailClient.send(it) }

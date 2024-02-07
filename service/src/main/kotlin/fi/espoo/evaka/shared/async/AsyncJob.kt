@@ -294,6 +294,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNewCustomerIncomeNotificationEmail(val guardianId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class DeleteAttachment(val attachmentId: AttachmentId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -342,6 +346,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,
                     SendVasuNotificationEmail::class,
+                    SendNewCustomerIncomeNotificationEmail::class,
                 )
             )
         val urgent =

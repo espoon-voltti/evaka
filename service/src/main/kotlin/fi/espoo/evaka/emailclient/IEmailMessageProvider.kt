@@ -79,7 +79,7 @@ interface IEmailMessageProvider {
 
     fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
 
-    fun outdatedIncomeNotification(
+    fun incomeNotification(
         notificationType: IncomeNotificationType,
         language: Language
     ): EmailContent
