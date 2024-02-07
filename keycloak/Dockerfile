@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.6.0
 # SPDX-FileCopyrightText: 2017-2023 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
@@ -5,16 +6,6 @@
 ARG KEYCLOAK_VERSION=23.0.4
 
 ## Package containers ##
-
-FROM registry.access.redhat.com/ubi9 AS ubi-curl
-
-RUN mkdir -p /mnt/rootfs \
- && dnf install \
-     --installroot /mnt/rootfs curl \
-     --releasever 9 --setopt install_weak_deps=false \
-     --nodocs -y \
- && dnf --installroot /mnt/rootfs clean all
-
 
 FROM registry.access.redhat.com/ubi9 AS ubi-maven
 
@@ -27,12 +18,9 @@ RUN mkdir -p /mnt/rootfs \
 
 ## Base containers ##
 
-ARG CACHE_BUST
-
 FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} as base
 
 USER root
-
 
 FROM base as maven-builder
 
@@ -83,12 +71,10 @@ ENV KC_METRICS_ENABLED=true
 ENV KC_DB=postgres
 ENV KC_HTTP_RELATIVE_PATH=/auth
 
-COPY --from=ubi-curl /mnt/rootfs /
-
-RUN mkdir -p /opt/keycloak/data/password-blacklists/ \
- && curl -sSf "https://raw.githubusercontent.com/danielmiessler/SecLists/2023.2/Passwords/xato-net-10-million-passwords-1000000.txt" \
-      -o /opt/keycloak/data/password-blacklists/default.txt \
- && echo "424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51  /opt/keycloak/data/password-blacklists/default.txt" | sha256sum -c -
+ADD --chmod=0644 \
+    --checksum=sha256:424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51 \
+    https://raw.githubusercontent.com/danielmiessler/SecLists/2023.1/Passwords/xato-net-10-million-passwords-1000000.txt \
+    /opt/keycloak/data/password-blacklists/default.txt
 
 COPY --from=builder-theme /work/evaka /opt/keycloak/themes/evaka
 COPY --from=builder-authenticator /project/target/evaka-review-profile.jar \
