@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
+
 import HelsinkiDateTime from '../helsinki-date-time'
+import { JsonOf } from '../json'
 import LocalDate from '../local-date'
 
 export const vasuQuestionTypes = [
@@ -137,6 +140,77 @@ export type VasuQuestion =
   | Followup
   | Paragraph
   | StaticInfoSubsection
+
+export const mapVasuQuestion = (
+  question: JsonOf<VasuQuestion>
+): VasuQuestion =>
+  isDateQuestionJson(question)
+    ? {
+        ...question,
+        value: LocalDate.parseNullableIso(question.value)
+      }
+    : isFollowupJson(question)
+      ? {
+          ...question,
+          value: question.value.map((entry: JsonOf<FollowupEntry>) => ({
+            ...entry,
+            date: LocalDate.parseIso(entry.date),
+            edited: entry.edited && {
+              ...entry.edited,
+              editedAt: LocalDate.parseIso(entry.edited.editedAt)
+            },
+            createdDate:
+              typeof entry.createdDate === 'string'
+                ? HelsinkiDateTime.parseIso(entry.createdDate)
+                : undefined
+          }))
+        }
+      : isRadioGroupQuestionJson(question)
+        ? {
+            ...question,
+            dateRange: question.dateRange && {
+              start: LocalDate.parseIso(question.dateRange.start),
+              end: LocalDate.parseIso(question.dateRange.end)
+            }
+          }
+        : isMultiSelectQuestionJson(question)
+          ? {
+              ...question,
+              dateValue:
+                question.dateValue &&
+                mapValues(question.dateValue, (v) => LocalDate.parseIso(v)),
+              dateRangeValue:
+                question.dateRangeValue &&
+                mapValues(question.dateRangeValue, (v) => ({
+                  start: LocalDate.parseIso(v.start),
+                  end: LocalDate.parseIso(v.end)
+                }))
+            }
+          : question
+
+function isDateQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<DateQuestion> {
+  return question.type === 'DATE'
+}
+
+function isFollowupJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<Followup> {
+  return question.type === 'FOLLOWUP'
+}
+
+function isRadioGroupQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<RadioGroupQuestion> {
+  return question.type === 'RADIO_GROUP'
+}
+
+function isMultiSelectQuestionJson(
+  question: JsonOf<VasuQuestion>
+): question is JsonOf<MultiSelectQuestion> {
+  return question.type === 'MULTISELECT'
+}
 
 export interface Field {
   name: string
