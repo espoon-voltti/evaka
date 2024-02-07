@@ -4,6 +4,7 @@
 
 import { mutation, query } from 'lib-common/query'
 
+import { getPreschoolTermsResult } from '../../api/applications'
 import { createQueryKeys } from '../../query'
 
 import {
@@ -23,7 +24,8 @@ const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriods: () => ['holidayPeriods'],
   holidayPeriod: (id: string) => ['holidayPeriod', id],
   questionnaires: () => ['questionnaires'],
-  questionnaire: (id: string) => ['questionnaire', id]
+  questionnaire: (id: string) => ['questionnaire', id],
+  preschoolTerms: () => ['preschoolTerms']
 })
 
 export const holidayPeriodsQuery = query({
@@ -39,6 +41,11 @@ export const holidayPeriodQuery = query({
 export const questionnairesQuery = query({
   api: getQuestionnaires,
   queryKey: () => queryKeys.questionnaires()
+})
+
+export const preschoolTermsQuery = query({
+  api: getPreschoolTermsResult,
+  queryKey: () => queryKeys.preschoolTerms()
 })
 
 export const questionnaireQuery = query({

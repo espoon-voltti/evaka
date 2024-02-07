@@ -413,11 +413,15 @@ export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
 
 export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   try {
-    const result = await client.get<JsonOf<PreschoolTerm[]>>(
-      `/public/preschool-terms`
-    )
-    return Success.of(result.data.map(deserializePreschoolTerm))
+    const result = await getPreschoolTermsResult()
+    return Success.of(result)
   } catch (e) {
     return Failure.fromError(e)
   }
+}
+
+export async function getPreschoolTermsResult(): Promise<PreschoolTerm[]> {
+  return client
+    .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
+    .then((res) => res.data.map(deserializePreschoolTerm))
 }

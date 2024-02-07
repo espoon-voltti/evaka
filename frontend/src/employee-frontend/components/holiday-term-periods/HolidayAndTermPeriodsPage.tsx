@@ -13,12 +13,13 @@ import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H1 } from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import TermsSection from './TermsSection'
 import {
   deleteHolidayPeriodMutation,
   deleteQuestionnaireMutation,
@@ -26,7 +27,7 @@ import {
   questionnairesQuery
 } from './queries'
 
-export default React.memo(function HolidayPeriodsPage() {
+export default React.memo(function HolidayAndTermPeriodsPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -64,7 +65,10 @@ export default React.memo(function HolidayPeriodsPage() {
   return (
     <Container>
       <ContentArea opaque>
-        <H1>{i18n.titles.holidayPeriods}</H1>
+        <H1>{i18n.titles.holidayAndTermPeriods}</H1>
+      </ContentArea>
+      <ContentArea opaque>
+        <H2>{i18n.titles.holidayPeriods}</H2>
 
         <AddButtonRow
           onClick={navigateToNewHolidayPeriod}
@@ -109,7 +113,7 @@ export default React.memo(function HolidayPeriodsPage() {
           </Table>
         ))}
 
-        <H1>{i18n.holidayQuestionnaires.questionnaires}</H1>
+        <H2>{i18n.holidayQuestionnaires.questionnaires}</H2>
 
         <AddButtonRow
           onClick={navigateToNewQuestionnaire}
@@ -183,6 +187,8 @@ export default React.memo(function HolidayPeriodsPage() {
             }}
           />
         )}
+
+        <TermsSection />
       </ContentArea>
     </Container>
   )
