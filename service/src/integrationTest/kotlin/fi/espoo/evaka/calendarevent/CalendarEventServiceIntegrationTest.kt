@@ -421,7 +421,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_1.id))
+                tree = mapOf(groupId to setOf(testChild_1.id)),
+                period = created.period
             )
         val updated = updateCalendarEvent(created.id, updateForm)
 
@@ -434,7 +435,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         setOf(
                             IndividualChild(
                                 testChild_1.id,
-                                "${testChild_1.firstName} ${testChild_1.lastName}",
+                                testChild_1.firstName,
+                                testChild_1.lastName,
                                 groupId
                             )
                         )
@@ -479,7 +481,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_2.id))
+                tree = mapOf(groupId to setOf(testChild_2.id)),
+                period = created.period
             )
         val updated = updateCalendarEvent(created.id, updateForm)
         assertThat(updated)
@@ -491,7 +494,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         setOf(
                             IndividualChild(
                                 testChild_2.id,
-                                "${testChild_2.firstName} ${testChild_2.lastName}",
+                                testChild_2.firstName,
+                                testChild_2.lastName,
                                 groupId
                             )
                         )
@@ -613,7 +617,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.plusDays(4)
                 )[0]
                 .id,
-            CalendarEventUpdateForm(title = "Updated title", description = "desc, updated")
+            CalendarEventUpdateForm(
+                title = "Updated title",
+                description = "desc, updated",
+                period = form.period
+            )
         )
 
         val event =
@@ -1669,7 +1677,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Updated title",
                 description = form.description,
-                tree = form.tree
+                tree = form.tree,
+                period = form.period
             )
 
         val modifiedEventData =

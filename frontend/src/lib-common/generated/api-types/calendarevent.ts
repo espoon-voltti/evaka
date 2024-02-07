@@ -60,6 +60,22 @@ export interface CalendarEventTime {
 }
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeCitizenReservationForm
+*/
+export interface CalendarEventTimeCitizenReservationForm {
+  calendarEventTimeId: UUID
+  childId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeEmployeeReservationForm
+*/
+export interface CalendarEventTimeEmployeeReservationForm {
+  calendarEventTimeId: UUID
+  childId: UUID | null
+}
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeForm
 */
 export interface CalendarEventTimeForm {
@@ -69,19 +85,10 @@ export interface CalendarEventTimeForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeReservationForm
-*/
-export interface CalendarEventTimeReservationForm {
-  calendarEventTimeId: UUID
-  childId: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventUpdateForm
 */
 export interface CalendarEventUpdateForm {
   description: string
-  period: FiniteDateRange
   title: string
   tree: Record<UUID, UUID[] | null> | null
 }
@@ -94,6 +101,16 @@ export interface CitizenCalendarEvent {
   description: string
   id: UUID
   title: string
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.DiscussionReservationDay
+*/
+export interface DiscussionReservationDay {
+  date: LocalDate
+  events: CalendarEvent[]
+  isHoliday: boolean
+  isOperationalDay: boolean
 }
 
 /**

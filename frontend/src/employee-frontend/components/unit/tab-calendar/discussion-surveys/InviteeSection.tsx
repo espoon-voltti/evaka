@@ -2,15 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import orderBy from 'lodash/orderBy'
-import partition from 'lodash/partition'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
-import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import { useTranslation } from 'employee-frontend/state/i18n'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import {
   FixedSpaceColumn,
@@ -44,58 +40,23 @@ const ChildNameList = React.memo(function ChildNameList({
 })
 
 export default React.memo(function InviteeSection({
-  unitDetails,
-  eventData
+  reserved,
+  unreserved
 }: {
-  unitDetails: UnitGroupDetails
-  eventData: CalendarEvent
+  reserved: ChildBasics[]
+  unreserved: ChildBasics[]
 }) {
-  const [reserved, unreserved] = useMemo(() => {
-    const { groups, period, individualChildren, times } = eventData
-    const fullGroupSelections = groups.filter((g) => {
-      const anyIndividuals =
-        individualChildren.length > 0 &&
-        eventData.individualChildren.some((c) => c.groupId === g.id)
-      return !anyIndividuals
-    })
-    const childSelections = individualChildren.map((c) => c.id)
-    const reservations = times.filter((t) => t.childId !== null)
-
-    const allInvitedChildren = unitDetails.placements
-      .filter((p) => {
-        const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
-          const placedGroupIsInFullGroups = fullGroupSelections.some(
-            (gi) => gi.id === gp.groupId
-          )
-          const durationsOverlap = period.overlaps(
-            new DateRange(gp.startDate, gp.endDate)
-          )
-          return placedGroupIsInFullGroups && durationsOverlap
-        })
-        const isPartOfIndividualSelections = childSelections.includes(
-          p.child.id
-        )
-        return isPartOfFullGroupSelection || isPartOfIndividualSelections
-      })
-      .map((p) => p.child)
-
-    const sortedResults = orderBy(allInvitedChildren, [
-      (c) => c.lastName,
-      (c) => c.firstName
-    ])
-    return partition(sortedResults, (e) =>
-      reservations.some((r) => r.childId === e.id)
-    )
-  }, [unitDetails, eventData])
+  const { i18n } = useTranslation()
+  const t = i18n.unit.calendar.events.discussionReservation
 
   return (
     <FixedSpaceRow spacing="XL" fullWidth justifyContent="space-between">
       <FixedSpaceColumn fullWidth>
-        <ReservationCount>{`Varaamatta (${unreserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
+        <ReservationCount>{`${t.unreservedTitle} (${unreserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
         <ChildNameList childList={unreserved} />
       </FixedSpaceColumn>
       <FixedSpaceColumn fullWidth>
-        <ReservationCount>{`Varanneet (${reserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
+        <ReservationCount>{`${t.reservedTitle} (${reserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
         <ChildNameList childList={reserved} />
       </FixedSpaceColumn>
     </FixedSpaceRow>

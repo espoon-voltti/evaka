@@ -18,7 +18,7 @@ import { H1, H2 } from 'lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import { unitQuery } from '../../queries'
-import { groupdiscussionSurveysQuery } from '../queries'
+import { groupDiscussionSurveysQuery } from '../queries'
 
 import DiscussionReservationSurveyItem from './DiscussionSurveyItem'
 
@@ -46,7 +46,7 @@ export default React.memo(function DiscussionReservationSurveysPage() {
   // - at least one calendar event time
   // - at least one attendee in the selected group
   const discussionSurveys = useQueryResult(
-    groupdiscussionSurveysQuery(unitId, groupId)
+    groupDiscussionSurveysQuery(unitId, groupId)
   )
   const navigate = useNavigate()
   const t = i18n.unit.calendar.events
@@ -60,11 +60,10 @@ export default React.memo(function DiscussionReservationSurveysPage() {
     [navigate, unitId, groupId]
   )
 
-  //TODO: sort should use modifiedAt ??
   const sortedSurveys = useMemo(
     () =>
       discussionSurveys.map((surveys) =>
-        orderBy(surveys, (s: CalendarEvent) => s.period.start, ['desc'])
+        orderBy(surveys, (s: CalendarEvent) => s.contentModifiedAt, ['desc'])
       ),
     [discussionSurveys]
   )

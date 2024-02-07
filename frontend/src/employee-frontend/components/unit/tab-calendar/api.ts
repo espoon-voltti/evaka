@@ -7,8 +7,12 @@ import {
   CalendarEvent,
   CalendarEventForm,
   CalendarEventTime,
-  CalendarEventUpdateForm
+  CalendarEventTimeEmployeeReservationForm,
+  CalendarEventTimeForm,
+  CalendarEventUpdateForm,
+  DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -57,8 +61,63 @@ export function updateCalendarEvent({
   return client.put(`/calendar-event/${eventId}`, form).then(() => undefined)
 }
 
+export function addCalendarEventTime({
+  eventId,
+  form
+}: {
+  eventId: UUID
+  form: CalendarEventTimeForm
+}): Promise<void> {
+  return client
+    .post(`/calendar-event/${eventId}/time`, form)
+    .then(() => undefined)
+}
+
+export function deleteCalendarEventTime({
+  eventTimeId
+}: {
+  eventTimeId: UUID
+}): Promise<void> {
+  return client
+    .delete(`/calendar-event-time/${eventTimeId}`)
+    .then(() => undefined)
+}
+
+export function setCalendarEventTimeReservation({
+  form
+}: {
+  form: CalendarEventTimeEmployeeReservationForm
+}): Promise<void> {
+  return client.post(`/calendar-event/reservation`, form).then(() => undefined)
+}
+
 export function deleteCalendarEventOfUnit(eventId: UUID): Promise<void> {
   return client.delete(`/calendar-event/${eventId}`).then(() => undefined)
+}
+
+export function getDiscussionReservationDaysForGroup(
+  unitId: UUID,
+  groupId: UUID,
+  start: LocalDate,
+  end: LocalDate
+): Promise<DiscussionReservationDay[]> {
+  return client
+    .get<JsonOf<DiscussionReservationDay[]>>(
+      `/units/${unitId}/groups/${groupId}/discussion-reservation-days`,
+      {
+        params: {
+          start: start.formatIso(),
+          end: end.formatIso()
+        }
+      }
+    )
+    .then((res) =>
+      res.data.map((d) => ({
+        ...d,
+        date: LocalDate.parseIso(d.date),
+        events: d.events.map((e) => deserializeCalendarEvent(e))
+      }))
+    )
 }
 
 export const deserializeCalendarEvent = (
@@ -66,7 +125,8 @@ export const deserializeCalendarEvent = (
 ): CalendarEvent => ({
   ...data,
   period: FiniteDateRange.parseJson(data.period),
-  times: data.times.map((t) => parseCalendarEventTime(t))
+  times: data.times.map((t) => parseCalendarEventTime(t)),
+  contentModifiedAt: HelsinkiDateTime.parseIso(data.contentModifiedAt)
 })
 
 function parseCalendarEventTime(

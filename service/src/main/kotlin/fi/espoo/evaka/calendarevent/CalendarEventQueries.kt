@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
@@ -189,6 +190,9 @@ fun Database.Read.getCalendarEventById(id: CalendarEventId) =
 fun Database.Read.getCalendarEventsByGroup(groupId: GroupId) =
     getCalendarEventsQuery(groupId = groupId).toList<CalendarEvent>()
 
+fun Database.Read.getCalendarEventsByGroupWithRange(groupId: GroupId, range: FiniteDateRange) =
+    getCalendarEventsQuery(groupId = groupId, range = range).toList<CalendarEvent>()
+
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
     @Suppress("DEPRECATION")
     this.createUpdate(
@@ -226,6 +230,11 @@ fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
         .bind("id", id)
         .exactlyOneOrNull<CalendarEventId>()
 
+fun Database.Read.getCalendarEventByTimeId(id: CalendarEventTimeId) =
+    createQuery("SELECT calendar_event_id, period,  FROM calendar_event_time WHERE id = :id")
+        .bind("id", id)
+        .exactlyOneOrNull<CalendarEvent>()
+
 fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) =
     @Suppress("DEPRECATION")
     createQuery(
@@ -260,19 +269,21 @@ WHERE id = :eventId
 fun Database.Transaction.updateCalendarEventWithPeriod(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
+    period: FiniteDateRange,
     updateForm: CalendarEventUpdateForm
 ) =
     this.createUpdate(
-        """
+            """
 UPDATE calendar_event
 SET title = :title, description = :description, period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
 WHERE id = :eventId
         """
-            .trimIndent()
-    )
+                .trimIndent()
+        )
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .bindKotlin(updateForm)
+        .bind("period", period)
         .updateExactlyOne()
 
 fun Database.Transaction.setCalendarEventContentModifiedAt(
@@ -293,7 +304,8 @@ WHERE id = :eventId
         .updateExactlyOne()
 
 fun Database.Transaction.insertCalendarEventTimeReservation(
-    form: CalendarEventTimeReservationForm,
+    eventTimeId: CalendarEventTimeId,
+    childId: ChildId?,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId
 ) =
@@ -305,8 +317,8 @@ SET child_id = :childId, modified_at = :modifiedAt, modified_by = :modifiedBy
 WHERE id = :calendarEventTimeId AND (child_id IS NULL OR child_id = :childId)
 """
         )
-        .bind("calendarEventTimeId", form.calendarEventTimeId)
-        .bind("childId", form.childId)
+        .bind("calendarEventTimeId", eventTimeId)
+        .bind("childId", childId)
         .bind("modifiedAt", modifiedAt)
         .bind("modifiedBy", modifiedBy)
         .updateNoneOrOne()
@@ -338,7 +350,6 @@ fun Database.Transaction.deleteCalendarEventTimeReservation(
 UPDATE calendar_event_time
 SET child_id = NULL::uuid
 WHERE id = :calendarEventTimeId
-AND (:childId IS NULL OR child_id = :childId)
 """
         )
         .bind("calendarEventTimeId", calendarEventTimeId)
@@ -534,3 +545,22 @@ GROUP BY mp.parent_id, p.language
             )
         }
 }
+
+fun Database.Transaction.updateCalendarEventPeriod(
+    eventId: CalendarEventId,
+    modifiedAt: HelsinkiDateTime,
+    period: FiniteDateRange
+) =
+    this.createUpdate<DatabaseTable.CalendarEvent> {
+        sql(
+            """
+UPDATE calendar_event
+SET period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
+WHERE id = :eventId
+        """
+        )
+    }
+        .bind("eventId", eventId)
+        .bind("modifiedAt", modifiedAt)
+        .bind("period", period)
+        .updateExactlyOne()

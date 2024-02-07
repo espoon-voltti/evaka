@@ -7,6 +7,7 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.getDaycareGroups
+import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
 import fi.espoo.evaka.shared.CalendarEventId
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.format.annotation.DateTimeFormat
@@ -102,6 +104,66 @@ class CalendarEventController(private val accessControl: AccessControl) {
                 Audit.GroupCalendarEventsRead.log(
                     targetId = groupId,
                     meta = mapOf("count" to it.size)
+                )
+            }
+    }
+
+    @GetMapping("/units/{unitId}/groups/{groupId}/discussion-reservation-days")
+    fun getGroupDiscussionReservationDays(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable groupId: GroupId,
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+    ): Set<DiscussionReservationDay> {
+        if (start.isAfter(end)) {
+            throw BadRequest("Start must be before or equal to the end")
+        }
+
+        val range = FiniteDateRange(start, end)
+
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CALENDAR_EVENTS,
+                        unitId
+                    )
+
+                    val holidays = tx.getHolidays(range)
+                    val unitInfo =
+                        tx.getUnitOperationDays()[unitId]
+                            ?: throw NotFound("Unit operation days not found")
+                    val events = tx.getCalendarEventsByGroupWithRange(groupId, range)
+
+                    range
+                        .dates()
+                        .map { day ->
+                            DiscussionReservationDay(
+                                date = day,
+                                events =
+                                    events
+                                        .filter { event -> event.period.includes(day) }
+                                        .filter { event ->
+                                            event.times.isEmpty() ||
+                                                event.times.any { time -> time.date.isEqual(day) }
+                                        }
+                                        .toSet(),
+                                isHoliday = holidays.contains(day),
+                                isOperationalDay = unitInfo.contains(day.dayOfWeek)
+                            )
+                        }
+                        .toSet()
+                }
+            }
+            .also {
+                Audit.GroupDiscussionReservationCalendarDaysRead.log(
+                    targetId = groupId,
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
     }
@@ -268,7 +330,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             childId = childId
                         )
                     }
-                    tx.updateCalendarEventWithPeriod(id, clock.now(), body)
+                    tx.updateCalendarEvent(id, clock.now(), body)
                     tx.deleteCalendarEventAttendees(id)
                     tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }
@@ -294,7 +356,17 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         id
                     )
                     val cetId = tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
-                    tx.setCalendarEventContentModifiedAt(id, clock.now())
+                    val associatedEvent = tx.getCalendarEventById(id)
+                    tx.updateCalendarEventPeriod(
+                        eventId = id,
+                        modifiedAt = clock.now(),
+                        period =
+                            getPeriodOfTimes(
+                                associatedEvent?.times
+                                    ?: throw NotFound("No corresponding calendar event found"),
+                                clock.today()
+                            )
+                    )
                     cetId
                 }
             }
@@ -318,8 +390,23 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         id
                     )
                     val calendarEventId = tx.getCalendarEventIdByTimeId(id)
-                    tx.setCalendarEventContentModifiedAt(calendarEventId!!, clock.now())
                     tx.deleteCalendarEventTime(id)
+
+                    val associatedEvent =
+                        tx.getCalendarEventById(
+                            calendarEventId
+                                ?: throw NotFound("Corresponding calendar event not found")
+                        )
+                    tx.updateCalendarEventPeriod(
+                        eventId = calendarEventId,
+                        modifiedAt = clock.now(),
+                        period =
+                            getPeriodOfTimes(
+                                associatedEvent?.times
+                                    ?: throw NotFound("No corresponding calendar event found"),
+                                clock.today()
+                            )
+                    )
                 }
             }
             .also { Audit.CalendarEventTimeDelete.log(targetId = id) }
@@ -330,7 +417,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventTimeReservationForm
+        @RequestBody body: CalendarEventTimeEmployeeReservationForm
     ) {
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -341,12 +428,23 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEventTime.UPDATE_RESERVATION,
                         body.calendarEventTimeId
                     )
-                    validate(tx, body)
+                    validate(
+                        tx = tx,
+                        eventTimeId = body.calendarEventTimeId,
+                        childId = body.childId
+                    )
                     tx.deleteCalendarEventTimeReservation(
                         calendarEventTimeId = body.calendarEventTimeId,
                         childId = null
                     )
-                    tx.insertCalendarEventTimeReservation(body, clock.now(), user.evakaUserId)
+                    if (body.childId != null) {
+                        tx.insertCalendarEventTimeReservation(
+                            eventTimeId = body.calendarEventTimeId,
+                            childId = body.childId,
+                            modifiedAt = clock.now(),
+                            modifiedBy = user.evakaUserId
+                        )
+                    }
                 }
                 .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = body) }
         }
@@ -446,7 +544,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventTimeReservationForm
+        @RequestBody body: CalendarEventTimeCitizenReservationForm
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -457,9 +555,18 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
                         body.childId
                     )
-                    validate(tx, body)
+                    validate(
+                        tx = tx,
+                        eventTimeId = body.calendarEventTimeId,
+                        childId = body.childId
+                    )
                     val count =
-                        tx.insertCalendarEventTimeReservation(body, clock.now(), user.evakaUserId)
+                        tx.insertCalendarEventTimeReservation(
+                            eventTimeId = body.calendarEventTimeId,
+                            childId = body.childId,
+                            modifiedAt = clock.now(),
+                            modifiedBy = user.evakaUserId
+                        )
                     if (count != 1) {
                         throw Conflict("Calendar event time already reserved")
                     }
@@ -476,7 +583,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         @RequestParam calendarEventTimeId: CalendarEventTimeId,
         @RequestParam childId: ChildId
     ) {
-        val body = CalendarEventTimeReservationForm(calendarEventTimeId, childId)
+        val body = CalendarEventTimeCitizenReservationForm(calendarEventTimeId, childId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -496,12 +603,13 @@ class CalendarEventController(private val accessControl: AccessControl) {
     }
 }
 
-private fun validate(tx: Database.Read, body: CalendarEventTimeReservationForm) {
+private fun validate(tx: Database.Read, eventTimeId: CalendarEventTimeId, childId: ChildId?) {
     val calendarEventId =
-        tx.getCalendarEventIdByTimeId(body.calendarEventTimeId)
+        tx.getCalendarEventIdByTimeId(eventTimeId)
             ?: throw BadRequest("Calendar event time not found")
-    if (!tx.getCalendarEventChildIds(calendarEventId).contains(body.childId)) {
-        throw BadRequest("Child ${body.childId} is not attendee in calendar event")
+
+    if (childId != null && !tx.getCalendarEventChildIds(calendarEventId).contains(childId)) {
+        throw BadRequest("Child ${childId} is not attendee in calendar event")
     }
 }
 
@@ -521,4 +629,14 @@ private fun resolveAttendeeChildIds(
                 endDate = range.end
             )
             .map { placement -> placement.child.id }
+}
+
+private fun getPeriodOfTimes(
+    dateList: Set<CalendarEventTime>,
+    default: LocalDate
+): FiniteDateRange {
+    val minDate = dateList.minOfOrNull { it.date }
+    val maxDate = dateList.maxOfOrNull { it.date }
+    return if (minDate != null && maxDate != null) FiniteDateRange(minDate, maxDate)
+    else FiniteDateRange(default, default)
 }

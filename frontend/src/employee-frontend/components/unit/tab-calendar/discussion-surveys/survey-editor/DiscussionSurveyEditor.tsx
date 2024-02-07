@@ -1,20 +1,31 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { faQuestion } from 'Icons'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import DateRange from 'lib-common/date-range'
-import { boolean, localDateRange, string } from 'lib-common/form/fields'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { boolean, requiredLocalTimeRange, string } from 'lib-common/form/fields'
 import {
   array,
   mapped,
   object,
   recursive,
-  required
+  required,
+  value
 } from 'lib-common/form/form'
-import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
+import {
+  BoundForm,
+  useForm,
+  useFormElems,
+  useFormFields
+} from 'lib-common/form/hooks'
 import { Form } from 'lib-common/form/types'
 import {
   CalendarEvent,
@@ -23,10 +34,8 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { cancelMutation, useQueryResult } from 'lib-common/query'
+import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -34,45 +43,60 @@ import TreeDropdown, {
   TreeNode,
   hasUncheckedChildren
 } from 'lib-components/atoms/dropdowns/TreeDropdown'
-import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
-import { H2, H3, Label } from 'lib-components/typography'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H3, Label } from 'lib-components/typography'
 
-import { unitGroupDetailsQuery } from '../../queries'
 import {
   createCalendarEventMutation,
   updateCalendarEventMutation
-} from '../queries'
+} from '../../queries'
 
-const FormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
-const FormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
+import BasicInfoSection from './BasicInfoSection'
+import DiscussionTimesForm from './DiscussionTimesForm'
+
+const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
+const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
   margin-bottom: 60px;
 `
-const WidthLimiter = styled.div`
+export const WidthLimiter = styled.div`
   max-width: 400px;
 `
+export type DiscussionSurveyEditMode = 'create' | 'reserve'
 
-const basicInfoForm = object({
-  period: required(localDateRange()),
+export const basicInfoForm = object({
   title: required(string()),
   description: required(string())
 })
 
-const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
+export const calendarEventTimeForm = object({
+  id: value<UUID | null>(),
+  childId: value<UUID | null>(),
+  date: required(value<LocalDate>()),
+  timeRange: required(requiredLocalTimeRange())
+})
+
+export const timesForm = object({
+  times: array(calendarEventTimeForm)
+})
+
+export const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
+  times,
   basicInfo,
+  period,
   eventData,
   possibleAttendees,
   invitedAttendees,
   groupId,
   unitId
 }: {
+  times: BoundForm<typeof timesForm>
   basicInfo: BoundForm<typeof basicInfoForm>
+  period: FiniteDateRange
   eventData: CalendarEvent | null
   possibleAttendees: UnitGroupDetails
   invitedAttendees: {
@@ -86,6 +110,8 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events
 
+  const [cancelConfirmModalVisible, setCancelConfirmModalVisible] =
+    useState(false)
   const navigate = useNavigate()
   const isChildSelected = (childId: string, selections: IndividualChild[]) =>
     selections.some((s) => s.id === childId)
@@ -103,7 +129,9 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
         ]) ?? []
     )
 
-  const { title, description, period } = useFormFields(basicInfo)
+  const { title, description } = useFormFields(basicInfo)
+  const { times: timesField } = useFormFields(times)
+  const timeElems = useFormElems(timesField)
 
   const attendeeTree: TreeNode[] = useMemo(() => {
     const { groups, placements } = possibleAttendees
@@ -117,7 +145,7 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
         p.groupPlacements.some(
           (gp) =>
             gp.groupId === g.id &&
-            period.value().overlaps(new DateRange(gp.startDate, gp.endDate))
+            period.overlaps(new DateRange(gp.startDate, gp.endDate))
         )
       )
 
@@ -143,7 +171,7 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
         children: sortedGroupChildren
       }
     })
-  }, [invitedAttendees, possibleAttendees, period, groupId])
+  }, [invitedAttendees, possibleAttendees, groupId, period])
 
   const treeNode = (): Form<TreeNode, never, TreeNode, unknown> =>
     object({
@@ -160,7 +188,6 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
     (output) => ({
       ...output,
       tree: getTreeSelectionAsRecord(output.attendees),
-      times: [],
       unitId: unitId
     })
   )
@@ -177,10 +204,6 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
 
   const validationErrors = useMemo(
     () => ({
-      period:
-        period.state.start && period.state.end
-          ? undefined
-          : ('required' as const),
       title:
         title.state && title.state.length > 0
           ? undefined
@@ -192,9 +215,13 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
       attendees:
         attendees.state.filter((a) => a.checked).length > 0
           ? undefined
+          : ('required' as const),
+      times:
+        timeElems && timeElems.length > 0 && timesField.isValid()
+          ? undefined
           : ('required' as const)
     }),
-    [attendees, title, description, period]
+    [attendees.state, title.state, description.state, timeElems, timesField]
   )
 
   const isValid = useMemo(
@@ -204,9 +231,31 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
 
   return (
     <>
-      <FormSectionGroup>
+      {cancelConfirmModalVisible && (
+        <InfoModal
+          type="warning"
+          title={t.discussionReservation.cancelConfirmation.title}
+          icon={faQuestion}
+          reject={{
+            action: () => setCancelConfirmModalVisible(false),
+            label: t.discussionReservation.cancelConfirmation.cancelButton
+          }}
+          resolve={{
+            action: () => {
+              setCancelConfirmModalVisible(false)
+              navigate(
+                `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
+                { replace: true }
+              )
+            },
+            label: t.discussionReservation.cancelConfirmation.continueButton
+          }}
+          text={t.discussionReservation.cancelConfirmation.text}
+        />
+      )}
+      <SurveyFormSectionGroup>
         <H3>{t.discussionReservation.surveyInviteeTitle}</H3>
-        <FormFieldGroup>
+        <SurveyFormFieldGroup>
           <WidthLimiter>
             <Label>{t.discussionReservation.surveyInvitees}</Label>
             <TreeDropdown
@@ -218,24 +267,14 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
               }
             />
           </WidthLimiter>
-        </FormFieldGroup>
-      </FormSectionGroup>
-      <FormSectionGroup>
-        <H3>{t.discussionReservation.surveyDiscussionTimesTitle}</H3>
-        <HorizontalLine />
-
-        <HorizontalLine />
-      </FormSectionGroup>
+        </SurveyFormFieldGroup>
+      </SurveyFormSectionGroup>
 
       <FixedSpaceRow justifyContent="flex-start" alignItems="center">
         <Button
           text={t.discussionReservation.cancelButton}
           disabled={false}
-          onClick={() =>
-            navigate(
-              `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`
-            )
-          }
+          onClick={() => setCancelConfirmModalVisible(true)}
           data-qa="cancel-button"
         />
 
@@ -264,19 +303,12 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
                   form: {
                     ...bind.value(),
                     ...basicInfo.value(),
-                    //FIXME: force test times
-                    times: [
-                      {
-                        date: period.value().start,
-                        startTime: LocalTime.of(8, 0),
-                        endTime: LocalTime.of(8, 30)
-                      },
-                      {
-                        date: period.value().start,
-                        startTime: LocalTime.of(9, 0),
-                        endTime: LocalTime.of(9, 30)
-                      }
-                    ]
+                    times: timesField.value().map((t) => ({
+                      ...t,
+                      startTime: t.timeRange.start,
+                      endTime: t.timeRange.end
+                    })),
+                    period
                   }
                 }
               : cancelMutation
@@ -288,46 +320,6 @@ const DiscussionSurveyForm = React.memo(function DiscussionSurveyForm({
   )
 })
 
-const DiscussionSurveyFormWrapper = React.memo(
-  function DiscussionSurveyFormWrapper({
-    basicInfo,
-    unitId,
-    groupId,
-    eventData
-  }: {
-    basicInfo: BoundForm<typeof basicInfoForm>
-    unitId: UUID
-    groupId: UUID
-    eventData: CalendarEvent | null
-  }) {
-    const { period } = useFormFields(basicInfo)
-    const groupData = useQueryResult(
-      unitGroupDetailsQuery(unitId, period.value().start, period.value().end)
-    )
-
-    return (
-      <>
-        {renderResult(groupData, (groupResult) => {
-          const { individualChildren, groups, isNewSurvey } = eventData
-            ? { ...eventData, isNewSurvey: false }
-            : { individualChildren: [], groups: [], isNewSurvey: true }
-
-          return (
-            <DiscussionSurveyForm
-              basicInfo={basicInfo}
-              eventData={eventData}
-              unitId={unitId}
-              invitedAttendees={{ individualChildren, groups, isNewSurvey }}
-              possibleAttendees={groupResult}
-              groupId={groupId}
-            />
-          )
-        })}
-      </>
-    )
-  }
-)
-
 export default React.memo(function DiscussionSurveyEditor({
   unitId,
   groupId,
@@ -337,9 +329,7 @@ export default React.memo(function DiscussionSurveyEditor({
   groupId: UUID
   eventData: CalendarEvent | null
 }) {
-  const { i18n, lang } = useTranslation()
-  const t = i18n.unit.calendar.events
-  const today = LocalDate.todayInHelsinkiTz()
+  const { i18n } = useTranslation()
 
   const form = mapped(basicInfoForm, (output) => ({
     ...output
@@ -348,113 +338,66 @@ export default React.memo(function DiscussionSurveyEditor({
   const basicInfo = useForm(
     form,
     () => ({
-      period: eventData
-        ? {
-            start: eventData.period.start.format(),
-            end: eventData.period.end.format(),
-            config: { minDate: eventData.period.start }
-          }
-        : {
-            start: today.format(),
-            end: today.addMonths(1).format(),
-            config: { minDate: today }
-          },
       title: eventData?.title ?? '',
       description: eventData?.description ?? ''
     }),
     i18n.validationErrors
   )
 
-  const { title, description, period } = useFormFields(basicInfo)
-
-  const validationErrors = useMemo(
-    () => ({
-      period:
-        basicInfo.state.period.start && basicInfo.state.period.end
-          ? undefined
-          : ('required' as const),
-      title:
-        basicInfo.state.title && basicInfo.state.title.trim().length > 0
-          ? undefined
-          : ('required' as const),
-      description:
-        basicInfo.state.description &&
-        basicInfo.state.description.trim().length > 0
-          ? undefined
-          : ('required' as const)
-    }),
-    [basicInfo.state]
-  )
-
-  const info = useCallback(
-    (key: keyof typeof validationErrors) => {
-      const error = validationErrors[key]
-      if (!error) return undefined
-
-      return {
-        status: 'warning' as const,
-        text: i18n.validationErrors[error]
-      }
-    },
-    [validationErrors, i18n]
-  )
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {eventData ? (
-          <H2>{title.state}</H2>
-        ) : (
-          <H2>{t.discussionReservation.surveyCreate}</H2>
-        )}
-        <H3>{t.discussionReservation.surveyBasicsTitle}</H3>
-
-        <FormSectionGroup>
-          <FormFieldGroup>
-            <Label>{t.discussionReservation.surveyPeriod}</Label>
-            <DateRangePickerF
-              locale={lang}
-              bind={period}
-              info={info('period')}
-              data-qa="survey-period"
-            />
-          </FormFieldGroup>
-
-          <FormFieldGroup>
-            <Label>{t.discussionReservation.surveySubject}</Label>
-            <WidthLimiter>
-              <TextAreaF
-                bind={title}
-                info={info('title')}
-                placeholder={t.discussionReservation.surveySubjectPlaceholder}
-                maxLength={30}
-              />
-            </WidthLimiter>
-          </FormFieldGroup>
-
-          <FormFieldGroup>
-            <ExpandingInfo info={t.discussionReservation.surveySummaryInfo}>
-              <Label>{t.discussionReservation.surveySummary}</Label>
-            </ExpandingInfo>
-            <WidthLimiter>
-              <TextAreaF
-                bind={description}
-                info={info('description')}
-                placeholder={t.discussionReservation.surveySummaryPlaceholder}
-              />
-            </WidthLimiter>
-          </FormFieldGroup>
-        </FormSectionGroup>
-
-        {period.isValid() && (
-          <DiscussionSurveyFormWrapper
-            eventData={eventData}
-            basicInfo={basicInfo}
-            unitId={unitId}
-            groupId={groupId}
-          />
-        )}
+        <BasicInfoSection eventData={eventData} basicInfo={basicInfo} />
+        <DiscussionTimesForm
+          eventData={eventData}
+          basicInfo={basicInfo}
+          unitId={unitId}
+          groupId={groupId}
+          editMode="reserve"
+        />
       </ContentArea>
     </Container>
   )
 })
+
+export const CreateDiscussionSurveyEditor = React.memo(
+  function CreateDiscussionSurveyEditor({
+    unitId,
+    groupId
+  }: {
+    unitId: UUID
+    groupId: UUID
+  }) {
+    const { i18n } = useTranslation()
+
+    const form = mapped(basicInfoForm, (output) => ({
+      ...output
+    }))
+
+    const basicInfo = useForm(
+      form,
+      () => ({
+        title: '',
+        description: ''
+      }),
+      i18n.validationErrors
+    )
+
+    return (
+      <Container>
+        <ReturnButton label={i18n.common.goBack} />
+        <ContentArea opaque>
+          <BasicInfoSection eventData={null} basicInfo={basicInfo} />
+          <DiscussionTimesForm
+            eventData={null}
+            basicInfo={basicInfo}
+            unitId={unitId}
+            groupId={groupId}
+            editMode="create"
+          />
+        </ContentArea>
+      </Container>
+    )
+  }
+)

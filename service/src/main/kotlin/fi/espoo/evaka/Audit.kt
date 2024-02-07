@@ -250,6 +250,7 @@ enum class Audit(
     FuturePreschoolers,
     GuardianChildrenRead,
     GroupCalendarEventsRead,
+    GroupDiscussionReservationCalendarDaysRead,
     GroupNoteCreate,
     GroupNoteUpdate,
     GroupNoteDelete,

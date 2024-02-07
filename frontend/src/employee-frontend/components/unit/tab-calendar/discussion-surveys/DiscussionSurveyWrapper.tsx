@@ -11,8 +11,10 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 
 import { discussionSurveyQuery } from '../queries'
 
-import DiscussionSurveyPeriodEditor from './DiscussionSurveyEditor'
-import DiscussionReservationSurveyView from './DiscussionSurveyView'
+import DiscussionSurveyView from './DiscussionSurveyView'
+import DiscussionSurveyEditor, {
+  CreateDiscussionSurveyEditor
+} from './survey-editor/DiscussionSurveyEditor'
 
 type DiscussionReservationSurveyViewMode = 'VIEW' | 'EDIT'
 
@@ -35,7 +37,7 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
   if (existingEvent) {
     if (mode === 'EDIT') {
       return renderResult(eventData, (data) => (
-        <DiscussionSurveyPeriodEditor
+        <DiscussionSurveyEditor
           unitId={unitId}
           groupId={groupId}
           eventData={data}
@@ -43,7 +45,7 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
       ))
     } else if (mode === 'VIEW') {
       return renderResult(eventData, (data) => (
-        <DiscussionReservationSurveyView
+        <DiscussionSurveyView
           unitId={unitId}
           groupId={groupId}
           eventData={data}
@@ -53,12 +55,6 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
       return null
     }
   } else {
-    return (
-      <DiscussionSurveyPeriodEditor
-        unitId={unitId}
-        groupId={groupId}
-        eventData={null}
-      />
-    )
+    return <CreateDiscussionSurveyEditor unitId={unitId} groupId={groupId} />
   }
 })

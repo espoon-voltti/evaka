@@ -67,7 +67,7 @@ const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
 const modifyCalendarEventResult = wrapResult(modifyCalendarEvent)
 const deleteCalendarEventResult = wrapResult(deleteCalendarEvent)
 
-const EventsWeekContainer = styled.div`
+export const EventsWeekContainer = styled.div`
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
@@ -75,7 +75,10 @@ const EventsWeekContainer = styled.div`
   word-wrap: break-word;
 `
 
-const EventDay = styled.div<{ $isToday: boolean; $isOtherMonth: boolean }>`
+export const EventDay = styled.div<{
+  $isToday: boolean
+  $isOtherMonth: boolean
+}>`
   height: 100%;
   border: ${(p) => `1px solid ${p.theme.colors.grayscale.g15}`};
   padding: ${defaultMargins.s} 0;

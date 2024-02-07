@@ -35,7 +35,7 @@ export default React.memo(function DiscussionReservationSurveyListItem({
       eventData.period.end.isBefore(LocalDate.todayInHelsinkiTz())
         ? 'ENDED'
         : 'SENT',
-    [eventData.period]
+    [eventData.period.end]
   )
 
   const statusColor = {
@@ -48,7 +48,9 @@ export default React.memo(function DiscussionReservationSurveyListItem({
         <H3>{eventData.title}</H3>
       </FixedSpaceRow>
       <FixedSpaceRow justifyContent="flex-end" spacing="L" alignItems="center">
-        <ModifiedAtText>Muutosaika tähän joskus??</ModifiedAtText>
+        <ModifiedAtText>
+          {`${t.surveyModifiedAt} ${eventData.contentModifiedAt.toLocalDate().format()}`}
+        </ModifiedAtText>
         <StaticChip fitContent color={statusColor[status]}>
           {t.surveyStatus[status]}
         </StaticChip>

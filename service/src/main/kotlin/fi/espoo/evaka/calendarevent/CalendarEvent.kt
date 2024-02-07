@@ -17,7 +17,12 @@ import org.jdbi.v3.json.Json
 
 data class GroupInfo(val id: GroupId, val name: String)
 
-data class IndividualChild(val id: ChildId, val firstName: String,val lastName: String, val groupId: GroupId)
+data class IndividualChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val groupId: GroupId
+)
 
 data class CalendarEvent(
     val id: CalendarEventId,
@@ -29,6 +34,19 @@ data class CalendarEvent(
     val period: FiniteDateRange,
     @Json val times: Set<CalendarEventTime>,
     val contentModifiedAt: HelsinkiDateTime
+)
+
+data class CalendarEventInfo(
+    val id: CalendarEventId,
+    val title: String,
+    val description: String
+)
+
+data class DiscussionReservationDay(
+    val date: LocalDate,
+    val events: Set<CalendarEvent>,
+    val isHoliday: Boolean,
+    val isOperationalDay: Boolean
 )
 
 data class CalendarEventTime(
@@ -68,7 +86,12 @@ data class CalendarEventTimeForm(
     val endTime: LocalTime
 )
 
-data class CalendarEventTimeReservationForm(
+data class CalendarEventTimeEmployeeReservationForm(
+    val calendarEventTimeId: CalendarEventTimeId,
+    val childId: ChildId?
+)
+
+data class CalendarEventTimeCitizenReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,
     val childId: ChildId
 )
@@ -76,6 +99,5 @@ data class CalendarEventTimeReservationForm(
 data class CalendarEventUpdateForm(
     val title: String,
     val description: String,
-    val period: FiniteDateRange,
     val tree: Map<GroupId, Set<ChildId>?>? = null
 )

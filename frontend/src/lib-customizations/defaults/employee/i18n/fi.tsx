@@ -194,6 +194,20 @@ export const fi = {
         'Perjantai',
         'Lauantai',
         'Sunnuntai'
+      ],
+      months: [
+        'Tammikuu',
+        'Helmikuu',
+        'Maaliskuu',
+        'Huhtikuu',
+        'Toukokuu',
+        'Kesäkuu',
+        'Heinäkuu',
+        'Elokuu',
+        'Syyskuu',
+        'Lokakuu',
+        'Marraskuu',
+        'Joulukuu'
       ]
     },
     nb: 'Huom',
@@ -2308,6 +2322,12 @@ export const fi = {
             'Osalla valituista lapsista ei ole sijoitusta nykyisessä yksikössä tai ei ole sijoitettuna valittuun ryhmään tapahtuman aikana. Näinä päivinä lasta ei listata osallistujana eikä huoltajalle näytetä tapahtumaa kalenterissa.'
         },
         discussionReservation: {
+          calendar: {
+            addTimeButton: 'Näytä lisää',
+            eventTooltipTitle: 'Muita tapahtumia:',
+            otherEventSingular: 'muu tapahtuma',
+            otherEventPlural: 'muuta tapahtumaa'
+          },
           discussionPageTitle: 'Keskustelut',
           discussionPageDescription:
             'Tällä sivulla voit luoda ja seurata kyselyjä, joilla kysytään huoltajille sopivia keskusteluaikoja.',
@@ -2328,10 +2348,43 @@ export const fi = {
           saveSurveyButton: 'Tallenna muutokset',
           deleteSurveyButton: 'Poista',
           cancelButton: 'Peruuta',
+          cancelConfirmation: {
+            title: 'Haluatko perua muutokset?',
+            text: 'Tekemiäsi muutoksia ei tallenneta',
+            cancelButton: 'Jatka muokkaamista',
+            continueButton: 'Peru muutokset'
+          },
           surveyModifiedAt: 'Muokattu',
           surveyStatus: {
             SENT: 'Lähetetty',
             ENDED: 'Päättynyt'
+          },
+          reservedTitle: 'Varanneet',
+          reserveButton: 'Varaa',
+          unreservedTitle: 'Varaamatta',
+          reservationModal: {
+            reservationStatus: 'Varaustilanne',
+            reserved: 'Varattu',
+            unreserved: 'Vapaa',
+            selectPlaceholder: 'Valitse',
+            inviteeLabel: 'Osallistuja',
+            reserveError: 'Keskusteluajan varaaminen epäonnistui',
+            deleteError: 'Keskusteluajan poistaminen epäonnistui',
+            deleteConfirmation: {
+              title: 'Poistettava aika on jo varattu',
+              text: 'Haluatko poistaa ajan ja varauksen?',
+              cancelButton: 'Peru poisto',
+              continueButton: 'Poista'
+            }
+          },
+          deleteConfirmation: {
+            title: 'Haluatko varmasti poistaa lähetetyn kyselyn?',
+            text: 'Kaikki vapaat ja varatut ajat poistetaan. Tätä toimintoa ei voi peruuttaa.',
+            error: 'Keskustelukyselyn poistaminen epäonnistui'
+          },
+          eventTime: {
+            addError: 'Keskusteluajan lisääminen epäonnistui',
+            deleteError: 'Keskusteluajan poistaminen epäonnistui'
           }
         }
       }
