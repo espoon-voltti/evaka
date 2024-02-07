@@ -268,55 +268,56 @@ private data class UnitChildAttendancesRow(
 
 fun Database.Read.getUnitChildAttendances(
     unitId: DaycareId,
-    now: HelsinkiDateTime,
+    now: HelsinkiDateTime
 ): Map<ChildId, List<AttendanceTimes>> {
-    return createQuery(
-            """
+    // get attendances for last week to include possible overnight stays
+    val range = FiniteDateRange(now.toLocalDate().minusWeeks(1), now.toLocalDate())
+    return createQuery<Any> {
+            sql(
+                """
 SELECT
     child_id,
     (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
     (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
 FROM child_attendance ca
 WHERE
-    ca.unit_id = :unitId AND (
-        ca.end_time IS NULL OR
-        (ca.date = :today AND ca.start_time != '00:00'::time) OR
-        -- An overnight attendance is included for 30 minutes after child has departed
-        (ca.date = :today AND ca.start_time = '00:00'::time AND :departedThreshold < ca.end_time) OR
-        (ca.date = :today - 1 AND ca.end_time = '23:59'::time)
+    ca.unit_id = ${bind(unitId)} AND (
+        between_start_and_end(${bind(range)}, ca.date) OR (ca.date <= ${bind(range.end)} AND ca.end_time IS NULL)
     )
 """
-        )
-        .bind("unitId", unitId)
-        .bind("today", now.toLocalDate())
-        .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
+            )
+        }
         .toList<UnitChildAttendancesRow>()
-        .groupBy { it.childId }
+        .groupBy(
+            keySelector = { it.childId },
+            valueTransform = { AttendanceTimes(it.arrived, it.departed) }
+        )
         .mapValues {
-            it.value
-                .sortedByDescending { att -> att.arrived }
-                .fold(listOf<AttendanceTimes>()) { result, attendance ->
-                    // Merge overnight attendances as one
-                    val departed = attendance.departed
-                    if (
-                        result.isNotEmpty() &&
-                            departed != null &&
-                            departed.hour == 23 &&
-                            departed.minute == 59 &&
-                            result.isNotEmpty()
-                    ) {
-                        result.dropLast(1) + result.last().copy(arrived = attendance.arrived)
-                    } else {
-                        result + AttendanceTimes(attendance.arrived, departed)
-                    }
-                }
-                .filterNot { att ->
-                    // Remove yesterday's stray attendance that wasn't merged because the child
-                    // departed > 30 minutes ago
-                    att.departed != null && att.departed.toLocalDate() != now.toLocalDate()
-                }
+            mergeOverNightRanges(it.value)
+                // filter out attendances not overlapping current day
+                .filter { it.departed?.toLocalDate()?.isBefore(now.toLocalDate()) != true }
+                .sortedByDescending { it.arrived }
         }
         .filter { it.value.isNotEmpty() }
+}
+
+private fun mergeOverNightRanges(attendances: List<AttendanceTimes>): List<AttendanceTimes> {
+    return attendances
+        .sortedBy { it.arrived }
+        .fold(emptyList()) { acc, attendance ->
+            val previous = acc.lastOrNull()
+            if (
+                previous?.departed != null &&
+                    previous.departed.toLocalDate() ==
+                        attendance.arrived.toLocalDate().minusDays(1) &&
+                    previous.departed.toLocalTime() == LocalTime.of(23, 59) &&
+                    attendance.arrived.toLocalTime() == LocalTime.of(0, 0)
+            ) {
+                acc.dropLast(1) + AttendanceTimes(previous.arrived, attendance.departed)
+            } else {
+                acc + attendance
+            }
+        }
 }
 
 fun Database.Read.getUnitChildAbsences(

@@ -7,7 +7,7 @@ import React from 'react'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { returnToComingMutation } from '../../child-attendance/queries'
+import { cancelAbsenceMutation } from '../../child-attendance/queries'
 import { InlineWideAsyncButton } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 
@@ -22,14 +22,14 @@ export default React.memo(function AttendanceChildAbsent({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const { mutateAsync: returnToComing } = useMutationResult(
-    returnToComingMutation
+  const { mutateAsync: cancelAbsence } = useMutationResult(
+    cancelAbsenceMutation
   )
 
   return (
     <InlineWideAsyncButton
-      text={i18n.attendances.actions.returnToComing}
-      onClick={() => returnToComing({ unitId, childId })}
+      text={i18n.attendances.actions.cancelAbsence}
+      onClick={() => cancelAbsence({ unitId, childId })}
       onSuccess={() => undefined}
       data-qa="delete-attendance"
     />

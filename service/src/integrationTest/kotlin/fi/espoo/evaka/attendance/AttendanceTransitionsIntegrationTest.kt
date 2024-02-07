@@ -228,8 +228,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val departed = LocalTime.of(9, 30)
         val absenceType = AbsenceType.SICKLEAVE
         markDeparted(departed, absenceType, absenceType)
-        val child = expectOneAttendanceStatus()
 
+        val child = expectOneAttendanceStatus()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendances)
         assertEquals(
@@ -243,13 +243,27 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `post child departs - multi day attendance`() {
+    fun `post child departs - multi day attendance - departed less than 30 min ago`() {
         givenChildPlacement(PlacementType.DAYCARE)
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = LocalTime.of(13, 0)
+        val departed = mockClock.now().toLocalTime().minusMinutes(20)
         markDeparted(departed, null, null)
-        expectNoAttendanceStatuses()
+
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+    }
+
+    @Test
+    fun `post child departs - multi day attendance - departed more than 30 min ago`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
+
+        val departed = mockClock.now().toLocalTime().minusMinutes(40)
+        markDeparted(departed, null, null)
+
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.COMING, child.status)
     }
 
     @Test

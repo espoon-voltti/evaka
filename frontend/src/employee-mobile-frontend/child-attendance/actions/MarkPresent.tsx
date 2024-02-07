@@ -9,14 +9,18 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
+import {
+  AttendanceChild,
+  ChildAttendanceStatusResponse
+} from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import {
   queryOrDefault,
   useMutationResult,
-  useQuery,
   useQueryResult
 } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -45,16 +49,17 @@ import {
 } from '../queries'
 import { childAttendanceStatus, useChild } from '../utils'
 
-export default React.memo(function MarkPresent() {
+const MarkPresentInner = React.memo(function MarkPresentInner({
+  unitId,
+  child,
+  attendanceStatus
+}: {
+  unitId: UUID
+  child: AttendanceChild
+  attendanceStatus: ChildAttendanceStatusResponse
+}) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
-
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
 
@@ -62,15 +67,13 @@ export default React.memo(function MarkPresent() {
     createArrivalMutation
   )
 
-  const { data: attendanceStatuses } = useQuery(attendanceStatusesQuery(unitId))
-  const childLatestDeparture = useMemo(() => {
-    if (!attendanceStatuses || !child.isSuccess) return null
-    const attendances = childAttendanceStatus(
-      child.value,
-      attendanceStatuses
-    ).attendances
-    return attendances.length > 0 ? attendances[0].departed : null
-  }, [attendanceStatuses, child])
+  const childLatestDeparture = useMemo(
+    () =>
+      attendanceStatus.attendances.length > 0
+        ? attendanceStatus.attendances[0].departed
+        : null,
+    [attendanceStatus]
+  )
 
   const isValidTime = useCallback(() => {
     const parsedTime = LocalTime.tryParse(time)
@@ -83,9 +86,8 @@ export default React.memo(function MarkPresent() {
     } else return true
   }, [childLatestDeparture, time])
 
-  const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(groupId)
+    queryOrDefault(groupNotesQuery, [])(child.groupId)
   )
 
   return (
@@ -94,7 +96,7 @@ export default React.memo(function MarkPresent() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
+      {renderResult(groupNotes, (groupNotes) => (
         <>
           <div>
             <ChildNameBackButton child={child} onClick={() => navigate(-1)} />
@@ -107,7 +109,7 @@ export default React.memo(function MarkPresent() {
           >
             <TimeWrapper>
               <TitleNoMargin size={2}>
-                {childLatestDeparture
+                {attendanceStatus.status === 'DEPARTED'
                   ? i18n.attendances.actions.returnToPresent
                   : i18n.attendances.actions.markPresent}
               </TitleNoMargin>
@@ -125,7 +127,7 @@ export default React.memo(function MarkPresent() {
                   text={i18n.common.confirm}
                   disabled={!isValidTime()}
                   onClick={() =>
-                    createArrival({ unitId, childId, arrived: time })
+                    createArrival({ unitId, childId: child.id, arrived: time })
                   }
                   onSuccess={() => {
                     navigate(-2)
@@ -134,7 +136,7 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
-            {childLatestDeparture && (
+            {attendanceStatus.status == 'DEPARTED' && (
               <>
                 <Title centered size={2}>
                   {i18n.attendances.actions.or}
@@ -143,7 +145,7 @@ export default React.memo(function MarkPresent() {
                   <WideMutateButton
                     text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
                     mutation={returnToPresentMutation}
-                    onClick={() => ({ unitId, childId })}
+                    onClick={() => ({ unitId, childId: child.id })}
                     onSuccess={() => navigate(-2)}
                     data-qa="return-to-present-btn"
                   />
@@ -192,3 +194,23 @@ const JustifyContainer = styled.div`
   display: flex;
   justify-content: center;
 `
+
+export default React.memo(function MarkPresent() {
+  const { childId, unitId } = useNonNullableParams<{
+    unitId: string
+    childId: string
+  }>()
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+
+  return renderResult(
+    combine(child, attendanceStatuses),
+    ([child, attendanceStatuses]) => (
+      <MarkPresentInner
+        unitId={unitId}
+        child={child}
+        attendanceStatus={childAttendanceStatus(child, attendanceStatuses)}
+      />
+    )
+  )
+})

@@ -9,6 +9,7 @@ import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceUpsert
+import fi.espoo.evaka.absence.getAbsencesOfChildByDate
 import fi.espoo.evaka.absence.insertAbsences
 import fi.espoo.evaka.absence.setChildDateAbsences
 import fi.espoo.evaka.daycare.getClubTerms
@@ -159,6 +160,7 @@ class ChildAttendanceController(
                                         absences,
                                         attendances,
                                         getChildAttendanceStatus(
+                                            clock.now(),
                                             placementType,
                                             attendances,
                                             absences
@@ -444,8 +446,10 @@ class ChildAttendanceController(
                 )
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
-                val attendance = tx.getChildAttendanceId(childId, unitId, clock.now())
-                if (attendance != null) {
+                val ongoingAttendance = tx.getChildOngoingAttendance(childId, unitId)
+                val completedAttendances =
+                    tx.getCompletedChildAttendanceTimes(childId, unitId, today)
+                if (ongoingAttendance != null || completedAttendances.isNotEmpty()) {
                     throw Conflict("Cannot add full day absence, child already has attendance")
                 }
 
@@ -462,6 +466,40 @@ class ChildAttendanceController(
             }
         }
         Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId, objectId = unitId)
+    }
+
+    @DeleteMapping("/units/{unitId}/children/{childId}/full-day-absence")
+    fun cancelFullDayAbsence(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @PathVariable childId: ChildId
+    ) {
+        val today = clock.today()
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Child.DELETE_ABSENCE,
+                    childId
+                )
+                val placementType =
+                    tx.fetchChildPlacementBasics(childId, unitId, clock.today()).placementType
+                val absenceCategories =
+                    tx.getAbsencesOfChildByDate(childId, today).map { it.category }.toSet()
+                val hasFullDayAbsence = placementType.absenceCategories() == absenceCategories
+                if (hasFullDayAbsence) {
+                    tx.deleteAbsencesByDate(childId, today)
+                } else {
+                    throw Conflict("Cannot cancel full day absence, child is not fully absent")
+                }
+            }
+        }
+        Audit.ChildAttendancesFullDayAbsenceDelete.log(targetId = childId, objectId = unitId)
     }
 
     data class AbsenceRangeRequest(
@@ -604,13 +642,20 @@ private fun Database.Read.fetchChildPlacementTypeDates(
 }
 
 private fun getChildAttendanceStatus(
+    now: HelsinkiDateTime,
     placementType: PlacementType,
     attendances: List<AttendanceTimes>,
     absences: List<ChildAbsence>
 ): AttendanceStatus {
-    if (attendances.isNotEmpty()) {
-        return if (attendances.any { it.departed == null }) AttendanceStatus.PRESENT
-        else AttendanceStatus.DEPARTED
+    if (attendances.any { it.departed == null }) {
+        return AttendanceStatus.PRESENT
+    }
+
+    val hasArrivedToday = attendances.any { it.arrived.toLocalDate() == now.toLocalDate() }
+    val hasDepartedRecently =
+        attendances.any { it.departed != null && it.departed > now.minusMinutes(30) }
+    if (hasArrivedToday || hasDepartedRecently) {
+        return AttendanceStatus.DEPARTED
     }
 
     if (isFullyAbsent(placementType, absences)) {

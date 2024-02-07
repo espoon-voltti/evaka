@@ -206,7 +206,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `attendance started yesterday, ended less than 30 minutes ago`() {
+    fun `attendance started yesterday`() {
         db.transaction { tx ->
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
@@ -218,7 +218,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.atStartOfDay(),
-                departed = now.minusMinutes(29),
+                departed = now.minusMinutes(45),
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -226,30 +226,10 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             mapOf(
                 testChild_1.id to
                     listOf(
-                        AttendanceTimes(arrived = now.minusDays(1), departed = now.minusMinutes(29))
+                        AttendanceTimes(arrived = now.minusDays(1), departed = now.minusMinutes(45))
                     )
             ),
             attendances
         )
-    }
-
-    @Test
-    fun `attendance started yesterday, ended 30 minutes ago`() {
-        db.transaction { tx ->
-            tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
-                arrived = now.minusDays(1),
-                departed = now.minusDays(1).atEndOfDay(),
-            )
-            tx.insertTestChildAttendance(
-                unitId = testDaycare.id,
-                childId = testChild_1.id,
-                arrived = now.atStartOfDay(),
-                departed = now.minusMinutes(30),
-            )
-        }
-        val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
-        assertTrue(attendances.isEmpty())
     }
 }

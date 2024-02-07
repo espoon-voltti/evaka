@@ -304,6 +304,25 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = departed
             )
         }
+
+        val child = expectOneChildAttendance()
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertEquals(1, child.attendances.size)
+    }
+
+    @Test
+    fun `yesterday's arrival is not shown if departed yesterday`() {
+        val arrived = now.minusDays(1).withTime(LocalTime.of(12, 30))
+        val departed = now.minusDays(1).withTime(LocalTime.of(22, 45))
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = arrived,
+                departed = departed
+            )
+        }
+
         expectNoChildAttendances()
     }
 

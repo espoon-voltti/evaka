@@ -952,7 +952,8 @@ sealed interface Action {
         ),
         DELETE_ABSENCE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
         DELETE_ABSENCE_RANGE(
             HasGlobalRole(ADMIN),

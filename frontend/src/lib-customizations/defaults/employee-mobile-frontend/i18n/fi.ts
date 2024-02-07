@@ -162,6 +162,7 @@ export const fi = {
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
       markAbsent: 'Merkitse poissaolevaksi',
+      cancelAbsence: 'Peruuta poissaolo',
       markPresent: 'Merkitse saapuneeksi',
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',

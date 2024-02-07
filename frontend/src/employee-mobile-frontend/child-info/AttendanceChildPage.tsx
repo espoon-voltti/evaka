@@ -234,6 +234,7 @@ export default React.memo(function AttendanceChildPage() {
                       <AttendanceChildComing
                         child={child}
                         groupRoute={groupRoute}
+                        attendances={childAttendance.attendances}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (

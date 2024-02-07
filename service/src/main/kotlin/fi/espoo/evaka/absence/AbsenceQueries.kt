@@ -500,6 +500,9 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         }
     )
 
+fun Database.Read.getAbsencesOfChildByDate(childId: ChildId, date: LocalDate): List<Absence> =
+    getAbsences(Predicate { where("$it.date = ${bind(date)} AND $it.child_id = ${bind(childId)}") })
+
 fun Database.Read.getAbsencesCitizen(
     today: LocalDate,
     guardianId: PersonId,
