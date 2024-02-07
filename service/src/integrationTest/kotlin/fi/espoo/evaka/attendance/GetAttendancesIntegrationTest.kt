@@ -379,7 +379,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(
-            listOf(ReservationResponse.Times(reservationStart, reservationEnd, false)),
+            listOf(ReservationResponse.Times(reservationStart, reservationEnd, true)),
             child.reservations
         )
     }
@@ -398,7 +398,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(listOf(ReservationResponse.NoTimes(false)), child.reservations)
+        assertEquals(listOf(ReservationResponse.NoTimes(true)), child.reservations)
     }
 
     @Test
@@ -426,7 +426,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(
-            listOf(ReservationResponse.Times(reservationStart, reservationEnd, false)),
+            listOf(ReservationResponse.Times(reservationStart, reservationEnd, true)),
             childInBackup.reservations
         )
     }

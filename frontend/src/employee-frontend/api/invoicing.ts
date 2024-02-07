@@ -597,7 +597,8 @@ export async function getAbsencesByChild(
       Success.of(
         res.data.map((absence) => ({
           ...absence,
-          date: LocalDate.parseIso(absence.date)
+          date: LocalDate.parseIso(absence.date),
+          modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
         }))
       )
     )

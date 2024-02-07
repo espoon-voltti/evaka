@@ -7,14 +7,21 @@ import uniqueId from 'lodash/uniqueId'
 import { Absence } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 
+import HelsinkiDateTime from '../helsinki-date-time'
+
 import { groupAbsencesByDateRange } from './absences'
+
+const base = {
+  childId: uniqueId(),
+  modifiedByStaff: true,
+  modifiedAt: HelsinkiDateTime.now()
+}
 
 describe('absences date range', () => {
   describe('grouping works with', () => {
     it('a single date', () => {
       const absence: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
@@ -25,15 +32,13 @@ describe('absences date range', () => {
 
     it('two dates', () => {
       const absence: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
@@ -44,30 +49,25 @@ describe('absences date range', () => {
 
     it('two ranges', () => {
       const absence: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
-
       const absence3: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence4: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(8),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
@@ -79,23 +79,20 @@ describe('absences date range', () => {
 
     it('a range and a single date', () => {
       const absence: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(1),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
       const absence2: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(2),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'
       }
 
       const absence3: Absence = {
-        id: uniqueId(),
-        childId: uniqueId(),
+        ...base,
         date: LocalDate.todayInSystemTz().addDays(7),
         absenceType: 'SICKLEAVE',
         category: 'NONBILLABLE'

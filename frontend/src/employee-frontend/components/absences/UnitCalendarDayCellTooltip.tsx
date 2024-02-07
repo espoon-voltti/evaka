@@ -92,13 +92,15 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   const absencesTooltip = useMemo(
     () =>
       absences.map(
-        ({ category, absenceType, modifiedAt, modifiedByType }, index) => (
+        ({ category, absenceType, modifiedAt, modifiedByStaff }, index) => (
           <div key={index}>
             {index !== 0 && <br />}
             {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
             <br />
             {`${modifiedAt.toLocalDate().format()} ${
-              i18n.absences.modifiedByType[modifiedByType]
+              modifiedByStaff
+                ? i18n.absences.modifiedByStaff
+                : i18n.absences.modifiedByCitizen
             }`}
           </div>
         )

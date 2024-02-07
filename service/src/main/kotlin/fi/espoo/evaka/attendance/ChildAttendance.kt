@@ -12,12 +12,12 @@ import fi.espoo.evaka.note.child.sticky.ChildStickyNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.ReservationResponse
-import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class ContactInfo(
     val id: String,
@@ -53,12 +53,12 @@ enum class AttendanceStatus {
     ABSENT
 }
 
-data class ChildAttendance(
-    val id: ChildAttendanceId,
+data class ChildAttendanceRow(
     val childId: ChildId,
     val unitId: DaycareId,
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime?
 )
 
 data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)

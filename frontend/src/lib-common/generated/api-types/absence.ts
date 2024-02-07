@@ -23,7 +23,8 @@ export interface Absence {
   category: AbsenceCategory
   childId: UUID
   date: LocalDate
-  id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedByStaff: boolean
 }
 
 /**
@@ -63,7 +64,7 @@ export interface AbsenceWithModifierInfo {
   absenceType: AbsenceType
   category: AbsenceCategory
   modifiedAt: HelsinkiDateTime
-  modifiedByType: EvakaUserType
+  modifiedByStaff: boolean
 }
 
 /**

@@ -7,25 +7,33 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.absence.Absence
+import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceType.OTHER_ABSENCE
 import fi.espoo.evaka.absence.AbsenceType.PLANNED_ABSENCE
 import fi.espoo.evaka.absence.AbsenceType.SICKLEAVE
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
+import fi.espoo.evaka.absence.getAbsencesCitizen
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.attendance.childrenHaveAttendanceInRange
+import fi.espoo.evaka.attendance.getChildAttendancesCitizen
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -60,6 +68,7 @@ class ReservationControllerCitizen(
                 throw BadRequest("Invalid date range $from - $to")
             }
 
+        val today = clock.today()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -72,42 +81,33 @@ class ReservationControllerCitizen(
                     val holidays = tx.getHolidays(requestedRange)
                     val preschoolTerms = tx.getPreschoolTerms()
                     val clubTerms = tx.getClubTerms()
-                    val children = tx.getReservationChildren(user.id, clock.today())
+                    val children = tx.getReservationChildren(user.id, today)
                     val childIds = children.map { it.id }.toSet()
-                    val placements = tx.getReservationPlacements(childIds, requestedRange)
+                    val placements =
+                        tx.getReservationPlacements(
+                            childIds,
+                            // Include all future placements for upcomingPlacementType computation
+                            DateRange(minOf(today, requestedRange.start), null)
+                        )
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
 
-                    val reservationData =
-                        tx.getReservationsCitizen(clock.today(), user.id, requestedRange)
-                    val absences: Map<Pair<ChildId, LocalDate>, AbsenceInfo> =
-                        reservationData
-                            .flatMap { d ->
-                                d.children.mapNotNull { c ->
-                                    if (c.absence == null) null
-                                    else
-                                        Pair(
-                                            Pair(c.childId, d.date),
-                                            AbsenceInfo(c.absence, c.absenceEditable)
-                                        )
-                                }
-                            }
-                            .toMap()
+                    val absences: Map<Pair<ChildId, LocalDate>, List<Absence>> =
+                        tx.getAbsencesCitizen(today, user.id, requestedRange).groupBy {
+                            it.childId to it.date
+                        }
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
-                        reservationData
-                            .flatMap { d ->
-                                d.children.map { c ->
-                                    Pair(Pair(c.childId, d.date), c.reservations)
-                                }
+                        tx.getReservationsCitizen(today, user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, reservations) ->
+                                reservations.map { ReservationResponse.from(it) }
                             }
-                            .toMap()
                     val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
-                        reservationData
-                            .flatMap { d ->
-                                d.children.map { c -> Pair(Pair(c.childId, d.date), c.attendances) }
+                        tx.getChildAttendancesCitizen(today, user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, attendances) ->
+                                attendances.map { OpenTimeRange(it.startTime, it.endTime) }
                             }
-                            .toMap()
-
                     val reservableRange =
                         getReservableRange(
                             clock.now(),
@@ -145,16 +145,50 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
+                                                        val childAbsences =
+                                                            absences[key] ?: listOf()
+                                                        val childReservations =
+                                                            reservations[key] ?: listOf()
+                                                        val childAttendances =
+                                                            attendances[key] ?: listOf()
+
+                                                        val isPast = date.isBefore(today)
+                                                        val hasEndedAttendances =
+                                                            childAttendances.any {
+                                                                it.endTime != null
+                                                            }
+                                                        val usedService =
+                                                            placementDay.daycareHoursPerMonth
+                                                                ?.takeIf {
+                                                                    isPast || hasEndedAttendances
+                                                                }
+                                                                ?.let { daycareHoursPerMonth ->
+                                                                    UsedService.compute(
+                                                                        daycareHoursPerMonth,
+                                                                        placementDay.placementType,
+                                                                        childAbsences.map {
+                                                                            it.category
+                                                                        },
+                                                                        childReservations
+                                                                            .mapNotNull {
+                                                                                it.asTimeRange()
+                                                                            },
+                                                                        childAttendances
+                                                                            .mapNotNull {
+                                                                                it.asTimeRange()
+                                                                            }
+                                                                    )
+                                                                }
                                                         ReservationResponseDayChild(
                                                             childId = child.id,
                                                             scheduleType =
                                                                 placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
-                                                            absence = absences[key],
-                                                            reservations =
-                                                                reservations[key] ?: listOf(),
-                                                            attendances =
-                                                                attendances[key] ?: listOf(),
+                                                            absence =
+                                                                selectSingleAbsence(childAbsences),
+                                                            reservations = childReservations,
+                                                            attendances = childAttendances,
+                                                            usedService = usedService,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange
                                                         )
@@ -166,7 +200,15 @@ class ReservationControllerCitizen(
                             .toList()
 
                     ReservationsResponse(
-                        children = children.filter { placements.containsKey(it.id) },
+                        children =
+                            children.map {
+                                ReservationChild.from(
+                                    it,
+                                    days,
+                                    placements[it.id] ?: emptyList(),
+                                    today
+                                )
+                            },
                         days = days,
                         reservableRange = reservableRange
                     )
@@ -322,8 +364,10 @@ class ReservationControllerCitizen(
 }
 
 data class PlacementDay(
+    val placementType: PlacementType,
     val scheduleType: ScheduleType,
     val shiftCare: Boolean,
+    val daycareHoursPerMonth: Int?,
     val reservableTimeRange: ReservableTimeRange
 )
 
@@ -355,8 +399,10 @@ private fun placementDay(
 
     return if (operationTime != null || shiftCare) {
         PlacementDay(
+            placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             shiftCare = shiftCare,
+            daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =
                 if (shiftCareType == ShiftCareType.INTERMITTENT) {
                     ReservableTimeRange.IntermittentShiftCare(operationTime)
@@ -369,10 +415,114 @@ private fun placementDay(
     }
 }
 
+/**
+ * Show at most one absence per child per day. Taking the non-billable one is just a random choice
+ * without any real meaning.
+ */
+private fun selectSingleAbsence(absences: List<Absence>): AbsenceInfo? =
+    absences
+        .let {
+            if (it.size > 1) {
+                it.first { a -> a.category == AbsenceCategory.NONBILLABLE }
+            } else {
+                it.firstOrNull()
+            }
+        }
+        ?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
+
 data class ReservationsResponse(
     val children: List<ReservationChild>,
     val days: List<ReservationResponseDay>,
     val reservableRange: FiniteDateRange
+)
+
+data class ReservationChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val duplicateOf: PersonId?,
+    val imageId: ChildImageId?,
+    val upcomingPlacementType: PlacementType?,
+    val monthSummaries: List<MonthSummary>
+) {
+    companion object {
+        fun from(
+            child: ReservationChildRow,
+            days: List<ReservationResponseDay>,
+            placements: List<ReservationPlacement>,
+            today: LocalDate
+        ): ReservationChild {
+            val hasHourBasedServiceNeeds =
+                placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
+            val monthSummaries =
+                if (hasHourBasedServiceNeeds) {
+                    days
+                        .mapNotNull { day ->
+                            day.children.find { it.childId == child.id }?.let { day.date to it }
+                        }
+                        .groupBy(
+                            { (date, _) -> date.year to date.monthValue },
+                            { (_, childDay) -> childDay }
+                        )
+                        .mapNotNull { (yearMonth, childDays) ->
+                            val (year, month) = yearMonth
+                            val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
+
+                            // As per how the hour-based service needs are used in practice, there
+                            // should only be just one service need for the child for each month, so
+                            // we'll take the first one
+                            val daycareHoursPerMonth =
+                                placements
+                                    .find { it.range.overlaps(monthRange) }
+                                    ?.serviceNeeds
+                                    ?.find { it.daycareHoursPerMonth != null }
+                                    ?.daycareHoursPerMonth
+
+                            if (daycareHoursPerMonth == null) {
+                                // Not an hour-based service need, don't generate a summary at all
+                                return@mapNotNull null
+                            }
+
+                            MonthSummary(
+                                year = yearMonth.first,
+                                month = yearMonth.second,
+                                serviceNeedMinutes = daycareHoursPerMonth * 60,
+                                reservedMinutes =
+                                    childDays.sumOf { day ->
+                                        day.reservations
+                                            .mapNotNull { it.asTimeRange() }
+                                            .sumOf { it.durationInMinutes() }
+                                    },
+                                usedServiceMinutes =
+                                    childDays.sumOf { it.usedService?.durationInMinutes ?: 0 }
+                            )
+                        }
+                } else {
+                    // No hour-based service needs, don't generate summaries
+                    emptyList()
+                }
+
+            return ReservationChild(
+                id = child.id,
+                firstName = child.firstName,
+                lastName = child.lastName,
+                preferredName = child.preferredName,
+                duplicateOf = child.duplicateOf,
+                imageId = child.imageId,
+                upcomingPlacementType = placements.find { it.range.end >= today }?.type,
+                monthSummaries = monthSummaries
+            )
+        }
+    }
+}
+
+data class MonthSummary(
+    val year: Int,
+    val month: Int,
+    val serviceNeedMinutes: Int,
+    val reservedMinutes: Int,
+    val usedServiceMinutes: Int
 )
 
 data class ReservationResponseDay(
@@ -388,6 +538,7 @@ data class ReservationResponseDayChild(
     val absence: AbsenceInfo?,
     val reservations: List<ReservationResponse>,
     val attendances: List<OpenTimeRange>,
+    val usedService: UsedService?,
     val reservableTimeRange: ReservableTimeRange
 )
 

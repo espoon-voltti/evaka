@@ -197,7 +197,8 @@ export async function getFutureAbsencesByChildPlain(
     .then((res) =>
       res.data.map((absence) => ({
         ...absence,
-        date: LocalDate.parseIso(absence.date)
+        date: LocalDate.parseIso(absence.date),
+        modifiedAt: HelsinkiDateTime.parseIso(absence.modifiedAt)
       }))
     )
 }

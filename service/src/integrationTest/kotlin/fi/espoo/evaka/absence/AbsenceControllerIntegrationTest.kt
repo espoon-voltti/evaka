@@ -7,9 +7,7 @@ package fi.espoo.evaka.absence
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevAbsence
@@ -27,7 +25,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,8 +35,6 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2023, 6, 1), LocalTime.of(8, 0))
     private val today = now.toLocalDate()
-
-    private val mockId = AbsenceId(UUID.randomUUID())
 
     private lateinit var daycare: DevDaycare
     private lateinit var group: DevDaycareGroup
@@ -145,14 +140,16 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     DevAbsence(
                         childId = child1.id,
                         date = date,
-                        absenceCategory = AbsenceCategory.BILLABLE
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                        modifiedAt = now
                     )
                 )
                 tx.insert(
                     DevAbsence(
                         childId = child1.id,
                         date = date,
-                        absenceCategory = AbsenceCategory.NONBILLABLE
+                        absenceCategory = AbsenceCategory.NONBILLABLE,
+                        modifiedAt = now
                     )
                 )
             }
@@ -162,7 +159,8 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevAbsence(
                     childId = child2.id,
                     date = firstAbsenceDate,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    modifiedAt = now
                 )
             )
         }
@@ -185,18 +183,20 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(
             listOf(
                 Absence(
-                    id = mockId,
                     childId = child1.id,
                     date = firstAbsenceDate,
                     category = AbsenceCategory.NONBILLABLE,
-                    absenceType = AbsenceType.OTHER_ABSENCE
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedByStaff = true,
+                    modifiedAt = now
                 ),
                 Absence(
-                    id = mockId,
                     childId = child1.id,
                     date = lastAbsenceDate,
                     category = AbsenceCategory.BILLABLE,
-                    absenceType = AbsenceType.OTHER_ABSENCE
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedByStaff = true,
+                    modifiedAt = now
                 ),
             ),
             getAbsencesOfChild(child1.id).sortedWith(compareBy({ it.date }, { it.category }))
@@ -204,11 +204,12 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(
             listOf(
                 Absence(
-                    id = mockId,
                     childId = child2.id,
                     date = firstAbsenceDate,
                     category = AbsenceCategory.BILLABLE,
-                    absenceType = AbsenceType.OTHER_ABSENCE
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedByStaff = true,
+                    modifiedAt = now
                 ),
             ),
             getAbsencesOfChild(child2.id)
@@ -237,7 +238,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employee.id.raw)
+                    createdBy = employee.evakaUserId
                 )
             )
             tx.insert(
@@ -246,7 +247,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(2),
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(employee.id.raw)
+                    createdBy = employee.evakaUserId
                 )
             )
         }
@@ -311,7 +312,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employee.id.raw)
+                    createdBy = employee.evakaUserId
                 )
             )
             tx.insert(
@@ -320,7 +321,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employee.id.raw)
+                    createdBy = employee.evakaUserId
                 )
             )
             tx.insert(
@@ -329,7 +330,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(2),
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(employee.id.raw)
+                    createdBy = employee.evakaUserId
                 )
             )
 
@@ -337,14 +338,16 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevAbsence(
                     childId = child1.id,
                     date = startDate,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    modifiedAt = now
                 )
             )
             tx.insert(
                 DevAbsence(
                     childId = child1.id,
                     date = startDate.plusDays(1),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    modifiedAt = now
                 )
             )
         }
@@ -378,11 +381,12 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             listOf(
                 // This was kept
                 Absence(
-                    id = mockId,
                     childId = child1.id,
                     date = startDate,
                     category = AbsenceCategory.BILLABLE,
-                    absenceType = AbsenceType.OTHER_ABSENCE
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedByStaff = true,
+                    modifiedAt = now
                 ),
             ),
             getAbsencesOfChild(child1.id)
@@ -390,17 +394,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getAbsencesOfChild(childId: ChildId): List<Absence> {
-        return absenceController
-            .absencesOfChild(
-                dbInstance(),
-                employee.user,
-                MockEvakaClock(now),
-                childId,
-                today.year,
-                today.monthValue
-            )
-            // We're not interested in IDs
-            .map { it.copy(id = mockId) }
+        return absenceController.absencesOfChild(
+            dbInstance(),
+            employee.user,
+            MockEvakaClock(now),
+            childId,
+            today.year,
+            today.monthValue
+        )
     }
 
     private fun upsertAbsences(absences: List<AbsenceUpsert>) {

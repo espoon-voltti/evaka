@@ -59,6 +59,7 @@ const emptyChild: ReservationResponseDayChild = {
   absence: null,
   reservations: [],
   attendances: [],
+  usedService: null,
   reservableTimeRange: {
     type: 'NORMAL',
     range: defaultReservableTimeRange

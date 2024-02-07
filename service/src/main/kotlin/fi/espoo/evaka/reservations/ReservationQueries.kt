@@ -12,6 +12,7 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -20,7 +21,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -137,52 +138,53 @@ fun Database.Transaction.insertValidReservations(
     }
 }
 
-private data class ReservationRow(
-    val childId: ChildId,
-    val startTime: LocalTime?,
-    val endTime: LocalTime?,
-    val staffCreated: Boolean
-)
+fun Database.Read.getReservations(
+    where: Predicate<DatabaseTable.AttendanceReservation>
+): List<ReservationRow> =
+    createQuery<Any> {
+            sql(
+                """
+SELECT
+  ar.date,
+  ar.child_id,
+  ar.start_time,
+  ar.end_time,
+  eu.type <> 'CITIZEN' as staff_created
+FROM attendance_reservation ar
+JOIN evaka_user eu ON ar.created_by = eu.id
+WHERE ${predicate(where.forTable("ar"))}
+"""
+            )
+        }
+        .toList {
+            ReservationRow(
+                column("date"),
+                column("child_id"),
+                Reservation.of(column("start_time"), column("end_time")),
+                column("staff_created")
+            )
+        }
 
 fun Database.Read.getUnitReservations(
     unitId: DaycareId,
     date: LocalDate
 ): Map<ChildId, List<ReservationResponse>> =
-    createQuery(
-            """
-    WITH placed_children AS (
-        SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
-        UNION
-        SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
-    )
-    SELECT
-        pc.child_id,
-        ar.start_time,
-        ar.end_time,
-        e.type = 'EMPLOYEE' as staff_created
-    FROM placed_children pc
-    JOIN attendance_reservation ar ON ar.child_id = pc.child_id 
-    JOIN evaka_user e ON ar.created_by = e.id
-    WHERE ar.date = :date
-    """
-                .trimIndent()
+    getReservations(
+            Predicate {
+                where(
+                    """
+$it.date = ${bind(date)} AND
+$it.child_id IN (
+    SELECT child_id FROM placement WHERE unit_id = ${bind(unitId)} AND ${bind(date)} BETWEEN start_date AND end_date
+    UNION
+    SELECT child_id FROM backup_care WHERE unit_id = ${bind(unitId)} AND ${bind(date)} BETWEEN start_date AND end_date
+)
+"""
+                )
+            }
         )
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<ReservationRow>()
-        .useIterable { rows ->
-            rows
-                .map {
-                    it.childId to
-                        ReservationResponse.fromLocalTimes(
-                            it.startTime,
-                            it.endTime,
-                            it.staffCreated
-                        )
-                }
-                .groupBy({ it.first }, { it.second })
-                .mapValues { (_, value) -> value.sorted() }
-        }
+        .groupBy { it.childId }
+        .mapValues { (_, value) -> value.map { ReservationResponse.from(it) } }
 
 fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
@@ -226,142 +228,53 @@ fun Database.Read.getReservationDatesForChildrenInRange(
 fun Database.Read.getReservationsForChildInRange(
     childId: ChildId,
     range: FiniteDateRange
-): Map<LocalDate, List<ReservationResponse>> {
-    data class ReservationWithDate(val date: LocalDate, val reservation: ReservationResponse)
-    return createQuery(
-            """
-SELECT ar.date, 
-       ar.start_time, 
-       ar.end_time, 
-       eu.type = 'EMPLOYEE' as staff_created
-FROM attendance_reservation ar
-LEFT JOIN evaka_user eu ON ar.created_by = eu.id
-WHERE between_start_and_end(:range, ar.date)
-  AND ar.child_id = :childId
-
-        """
-        )
-        .bind("range", range)
-        .bind("childId", childId)
-        .toList {
-            ReservationWithDate(
-                column("date"),
-                ReservationResponse.fromLocalTimes(
-                    column("start_time"),
-                    column("end_time"),
-                    column("staff_created")
+): Map<LocalDate, List<ReservationResponse>> =
+    getReservations(
+            Predicate {
+                where(
+                    """
+between_start_and_end(${bind(range)}, ar.date)
+AND ar.child_id = ${bind(childId)}
+"""
                 )
-            )
-        }
-        .groupBy({ it.date }, { it.reservation })
-}
-
-data class DailyReservationData(val date: LocalDate, @Json val children: List<ChildDailyData>)
-
-@Json
-data class ChildDailyData(
-    val childId: ChildId,
-    val absence: AbsenceType?,
-    val absenceEditable: Boolean,
-    val reservations: List<ReservationResponse>,
-    val attendances: List<OpenTimeRange>
-)
+            }
+        )
+        .groupBy { it.date }
+        .mapValues { (_, value) -> value.map { ReservationResponse.from(it) } }
 
 fun Database.Read.getReservationsCitizen(
     today: LocalDate,
-    userId: PersonId,
-    range: FiniteDateRange,
-): List<DailyReservationData> {
-    if (range.durationInDays() > 450) throw BadRequest("Range too long")
-
-    return createQuery(
-            """
-WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<ReservationRow> =
+    getReservations(
+        Predicate {
+            where(
+                """
+between_start_and_end(${bind(range)}, $it.date) AND
+$it.child_id = ANY (
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
     UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
 )
-SELECT
-    t::date AS date,
-    coalesce(
-        jsonb_agg(
-            jsonb_build_object(
-                'childId', c.child_id,
-                'absence', a.absence_type,
-                'absenceEditable', a.absence_editable,
-                'reservations', coalesce(ar.reservations, '[]'),
-                'attendances', coalesce(ca.attendances, '[]')
+"""
             )
-        ) FILTER (
-            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
-              AND EXISTS(
-                SELECT 1 FROM placement p
-                JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-                WHERE c.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
-              )
-        ),
-        '[]'
-    ) AS children
-FROM generate_series(:start, :end, '1 day') t, children c
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            CASE WHEN ar.start_time IS NULL OR ar.end_time IS NULL THEN
-                jsonb_build_object('type', 'NO_TIMES')
-            ELSE
-                jsonb_build_object('type', 'TIMES', 'startTime', ar.start_time, 'endTime', ar.end_time)
-            END
-            ORDER BY ar.start_time
-        ) AS reservations
-    FROM attendance_reservation ar WHERE ar.child_id = c.child_id AND ar.date = t::date
-) ar ON true
-LEFT JOIN LATERAL (
-    SELECT
-        jsonb_agg(
-            jsonb_build_object(
-                'startTime', to_char(ca.start_time, 'HH24:MI'),
-                'endTime', to_char(ca.end_time, 'HH24:MI')
-            ) ORDER BY ca.start_time ASC
-        ) AS attendances
-    FROM child_attendance ca WHERE ca.child_id = c.child_id AND ca.date = t::date
-) ca ON true
-LEFT JOIN LATERAL (
-    SELECT
-        a.absence_type,
-        (a.absence_type <> 'FREE_ABSENCE' AND eu.type = 'CITIZEN') AS absence_editable
-    FROM absence a
-    JOIN evaka_user eu ON eu.id = a.modified_by
-    WHERE
-        a.child_id = c.child_id AND
-        a.date = t::date
-    ORDER BY a.category DESC
-    LIMIT 1
-) a ON true
-GROUP BY date
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .bind("start", range.start)
-        .bind("end", range.end)
-        .toList<DailyReservationData>()
-}
+        }
+    )
 
-data class ReservationChild(
+data class ReservationChildRow(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
     val preferredName: String,
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
-    val upcomingPlacementType: PlacementType?,
 )
 
 fun Database.Read.getReservationChildren(
     guardianId: PersonId,
     today: LocalDate
-): List<ReservationChild> {
+): List<ReservationChildRow> {
     return createQuery(
             """
 WITH children AS (
@@ -375,13 +288,7 @@ SELECT
     p.last_name,
     p.preferred_name,
     p.duplicate_of,
-    ci.id AS image_id,
-    (
-        SELECT type FROM placement
-        WHERE child_id = p.id AND :today <= end_date
-        ORDER BY start_date
-        LIMIT 1
-    ) AS upcoming_placement_type
+    ci.id AS image_id
 FROM person p
 LEFT JOIN child_images ci ON ci.child_id = p.id
 WHERE p.id = ANY (SELECT child_id FROM children)
@@ -390,7 +297,7 @@ ORDER BY p.date_of_birth, p.duplicate_of
         )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .toList<ReservationChild>()
+        .toList<ReservationChildRow>()
 }
 
 data class ReservationPlacement(
@@ -401,7 +308,11 @@ data class ReservationPlacement(
     val serviceNeeds: List<ReservationServiceNeed>
 )
 
-data class ReservationServiceNeed(val range: FiniteDateRange, val shiftCareType: ShiftCareType)
+data class ReservationServiceNeed(
+    val range: FiniteDateRange,
+    val shiftCareType: ShiftCareType,
+    val daycareHoursPerMonth: Int?
+)
 
 data class ReservationPlacementRow(
     val childId: ChildId,
@@ -409,36 +320,38 @@ data class ReservationPlacementRow(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
-    val serviceNeedRange: FiniteDateRange?,
     val shiftCareType: ShiftCareType?,
+    val daycareHoursPerMonth: Int?,
+    val serviceNeedRange: FiniteDateRange?,
 )
 
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
-): Map<ChildId, List<ReservationPlacement>> {
-    val sql =
-        """
+    range: DateRange
+): Map<ChildId, List<ReservationPlacement>> =
+    createQuery<Any> {
+            sql(
+                """
 SELECT
     pl.child_id,
-    pl.id as placement_id,
-    daterange(pl.start_date, pl.end_date, '[]') * :range AS range,
+    pl.id AS placement_id,
+    daterange(pl.start_date, pl.end_date, '[]') AS range,
     pl.type,
     u.operation_times,
-    sn.shift_care as shift_care_type,
-    daterange(sn.start_date, sn.end_date, '[]') * :range AS service_need_range
+    sn.shift_care AS shift_care_type,
+    sno.daycare_hours_per_month,
+    CASE WHEN sn IS NOT NULL THEN daterange(sn.start_date, sn.end_date, '[]') END AS service_need_range
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
-LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
+LEFT JOIN service_need sn ON sn.placement_id = pl.id
+LEFT JOIN service_need_option sno ON sno.id = sn.option_id
 WHERE
-    pl.child_id = ANY (:childIds) AND
-    daterange(pl.start_date, pl.end_date, '[]') && :range AND
+    pl.child_id = ANY (${bind(childIds)}) AND
+    daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-
-    return createQuery(sql)
-        .bind("childIds", childIds)
-        .bind("range", range)
+            )
+        }
         .toList<ReservationPlacementRow>()
         .groupBy { it.placementId }
         .map { (_, rows) ->
@@ -454,14 +367,14 @@ WHERE
                             else
                                 ReservationServiceNeed(
                                     range = it.serviceNeedRange,
-                                    shiftCareType = it.shiftCareType
+                                    shiftCareType = it.shiftCareType,
+                                    daycareHoursPerMonth = it.daycareHoursPerMonth
                                 )
                         }
                         .toList()
             )
         }
         .groupBy { it.childId }
-}
 
 data class ReservationBackupPlacement(
     val childId: ChildId,

@@ -200,6 +200,17 @@ export interface GroupReservationStatisticResult {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.MonthSummary
+*/
+export interface MonthSummary {
+  month: number
+  reservedMinutes: number
+  serviceNeedMinutes: number
+  usedServiceMinutes: number
+  year: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.OpenTimeRange
 */
 export interface OpenTimeRange {
@@ -273,6 +284,7 @@ export interface ReservationChild {
   id: UUID
   imageId: UUID | null
   lastName: string
+  monthSummaries: MonthSummary[]
   preferredName: string
   upcomingPlacementType: PlacementType | null
 }
@@ -342,6 +354,7 @@ export interface ReservationResponseDayChild {
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
   shiftCare: boolean
+  usedService: UsedService | null
 }
 
 /**
@@ -371,3 +384,28 @@ export interface UnitDateInfo {
   isInHolidayPeriod: boolean
   time: TimeRange | null
 }
+
+export namespace UsedService {
+  /**
+  * Generated from fi.espoo.evaka.reservations.UsedService.Average
+  */
+  export interface Average {
+    type: 'AVERAGE'
+    durationInMinutes: number
+  }
+  
+  /**
+  * Generated from fi.espoo.evaka.reservations.UsedService.Ranges
+  */
+  export interface Ranges {
+    type: 'RANGES'
+    durationInMinutes: number
+    ranges: TimeRange[]
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.UsedService
+*/
+export type UsedService = UsedService.Average | UsedService.Ranges
+

@@ -34,7 +34,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isOperationalDate
-import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -154,7 +153,8 @@ fun getGroupMonthCalendar(
                                                 isHolidayPeriodDate &&
                                                 childReservations.isEmpty() &&
                                                 childAbsences.isEmpty(),
-                                        absences = childAbsences,
+                                        absences =
+                                            childAbsences.map { AbsenceWithModifierInfo.from(it) },
                                         reservations = childReservations,
                                         dailyServiceTimes =
                                             (dailyServiceTimes[child.id]?.map { it.times }
@@ -501,19 +501,32 @@ data class ChildServiceNeedInfo(
 data class AbsencePlacement(val dateRange: FiniteDateRange, val type: PlacementType)
 
 data class Absence(
-    val id: AbsenceId,
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
-    val absenceType: AbsenceType
-)
+    val absenceType: AbsenceType,
+    val modifiedByStaff: Boolean,
+    val modifiedAt: HelsinkiDateTime
+) {
+    fun editableByCitizen(): Boolean = absenceType != AbsenceType.FREE_ABSENCE && !modifiedByStaff
+}
 
 data class AbsenceWithModifierInfo(
-    val category: AbsenceCategory,
     val absenceType: AbsenceType,
-    val modifiedByType: EvakaUserType,
+    val category: AbsenceCategory,
+    val modifiedByStaff: Boolean,
     val modifiedAt: HelsinkiDateTime
-)
+) {
+    companion object {
+        fun from(absence: Absence): AbsenceWithModifierInfo =
+            AbsenceWithModifierInfo(
+                absence.absenceType,
+                absence.category,
+                absence.modifiedByStaff,
+                absence.modifiedAt
+            )
+    }
+}
 
 enum class AbsenceType : DatabaseEnum {
     /** A normal absence that has been informed to the staff */
