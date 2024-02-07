@@ -179,7 +179,15 @@ data class ReservationRow(
     val staffCreated: Boolean
 )
 
-data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) {
+data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) :
+    Comparable<OpenTimeRange> {
+    override fun compareTo(other: OpenTimeRange): Int {
+        return startTime.compareTo(other.startTime).let {
+            if (it != 0) it
+            else (endTime ?: LocalTime.MAX).compareTo(other.endTime ?: LocalTime.MAX)
+        }
+    }
+
     fun asTimeRange(): TimeRange? = endTime?.let { TimeRange(startTime, it) }
 }
 

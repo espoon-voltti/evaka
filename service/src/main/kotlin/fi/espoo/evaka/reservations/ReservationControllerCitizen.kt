@@ -186,8 +186,9 @@ class ReservationControllerCitizen(
                                                             shiftCare = placementDay.shiftCare,
                                                             absence =
                                                                 selectSingleAbsence(childAbsences),
-                                                            reservations = childReservations,
-                                                            attendances = childAttendances,
+                                                            reservations =
+                                                                childReservations.sorted(),
+                                                            attendances = childAttendances.sorted(),
                                                             usedService = usedService,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange
