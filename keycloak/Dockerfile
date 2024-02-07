@@ -7,6 +7,7 @@ ARG KEYCLOAK_VERSION=23.0.4
 ## Package containers ##
 
 FROM registry.access.redhat.com/ubi9 AS ubi-curl
+ARG CACHE_BUST
 
 RUN mkdir -p /mnt/rootfs \
  && dnf install \
@@ -27,12 +28,9 @@ RUN mkdir -p /mnt/rootfs \
 
 ## Base containers ##
 
-ARG CACHE_BUST
-
 FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} as base
 
 USER root
-
 
 FROM base as maven-builder
 

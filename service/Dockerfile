@@ -2,9 +2,8 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG CACHE_BUST
-
 FROM eclipse-temurin:21-jammy as base
+ARG CACHE_BUST
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
