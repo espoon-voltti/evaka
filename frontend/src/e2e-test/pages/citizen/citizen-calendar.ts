@@ -559,15 +559,8 @@ class AbsencesModal {
 }
 
 class MonthlySummary extends Element {
-  constructor(root: Element) {
-    super(root)
-  }
-  #title = this.findByDataQa('monthly-summary-info-title')
-  #text = this.findByDataQa('monthly-summary-info-text')
-  async assertContent(title: string, text: string) {
-    await this.#title.assertTextEquals(title)
-    await this.#text.assertTextEquals(text)
-  }
+  title = this.findByDataQa('monthly-summary-info-title')
+  textElement = this.findByDataQa('monthly-summary-info-text')
 }
 
 class DayView extends Element {

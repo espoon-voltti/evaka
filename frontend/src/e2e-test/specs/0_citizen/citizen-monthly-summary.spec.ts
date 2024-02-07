@@ -93,8 +93,8 @@ describe('Monthly summary', () => {
       today.year,
       today.month
     )
-    await summary.assertContent(
-      'Läsnäolot 01.01. - 31.01.2022',
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
       'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 0 h / 140 h'
     )
   })
@@ -115,8 +115,8 @@ describe('Monthly summary', () => {
       today.year,
       today.month
     )
-    await summary.assertContent(
-      'Läsnäolot 01.01. - 31.01.2022',
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma 0 h / 140 h\n' +

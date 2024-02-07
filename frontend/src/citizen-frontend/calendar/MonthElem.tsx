@@ -134,28 +134,24 @@ export interface CalendarMonth {
 }
 
 export function groupByMonth(days: ReservationResponseDay[]): CalendarMonth[] {
-  return days.reduce((months, day) => {
-    const monthIndex = months.findIndex(
-      (m) => m.monthNumber === day.date.month && m.year === day.date.year
-    )
-
-    if (monthIndex === -1) {
-      // Month does not exist, create new month
-      const newMonth = {
-        year: day.date.year,
-        monthNumber: day.date.month,
-        calendarDays: [day]
+  const months: CalendarMonth[] = []
+  let currentMonth: CalendarMonth | undefined = undefined
+  days.forEach((d) => {
+    if (
+      !currentMonth ||
+      currentMonth.year !== d.date.year ||
+      currentMonth.monthNumber !== d.date.month
+    ) {
+      currentMonth = {
+        year: d.date.year,
+        monthNumber: d.date.month,
+        calendarDays: []
       }
-      return [...months, newMonth]
-    } else {
-      // Month exists, add day to the month
-      return months.map((month, index) =>
-        index === monthIndex
-          ? { ...month, calendarDays: [...month.calendarDays, day] }
-          : month
-      )
+      months.push(currentMonth)
     }
-  }, [] as CalendarMonth[])
+    currentMonth.calendarDays.push(d)
+  })
+  return months
 }
 const titleStyles = css`
   margin: 0;
