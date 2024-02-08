@@ -14,6 +14,7 @@ import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
 import { ExternalId } from './identity'
 import { IncomeEffect } from './invoicing'
+import { JsonOf } from '../../json'
 import { Nationality } from './vtjclient'
 import { NativeLanguage } from './vtjclient'
 import { UUID } from '../../types'
@@ -619,4 +620,202 @@ export interface TemporaryEmployee {
 export interface UpsertEmployeeDaycareRolesRequest {
   daycareIds: UUID[]
   role: UserRole
+}
+
+
+export function deserializeJsonCreateFosterParentRelationshipBody(json: JsonOf<CreateFosterParentRelationshipBody>): CreateFosterParentRelationshipBody {
+  return {
+    ...json,
+    validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonCreatePersonBody(json: JsonOf<CreatePersonBody>): CreatePersonBody {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonEmployee(json: JsonOf<Employee>): Employee {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
+  }
+}
+
+
+export function deserializeJsonEmployeeWithDaycareRoles(json: JsonOf<EmployeeWithDaycareRoles>): EmployeeWithDaycareRoles {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null,
+    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
+  }
+}
+
+
+export function deserializeJsonFamilyOverview(json: JsonOf<FamilyOverview>): FamilyOverview {
+  return {
+    ...json,
+    children: json.children.map(e => deserializeJsonFamilyOverviewPerson(e)),
+    headOfFamily: deserializeJsonFamilyOverviewPerson(json.headOfFamily),
+    partner: (json.partner != null) ? deserializeJsonFamilyOverviewPerson(json.partner) : null
+  }
+}
+
+
+export function deserializeJsonFamilyOverviewPerson(json: JsonOf<FamilyOverviewPerson>): FamilyOverviewPerson {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonFosterParentRelationship(json: JsonOf<FosterParentRelationship>): FosterParentRelationship {
+  return {
+    ...json,
+    child: deserializeJsonPersonSummary(json.child),
+    parent: deserializeJsonPersonSummary(json.parent),
+    validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonPagedEmployeesWithDaycareRoles(json: JsonOf<PagedEmployeesWithDaycareRoles>): PagedEmployeesWithDaycareRoles {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonEmployeeWithDaycareRoles(e))
+  }
+}
+
+
+export function deserializeJsonParentship(json: JsonOf<Parentship>): Parentship {
+  return {
+    ...json,
+    child: deserializeJsonPersonJSON(json.child),
+    endDate: LocalDate.parseIso(json.endDate),
+    headOfChild: deserializeJsonPersonJSON(json.headOfChild),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonParentshipRequest(json: JsonOf<ParentshipRequest>): ParentshipRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonParentshipUpdateRequest(json: JsonOf<ParentshipUpdateRequest>): ParentshipUpdateRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonParentshipWithPermittedActions(json: JsonOf<ParentshipWithPermittedActions>): ParentshipWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonParentship(json.data)
+  }
+}
+
+
+export function deserializeJsonPartnership(json: JsonOf<Partnership>): Partnership {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    partners: json.partners.map(e => deserializeJsonPersonJSON(e)),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPartnershipRequest(json: JsonOf<PartnershipRequest>): PartnershipRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPartnershipUpdateRequest(json: JsonOf<PartnershipUpdateRequest>): PartnershipUpdateRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPartnershipWithPermittedActions(json: JsonOf<PartnershipWithPermittedActions>): PartnershipWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonPartnership(json.data)
+  }
+}
+
+
+export function deserializeJsonPersonJSON(json: JsonOf<PersonJSON>): PersonJSON {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
+    updatedFromVtj: (json.updatedFromVtj != null) ? HelsinkiDateTime.parseIso(json.updatedFromVtj) : null
+  }
+}
+
+
+export function deserializeJsonPersonPatch(json: JsonOf<PersonPatch>): PersonPatch {
+  return {
+    ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null
+  }
+}
+
+
+export function deserializeJsonPersonResponse(json: JsonOf<PersonResponse>): PersonResponse {
+  return {
+    ...json,
+    person: deserializeJsonPersonJSON(json.person)
+  }
+}
+
+
+export function deserializeJsonPersonSummary(json: JsonOf<PersonSummary>): PersonSummary {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null
+  }
+}
+
+
+export function deserializeJsonPersonWithChildrenDTO(json: JsonOf<PersonWithChildrenDTO>): PersonWithChildrenDTO {
+  return {
+    ...json,
+    children: json.children.map(e => deserializeJsonPersonWithChildrenDTO(e)),
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
+    restrictedDetails: deserializeJsonRestrictedDetails(json.restrictedDetails)
+  }
+}
+
+
+export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>): RestrictedDetails {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
 }

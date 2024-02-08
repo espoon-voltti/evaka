@@ -9,7 +9,9 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { Action } from '../action'
 import { AssistanceActionResponse } from './assistanceaction'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
+import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
 
 /**
 * Generated from fi.espoo.evaka.assistance.AssistanceFactor
@@ -170,4 +172,116 @@ export interface PreschoolAssistanceResponse {
 export interface PreschoolAssistanceUpdate {
   level: PreschoolAssistanceLevel
   validDuring: FiniteDateRange
+}
+
+
+export function deserializeJsonAssistanceFactor(json: JsonOf<AssistanceFactor>): AssistanceFactor {
+  return {
+    ...json,
+    modified: HelsinkiDateTime.parseIso(json.modified),
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonAssistanceFactorResponse(json: JsonOf<AssistanceFactorResponse>): AssistanceFactorResponse {
+  return {
+    ...json,
+    data: deserializeJsonAssistanceFactor(json.data)
+  }
+}
+
+
+export function deserializeJsonAssistanceFactorUpdate(json: JsonOf<AssistanceFactorUpdate>): AssistanceFactorUpdate {
+  return {
+    ...json,
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonAssistanceResponse(json: JsonOf<AssistanceResponse>): AssistanceResponse {
+  return {
+    ...json,
+    assistanceActions: json.assistanceActions.map(e => deserializeJsonAssistanceActionResponse(e)),
+    assistanceFactors: json.assistanceFactors.map(e => deserializeJsonAssistanceFactorResponse(e)),
+    daycareAssistances: json.daycareAssistances.map(e => deserializeJsonDaycareAssistanceResponse(e)),
+    otherAssistanceMeasures: json.otherAssistanceMeasures.map(e => deserializeJsonOtherAssistanceMeasureResponse(e)),
+    preschoolAssistances: json.preschoolAssistances.map(e => deserializeJsonPreschoolAssistanceResponse(e))
+  }
+}
+
+
+export function deserializeJsonDaycareAssistance(json: JsonOf<DaycareAssistance>): DaycareAssistance {
+  return {
+    ...json,
+    modified: HelsinkiDateTime.parseIso(json.modified),
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonDaycareAssistanceResponse(json: JsonOf<DaycareAssistanceResponse>): DaycareAssistanceResponse {
+  return {
+    ...json,
+    data: deserializeJsonDaycareAssistance(json.data)
+  }
+}
+
+
+export function deserializeJsonDaycareAssistanceUpdate(json: JsonOf<DaycareAssistanceUpdate>): DaycareAssistanceUpdate {
+  return {
+    ...json,
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonOtherAssistanceMeasure(json: JsonOf<OtherAssistanceMeasure>): OtherAssistanceMeasure {
+  return {
+    ...json,
+    modified: HelsinkiDateTime.parseIso(json.modified),
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonOtherAssistanceMeasureResponse(json: JsonOf<OtherAssistanceMeasureResponse>): OtherAssistanceMeasureResponse {
+  return {
+    ...json,
+    data: deserializeJsonOtherAssistanceMeasure(json.data)
+  }
+}
+
+
+export function deserializeJsonOtherAssistanceMeasureUpdate(json: JsonOf<OtherAssistanceMeasureUpdate>): OtherAssistanceMeasureUpdate {
+  return {
+    ...json,
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonPreschoolAssistance(json: JsonOf<PreschoolAssistance>): PreschoolAssistance {
+  return {
+    ...json,
+    modified: HelsinkiDateTime.parseIso(json.modified),
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonPreschoolAssistanceResponse(json: JsonOf<PreschoolAssistanceResponse>): PreschoolAssistanceResponse {
+  return {
+    ...json,
+    data: deserializeJsonPreschoolAssistance(json.data)
+  }
+}
+
+
+export function deserializeJsonPreschoolAssistanceUpdate(json: JsonOf<PreschoolAssistanceUpdate>): PreschoolAssistanceUpdate {
+  return {
+    ...json,
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
 }

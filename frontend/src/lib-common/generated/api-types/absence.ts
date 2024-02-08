@@ -9,11 +9,14 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { EvakaUserType } from './user'
+import { JsonOf } from '../../json'
 import { Reservation } from './reservations'
 import { ScheduleType } from './placement'
 import { ShiftCareType } from './serviceneed'
 import { TimeRange } from './shared'
 import { UUID } from '../../types'
+import { deserializeJsonReservation } from './reservations'
+import { deserializeJsonTimeRange } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.absence.Absence
@@ -158,4 +161,108 @@ export interface Presence {
   category: AbsenceCategory
   childId: UUID
   date: LocalDate
+}
+
+
+export function deserializeJsonAbsence(json: JsonOf<Absence>): Absence {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonAbsenceUpsert(json: JsonOf<AbsenceUpsert>): AbsenceUpsert {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonAbsenceWithModifierInfo(json: JsonOf<AbsenceWithModifierInfo>): AbsenceWithModifierInfo {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonChildReservation(json: JsonOf<ChildReservation>): ChildReservation {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    reservation: deserializeJsonReservation(json.reservation)
+  }
+}
+
+
+export function deserializeJsonChildServiceNeedInfo(json: JsonOf<ChildServiceNeedInfo>): ChildServiceNeedInfo {
+  return {
+    ...json,
+    validDuring: FiniteDateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonDeleteChildAbsenceBody(json: JsonOf<DeleteChildAbsenceBody>): DeleteChildAbsenceBody {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonGroupMonthCalendar(json: JsonOf<GroupMonthCalendar>): GroupMonthCalendar {
+  return {
+    ...json,
+    children: json.children.map(e => deserializeJsonGroupMonthCalendarChild(e)),
+    daycareOperationTimes: json.daycareOperationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    days: json.days.map(e => deserializeJsonGroupMonthCalendarDay(e))
+  }
+}
+
+
+export function deserializeJsonGroupMonthCalendarChild(json: JsonOf<GroupMonthCalendarChild>): GroupMonthCalendarChild {
+  return {
+    ...json,
+    actualServiceNeeds: json.actualServiceNeeds.map(e => deserializeJsonChildServiceNeedInfo(e)),
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonGroupMonthCalendarDay(json: JsonOf<GroupMonthCalendarDay>): GroupMonthCalendarDay {
+  return {
+    ...json,
+    children: (json.children != null) ? json.children.map(e => deserializeJsonGroupMonthCalendarDayChild(e)) : null,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonGroupMonthCalendarDayChild(json: JsonOf<GroupMonthCalendarDayChild>): GroupMonthCalendarDayChild {
+  return {
+    ...json,
+    absences: json.absences.map(e => deserializeJsonAbsenceWithModifierInfo(e)),
+    dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonTimeRange(json.dailyServiceTimes) : null,
+    reservations: json.reservations.map(e => deserializeJsonChildReservation(e))
+  }
+}
+
+
+export function deserializeJsonHolidayReservationsDelete(json: JsonOf<HolidayReservationsDelete>): HolidayReservationsDelete {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonPresence(json: JsonOf<Presence>): Presence {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
 }

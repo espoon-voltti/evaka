@@ -9,6 +9,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -110,4 +111,61 @@ export interface IndividualChild {
   groupId: UUID
   id: UUID
   name: string
+}
+
+
+export function deserializeJsonAttendingChild(json: JsonOf<AttendingChild>): AttendingChild {
+  return {
+    ...json,
+    periods: json.periods.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonCalendarEvent(json: JsonOf<CalendarEvent>): CalendarEvent {
+  return {
+    ...json,
+    contentModifiedAt: HelsinkiDateTime.parseIso(json.contentModifiedAt),
+    period: FiniteDateRange.parseJson(json.period),
+    times: json.times.map(e => deserializeJsonCalendarEventTime(e))
+  }
+}
+
+
+export function deserializeJsonCalendarEventForm(json: JsonOf<CalendarEventForm>): CalendarEventForm {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    times: (json.times != null) ? json.times.map(e => deserializeJsonCalendarEventTimeForm(e)) : null
+  }
+}
+
+
+export function deserializeJsonCalendarEventTime(json: JsonOf<CalendarEventTime>): CalendarEventTime {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    endTime: LocalTime.parseIso(json.endTime),
+    startTime: LocalTime.parseIso(json.startTime)
+  }
+}
+
+
+export function deserializeJsonCalendarEventTimeForm(json: JsonOf<CalendarEventTimeForm>): CalendarEventTimeForm {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    endTime: LocalTime.parseIso(json.endTime),
+    startTime: LocalTime.parseIso(json.startTime)
+  }
+}
+
+
+export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendarEvent>): CitizenCalendarEvent {
+  return {
+    ...json,
+    attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
+      ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
+    ))
+  }
 }

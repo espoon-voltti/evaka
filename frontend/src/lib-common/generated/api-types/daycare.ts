@@ -13,6 +13,7 @@ import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
+import { JsonOf } from '../../json'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
@@ -22,6 +23,13 @@ import { TimeRange } from './shared'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
+import { deserializeJsonDaycarePlacementWithDetails } from './placement'
+import { deserializeJsonMissingGroupPlacement } from './placement'
+import { deserializeJsonOccupancyResponse } from './occupancy'
+import { deserializeJsonPersonJSON } from './pis'
+import { deserializeJsonTerminatedPlacement } from './placement'
+import { deserializeJsonTimeRange } from './shared'
+import { deserializeJsonUnitBackupCare } from './backupcare'
 
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
@@ -505,4 +513,208 @@ export interface VisitingAddress {
   postOffice: string
   postalCode: string
   streetAddress: string
+}
+
+
+export function deserializeJsonCaretakerAmount(json: JsonOf<CaretakerAmount>): CaretakerAmount {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonCaretakerRequest(json: JsonOf<CaretakerRequest>): CaretakerRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonCaretakersResponse(json: JsonOf<CaretakersResponse>): CaretakersResponse {
+  return {
+    ...json,
+    caretakers: json.caretakers.map(e => deserializeJsonCaretakerAmount(e))
+  }
+}
+
+
+export function deserializeJsonChildResponse(json: JsonOf<ChildResponse>): ChildResponse {
+  return {
+    ...json,
+    person: deserializeJsonPersonJSON(json.person)
+  }
+}
+
+
+export function deserializeJsonClubTerm(json: JsonOf<ClubTerm>): ClubTerm {
+  return {
+    ...json,
+    applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
+    term: FiniteDateRange.parseJson(json.term),
+    termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonCreateGroupRequest(json: JsonOf<CreateGroupRequest>): CreateGroupRequest {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDaycare(json: JsonOf<Daycare>): Daycare {
+  return {
+    ...json,
+    closingDate: (json.closingDate != null) ? LocalDate.parseIso(json.closingDate) : null,
+    clubApplyPeriod: (json.clubApplyPeriod != null) ? DateRange.parseJson(json.clubApplyPeriod) : null,
+    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? deserializeJsonTimeRange(json.dailyPreparatoryTime) : null,
+    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? deserializeJsonTimeRange(json.dailyPreschoolTime) : null,
+    daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
+    openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
+    operationTimes: json.operationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+  }
+}
+
+
+export function deserializeJsonDaycareFields(json: JsonOf<DaycareFields>): DaycareFields {
+  return {
+    ...json,
+    closingDate: (json.closingDate != null) ? LocalDate.parseIso(json.closingDate) : null,
+    clubApplyPeriod: (json.clubApplyPeriod != null) ? DateRange.parseJson(json.clubApplyPeriod) : null,
+    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? deserializeJsonTimeRange(json.dailyPreparatoryTime) : null,
+    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? deserializeJsonTimeRange(json.dailyPreschoolTime) : null,
+    daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
+    openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
+    operationTimes: json.operationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+  }
+}
+
+
+export function deserializeJsonDaycareGroup(json: JsonOf<DaycareGroup>): DaycareGroup {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDaycareGroupResponse(json: JsonOf<DaycareGroupResponse>): DaycareGroupResponse {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
+export function deserializeJsonDaycareResponse(json: JsonOf<DaycareResponse>): DaycareResponse {
+  return {
+    ...json,
+    daycare: deserializeJsonDaycare(json.daycare),
+    groups: json.groups.map(e => deserializeJsonDaycareGroupResponse(e))
+  }
+}
+
+
+export function deserializeJsonGroupOccupancies(json: JsonOf<GroupOccupancies>): GroupOccupancies {
+  return {
+    ...json,
+    confirmed: Object.fromEntries(Object.entries(json.confirmed).map(
+      ([k, v]) => [k, deserializeJsonOccupancyResponse(v)]
+    )),
+    realized: Object.fromEntries(Object.entries(json.realized).map(
+      ([k, v]) => [k, deserializeJsonOccupancyResponse(v)]
+    ))
+  }
+}
+
+
+export function deserializeJsonGroupStaffAttendance(json: JsonOf<GroupStaffAttendance>): GroupStaffAttendance {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonGroupUpdateRequest(json: JsonOf<GroupUpdateRequest>): GroupUpdateRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPreschoolTerm(json: JsonOf<PreschoolTerm>): PreschoolTerm {
+  return {
+    ...json,
+    applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
+    extendedTerm: FiniteDateRange.parseJson(json.extendedTerm),
+    finnishPreschool: FiniteDateRange.parseJson(json.finnishPreschool),
+    swedishPreschool: FiniteDateRange.parseJson(json.swedishPreschool),
+    termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonPublicUnit(json: JsonOf<PublicUnit>): PublicUnit {
+  return {
+    ...json,
+    clubApplyPeriod: (json.clubApplyPeriod != null) ? DateRange.parseJson(json.clubApplyPeriod) : null,
+    daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceForDates(json: JsonOf<StaffAttendanceForDates>): StaffAttendanceForDates {
+  return {
+    ...json,
+    attendances: Object.fromEntries(Object.entries(json.attendances).map(
+      ([k, v]) => [k, deserializeJsonGroupStaffAttendance(v)]
+    )),
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceUpdate(json: JsonOf<StaffAttendanceUpdate>): StaffAttendanceUpdate {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonUnitGroupDetails(json: JsonOf<UnitGroupDetails>): UnitGroupDetails {
+  return {
+    ...json,
+    backupCares: json.backupCares.map(e => deserializeJsonUnitBackupCare(e)),
+    groupOccupancies: (json.groupOccupancies != null) ? deserializeJsonGroupOccupancies(json.groupOccupancies) : null,
+    groups: json.groups.map(e => deserializeJsonDaycareGroup(e)),
+    missingGroupPlacements: json.missingGroupPlacements.map(e => deserializeJsonMissingGroupPlacement(e)),
+    placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e)),
+    recentlyTerminatedPlacements: json.recentlyTerminatedPlacements.map(e => deserializeJsonTerminatedPlacement(e))
+  }
+}
+
+
+export function deserializeJsonUnitStaffAttendance(json: JsonOf<UnitStaffAttendance>): UnitStaffAttendance {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    groups: json.groups.map(e => deserializeJsonGroupStaffAttendance(e)),
+    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
+  }
 }

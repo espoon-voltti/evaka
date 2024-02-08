@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -33,4 +34,12 @@ export interface WebPushSubscription {
   ecdhKey: number[]
   endpoint: string
   expires: HelsinkiDateTime | null
+}
+
+
+export function deserializeJsonWebPushSubscription(json: JsonOf<WebPushSubscription>): WebPushSubscription {
+  return {
+    ...json,
+    expires: (json.expires != null) ? HelsinkiDateTime.parseIso(json.expires) : null
+  }
 }

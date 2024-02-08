@@ -15,11 +15,17 @@ import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from './dailyservicetimes'
 import { HelsinkiDateTimeRange } from './shared'
+import { JsonOf } from '../../json'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
 import { ReservationResponse } from './reservations'
 import { ScheduleType } from './placement'
 import { UUID } from '../../types'
+import { deserializeJsonChildDailyNote } from './note'
+import { deserializeJsonChildStickyNote } from './note'
+import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
+import { deserializeJsonHelsinkiDateTimeRange } from './shared'
+import { deserializeJsonReservationResponse } from './reservations'
 
 /**
 * Generated from fi.espoo.evaka.attendance.ChildAttendanceController.AbsenceRangeRequest
@@ -421,4 +427,243 @@ export interface UpsertStaffAttendance {
   employeeId: UUID
   groupId: UUID | null
   type: StaffAttendanceType
+}
+
+
+export function deserializeJsonAbsenceRangeRequest(json: JsonOf<AbsenceRangeRequest>): AbsenceRangeRequest {
+  return {
+    ...json,
+    range: FiniteDateRange.parseJson(json.range)
+  }
+}
+
+
+export function deserializeJsonAttendance(json: JsonOf<Attendance>): Attendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonAttendanceChild(json: JsonOf<AttendanceChild>): AttendanceChild {
+  return {
+    ...json,
+    dailyNote: (json.dailyNote != null) ? deserializeJsonChildDailyNote(json.dailyNote) : null,
+    dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
+    stickyNotes: json.stickyNotes.map(e => deserializeJsonChildStickyNote(e))
+  }
+}
+
+
+export function deserializeJsonAttendanceTimes(json: JsonOf<AttendanceTimes>): AttendanceTimes {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonChildAttendanceStatusResponse(json: JsonOf<ChildAttendanceStatusResponse>): ChildAttendanceStatusResponse {
+  return {
+    ...json,
+    attendances: json.attendances.map(e => deserializeJsonAttendanceTimes(e))
+  }
+}
+
+
+export function deserializeJsonCurrentDayStaffAttendanceResponse(json: JsonOf<CurrentDayStaffAttendanceResponse>): CurrentDayStaffAttendanceResponse {
+  return {
+    ...json,
+    extraAttendances: json.extraAttendances.map(e => deserializeJsonExternalStaffMember(e)),
+    staff: json.staff.map(e => deserializeJsonStaffMember(e))
+  }
+}
+
+
+export function deserializeJsonDepartureRequest(json: JsonOf<DepartureRequest>): DepartureRequest {
+  return {
+    ...json,
+    departed: LocalTime.parseIso(json.departed)
+  }
+}
+
+
+export function deserializeJsonEmployeeAttendance(json: JsonOf<EmployeeAttendance>): EmployeeAttendance {
+  return {
+    ...json,
+    attendances: json.attendances.map(e => deserializeJsonAttendance(e)),
+    plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e))
+  }
+}
+
+
+export function deserializeJsonExpectedAbsencesOnDepartureRequest(json: JsonOf<ExpectedAbsencesOnDepartureRequest>): ExpectedAbsencesOnDepartureRequest {
+  return {
+    ...json,
+    departed: LocalTime.parseIso(json.departed)
+  }
+}
+
+
+export function deserializeJsonExternalAttendance(json: JsonOf<ExternalAttendance>): ExternalAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonExternalAttendanceBody(json: JsonOf<ExternalAttendanceBody>): ExternalAttendanceBody {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    entries: json.entries.map(e => deserializeJsonExternalAttendanceUpsert(e))
+  }
+}
+
+
+export function deserializeJsonExternalAttendanceUpsert(json: JsonOf<ExternalAttendanceUpsert>): ExternalAttendanceUpsert {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonExternalStaffArrivalRequest(json: JsonOf<ExternalStaffArrivalRequest>): ExternalStaffArrivalRequest {
+  return {
+    ...json,
+    arrived: LocalTime.parseIso(json.arrived)
+  }
+}
+
+
+export function deserializeJsonExternalStaffDepartureRequest(json: JsonOf<ExternalStaffDepartureRequest>): ExternalStaffDepartureRequest {
+  return {
+    ...json,
+    time: LocalTime.parseIso(json.time)
+  }
+}
+
+
+export function deserializeJsonExternalStaffMember(json: JsonOf<ExternalStaffMember>): ExternalStaffMember {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived)
+  }
+}
+
+
+export function deserializeJsonPlannedStaffAttendance(json: JsonOf<PlannedStaffAttendance>): PlannedStaffAttendance {
+  return {
+    ...json,
+    end: HelsinkiDateTime.parseIso(json.end),
+    start: HelsinkiDateTime.parseIso(json.start)
+  }
+}
+
+
+export function deserializeJsonStaffArrivalRequest(json: JsonOf<StaffArrivalRequest>): StaffArrivalRequest {
+  return {
+    ...json,
+    time: LocalTime.parseIso(json.time)
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceBody(json: JsonOf<StaffAttendanceBody>): StaffAttendanceBody {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    entries: json.entries.map(e => deserializeJsonStaffAttendanceUpsert(e))
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceResponse(json: JsonOf<StaffAttendanceResponse>): StaffAttendanceResponse {
+  return {
+    ...json,
+    extraAttendances: json.extraAttendances.map(e => deserializeJsonExternalAttendance(e)),
+    staff: json.staff.map(e => deserializeJsonEmployeeAttendance(e))
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceUpdateRequest(json: JsonOf<StaffAttendanceUpdateRequest>): StaffAttendanceUpdateRequest {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    rows: json.rows.map(e => deserializeJsonStaffAttendanceUpsert(e))
+  }
+}
+
+
+export function deserializeJsonStaffAttendanceUpsert(json: JsonOf<StaffAttendanceUpsert>): StaffAttendanceUpsert {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonStaffDepartureRequest(json: JsonOf<StaffDepartureRequest>): StaffDepartureRequest {
+  return {
+    ...json,
+    time: LocalTime.parseIso(json.time)
+  }
+}
+
+
+export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMember {
+  return {
+    ...json,
+    attendances: json.attendances.map(e => deserializeJsonStaffMemberAttendance(e)),
+    latestCurrentDayAttendance: (json.latestCurrentDayAttendance != null) ? deserializeJsonStaffMemberAttendance(json.latestCurrentDayAttendance) : null,
+    plannedAttendances: json.plannedAttendances.map(e => deserializeJsonPlannedStaffAttendance(e)),
+    spanningPlan: (json.spanningPlan != null) ? deserializeJsonHelsinkiDateTimeRange(json.spanningPlan) : null
+  }
+}
+
+
+export function deserializeJsonStaffMemberAttendance(json: JsonOf<StaffMemberAttendance>): StaffMemberAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonUpsertExternalAttendance(json: JsonOf<UpsertExternalAttendance>): UpsertExternalAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonUpsertStaffAndExternalAttendanceRequest(json: JsonOf<UpsertStaffAndExternalAttendanceRequest>): UpsertStaffAndExternalAttendanceRequest {
+  return {
+    ...json,
+    externalAttendances: json.externalAttendances.map(e => deserializeJsonUpsertExternalAttendance(e)),
+    staffAttendances: json.staffAttendances.map(e => deserializeJsonUpsertStaffAttendance(e))
+  }
+}
+
+
+export function deserializeJsonUpsertStaffAttendance(json: JsonOf<UpsertStaffAttendance>): UpsertStaffAttendance {
+  return {
+    ...json,
+    arrived: HelsinkiDateTime.parseIso(json.arrived),
+    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
 }

@@ -7,6 +7,7 @@
 
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -46,4 +47,30 @@ export interface AssistanceActionRequest {
 export interface AssistanceActionResponse {
   action: AssistanceAction
   permittedActions: Action.AssistanceAction[]
+}
+
+
+export function deserializeJsonAssistanceAction(json: JsonOf<AssistanceAction>): AssistanceAction {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonAssistanceActionRequest(json: JsonOf<AssistanceActionRequest>): AssistanceActionRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonAssistanceActionResponse(json: JsonOf<AssistanceActionResponse>): AssistanceActionResponse {
+  return {
+    ...json,
+    action: deserializeJsonAssistanceAction(json.action)
+  }
 }

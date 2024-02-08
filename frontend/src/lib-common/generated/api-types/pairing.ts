@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -149,4 +150,12 @@ export interface PostPairingValidationReq {
 */
 export interface RenameRequest {
   name: string
+}
+
+
+export function deserializeJsonPairing(json: JsonOf<Pairing>): Pairing {
+  return {
+    ...json,
+    expires: HelsinkiDateTime.parseIso(json.expires)
+  }
 }

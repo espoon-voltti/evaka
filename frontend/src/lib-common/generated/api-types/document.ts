@@ -9,6 +9,7 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 
@@ -357,4 +358,97 @@ export interface Section {
 */
 export interface StatusChangeRequest {
   newStatus: DocumentStatus
+}
+
+
+export function deserializeJsonChildBasics(json: JsonOf<ChildBasics>): ChildBasics {
+  return {
+    ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null
+  }
+}
+
+
+export function deserializeJsonChildDocumentCitizenDetails(json: JsonOf<ChildDocumentCitizenDetails>): ChildDocumentCitizenDetails {
+  return {
+    ...json,
+    child: deserializeJsonChildBasics(json.child),
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
+    template: deserializeJsonDocumentTemplate(json.template)
+  }
+}
+
+
+export function deserializeJsonChildDocumentCitizenSummary(json: JsonOf<ChildDocumentCitizenSummary>): ChildDocumentCitizenSummary {
+  return {
+    ...json,
+    publishedAt: HelsinkiDateTime.parseIso(json.publishedAt)
+  }
+}
+
+
+export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDetails>): ChildDocumentDetails {
+  return {
+    ...json,
+    child: deserializeJsonChildBasics(json.child),
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
+    template: deserializeJsonDocumentTemplate(json.template)
+  }
+}
+
+
+export function deserializeJsonChildDocumentSummary(json: JsonOf<ChildDocumentSummary>): ChildDocumentSummary {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
+  }
+}
+
+
+export function deserializeJsonChildDocumentSummaryWithPermittedActions(json: JsonOf<ChildDocumentSummaryWithPermittedActions>): ChildDocumentSummaryWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonChildDocumentSummary(json.data)
+  }
+}
+
+
+export function deserializeJsonChildDocumentWithPermittedActions(json: JsonOf<ChildDocumentWithPermittedActions>): ChildDocumentWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonChildDocumentDetails(json.data)
+  }
+}
+
+
+export function deserializeJsonDocumentTemplate(json: JsonOf<DocumentTemplate>): DocumentTemplate {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonDocumentTemplateCreateRequest(json: JsonOf<DocumentTemplateCreateRequest>): DocumentTemplateCreateRequest {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonDocumentTemplateSummary(json: JsonOf<DocumentTemplateSummary>): DocumentTemplateSummary {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonExportedDocumentTemplate(json: JsonOf<ExportedDocumentTemplate>): ExportedDocumentTemplate {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
+  }
 }

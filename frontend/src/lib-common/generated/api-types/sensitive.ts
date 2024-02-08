@@ -7,6 +7,7 @@
 
 import LocalDate from '../../local-date'
 import { ContactInfo } from './attendance'
+import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -29,4 +30,12 @@ export interface ChildSensitiveInformation {
   placementTypes: PlacementType[]
   preferredName: string
   ssn: string
+}
+
+
+export function deserializeJsonChildSensitiveInformation(json: JsonOf<ChildSensitiveInformation>): ChildSensitiveInformation {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
 }

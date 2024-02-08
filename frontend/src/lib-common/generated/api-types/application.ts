@@ -17,12 +17,18 @@ import { DecisionStatus } from './decision'
 import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
 import { FinanceDecisionType } from './invoicing'
+import { JsonOf } from '../../json'
 import { PersonJSON } from './pis'
 import { PlacementPlanConfirmationStatus } from './placement'
 import { PlacementPlanDetails } from './placement'
 import { PlacementPlanRejectReason } from './placement'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
+import { deserializeJsonCreatePersonBody } from './pis'
+import { deserializeJsonDecision } from './decision'
+import { deserializeJsonDecisionDraft } from './decision'
+import { deserializeJsonPersonJSON } from './pis'
+import { deserializeJsonPlacementPlanDetails } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.application.AcceptDecisionRequest
@@ -699,3 +705,295 @@ export type VoucherApplicationFilter =
   | 'VOUCHER_FIRST_CHOICE'
   | 'VOUCHER_ONLY'
   | 'NO_VOUCHER'
+
+
+export function deserializeJsonAcceptDecisionRequest(json: JsonOf<AcceptDecisionRequest>): AcceptDecisionRequest {
+  return {
+    ...json,
+    requestedStartDate: LocalDate.parseIso(json.requestedStartDate)
+  }
+}
+
+
+export function deserializeJsonApplicationAttachment(json: JsonOf<ApplicationAttachment>): ApplicationAttachment {
+  return {
+    ...json,
+    receivedAt: HelsinkiDateTime.parseIso(json.receivedAt),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonApplicationDecisions(json: JsonOf<ApplicationDecisions>): ApplicationDecisions {
+  return {
+    ...json,
+    decisions: json.decisions.map(e => deserializeJsonDecisionSummary(e))
+  }
+}
+
+
+export function deserializeJsonApplicationDetails(json: JsonOf<ApplicationDetails>): ApplicationDetails {
+  return {
+    ...json,
+    attachments: json.attachments.map(e => deserializeJsonApplicationAttachment(e)),
+    createdDate: (json.createdDate != null) ? HelsinkiDateTime.parseIso(json.createdDate) : null,
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    dueDateSetManuallyAt: (json.dueDateSetManuallyAt != null) ? HelsinkiDateTime.parseIso(json.dueDateSetManuallyAt) : null,
+    form: deserializeJsonApplicationForm(json.form),
+    guardianDateOfDeath: (json.guardianDateOfDeath != null) ? LocalDate.parseIso(json.guardianDateOfDeath) : null,
+    modifiedDate: (json.modifiedDate != null) ? HelsinkiDateTime.parseIso(json.modifiedDate) : null,
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonApplicationForm(json: JsonOf<ApplicationForm>): ApplicationForm {
+  return {
+    ...json,
+    child: deserializeJsonChildDetails(json.child),
+    guardian: deserializeJsonGuardian(json.guardian),
+    preferences: deserializeJsonPreferences(json.preferences)
+  }
+}
+
+
+export function deserializeJsonApplicationFormUpdate(json: JsonOf<ApplicationFormUpdate>): ApplicationFormUpdate {
+  return {
+    ...json,
+    child: deserializeJsonChildDetailsUpdate(json.child),
+    guardian: deserializeJsonGuardianUpdate(json.guardian),
+    preferences: deserializeJsonPreferences(json.preferences)
+  }
+}
+
+
+export function deserializeJsonApplicationNote(json: JsonOf<ApplicationNote>): ApplicationNote {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonApplicationNoteResponse(json: JsonOf<ApplicationNoteResponse>): ApplicationNoteResponse {
+  return {
+    ...json,
+    note: deserializeJsonApplicationNote(json.note)
+  }
+}
+
+
+export function deserializeJsonApplicationResponse(json: JsonOf<ApplicationResponse>): ApplicationResponse {
+  return {
+    ...json,
+    application: deserializeJsonApplicationDetails(json.application),
+    attachments: json.attachments.map(e => deserializeJsonApplicationAttachment(e)),
+    decisions: json.decisions.map(e => deserializeJsonDecision(e)),
+    guardians: json.guardians.map(e => deserializeJsonPersonJSON(e))
+  }
+}
+
+
+export function deserializeJsonApplicationSummary(json: JsonOf<ApplicationSummary>): ApplicationSummary {
+  return {
+    ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null,
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    placementPlanStartDate: (json.placementPlanStartDate != null) ? LocalDate.parseIso(json.placementPlanStartDate) : null,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonApplicationUnitSummary(json: JsonOf<ApplicationUnitSummary>): ApplicationUnitSummary {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    preferredStartDate: LocalDate.parseIso(json.preferredStartDate)
+  }
+}
+
+
+export function deserializeJsonApplicationUpdate(json: JsonOf<ApplicationUpdate>): ApplicationUpdate {
+  return {
+    ...json,
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    form: deserializeJsonApplicationFormUpdate(json.form)
+  }
+}
+
+
+export function deserializeJsonApplicationsOfChild(json: JsonOf<ApplicationsOfChild>): ApplicationsOfChild {
+  return {
+    ...json,
+    applicationSummaries: json.applicationSummaries.map(e => deserializeJsonCitizenApplicationSummary(e))
+  }
+}
+
+
+export function deserializeJsonChildDetails(json: JsonOf<ChildDetails>): ChildDetails {
+  return {
+    ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null,
+    futureAddress: (json.futureAddress != null) ? deserializeJsonFutureAddress(json.futureAddress) : null
+  }
+}
+
+
+export function deserializeJsonChildDetailsUpdate(json: JsonOf<ChildDetailsUpdate>): ChildDetailsUpdate {
+  return {
+    ...json,
+    futureAddress: (json.futureAddress != null) ? deserializeJsonFutureAddress(json.futureAddress) : null
+  }
+}
+
+
+export function deserializeJsonCitizenApplicationSummary(json: JsonOf<CitizenApplicationSummary>): CitizenApplicationSummary {
+  return {
+    ...json,
+    createdDate: HelsinkiDateTime.parseIso(json.createdDate),
+    modifiedDate: HelsinkiDateTime.parseIso(json.modifiedDate),
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonCitizenApplicationUpdate(json: JsonOf<CitizenApplicationUpdate>): CitizenApplicationUpdate {
+  return {
+    ...json,
+    form: deserializeJsonApplicationFormUpdate(json.form)
+  }
+}
+
+
+export function deserializeJsonCitizenChildren(json: JsonOf<CitizenChildren>): CitizenChildren {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonDaycarePlacementPlan(json: JsonOf<DaycarePlacementPlan>): DaycarePlacementPlan {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    preschoolDaycarePeriod: (json.preschoolDaycarePeriod != null) ? FiniteDateRange.parseJson(json.preschoolDaycarePeriod) : null
+  }
+}
+
+
+export function deserializeJsonDecisionDraftGroup(json: JsonOf<DecisionDraftGroup>): DecisionDraftGroup {
+  return {
+    ...json,
+    decisions: json.decisions.map(e => deserializeJsonDecisionDraft(e))
+  }
+}
+
+
+export function deserializeJsonDecisionSummary(json: JsonOf<DecisionSummary>): DecisionSummary {
+  return {
+    ...json,
+    resolved: (json.resolved != null) ? LocalDate.parseIso(json.resolved) : null,
+    sentDate: LocalDate.parseIso(json.sentDate)
+  }
+}
+
+
+export function deserializeJsonDecisionWithValidStartDatePeriod(json: JsonOf<DecisionWithValidStartDatePeriod>): DecisionWithValidStartDatePeriod {
+  return {
+    ...json,
+    decision: deserializeJsonDecision(json.decision),
+    validRequestedStartDatePeriod: FiniteDateRange.parseJson(json.validRequestedStartDatePeriod)
+  }
+}
+
+
+export function deserializeJsonFinanceDecisionCitizenInfo(json: JsonOf<FinanceDecisionCitizenInfo>): FinanceDecisionCitizenInfo {
+  return {
+    ...json,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonFutureAddress(json: JsonOf<FutureAddress>): FutureAddress {
+  return {
+    ...json,
+    movingDate: (json.movingDate != null) ? LocalDate.parseIso(json.movingDate) : null
+  }
+}
+
+
+export function deserializeJsonGuardian(json: JsonOf<Guardian>): Guardian {
+  return {
+    ...json,
+    futureAddress: (json.futureAddress != null) ? deserializeJsonFutureAddress(json.futureAddress) : null
+  }
+}
+
+
+export function deserializeJsonGuardianUpdate(json: JsonOf<GuardianUpdate>): GuardianUpdate {
+  return {
+    ...json,
+    futureAddress: (json.futureAddress != null) ? deserializeJsonFutureAddress(json.futureAddress) : null
+  }
+}
+
+
+export function deserializeJsonPagedApplicationSummaries(json: JsonOf<PagedApplicationSummaries>): PagedApplicationSummaries {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonApplicationSummary(e))
+  }
+}
+
+
+export function deserializeJsonPaperApplicationCreateRequest(json: JsonOf<PaperApplicationCreateRequest>): PaperApplicationCreateRequest {
+  return {
+    ...json,
+    guardianToBeCreated: (json.guardianToBeCreated != null) ? deserializeJsonCreatePersonBody(json.guardianToBeCreated) : null,
+    sentDate: LocalDate.parseIso(json.sentDate)
+  }
+}
+
+
+export function deserializeJsonPersonApplicationSummary(json: JsonOf<PersonApplicationSummary>): PersonApplicationSummary {
+  return {
+    ...json,
+    preferredStartDate: (json.preferredStartDate != null) ? LocalDate.parseIso(json.preferredStartDate) : null,
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonPreferences(json: JsonOf<Preferences>): Preferences {
+  return {
+    ...json,
+    connectedDaycarePreferredStartDate: (json.connectedDaycarePreferredStartDate != null) ? LocalDate.parseIso(json.connectedDaycarePreferredStartDate) : null,
+    preferredStartDate: (json.preferredStartDate != null) ? LocalDate.parseIso(json.preferredStartDate) : null
+  }
+}
+
+
+export function deserializeJsonSearchApplicationRequest(json: JsonOf<SearchApplicationRequest>): SearchApplicationRequest {
+  return {
+    ...json,
+    periodEnd: (json.periodEnd != null) ? LocalDate.parseIso(json.periodEnd) : null,
+    periodStart: (json.periodStart != null) ? LocalDate.parseIso(json.periodStart) : null
+  }
+}
+
+
+export function deserializeJsonUnitApplications(json: JsonOf<UnitApplications>): UnitApplications {
+  return {
+    ...json,
+    applications: json.applications.map(e => deserializeJsonApplicationUnitSummary(e)),
+    placementPlans: json.placementPlans.map(e => deserializeJsonPlacementPlanDetails(e)),
+    placementProposals: json.placementProposals.map(e => deserializeJsonPlacementPlanDetails(e))
+  }
+}

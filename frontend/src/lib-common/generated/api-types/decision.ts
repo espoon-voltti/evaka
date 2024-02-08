@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import LocalDate from '../../local-date'
+import { JsonOf } from '../../json'
 import { ProviderType } from './daycare'
 import { UUID } from '../../types'
 
@@ -98,4 +99,42 @@ export interface DecisionUnit {
   preschoolDecisionName: string
   providerType: ProviderType
   streetAddress: string
+}
+
+
+export function deserializeJsonDecision(json: JsonOf<Decision>): Decision {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    requestedStartDate: (json.requestedStartDate != null) ? LocalDate.parseIso(json.requestedStartDate) : null,
+    resolved: (json.resolved != null) ? LocalDate.parseIso(json.resolved) : null,
+    sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDecisionDraft(json: JsonOf<DecisionDraft>): DecisionDraft {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDecisionDraftUpdate(json: JsonOf<DecisionDraftUpdate>): DecisionDraftUpdate {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDecisionListResponse(json: JsonOf<DecisionListResponse>): DecisionListResponse {
+  return {
+    ...json,
+    decisions: json.decisions.map(e => deserializeJsonDecision(e))
+  }
 }
