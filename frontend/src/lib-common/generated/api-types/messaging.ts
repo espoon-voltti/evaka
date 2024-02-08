@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { JsonOf } from '../../json'
 import { MessageAttachment } from './attachment'
 import { MessageReceiver } from '../../api-types/messaging'
 import { UUID } from '../../types'
@@ -38,6 +39,7 @@ export interface CitizenMessageBody {
   title: string
 }
 
+
 export namespace CitizenMessageThread {
   /**
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
@@ -50,7 +52,7 @@ export namespace CitizenMessageThread {
     sender: MessageAccount | null
     urgent: boolean
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
   */
@@ -341,4 +343,109 @@ export interface UpdatableDraftContent {
   title: string
   type: MessageType
   urgent: boolean
+}
+
+
+
+export function deserializeJsonCitizenMessageThreadRedacted(json: JsonOf<CitizenMessageThread.Redacted>): CitizenMessageThread.Redacted {
+  return {
+    ...json,
+    lastMessageSentAt: (json.lastMessageSentAt != null) ? HelsinkiDateTime.parseIso(json.lastMessageSentAt) : null
+  }
+}
+
+export function deserializeJsonCitizenMessageThreadRegular(json: JsonOf<CitizenMessageThread.Regular>): CitizenMessageThread.Regular {
+  return {
+    ...json,
+    messages: json.messages.map(e => deserializeJsonMessage(e))
+  }
+}
+export function deserializeJsonCitizenMessageThread(json: JsonOf<CitizenMessageThread>): CitizenMessageThread {
+  switch (json.type) {
+    case 'Redacted': return deserializeJsonCitizenMessageThreadRedacted(json)
+    case 'Regular': return deserializeJsonCitizenMessageThreadRegular(json)
+    default: return json
+  }
+}
+
+
+export function deserializeJsonDraftContent(json: JsonOf<DraftContent>): DraftContent {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created)
+  }
+}
+
+
+export function deserializeJsonMessage(json: JsonOf<Message>): Message {
+  return {
+    ...json,
+    readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCopy {
+  return {
+    ...json,
+    readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonMessageThread(json: JsonOf<MessageThread>): MessageThread {
+  return {
+    ...json,
+    messages: json.messages.map(e => deserializeJsonMessage(e))
+  }
+}
+
+
+export function deserializeJsonPagedCitizenMessageThreads(json: JsonOf<PagedCitizenMessageThreads>): PagedCitizenMessageThreads {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonCitizenMessageThread(e))
+  }
+}
+
+
+export function deserializeJsonPagedMessageCopies(json: JsonOf<PagedMessageCopies>): PagedMessageCopies {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonMessageCopy(e))
+  }
+}
+
+
+export function deserializeJsonPagedMessageThreads(json: JsonOf<PagedMessageThreads>): PagedMessageThreads {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonMessageThread(e))
+  }
+}
+
+
+export function deserializeJsonPagedSentMessages(json: JsonOf<PagedSentMessages>): PagedSentMessages {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonSentMessage(e))
+  }
+}
+
+
+export function deserializeJsonSentMessage(json: JsonOf<SentMessage>): SentMessage {
+  return {
+    ...json,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonThreadReply(json: JsonOf<ThreadReply>): ThreadReply {
+  return {
+    ...json,
+    message: deserializeJsonMessage(json.message)
+  }
 }

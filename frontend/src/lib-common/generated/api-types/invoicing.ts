@@ -11,6 +11,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { CareType } from './daycare'
+import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -1073,4 +1074,388 @@ export type VoucherValueDecisionType =
 */
 export interface VoucherValueDecisionTypeRequest {
   type: VoucherValueDecisionType
+}
+
+
+export function deserializeJsonChildWithDateOfBirth(json: JsonOf<ChildWithDateOfBirth>): ChildWithDateOfBirth {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonCreateRetroactiveFeeDecisionsBody(json: JsonOf<CreateRetroactiveFeeDecisionsBody>): CreateRetroactiveFeeDecisionsBody {
+  return {
+    ...json,
+    from: LocalDate.parseIso(json.from)
+  }
+}
+
+
+export function deserializeJsonFeeAlteration(json: JsonOf<FeeAlteration>): FeeAlteration {
+  return {
+    ...json,
+    updatedAt: (json.updatedAt != null) ? HelsinkiDateTime.parseIso(json.updatedAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonFeeAlterationWithPermittedActions(json: JsonOf<FeeAlterationWithPermittedActions>): FeeAlterationWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonFeeAlteration(json.data)
+  }
+}
+
+
+export function deserializeJsonFeeDecision(json: JsonOf<FeeDecision>): FeeDecision {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    children: json.children.map(e => deserializeJsonFeeDecisionChild(e)),
+    created: HelsinkiDateTime.parseIso(json.created),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validDuring: DateRange.parseJson(json.validDuring),
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonFeeDecisionChild(json: JsonOf<FeeDecisionChild>): FeeDecisionChild {
+  return {
+    ...json,
+    child: deserializeJsonChildWithDateOfBirth(json.child)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionChildDetailed(json: JsonOf<FeeDecisionChildDetailed>): FeeDecisionChildDetailed {
+  return {
+    ...json,
+    child: deserializeJsonPersonDetailed(json.child)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionDetailed(json: JsonOf<FeeDecisionDetailed>): FeeDecisionDetailed {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    children: json.children.map(e => deserializeJsonFeeDecisionChildDetailed(e)),
+    created: HelsinkiDateTime.parseIso(json.created),
+    headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
+    partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeDecisionSummary(json: JsonOf<FeeDecisionSummary>): FeeDecisionSummary {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    children: json.children.map(e => deserializeJsonPersonBasic(e)),
+    created: HelsinkiDateTime.parseIso(json.created),
+    headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeThresholds(json: JsonOf<FeeThresholds>): FeeThresholds {
+  return {
+    ...json,
+    validDuring: DateRange.parseJson(json.validDuring)
+  }
+}
+
+
+export function deserializeJsonFeeThresholdsWithId(json: JsonOf<FeeThresholdsWithId>): FeeThresholdsWithId {
+  return {
+    ...json,
+    thresholds: deserializeJsonFeeThresholds(json.thresholds)
+  }
+}
+
+
+export function deserializeJsonIncomeNotification(json: JsonOf<IncomeNotification>): IncomeNotification {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created)
+  }
+}
+
+
+export function deserializeJsonInvoice(json: JsonOf<Invoice>): Invoice {
+  return {
+    ...json,
+    dueDate: LocalDate.parseIso(json.dueDate),
+    invoiceDate: LocalDate.parseIso(json.invoiceDate),
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart),
+    rows: json.rows.map(e => deserializeJsonInvoiceRow(e)),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonInvoiceCorrection(json: JsonOf<InvoiceCorrection>): InvoiceCorrection {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonInvoiceCorrectionWithPermittedActions(json: JsonOf<InvoiceCorrectionWithPermittedActions>): InvoiceCorrectionWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonInvoiceCorrection(json.data)
+  }
+}
+
+
+export function deserializeJsonInvoiceDetailed(json: JsonOf<InvoiceDetailed>): InvoiceDetailed {
+  return {
+    ...json,
+    codebtor: (json.codebtor != null) ? deserializeJsonPersonDetailed(json.codebtor) : null,
+    dueDate: LocalDate.parseIso(json.dueDate),
+    headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
+    invoiceDate: LocalDate.parseIso(json.invoiceDate),
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart),
+    rows: json.rows.map(e => deserializeJsonInvoiceRowDetailed(e)),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonInvoiceDetailedResponse(json: JsonOf<InvoiceDetailedResponse>): InvoiceDetailedResponse {
+  return {
+    ...json,
+    data: deserializeJsonInvoiceDetailed(json.data)
+  }
+}
+
+
+export function deserializeJsonInvoicePayload(json: JsonOf<InvoicePayload>): InvoicePayload {
+  return {
+    ...json,
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    from: LocalDate.parseIso(json.from),
+    invoiceDate: (json.invoiceDate != null) ? LocalDate.parseIso(json.invoiceDate) : null,
+    to: LocalDate.parseIso(json.to)
+  }
+}
+
+
+export function deserializeJsonInvoiceRow(json: JsonOf<InvoiceRow>): InvoiceRow {
+  return {
+    ...json,
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart)
+  }
+}
+
+
+export function deserializeJsonInvoiceRowDetailed(json: JsonOf<InvoiceRowDetailed>): InvoiceRowDetailed {
+  return {
+    ...json,
+    child: deserializeJsonPersonDetailed(json.child),
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart)
+  }
+}
+
+
+export function deserializeJsonInvoiceRowSummary(json: JsonOf<InvoiceRowSummary>): InvoiceRowSummary {
+  return {
+    ...json,
+    child: deserializeJsonPersonBasic(json.child)
+  }
+}
+
+
+export function deserializeJsonInvoiceSummary(json: JsonOf<InvoiceSummary>): InvoiceSummary {
+  return {
+    ...json,
+    codebtor: (json.codebtor != null) ? deserializeJsonPersonDetailed(json.codebtor) : null,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
+    periodEnd: LocalDate.parseIso(json.periodEnd),
+    periodStart: LocalDate.parseIso(json.periodStart),
+    rows: json.rows.map(e => deserializeJsonInvoiceRowSummary(e)),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null
+  }
+}
+
+
+export function deserializeJsonInvoiceSummaryResponse(json: JsonOf<InvoiceSummaryResponse>): InvoiceSummaryResponse {
+  return {
+    ...json,
+    data: deserializeJsonInvoiceSummary(json.data)
+  }
+}
+
+
+export function deserializeJsonNewInvoiceCorrection(json: JsonOf<NewInvoiceCorrection>): NewInvoiceCorrection {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonPagedFeeDecisionSummaries(json: JsonOf<PagedFeeDecisionSummaries>): PagedFeeDecisionSummaries {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonFeeDecisionSummary(e))
+  }
+}
+
+
+export function deserializeJsonPagedInvoiceSummaryResponses(json: JsonOf<PagedInvoiceSummaryResponses>): PagedInvoiceSummaryResponses {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonInvoiceSummaryResponse(e))
+  }
+}
+
+
+export function deserializeJsonPagedPayments(json: JsonOf<PagedPayments>): PagedPayments {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonPayment(e))
+  }
+}
+
+
+export function deserializeJsonPagedVoucherValueDecisionSummaries(json: JsonOf<PagedVoucherValueDecisionSummaries>): PagedVoucherValueDecisionSummaries {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonVoucherValueDecisionSummary(e))
+  }
+}
+
+
+export function deserializeJsonPayment(json: JsonOf<Payment>): Payment {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
+    paymentDate: (json.paymentDate != null) ? LocalDate.parseIso(json.paymentDate) : null,
+    period: DateRange.parseJson(json.period),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonPersonBasic(json: JsonOf<PersonBasic>): PersonBasic {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonPersonDetailed(json: JsonOf<PersonDetailed>): PersonDetailed {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null
+  }
+}
+
+
+export function deserializeJsonSearchFeeDecisionRequest(json: JsonOf<SearchFeeDecisionRequest>): SearchFeeDecisionRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonSearchInvoicesRequest(json: JsonOf<SearchInvoicesRequest>): SearchInvoicesRequest {
+  return {
+    ...json,
+    periodEnd: (json.periodEnd != null) ? LocalDate.parseIso(json.periodEnd) : null,
+    periodStart: (json.periodStart != null) ? LocalDate.parseIso(json.periodStart) : null
+  }
+}
+
+
+export function deserializeJsonSearchPaymentsRequest(json: JsonOf<SearchPaymentsRequest>): SearchPaymentsRequest {
+  return {
+    ...json,
+    paymentDateEnd: (json.paymentDateEnd != null) ? LocalDate.parseIso(json.paymentDateEnd) : null,
+    paymentDateStart: (json.paymentDateStart != null) ? LocalDate.parseIso(json.paymentDateStart) : null
+  }
+}
+
+
+export function deserializeJsonSearchVoucherValueDecisionRequest(json: JsonOf<SearchVoucherValueDecisionRequest>): SearchVoucherValueDecisionRequest {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: (json.startDate != null) ? LocalDate.parseIso(json.startDate) : null
+  }
+}
+
+
+export function deserializeJsonSendPaymentsRequest(json: JsonOf<SendPaymentsRequest>): SendPaymentsRequest {
+  return {
+    ...json,
+    dueDate: LocalDate.parseIso(json.dueDate),
+    paymentDate: LocalDate.parseIso(json.paymentDate)
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecision(json: JsonOf<VoucherValueDecision>): VoucherValueDecision {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    child: deserializeJsonChildWithDateOfBirth(json.child),
+    created: HelsinkiDateTime.parseIso(json.created),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecisionDetailed(json: JsonOf<VoucherValueDecisionDetailed>): VoucherValueDecisionDetailed {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    child: deserializeJsonPersonDetailed(json.child),
+    created: HelsinkiDateTime.parseIso(json.created),
+    headOfFamily: deserializeJsonPersonDetailed(json.headOfFamily),
+    partner: (json.partner != null) ? deserializeJsonPersonDetailed(json.partner) : null,
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecisionSummary(json: JsonOf<VoucherValueDecisionSummary>): VoucherValueDecisionSummary {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    child: deserializeJsonPersonBasic(json.child),
+    created: HelsinkiDateTime.parseIso(json.created),
+    headOfFamily: deserializeJsonPersonBasic(json.headOfFamily),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
 }

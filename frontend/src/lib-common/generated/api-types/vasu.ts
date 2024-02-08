@@ -9,8 +9,10 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
+import { mapVasuQuestion } from '../../api-types/vasu'
 
 /**
 * Generated from fi.espoo.evaka.vasu.VasuController.ChangeDocumentStateRequest
@@ -275,4 +277,157 @@ export interface VasuTemplateSummary {
 export interface VasuTemplateUpdate {
   name: string
   valid: FiniteDateRange
+}
+
+
+export function deserializeJsonCitizenGetVasuDocumentResponse(json: JsonOf<CitizenGetVasuDocumentResponse>): CitizenGetVasuDocumentResponse {
+  return {
+    ...json,
+    vasu: deserializeJsonVasuDocument(json.vasu)
+  }
+}
+
+
+export function deserializeJsonCitizenGetVasuDocumentSummariesResponse(json: JsonOf<CitizenGetVasuDocumentSummariesResponse>): CitizenGetVasuDocumentSummariesResponse {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonVasuDocumentSummary(e))
+  }
+}
+
+
+export function deserializeJsonCopyTemplateRequest(json: JsonOf<CopyTemplateRequest>): CopyTemplateRequest {
+  return {
+    ...json,
+    valid: FiniteDateRange.parseJson(json.valid)
+  }
+}
+
+
+export function deserializeJsonCreateTemplateRequest(json: JsonOf<CreateTemplateRequest>): CreateTemplateRequest {
+  return {
+    ...json,
+    valid: FiniteDateRange.parseJson(json.valid)
+  }
+}
+
+
+export function deserializeJsonUpdateDocumentRequest(json: JsonOf<UpdateDocumentRequest>): UpdateDocumentRequest {
+  return {
+    ...json,
+    content: deserializeJsonVasuContent(json.content)
+  }
+}
+
+
+export function deserializeJsonVasuBasics(json: JsonOf<VasuBasics>): VasuBasics {
+  return {
+    ...json,
+    child: deserializeJsonVasuChild(json.child),
+    placements: (json.placements != null) ? json.placements.map(e => deserializeJsonVasuPlacement(e)) : null
+  }
+}
+
+
+export function deserializeJsonVasuChild(json: JsonOf<VasuChild>): VasuChild {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonVasuContent(json: JsonOf<VasuContent>): VasuContent {
+  return {
+    ...json,
+    sections: json.sections.map(e => deserializeJsonVasuSection(e))
+  }
+}
+
+
+export function deserializeJsonVasuDocument(json: JsonOf<VasuDocument>): VasuDocument {
+  return {
+    ...json,
+    basics: deserializeJsonVasuBasics(json.basics),
+    content: deserializeJsonVasuContent(json.content),
+    events: json.events.map(e => deserializeJsonVasuDocumentEvent(e)),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
+    templateRange: FiniteDateRange.parseJson(json.templateRange)
+  }
+}
+
+
+export function deserializeJsonVasuDocumentEvent(json: JsonOf<VasuDocumentEvent>): VasuDocumentEvent {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created)
+  }
+}
+
+
+export function deserializeJsonVasuDocumentSummary(json: JsonOf<VasuDocumentSummary>): VasuDocumentSummary {
+  return {
+    ...json,
+    events: json.events.map(e => deserializeJsonVasuDocumentEvent(e)),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
+  }
+}
+
+
+export function deserializeJsonVasuDocumentSummaryWithPermittedActions(json: JsonOf<VasuDocumentSummaryWithPermittedActions>): VasuDocumentSummaryWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonVasuDocumentSummary(json.data)
+  }
+}
+
+
+export function deserializeJsonVasuDocumentWithPermittedActions(json: JsonOf<VasuDocumentWithPermittedActions>): VasuDocumentWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonVasuDocument(json.data)
+  }
+}
+
+
+export function deserializeJsonVasuPlacement(json: JsonOf<VasuPlacement>): VasuPlacement {
+  return {
+    ...json,
+    range: FiniteDateRange.parseJson(json.range)
+  }
+}
+
+
+export function deserializeJsonVasuSection(json: JsonOf<VasuSection>): VasuSection {
+  return {
+    ...json,
+    questions: json.questions.map(e => mapVasuQuestion(e))
+  }
+}
+
+
+export function deserializeJsonVasuTemplate(json: JsonOf<VasuTemplate>): VasuTemplate {
+  return {
+    ...json,
+    content: deserializeJsonVasuContent(json.content),
+    valid: FiniteDateRange.parseJson(json.valid)
+  }
+}
+
+
+export function deserializeJsonVasuTemplateSummary(json: JsonOf<VasuTemplateSummary>): VasuTemplateSummary {
+  return {
+    ...json,
+    valid: FiniteDateRange.parseJson(json.valid)
+  }
+}
+
+
+export function deserializeJsonVasuTemplateUpdate(json: JsonOf<VasuTemplateUpdate>): VasuTemplateUpdate {
+  return {
+    ...json,
+    valid: FiniteDateRange.parseJson(json.valid)
+  }
 }

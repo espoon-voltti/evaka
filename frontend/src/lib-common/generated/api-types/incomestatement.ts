@@ -7,6 +7,7 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { JsonOf } from '../../json'
 import { ProviderType } from './daycare'
 import { SortDirection } from './invoicing'
 import { UUID } from '../../types'
@@ -82,6 +83,7 @@ export type IncomeSource =
   | 'INCOMES_REGISTER'
   | 'ATTACHMENTS'
 
+
 export namespace IncomeStatement {
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.ChildIncome
@@ -101,7 +103,7 @@ export namespace IncomeStatement {
     startDate: LocalDate
     updated: HelsinkiDateTime
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.HighestFee
   */
@@ -118,7 +120,7 @@ export namespace IncomeStatement {
     startDate: LocalDate
     updated: HelsinkiDateTime
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.Income
   */
@@ -163,6 +165,7 @@ export interface IncomeStatementAwaitingHandler {
   type: IncomeStatementType
 }
 
+
 export namespace IncomeStatementBody {
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.ChildIncome
@@ -174,7 +177,7 @@ export namespace IncomeStatementBody {
     otherInfo: string
     startDate: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.HighestFee
   */
@@ -183,7 +186,7 @@ export namespace IncomeStatementBody {
     endDate: LocalDate | null
     startDate: LocalDate
   }
-  
+
   /**
   * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.Income
   */
@@ -307,4 +310,141 @@ export interface SelfEmployed {
 export interface SetIncomeStatementHandledBody {
   handled: boolean
   handlerNote: string
+}
+
+
+export function deserializeJsonEntrepreneur(json: JsonOf<Entrepreneur>): Entrepreneur {
+  return {
+    ...json,
+    selfEmployed: (json.selfEmployed != null) ? deserializeJsonSelfEmployed(json.selfEmployed) : null,
+    startOfEntrepreneurship: LocalDate.parseIso(json.startOfEntrepreneurship)
+  }
+}
+
+
+export function deserializeJsonEstimatedIncome(json: JsonOf<EstimatedIncome>): EstimatedIncome {
+  return {
+    ...json,
+    incomeEndDate: (json.incomeEndDate != null) ? LocalDate.parseIso(json.incomeEndDate) : null,
+    incomeStartDate: LocalDate.parseIso(json.incomeStartDate)
+  }
+}
+
+
+
+export function deserializeJsonIncomeStatementChildIncome(json: JsonOf<IncomeStatement.ChildIncome>): IncomeStatement.ChildIncome {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+export function deserializeJsonIncomeStatementHighestFee(json: JsonOf<IncomeStatement.HighestFee>): IncomeStatement.HighestFee {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+export function deserializeJsonIncomeStatementIncome(json: JsonOf<IncomeStatement.Income>): IncomeStatement.Income {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    entrepreneur: (json.entrepreneur != null) ? deserializeJsonEntrepreneur(json.entrepreneur) : null,
+    startDate: LocalDate.parseIso(json.startDate),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+export function deserializeJsonIncomeStatement(json: JsonOf<IncomeStatement>): IncomeStatement {
+  switch (json.type) {
+    case 'CHILD_INCOME': return deserializeJsonIncomeStatementChildIncome(json)
+    case 'HIGHEST_FEE': return deserializeJsonIncomeStatementHighestFee(json)
+    case 'INCOME': return deserializeJsonIncomeStatementIncome(json)
+    default: return json
+  }
+}
+
+
+export function deserializeJsonIncomeStatementAwaitingHandler(json: JsonOf<IncomeStatementAwaitingHandler>): IncomeStatementAwaitingHandler {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+
+export function deserializeJsonIncomeStatementBodyChildIncome(json: JsonOf<IncomeStatementBody.ChildIncome>): IncomeStatementBody.ChildIncome {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+export function deserializeJsonIncomeStatementBodyHighestFee(json: JsonOf<IncomeStatementBody.HighestFee>): IncomeStatementBody.HighestFee {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+export function deserializeJsonIncomeStatementBodyIncome(json: JsonOf<IncomeStatementBody.Income>): IncomeStatementBody.Income {
+  return {
+    ...json,
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    entrepreneur: (json.entrepreneur != null) ? deserializeJsonEntrepreneur(json.entrepreneur) : null,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+export function deserializeJsonIncomeStatementBody(json: JsonOf<IncomeStatementBody>): IncomeStatementBody {
+  switch (json.type) {
+    case 'CHILD_INCOME': return deserializeJsonIncomeStatementBodyChildIncome(json)
+    case 'HIGHEST_FEE': return deserializeJsonIncomeStatementBodyHighestFee(json)
+    case 'INCOME': return deserializeJsonIncomeStatementBodyIncome(json)
+    default: return json
+  }
+}
+
+
+export function deserializeJsonPagedIncomeStatements(json: JsonOf<PagedIncomeStatements>): PagedIncomeStatements {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonIncomeStatement(e))
+  }
+}
+
+
+export function deserializeJsonPagedIncomeStatementsAwaitingHandler(json: JsonOf<PagedIncomeStatementsAwaitingHandler>): PagedIncomeStatementsAwaitingHandler {
+  return {
+    ...json,
+    data: json.data.map(e => deserializeJsonIncomeStatementAwaitingHandler(e))
+  }
+}
+
+
+export function deserializeJsonSearchIncomeStatementsRequest(json: JsonOf<SearchIncomeStatementsRequest>): SearchIncomeStatementsRequest {
+  return {
+    ...json,
+    placementValidDate: (json.placementValidDate != null) ? LocalDate.parseIso(json.placementValidDate) : null,
+    sentEndDate: (json.sentEndDate != null) ? LocalDate.parseIso(json.sentEndDate) : null,
+    sentStartDate: (json.sentStartDate != null) ? LocalDate.parseIso(json.sentStartDate) : null
+  }
+}
+
+
+export function deserializeJsonSelfEmployed(json: JsonOf<SelfEmployed>): SelfEmployed {
+  return {
+    ...json,
+    estimatedIncome: (json.estimatedIncome != null) ? deserializeJsonEstimatedIncome(json.estimatedIncome) : null
+  }
 }

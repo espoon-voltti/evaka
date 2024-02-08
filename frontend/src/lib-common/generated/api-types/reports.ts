@@ -15,6 +15,7 @@ import { AssistanceActionOption } from './assistanceaction'
 import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DecisionType } from './decision'
+import { JsonOf } from '../../json'
 import { OccupancyValues } from './occupancy'
 import { OtherAssistanceMeasureType } from './assistance'
 import { PlacementType } from './placement'
@@ -854,3 +855,157 @@ export type VoucherReportRowType =
   | 'ORIGINAL'
   | 'REFUND'
   | 'CORRECTION'
+
+
+export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<AssistanceNeedDecisionsReportRow>): AssistanceNeedDecisionsReportRow {
+  return {
+    ...json,
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    sentForDecision: LocalDate.parseIso(json.sentForDecision)
+  }
+}
+
+
+export function deserializeJsonAttendanceReservationReportByChildRow(json: JsonOf<AttendanceReservationReportByChildRow>): AttendanceReservationReportByChildRow {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    reservationEndTime: (json.reservationEndTime != null) ? LocalTime.parseIso(json.reservationEndTime) : null,
+    reservationStartTime: (json.reservationStartTime != null) ? LocalTime.parseIso(json.reservationStartTime) : null
+  }
+}
+
+
+export function deserializeJsonAttendanceReservationReportRow(json: JsonOf<AttendanceReservationReportRow>): AttendanceReservationReportRow {
+  return {
+    ...json,
+    dateTime: HelsinkiDateTime.parseIso(json.dateTime)
+  }
+}
+
+
+export function deserializeJsonDuplicatePeopleReportRow(json: JsonOf<DuplicatePeopleReportRow>): DuplicatePeopleReportRow {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonEndedPlacementsReportRow(json: JsonOf<EndedPlacementsReportRow>): EndedPlacementsReportRow {
+  return {
+    ...json,
+    nextPlacementStart: (json.nextPlacementStart != null) ? LocalDate.parseIso(json.nextPlacementStart) : null,
+    placementEnd: LocalDate.parseIso(json.placementEnd)
+  }
+}
+
+
+export function deserializeJsonManualDuplicationReportRow(json: JsonOf<ManualDuplicationReportRow>): ManualDuplicationReportRow {
+  return {
+    ...json,
+    connectedEndDate: LocalDate.parseIso(json.connectedEndDate),
+    connectedStartDate: LocalDate.parseIso(json.connectedStartDate),
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    preschoolEndDate: LocalDate.parseIso(json.preschoolEndDate),
+    preschoolStartDate: LocalDate.parseIso(json.preschoolStartDate)
+  }
+}
+
+
+export function deserializeJsonMissingHeadOfFamilyReportRow(json: JsonOf<MissingHeadOfFamilyReportRow>): MissingHeadOfFamilyReportRow {
+  return {
+    ...json,
+    rangesWithoutHead: json.rangesWithoutHead.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonNonSsnChildrenReportRow(json: JsonOf<NonSsnChildrenReportRow>): NonSsnChildrenReportRow {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonPlacementGuaranteeReportRow(json: JsonOf<PlacementGuaranteeReportRow>): PlacementGuaranteeReportRow {
+  return {
+    ...json,
+    placementEndDate: LocalDate.parseIso(json.placementEndDate),
+    placementStartDate: LocalDate.parseIso(json.placementStartDate)
+  }
+}
+
+
+export function deserializeJsonPlacementSketchingReportRow(json: JsonOf<PlacementSketchingReportRow>): PlacementSketchingReportRow {
+  return {
+    ...json,
+    childDob: LocalDate.parseIso(json.childDob),
+    childMovingDate: (json.childMovingDate != null) ? LocalDate.parseIso(json.childMovingDate) : null,
+    preferredStartDate: LocalDate.parseIso(json.preferredStartDate),
+    sentDate: LocalDate.parseIso(json.sentDate)
+  }
+}
+
+
+export function deserializeJsonPresenceReportRow(json: JsonOf<PresenceReportRow>): PresenceReportRow {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonRawReportRow(json: JsonOf<RawReportRow>): RawReportRow {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    day: LocalDate.parseIso(json.day)
+  }
+}
+
+
+export function deserializeJsonServiceVoucherReport(json: JsonOf<ServiceVoucherReport>): ServiceVoucherReport {
+  return {
+    ...json,
+    locked: (json.locked != null) ? LocalDate.parseIso(json.locked) : null
+  }
+}
+
+
+export function deserializeJsonServiceVoucherUnitReport(json: JsonOf<ServiceVoucherUnitReport>): ServiceVoucherUnitReport {
+  return {
+    ...json,
+    locked: (json.locked != null) ? LocalDate.parseIso(json.locked) : null,
+    rows: json.rows.map(e => deserializeJsonServiceVoucherValueRow(e))
+  }
+}
+
+
+export function deserializeJsonServiceVoucherValueRow(json: JsonOf<ServiceVoucherValueRow>): ServiceVoucherValueRow {
+  return {
+    ...json,
+    childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth),
+    realizedPeriod: FiniteDateRange.parseJson(json.realizedPeriod)
+  }
+}
+
+
+export function deserializeJsonStartingPlacementsRow(json: JsonOf<StartingPlacementsRow>): StartingPlacementsRow {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    placementStart: LocalDate.parseIso(json.placementStart)
+  }
+}
+
+
+export function deserializeJsonVardaErrorReportRow(json: JsonOf<VardaErrorReportRow>): VardaErrorReportRow {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    resetTimeStamp: (json.resetTimeStamp != null) ? HelsinkiDateTime.parseIso(json.resetTimeStamp) : null,
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}

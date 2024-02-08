@@ -10,6 +10,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -476,4 +477,172 @@ export interface UpdateDecisionMakerForAssistanceNeedDecisionRequest {
 */
 export interface UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest {
   title: string
+}
+
+
+export function deserializeJsonAssistanceNeedDecision(json: JsonOf<AssistanceNeedDecision>): AssistanceNeedDecision {
+  return {
+    ...json,
+    child: (json.child != null) ? deserializeJsonAssistanceNeedDecisionChild(json.child) : null,
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    guardiansHeardOn: (json.guardiansHeardOn != null) ? LocalDate.parseIso(json.guardiansHeardOn) : null,
+    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
+    validityPeriod: DateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionBasics(json: JsonOf<AssistanceNeedDecisionBasics>): AssistanceNeedDecisionBasics {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
+    validityPeriod: DateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionBasicsResponse(json: JsonOf<AssistanceNeedDecisionBasicsResponse>): AssistanceNeedDecisionBasicsResponse {
+  return {
+    ...json,
+    decision: deserializeJsonAssistanceNeedDecisionBasics(json.decision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionChild(json: JsonOf<AssistanceNeedDecisionChild>): AssistanceNeedDecisionChild {
+  return {
+    ...json,
+    dateOfBirth: (json.dateOfBirth != null) ? LocalDate.parseIso(json.dateOfBirth) : null
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionCitizenListItem(json: JsonOf<AssistanceNeedDecisionCitizenListItem>): AssistanceNeedDecisionCitizenListItem {
+  return {
+    ...json,
+    decisionMade: LocalDate.parseIso(json.decisionMade),
+    validityPeriod: DateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionForm(json: JsonOf<AssistanceNeedDecisionForm>): AssistanceNeedDecisionForm {
+  return {
+    ...json,
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    guardiansHeardOn: (json.guardiansHeardOn != null) ? LocalDate.parseIso(json.guardiansHeardOn) : null,
+    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
+    validityPeriod: DateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionRequest(json: JsonOf<AssistanceNeedDecisionRequest>): AssistanceNeedDecisionRequest {
+  return {
+    ...json,
+    decision: deserializeJsonAssistanceNeedDecisionForm(json.decision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedDecisionResponse(json: JsonOf<AssistanceNeedDecisionResponse>): AssistanceNeedDecisionResponse {
+  return {
+    ...json,
+    decision: deserializeJsonAssistanceNeedDecision(json.decision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecision(json: JsonOf<AssistanceNeedPreschoolDecision>): AssistanceNeedPreschoolDecision {
+  return {
+    ...json,
+    child: deserializeJsonAssistanceNeedPreschoolDecisionChild(json.child),
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    form: deserializeJsonAssistanceNeedPreschoolDecisionForm(json.form),
+    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionBasics(json: JsonOf<AssistanceNeedPreschoolDecisionBasics>): AssistanceNeedPreschoolDecisionBasics {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
+    sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null,
+    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null,
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionBasicsResponse(json: JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse>): AssistanceNeedPreschoolDecisionBasicsResponse {
+  return {
+    ...json,
+    decision: deserializeJsonAssistanceNeedPreschoolDecisionBasics(json.decision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionChild(json: JsonOf<AssistanceNeedPreschoolDecisionChild>): AssistanceNeedPreschoolDecisionChild {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionCitizenListItem(json: JsonOf<AssistanceNeedPreschoolDecisionCitizenListItem>): AssistanceNeedPreschoolDecisionCitizenListItem {
+  return {
+    ...json,
+    decisionMade: LocalDate.parseIso(json.decisionMade),
+    validityPeriod: DateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionForm(json: JsonOf<AssistanceNeedPreschoolDecisionForm>): AssistanceNeedPreschoolDecisionForm {
+  return {
+    ...json,
+    basisDocumentDoctorStatementDate: (json.basisDocumentDoctorStatementDate != null) ? LocalDate.parseIso(json.basisDocumentDoctorStatementDate) : null,
+    basisDocumentPedagogicalReportDate: (json.basisDocumentPedagogicalReportDate != null) ? LocalDate.parseIso(json.basisDocumentPedagogicalReportDate) : null,
+    basisDocumentPsychologistStatementDate: (json.basisDocumentPsychologistStatementDate != null) ? LocalDate.parseIso(json.basisDocumentPsychologistStatementDate) : null,
+    basisDocumentSocialReportDate: (json.basisDocumentSocialReportDate != null) ? LocalDate.parseIso(json.basisDocumentSocialReportDate) : null,
+    guardiansHeardOn: (json.guardiansHeardOn != null) ? LocalDate.parseIso(json.guardiansHeardOn) : null,
+    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedPreschoolDecisionResponse(json: JsonOf<AssistanceNeedPreschoolDecisionResponse>): AssistanceNeedPreschoolDecisionResponse {
+  return {
+    ...json,
+    decision: deserializeJsonAssistanceNeedPreschoolDecision(json.decision)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedVoucherCoefficient(json: JsonOf<AssistanceNeedVoucherCoefficient>): AssistanceNeedVoucherCoefficient {
+  return {
+    ...json,
+    validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedVoucherCoefficientRequest(json: JsonOf<AssistanceNeedVoucherCoefficientRequest>): AssistanceNeedVoucherCoefficientRequest {
+  return {
+    ...json,
+    validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
+  }
+}
+
+
+export function deserializeJsonAssistanceNeedVoucherCoefficientResponse(json: JsonOf<AssistanceNeedVoucherCoefficientResponse>): AssistanceNeedVoucherCoefficientResponse {
+  return {
+    ...json,
+    voucherCoefficient: deserializeJsonAssistanceNeedVoucherCoefficient(json.voucherCoefficient)
+  }
 }

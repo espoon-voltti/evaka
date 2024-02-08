@@ -8,8 +8,10 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { JsonOf } from '../../json'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
+import { deserializeJsonServiceNeed } from './serviceneed'
 
 /**
 * Generated from fi.espoo.evaka.backupcare.BackupCareChild
@@ -104,4 +106,70 @@ export interface UnitBackupCare {
 */
 export interface UnitBackupCaresResponse {
   backupCares: UnitBackupCare[]
+}
+
+
+export function deserializeJsonBackupCareChild(json: JsonOf<BackupCareChild>): BackupCareChild {
+  return {
+    ...json,
+    birthDate: LocalDate.parseIso(json.birthDate)
+  }
+}
+
+
+export function deserializeJsonBackupCareUpdateRequest(json: JsonOf<BackupCareUpdateRequest>): BackupCareUpdateRequest {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonChildBackupCare(json: JsonOf<ChildBackupCare>): ChildBackupCare {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonChildBackupCareResponse(json: JsonOf<ChildBackupCareResponse>): ChildBackupCareResponse {
+  return {
+    ...json,
+    backupCare: deserializeJsonChildBackupCare(json.backupCare)
+  }
+}
+
+
+export function deserializeJsonChildBackupCaresResponse(json: JsonOf<ChildBackupCaresResponse>): ChildBackupCaresResponse {
+  return {
+    ...json,
+    backupCares: json.backupCares.map(e => deserializeJsonChildBackupCareResponse(e))
+  }
+}
+
+
+export function deserializeJsonNewBackupCare(json: JsonOf<NewBackupCare>): NewBackupCare {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonUnitBackupCare(json: JsonOf<UnitBackupCare>): UnitBackupCare {
+  return {
+    ...json,
+    child: deserializeJsonBackupCareChild(json.child),
+    period: FiniteDateRange.parseJson(json.period),
+    serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e))
+  }
+}
+
+
+export function deserializeJsonUnitBackupCaresResponse(json: JsonOf<UnitBackupCaresResponse>): UnitBackupCaresResponse {
+  return {
+    ...json,
+    backupCares: json.backupCares.map(e => deserializeJsonUnitBackupCare(e))
+  }
 }

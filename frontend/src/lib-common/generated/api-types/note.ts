@@ -7,6 +7,7 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -103,4 +104,56 @@ export interface NotesByGroupResponse {
   childDailyNotes: ChildDailyNote[]
   childStickyNotes: ChildStickyNote[]
   groupNotes: GroupNote[]
+}
+
+
+export function deserializeJsonChildDailyNote(json: JsonOf<ChildDailyNote>): ChildDailyNote {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonChildStickyNote(json: JsonOf<ChildStickyNote>): ChildStickyNote {
+  return {
+    ...json,
+    expires: LocalDate.parseIso(json.expires),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonChildStickyNoteBody(json: JsonOf<ChildStickyNoteBody>): ChildStickyNoteBody {
+  return {
+    ...json,
+    expires: LocalDate.parseIso(json.expires)
+  }
+}
+
+
+export function deserializeJsonGroupNote(json: JsonOf<GroupNote>): GroupNote {
+  return {
+    ...json,
+    expires: LocalDate.parseIso(json.expires),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
+export function deserializeJsonGroupNoteBody(json: JsonOf<GroupNoteBody>): GroupNoteBody {
+  return {
+    ...json,
+    expires: LocalDate.parseIso(json.expires)
+  }
+}
+
+
+export function deserializeJsonNotesByGroupResponse(json: JsonOf<NotesByGroupResponse>): NotesByGroupResponse {
+  return {
+    ...json,
+    childDailyNotes: json.childDailyNotes.map(e => deserializeJsonChildDailyNote(e)),
+    childStickyNotes: json.childStickyNotes.map(e => deserializeJsonChildStickyNote(e)),
+    groupNotes: json.groupNotes.map(e => deserializeJsonGroupNote(e))
+  }
 }

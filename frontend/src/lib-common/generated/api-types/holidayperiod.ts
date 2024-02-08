@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { AbsenceType } from './absence'
+import { JsonOf } from '../../json'
 import { Translatable } from './shared'
 import { UUID } from '../../types'
 
@@ -98,3 +99,76 @@ export interface QuestionnaireConditions {
 export type QuestionnaireType =
   | 'FIXED_PERIOD'
   | 'OPEN_RANGES'
+
+
+export function deserializeJsonActiveQuestionnaire(json: JsonOf<ActiveQuestionnaire>): ActiveQuestionnaire {
+  return {
+    ...json,
+    previousAnswers: json.previousAnswers.map(e => deserializeJsonHolidayQuestionnaireAnswer(e)),
+    questionnaire: deserializeJsonFixedPeriodQuestionnaire(json.questionnaire)
+  }
+}
+
+
+export function deserializeJsonFixedPeriodQuestionnaire(json: JsonOf<FixedPeriodQuestionnaire>): FixedPeriodQuestionnaire {
+  return {
+    ...json,
+    active: FiniteDateRange.parseJson(json.active),
+    conditions: deserializeJsonQuestionnaireConditions(json.conditions),
+    periodOptions: json.periodOptions.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonFixedPeriodQuestionnaireBody(json: JsonOf<FixedPeriodQuestionnaireBody>): FixedPeriodQuestionnaireBody {
+  return {
+    ...json,
+    active: FiniteDateRange.parseJson(json.active),
+    conditions: deserializeJsonQuestionnaireConditions(json.conditions),
+    periodOptions: json.periodOptions.map(e => FiniteDateRange.parseJson(e))
+  }
+}
+
+
+export function deserializeJsonFixedPeriodsBody(json: JsonOf<FixedPeriodsBody>): FixedPeriodsBody {
+  return {
+    ...json,
+    fixedPeriods: Object.fromEntries(Object.entries(json.fixedPeriods).map(
+      ([k, v]) => [k, (v != null) ? FiniteDateRange.parseJson(v) : null]
+    ))
+  }
+}
+
+
+export function deserializeJsonHolidayPeriod(json: JsonOf<HolidayPeriod>): HolidayPeriod {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+  }
+}
+
+
+export function deserializeJsonHolidayPeriodBody(json: JsonOf<HolidayPeriodBody>): HolidayPeriodBody {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+  }
+}
+
+
+export function deserializeJsonHolidayQuestionnaireAnswer(json: JsonOf<HolidayQuestionnaireAnswer>): HolidayQuestionnaireAnswer {
+  return {
+    ...json,
+    fixedPeriod: (json.fixedPeriod != null) ? FiniteDateRange.parseJson(json.fixedPeriod) : null
+  }
+}
+
+
+export function deserializeJsonQuestionnaireConditions(json: JsonOf<QuestionnaireConditions>): QuestionnaireConditions {
+  return {
+    ...json,
+    continuousPlacement: (json.continuousPlacement != null) ? FiniteDateRange.parseJson(json.continuousPlacement) : null
+  }
+}

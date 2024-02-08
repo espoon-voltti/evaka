@@ -10,12 +10,14 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { EvakaUser } from './user'
+import { JsonOf } from '../../json'
 import { Language } from './daycare'
 import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
 import { UUID } from '../../types'
 import { Unit } from './children'
+import { deserializeJsonServiceNeed } from './serviceneed'
 
 /**
 * Generated from fi.espoo.evaka.placement.ChildBasics
@@ -337,4 +339,191 @@ export interface UnitChildrenCapacityFactors {
   assistanceNeedFactor: number
   childId: UUID
   serviceNeedFactor: number
+}
+
+
+export function deserializeJsonChildBasics(json: JsonOf<ChildBasics>): ChildBasics {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonChildPlacement(json: JsonOf<ChildPlacement>): ChildPlacement {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate),
+    terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
+  }
+}
+
+
+export function deserializeJsonChildPlacementResponse(json: JsonOf<ChildPlacementResponse>): ChildPlacementResponse {
+  return {
+    ...json,
+    placements: json.placements.map(e => deserializeJsonTerminatablePlacementGroup(e))
+  }
+}
+
+
+export function deserializeJsonDaycareGroupPlacement(json: JsonOf<DaycareGroupPlacement>): DaycareGroupPlacement {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDaycarePlacementWithDetails(json: JsonOf<DaycarePlacementWithDetails>): DaycarePlacementWithDetails {
+  return {
+    ...json,
+    child: deserializeJsonChildBasics(json.child),
+    endDate: LocalDate.parseIso(json.endDate),
+    groupPlacements: json.groupPlacements.map(e => deserializeJsonDaycareGroupPlacement(e)),
+    serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e)),
+    startDate: LocalDate.parseIso(json.startDate),
+    terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null,
+    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
+  }
+}
+
+
+export function deserializeJsonGroupPlacementRequestBody(json: JsonOf<GroupPlacementRequestBody>): GroupPlacementRequestBody {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonGroupTransferRequestBody(json: JsonOf<GroupTransferRequestBody>): GroupTransferRequestBody {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonMissingGroupPlacement(json: JsonOf<MissingGroupPlacement>): MissingGroupPlacement {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    gap: FiniteDateRange.parseJson(json.gap),
+    placementPeriod: FiniteDateRange.parseJson(json.placementPeriod),
+    serviceNeeds: json.serviceNeeds.map(e => deserializeJsonMissingGroupPlacementServiceNeed(e))
+  }
+}
+
+
+export function deserializeJsonMissingGroupPlacementServiceNeed(json: JsonOf<MissingGroupPlacementServiceNeed>): MissingGroupPlacementServiceNeed {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPlacementCreateRequestBody(json: JsonOf<PlacementCreateRequestBody>): PlacementCreateRequestBody {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPlacementDraftChild(json: JsonOf<PlacementDraftChild>): PlacementDraftChild {
+  return {
+    ...json,
+    dob: LocalDate.parseIso(json.dob)
+  }
+}
+
+
+export function deserializeJsonPlacementPlanChild(json: JsonOf<PlacementPlanChild>): PlacementPlanChild {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonPlacementPlanDetails(json: JsonOf<PlacementPlanDetails>): PlacementPlanDetails {
+  return {
+    ...json,
+    child: deserializeJsonPlacementPlanChild(json.child),
+    period: FiniteDateRange.parseJson(json.period),
+    preschoolDaycarePeriod: (json.preschoolDaycarePeriod != null) ? FiniteDateRange.parseJson(json.preschoolDaycarePeriod) : null
+  }
+}
+
+
+export function deserializeJsonPlacementPlanDraft(json: JsonOf<PlacementPlanDraft>): PlacementPlanDraft {
+  return {
+    ...json,
+    child: deserializeJsonPlacementDraftChild(json.child),
+    period: FiniteDateRange.parseJson(json.period),
+    placements: json.placements.map(e => deserializeJsonPlacementSummary(e)),
+    preschoolDaycarePeriod: (json.preschoolDaycarePeriod != null) ? FiniteDateRange.parseJson(json.preschoolDaycarePeriod) : null
+  }
+}
+
+
+export function deserializeJsonPlacementResponse(json: JsonOf<PlacementResponse>): PlacementResponse {
+  return {
+    ...json,
+    placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e))
+  }
+}
+
+
+export function deserializeJsonPlacementSummary(json: JsonOf<PlacementSummary>): PlacementSummary {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonPlacementTerminationRequestBody(json: JsonOf<PlacementTerminationRequestBody>): PlacementTerminationRequestBody {
+  return {
+    ...json,
+    terminationDate: LocalDate.parseIso(json.terminationDate)
+  }
+}
+
+
+export function deserializeJsonPlacementUpdateRequestBody(json: JsonOf<PlacementUpdateRequestBody>): PlacementUpdateRequestBody {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonTerminatablePlacementGroup(json: JsonOf<TerminatablePlacementGroup>): TerminatablePlacementGroup {
+  return {
+    ...json,
+    additionalPlacements: json.additionalPlacements.map(e => deserializeJsonChildPlacement(e)),
+    endDate: LocalDate.parseIso(json.endDate),
+    placements: json.placements.map(e => deserializeJsonChildPlacement(e)),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonTerminatedPlacement(json: JsonOf<TerminatedPlacement>): TerminatedPlacement {
+  return {
+    ...json,
+    child: deserializeJsonChildBasics(json.child),
+    endDate: LocalDate.parseIso(json.endDate),
+    terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
+  }
 }

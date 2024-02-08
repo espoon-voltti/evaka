@@ -7,6 +7,7 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalTime from '../../local-time'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -141,3 +142,28 @@ export type UserRole =
   | 'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
   | 'MOBILE'
   | 'GROUP_STAFF'
+
+/**
+* Generated from fi.espoo.evaka.shared.controllers.Wrapper
+*/
+export interface Wrapper<T> {
+  data: T
+}
+
+
+export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
+  return {
+    ...json,
+    end: HelsinkiDateTime.parseIso(json.end),
+    start: HelsinkiDateTime.parseIso(json.start)
+  }
+}
+
+
+export function deserializeJsonTimeRange(json: JsonOf<TimeRange>): TimeRange {
+  return {
+    ...json,
+    end: LocalTime.parseIso(json.end),
+    start: LocalTime.parseIso(json.start)
+  }
+}

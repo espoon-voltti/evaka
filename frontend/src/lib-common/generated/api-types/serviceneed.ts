@@ -7,6 +7,7 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
@@ -125,3 +126,66 @@ export const shiftCareType = [
 ] as const
 
 export type ShiftCareType = typeof shiftCareType[number]
+
+
+export function deserializeJsonServiceNeed(json: JsonOf<ServiceNeed>): ServiceNeed {
+  return {
+    ...json,
+    confirmed: (json.confirmed != null) ? deserializeJsonServiceNeedConfirmation(json.confirmed) : null,
+    endDate: LocalDate.parseIso(json.endDate),
+    option: deserializeJsonServiceNeedOptionSummary(json.option),
+    startDate: LocalDate.parseIso(json.startDate),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonServiceNeedConfirmation(json: JsonOf<ServiceNeedConfirmation>): ServiceNeedConfirmation {
+  return {
+    ...json,
+    at: (json.at != null) ? HelsinkiDateTime.parseIso(json.at) : null
+  }
+}
+
+
+export function deserializeJsonServiceNeedCreateRequest(json: JsonOf<ServiceNeedCreateRequest>): ServiceNeedCreateRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonServiceNeedOption(json: JsonOf<ServiceNeedOption>): ServiceNeedOption {
+  return {
+    ...json,
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonServiceNeedOptionSummary(json: JsonOf<ServiceNeedOptionSummary>): ServiceNeedOptionSummary {
+  return {
+    ...json,
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonServiceNeedSummary(json: JsonOf<ServiceNeedSummary>): ServiceNeedSummary {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonServiceNeedUpdateRequest(json: JsonOf<ServiceNeedUpdateRequest>): ServiceNeedUpdateRequest {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}

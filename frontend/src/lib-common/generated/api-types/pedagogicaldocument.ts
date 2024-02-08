@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
@@ -47,4 +48,21 @@ export interface PedagogicalDocumentCitizen {
 export interface PedagogicalDocumentPostBody {
   childId: UUID
   description: string
+}
+
+
+export function deserializeJsonPedagogicalDocument(json: JsonOf<PedagogicalDocument>): PedagogicalDocument {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created),
+    updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonPedagogicalDocumentCitizen(json: JsonOf<PedagogicalDocumentCitizen>): PedagogicalDocumentCitizen {
+  return {
+    ...json,
+    created: HelsinkiDateTime.parseIso(json.created)
+  }
 }

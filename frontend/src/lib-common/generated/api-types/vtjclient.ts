@@ -5,8 +5,6 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
-
-
 /**
 * Generated from fi.espoo.evaka.vtjclient.dto.Nationality
 */
