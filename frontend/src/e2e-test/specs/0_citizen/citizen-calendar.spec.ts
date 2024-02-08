@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -79,7 +80,8 @@ beforeEach(async () => {
       id: groupEventId,
       title: 'Group-wide event',
       description: 'Whole group',
-      period: new FiniteDateRange(today, today)
+      period: new FiniteDateRange(today, today),
+      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
     })
     .save()
 
@@ -96,7 +98,8 @@ beforeEach(async () => {
       id: individualEventId,
       title: 'Individual event',
       description: 'Just Jari',
-      period: new FiniteDateRange(today, today)
+      period: new FiniteDateRange(today, today),
+      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
     })
     .save()
 
@@ -114,7 +117,8 @@ beforeEach(async () => {
       id: unitEventId,
       title: 'Unit event',
       description: 'For everyone in the unit',
-      period: new FiniteDateRange(today.addDays(1), today.addDays(2))
+      period: new FiniteDateRange(today.addDays(1), today.addDays(2)),
+      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
     })
     .save()
 

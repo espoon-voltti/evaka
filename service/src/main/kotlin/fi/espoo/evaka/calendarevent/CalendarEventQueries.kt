@@ -9,6 +9,7 @@ import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -31,7 +32,7 @@ private fun Database.Read.getCalendarEventsQuery(
     this.createQuery(
             """
 SELECT
-    ce.id, cea.unit_id, ce.title, ce.description, ce.period,
+    ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at,
     (
         coalesce(jsonb_agg(DISTINCT jsonb_build_object(
             'id', cea.group_id,
@@ -84,12 +85,13 @@ fun Database.Transaction.createCalendarEvent(
     val eventId =
         this.createUpdate(
                 """
-INSERT INTO calendar_event (title, description, period)
-VALUES (:title, :description, :period)
+INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at)
+VALUES (:createdAt, :title, :description, :period, :createdAt, :createdAt)
 RETURNING id
         """
                     .trimIndent()
             )
+            .bind("createdAt", createdAt)
             .bindKotlin(event)
             .executeAndReturnGeneratedKeys()
             .exactlyOne<CalendarEventId>()
@@ -219,18 +221,37 @@ WHERE calendar_event_id = :calendarEventId
 
 fun Database.Transaction.updateCalendarEvent(
     eventId: CalendarEventId,
+    modifiedAt: HelsinkiDateTime,
     updateForm: CalendarEventUpdateForm
 ) =
     this.createUpdate(
             """
 UPDATE calendar_event
-SET title = :title, description = :description
+SET title = :title, description = :description, modified_at = :modifiedAt, content_modified_at = :modifiedAt
 WHERE id = :eventId
         """
                 .trimIndent()
         )
         .bind("eventId", eventId)
+        .bind("modifiedAt", modifiedAt)
         .bindKotlin(updateForm)
+        .updateExactlyOne()
+
+fun Database.Transaction.setCalendarEventContentModifiedAt(
+    eventId: CalendarEventId,
+    modifiedAt: HelsinkiDateTime
+) =
+    this.createUpdate<DatabaseTable.CalendarEvent> {
+            sql(
+                """
+UPDATE calendar_event
+SET content_modified_at = :modifiedAt
+WHERE id = :eventId
+        """
+            )
+        }
+        .bind("eventId", eventId)
+        .bind("modifiedAt", modifiedAt)
         .updateExactlyOne()
 
 fun Database.Transaction.insertCalendarEventTimeReservation(
@@ -381,7 +402,7 @@ fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<P
             sql(
                 """
 WITH matching_events AS (
-    SELECT id, period FROM calendar_event WHERE created >= ${bind(cutoff)}
+    SELECT id, period FROM calendar_event WHERE created_at >= ${bind(cutoff)}
 ), matching_children AS (
     SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
     FROM matching_events ce

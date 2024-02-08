@@ -326,6 +326,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         title = title,
                         description = description,
                         period = period,
+                        modifiedAt = created
                     )
                 )
 
@@ -333,7 +334,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     sql(
                         """
                     UPDATE calendar_event
-                    SET created = ${bind(created)} WHERE id = ${bind(eventId)}
+                    SET created_at = ${bind(created)} WHERE id = ${bind(eventId)}
                     """
                     )
                 }

@@ -2148,7 +2148,8 @@ data class DevCalendarEvent(
     val id: CalendarEventId = CalendarEventId(UUID.randomUUID()),
     val title: String,
     val description: String,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
+    val modifiedAt: HelsinkiDateTime
 )
 
 data class DevCalendarEventAttendee(

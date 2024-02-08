@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.PlacementControllerCitizen
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.placement.TerminatablePlacementType
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -1648,6 +1649,108 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
+    @Test
+    fun `content timestamp updated on all edits except reservation changes`() {
+        val tickingClock = MockEvakaClock(now)
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = null,
+                title = "Unit-wide event",
+                description = "uwe",
+                period = FiniteDateRange(today, today.plusDays(3))
+            )
+        val newEventData = createCalendarEvent(form = form, clock = tickingClock)
+
+        tickingClock.tick()
+
+        val updateForm =
+            CalendarEventUpdateForm(
+                title = "Updated title",
+                description = form.description,
+                tree = form.tree
+            )
+
+        val modifiedEventData =
+            modifyCalendarEvent(form = updateForm, clock = tickingClock, id = newEventData.id)
+
+        assertThat(newEventData.contentModifiedAt < modifiedEventData.contentModifiedAt)
+        tickingClock.tick()
+
+        val updatedEventData =
+            updateCalendarEvent(
+                clock = tickingClock,
+                id = newEventData.id,
+                form = updateForm.copy(tree = mapOf(groupId to setOf(testChild_1.id)))
+            )
+
+        assertThat(modifiedEventData.contentModifiedAt < updatedEventData.contentModifiedAt)
+        tickingClock.tick()
+
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(1),
+                startTime = LocalTime.of(9, 0),
+                endTime = LocalTime.of(9, 30)
+            )
+
+        val eventTimeId =
+            addEventTimeAsEmployee(
+                form = eventTimeForm,
+                eventId = newEventData.id,
+                clock = tickingClock
+            )
+        val timeAddedEventData = readCalendarEvent(newEventData.id)
+
+        assertThat(updatedEventData.contentModifiedAt < timeAddedEventData.contentModifiedAt)
+        tickingClock.tick()
+
+        val reservationForm =
+            CalendarEventTimeReservationForm(
+                calendarEventTimeId = eventTimeId,
+                childId = testChild_1.id
+            )
+
+        addEventTimeReservationAsCitizen(form = reservationForm, clock = tickingClock)
+        val citizenReservedEventData = readCalendarEvent(newEventData.id)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            citizenReservedEventData.contentModifiedAt
+        )
+        tickingClock.tick()
+
+        deleteEventTimeReservationAsCitizen(
+            eventTimeId = eventTimeId,
+            clock = tickingClock,
+            childId = testChild_1.id
+        )
+        val citizenCancelledEventData = readCalendarEvent(newEventData.id)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            citizenCancelledEventData.contentModifiedAt
+        )
+        tickingClock.tick()
+
+        setCalendarEventTimeReservationAsEmployee(clock = tickingClock, form = reservationForm)
+        val employeeReservedEventData = readCalendarEvent(newEventData.id)
+
+        assertEquals(
+            timeAddedEventData.contentModifiedAt,
+            employeeReservedEventData.contentModifiedAt
+        )
+        tickingClock.tick()
+
+        deleteEventTimeAsEmployee(clock = tickingClock, eventTimeId = eventTimeId)
+        val deletedTimeEventData = readCalendarEvent(newEventData.id)
+
+        assertThat(
+            employeeReservedEventData.contentModifiedAt < deletedTimeEventData.contentModifiedAt
+        )
+    }
+
     private fun createCalendarEvent(
         form: CalendarEventForm,
         user: AuthenticatedUser.Employee = admin,
@@ -1670,6 +1773,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock
     ): CalendarEvent {
         calendarEventController.updateCalendarEvent(dbInstance(), user, clock, id, form)
+        return readCalendarEvent(id, user = user, clock = clock)
+    }
+
+    private fun modifyCalendarEvent(
+        id: CalendarEventId,
+        form: CalendarEventUpdateForm,
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock
+    ): CalendarEvent {
+        calendarEventController.modifyCalendarEvent(dbInstance(), user, clock, id, form)
         return readCalendarEvent(id, user = user, clock = clock)
     }
 
@@ -1698,4 +1811,44 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             calendarEventId,
             childId
         )
+
+    private fun addEventTimeAsEmployee(
+        form: CalendarEventTimeForm,
+        eventId: CalendarEventId,
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock
+    ): CalendarEventTimeId =
+        calendarEventController.addCalendarEventTime(dbInstance(), user, clock, eventId, form)
+
+    private fun deleteEventTimeAsEmployee(
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock,
+        eventTimeId: CalendarEventTimeId
+    ) = calendarEventController.deleteCalendarEventTime(dbInstance(), user, clock, eventTimeId)
+
+    private fun addEventTimeReservationAsCitizen(
+        form: CalendarEventTimeReservationForm,
+        user: AuthenticatedUser.Citizen = guardian,
+        clock: EvakaClock = this.clock
+    ) = calendarEventController.addCalendarEventTimeReservation(dbInstance(), user, clock, form)
+
+    private fun deleteEventTimeReservationAsCitizen(
+        user: AuthenticatedUser.Citizen = guardian,
+        clock: EvakaClock = this.clock,
+        eventTimeId: CalendarEventTimeId,
+        childId: ChildId
+    ) =
+        calendarEventController.deleteCalendarEventTimeReservation(
+            dbInstance(),
+            user,
+            clock,
+            eventTimeId,
+            childId
+        )
+
+    private fun setCalendarEventTimeReservationAsEmployee(
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock,
+        form: CalendarEventTimeReservationForm
+    ) = calendarEventController.setCalendarEventTimeReservation(dbInstance(), user, clock, form)
 }

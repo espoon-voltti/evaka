@@ -2093,7 +2093,8 @@ export class Fixture {
       period: new FiniteDateRange(
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 1, 1)
-      )
+      ),
+      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN)
     })
   }
 
