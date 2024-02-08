@@ -92,6 +92,7 @@ export interface AssistanceNeedsAndActionsReportRow {
 export interface AssistanceNeedsAndActionsReportRowByChild {
   actions: string[]
   careAreaName: string
+  childAge: number
   childFirstName: string
   childId: UUID
   childLastName: string

@@ -3336,7 +3336,8 @@ export const fi = {
       childName: 'Lapsen nimi',
       child: 'Lapsi',
       under3y: '<3v',
-      over3y: '3+'
+      over3y: '3+',
+      age: 'Ikä'
     },
     applications: {
       title: 'Saapuneet hakemukset',

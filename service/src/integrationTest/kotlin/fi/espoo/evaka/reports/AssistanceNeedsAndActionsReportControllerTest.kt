@@ -72,7 +72,11 @@ class AssistanceNeedsAndActionsReportControllerTest :
 
         val child1Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 1"), DevPersonType.CHILD)
+                val childId =
+                    tx.insert(
+                        DevPerson(firstName = "Test 1", dateOfBirth = date.minusYears(3)),
+                        DevPersonType.CHILD
+                    )
                 val placementId =
                     tx.insert(
                         DevPlacement(
@@ -109,7 +113,11 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child2Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 2"), DevPersonType.CHILD)
+                val childId =
+                    tx.insert(
+                        DevPerson(firstName = "Test 2", dateOfBirth = date.minusYears(3)),
+                        DevPersonType.CHILD
+                    )
                 val placementId =
                     tx.insert(
                         DevPlacement(
@@ -146,7 +154,11 @@ class AssistanceNeedsAndActionsReportControllerTest :
             }
         val child3Id =
             db.transaction { tx ->
-                val childId = tx.insert(DevPerson(firstName = "Test 3"), DevPersonType.CHILD)
+                val childId =
+                    tx.insert(
+                        DevPerson(firstName = "Test 3", dateOfBirth = date.minusYears(3)),
+                        DevPersonType.CHILD
+                    )
                 val placementId =
                     tx.insert(
                         DevPlacement(
@@ -243,6 +255,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     childId = child1Id,
                     childLastName = "Person",
                     childFirstName = "Test 1",
+                    childAge = 3,
                     actions = setOf("ASSISTANCE_SERVICE_CHILD"),
                     otherAction = "",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
@@ -258,6 +271,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     childId = child2Id,
                     childLastName = "Person",
                     childFirstName = "Test 2",
+                    childAge = 3,
                     actions = emptySet(),
                     otherAction = "other action test",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
@@ -273,6 +287,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     childId = child3Id,
                     childLastName = "Person",
                     childFirstName = "Test 3",
+                    childAge = 3,
                     actions = setOf("ASSISTANCE_SERVICE_CHILD"),
                     otherAction = "",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),

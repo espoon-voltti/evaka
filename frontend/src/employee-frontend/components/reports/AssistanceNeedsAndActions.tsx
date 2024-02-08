@@ -523,7 +523,6 @@ export default React.memo(function AssistanceNeedsAndActions() {
             selectedDaycareColumns={selectedDaycareColumns}
             selectedPreschoolColumns={selectedPreschoolColumns}
             selectedOtherColumns={selectedOtherColumns}
-            showActions={!reportByChildPermitted}
           />
         ) : (
           <ReportByChild
@@ -550,7 +549,6 @@ const ReportByGroup = ({
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
-  showActions: boolean
 }) => {
   const [result] = useApiState(
     () => getAssistanceNeedsAndActionsReport(filters),
@@ -575,7 +573,6 @@ const ReportByGroupTable = ({
   selectedDaycareColumns,
   selectedPreschoolColumns,
   selectedOtherColumns,
-  showActions,
   report,
   filename
 }: {
@@ -584,7 +581,6 @@ const ReportByGroupTable = ({
   selectedDaycareColumns: DaycareAssistanceLevel[]
   selectedPreschoolColumns: PreschoolAssistanceLevel[]
   selectedOtherColumns: OtherAssistanceMeasureType[]
-  showActions: boolean
   report: AssistanceNeedsAndActionsReport
   filename: string
 }) => {
@@ -662,12 +658,10 @@ const ReportByGroupTable = ({
                 `OTHER-ASSISTANCE-MEASURE-${type}`,
                 row.otherAssistanceMeasureCounts[type] ?? 0
               ]),
-              ...(showActions
-                ? report.actions.map(({ value }) => [
-                    `ACTION-${value}`,
-                    row.actionCounts[value] ?? 0
-                  ])
-                : [])
+              ...report.actions.map(({ value }) => [
+                `ACTION-${value}`,
+                row.actionCounts[value] ?? 0
+              ])
             ])
           })
         )}
@@ -705,13 +699,11 @@ const ReportByGroupTable = ({
               ],
             key: `OTHER-ASSISTANCE-MEASURE-${type}`
           })),
-          ...(showActions
-            ? report.actions.map((action) => ({
-                label: action.nameFi,
-                key: `ACTION-${action.value}`
-              }))
-            : []),
-          ...(showActions && featureFlags.assistanceActionOther
+          ...report.actions.map((action) => ({
+            label: action.nameFi,
+            key: `ACTION-${action.value}`
+          })),
+          ...(featureFlags.assistanceActionOther
             ? [
                 {
                   label:
@@ -721,14 +713,10 @@ const ReportByGroupTable = ({
                 }
               ]
             : []),
-          ...(showActions
-            ? [
-                {
-                  label: i18n.reports.assistanceNeedsAndActions.actionMissing,
-                  key: 'noActionCount'
-                }
-              ]
-            : [])
+          {
+            label: i18n.reports.assistanceNeedsAndActions.actionMissing,
+            key: 'noActionCount'
+          }
         ]}
         filename={filename}
       />
@@ -770,11 +758,10 @@ const ReportByGroupTable = ({
                 }
               </Th>
             ))}
-            {showActions &&
-              report.actions.map((action) => (
-                <Th key={action.value}>{action.nameFi}</Th>
-              ))}
-            {showActions && featureFlags.assistanceActionOther && (
+            {report.actions.map((action) => (
+              <Th key={action.value}>{action.nameFi}</Th>
+            ))}
+            {featureFlags.assistanceActionOther && (
               <Th>
                 {
                   i18n.childInformation.assistanceAction.fields.actionTypes
@@ -782,9 +769,7 @@ const ReportByGroupTable = ({
                 }
               </Th>
             )}
-            {showActions && (
-              <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
-            )}
+            <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -825,16 +810,15 @@ const ReportByGroupTable = ({
                       {data.otherAssistanceMeasureCounts[type] ?? 0}
                     </Td>
                   ))}
-                  {showActions &&
-                    report.actions.map((action) => (
-                      <Td key={action.value}>
-                        {data.actionCounts[action.value] ?? 0}
-                      </Td>
-                    ))}
-                  {showActions && featureFlags.assistanceActionOther && (
+                  {report.actions.map((action) => (
+                    <Td key={action.value}>
+                      {data.actionCounts[action.value] ?? 0}
+                    </Td>
+                  ))}
+                  {featureFlags.assistanceActionOther && (
                     <Td>{data.otherActionCount}</Td>
                   )}
-                  {showActions && <Td>{data.noActionCount}</Td>}
+                  <Td>{data.noActionCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -866,16 +850,15 @@ const ReportByGroupTable = ({
                         {row.otherAssistanceMeasureCounts[type] ?? 0}
                       </Td>
                     ))}
-                    {showActions &&
-                      report.actions.map((action) => (
-                        <Td key={action.value}>
-                          {row.actionCounts[action.value] ?? 0}
-                        </Td>
-                      ))}
-                    {showActions && featureFlags.assistanceActionOther && (
+                    {report.actions.map((action) => (
+                      <Td key={action.value}>
+                        {row.actionCounts[action.value] ?? 0}
+                      </Td>
+                    ))}
+                    {featureFlags.assistanceActionOther && (
                       <Td>{row.otherActionCount}</Td>
                     )}
-                    {showActions && <Td>{row.noActionCount}</Td>}
+                    <Td>{row.noActionCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -909,23 +892,20 @@ const ReportByGroupTable = ({
                 )}
               </Td>
             ))}
-            {showActions &&
-              report.actions.map((action) => (
-                <Td key={action.value}>
-                  {reducePropertySum(
-                    filteredRows,
-                    (r) => r.actionCounts[action.value] ?? 0
-                  )}
-                </Td>
-              ))}
-            {showActions && featureFlags.assistanceActionOther && (
+            {report.actions.map((action) => (
+              <Td key={action.value}>
+                {reducePropertySum(
+                  filteredRows,
+                  (r) => r.actionCounts[action.value] ?? 0
+                )}
+              </Td>
+            ))}
+            {featureFlags.assistanceActionOther && (
               <Td>
                 {reducePropertySum(filteredRows, (r) => r.otherActionCount)}
               </Td>
             )}
-            {showActions && (
-              <Td>{reducePropertySum(filteredRows, (r) => r.noActionCount)}</Td>
-            )}
+            <Td>{reducePropertySum(filteredRows, (r) => r.noActionCount)}</Td>
           </Tr>
         </TableFooter>
       </TableScrollable>
@@ -1072,6 +1052,10 @@ const ReportByChildTable = ({
             label: i18n.reports.common.groupName,
             key: 'groupName'
           },
+          {
+            label: i18n.reports.common.age,
+            key: 'childAge'
+          },
           ...selectedDaycareColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.daycareAssistanceLevel[
@@ -1121,6 +1105,7 @@ const ReportByChildTable = ({
               }
             </Th>
             <Th>{i18n.reports.common.groupName}</Th>
+            <Th>{i18n.reports.common.age}</Th>
             {selectedDaycareColumns.map((level) => (
               <Th key={level}>
                 {
@@ -1208,6 +1193,7 @@ const ReportByChildTable = ({
                       )}
                     </Td>
                     <Td>{row.groupName}</Td>
+                    <Td>{row.childAge}</Td>
                     {selectedDaycareColumns.map((level) => (
                       <Td key={level}>
                         {row.daycareAssistanceCounts[level] ?? 0}
@@ -1248,6 +1234,7 @@ const ReportByChildTable = ({
         <TableFooter>
           <Tr>
             <Td className="bold">{i18n.reports.common.total}</Td>
+            <Td />
             <Td />
             {selectedDaycareColumns.map((level) => (
               <Td key={level}>
