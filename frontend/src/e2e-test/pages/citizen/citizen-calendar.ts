@@ -27,6 +27,8 @@ export default class CitizenCalendarPage {
   )
   dayCell = (date: LocalDate) =>
     this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
+  monthlySummaryInfoButton = (year: number, month: number) =>
+    this.page.findByDataQa(`monthly-summary-info-button-${month}-${year}`)
   reservationModal = this.page.findByDataQa('reservation-modal')
 
   async openDayModal(date: LocalDate) {
@@ -98,6 +100,15 @@ export default class CitizenCalendarPage {
   async openDayView(date: LocalDate) {
     await this.dayCell(date).click()
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
+  }
+
+  async openMonthlySummary(year: number, month: number) {
+    await this.monthlySummaryInfoButton(year, month).click()
+    return new MonthlySummary(
+      this.page.findByDataQa(
+        `monthly-summary-info-container-${month}-${year}-text`
+      )
+    )
   }
 
   async assertHoliday(date: LocalDate) {
@@ -545,6 +556,11 @@ class AbsencesModal {
   getAbsenceTypeRequiredError() {
     return this.absenceTypeRequiredError
   }
+}
+
+class MonthlySummary extends Element {
+  title = this.findByDataQa('monthly-summary-info-title')
+  textElement = this.findByDataQa('monthly-summary-info-text')
 }
 
 class DayView extends Element {

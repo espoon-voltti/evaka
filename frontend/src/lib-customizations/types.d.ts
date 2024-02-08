@@ -212,6 +212,11 @@ interface BaseFeatureFlags {
    * These flags will either be dropped when features are deemed ready or promoted
    * to top-level flags (moved up, `?` removed).
    */
+
+  /**
+   * Display time usage info in citizen calendar views
+   */
+  timeUsageInfo?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

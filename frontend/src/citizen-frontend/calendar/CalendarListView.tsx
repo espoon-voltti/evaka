@@ -20,8 +20,8 @@ import { faPlus } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
+import MonthElem, { getSummaryForMonth, groupByMonth } from './MonthElem'
 import { getChildImages } from './RoundChildImages'
-import WeekElem from './WeekElem'
 
 export interface Props {
   childData: ReservationChild[]
@@ -43,22 +43,26 @@ export default React.memo(function CalendarListView({
   events
 }: Props) {
   const i18n = useTranslation()
-  const calendarWeeks = useMemo(() => groupByWeek(calendarDays), [calendarDays])
+  const months = useMemo(() => groupByMonth(calendarDays), [calendarDays])
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
   return (
     <>
       <FixedSpaceColumn spacing="zero">
-        {calendarWeeks.map((w) => (
-          <WeekElem
-            key={`${w.year}-${w.weekNumber}`}
-            weekNumber={w.weekNumber}
-            calendarDays={w.calendarDays}
+        {months.map((m, index) => (
+          <MonthElem
+            key={`month-${index}`}
+            calendarMonth={m}
             selectDate={selectDate}
             dayIsReservable={dayIsReservable}
             dayIsHolidayPeriod={dayIsHolidayPeriod}
             childImages={childImages}
             events={events}
+            childSummaries={getSummaryForMonth(
+              childData,
+              m.year,
+              m.monthNumber
+            )}
           />
         ))}
       </FixedSpaceColumn>
@@ -75,34 +79,12 @@ export default React.memo(function CalendarListView({
   )
 })
 
-export interface CalendarWeek {
-  year: number
-  weekNumber: number
-  calendarDays: ReservationResponseDay[]
-}
-
-export function groupByWeek(days: ReservationResponseDay[]): CalendarWeek[] {
-  const weeks: CalendarWeek[] = []
-  let currentWeek: CalendarWeek | undefined = undefined
-  days.forEach((d) => {
-    if (!currentWeek || currentWeek.weekNumber !== d.date.getIsoWeek()) {
-      currentWeek = {
-        year: d.date.year,
-        weekNumber: d.date.getIsoWeek(),
-        calendarDays: []
-      }
-      weeks.push(currentWeek)
-    }
-    currentWeek.calendarDays.push(d)
-  })
-  return weeks
-}
-
 const HoverButton = styled(Button)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};
   border-radius: 40px;
+  z-index: 2;
 `
 
 const Icon = styled(FontAwesomeIcon)`

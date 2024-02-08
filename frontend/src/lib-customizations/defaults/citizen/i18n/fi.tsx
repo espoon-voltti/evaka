@@ -412,6 +412,13 @@ export default {
     absentDisable: 'Merkitse läsnä olevaksi',
     validationErrors: {
       range: 'Yksikön aukiolo ylittyy'
+    },
+    monthSummary: {
+      title: 'Läsnäolot',
+      reserved: 'Suunnitelma',
+      usedService: 'Toteuma',
+      minutes: 'min',
+      hours: 'h'
     }
   },
   messages: {
