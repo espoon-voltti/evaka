@@ -712,7 +712,7 @@ export const fi = {
             'Erityinen tuki ja pidennetty oppivelvollisuus - kehitysvamma 2 (Koskeen)'
         },
         otherAssistanceMeasureType: {
-          TRANSPORT_BENEFIT: 'Kuljetusetu',
+          TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',
           ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
           ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta',
           CHILD_DISCUSSION_OFFERED: 'Lapset puheeksi tarjottu',
