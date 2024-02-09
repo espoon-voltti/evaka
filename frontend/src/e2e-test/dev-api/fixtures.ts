@@ -140,6 +140,13 @@ import {
   insertAbsenceFixture
 } from './index'
 
+export const uuidv4 = (): string =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0,
+      v = c == 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+
 export const fullDayTimeRange: TimeRange = {
   start: LocalTime.MIN,
   end: LocalTime.parse('23:59')
@@ -151,6 +158,7 @@ export const nonFullDayTimeRange: TimeRange = {
 }
 
 export const preschoolTermFixture2020: PreschoolTerm = {
+  id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -171,6 +179,7 @@ export const preschoolTermFixture2020: PreschoolTerm = {
 }
 
 export const preschoolTermFixture2021: PreschoolTerm = {
+  id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -191,6 +200,7 @@ export const preschoolTermFixture2021: PreschoolTerm = {
 }
 
 export const preschoolTermFixture2022: PreschoolTerm = {
+  id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2022, 8, 11),
     LocalDate.of(2023, 6, 2)
@@ -211,6 +221,7 @@ export const preschoolTermFixture2022: PreschoolTerm = {
 }
 
 export const preschoolTermFixture2023: PreschoolTerm = {
+  id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2023, 8, 11),
     LocalDate.of(2024, 6, 3)
@@ -1304,13 +1315,6 @@ export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
 export const nullUUID = '00000000-0000-0000-0000-000000000000'
 
 export const systemInternalUser = nullUUID
-
-export const uuidv4 = (): string =>
-  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0,
-      v = c == 'x' ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
 
 export const uniqueLabel = (l = 7): string =>
   Math.random().toString(36).substring(0, l)

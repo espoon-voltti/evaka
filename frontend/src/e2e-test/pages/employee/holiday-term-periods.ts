@@ -11,6 +11,18 @@ export class HolidayAndTermPeriodsPage {
     return this.page.findAllByDataQa('holiday-period').allTexts()
   }
 
+  get visiblePreschoolTermPeriods(): Promise<string[]> {
+    return this.page.findAllByDataQa('finnish-preschool').allTexts()
+  }
+
+  get visibleExtendedTermStartDates(): Promise<string[]> {
+    return this.page.findAllByDataQa('extended-term-start').allTexts()
+  }
+
+  get visibleApplicationPeriodStartDates(): Promise<string[]> {
+    return this.page.findAllByDataQa('application-period-start').allTexts()
+  }
+
   #periodRows = this.page.findAllByDataQa('holiday-period-row')
   #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
 
@@ -31,6 +43,10 @@ export class HolidayAndTermPeriodsPage {
 
   async clickAddQuestionnaireButton() {
     return this.page.findByDataQa('add-questionnaire-button').click()
+  }
+
+  async clickAddPreschoolTermButton() {
+    return this.page.findByDataQa('add-preschool-term-button').click()
   }
 
   #periodInputs = {
@@ -111,6 +127,34 @@ export class HolidayAndTermPeriodsPage {
         }
       }
     }
+  }
+
+  async fillPreschoolTermForm(params: {
+    finnishPreschoolStart?: string
+    finnishPreschoolEnd?: string
+    extendedTermStart?: string
+    applicationPeriodStart?: string
+  }) {
+    for (const [key, val] of Object.entries(params)) {
+      if (val !== undefined) {
+        await this.#preschoolTermInputs[key as keyof typeof params].fill(val)
+      }
+    }
+  }
+
+  #preschoolTermInputs = {
+    finnishPreschoolStart: new DatePicker(
+      this.page.findByDataQa('finnish-preschool').findAll('input').first()
+    ),
+    finnishPreschoolEnd: new DatePicker(
+      this.page.findByDataQa('finnish-preschool').findAll('input').last()
+    ),
+    extendedTermStart: new DatePicker(
+      this.page.findByDataQa('input-extended-term-start')
+    ),
+    applicationPeriodStart: new DatePicker(
+      this.page.findByDataQa('input-application-period-start')
+    )
   }
 
   async submit() {

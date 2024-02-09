@@ -30,7 +30,7 @@ beforeEach(async () => {
   holidayAndTermPeriodsPage = new HolidayAndTermPeriodsPage(page)
 })
 
-describe('Holiday periods page', () => {
+describe('Holiday and term periods page', () => {
   beforeEach(async () => {
     await new EmployeeNav(page).openAndClickDropdownMenuItem('holiday-periods')
   })
@@ -118,6 +118,51 @@ describe('Holiday periods page', () => {
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visibleQuestionnaires,
       []
+    )
+  })
+
+  test('Preschool terms can be created', async () => {
+    await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
+    await holidayAndTermPeriodsPage.fillPreschoolTermForm({
+      finnishPreschoolStart: '01.08.2024',
+      finnishPreschoolEnd: '30.05.2025',
+      extendedTermStart: '01.07.2024',
+      applicationPeriodStart: '01.06.2024'
+    })
+    await holidayAndTermPeriodsPage.submit()
+
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
+      ['01.08.2024 - 30.05.2025']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
+      ['01.07.2024']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
+      ['01.06.2024']
+    )
+
+    await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
+    await holidayAndTermPeriodsPage.fillPreschoolTermForm({
+      finnishPreschoolStart: '01.08.2025',
+      finnishPreschoolEnd: '30.05.2026',
+      extendedTermStart: '01.07.2025',
+      applicationPeriodStart: '01.06.2025'
+    })
+    await holidayAndTermPeriodsPage.submit()
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
+      ['01.08.2025 - 30.05.2026', '01.08.2024 - 30.05.2025']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
+      ['01.07.2025', '01.07.2024']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
+      ['01.06.2025', '01.06.2024']
     )
   })
 })
