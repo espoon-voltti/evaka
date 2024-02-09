@@ -1367,7 +1367,11 @@ class AttendanceReservationsControllerIntegrationTest :
 
             val previousFriday = mon.minusDays(3)
             it.insertPreschoolTerm(
-                preschoolTerm2020.copy(termBreaks = DateSet.of(FiniteDateRange(mon, tue)))
+                preschoolTerm2020.finnishPreschool,
+                preschoolTerm2020.swedishPreschool,
+                preschoolTerm2020.extendedTerm,
+                preschoolTerm2020.applicationPeriod,
+                DateSet.of(FiniteDateRange(mon, tue))
             )
 
             it.insertTestHoliday(previousFriday)

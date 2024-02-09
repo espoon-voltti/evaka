@@ -8,11 +8,13 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -231,6 +233,7 @@ class AbsenceCalculatorTests {
             preschoolTerms =
                 listOf(
                     PreschoolTerm(
+                        id = PreschoolTermId(UUID.randomUUID()),
                         finnishPreschool =
                             FiniteDateRange(LocalDate.of(2023, 8, 15), LocalDate.of(2024, 5, 31)),
                         swedishPreschool =
