@@ -4,17 +4,21 @@
 
 package evaka.codegen.api
 
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.functions
+import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.typeOf
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner
 import org.springframework.core.MethodParameter
 import org.springframework.core.env.StandardEnvironment
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.web.bind.annotation.PathVariable
@@ -50,12 +54,14 @@ fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> =
 data class EndpointMetadata(
     val controllerClass: KClass<*>,
     val controllerMethod: String,
+    val isJsonEndpoint: Boolean,
     val path: String,
     val httpMethod: RequestMethod,
     val pathVariables: List<NamedParameter>,
     val requestParameters: List<NamedParameter>,
     val requestBodyType: KType?,
-    val responseBodyType: KType?
+    val responseBodyType: KType?,
+    val authenticatedUserType: KType?,
 ) {
     fun types(): Sequence<KType> =
         pathVariables.asSequence().map { it.type } +
@@ -110,6 +116,10 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
         .flatMap { (info, method) ->
             val controllerClass = method.beanType.kotlin
             val kotlinMethod = controllerClass.functions.find { it.javaMethod == method.method }!!
+            val authenticatedUserType =
+                kotlinMethod.parameters
+                    .singleOrNull { it.type.isSubtypeOf(typeOf<AuthenticatedUser>()) }
+                    ?.type
             val pathVariables =
                 method.methodParameters
                     .filter { pathSupport.supportsParameter(it) }
@@ -134,18 +144,27 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                 } else null
             val paths = info.patternValues
             val methods = info.methodsCondition.methods
+            val consumesJson =
+                info.consumesCondition.isEmpty ||
+                    info.consumesCondition.consumableMediaTypes.contains(MediaType.APPLICATION_JSON)
+            val producesJson =
+                info.producesCondition.isEmpty ||
+                    info.producesCondition.producibleMediaTypes.contains(MediaType.APPLICATION_JSON)
             paths
                 .flatMap { path -> methods.map { method -> Pair(path, method) } }
                 .map { (path, method) ->
                     EndpointMetadata(
                         controllerClass = controllerClass,
                         controllerMethod = kotlinMethod.name,
+                        isJsonEndpoint =
+                            consumesJson && producesJson && responseBodyType != typeOf<Any>(),
                         path = path,
                         httpMethod = method,
                         pathVariables = pathVariables,
                         requestParameters = requestParameters,
                         requestBodyType = requestBodyType,
-                        responseBodyType = responseBodyType
+                        responseBodyType = responseBodyType,
+                        authenticatedUserType = authenticatedUserType,
                     )
                 }
         }

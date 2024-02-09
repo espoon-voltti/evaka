@@ -12,7 +12,10 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 fun generateApiFiles(): Map<TsFile, String> {
-    val endpoints = scanEndpoints("fi.espoo.evaka")
+    val endpoints =
+        scanEndpoints("fi.espoo.evaka")
+            .filter { it.isJsonEndpoint }
+            .filterNot { it.path.startsWith("/integration") }
     endpoints.forEach { it.validate() }
 
     val metadata =
