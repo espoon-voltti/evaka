@@ -22,6 +22,8 @@ class TsCodeGeneratorTest {
         }
     }
 
+    data class ObjectLiteral(val str: String, val list: List<String>?, val bool: Boolean)
+
     @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
     @JsonTypeIdResolver(SealedSubclassSimpleName::class)
     sealed interface SealedInterface {
@@ -34,29 +36,63 @@ class TsCodeGeneratorTest {
         }
     }
 
-    private fun singleFileGenerator(vararg rootTypes: KType): TsCodeGenerator {
-        return object : TsCodeGenerator(discoverMetadata(defaultMetadata, rootTypes.asSequence())) {
+    private fun metadata(vararg rootTypes: KType): TypeMetadata =
+        discoverMetadata(defaultMetadata, rootTypes.asSequence())
+
+    private fun singleFileGenerator(metadata: TypeMetadata): TsCodeGenerator =
+        object : TsCodeGenerator(metadata) {
             override fun locateNamedType(namedType: TsNamedType<*>): TsFile = dummyFile
         }
-    }
 
     @Test
     fun `code for types is generated correctly`() {
-        val generator = singleFileGenerator(typeOf<PlainObject>(), typeOf<SealedInterface>())
-        fun assertTsCode(text: String, vararg imports: TsImport, type: KType) {
-            assertEquals(TsCode(text, *imports), generator.tsType(type))
+        val generator =
+            singleFileGenerator(
+                metadata(typeOf<PlainObject>(), typeOf<SealedInterface>()) +
+                    TypeMetadata(ObjectLiteral::class to TsObjectLiteral(ObjectLiteral::class))
+            )
+        fun assertTsCode(
+            text: String,
+            vararg imports: TsImport,
+            type: KType,
+            compact: Boolean = false
+        ) {
+            assertEquals(TsCode(text, *imports), generator.tsType(type, compact = compact))
         }
 
         assertTsCode("string", type = typeOf<String>())
         assertTsCode("string | null", type = typeOf<String?>())
         assertTsCode("PlainObject", PlainObject.import, type = typeOf<PlainObject>())
         assertTsCode("SealedInterface", SealedInterface.import, type = typeOf<SealedInterface>())
+        assertTsCode(
+            "{ bool: boolean, list: string[] | null, str: string }",
+            type = typeOf<ObjectLiteral>(),
+            compact = true
+        )
+        assertTsCode(
+            """{
+  bool: boolean,
+  list: string[] | null,
+  str: string
+}"""
+                .trimIndent(),
+            type = typeOf<ObjectLiteral>()
+        )
 
         assertTsCode("string[]", type = typeOf<List<String>>())
         assertTsCode("(string | null)[]", type = typeOf<List<String?>>())
         assertTsCode("(string | null)[] | null", type = typeOf<List<String?>?>())
         assertTsCode("LocalDate[]", Imports.localDate, type = typeOf<List<LocalDate>>())
         assertTsCode("PlainObject[]", PlainObject.import, type = typeOf<List<PlainObject>>())
+        assertTsCode(
+            """({
+  bool: boolean,
+  list: string[] | null,
+  str: string
+} | null)[]"""
+                .trimIndent(),
+            type = typeOf<List<ObjectLiteral?>>()
+        )
 
         assertTsCode("Record<string, number>", type = typeOf<Map<String, Int>>())
         assertTsCode("Record<string, number | null>", type = typeOf<Map<String, Int?>>())
@@ -70,11 +106,21 @@ class TsCodeGeneratorTest {
             PlainObject.import,
             type = typeOf<Map<String, PlainObject>>()
         )
+        assertTsCode(
+            """Record<string, {
+  bool: boolean,
+  list: string[] | null,
+  str: string
+} | null>"""
+                .trimIndent(),
+            type = typeOf<Map<String, ObjectLiteral?>>()
+        )
     }
 
     @Test
     fun `declarations for named types are generated correctly`() {
-        val generator = singleFileGenerator(typeOf<PlainObject>(), typeOf<SealedInterface>())
+        val generator =
+            singleFileGenerator(metadata(typeOf<PlainObject>(), typeOf<SealedInterface>()))
         fun assertTsCode(text: String, vararg imports: TsImport, type: KType) {
             assertEquals(
                 TsCode(text.trimIndent(), *imports),

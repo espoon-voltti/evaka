@@ -69,6 +69,9 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
     operator fun plus(other: TsCode): TsCode =
         TsCode(this.text + other.text, this.imports + other.imports)
 
+    fun prependIndent(indent: String): TsCode =
+        if (text.isEmpty()) this else copy(text = text.prependIndent(indent))
+
     companion object {
         operator fun invoke(f: Builder.() -> TsCode): TsCode = Builder().run { f(this) }
 

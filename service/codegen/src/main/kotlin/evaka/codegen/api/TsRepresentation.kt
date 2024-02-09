@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.ForceCodeGenType
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.createType
@@ -76,19 +77,7 @@ data class TsPlainObject(
     ) : this(
         clazz,
         clazz.simpleName ?: error("no class name: $clazz"),
-        clazz.declaredMemberProperties
-            .filterNot {
-                (it.findAnnotation<JsonIgnore>() ?: it.getter.findAnnotation<JsonIgnore>())
-                    ?.value == true
-            }
-            .associate { prop ->
-                prop.name to
-                    (prop.javaField
-                        ?.getAnnotation(ForceCodeGenType::class.java)
-                        ?.type
-                        ?.createType(nullable = prop.returnType.isMarkedNullable)
-                        ?: prop.returnType)
-            }
+        collectProperties(clazz.declaredMemberProperties)
     )
 
     fun applyTypeArguments(arguments: List<KTypeProjection>): Map<String, KType> {
@@ -108,6 +97,11 @@ data class TsPlainObject(
         }
         return typeArgs.map { it.type }
     }
+}
+
+/** An anonymous TS object literal, e.g. { a: string, b: number } */
+data class TsObjectLiteral(val properties: Map<String, KType>) : TsRepresentation<Nothing> {
+    constructor(clazz: KClass<*>) : this(collectProperties(clazz.declaredMemberProperties))
 }
 
 /** Sealed class, represented as a union of several variants */
@@ -153,3 +147,17 @@ data class TsType(
     val isNullable: Boolean,
     val typeArguments: List<KTypeProjection>
 )
+
+private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, KType> =
+    props
+        .filterNot {
+            (it.findAnnotation<JsonIgnore>() ?: it.getter.findAnnotation<JsonIgnore>())?.value ==
+                true
+        }
+        .associate { prop ->
+            prop.name to
+                (prop.javaField
+                    ?.getAnnotation(ForceCodeGenType::class.java)
+                    ?.type
+                    ?.createType(nullable = prop.returnType.isMarkedNullable) ?: prop.returnType)
+        }

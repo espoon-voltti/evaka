@@ -93,6 +93,7 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
                 require(arguments.size == 2) { "Expected 2 type arguments, got $this" }
                 discoverTypeParameters()
             }
+            is TsObjectLiteral -> tsRepr.properties.values.forEach { it.discover() }
             is Excluded,
             is TsPlain,
             is TsExternalTypeRef -> {}
