@@ -71,8 +71,11 @@ export default React.memo(function TermsSection() {
                   </Td>
                   <Td data-qa="term-breaks">
                     <Ul>
-                      {row.termBreaks.map((termBreak) => (
-                        <li key={termBreak.start.format('dd.MM.yyyy')}>
+                      {row.termBreaks.map((termBreak, i) => (
+                        <li
+                          data-qa={`term-break-${termBreak.start.formatIso()}`}
+                          key={`term-break-${i}`}
+                        >
                           {termBreak.formatCompact()}
                         </li>
                       ))}

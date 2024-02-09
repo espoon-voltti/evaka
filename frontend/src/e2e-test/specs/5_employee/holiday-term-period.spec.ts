@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
@@ -123,11 +124,21 @@ describe('Holiday and term periods page', () => {
 
   test('Preschool terms can be created', async () => {
     await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
+
+    const firstTermBreaks = [
+      new FiniteDateRange(
+        LocalDate.of(2024, 12, 23),
+        LocalDate.of(2024, 12, 27)
+      ),
+      new FiniteDateRange(LocalDate.of(2025, 2, 1), LocalDate.of(2025, 2, 10))
+    ]
+
     await holidayAndTermPeriodsPage.fillPreschoolTermForm({
       finnishPreschoolStart: '01.08.2024',
       finnishPreschoolEnd: '30.05.2025',
       extendedTermStart: '01.07.2024',
-      applicationPeriodStart: '01.06.2024'
+      applicationPeriodStart: '01.06.2024',
+      termBreaks: firstTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
 
@@ -144,12 +155,28 @@ describe('Holiday and term periods page', () => {
       ['01.06.2024']
     )
 
+    for (const tb of firstTermBreaks) {
+      await waitUntilEqual(
+        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
+        [tb.formatCompact()]
+      )
+    }
+
     await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
+
+    const secondTermBreaks = [
+      new FiniteDateRange(
+        LocalDate.of(2025, 12, 23),
+        LocalDate.of(2025, 12, 27)
+      ),
+      new FiniteDateRange(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 10))
+    ]
     await holidayAndTermPeriodsPage.fillPreschoolTermForm({
       finnishPreschoolStart: '01.08.2025',
       finnishPreschoolEnd: '30.05.2026',
       extendedTermStart: '01.07.2025',
-      applicationPeriodStart: '01.06.2025'
+      applicationPeriodStart: '01.06.2025',
+      termBreaks: secondTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
     await waitUntilEqual(
@@ -164,5 +191,12 @@ describe('Holiday and term periods page', () => {
       () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
       ['01.06.2025', '01.06.2024']
     )
+
+    for (const tb of secondTermBreaks) {
+      await waitUntilEqual(
+        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
+        [tb.formatCompact()]
+      )
+    }
   })
 })
