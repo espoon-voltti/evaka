@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var termsController: TermsController
 
-    private val today = LocalDate.of(2021, 1, 12)
+    private val today = LocalDate.of(2024, 1, 12)
     private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
     private val adminUser =
         AuthenticatedUser.Employee(
