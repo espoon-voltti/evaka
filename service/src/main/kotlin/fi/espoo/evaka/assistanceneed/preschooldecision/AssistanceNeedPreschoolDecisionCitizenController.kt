@@ -120,7 +120,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
     }
 
     @GetMapping("/children/assistance-need-preschool-decisions/unread-counts")
-    fun getAssistanceNeedDecisionUnreadCount(
+    fun getAssistanceNeedPreschoolDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
