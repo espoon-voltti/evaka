@@ -1489,7 +1489,17 @@ RETURNING id
 
     @PostMapping("/preschool-term")
     fun createPreschoolTerm(db: Database, @RequestBody body: PreschoolTerm) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.insertPreschoolTerm(body) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.insertPreschoolTerm(
+                    body.finnishPreschool,
+                    body.swedishPreschool,
+                    body.extendedTerm,
+                    body.applicationPeriod,
+                    body.termBreaks
+                )
+            }
+        }
     }
 
     @Suppress("EmailMessageType", "ktlint:standard:enum-entry-name-case")

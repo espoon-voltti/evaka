@@ -364,6 +364,18 @@ export interface PreschoolTerm {
   applicationPeriod: FiniteDateRange
   extendedTerm: FiniteDateRange
   finnishPreschool: FiniteDateRange
+  id: UUID
+  swedishPreschool: FiniteDateRange
+  termBreaks: FiniteDateRange[]
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.PreschoolTermRequest
+*/
+export interface PreschoolTermRequest {
+  applicationPeriod: FiniteDateRange
+  extendedTerm: FiniteDateRange
+  finnishPreschool: FiniteDateRange
   swedishPreschool: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -656,6 +668,18 @@ export function deserializeJsonGroupUpdateRequest(json: JsonOf<GroupUpdateReques
 
 
 export function deserializeJsonPreschoolTerm(json: JsonOf<PreschoolTerm>): PreschoolTerm {
+  return {
+    ...json,
+    applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
+    extendedTerm: FiniteDateRange.parseJson(json.extendedTerm),
+    finnishPreschool: FiniteDateRange.parseJson(json.finnishPreschool),
+    swedishPreschool: FiniteDateRange.parseJson(json.swedishPreschool),
+    termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonPreschoolTermRequest(json: JsonOf<PreschoolTermRequest>): PreschoolTermRequest {
   return {
     ...json,
     applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),

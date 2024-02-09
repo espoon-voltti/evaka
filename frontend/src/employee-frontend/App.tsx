@@ -53,6 +53,7 @@ import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import HolidayAndTermPeriodsPage from './components/holiday-term-periods/HolidayAndTermPeriodsPage'
 import HolidayPeriodEditor from './components/holiday-term-periods/HolidayPeriodEditor'
 import QuestionnaireEditor from './components/holiday-term-periods/QuestionnaireEditor'
+import TermPeriodEditor from './components/holiday-term-periods/TermPeriodEditor'
 import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
@@ -875,6 +876,22 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="holidayQuestionnaire">
               <QuestionnaireEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/holiday-periods/preschool-term/new',
+          element: (
+            <EmployeeRoute title="preschoolTerm">
+              <TermPeriodEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/holiday-periods/preschool-term/edit/:preschoolTermId',
+          element: (
+            <EmployeeRoute title="preschoolTerm">
+              <TermPeriodEditor />
             </EmployeeRoute>
           )
         },

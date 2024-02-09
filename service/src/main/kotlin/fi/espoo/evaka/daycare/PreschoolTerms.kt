@@ -5,12 +5,14 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
 data class PreschoolTerm(
+    val id: PreschoolTermId,
     /*The period during which finnish speaking preschool is arranged.*/
     val finnishPreschool: FiniteDateRange,
     /*The period during which swedish speaking preschool is arranged.*/
@@ -42,6 +44,7 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
     return createQuery(
             """
         SELECT
+            id,
             finnish_preschool,
             swedish_preschool,
             extended_term,
@@ -59,8 +62,14 @@ fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
     return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
 }
 
-fun Database.Transaction.insertPreschoolTerm(term: PreschoolTerm) {
-    createUpdate(
+fun Database.Transaction.insertPreschoolTerm(
+    finnishPreschool: FiniteDateRange,
+    swedishPreschool: FiniteDateRange,
+    extendedTerm: FiniteDateRange,
+    applicationPeriod: FiniteDateRange,
+    termBreaks: DateSet
+): PreschoolTermId {
+    return createUpdate(
             """
         INSERT INTO preschool_term (
             finnish_preschool,
@@ -75,9 +84,15 @@ fun Database.Transaction.insertPreschoolTerm(term: PreschoolTerm) {
             :applicationPeriod,
             :termBreaks
         )
+        RETURNING id
         """
                 .trimIndent()
         )
-        .bindKotlin(term)
-        .execute()
+        .bind("finnishPreschool", finnishPreschool)
+        .bind("swedishPreschool", swedishPreschool)
+        .bind("extendedTerm", extendedTerm)
+        .bind("applicationPeriod", applicationPeriod)
+        .bind("termBreaks", termBreaks)
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<PreschoolTermId>()
 }
