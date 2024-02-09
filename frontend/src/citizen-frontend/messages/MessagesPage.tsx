@@ -135,7 +135,7 @@ export default React.memo(function MessagesPage() {
                   <MessageEditor
                     children_={children}
                     receiverOptions={receiverOptions}
-                    onSend={sendMessage}
+                    onSend={(body) => sendMessage({ body })}
                     onSuccess={() => {
                       changeEditorVisibility(false)
                     }}

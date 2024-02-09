@@ -114,7 +114,7 @@ export default React.memo(function ChildApplicationsBlock({
       icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
       resolve: {
         action: () => {
-          removeUnprocessedApplication(applicationId)
+          removeUnprocessedApplication({ applicationId })
             .catch(() => {
               setErrorMessage({
                 title: t.applications.deleteUnprocessedApplicationError,

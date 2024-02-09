@@ -74,7 +74,7 @@ export default React.memo(function MapView() {
   const [providerTypes, setProviderTypes] = useState<ProviderType[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
-  const allUnits = useQueryResult(unitsQuery(careType))
+  const allUnits = useQueryResult(unitsQuery({ applicationType: careType }))
 
   const filteredUnits = useMemo(
     () =>

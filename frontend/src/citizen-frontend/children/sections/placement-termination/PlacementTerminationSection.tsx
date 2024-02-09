@@ -9,6 +9,7 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
+import { wrapResult } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -16,14 +17,17 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { P } from 'lib-components/typography'
 import { faLockAlt } from 'lib-icons'
 
+import { getPlacements } from '../../../generated/api-clients/placement'
+
 import NonTerminatablePlacement from './NonTerminatablePlacement'
 import PlacementTerminationForm from './PlacementTerminationForm'
 import TerminatedPlacements from './TerminatedPlacements'
-import { getPlacements } from './api'
 
 interface PlacementTerminationProps {
   childId: UUID
 }
+
+const getPlacementsResult = wrapResult(getPlacements)
 
 export default React.memo(function PlacementTerminationSection({
   childId
@@ -52,7 +56,7 @@ const PlacementTerminationContent = React.memo(
   function PlacementTerminationContent({ childId }: PlacementTerminationProps) {
     const t = useTranslation()
     const [placementsResponse, refreshPlacements] = useApiState(
-      () => getPlacements(childId),
+      () => getPlacementsResult({ childId }),
       [childId]
     )
 

@@ -38,7 +38,10 @@ interface EditorState {
 
 function useInitialEditorState(id: UUID | undefined): Result<EditorState> {
   const incomeStatement = useQueryResult(
-    queryOrDefault(incomeStatementQuery, null)(id)
+    queryOrDefault(
+      incomeStatementQuery,
+      null
+    )(id ? { incomeStatementId: id } : undefined)
   )
   const startDates = useQueryResult(incomeStatementStartDatesQuery())
 
@@ -100,9 +103,12 @@ export default React.memo(function IncomeStatementEditor() {
       const validatedData = formData ? fromBody('adult', formData) : undefined
       if (validatedData) {
         if (id) {
-          return updateIncomeStatement({ id, body: validatedData })
+          return updateIncomeStatement({
+            incomeStatementId: id,
+            body: validatedData
+          })
         } else {
-          return createIncomeStatement(validatedData)
+          return createIncomeStatement({ body: validatedData })
         }
       } else {
         setShowFormErrors(true)

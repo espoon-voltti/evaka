@@ -56,14 +56,14 @@ export default React.memo(function ApplicationCreation() {
   )
   const [selectedType, setSelectedType] = useState<ApplicationType>()
 
-  const { data: duplicates } = useQuery(duplicateApplicationsQuery(childId))
+  const { data: duplicates } = useQuery(duplicateApplicationsQuery({ childId }))
   const duplicateExists =
     selectedType !== undefined &&
     duplicates !== undefined &&
     duplicates[selectedType]
 
   const { data: transferApplicationTypes } = useQuery(
-    activePlacementsByApplicationTypeQuery(childId)
+    activePlacementsByApplicationTypeQuery({ childId })
   )
   const shouldUseTransferApplication =
     (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&
@@ -166,7 +166,7 @@ export default React.memo(function ApplicationCreation() {
                 mutation={createApplicationMutation}
                 onClick={() =>
                   selectedType !== undefined
-                    ? { childId, type: selectedType }
+                    ? { body: { childId, type: selectedType } }
                     : cancelMutation
                 }
                 onSuccess={(id) => navigate(`/applications/${id}/edit`)}

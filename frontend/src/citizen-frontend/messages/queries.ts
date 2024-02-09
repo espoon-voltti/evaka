@@ -4,18 +4,17 @@
 
 import { mutation, pagedInfiniteQuery, query } from 'lib-common/query'
 
-import { createQueryKeys } from '../query'
-
 import {
   archiveThread,
-  getMessageAccount,
+  getMyAccount,
   getReceivedMessages,
   getReceivers,
-  getUnreadMessagesCount,
+  getUnreadMessages,
   markThreadRead,
-  replyToThread,
-  sendMessage
-} from './api'
+  newMessage,
+  replyToThread
+} from '../generated/api-clients/messaging'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('messages', {
   receivedMessages: () => ['receivedMessages'],
@@ -26,7 +25,7 @@ const queryKeys = createQueryKeys('messages', {
 
 export const receivedMessagesQuery = pagedInfiniteQuery({
   api: (pageSize: number) => (page: number) =>
-    getReceivedMessages(page, pageSize),
+    getReceivedMessages({ page, pageSize }),
   queryKey: queryKeys.receivedMessages,
   id: (thread) => thread.id
 })
@@ -37,12 +36,12 @@ export const receiversQuery = query({
 })
 
 export const messageAccountQuery = query({
-  api: getMessageAccount,
+  api: getMyAccount,
   queryKey: queryKeys.messageAccount
 })
 
 export const unreadMessagesCountQuery = query({
-  api: getUnreadMessagesCount,
+  api: getUnreadMessages,
   queryKey: queryKeys.unreadMessagesCount
 })
 
@@ -52,7 +51,7 @@ export const markThreadReadMutation = mutation({
 })
 
 export const sendMessageMutation = mutation({
-  api: sendMessage,
+  api: newMessage,
   invalidateQueryKeys: () => [queryKeys.receivedMessages()]
 })
 

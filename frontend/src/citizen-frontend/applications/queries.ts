@@ -3,30 +3,31 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../query'
-
 import {
-  ApplicationUnitType,
   createApplication,
-  getActivePlacementsByApplicationType,
+  deleteOrCancelUnprocessedApplication,
   getApplication,
   getApplicationChildren,
-  getApplicationUnits,
-  getClubTerms,
-  getDuplicateApplications,
+  getChildDuplicateApplications,
+  getChildPlacementStatusByApplicationType,
   getGuardianApplications,
-  getPreschoolTerms,
-  getServiceNeedOptionPublicInfos,
-  removeUnprocessedApplication,
-  saveApplicationDraft,
+  saveApplicationAsDraft,
   sendApplication,
   updateApplication
-} from './api'
+} from '../generated/api-clients/application'
+import {
+  getApplicationUnits,
+  getClubTerms,
+  getPreschoolTerms
+} from '../generated/api-clients/daycare'
+import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('applications', {
   units: (
@@ -75,7 +76,11 @@ export const applicationUnitsQuery = query({
             ? 'PREPARATORY'
             : 'PRESCHOOL'
     return preferredStartDate
-      ? getApplicationUnits(unitType, preferredStartDate, shiftCare)
+      ? getApplicationUnits({
+          type: unitType,
+          date: preferredStartDate,
+          shiftCare
+        })
       : Promise.resolve([])
   },
   queryKey: queryKeys.units
@@ -83,7 +88,7 @@ export const applicationUnitsQuery = query({
 
 export const applicationQuery = query({
   api: getApplication,
-  queryKey: queryKeys.application
+  queryKey: ({ applicationId }) => queryKeys.application(applicationId)
 })
 
 export const guardianApplicationsQuery = query({
@@ -97,13 +102,14 @@ export const applicationChildrenQuery = query({
 })
 
 export const duplicateApplicationsQuery = query({
-  api: getDuplicateApplications,
-  queryKey: queryKeys.duplicates
+  api: getChildDuplicateApplications,
+  queryKey: ({ childId }) => queryKeys.duplicates(childId)
 })
 
 export const activePlacementsByApplicationTypeQuery = query({
-  api: getActivePlacementsByApplicationType,
-  queryKey: queryKeys.activePlacementsByApplicationType
+  api: getChildPlacementStatusByApplicationType,
+  queryKey: ({ childId }) =>
+    queryKeys.activePlacementsByApplicationType(childId)
 })
 
 export const preschoolTermsQuery = query({
@@ -118,7 +124,8 @@ export const clubTermsQuery = query({
 
 export const serviceNeedOptionPublicInfosQuery = query({
   api: getServiceNeedOptionPublicInfos,
-  queryKey: queryKeys.serviceNeedOptionPublicInfos
+  queryKey: ({ placementTypes }) =>
+    queryKeys.serviceNeedOptionPublicInfos(placementTypes)
 })
 
 export const createApplicationMutation = mutation({
@@ -128,19 +135,19 @@ export const createApplicationMutation = mutation({
 export const updateApplicationMutation = mutation({
   api: updateApplication,
   invalidateQueryKeys: ({ applicationId }) => [
-    applicationQuery(applicationId).queryKey
+    applicationQuery({ applicationId }).queryKey
   ]
 })
 
 export const saveApplicationDraftMutation = mutation({
-  api: saveApplicationDraft,
+  api: saveApplicationAsDraft,
   invalidateQueryKeys: ({ applicationId }) => [
-    applicationQuery(applicationId).queryKey
+    applicationQuery({ applicationId }).queryKey
   ]
 })
 
 export const removeUnprocessableApplicationMutation = mutation({
-  api: removeUnprocessedApplication,
+  api: deleteOrCancelUnprocessedApplication,
   invalidateQueryKeys: () => [guardianApplicationsQuery().queryKey]
 })
 

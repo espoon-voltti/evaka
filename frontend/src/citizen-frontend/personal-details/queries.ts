@@ -4,13 +4,12 @@
 
 import { mutation, query } from 'lib-common/query'
 
-import { createQueryKeys } from '../query'
-
 import {
   getNotificationSettings,
   updateNotificationSettings,
   updatePersonalData
-} from './api'
+} from '../generated/api-clients/pis'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('personalDetails', {
   notificationSettings: () => ['notificationSettings']

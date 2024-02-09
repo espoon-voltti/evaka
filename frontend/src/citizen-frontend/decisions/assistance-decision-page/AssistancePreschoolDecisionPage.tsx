@@ -27,7 +27,7 @@ import {
 export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
   const { id } = useRouteParams(['id'])
 
-  const decision = useQueryResult(assistanceNeedPreschoolDecisionQuery(id))
+  const decision = useQueryResult(assistanceNeedPreschoolDecisionQuery({ id }))
   const i18n = useTranslation()
 
   const { mutate: markAssistanceNeedDecisionAsRead } = useMutationResult(
@@ -35,7 +35,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
   )
 
   useEffect(() => {
-    markAssistanceNeedDecisionAsRead(id)
+    markAssistanceNeedDecisionAsRead({ id })
   }, [id, markAssistanceNeedDecisionAsRead])
 
   return (

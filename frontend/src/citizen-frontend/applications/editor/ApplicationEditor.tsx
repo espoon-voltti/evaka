@@ -8,14 +8,16 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import {
   apiDataToFormData,
   ApplicationFormData,
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CitizenChildren } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationDetails as ApplicationDetailsGen,
+  CitizenChildren
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -61,12 +63,12 @@ import {
 } from './validations'
 
 type ApplicationEditorContentProps = {
-  application: ApplicationDetails
+  application: ApplicationDetailsGen
   citizenChildren: CitizenChildren[]
 }
 
 export type ApplicationFormProps = {
-  application: ApplicationDetails
+  application: ApplicationDetailsGen
   formData: ApplicationFormData
   setFormData: (
     update: (old: ApplicationFormData) => ApplicationFormData
@@ -210,7 +212,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
-      .then(() => sendApplication(application.id))
+      .then(() => sendApplication({ applicationId: application.id }))
       .then(() => {
         setInfoMessage({
           title: t.applications.editor.sentInfo.title,
@@ -469,7 +471,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useRouteParams(['applicationId'])
   const t = useTranslation()
-  const application = useQueryResult(applicationQuery(applicationId))
+  const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())
 
   useTitle(

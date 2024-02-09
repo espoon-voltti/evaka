@@ -285,7 +285,7 @@ export default React.memo(function AbsenceModal({
                     useShowAllErrors.on()
                     return cancelMutation
                   }
-                  return form.value()
+                  return { body: form.value() }
                 }}
                 onSuccess={close}
                 data-qa="modal-okBtn"

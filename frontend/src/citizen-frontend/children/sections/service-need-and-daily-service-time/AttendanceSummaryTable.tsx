@@ -6,12 +6,12 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { Result, combine } from 'lib-common/api'
+import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceSummary } from 'lib-common/generated/api-types/children'
 import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { useQuery } from 'lib-common/query'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -46,8 +46,8 @@ export default React.memo(function AttendanceSummaryTable({
       ),
     [attendanceSummaryDate]
   )
-  const { data: attendanceSummaryResponse } = useQuery(
-    attendanceSummaryQuery(childId, attendanceSummaryDate)
+  const attendanceSummaryResponse = useQueryResult(
+    attendanceSummaryQuery({ childId, yearMonth: attendanceSummaryDate })
   )
 
   return (

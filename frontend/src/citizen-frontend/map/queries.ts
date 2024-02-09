@@ -7,11 +7,11 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { query } from 'lib-common/query'
 
+import { getAllApplicableUnits } from '../generated/api-clients/daycare'
 import { createQueryKeys } from '../query'
 
 import { MapAddress } from './MapView'
 import {
-  fetchUnits,
   fetchDistance,
   autocompleteAddress,
   fetchUnitsWithDistances
@@ -36,8 +36,8 @@ const queryKeys = createQueryKeys('map', {
 })
 
 export const unitsQuery = query({
-  api: fetchUnits,
-  queryKey: queryKeys.units
+  api: getAllApplicableUnits,
+  queryKey: ({ applicationType }) => queryKeys.units(applicationType)
 })
 
 export const unitsWithDistancesQuery = query({

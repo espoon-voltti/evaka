@@ -20,7 +20,7 @@ import { applicationChildrenQuery, applicationQuery } from '../queries'
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useRouteParams(['applicationId'])
   const t = useTranslation()
-  const application = useQueryResult(applicationQuery(applicationId))
+  const application = useQueryResult(applicationQuery({ applicationId }))
   const children = useQueryResult(applicationChildrenQuery())
 
   useTitle(

@@ -124,7 +124,9 @@ export default React.memo(function IncomeStatements() {
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [page, setPage] = useState(1)
-  const incomeStatements = useQueryResult(incomeStatementsQuery(page, 10))
+  const incomeStatements = useQueryResult(
+    incomeStatementsQuery({ page, pageSize: 10 })
+  )
   const { mutateAsync: deleteIncomeStatement } = useMutation(
     deleteIncomeStatementMutation
   )
@@ -140,7 +142,7 @@ export default React.memo(function IncomeStatements() {
   const onDelete = useCallback(
     (id: UUID) => {
       setDeletionState({ status: 'deleting', rowToDelete: id })
-      deleteIncomeStatement(id)
+      deleteIncomeStatement({ id })
         .then(() => {
           setDeletionState({ status: 'row-not-selected' })
         })

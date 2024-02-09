@@ -6,7 +6,6 @@ import { UUID } from 'lib-common/types'
 
 import {
   Message,
-  MessageCopy,
   MessageRecipientType,
   MessageThread,
   ThreadReply
@@ -58,14 +57,6 @@ export const deserializeReplyResponse = (
 ): ThreadReply => ({
   threadId: responseData.threadId,
   message: deserializeMessage(responseData.message)
-})
-
-export const deserializeMessageCopy = (
-  json: JsonOf<MessageCopy>
-): MessageCopy => ({
-  ...json,
-  sentAt: HelsinkiDateTime.parseIso(json.sentAt),
-  readAt: json.readAt ? HelsinkiDateTime.parseIso(json.readAt) : null
 })
 
 export const sortReceivers = (

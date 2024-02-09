@@ -121,7 +121,7 @@ export const MessageContextProvider = React.memo(
           (m) => !m.readAt && m.sender.id !== accountId.value
         )
         if (hasUnreadMessages) {
-          markThreadRead(selectedThread.id)
+          markThreadRead({ threadId: selectedThread.id })
           transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
         }
       }

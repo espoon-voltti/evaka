@@ -5,23 +5,22 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../query'
-
 import {
   createChildIncomeStatement,
   createIncomeStatement,
-  deleteChildIncomeStatement,
   deleteIncomeStatement,
   getChildIncomeStatement,
-  getChildIncomeStatements,
   getChildIncomeStatementStartDates,
-  getGuardianIncomeStatementChildren,
+  getChildIncomeStatements,
   getIncomeStatement,
-  getIncomeStatements,
+  getIncomeStatementChildren,
   getIncomeStatementStartDates,
+  getIncomeStatements,
+  removeChildIncomeStatement,
   updateChildIncomeStatement,
   updateIncomeStatement
-} from './api'
+} from '../generated/api-clients/incomestatement'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('incomeStatements', {
   allIncomeStatements: () => ['incomeStatements'],
@@ -51,12 +50,13 @@ const queryKeys = createQueryKeys('incomeStatements', {
     page,
     pageSize
   ],
-  childIncomeStatement: ({ childId, id }: { childId: UUID; id: UUID }) => [
-    'childIncomeStatements',
+  childIncomeStatement: ({
     childId,
-    'single',
-    id
-  ],
+    incomeStatementId
+  }: {
+    childId: UUID
+    incomeStatementId: UUID
+  }) => ['childIncomeStatements', childId, 'single', incomeStatementId],
   childIncomeStatementStartDates: (childId: UUID) => [
     'childIncomeStatements',
     childId,
@@ -68,12 +68,13 @@ const queryKeys = createQueryKeys('incomeStatements', {
 
 export const incomeStatementsQuery = query({
   api: getIncomeStatements,
-  queryKey: queryKeys.incomeStatements
+  queryKey: ({ page, pageSize }) => queryKeys.incomeStatements(page, pageSize)
 })
 
 export const incomeStatementQuery = query({
   api: getIncomeStatement,
-  queryKey: queryKeys.incomeStatement
+  queryKey: ({ incomeStatementId }) =>
+    queryKeys.incomeStatement(incomeStatementId)
 })
 
 export const incomeStatementStartDatesQuery = query({
@@ -99,13 +100,14 @@ export const deleteIncomeStatementMutation = mutation({
 // Child
 
 export const guardianIncomeStatementChildrenQuery = query({
-  api: getGuardianIncomeStatementChildren,
+  api: getIncomeStatementChildren,
   queryKey: queryKeys.guardianIncomeStatementChildren
 })
 
 export const childIncomeStatementsQuery = query({
   api: getChildIncomeStatements,
-  queryKey: queryKeys.childIncomeStatements
+  queryKey: ({ childId, page, pageSize }) =>
+    queryKeys.childIncomeStatements(childId, page, pageSize)
 })
 
 export const childIncomeStatementQuery = query({
@@ -115,7 +117,7 @@ export const childIncomeStatementQuery = query({
 
 export const childIncomeStatementStartDatesQuery = query({
   api: getChildIncomeStatementStartDates,
-  queryKey: queryKeys.childIncomeStatementStartDates
+  queryKey: ({ childId }) => queryKeys.childIncomeStatementStartDates(childId)
 })
 
 export const createChildIncomeStatementMutation = mutation({
@@ -133,7 +135,7 @@ export const updateChildIncomeStatementMutation = mutation({
 })
 
 export const deleteChildIncomeStatementMutation = mutation({
-  api: deleteChildIncomeStatement,
+  api: removeChildIncomeStatement,
   invalidateQueryKeys: ({ childId }) => [
     queryKeys.allChildIncomeStatements(childId)
   ]

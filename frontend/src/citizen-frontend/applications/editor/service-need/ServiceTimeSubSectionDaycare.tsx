@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -23,10 +23,10 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
+import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
@@ -39,6 +39,8 @@ const Hyphenbox = styled.div`
 type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 
 const applicationType = 'DAYCARE'
+
+const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function ServiceTimeSubSectionDaycare({
   formData,
@@ -109,7 +111,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     })
 
   const deleteExtendedCareAttachment = (id: UUID) =>
-    deleteAttachment(id).then((result) => {
+    deleteAttachmentResult({ attachmentId: id }).then((result) => {
       result.isSuccess &&
         updateFormData({
           shiftCareAttachments: formData.shiftCareAttachments.filter(
