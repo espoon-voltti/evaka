@@ -9,15 +9,15 @@ import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 
 abstract class TsCodeGenerator(private val metadata: TypeMetadata) {
-    abstract fun locateNamedType(namedType: TsNamedType): TsFile
+    abstract fun locateNamedType(namedType: TsNamedType<*>): TsFile
 
-    private fun typeRef(namedType: TsNamedType): TsImport =
+    private fun typeRef(namedType: TsNamedType<*>): TsImport =
         TsImport.Named(locateNamedType(namedType), namedType.name)
 
     private fun typeRef(sealedVariant: TsSealedVariant): TsImport =
         TsImport.Named(locateNamedType(sealedVariant.parent), sealedVariant.name)
 
-    private fun deserializerRef(namedType: TsNamedType): TsImport =
+    private fun deserializerRef(namedType: TsNamedType<*>): TsImport =
         TsImport.Named(locateNamedType(namedType), "deserializeJson${namedType.name}")
 
     private fun deserializerRef(sealedVariant: TsSealedVariant): TsImport =
@@ -36,54 +36,65 @@ abstract class TsCodeGenerator(private val metadata: TypeMetadata) {
         return elementTs + TsCode("[]")
     }
 
-    fun recordType(keyType: KType?, valueType: KType?): TsCode {
-        val keyTs = keyType?.let(::keyType) ?: TsCode("never")
-        val valueTs = valueType?.let(this::tsType) ?: TsCode("never")
+    fun recordType(type: Pair<KType?, KType?>): TsCode {
+        val keyTs = type.first?.let(::keyType) ?: TsCode("never")
+        val valueTs = type.second?.let(this::tsType) ?: TsCode("never")
         return TsCode { ts("Record<${inline(keyTs)}, ${inline(valueTs)}>") }
     }
 
-    fun keyType(type: KType): TsCode =
-        tsReprType(type) { tsRepr ->
-            when (tsRepr) {
-                is TsPlain -> TsCode(tsRepr.type)
-                is TsStringEnum -> TsCode(typeRef(tsRepr))
-                is TsExternalTypeRef -> tsRepr.keyRepresentation
-                is Excluded,
-                is TsArray,
-                is TsRecord,
-                is TsPlainObject,
-                is TsSealedClass,
-                is TsSealedVariant -> null
-            } ?: error("$type is not supported as a key type")
-        }
-
-    private fun tsReprType(type: KType, f: (tsRepr: TsRepresentation) -> TsCode): TsCode =
+    private fun typeToTsCode(type: KType, f: (tsType: TsType) -> TsCode): TsCode =
         when (val clazz = type.classifier) {
-            is KClass<*> -> f(metadata[clazz] ?: error("No TS type found for $type"))
+            is KClass<*> ->
+                f(
+                    TsType(
+                        metadata[clazz] ?: error("No TS type found for $type"),
+                        type.isMarkedNullable,
+                        type.arguments
+                    )
+                )
             is KTypeParameter -> TsCode(clazz.name)
             // Not possible, but KClassifier is not a sealed interface so can't be proven at compile
             // time
             else -> error("Unsupported classifier")
-        }.let { if (type.isMarkedNullable) it + TsCode(" | null") else it }
-
-    fun tsType(type: KType): TsCode =
-        tsReprType(type) { tsRepr ->
-            when (tsRepr) {
-                is TsPlain -> TsCode(tsRepr.type)
-                is TsArray -> {
-                    require(type.arguments.size == 1) { "Expected 1 type argument, got $type" }
-                    arrayType(type.arguments.single().type)
-                }
-                is TsRecord -> {
-                    require(type.arguments.size == 2) { "Expected 2 type arguments, got $type" }
-                    recordType(type.arguments[0].type, type.arguments[1].type)
-                }
-                is TsNamedType -> TsCode(typeRef(tsRepr))
-                is TsSealedVariant -> TsCode(typeRef(tsRepr))
-                is TsExternalTypeRef -> TsCode(tsRepr.type, tsRepr.imports)
-                is Excluded -> TsCode("never")
-            }
         }
+
+    fun keyType(type: KType): TsCode = typeToTsCode(type, ::keyType)
+
+    fun keyType(tsType: TsType): TsCode =
+        when (val tsRepr = tsType.representation) {
+            is TsPlain -> TsCode(tsRepr.type)
+            is TsStringEnum -> TsCode(typeRef(tsRepr))
+            is TsExternalTypeRef -> tsRepr.keyRepresentation
+            is Excluded,
+            is TsArray,
+            is TsRecord,
+            is TsPlainObject,
+            is TsSealedClass,
+            is TsSealedVariant -> null
+        }?.takeUnless { tsType.isNullable } ?: error("$tsType is not supported as a key type")
+
+    fun tsType(type: KType): TsCode = typeToTsCode(type, ::tsType)
+
+    fun tsType(tsType: TsType): TsCode =
+        when (val tsRepr = tsType.representation) {
+            is TsPlain -> TsCode(tsRepr.type)
+            is TsArray -> arrayType(tsRepr.getTypeArgs(tsType.typeArguments))
+            is TsRecord -> recordType(tsRepr.getTypeArgs(tsType.typeArguments))
+            is TsPlainObject -> {
+                val typeArguments =
+                    tsRepr.getTypeArgs(tsType.typeArguments).map {
+                        it?.let(::tsType) ?: TsCode("never")
+                    }
+                TsCode(typeRef(tsRepr)) +
+                    if (typeArguments.isEmpty()) TsCode("")
+                    else TsCode.join(typeArguments, separator = ", ", prefix = "<", postfix = ">")
+            }
+            is TsSealedClass -> TsCode(typeRef(tsRepr))
+            is TsStringEnum -> TsCode(typeRef(tsRepr))
+            is TsSealedVariant -> TsCode(typeRef(tsRepr))
+            is TsExternalTypeRef -> TsCode(tsRepr.type, tsRepr.imports)
+            is Excluded -> TsCode("never")
+        }.let { if (tsType.isNullable) it + TsCode(" | null") else it }
 
     fun stringEnum(enum: TsStringEnum): TsCode = TsCode {
         if (enum.constList != null)
@@ -162,7 +173,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
         }
     }
 
-    fun namedType(namedType: TsNamedType): TsCode =
+    fun namedType(namedType: TsNamedType<*>): TsCode =
         when (namedType) {
             is TsStringEnum -> stringEnum(namedType)
             is TsPlainObject -> tsPlainObject(namedType)
@@ -176,14 +187,9 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
             cache.getOrPut(type) {
                 cache[type] = false // prevent problems with recursion by assuming false by default
                 when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
-                    is TsArray -> {
-                        require(type.arguments.size == 1) { "Expected 1 type argument, got $type" }
-                        type.arguments.single().type?.let { check(it) } ?: false
-                    }
-                    is TsRecord -> {
-                        require(type.arguments.size == 2) { "Expected 2 type arguments, got $type" }
-                        type.arguments[1].type?.let { check(it) } ?: false
-                    }
+                    is TsArray -> tsRepr.getTypeArgs(type.arguments)?.let { check(it) } ?: false
+                    is TsRecord ->
+                        tsRepr.getTypeArgs(type.arguments).second?.let { check(it) } ?: false
                     is TsPlainObject ->
                         tsRepr.applyTypeArguments(type.arguments).values.any { check(it) }
                     is TsSealedClass ->
@@ -204,7 +210,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
         return check(type)
     }
 
-    fun jsonDeserializer(namedType: TsNamedType): TsCode? =
+    fun jsonDeserializer(namedType: TsNamedType<*>): TsCode? =
         when (namedType) {
             is TsStringEnum -> null
             is TsSealedClass -> {
@@ -285,14 +291,18 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         else
             when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
                 is TsArray -> {
-                    require(type.arguments.size == 1) { "Expected 1 type argument, got $type" }
-                    jsonDeserializerExpression(requireNotNull(type.arguments.single().type), "e")
+                    jsonDeserializerExpression(
+                            requireNotNull(tsRepr.getTypeArgs(type.arguments)),
+                            "e"
+                        )
                         ?.let { it.copy(text = "$jsonExpression.map(e => ${it.text})") }
                 }
                 is TsRecord -> {
-                    require(type.arguments.size == 2) { "Expected 2 type arguments, got $type" }
                     val valueDeser =
-                        jsonDeserializerExpression(requireNotNull(type.arguments[1].type), "v")
+                        jsonDeserializerExpression(
+                            requireNotNull(tsRepr.getTypeArgs(type.arguments).second),
+                            "v"
+                        )
                     if (valueDeser == null) null
                     else
                         TsCode {
@@ -319,6 +329,6 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             }
 }
 
-private fun TsNamedType.docHeader() = """/**
+private fun TsNamedType<*>.docHeader() = """/**
 * Generated from $source
 */"""

@@ -67,7 +67,7 @@ val defaultMetadata =
                 "LocalDate",
                 keyRepresentation = TsCode("string"),
                 jsonDeserializeExpression = { json: String ->
-                    TsCode("LocalDate.parseIso($json)", imports = setOf(Imports.localDate))
+                    TsCode("LocalDate.parseIso($json)", Imports.localDate)
                 },
                 Imports.localDate
             ),
@@ -76,7 +76,7 @@ val defaultMetadata =
                 "LocalTime",
                 keyRepresentation = TsCode("string"),
                 jsonDeserializeExpression = { json: String ->
-                    TsCode("LocalTime.parseIso($json)", imports = setOf(Imports.localTime))
+                    TsCode("LocalTime.parseIso($json)", Imports.localTime)
                 },
                 Imports.localTime
             ),
@@ -85,10 +85,7 @@ val defaultMetadata =
                 "HelsinkiDateTime",
                 keyRepresentation = null,
                 jsonDeserializeExpression = { json: String ->
-                    TsCode(
-                        "HelsinkiDateTime.parseIso($json)",
-                        imports = setOf(Imports.helsinkiDateTime)
-                    )
+                    TsCode("HelsinkiDateTime.parseIso($json)", Imports.helsinkiDateTime)
                 },
                 Imports.helsinkiDateTime
             ),
@@ -97,10 +94,7 @@ val defaultMetadata =
                 "FiniteDateRange",
                 keyRepresentation = null,
                 jsonDeserializeExpression = { json: String ->
-                    TsCode(
-                        "FiniteDateRange.parseJson($json)",
-                        imports = setOf(Imports.finiteDateRange)
-                    )
+                    TsCode("FiniteDateRange.parseJson($json)", Imports.finiteDateRange)
                 },
                 Imports.finiteDateRange
             ),
@@ -109,7 +103,7 @@ val defaultMetadata =
                 "DateRange",
                 keyRepresentation = null,
                 jsonDeserializeExpression = { json: String ->
-                    TsCode("DateRange.parseJson($json)", imports = setOf(Imports.dateRange))
+                    TsCode("DateRange.parseJson($json)", Imports.dateRange)
                 },
                 Imports.dateRange
             ),
@@ -120,7 +114,7 @@ val defaultMetadata =
                 jsonDeserializeExpression = { json: String ->
                     TsCode(
                         "$json.map((x) => FiniteDateRange.parseJson(x))",
-                        imports = setOf(Imports.finiteDateRange)
+                        Imports.finiteDateRange
                     )
                 },
                 Imports.finiteDateRange
@@ -130,7 +124,7 @@ val defaultMetadata =
                 "VasuQuestion",
                 keyRepresentation = null,
                 jsonDeserializeExpression = { json: String ->
-                    TsCode("mapVasuQuestion($json)", imports = setOf(Imports.mapVasuQuestion))
+                    TsCode("mapVasuQuestion($json)", Imports.mapVasuQuestion)
                 },
                 Imports.vasuQuestion
             ),

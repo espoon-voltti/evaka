@@ -59,7 +59,9 @@ sealed interface TsImport {
  * A fragment of TS code carrying also information about names that need to be imported from other
  * modules.
  */
-data class TsCode(val text: String, val imports: Set<TsImport> = emptySet()) {
+data class TsCode(val text: String, val imports: Set<TsImport>) {
+    constructor(text: String, vararg imports: TsImport) : this(text, imports.toSet())
+
     constructor(
         import: TsImport,
     ) : this(import.name, setOf(import))

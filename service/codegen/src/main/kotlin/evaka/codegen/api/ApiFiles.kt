@@ -28,7 +28,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val tsCodeGenerator =
         object : TsCodeGenerator(metadata) {
-            override fun locateNamedType(namedType: TsNamedType): TsFile =
+            override fun locateNamedType(namedType: TsNamedType<*>): TsFile =
                 getBasePackage(namedType.clazz).let { pkg ->
                     TsProject.LibCommon / "generated/api-types/$pkg.ts"
                 }
@@ -42,7 +42,11 @@ fun generateApiFiles(): Map<TsFile, String> {
         .toMap()
 }
 
-fun render(file: TsFile, generator: TsCodeGenerator, namedTypes: Collection<TsNamedType>): String {
+fun render(
+    file: TsFile,
+    generator: TsCodeGenerator,
+    namedTypes: Collection<TsNamedType<*>>
+): String {
     val conflicts = namedTypes.groupBy { it.name }.filter { it.value.size > 1 }
     conflicts.forEach { (name, conflictingClasses) ->
         logger.error("Multiple Kotlin classes map to $name: ${conflictingClasses.map { it.name }}")
