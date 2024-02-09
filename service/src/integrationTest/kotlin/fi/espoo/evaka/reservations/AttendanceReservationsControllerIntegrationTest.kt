@@ -372,7 +372,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 ),
                             attendances =
                                 listOf(
-                                    OpenTimeRange(
+                                    TimeInterval(
                                         startTime = LocalTime.of(8, 15),
                                         endTime = LocalTime.of(16, 5)
                                     )
@@ -668,7 +668,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 true
                             )
                         ),
-                    attendances = listOf(OpenTimeRange(LocalTime.of(19, 10), LocalTime.of(23, 59))),
+                    attendances = listOf(TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59))),
                     absenceBillable = null,
                     absenceNonbillable = null,
                     possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
@@ -697,8 +697,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         ),
                     attendances =
                         listOf(
-                            OpenTimeRange(LocalTime.of(0, 0), LocalTime.of(10, 30)),
-                            OpenTimeRange(LocalTime.of(17, 0), null),
+                            TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
+                            TimeInterval(LocalTime.of(17, 0), null),
                         ),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -878,7 +878,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             endTime = LocalTime.of(23, 59)
                         )
                     ),
-                attendances = listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), null)),
+                attendances = listOf(TimeInterval(startTime = LocalTime.of(12, 30), null)),
                 absenceBillable = AbsenceType.OTHER_ABSENCE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE
             )
@@ -901,7 +901,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         )
                     ),
                 attendances =
-                    listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), endTime = null)),
+                    listOf(TimeInterval(startTime = LocalTime.of(12, 30), endTime = null)),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
@@ -937,7 +937,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         )
                     ),
                 attendances =
-                    listOf(OpenTimeRange(startTime = LocalTime.of(12, 30), LocalTime.of(17, 0))),
+                    listOf(TimeInterval(startTime = LocalTime.of(12, 30), LocalTime.of(17, 0))),
                 absenceBillable = AbsenceType.FORCE_MAJEURE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE
             )
@@ -961,7 +961,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     ),
                 attendances =
                     listOf(
-                        OpenTimeRange(
+                        TimeInterval(
                             startTime = LocalTime.of(12, 30),
                             endTime = LocalTime.of(17, 0)
                         )

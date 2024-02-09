@@ -4,7 +4,7 @@
 
 import DateRange from '../date-range'
 import FiniteDateRange from '../finite-date-range'
-import { OpenTimeRange } from '../generated/api-types/reservations'
+import { TimeInterval } from '../generated/api-types/reservations'
 import { TimeRange } from '../generated/api-types/shared'
 import LocalDate from '../local-date'
 import LocalTime from '../local-time'
@@ -263,7 +263,7 @@ export const openEndedLocalTimeRange = () =>
     ({
       startTime,
       endTime
-    }): ValidationResult<OpenTimeRange | undefined, 'timeFormat'> => {
+    }): ValidationResult<TimeInterval | undefined, 'timeFormat'> => {
       if (startTime === undefined && endTime === undefined) {
         return ValidationSuccess.of(undefined)
       }

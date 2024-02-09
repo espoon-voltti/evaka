@@ -102,11 +102,11 @@ class ReservationControllerCitizen(
                             .mapValues { (_, reservations) ->
                                 reservations.map { ReservationResponse.from(it) }
                             }
-                    val attendances: Map<Pair<ChildId, LocalDate>, List<OpenTimeRange>> =
+                    val attendances: Map<Pair<ChildId, LocalDate>, List<TimeInterval>> =
                         tx.getChildAttendancesCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, attendances) ->
-                                attendances.map { OpenTimeRange(it.startTime, it.endTime) }
+                                attendances.map { TimeInterval(it.startTime, it.endTime) }
                             }
                     val reservableRange =
                         getReservableRange(
@@ -541,7 +541,7 @@ data class ReservationResponseDayChild(
     val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
     val absence: AbsenceInfo?,
     val reservations: List<ReservationResponse>,
-    val attendances: List<OpenTimeRange>,
+    val attendances: List<TimeInterval>,
     val usedService: UsedServiceResult?,
     val reservableTimeRange: ReservableTimeRange
 )
