@@ -38,6 +38,7 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -58,7 +59,7 @@ function checkForOverlappingRanges(ranges: FiniteDateRange[]): boolean {
 const preschoolTermForm = transformed(
   object({
     finnishPreschool: required(localDateRange()),
-    extendedTermStart: required(localDate()),
+    extendedTermStart: localDate(),
     applicationPeriodStart: required(localDate()),
     termBreaks: array(required(localDateRange())),
     allTerms: value<PreschoolTerm[]>()
@@ -76,11 +77,16 @@ const preschoolTermForm = transformed(
       return ValidationError.field('finnishPreschool', 'overlap')
     }
 
-    if (extendedTermStart.isAfter(finnishPreschool.start)) {
-      return ValidationError.field(
-        'extendedTermStart',
-        'extendedTermStartAfter'
-      )
+    if (featureFlags.extendedPreschoolTerm) {
+      if (!extendedTermStart) {
+        return ValidationError.field('extendedTermStart', 'required')
+      }
+      if (extendedTermStart.isAfter(finnishPreschool.start)) {
+        return ValidationError.field(
+          'extendedTermStart',
+          'extendedTermStartAfter'
+        )
+      }
     }
 
     if (termBreaks.length > 0) {
@@ -97,7 +103,9 @@ const preschoolTermForm = transformed(
         finnishPreschool.end
       ),
       extendedTerm: new FiniteDateRange(
-        extendedTermStart,
+        featureFlags.extendedPreschoolTerm && extendedTermStart
+          ? extendedTermStart
+          : finnishPreschool.start,
         finnishPreschool.end
       ),
       termBreaks: termBreaks
@@ -187,20 +195,23 @@ export default React.memo(function PreschoolTermForm({
 
         <Gap size="L" />
 
-        <div>
-          <ExpandingInfo info={i18n.terms.extendedTermStartInfo}>
-            <Label>{i18n.terms.extendedTermStart} *</Label>
-          </ExpandingInfo>
-          <DatePickerF
-            hideErrorsBeforeTouched
-            bind={extendedTermStart}
-            locale={lang}
-            data-qa="input-extended-term-start"
-            info={extendedTermStart.inputInfo()}
-          />
-        </div>
-
-        <Gap size="L" />
+        {featureFlags.extendedPreschoolTerm && (
+          <>
+            <div>
+              <ExpandingInfo info={i18n.terms.extendedTermStartInfo}>
+                <Label>{i18n.terms.extendedTermStart} *</Label>
+              </ExpandingInfo>
+              <DatePickerF
+                hideErrorsBeforeTouched
+                bind={extendedTermStart}
+                locale={lang}
+                data-qa="input-extended-term-start"
+                info={extendedTermStart.inputInfo()}
+              />
+            </div>
+            <Gap size="L" />
+          </>
+        )}
 
         <div>
           <FixedSpaceRow>

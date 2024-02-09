@@ -16,6 +16,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { preschoolTermsQuery } from './queries'
+import {featureFlags} from "../../../lib-customizations/employeeMobile";
 
 const Ul = styled.ul`
   margin: 0;
@@ -47,7 +48,9 @@ export default React.memo(function TermsSection() {
           <Thead>
             <Tr>
               <Th>{i18n.terms.finnishPreschool}</Th>
-              <Th>{i18n.terms.extendedTermStart}</Th>
+              {featureFlags.extendedPreschoolTerm && (
+                <Th>{i18n.terms.extendedTermStart}</Th>
+              )}
               <Th>{i18n.terms.applicationPeriodStart}</Th>
               <Th>{i18n.terms.termBreaks}</Th>
               <Th />
@@ -63,9 +66,11 @@ export default React.memo(function TermsSection() {
                   <Td data-qa="finnish-preschool">
                     {row.finnishPreschool.format('dd.MM.yyyy')}
                   </Td>
-                  <Td data-qa="extended-term-start">
-                    {row.extendedTerm.start.format('dd.MM.yyyy')}
-                  </Td>
+                  {featureFlags.extendedPreschoolTerm && (
+                    <Td data-qa="extended-term-start">
+                      {row.extendedTerm.start.format('dd.MM.yyyy')}
+                    </Td>
+                  )}
                   <Td data-qa="application-period-start">
                     {row.applicationPeriod.start.format('dd.MM.yyyy')}
                   </Td>
