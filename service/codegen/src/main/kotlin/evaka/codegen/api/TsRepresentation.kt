@@ -38,15 +38,26 @@ data object Excluded : TsRepresentation<Nothing>
 data class TsExternalTypeRef(
     val type: String,
     val keyRepresentation: TsCode?,
-    val jsonDeserializeExpression: ((jsonExpr: String) -> TsCode)?,
+    val deserializeJson: ((jsonExpr: TsCode) -> TsCode)?,
+    val serializePathVariable: ((valueExpr: TsCode) -> TsCode)?,
+    val serializeRequestParam: ((valueExpr: TsCode, nullable: Boolean) -> TsCode)?,
     val imports: Set<TsImport>,
 ) : TsRepresentation<Nothing> {
     constructor(
         type: String,
         keyRepresentation: TsCode?,
-        jsonDeserializeExpression: ((jsonExpr: String) -> TsCode)? = null,
+        deserializeJson: ((jsonExpr: TsCode) -> TsCode)? = null,
+        serializePathVariable: ((valueExpr: TsCode) -> TsCode)?,
+        serializeRequestParam: ((valueExpr: TsCode, nullable: Boolean) -> TsCode)?,
         vararg imports: TsImport,
-    ) : this(type, keyRepresentation, jsonDeserializeExpression, imports.toSet())
+    ) : this(
+        type,
+        keyRepresentation,
+        deserializeJson,
+        serializePathVariable,
+        serializeRequestParam,
+        imports.toSet()
+    )
 }
 
 /** A plain TS type */

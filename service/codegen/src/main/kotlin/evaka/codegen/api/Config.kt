@@ -48,6 +48,8 @@ object Imports {
     val uuid = TsImport.Named(LibCommon / "types.d.ts", "UUID")
     val action = TsImport.Named(LibCommon / "generated/action.ts", "Action")
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
+    val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
+    val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
 }
 
 val defaultMetadata =
@@ -66,8 +68,12 @@ val defaultMetadata =
             TsExternalTypeRef(
                 "LocalDate",
                 keyRepresentation = TsCode("string"),
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("LocalDate.parseIso($json)", Imports.localDate)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.localDate)}.parseIso(${inline(json)})") }
+                },
+                serializePathVariable = { value -> value + ".formatIso()" },
+                serializeRequestParam = { value, nullable ->
+                    value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
                 Imports.localDate
             ),
@@ -75,8 +81,12 @@ val defaultMetadata =
             TsExternalTypeRef(
                 "LocalTime",
                 keyRepresentation = TsCode("string"),
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("LocalTime.parseIso($json)", Imports.localTime)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.localTime)}.parseIso(${inline(json)})") }
+                },
+                serializePathVariable = { value -> value + ".formatIso()" },
+                serializeRequestParam = { value, nullable ->
+                    value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
                 Imports.localTime
             ),
@@ -84,8 +94,12 @@ val defaultMetadata =
             TsExternalTypeRef(
                 "HelsinkiDateTime",
                 keyRepresentation = null,
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("HelsinkiDateTime.parseIso($json)", Imports.helsinkiDateTime)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.helsinkiDateTime)}.parseIso(${inline(json)})") }
+                },
+                serializePathVariable = { value -> value + ".formatIso()" },
+                serializeRequestParam = { value, nullable ->
+                    value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
                 Imports.helsinkiDateTime
             ),
@@ -93,74 +107,102 @@ val defaultMetadata =
             TsExternalTypeRef(
                 "FiniteDateRange",
                 keyRepresentation = null,
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("FiniteDateRange.parseJson($json)", Imports.finiteDateRange)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.finiteDateRange)}.parseJson(${inline(json)})") }
                 },
+                serializePathVariable = null,
+                serializeRequestParam = null,
                 Imports.finiteDateRange
             ),
         DateRange::class to
             TsExternalTypeRef(
                 "DateRange",
                 keyRepresentation = null,
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("DateRange.parseJson($json)", Imports.dateRange)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.dateRange)}.parseJson(${inline(json)})") }
                 },
+                serializePathVariable = null,
+                serializeRequestParam = null,
                 Imports.dateRange
             ),
         DateSet::class to
             TsExternalTypeRef(
                 "FiniteDateRange[]",
                 keyRepresentation = null,
-                jsonDeserializeExpression = { json: String ->
-                    TsCode(
-                        "$json.map((x) => FiniteDateRange.parseJson(x))",
-                        Imports.finiteDateRange
-                    )
+                deserializeJson = { json ->
+                    TsCode {
+                        ts(
+                            "${inline(json)}.map((x) => ${ref(Imports.finiteDateRange)}.parseJson(x))"
+                        )
+                    }
                 },
+                serializePathVariable = null,
+                serializeRequestParam = null,
                 Imports.finiteDateRange
             ),
         VasuQuestion::class to
             TsExternalTypeRef(
                 "VasuQuestion",
                 keyRepresentation = null,
-                jsonDeserializeExpression = { json: String ->
-                    TsCode("mapVasuQuestion($json)", Imports.mapVasuQuestion)
+                deserializeJson = { json ->
+                    TsCode { ts("${ref(Imports.mapVasuQuestion)}(${inline(json)})") }
                 },
+                serializePathVariable = null,
+                serializeRequestParam = null,
                 Imports.vasuQuestion
             ),
         MessageReceiver::class to
             TsExternalTypeRef(
                 "MessageReceiver",
                 keyRepresentation = null,
-                jsonDeserializeExpression = null,
+                deserializeJson = null,
+                serializePathVariable = null,
+                serializeRequestParam = null,
                 Imports.messageReceiver
             ),
         UUID::class to
             TsExternalTypeRef(
                 "UUID",
                 keyRepresentation = TsCode(Imports.uuid),
-                jsonDeserializeExpression = null,
+                deserializeJson = null,
+                serializePathVariable = { value -> value },
+                serializeRequestParam = { value, _ -> value },
                 Imports.uuid
             ),
         Id::class to
             TsExternalTypeRef(
                 "UUID",
                 keyRepresentation = TsCode(Imports.uuid),
-                jsonDeserializeExpression = null,
+                deserializeJson = null,
+                serializePathVariable = { value -> value },
+                serializeRequestParam = { value, _ -> value },
                 Imports.uuid
             ),
         List::class to TsArray,
         Set::class to TsArray,
         Map::class to TsRecord,
         Void::class to Excluded,
-        YearMonth::class to Excluded
+        YearMonth::class to
+            TsExternalTypeRef(
+                "LocalDate",
+                keyRepresentation = null,
+                deserializeJson = { error("YearMonth in JSON is not supported") },
+                serializePathVariable = { value -> value + ".formatExotic('YYYY-MM')" },
+                serializeRequestParam = { value, nullable ->
+                    value +
+                        if (nullable) "?.formatExotic('YYYY-MM')" else ".formatExotic('YYYY-MM')"
+                },
+                Imports.localDate
+            )
     ) +
         TypeMetadata(
             Action::class.nestedClasses.associateWith { action ->
                 TsExternalTypeRef(
                     "Action.${action.simpleName}",
                     keyRepresentation = TsCode("string"),
-                    jsonDeserializeExpression = null,
+                    deserializeJson = null,
+                    serializePathVariable = { value -> value },
+                    serializeRequestParam = { value, _ -> value },
                     Imports.action
                 )
             } +
@@ -168,7 +210,9 @@ val defaultMetadata =
                     TsExternalTypeRef(
                         "Action.Citizen.${action.simpleName}",
                         keyRepresentation = TsCode("string"),
-                        jsonDeserializeExpression = null,
+                        deserializeJson = null,
+                        serializePathVariable = { value -> value },
+                        serializeRequestParam = { value, _ -> value },
                         Imports.action
                     )
                 }

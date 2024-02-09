@@ -66,6 +66,8 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
         import: TsImport,
     ) : this(import.name, setOf(import))
 
+    operator fun plus(other: String): TsCode = TsCode(this.text + other, this.imports)
+
     operator fun plus(other: TsCode): TsCode =
         TsCode(this.text + other.text, this.imports + other.imports)
 

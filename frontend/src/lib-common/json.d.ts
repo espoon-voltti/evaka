@@ -31,3 +31,22 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
                     : T extends object // eslint-disable-line @typescript-eslint/ban-types
                       ? { [P in keyof T]: JsonOf<T[P]> }
                       : never
+
+/**
+ * Type operator to check if the given type can be converted to reasonable JSON without extra code.
+ *
+ * Use with the TS satisfies operator: `someValue satisfies JsonCompatible<TypeOfThatValue>`
+ */
+export type JsonCompatible<T> = T extends
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | { toJSON(): string }
+  ? T
+  : T extends (infer U)[]
+    ? JsonCompatible<U>[]
+    : T extends object // eslint-disable-line @typescript-eslint/ban-types
+      ? { [P in keyof T]: JsonCompatible<T[P]> }
+      : never
