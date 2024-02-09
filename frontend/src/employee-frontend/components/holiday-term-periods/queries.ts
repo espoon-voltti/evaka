@@ -26,8 +26,7 @@ const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriod: (id: string) => ['holidayPeriod', id],
   questionnaires: () => ['questionnaires'],
   questionnaire: (id: string) => ['questionnaire', id],
-  preschoolTerms: () => ['preschoolTerms'],
-  preschoolTerm: (id: string) => ['preschoolTerm', id]
+  preschoolTerms: () => ['preschoolTerms']
 })
 
 export const holidayPeriodsQuery = query({
