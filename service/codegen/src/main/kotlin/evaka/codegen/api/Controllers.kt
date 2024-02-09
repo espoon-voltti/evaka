@@ -103,7 +103,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
     }
 
     val pathSupport = PathVariableMethodArgumentResolver()
-    val paramSupport = RequestParamMethodArgumentResolver(true)
+    val paramSupport = RequestParamMethodArgumentResolver(false)
     val bodySupport = RequestResponseBodyMethodProcessor(listOf(StringHttpMessageConverter()))
     return handlerMethods
         .asSequence()
