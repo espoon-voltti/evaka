@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -54,6 +55,7 @@ import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
@@ -454,7 +456,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `get reservations returns reservations, attendances and used service correctly`() {
+    fun `get reservations returns reservations, attendances, used service and month summaries correctly`() {
         val area = DevCareArea()
         val daycare =
             DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
@@ -652,6 +654,102 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 ),
             ),
             res.days
+        )
+
+        assertEquals(
+            listOf(
+                MonthSummary(
+                    year = monday.year,
+                    month = monday.monthValue,
+                    serviceNeedMinutes = snDaycareHours120.daycareHoursPerMonth!! * 60,
+                    reservedMinutes = 840,
+                    usedServiceMinutes = 1698
+                )
+            ),
+            res.children.single().monthSummaries
+        )
+    }
+
+    @Test
+    fun `month summary has the service need minutes from the first day of the month`() {
+        val firstOfMonth1 = LocalDate.of(2021, 11, 1)
+        val lastOfMonth1 = LocalDate.of(2021, 11, 30)
+        val firstOfMonth2 = LocalDate.of(2021, 12, 1)
+        val lastOfMonth2 = LocalDate.of(2021, 12, 31)
+
+        val snDaycareHours147 =
+            snDaycareHours120.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                daycareHoursPerMonth = 147
+            )
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDaycareHours147)
+
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = firstOfMonth1,
+                    endDate = lastOfMonth2
+                )
+                .also { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = FiniteDateRange(firstOfMonth1, lastOfMonth1),
+                        optionId = snDaycareHours120.id,
+                        confirmedBy = employee.evakaUserId
+                    )
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = FiniteDateRange(firstOfMonth2, lastOfMonth2),
+                        optionId = snDaycareHours147.id,
+                        confirmedBy = employee.evakaUserId
+                    )
+                }
+        }
+
+        val res =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(firstOfMonth1, lastOfMonth2),
+                mockNow = HelsinkiDateTime.of(firstOfMonth1.minusDays(1), LocalTime.of(12, 0))
+            )
+
+        assertEquals(
+            listOf(
+                MonthSummary(
+                    year = firstOfMonth1.year,
+                    month = firstOfMonth1.monthValue,
+                    serviceNeedMinutes = snDaycareHours120.daycareHoursPerMonth!! * 60,
+                    reservedMinutes = 0,
+                    usedServiceMinutes = 0
+                ),
+                MonthSummary(
+                    year = firstOfMonth2.year,
+                    month = firstOfMonth2.monthValue,
+                    serviceNeedMinutes = snDaycareHours147.daycareHoursPerMonth!! * 60,
+                    reservedMinutes = 0,
+                    usedServiceMinutes = 0
+                )
+            ),
+            res.children.single().monthSummaries
         )
     }
 

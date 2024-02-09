@@ -371,10 +371,12 @@ WHERE
                                     daycareHoursPerMonth = it.daycareHoursPerMonth
                                 )
                         }
+                        .sortedBy { it.range.start }
                         .toList()
             )
         }
         .groupBy { it.childId }
+        .mapValues { (_, value) -> value.sortedBy { it.range.start } }
 
 data class ReservationBackupPlacement(
     val childId: ChildId,

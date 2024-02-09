@@ -477,7 +477,10 @@ data class ReservationChild(
                                 placements
                                     .find { it.range.overlaps(monthRange) }
                                     ?.serviceNeeds
-                                    ?.find { it.daycareHoursPerMonth != null }
+                                    ?.find {
+                                        it.range.overlaps(monthRange) &&
+                                            it.daycareHoursPerMonth != null
+                                    }
                                     ?.daycareHoursPerMonth
 
                             if (daycareHoursPerMonth == null) {
