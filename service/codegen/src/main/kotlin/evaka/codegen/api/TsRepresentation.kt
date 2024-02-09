@@ -97,7 +97,9 @@ data class TsSealedClass(
 }
 
 /** One variant of a sealed class, represented as a TS plain object */
-data class TsSealedVariant(val parent: TsSealedClass, val obj: TsPlainObject) : TsRepresentation
+data class TsSealedVariant(val parent: TsSealedClass, val obj: TsPlainObject) : TsRepresentation {
+    val name: String = "${parent.name}.${obj.name}"
+}
 
 /** TS "string enum", e.g. 'A' | 'B' | 'C' */
 data class TsStringEnum(

@@ -60,14 +60,30 @@ sealed interface TsImport {
  * modules.
  */
 data class TsCode(val text: String, val imports: Set<TsImport> = emptySet()) {
+    constructor(
+        import: TsImport,
+    ) : this(import.name, setOf(import))
+
+    operator fun plus(other: TsCode): TsCode =
+        TsCode(this.text + other.text, this.imports + other.imports)
+
     companion object {
         operator fun invoke(f: Builder.() -> TsCode): TsCode = Builder().run { f(this) }
+
+        fun join(
+            code: Collection<TsCode>,
+            separator: String,
+            prefix: String = "",
+            postfix: String = ""
+        ): TsCode = TsCode {
+            ts(join(code, separator = separator, prefix = prefix, postfix = postfix))
+        }
     }
 
     class Builder {
         private var imports: List<TsImport> = listOf()
 
-        fun ts(code: TsCode): String {
+        fun inline(code: TsCode): String {
             this.imports += code.imports
             return code.text
         }
@@ -77,9 +93,14 @@ data class TsCode(val text: String, val imports: Set<TsImport> = emptySet()) {
             return import.name
         }
 
-        fun join(code: Collection<TsCode>, separator: String): String {
+        fun join(
+            code: Collection<TsCode>,
+            separator: String,
+            prefix: String = "",
+            postfix: String = ""
+        ): String {
             this.imports += code.flatMap { it.imports }
-            return code.joinToString(separator) { it.text }
+            return code.joinToString(separator, prefix = prefix, postfix = postfix) { it.text }
         }
 
         fun ts(text: String): TsCode = TsCode(text, imports.toSet())
