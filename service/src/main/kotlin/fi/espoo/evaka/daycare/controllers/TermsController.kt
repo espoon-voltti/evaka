@@ -96,15 +96,6 @@ class TermsController(private val accessControl: AccessControl) {
                 "Extended term ${termReq.extendedTerm} has to include the finnish and swedish term periods"
             )
         }
-
-        if (
-            !termReq.extendedTerm.contains(termReq.finnishPreschool) ||
-                !termReq.extendedTerm.contains(termReq.swedishPreschool)
-        ) {
-            throw BadRequest(
-                "Extended term ${termReq.extendedTerm} has to include the finnish and swedish term periods"
-            )
-        }
     }
 
     data class PreschoolTermRequest(
