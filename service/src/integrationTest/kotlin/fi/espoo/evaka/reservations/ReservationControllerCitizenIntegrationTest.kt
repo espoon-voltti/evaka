@@ -569,7 +569,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     ),
                                 attendances =
                                     listOf(
-                                        OpenTimeRange(
+                                        TimeInterval(
                                             LocalTime.of(9, 15),
                                             LocalTime.of(15, 55),
                                         )
@@ -604,7 +604,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     ),
                                 attendances =
                                     listOf(
-                                        OpenTimeRange(
+                                        TimeInterval(
                                             LocalTime.of(8, 45),
                                             LocalTime.of(16, 20),
                                         )
@@ -629,7 +629,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 reservations = listOf(),
                                 attendances =
                                     listOf(
-                                        OpenTimeRange(
+                                        TimeInterval(
                                             LocalTime.of(8, 0),
                                             LocalTime.of(16, 0),
                                         )
@@ -1847,7 +1847,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         shiftCare: Boolean = false,
         absence: AbsenceInfo? = null,
         reservations: List<ReservationResponse> = emptyList(),
-        attendances: List<OpenTimeRange> = emptyList(),
+        attendances: List<TimeInterval> = emptyList(),
         usedService: UsedServiceResult? = null,
     ) =
         ReservationResponseDayChild(

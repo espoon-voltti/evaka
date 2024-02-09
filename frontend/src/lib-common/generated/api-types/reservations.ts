@@ -64,7 +64,7 @@ export interface Child {
 export interface ChildDatePresence {
   absenceBillable: AbsenceType | null
   absenceNonbillable: AbsenceType | null
-  attendances: OpenTimeRange[]
+  attendances: TimeInterval[]
   childId: UUID
   date: LocalDate
   reservations: Reservation[]
@@ -77,7 +77,7 @@ export interface ChildDatePresence {
 export interface ChildRecordOfDay {
   absenceBillable: AbsenceTypeResponse | null
   absenceNonbillable: AbsenceTypeResponse | null
-  attendances: OpenTimeRange[]
+  attendances: TimeInterval[]
   backupGroupId: UUID | null
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
@@ -216,14 +216,6 @@ export interface MonthSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.OpenTimeRange
-*/
-export interface OpenTimeRange {
-  endTime: LocalTime | null
-  startTime: LocalTime
-}
-
-/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.OperationalDay
 */
 export interface OperationalDay {
@@ -356,7 +348,7 @@ export interface ReservationResponseDay {
 */
 export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
-  attendances: OpenTimeRange[]
+  attendances: TimeInterval[]
   childId: UUID
   reservableTimeRange: ReservableTimeRange
   reservations: ReservationResponse[]
@@ -372,6 +364,14 @@ export interface ReservationsResponse {
   children: ReservationChild[]
   days: ReservationResponseDay[]
   reservableRange: FiniteDateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.reservations.TimeInterval
+*/
+export interface TimeInterval {
+  endTime: LocalTime | null
+  startTime: LocalTime
 }
 
 /**
@@ -424,7 +424,7 @@ export function deserializeJsonChild(json: JsonOf<Child>): Child {
 export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>): ChildDatePresence {
   return {
     ...json,
-    attendances: json.attendances.map(e => deserializeJsonOpenTimeRange(e)),
+    attendances: json.attendances.map(e => deserializeJsonTimeInterval(e)),
     date: LocalDate.parseIso(json.date),
     reservations: json.reservations.map(e => deserializeJsonReservation(e))
   }
@@ -434,7 +434,7 @@ export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>
 export function deserializeJsonChildRecordOfDay(json: JsonOf<ChildRecordOfDay>): ChildRecordOfDay {
   return {
     ...json,
-    attendances: json.attendances.map(e => deserializeJsonOpenTimeRange(e)),
+    attendances: json.attendances.map(e => deserializeJsonTimeInterval(e)),
     dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e))
   }
@@ -538,15 +538,6 @@ export function deserializeJsonExpectedAbsencesRequest(json: JsonOf<ExpectedAbse
 }
 
 
-export function deserializeJsonOpenTimeRange(json: JsonOf<OpenTimeRange>): OpenTimeRange {
-  return {
-    ...json,
-    endTime: (json.endTime != null) ? LocalTime.parseIso(json.endTime) : null,
-    startTime: LocalTime.parseIso(json.startTime)
-  }
-}
-
-
 export function deserializeJsonOperationalDay(json: JsonOf<OperationalDay>): OperationalDay {
   return {
     ...json,
@@ -632,7 +623,7 @@ export function deserializeJsonReservationResponseDay(json: JsonOf<ReservationRe
 export function deserializeJsonReservationResponseDayChild(json: JsonOf<ReservationResponseDayChild>): ReservationResponseDayChild {
   return {
     ...json,
-    attendances: json.attendances.map(e => deserializeJsonOpenTimeRange(e)),
+    attendances: json.attendances.map(e => deserializeJsonTimeInterval(e)),
     reservableTimeRange: deserializeJsonReservableTimeRange(json.reservableTimeRange),
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
     usedService: (json.usedService != null) ? deserializeJsonUsedServiceResult(json.usedService) : null
@@ -645,6 +636,15 @@ export function deserializeJsonReservationsResponse(json: JsonOf<ReservationsRes
     ...json,
     days: json.days.map(e => deserializeJsonReservationResponseDay(e)),
     reservableRange: FiniteDateRange.parseJson(json.reservableRange)
+  }
+}
+
+
+export function deserializeJsonTimeInterval(json: JsonOf<TimeInterval>): TimeInterval {
+  return {
+    ...json,
+    endTime: (json.endTime != null) ? LocalTime.parseIso(json.endTime) : null,
+    startTime: LocalTime.parseIso(json.startTime)
   }
 }
 
@@ -669,6 +669,6 @@ export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDat
 export function deserializeJsonUsedServiceResult(json: JsonOf<UsedServiceResult>): UsedServiceResult {
   return {
     ...json,
-    ranges: json.ranges.map(e => deserializeJsonTimeRange(e))
+    usedServiceRanges: json.usedServiceRanges.map(e => deserializeJsonTimeRange(e))
   }
 }

@@ -180,9 +180,9 @@ data class ReservationRow(
     val staffCreated: Boolean
 )
 
-data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) :
-    Comparable<OpenTimeRange> {
-    override fun compareTo(other: OpenTimeRange): Int {
+data class TimeInterval(val startTime: LocalTime, val endTime: LocalTime?) :
+    Comparable<TimeInterval> {
+    override fun compareTo(other: TimeInterval): Int {
         return startTime.compareTo(other.startTime).let {
             if (it != 0) it
             else (endTime ?: LocalTime.MAX).compareTo(other.endTime ?: LocalTime.MAX)
@@ -379,7 +379,7 @@ data class ChildDatePresence(
     val childId: ChildId,
     val unitId: DaycareId,
     val reservations: List<Reservation>,
-    val attendances: List<OpenTimeRange>,
+    val attendances: List<TimeInterval>,
     val absenceBillable: AbsenceType?,
     val absenceNonbillable: AbsenceType?
 )

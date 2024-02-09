@@ -4,7 +4,7 @@
 
 import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
 import {
-  OpenTimeRange,
+  TimeInterval,
   Reservation,
   ReservationResponse
 } from './generated/api-types/reservations'
@@ -121,7 +121,7 @@ export function attendanceTimeDiffers(
 
 export function reservationsAndAttendancesDiffer(
   reservations: Reservation[],
-  attendances: OpenTimeRange[]
+  attendances: TimeInterval[]
 ): boolean {
   return reservations.some((reservation) => {
     if (reservation.type === 'NO_TIMES') return false
