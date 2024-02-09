@@ -315,8 +315,8 @@ export interface FinanceDecisionHandler {
 * Generated from fi.espoo.evaka.daycare.controllers.GroupOccupancies
 */
 export interface GroupOccupancies {
-  confirmed: Record<string, OccupancyResponse>
-  realized: Record<string, OccupancyResponse>
+  confirmed: Record<UUID, OccupancyResponse>
+  realized: Record<UUID, OccupancyResponse>
 }
 
 /**
@@ -439,13 +439,13 @@ export interface UnitFeatures {
 */
 export interface UnitGroupDetails {
   backupCares: UnitBackupCare[]
-  caretakers: Record<string, Caretakers>
+  caretakers: Record<UUID, Caretakers>
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
-  permittedBackupCareActions: Record<string, Action.BackupCare[]>
-  permittedGroupPlacementActions: Record<string, Action.GroupPlacement[]>
-  permittedPlacementActions: Record<string, Action.Placement[]>
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>
+  permittedPlacementActions: Record<UUID, Action.Placement[]>
   placements: DaycarePlacementWithDetails[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]

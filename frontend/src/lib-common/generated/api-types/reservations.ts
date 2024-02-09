@@ -127,7 +127,7 @@ export interface ConfirmedRangeDateUpdate {
 */
 export interface DailyChildReservationResult {
   childReservations: ChildReservationInfo[]
-  children: Record<string, ReservationChildInfo>
+  children: Record<UUID, ReservationChildInfo>
 }
 
 

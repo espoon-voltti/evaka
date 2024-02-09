@@ -294,7 +294,7 @@ export interface ApplicationsOfChild {
   childId: UUID
   childName: string
   duplicateOf: UUID | null
-  permittedActions: Record<string, Action.Citizen.Application[]>
+  permittedActions: Record<UUID, Action.Citizen.Application[]>
 }
 
 /**

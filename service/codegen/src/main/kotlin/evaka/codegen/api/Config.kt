@@ -144,14 +144,14 @@ val defaultMetadata =
         UUID::class to
             TsExternalTypeRef(
                 "UUID",
-                keyRepresentation = TsCode("string"),
+                keyRepresentation = TsCode(Imports.uuid),
                 jsonDeserializeExpression = null,
                 Imports.uuid
             ),
         Id::class to
             TsExternalTypeRef(
                 "UUID",
-                keyRepresentation = TsCode("string"),
+                keyRepresentation = TsCode(Imports.uuid),
                 jsonDeserializeExpression = null,
                 Imports.uuid
             ),
