@@ -8,7 +8,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
-import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaMethod
@@ -98,9 +97,8 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
     ): NamedParameter {
         val kotlinParam = find(param)
         val name =
-            kotlinParam.findAnnotations(annotation).singleOrNull()?.let(getName)?.takeIf {
-                it.isNotBlank()
-            } ?: kotlinParam.name!!
+            param.getParameterAnnotation(annotation.java)?.let(getName)?.takeIf { it.isNotBlank() }
+                ?: kotlinParam.name!!
         return NamedParameter(name = name, type = kotlinParam.type)
     }
 
