@@ -11,12 +11,12 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { preschoolTermsQuery } from './queries'
-import {featureFlags} from "../../../lib-customizations/employeeMobile";
 
 const Ul = styled.ul`
   margin: 0;
