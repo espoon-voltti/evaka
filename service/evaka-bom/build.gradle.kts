@@ -61,5 +61,5 @@ dependencies {
     api(platform(libs.kotlin.bom))
     api(platform("org.junit:junit-bom:5.10.0"))
     api(platform(libs.spring.boot.dependencies))
-    api(platform("software.amazon.awssdk:bom:2.23.3"))
+    api(platform("software.amazon.awssdk:bom:2.24.0"))
 }
