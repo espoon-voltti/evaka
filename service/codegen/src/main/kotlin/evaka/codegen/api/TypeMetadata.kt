@@ -15,8 +15,8 @@ import kotlin.reflect.full.starProjectedType
 
 /** Immutable metadata about Kotlin classes and their TS representations */
 @JvmInline
-value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentation>) {
-    constructor(vararg classes: Pair<KClass<*>, TsRepresentation>) : this(classes.toMap())
+value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentation<*>>) {
+    constructor(vararg classes: Pair<KClass<*>, TsRepresentation<*>>) : this(classes.toMap())
 
     operator fun get(clazz: KClass<*>) = tsRepresentationMap[clazz]
 
@@ -25,7 +25,7 @@ value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentatio
     operator fun plus(other: TypeMetadata) =
         TypeMetadata(this.tsRepresentationMap + other.tsRepresentationMap)
 
-    fun namedTypes(): List<TsNamedType> =
+    fun namedTypes(): List<TsNamedType<*>> =
         tsRepresentationMap.values.mapNotNull { it as? TsNamedType }
 }
 
@@ -37,7 +37,7 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
     val tsReprMap = initial.tsRepresentationMap.toMutableMap()
     val analyzedTypes: MutableSet<KType> = mutableSetOf()
 
-    fun createTsRepr(clazz: KClass<*>): TsRepresentation {
+    fun createTsRepr(clazz: KClass<*>): TsRepresentation<*> {
         if (
             clazz.qualifiedName?.startsWith("fi.espoo.") != true &&
                 clazz.qualifiedName?.startsWith("evaka.") != true
@@ -72,7 +72,7 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
 
         fun discoverTypeParameters() = arguments.forEach { it.type?.discover() }
 
-        fun TsNamedType.discoverRelatedTypes() =
+        fun TsNamedType<*>.discoverRelatedTypes() =
             when (this) {
                 is TsPlainObject -> discoverProperties(this)
                 is TsSealedClass -> {
@@ -93,6 +93,7 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
                 require(arguments.size == 2) { "Expected 2 type arguments, got $this" }
                 discoverTypeParameters()
             }
+            is TsObjectLiteral -> tsRepr.properties.values.forEach { it.discover() }
             is Excluded,
             is TsPlain,
             is TsExternalTypeRef -> {}

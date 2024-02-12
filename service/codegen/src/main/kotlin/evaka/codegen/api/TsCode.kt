@@ -59,15 +59,37 @@ sealed interface TsImport {
  * A fragment of TS code carrying also information about names that need to be imported from other
  * modules.
  */
-data class TsCode(val text: String, val imports: Set<TsImport> = emptySet()) {
+data class TsCode(val text: String, val imports: Set<TsImport>) {
+    constructor(text: String, vararg imports: TsImport) : this(text, imports.toSet())
+
+    constructor(
+        import: TsImport,
+    ) : this(import.name, setOf(import))
+
+    operator fun plus(other: String): TsCode = TsCode(this.text + other, this.imports)
+
+    operator fun plus(other: TsCode): TsCode =
+        TsCode(this.text + other.text, this.imports + other.imports)
+
+    fun prependIndent(indent: String): TsCode =
+        if (text.isEmpty()) this else copy(text = text.prependIndent(indent))
+
     companion object {
-        operator fun invoke(f: Builder.() -> TsCode): TsCode = Builder().run { f(this) }
+        operator fun invoke(f: Builder.() -> String): TsCode =
+            Builder().run { this.toTsCode(f(this)) }
+
+        fun join(
+            code: Collection<TsCode>,
+            separator: String,
+            prefix: String = "",
+            postfix: String = ""
+        ): TsCode = TsCode { join(code, separator = separator, prefix = prefix, postfix = postfix) }
     }
 
     class Builder {
         private var imports: List<TsImport> = listOf()
 
-        fun ts(code: TsCode): String {
+        fun inline(code: TsCode): String {
             this.imports += code.imports
             return code.text
         }
@@ -77,11 +99,16 @@ data class TsCode(val text: String, val imports: Set<TsImport> = emptySet()) {
             return import.name
         }
 
-        fun join(code: Collection<TsCode>, separator: String): String {
+        fun join(
+            code: Collection<TsCode>,
+            separator: String,
+            prefix: String = "",
+            postfix: String = ""
+        ): String {
             this.imports += code.flatMap { it.imports }
-            return code.joinToString(separator) { it.text }
+            return code.joinToString(separator, prefix = prefix, postfix = postfix) { it.text }
         }
 
-        fun ts(text: String): TsCode = TsCode(text, imports.toSet())
+        fun toTsCode(text: String): TsCode = TsCode(text, imports.toSet())
     }
 }

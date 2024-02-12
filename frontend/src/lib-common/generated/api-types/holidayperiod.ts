@@ -57,7 +57,7 @@ export interface FixedPeriodQuestionnaireBody {
 * Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {
-  fixedPeriods: Record<string, FiniteDateRange | null>
+  fixedPeriods: Record<UUID, FiniteDateRange | null>
 }
 
 /**

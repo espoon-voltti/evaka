@@ -45,7 +45,7 @@ export interface CalendarEventForm {
   period: FiniteDateRange
   times: CalendarEventTimeForm[] | null
   title: string
-  tree: Record<string, UUID[] | null> | null
+  tree: Record<UUID, UUID[] | null> | null
   unitId: UUID
 }
 
@@ -83,14 +83,14 @@ export interface CalendarEventTimeReservationForm {
 export interface CalendarEventUpdateForm {
   description: string
   title: string
-  tree: Record<string, UUID[] | null> | null
+  tree: Record<UUID, UUID[] | null> | null
 }
 
 /**
 * Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEvent
 */
 export interface CitizenCalendarEvent {
-  attendingChildren: Record<string, AttendingChild[]>
+  attendingChildren: Record<UUID, AttendingChild[]>
   description: string
   id: UUID
   title: string

@@ -35,9 +35,15 @@ fun generate() {
     generateLanguages(generatedPath / "language.ts")
 
     val apiFiles = generateApiFiles()
-    val apiPath = generatedPath / "api-types"
-    apiPath.toFile().deleteRecursively()
-    apiPath.createDirectory()
+    val apiPaths =
+        listOf(
+            srcPath / "lib-common" / "generated" / "api-types",
+            srcPath / "citizen-frontend" / "generated" / "api-clients"
+        )
+    apiPaths.forEach {
+        it.toFile().deleteRecursively()
+        it.createDirectory()
+    }
     apiFiles.forEach { (file, content) ->
         val path = absolutePath(srcPath, file)
         path.writeText(content)
