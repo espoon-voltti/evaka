@@ -322,7 +322,6 @@ data class DvvModificationsEnv(
     val userId: String,
     val password: Sensitive<String>,
     val xroadClientId: String,
-    val productCode: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -347,11 +346,6 @@ data class DvvModificationsEnv(
                         "evaka.integration.dvv_modifications.xroad_client_id",
                         "fi.espoo.integration.dvv-modifications-service.xRoadClientId"
                     ),
-                productCode =
-                    env.lookup(
-                        "evaka.integration.dvv_modifications.product_code",
-                        "fi.espoo.integration.dvv-modifications-service.productCode"
-                    )
             )
     }
 }
