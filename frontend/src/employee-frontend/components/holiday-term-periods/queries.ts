@@ -4,16 +4,17 @@
 
 import { mutation, query } from 'lib-common/query'
 
-import { getPreschoolTermsResult } from '../../api/applications'
 import { createQueryKeys } from '../../query'
 
 import {
   createFixedPeriodQuestionnaire,
   createHolidayPeriod,
+  createPreschoolTerm,
   deleteHolidayPeriod,
   deleteQuestionnaire,
   getHolidayPeriod,
   getHolidayPeriods,
+  getPreschoolTermsResult,
   getQuestionnaire,
   getQuestionnaires,
   updateFixedPeriodQuestionnaire,
@@ -43,14 +44,19 @@ export const questionnairesQuery = query({
   queryKey: () => queryKeys.questionnaires()
 })
 
+export const questionnaireQuery = query({
+  api: getQuestionnaire,
+  queryKey: queryKeys.questionnaire
+})
+
 export const preschoolTermsQuery = query({
   api: getPreschoolTermsResult,
   queryKey: () => queryKeys.preschoolTerms()
 })
 
-export const questionnaireQuery = query({
-  api: getQuestionnaire,
-  queryKey: queryKeys.questionnaire
+export const createPreschoolTermMutation = mutation({
+  api: createPreschoolTerm,
+  invalidateQueryKeys: () => [queryKeys.preschoolTerms()]
 })
 
 export const createHolidayPeriodMutation = mutation({

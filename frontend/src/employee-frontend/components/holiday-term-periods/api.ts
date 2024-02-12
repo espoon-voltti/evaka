@@ -6,6 +6,11 @@ import {
   deserializeFixedPeriodQuestionnaire,
   deserializeHolidayPeriod
 } from 'lib-common/api-types/holiday-period'
+import { deserializePreschoolTerm } from 'lib-common/api-types/units/terms'
+import {
+  PreschoolTerm,
+  PreschoolTermRequest
+} from 'lib-common/generated/api-types/daycare'
 import {
   FixedPeriodQuestionnaire,
   FixedPeriodQuestionnaireBody,
@@ -85,4 +90,14 @@ export function deleteQuestionnaire(id: UUID): Promise<void> {
   return client
     .delete(`/holiday-period/questionnaire/${id}`)
     .then(() => undefined)
+}
+
+export async function getPreschoolTermsResult(): Promise<PreschoolTerm[]> {
+  return client
+    .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
+    .then((res) => res.data.map(deserializePreschoolTerm))
+}
+
+export function createPreschoolTerm(data: PreschoolTermRequest): Promise<void> {
+  return client.post('/preschool-terms', data).then(() => undefined)
 }

@@ -7,10 +7,7 @@ import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import {
-  deserializeClubTerm,
-  deserializePreschoolTerm
-} from 'lib-common/api-types/units/terms'
+import { deserializeClubTerm } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationNoteResponse,
@@ -27,6 +24,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { getPreschoolTermsResult } from '../components/holiday-term-periods/api'
 import { SearchOrder } from '../types'
 import {
   ApplicationResponse,
@@ -418,10 +416,4 @@ export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   } catch (e) {
     return Failure.fromError(e)
   }
-}
-
-export async function getPreschoolTermsResult(): Promise<PreschoolTerm[]> {
-  return client
-    .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
-    .then((res) => res.data.map(deserializePreschoolTerm))
 }

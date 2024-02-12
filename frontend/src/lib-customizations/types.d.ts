@@ -204,6 +204,11 @@ interface BaseFeatureFlags {
   staffAttendanceTypes: boolean
 
   /**
+   * Enable extended period start date -field when creating or editing preschool terms
+   */
+  extendedPreschoolTerm: boolean
+
+  /**
    * Experimental flags are features in development: features that aren't yet
    * recommended/tested for production usage but can be enabled for testing
    * in eVaka implementations. They are optional (have `?` after the property name)

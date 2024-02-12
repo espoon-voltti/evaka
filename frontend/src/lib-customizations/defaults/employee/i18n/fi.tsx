@@ -48,6 +48,7 @@ export const fi = {
     personProfile: 'Aikuisen tiedot',
     personTimeline: 'Asiakkaan aikajana',
     personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
+    preschoolTerm: 'Esiopetuksen lukukausi',
     preschoolTerms: 'Esiopetuksen lukukaudet',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
@@ -4461,10 +4462,23 @@ export const fi = {
   terms: {
     term: 'Lukukausi',
     finnishPreschool: 'Suomenkielinen esiopetus',
-    extendedPeriodStarts: 'Pidennetty lukukausi alkaa',
-    applicationPeriodStarts: 'Haku lukukaudelle alkaa',
+    extendedTermStart: 'Pidennetty lukukausi alkaa',
+    applicationPeriodStart: 'Haku lukukaudelle alkaa',
     termBreaks: 'Opetustauot',
-    confirmDelete: 'Haluatko varmasti poistaa lukukauden?'
+    addTerm: 'Lisää lukukausi',
+    confirmDelete: 'Haluatko varmasti poistaa lukukauden?',
+    extendedTermStartInfo:
+      'Aika, jolloin varhaiskasvatusmaksu määräytyy liittyvän varhaiskasvatuksen mukaan.',
+    termBreaksInfo:
+      'Lisää tähän sellaiset ajat lukukauden aikana, jolloin opetusta ei tarjota, esim. joululomat.',
+    addTermBreak: 'Lisää taukojakso',
+    validationErrors: {
+      overlap:
+        'Tälle ajanjaksolle on jo päällekkäinen lukukausi. Yritä kirjata merkintä eri ajanjaksolle.',
+      extendedTermStartAfter:
+        'Pidennetyn lukukauden aloituspäivämäärä ei voi olla lukukauden aloituspäivämäärän jälkeen.',
+      termBreaksOverlap: 'Päällekkäiset opetustauot eivät ole sallittua.'
+    }
   },
   preferredFirstName: {
     popupLink: 'Kutsumanimi',

@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+
 import { Checkbox, DatePicker, Page, Radio, TextInput } from '../../utils/page'
 
 export class HolidayAndTermPeriodsPage {
@@ -9,6 +12,24 @@ export class HolidayAndTermPeriodsPage {
 
   get visiblePeriods(): Promise<string[]> {
     return this.page.findAllByDataQa('holiday-period').allTexts()
+  }
+
+  get visiblePreschoolTermPeriods(): Promise<string[]> {
+    return this.page.findAllByDataQa('finnish-preschool').allTexts()
+  }
+
+  get visibleExtendedTermStartDates(): Promise<string[]> {
+    return this.page.findAllByDataQa('extended-term-start').allTexts()
+  }
+
+  get visibleApplicationPeriodStartDates(): Promise<string[]> {
+    return this.page.findAllByDataQa('application-period-start').allTexts()
+  }
+
+  async visibleTermBreakByDate(date: LocalDate): Promise<string[]> {
+    return this.page
+      .findAllByDataQa(`term-break-${date.formatIso()}`)
+      .allTexts()
   }
 
   #periodRows = this.page.findAllByDataQa('holiday-period-row')
@@ -31,6 +52,10 @@ export class HolidayAndTermPeriodsPage {
 
   async clickAddQuestionnaireButton() {
     return this.page.findByDataQa('add-questionnaire-button').click()
+  }
+
+  async clickAddPreschoolTermButton() {
+    return this.page.findByDataQa('add-preschool-term-button').click()
   }
 
   #periodInputs = {
@@ -111,6 +136,60 @@ export class HolidayAndTermPeriodsPage {
         }
       }
     }
+  }
+
+  async fillPreschoolTermForm(params: {
+    finnishPreschoolStart?: string
+    finnishPreschoolEnd?: string
+    extendedTermStart?: string
+    applicationPeriodStart?: string
+    termBreaks?: FiniteDateRange[]
+  }) {
+    const { termBreaks, ...baseInputs } = params
+    for (const [key, val] of Object.entries(baseInputs)) {
+      if (val !== undefined) {
+        await this.#preschoolTermInputs[key as keyof typeof baseInputs].fill(
+          val
+        )
+      }
+    }
+
+    if (termBreaks && termBreaks.length > 0) {
+      for (const [i, termBreak] of termBreaks.entries()) {
+        await this.#addTermBreakButton.click()
+        const startInput = new DatePicker(
+          this.page
+            .findByDataQa(`term-break-entry-${i}`)
+            .findAll('input')
+            .first()
+        )
+        const endInput = new DatePicker(
+          this.page
+            .findByDataQa(`term-break-entry-${i}`)
+            .findAll('input')
+            .last()
+        )
+        await startInput.fill(termBreak.start.format())
+        await endInput.fill(termBreak.end.format())
+      }
+    }
+  }
+
+  #addTermBreakButton = this.page.findByDataQa('add-term-break-button')
+
+  #preschoolTermInputs = {
+    finnishPreschoolStart: new DatePicker(
+      this.page.findByDataQa('finnish-preschool').findAll('input').first()
+    ),
+    finnishPreschoolEnd: new DatePicker(
+      this.page.findByDataQa('finnish-preschool').findAll('input').last()
+    ),
+    extendedTermStart: new DatePicker(
+      this.page.findByDataQa('input-extended-term-start')
+    ),
+    applicationPeriodStart: new DatePicker(
+      this.page.findByDataQa('input-application-period-start')
+    )
   }
 
   async submit() {

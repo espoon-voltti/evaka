@@ -160,7 +160,11 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
             // Term break on thursday
             tx.insertPreschoolTerm(
-                preschoolTerm2021.copy(termBreaks = DateSet.of(FiniteDateRange(thursday, thursday)))
+                preschoolTerm2021.finnishPreschool,
+                preschoolTerm2021.swedishPreschool,
+                preschoolTerm2021.extendedTerm,
+                preschoolTerm2021.applicationPeriod,
+                DateSet.of(FiniteDateRange(thursday, thursday))
             )
         }
 

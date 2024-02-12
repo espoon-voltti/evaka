@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
-import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -281,13 +280,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `calendar has correct absence categories`() {
         db.transaction { tx ->
             tx.insertPreschoolTerm(
-                PreschoolTerm(
-                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
-                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
-                    termBreaks = DateSet.empty()
-                )
+                finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+                termBreaks = DateSet.empty()
             )
         }
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)
@@ -364,15 +361,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `calendar has correct schedule types`() {
         db.transaction { tx ->
             tx.insertPreschoolTerm(
-                PreschoolTerm(
-                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
-                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+                finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                applicationPeriod = FiniteDateRange(placementStart, placementEnd),
 
-                    // First day is in a term break
-                    termBreaks = DateSet.of(FiniteDateRange(placementStart, placementStart))
-                )
+                // First day is in a term break
+                termBreaks = DateSet.of(FiniteDateRange(placementStart, placementStart))
             )
         }
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)

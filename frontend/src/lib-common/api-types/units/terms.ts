@@ -16,6 +16,7 @@ export const deserializeClubTerm = (clubTerm: JsonOf<ClubTerm>): ClubTerm => ({
 export const deserializePreschoolTerm = (
   preschoolTerm: JsonOf<PreschoolTerm>
 ): PreschoolTerm => ({
+  ...preschoolTerm,
   finnishPreschool: FiniteDateRange.parseJson(preschoolTerm.finnishPreschool),
   swedishPreschool: FiniteDateRange.parseJson(preschoolTerm.swedishPreschool),
   extendedTerm: FiniteDateRange.parseJson(preschoolTerm.extendedTerm),

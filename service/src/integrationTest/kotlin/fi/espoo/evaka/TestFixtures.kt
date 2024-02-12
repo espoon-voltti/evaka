@@ -19,11 +19,9 @@ import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
-import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.insertClubTerm
-import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.EmployeeWithName
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
@@ -38,6 +36,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
@@ -47,6 +46,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -579,7 +579,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         )
     )
 
-    insertPreschoolTerms()
+    preschoolTerms.forEach { insert(it) }
     insertClubTerms()
 
     insertServiceNeedOptions()
@@ -602,7 +602,8 @@ fun Database.Transaction.insertTestDecisionMaker() {
 }
 
 val preschoolTerm2020 =
-    PreschoolTerm(
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
         FiniteDateRange(LocalDate.of(2020, 8, 18), LocalDate.of(2021, 6, 4)),
         FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4)),
@@ -610,7 +611,8 @@ val preschoolTerm2020 =
         DateSet.empty()
     )
 val preschoolTerm2021 =
-    PreschoolTerm(
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
         FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
         FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
@@ -618,7 +620,8 @@ val preschoolTerm2021 =
         DateSet.empty()
     )
 val preschoolTerm2022 =
-    PreschoolTerm(
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
         FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
         FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2023, 6, 2)),
@@ -626,7 +629,8 @@ val preschoolTerm2022 =
         DateSet.empty()
     )
 val preschoolTerm2023 =
-    PreschoolTerm(
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
         FiniteDateRange(LocalDate.of(2023, 8, 13), LocalDate.of(2024, 6, 6)),
         FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 6)),
@@ -638,7 +642,8 @@ val preschoolTerm2023 =
         )
     )
 val preschoolTerm2024 =
-    PreschoolTerm(
+    DevPreschoolTerm(
+        PreschoolTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
         FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
         FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 5, 30)),
@@ -658,10 +663,6 @@ val preschoolTerms =
         preschoolTerm2023,
         preschoolTerm2024
     )
-
-fun Database.Transaction.insertPreschoolTerms() {
-    preschoolTerms.forEach { insertPreschoolTerm(it) }
-}
 
 val clubTerms =
     listOf(

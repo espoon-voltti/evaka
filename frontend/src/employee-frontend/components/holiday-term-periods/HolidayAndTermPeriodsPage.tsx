@@ -14,6 +14,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -187,6 +188,8 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
             }}
           />
         )}
+
+        <Gap size="m" />
 
         <TermsSection />
       </ContentArea>
