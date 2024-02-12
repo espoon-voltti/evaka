@@ -1635,10 +1635,10 @@ VALUES (:childId, :unitId, :date, :arrived, :departed)
 
 fun Database.Transaction.insert(preschoolTerm: DevPreschoolTerm) =
     insertTestDataRow(
-        preschoolTerm,
-        """
+            preschoolTerm,
+            """
 INSERT INTO preschool_term (id, finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) 
 VALUES (:id, :finnishPreschool, :swedishPreschool, :extendedTerm, :applicationPeriod, :termBreaks)
 """
-    )
+        )
         .let(::PreschoolTermId)

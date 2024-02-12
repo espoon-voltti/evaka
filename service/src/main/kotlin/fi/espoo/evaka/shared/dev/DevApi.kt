@@ -1998,7 +1998,7 @@ data class DevParentship(
     val endDate: LocalDate
 )
 
-data class DevPreschoolTerm (
+data class DevPreschoolTerm(
     val id: PreschoolTermId = PreschoolTermId(UUID.randomUUID()),
     val finnishPreschool: FiniteDateRange,
     val swedishPreschool: FiniteDateRange,
