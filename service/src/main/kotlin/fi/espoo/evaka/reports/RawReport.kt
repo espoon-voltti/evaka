@@ -116,7 +116,14 @@ SELECT
     coalesce(sn.shift_care, 'NONE') = 'FULL' AS shift_care,
     coalesce(sno.daycare_hours_per_week, 0.0) AS hours_per_week,
 
-    an IS NOT NULL as has_assistance_need,
+    (
+        an IS NOT NULL
+        OR EXISTS(SELECT FROM assistance_action WHERE child_id = pl.child_id AND valid_during @> t::date)
+        OR EXISTS(SELECT FROM assistance_need WHERE child_id = pl.child_id AND valid_during @> t::date)
+        OR EXISTS(SELECT FROM preschool_assistance WHERE child_id = pl.child_id AND valid_during @> t::date)
+        OR EXISTS(SELECT FROM other_assistance_measure WHERE child_id = pl.child_id AND valid_during @> t::date)
+    ) AS has_assistance_need,
+
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
     coalesce(an.capacity_factor, 1.0) * (CASE
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
