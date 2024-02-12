@@ -150,12 +150,10 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
     val tsArgument =
         if (argumentType != null)
             TsCode {
-                ts(
-                    "\n" +
-                        "request: ${inline(generator.tsType(argumentType, compact = false))}"
-                            .prependIndent("  ") +
-                        "\n"
-                )
+                "\n" +
+                    "request: ${inline(generator.tsType(argumentType, compact = false))}"
+                        .prependIndent("  ") +
+                    "\n"
             }
         else null
 
@@ -164,7 +162,7 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
             endpoint.pathVariables.associate {
                 it.name to
                     generator.serializePathVariable(it.type, TsCode("request.${it.name}")).let {
-                        TsCode { ts("\${${inline(it)}}") }
+                        TsCode { "\${${inline(it)}}" }
                     }
             }
         else emptyMap()
@@ -177,7 +175,7 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
                         it.name to
                             generator.serializeRequestParam(it.type, TsCode("request.${it.name}"))
                     }
-                    .map { TsCode { ts("  ${it.key}: ${inline(it.value)}") } },
+                    .map { TsCode { "  ${it.key}: ${inline(it.value)}" } },
                 separator = ",\n",
                 prefix = "{\n",
                 postfix = "\n}"
@@ -197,14 +195,12 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
 
     val axiosArguments =
         listOfNotNull(
-            TsCode { ts("url: ${ref(Imports.uri)}`${inline(url)}`.toString()") },
-            TsCode { ts("method: '${endpoint.httpMethod}'") },
-            requestParameters?.let { TsCode { ts("params: ${inline(it)}") } },
+            TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
+            TsCode { "method: '${endpoint.httpMethod}'" },
+            requestParameters?.let { TsCode { "params: ${inline(it)}" } },
             endpoint.requestBodyType?.let {
                 TsCode {
-                    ts(
-                        "data: request.body satisfies ${ref(Imports.jsonCompatible)}<${inline(tsRequestType)}>"
-                    )
+                    "data: request.body satisfies ${ref(Imports.jsonCompatible)}<${inline(tsRequestType)}>"
                 }
             }
         )
@@ -216,8 +212,7 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
         endpoint.responseBodyType?.let { generator.jsonDeserializerExpression(it, TsCode("json")) }
 
     return TsCode {
-        ts(
-            """
+        """
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod}
 */
@@ -227,7 +222,6 @@ ${join(axiosArguments, ",\n").prependIndent("    ")}
   })
   return ${inline(responseDeserializer ?: TsCode("json"))}
 }"""
-        )
     }
 }
 

@@ -39,7 +39,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
     fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
         val keyTs = type.first?.let { keyType(it) } ?: TsCode("never")
         val valueTs = type.second?.let { tsType(it, compact) } ?: TsCode("never")
-        return TsCode { ts("Record<${inline(keyTs)}, ${inline(valueTs)}>") }
+        return TsCode { "Record<${inline(keyTs)}, ${inline(valueTs)}>" }
     }
 
     private fun typeToTsCode(type: KType, f: (tsType: TsType) -> TsCode): TsCode =
@@ -93,7 +93,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsObjectLiteral ->
                 TsCode.join(
                     tsRepr.properties.map { (name, type) ->
-                        TsCode { ts("$name: ${inline(tsType(type, compact))}") }
+                        TsCode { "$name: ${inline(tsType(type, compact))}" }
                             .let { if (!compact) it.prependIndent("  ") else it }
                     },
                     separator = if (compact) ", " else ",\n",
@@ -109,20 +109,16 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
 
     fun stringEnum(enum: TsStringEnum): TsCode = TsCode {
         if (enum.constList != null)
-            ts(
-                """${enum.docHeader()}
+            """${enum.docHeader()}
 export const ${enum.constList.name} = [
 ${enum.values.joinToString(",\n") { "'$it'" }.prependIndent("  ")}
 ] as const
 
 export type ${enum.name} = typeof ${enum.constList.name}[number]"""
-            )
         else
-            ts(
-                """${enum.docHeader()}
+            """${enum.docHeader()}
 export type ${enum.name} =
 ${enum.values.joinToString("\n") { "| '$it'" }.prependIndent("  ")}"""
-            )
     }
 
     fun tsPlainObject(obj: TsPlainObject): TsCode {
@@ -135,15 +131,13 @@ ${enum.values.joinToString("\n") { "| '$it'" }.prependIndent("  ")}"""
                 .sortedBy { it.key }
                 .map { (name, type) ->
                     val tsRepr = tsType(type, compact = true)
-                    TsCode { ts("$name: ${inline(tsRepr)}") }
+                    TsCode { "$name: ${inline(tsRepr)}" }
                 }
         return TsCode {
-            ts(
-                """${obj.docHeader()}
+            """${obj.docHeader()}
 export interface ${obj.name}$typeParams {
 ${join(props, "\n").prependIndent("  ")}
 }"""
-            )
         }
     }
 
@@ -161,20 +155,17 @@ ${join(props, "\n").prependIndent("  ")}
                         variant.obj.properties.entries
                             .sortedBy { it.key }
                             .map { (name, type) ->
-                                TsCode { ts("$name: ${inline(tsType(type, compact = true))}") }
+                                TsCode { "$name: ${inline(tsType(type, compact = true))}" }
                             }
                 TsCode {
-                    ts(
-                        """${variant.obj.docHeader()}
+                    """${variant.obj.docHeader()}
 export interface ${variant.obj.name} {
 ${join(props, "\n").prependIndent("  ")}
 }"""
-                    )
                 }
             }
         return TsCode {
-            ts(
-                """
+            """
 export namespace ${sealed.name} {
 ${join(tsVariants, "\n\n").prependIndent("  ")}
 }
@@ -182,7 +173,6 @@ ${join(tsVariants, "\n\n").prependIndent("  ")}
 ${sealed.docHeader()}
 export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sealed.name}.${it.obj.name}" }}
 """
-            )
         }
     }
 
@@ -252,8 +242,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                             "case '$discriminant': return deserializeJson${namedType.name}${variant.obj.name}(json)"
                         }
                     TsCode {
-                        ts(
-                            """
+                        """
 ${join(variants.values, "\n")}
 export function deserializeJson${namedType.name}(json: ${ref(Imports.jsonOf)}<${namedType.name}>): ${namedType.name} {
   switch (json.$discriminantProp) {
@@ -261,7 +250,6 @@ ${cases.prependIndent("    ")}
     default: return json
   }
 }"""
-                        )
                     }
                 }
             }
@@ -287,16 +275,14 @@ ${cases.prependIndent("    ")}
         if (propDeserializers.isEmpty()) return null
         val propCodes =
             listOf(TsCode("...json")) +
-                propDeserializers.map { (name, code) -> TsCode { ts("$name: ${inline(code)}") } }
+                propDeserializers.map { (name, code) -> TsCode { "$name: ${inline(code)}" } }
         return TsCode {
-            ts(
-                """
+            """
 export function ${ref(function)}(json: ${ref(Imports.jsonOf)}<${ref(type)}>): ${ref(type)} {
   return {
 ${join(propCodes, ",\n").prependIndent("    ")}
   }
 }"""
-            )
         }
     }
 
@@ -309,7 +295,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                             requireNotNull(tsRepr.getTypeArgs(type.arguments)),
                             TsCode("e")
                         )
-                        ?.let { TsCode { ts("${inline(jsonExpression)}.map(e => ${inline(it)})") } }
+                        ?.let { TsCode { "${inline(jsonExpression)}.map(e => ${inline(it)})" } }
                 }
                 is TsRecord -> {
                     val valueDeser =
@@ -320,26 +306,24 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                     if (valueDeser == null) null
                     else
                         TsCode {
-                            ts(
-                                """Object.fromEntries(Object.entries(${inline(jsonExpression)}).map(
+                            """Object.fromEntries(Object.entries(${inline(jsonExpression)}).map(
   ([k, v]) => [k, ${inline(valueDeser)}]
 ))"""
-                            )
                         }
                 }
                 is TsObjectLiteral,
                 is TsSealedVariant -> TODO()
                 is TsPlainObject ->
-                    TsCode { ts("${ref(deserializerRef(tsRepr))}(${inline(jsonExpression)})") }
+                    TsCode { "${ref(deserializerRef(tsRepr))}(${inline(jsonExpression)})" }
                 is TsSealedClass ->
-                    TsCode { ts("${ref(deserializerRef(tsRepr))}(${inline(jsonExpression)})") }
+                    TsCode { "${ref(deserializerRef(tsRepr))}(${inline(jsonExpression)})" }
                 is TsExternalTypeRef -> tsRepr.deserializeJson?.invoke(jsonExpression)
                 is Excluded,
                 is TsPlain,
                 is TsStringEnum -> null
             }?.let {
                 if (type.isMarkedNullable)
-                    TsCode { ts("(${inline(jsonExpression)} != null) ? ${inline(it)} : null") }
+                    TsCode { "(${inline(jsonExpression)} != null) ? ${inline(it)} : null" }
                 else it
             }
 

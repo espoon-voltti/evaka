@@ -75,16 +75,15 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
         if (text.isEmpty()) this else copy(text = text.prependIndent(indent))
 
     companion object {
-        operator fun invoke(f: Builder.() -> TsCode): TsCode = Builder().run { f(this) }
+        operator fun invoke(f: Builder.() -> String): TsCode =
+            Builder().run { this.toTsCode(f(this)) }
 
         fun join(
             code: Collection<TsCode>,
             separator: String,
             prefix: String = "",
             postfix: String = ""
-        ): TsCode = TsCode {
-            ts(join(code, separator = separator, prefix = prefix, postfix = postfix))
-        }
+        ): TsCode = TsCode { join(code, separator = separator, prefix = prefix, postfix = postfix) }
     }
 
     class Builder {
@@ -110,6 +109,6 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
             return code.joinToString(separator, prefix = prefix, postfix = postfix) { it.text }
         }
 
-        fun ts(text: String): TsCode = TsCode(text, imports.toSet())
+        fun toTsCode(text: String): TsCode = TsCode(text, imports.toSet())
     }
 }

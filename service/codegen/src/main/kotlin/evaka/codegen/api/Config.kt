@@ -69,7 +69,7 @@ val defaultMetadata =
                 "LocalDate",
                 keyRepresentation = TsCode("string"),
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.localDate)}.parseIso(${inline(json)})") }
+                    TsCode { "${ref(Imports.localDate)}.parseIso(${inline(json)})" }
                 },
                 serializePathVariable = { value -> value + ".formatIso()" },
                 serializeRequestParam = { value, nullable ->
@@ -82,7 +82,7 @@ val defaultMetadata =
                 "LocalTime",
                 keyRepresentation = TsCode("string"),
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.localTime)}.parseIso(${inline(json)})") }
+                    TsCode { "${ref(Imports.localTime)}.parseIso(${inline(json)})" }
                 },
                 serializePathVariable = { value -> value + ".formatIso()" },
                 serializeRequestParam = { value, nullable ->
@@ -95,7 +95,7 @@ val defaultMetadata =
                 "HelsinkiDateTime",
                 keyRepresentation = null,
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.helsinkiDateTime)}.parseIso(${inline(json)})") }
+                    TsCode { "${ref(Imports.helsinkiDateTime)}.parseIso(${inline(json)})" }
                 },
                 serializePathVariable = { value -> value + ".formatIso()" },
                 serializeRequestParam = { value, nullable ->
@@ -108,7 +108,7 @@ val defaultMetadata =
                 "FiniteDateRange",
                 keyRepresentation = null,
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.finiteDateRange)}.parseJson(${inline(json)})") }
+                    TsCode { "${ref(Imports.finiteDateRange)}.parseJson(${inline(json)})" }
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
@@ -119,7 +119,7 @@ val defaultMetadata =
                 "DateRange",
                 keyRepresentation = null,
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.dateRange)}.parseJson(${inline(json)})") }
+                    TsCode { "${ref(Imports.dateRange)}.parseJson(${inline(json)})" }
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
@@ -131,9 +131,7 @@ val defaultMetadata =
                 keyRepresentation = null,
                 deserializeJson = { json ->
                     TsCode {
-                        ts(
-                            "${inline(json)}.map((x) => ${ref(Imports.finiteDateRange)}.parseJson(x))"
-                        )
+                        "${inline(json)}.map((x) => ${ref(Imports.finiteDateRange)}.parseJson(x))"
                     }
                 },
                 serializePathVariable = null,
@@ -145,7 +143,7 @@ val defaultMetadata =
                 "VasuQuestion",
                 keyRepresentation = null,
                 deserializeJson = { json ->
-                    TsCode { ts("${ref(Imports.mapVasuQuestion)}(${inline(json)})") }
+                    TsCode { "${ref(Imports.mapVasuQuestion)}(${inline(json)})" }
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
