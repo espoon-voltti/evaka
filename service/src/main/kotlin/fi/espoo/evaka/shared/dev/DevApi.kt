@@ -38,13 +38,11 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
-import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.insertClubTerm
-import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -154,6 +152,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
@@ -163,6 +162,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -1488,18 +1488,8 @@ RETURNING id
     }
 
     @PostMapping("/preschool-term")
-    fun createPreschoolTerm(db: Database, @RequestBody body: PreschoolTerm) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.insertPreschoolTerm(
-                    body.finnishPreschool,
-                    body.swedishPreschool,
-                    body.extendedTerm,
-                    body.applicationPeriod,
-                    body.termBreaks
-                )
-            }
-        }
+    fun createPreschoolTerm(db: Database, @RequestBody body: DevPreschoolTerm) {
+        db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
     @Suppress("EmailMessageType", "ktlint:standard:enum-entry-name-case")
@@ -2006,6 +1996,15 @@ data class DevParentship(
     val headOfChildId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate
+)
+
+data class DevPreschoolTerm (
+    val id: PreschoolTermId = PreschoolTermId(UUID.randomUUID()),
+    val finnishPreschool: FiniteDateRange,
+    val swedishPreschool: FiniteDateRange,
+    val extendedTerm: FiniteDateRange,
+    val applicationPeriod: FiniteDateRange,
+    val termBreaks: DateSet
 )
 
 data class DevEmployee(

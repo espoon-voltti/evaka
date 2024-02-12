@@ -69,6 +69,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -1631,3 +1632,13 @@ VALUES (:childId, :unitId, :date, :arrived, :departed)
 """
         )
         .let(::ChildAttendanceId)
+
+fun Database.Transaction.insert(preschoolTerm: DevPreschoolTerm) =
+    insertTestDataRow(
+        preschoolTerm,
+        """
+INSERT INTO preschool_term (id, finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) 
+VALUES (:id, :finnishPreschool, :swedishPreschool, :extendedTerm, :applicationPeriod, :termBreaks)
+"""
+    )
+        .let(::PreschoolTermId)
