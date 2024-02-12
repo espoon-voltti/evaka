@@ -2,18 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { tabletMin } from 'lib-components/breakpoints'
+import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -45,6 +48,8 @@ export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
   const t = useTranslation()
 
+  const [permissionExpanded, { toggle: togglePermissionExpanded }] =
+    useBoolean(true)
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
   const vasuDocument = useQueryResult(vasuDocumentQuery(id))
@@ -99,60 +104,76 @@ export default React.memo(function VasuPage() {
             {vasu &&
               permissionToShareRequired &&
               !guardianHasGivenPermissionToShare && (
-                <StickyFooter>
+                <PermissionWrapper>
                   <Container>
                     <ContentArea
                       opaque
                       paddingVertical="m"
                       paddingHorizontal="L"
                     >
-                      <Label>
-                        {vasu.type === 'DAYCARE'
-                          ? t.children.vasu.givePermissionToShareTitleVasu
-                          : t.children.vasu.givePermissionToShareTitleLeops}
-                      </Label>
-                      <Gap size="s" />
-                      <ExpandingInfo
-                        info={
-                          <div>
-                            {vasu.type === 'DAYCARE'
-                              ? `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingVasuDisclaimer}`
-                              : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
-                          </div>
-                        }
-                        inlineChildren
-                      >
-                        <span>
+                      <FixedSpaceRow alignItems="flex-start">
+                        <Label>
                           {vasu.type === 'DAYCARE'
-                            ? t.children.vasu.givePermissionToShareVasuBrief
-                            : t.children.vasu.givePermissionToShareLeopsBrief}
-                        </span>
-                      </ExpandingInfo>
-                      <Gap size="s" />
-                      <Checkbox
-                        checked={givePermissionToShareSelected}
-                        label={
-                          vasu.type === 'DAYCARE'
-                            ? t.children.vasu.givePermissionToShareVasu
-                            : t.children.vasu.givePermissionToShareLeops
-                        }
-                        onChange={(value) => {
-                          setGivePermissionToShareSelected(value)
-                        }}
-                        data-qa="confirm-checkbox"
-                      />
-                      <Gap />
-                      <MutateButton
-                        primary
-                        text={t.common.confirm}
-                        disabled={!givePermissionToShareSelected}
-                        mutation={givePermissionToShareVasuMutation}
-                        onClick={() => id}
-                        data-qa="confirm-button"
-                      />
+                            ? t.children.vasu.givePermissionToShareTitleVasu
+                            : t.children.vasu.givePermissionToShareTitleLeops}
+                        </Label>
+                        <InlineButton
+                          onClick={togglePermissionExpanded}
+                          text={
+                            permissionExpanded ? t.common.show : t.common.hide
+                          }
+                          icon={
+                            permissionExpanded ? faChevronDown : faChevronUp
+                          }
+                        />
+                      </FixedSpaceRow>
+                      {permissionExpanded && (
+                        <>
+                          <Gap size="s" />
+                          <ExpandingInfo
+                            info={
+                              <div>
+                                {vasu.type === 'DAYCARE'
+                                  ? `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingVasuDisclaimer}`
+                                  : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
+                              </div>
+                            }
+                            inlineChildren
+                          >
+                            <span>
+                              {vasu.type === 'DAYCARE'
+                                ? t.children.vasu.givePermissionToShareVasuBrief
+                                : t.children.vasu
+                                    .givePermissionToShareLeopsBrief}
+                            </span>
+                          </ExpandingInfo>
+                          <Gap size="s" />
+                          <Checkbox
+                            checked={givePermissionToShareSelected}
+                            label={
+                              vasu.type === 'DAYCARE'
+                                ? t.children.vasu.givePermissionToShareVasu
+                                : t.children.vasu.givePermissionToShareLeops
+                            }
+                            onChange={(value) => {
+                              setGivePermissionToShareSelected(value)
+                            }}
+                            data-qa="confirm-checkbox"
+                          />
+                          <Gap />
+                          <MutateButton
+                            primary
+                            text={t.common.confirm}
+                            disabled={!givePermissionToShareSelected}
+                            mutation={givePermissionToShareVasuMutation}
+                            onClick={() => id}
+                            data-qa="confirm-button"
+                          />
+                        </>
+                      )}
                     </ContentArea>
                   </Container>
-                </StickyFooter>
+                </PermissionWrapper>
               )}
           </>
         )
@@ -160,3 +181,9 @@ export default React.memo(function VasuPage() {
     </UnwrapResult>
   )
 })
+
+const PermissionWrapper = styled(StickyFooter)`
+  @media screen and (max-width: ${desktopMin}) {
+    bottom: 60px;
+  }
+`
