@@ -106,6 +106,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val child1 = DevPerson(dateOfBirth = LocalDate.of(2015, 1, 1))
         val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 1, 1))
         val child3 = DevPerson(dateOfBirth = LocalDate.of(2017, 1, 1))
+        val child4 = DevPerson(dateOfBirth = LocalDate.of(2018, 1, 1))
 
         db.transaction { tx ->
             tx.insert(area)
@@ -113,7 +114,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(employee)
 
             tx.insert(adult, DevPersonType.ADULT)
-            listOf(child1, child2, child3).forEach { child ->
+            listOf(child1, child2, child3, child4).forEach { child ->
                 tx.insert(child, DevPersonType.CHILD)
                 tx.insertGuardian(adult.id, child.id)
             }
@@ -151,6 +152,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 startDate = monday,
                 endDate = thursday
             )
+
+            // child4 has no placement
 
             // Holiday on wednesday
             tx.insertTestHoliday(wednesday)
@@ -207,6 +210,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             upcomingPlacementType = PlacementType.PRESCHOOL,
                             monthSummaries = emptyList()
                         ),
+                        // child4 has no placements => not included
                     ),
                 days =
                     listOf(
