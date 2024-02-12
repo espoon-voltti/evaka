@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
+import fi.espoo.evaka.shared.security.ChildAclConfig
 
 private typealias FilterByMobile<T> =
     QuerySql.Builder<T>.(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) -> QuerySql<T>
@@ -42,6 +43,40 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
         filter: FilterByMobile<T>
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
+    /**
+     * Creates a rule that is based on the relation between a mobile device and a child.
+     *
+     * @param cfg configuration for the mobile/child relation
+     * @param idChildQuery a query that must return rows with columns `id` and `child_id`
+     */
+    private fun <T : Id<*>> ruleViaChildAcl(
+        cfg: ChildAclConfig,
+        idChildQuery:
+            QuerySql.Builder<T>.(
+                user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime
+            ) -> QuerySql<T>
+    ): DatabaseActionRule.Scoped<T, IsMobile> =
+        DatabaseActionRule.Scoped.Simple(
+            this,
+            Query { user, now ->
+                val aclQueries = cfg.aclQueries(user, now)
+                union(
+                    all = true,
+                    aclQueries.map { aclQuery ->
+                        QuerySql.of {
+                            sql(
+                                """
+SELECT target.id
+FROM (${subquery { idChildQuery(user, now) }}) target
+JOIN (${subquery(aclQuery)}) acl USING (child_id)
+"""
+                            )
+                        }
+                    }
+                )
+            }
+        )
 
     private data class Query<T : Id<*>>(private val filter: FilterByMobile<T>) :
         DatabaseActionRule.Scoped.Query<T, IsMobile> {
@@ -124,59 +159,43 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                 }
         }
 
-    fun inPlacementUnitOfChild() =
+    fun inPlacementUnitOfChild(cfg: ChildAclConfig = ChildAclConfig()) =
         rule<ChildId> { user, now ->
-            sql(
-                """
-SELECT child_id AS id
-FROM child_daycare_acl(${bind(now.toLocalDate())})
-JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+            union(
+                all = true,
+                cfg.aclQueries(user, now).map { aclQuery ->
+                    QuerySql.of {
+                        sql("""
+SELECT acl.child_id AS id
+FROM (${subquery(aclQuery)}) acl
+""")
+                    }
+                }
             )
         }
 
-    fun inPlacementUnitOfChildOfChildDailyNote() =
-        rule<ChildDailyNoteId> { user, now ->
-            sql(
-                """
-SELECT cdn.id
+    fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
+        ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
+            sql("""
+SELECT cdn.id, cdn.child_id
 FROM child_daily_note cdn
-JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
-JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
+""")
         }
 
-    fun inPlacementUnitOfChildOfChildStickyNote() =
-        rule<ChildStickyNoteId> { user, now ->
-            sql(
-                """
-SELECT csn.id
+    fun inPlacementUnitOfChildOfChildStickyNote(cfg: ChildAclConfig = ChildAclConfig()) =
+        ruleViaChildAcl<ChildStickyNoteId>(cfg) { _, _ ->
+            sql("""
+SELECT csn.id, csn.child_id
 FROM child_sticky_note csn
-JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
-JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
+""")
         }
 
-    fun inPlacementUnitOfChildOfChildImage() =
-        rule<ChildImageId> { user, now ->
-            sql(
-                """
-SELECT img.id
+    fun inPlacementUnitOfChildOfChildImage(cfg: ChildAclConfig = ChildAclConfig()) =
+        ruleViaChildAcl<ChildImageId>(cfg) { _, _ ->
+            sql("""
+SELECT img.id, img.child_id
 FROM child_images img
-JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
-JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
-            )
+""")
         }
 
     fun inUnitOfGroup() =
@@ -185,10 +204,12 @@ WHERE mobile_device_id = ${bind(user.id)}
                 """
 SELECT g.id
 FROM daycare_group g
-JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+WHERE EXISTS (
+    SELECT FROM mobile_device md
+    LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
+    WHERE md.id = ${bind(user.id)} AND (md.unit_id = g.daycare_id OR acl.daycare_id = g.daycare_id)
+)
+"""
             )
         }
 
@@ -199,10 +220,12 @@ WHERE acl.mobile_device_id = ${bind(user.id)}
 SELECT gn.id
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
-JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+WHERE EXISTS (
+    SELECT FROM mobile_device md
+    LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
+    WHERE md.id = ${bind(user.id)} AND (md.unit_id = g.daycare_id OR acl.daycare_id = g.daycare_id)
+)
+"""
             )
         }
 
@@ -210,11 +233,14 @@ WHERE acl.mobile_device_id = ${bind(user.id)}
         rule<DaycareId> { user, _ ->
             sql(
                 """
-SELECT daycare_id AS id
-FROM mobile_device_daycare_acl_view
-WHERE mobile_device_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+SELECT id
+FROM daycare d
+WHERE EXISTS (
+    SELECT FROM mobile_device md
+    LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
+    WHERE md.id = ${bind(user.id)} AND (md.unit_id = d.id OR acl.daycare_id = d.id)
+)
+"""
             )
         }
 
