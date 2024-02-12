@@ -46,8 +46,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val clock =
-        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 2, 1), LocalTime.of(21, 0)))
+    private lateinit var clock: MockEvakaClock
 
     private val testChild =
         DevPerson(
@@ -72,6 +71,9 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
     @BeforeEach
     fun beforeEach() {
+        MockEmailClient.clear()
+        clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 2, 1), LocalTime.of(21, 0)))
+
         db.transaction { tx ->
             val areaId = tx.insert(DevCareArea())
             fridgeHeadOfChildId =
@@ -128,7 +130,6 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     fun `notifications are not sent when placement does not start in current month`() {
         clock.tick(Duration.ofDays(-1))
         assertEquals(0, getEmails().size)
-        clock.tick(Duration.ofDays(1))
     }
 
     @Test
@@ -300,7 +301,6 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         scheduledJobs.sendNewCustomerIncomeNotifications(db, clock)
         asyncJobRunner.runPendingJobsSync(clock)
         val emails = MockEmailClient.emails
-        MockEmailClient.clear()
         return emails
     }
 

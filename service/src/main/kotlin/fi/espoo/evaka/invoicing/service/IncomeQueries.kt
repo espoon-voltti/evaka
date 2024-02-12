@@ -108,6 +108,8 @@ ${if (aPersonId != null) " AND person_id = :aPersonId" else ""}
 fun Database.Read.newCustomerIdsForIncomeNotifications(
     today: LocalDate,
 ): List<PersonId> {
+    val currentMonth = FiniteDateRange.ofMonth(today)
+
     return createQuery(
             """
 WITH fridge_parents AS (
@@ -127,7 +129,7 @@ WITH fridge_parents AS (
         fp_spouse.person_id <> fp.person_id AND
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> :today AND fp_spouse.conflict = false
     ) 
-    WHERE date_trunc('month', :today) = date_trunc('month', pl.start_date)
+    WHERE pl.start_date BETWEEN :month_start AND :month_end
     AND NOT EXISTS(
         SELECT 1 
         FROM placement
@@ -142,8 +144,8 @@ WITH fridge_parents AS (
 SELECT DISTINCT person_id FROM (
     SELECT parent_id AS person_id 
     FROM fridge_parents
-    UNION 
-    SELECT DISTINCT spouse_id AS person_id
+    UNION ALL
+    SELECT spouse_id AS person_id
     FROM fridge_parents
     WHERE spouse_id IS NOT NULL
 ) AS parent
@@ -151,6 +153,8 @@ SELECT DISTINCT person_id FROM (
                 .trimIndent()
         )
         .bind("today", today)
+        .bind("month_start", currentMonth.start)
+        .bind("month_end", currentMonth.end)
         .toList<PersonId>()
 }
 

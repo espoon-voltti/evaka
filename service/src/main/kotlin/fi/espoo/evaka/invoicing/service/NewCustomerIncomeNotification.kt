@@ -81,26 +81,39 @@ class NewCustomerIncomeNotification(
                     }
             } ?: return
 
-        logger.info(
-            "NewCustomerIncomeNotification: sending notification email to ${msg.guardianId}"
-        )
-
-        Email.create(
-                dbc = db,
-                emailType = EmailMessageType.NEW_CUSTOMER_INCOME_NOTIFICATION,
-                personId = msg.guardianId,
-                fromAddress = emailEnv.sender(language),
-                content =
-                    emailMessageProvider.incomeNotification(
-                        IncomeNotificationType.NEW_CUSTOMER,
-                        language
-                    ),
-                traceId = msg.guardianId.toString()
+        if (
+            db.read { tx ->
+                    tx.newCustomerIdsForIncomeNotifications(
+                        clock.today(),
+                    )
+                }
+                .contains(msg.guardianId)
+        ) {
+            logger.info(
+                "NewCustomerIncomeNotification: sending notification email to ${msg.guardianId}"
             )
-            ?.also { emailClient.send(it) }
 
-        db.transaction {
-            it.createIncomeNotification(msg.guardianId, IncomeNotificationType.NEW_CUSTOMER)
+            Email.create(
+                    dbc = db,
+                    emailType = EmailMessageType.NEW_CUSTOMER_INCOME_NOTIFICATION,
+                    personId = msg.guardianId,
+                    fromAddress = emailEnv.sender(language),
+                    content =
+                        emailMessageProvider.incomeNotification(
+                            IncomeNotificationType.NEW_CUSTOMER,
+                            language
+                        ),
+                    traceId = msg.guardianId.toString()
+                )
+                ?.also { emailClient.send(it) }
+
+            db.transaction {
+                it.createIncomeNotification(msg.guardianId, IncomeNotificationType.NEW_CUSTOMER)
+            }
+        } else {
+            logger.info(
+                "Skipping NewCustomerIncomeNotification: ${msg.guardianId} is no longer valid recipient"
+            )
         }
     }
 }
