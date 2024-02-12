@@ -408,9 +408,7 @@ class AssistanceNeedDecisionController(
                         asyncJobRunner.plan(
                             tx,
                             listOf(
-                                AsyncJob.SendAssistanceNeedDecisionEmail(id),
                                 AsyncJob.CreateAssistanceNeedDecisionPdf(id),
-                                AsyncJob.SendAssistanceNeedDecisionSfiMessage(id)
                             ),
                             runAt = clock.now()
                         )
