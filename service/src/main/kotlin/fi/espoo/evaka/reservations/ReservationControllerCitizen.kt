@@ -202,13 +202,11 @@ class ReservationControllerCitizen(
 
                     ReservationsResponse(
                         children =
-                            children.map {
-                                ReservationChild.from(
-                                    it,
-                                    days,
-                                    placements[it.id] ?: emptyList(),
-                                    today
-                                )
+                            children.mapNotNull { child ->
+                                // Only return children with at least one placement
+                                placements[child.id]?.let { childPlacements ->
+                                    ReservationChild.from(child, days, childPlacements, today)
+                                }
                             },
                         days = days,
                         reservableRange = reservableRange
