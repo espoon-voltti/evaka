@@ -91,7 +91,8 @@ function log(
   }
 
   if (level === 'error') {
-    extraFields.exception = err?.constructor?.name || 'Unknown Error'
+    extraFields.exception =
+      err?.name ?? err?.constructor?.name ?? 'Unknown Error'
     extraFields.stackTrace = err?.stack
   }
 
