@@ -21,7 +21,7 @@ import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
-import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import {
   DocumentContent,
   DocumentStatus
@@ -72,6 +72,7 @@ import {
   DevHoliday,
   DevIncome,
   DevPayment,
+  DevPreschoolTerm,
   DevRealtimeStaffAttendance,
   DevStaffAttendancePlan,
   DevStaffOccupancyCoefficient,
@@ -157,7 +158,7 @@ export const nonFullDayTimeRange: TimeRange = {
   end: LocalTime.of(23, 0)
 }
 
-export const preschoolTermFixture2020: PreschoolTerm = {
+export const preschoolTermFixture2020: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
@@ -178,7 +179,7 @@ export const preschoolTermFixture2020: PreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2021: PreschoolTerm = {
+export const preschoolTermFixture2021: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
@@ -199,7 +200,7 @@ export const preschoolTermFixture2021: PreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2022: PreschoolTerm = {
+export const preschoolTermFixture2022: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2022, 8, 11),
@@ -220,7 +221,7 @@ export const preschoolTermFixture2022: PreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2023: PreschoolTerm = {
+export const preschoolTermFixture2023: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2023, 8, 11),
@@ -2261,7 +2262,7 @@ export class CareAreaBuilder extends FixtureBuilder<CareArea> {
   }
 }
 
-export class PreschoolTermBuilder extends FixtureBuilder<PreschoolTerm> {
+export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
   async save() {
     await insertPreschoolTerm(this.data)
     return this

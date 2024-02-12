@@ -696,3 +696,12 @@ export interface DevChildDocument {
   modifiedAt: HelsinkiDateTime | null
   publishedAt: HelsinkiDateTime | null
 }
+
+export interface DevPreschoolTerm {
+  id: UUID
+  applicationPeriod: FiniteDateRange
+  extendedTerm: FiniteDateRange
+  finnishPreschool: FiniteDateRange
+  swedishPreschool: FiniteDateRange
+  termBreaks: FiniteDateRange[]
+}

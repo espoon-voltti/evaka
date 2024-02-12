@@ -29,7 +29,7 @@ import {
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
-import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
+import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecision,
   FeeThresholds,
@@ -83,6 +83,7 @@ import {
   DevHolidayPeriod,
   DevIncome,
   DevPayment,
+  DevPreschoolTerm,
   DevRealtimeStaffAttendance,
   DevStaffAttendancePlan,
   DevVardaReset,
@@ -1340,7 +1341,9 @@ export async function insertClubTerm(body: ClubTerm): Promise<void> {
   }
 }
 
-export async function insertPreschoolTerm(body: PreschoolTerm): Promise<void> {
+export async function insertPreschoolTerm(
+  body: DevPreschoolTerm
+): Promise<void> {
   try {
     await devClient.post<void>('/preschool-term', body)
   } catch (e) {
