@@ -185,12 +185,12 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
   await modal.addBillableAbsenceBtn.click()
-  await modal.billableAbsenceType.selectOption('PLANNED_ABSENCE')
+  await modal.billableAbsenceType.selectOption('SICKLEAVE')
 
   await modal.addNonbillableAbsenceBtn.click()
   await waitUntilEqual(
     () => modal.nonbillableAbsenceType.selectedOption,
-    'PLANNED_ABSENCE' // defaults from the other absence
+    'SICKLEAVE' // defaults from the other absence
   )
   await modal.nonbillableAbsenceType.selectOption('UNKNOWN_ABSENCE')
   await modal.submit()
@@ -199,17 +199,17 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('P\nVuorotyö*')
+    .assertTextEquals('Sairaus*')
 
   await reservationsTable.openChildDateModal(childId, date)
   await modal.nonbillableAbsenceRemove.click()
-  await modal.billableAbsenceType.selectOption('SICKLEAVE')
+  await modal.billableAbsenceType.selectOption('OTHER_ABSENCE')
   await modal.submit()
 
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Sairaus*')
+    .assertTextEquals('Poissaolo*')
 
   // reservation times are shown if partially absent
   await reservationsTable.openChildDateModal(childId, date)
@@ -232,12 +232,12 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
   // reservation times are not shown if fully absent
   await reservationsTable.openChildDateModal(childId, date)
   await modal.addNonbillableAbsenceBtn.click()
-  await modal.nonbillableAbsenceType.selectOption('SICKLEAVE')
+  await modal.nonbillableAbsenceType.selectOption('OTHER_ABSENCE')
   await modal.submit()
   await reservationsTable
     .reservationCells(childId, date)
     .nth(0)
-    .assertTextEquals('Sairaus*')
+    .assertTextEquals('Poissaolo*')
   await reservationsTable
     .reservationCells(childId, date)
     .nth(1)

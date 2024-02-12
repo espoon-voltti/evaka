@@ -129,6 +129,16 @@ const form = transformed(
   }
 )
 
+const excludedAbsenceTypes: AbsenceType[] = [
+  'FREE_ABSENCE',
+  'PARENTLEAVE',
+  'PLANNED_ABSENCE',
+  'FORCE_MAJEURE'
+]
+const basicAbsenceTypes = absenceTypes.filter(
+  (t) => !excludedAbsenceTypes.includes(t)
+)
+
 export default React.memo(function ChildDateModal({
   target: { date, dateInfo, child, childDayRecord },
   unitId,
@@ -143,7 +153,34 @@ export default React.memo(function ChildDateModal({
   const today = LocalDate.todayInHelsinkiTz()
   const editingFuture = date.isAfter(today)
 
-  const absenceOptions = absenceTypes.map((at) => ({
+  const availableBillableAbsences = [...basicAbsenceTypes]
+  if (
+    childDayRecord.absenceBillable &&
+    !availableBillableAbsences.includes(
+      childDayRecord.absenceBillable.absenceType
+    )
+  ) {
+    availableBillableAbsences.push(childDayRecord.absenceBillable.absenceType)
+  }
+  const absenceOptionsBillable = availableBillableAbsences.map((at) => ({
+    domValue: at,
+    value: at,
+    label: i18n.absences.absenceTypes[at],
+    dataQa: at
+  }))
+
+  const availableNonbillableAbsences = [...basicAbsenceTypes]
+  if (
+    childDayRecord.absenceNonbillable &&
+    !availableNonbillableAbsences.includes(
+      childDayRecord.absenceNonbillable.absenceType
+    )
+  ) {
+    availableNonbillableAbsences.push(
+      childDayRecord.absenceNonbillable.absenceType
+    )
+  }
+  const absenceOptionsNonbillable = availableNonbillableAbsences.map((at) => ({
     domValue: at,
     value: at,
     label: i18n.absences.absenceTypes[at],
@@ -183,7 +220,7 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceBillable
               ? childDayRecord.absenceBillable.absenceType
               : '',
-            options: absenceOptions
+            options: absenceOptionsBillable
           }
         : {
             domValue: '',
@@ -196,7 +233,7 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceNonbillable
               ? childDayRecord.absenceNonbillable.absenceType
               : '',
-            options: absenceOptions
+            options: absenceOptionsNonbillable
           }
         : {
             domValue: '',
