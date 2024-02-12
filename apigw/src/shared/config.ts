@@ -61,7 +61,6 @@ export interface EvakaSamlConfig {
   nameIdFormat?: string | undefined
 }
 
-export const gatewayRoles = ['enduser', 'internal'] as const
 export type NodeEnv = (typeof nodeEnvs)[number]
 export const nodeEnvs = ['local', 'test', 'production'] as const
 
@@ -138,8 +137,7 @@ export function configFromEnv(): Config {
     env('DEV_LOGIN', parseBoolean) ??
     ifNodeEnv(['local', 'test'], true) ??
     false
-  const adType =
-    gatewayRole === 'enduser' ? 'disabled' : adMock ? 'mock' : 'saml'
+  const adType = adMock ? 'mock' : 'saml'
   const defaultUserIdKey =
     'http://schemas.microsoft.com/identity/claims/objectidentifier'
   const ad: Config['ad'] = {
@@ -168,8 +166,7 @@ export function configFromEnv(): Config {
 
   const sfiMock =
     env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-  const sfiType =
-    gatewayRole === 'internal' ? 'disabled' : sfiMock ? 'mock' : 'saml'
+  const sfiType = sfiMock ? 'mock' : 'saml'
   const sfi: Config['sfi'] =
     sfiType !== 'saml'
       ? { type: sfiType }
@@ -326,7 +323,6 @@ export function configFromEnv(): Config {
   }
 }
 
-export const gatewayRole = env('GATEWAY_ROLE', parseEnum(gatewayRoles))
 export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
 export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
 export const appCommit = process.env.APP_COMMIT ?? 'UNDEFINED'
@@ -345,7 +341,7 @@ export const jwtPrivateKey = required(
     ifNodeEnv(['local', 'test'], 'config/test-cert/jwt_private_key.pem')
 )
 
-export const serviceName = `evaka-${gatewayRole || 'api'}-gw`
+export const serviceName = 'evaka-api-gw'
 export const jwtKid = process.env.JWT_KID ?? serviceName
 
 export const evakaBaseUrl = required(
