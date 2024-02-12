@@ -6,6 +6,7 @@ import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -47,7 +48,8 @@ export default React.memo(function VasuPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
   const t = useTranslation()
 
-  const [permissionExpanded, setPermissionExpanded] = useState(true)
+  const [permissionExpanded, { toggle: togglePermissionExpanded }] =
+    useBoolean(true)
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
   const vasuDocument = useQueryResult(vasuDocumentQuery(id))
@@ -116,7 +118,7 @@ export default React.memo(function VasuPage() {
                             : t.children.vasu.givePermissionToShareTitleLeops}
                         </Label>
                         <InlineButton
-                          onClick={() => setPermissionExpanded((prev) => !prev)}
+                          onClick={togglePermissionExpanded}
                           text={
                             permissionExpanded ? t.common.show : t.common.hide
                           }
