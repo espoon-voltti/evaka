@@ -15,6 +15,49 @@ private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
 private val dateParamName = { index: Int -> "date_$index" }
 
+fun freeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
+    val ssnPredicates =
+        findSsnParams(searchText).map { ssn ->
+            Predicate<Any> { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
+        }
+    val datePredicates =
+        findDateParams(searchText).map { date ->
+            Predicate<Any> { where("to_char($it.date_of_birth, 'DDMMYY') = ${bind(date)}") }
+        }
+    val freeTextPredicate =
+        searchText
+            .let(removeSsnParams)
+            .let(removeDateParams)
+            .takeIf { it.isNotBlank() }
+            ?.let(::freeTextParamsToTsQuery)
+            ?.let { tsQuery ->
+                Predicate<Any> {
+                    where("$it.freetext_vec @@ to_tsquery('simple', ${bind(tsQuery)})")
+                }
+            }
+
+    val freeTextPredicateSql =
+        if (freeTextPredicate != null)
+            PredicateSql.any(tables.map { table -> freeTextPredicate.forTable(table) })
+        else PredicateSql.alwaysTrue()
+
+    val ssnPredicateSql =
+        PredicateSql.all(
+            ssnPredicates.map { predicate ->
+                PredicateSql.any(tables.map { table -> predicate.forTable(table) })
+            }
+        )
+
+    val datePredicateSql =
+        PredicateSql.all(
+            datePredicates.map { predicate ->
+                PredicateSql.any(tables.map { table -> predicate.forTable(table) })
+            }
+        )
+
+    return PredicateSql.all(freeTextPredicateSql, ssnPredicateSql, datePredicateSql)
+}
+
 fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     val ssnParams = findSsnParams(searchText)
     val dateParams = findDateParams(searchText)
