@@ -21,6 +21,7 @@ import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
 import { guardianApplicationsQuery } from './queries'
+import { featureFlags } from "../../lib-customizations/employee";
 
 export default React.memo(function Applications() {
   const t = useTranslation()
@@ -37,13 +38,17 @@ export default React.memo(function Applications() {
       <ContentArea opaque paddingVertical="L">
         <H1 noMargin>{t.applicationsList.title}</H1>
         {t.applicationsList.summary}
-        <P noMargin>{t.loginPage.applying.mapText}</P>
-        <Gap size="xs" />
-        <MapLink to="/map">
-          <FontAwesomeIcon icon={farMap} />
-          <Gap size="xs" horizontal />
-          {t.loginPage.applying.mapLink}
-        </MapLink>
+        {!featureFlags.hideMapLink && (
+          <>
+            <P noMargin>{t.loginPage.applying.mapText}</P>
+            <Gap size="xs" />
+            <MapLink to="/map">
+              <FontAwesomeIcon icon={farMap} />
+              <Gap size="xs" horizontal />
+              {t.loginPage.applying.mapLink}
+            </MapLink>
+          </>
+        )}
       </ContentArea>
       <Gap size="s" />
 

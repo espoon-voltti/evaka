@@ -28,6 +28,7 @@ import Footer from './Footer'
 import { useUser } from './auth/state'
 import { useTranslation } from './localization'
 import { getStrongLoginUriWithPath, getWeakLoginUri } from './navigation/const'
+import { featureFlags } from "../lib-customizations/employee";
 
 const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
@@ -132,14 +133,18 @@ export default React.memo(function LoginPage() {
             >
               {i18n.loginPage.applying.link}
             </LinkButton>
-            <Gap size="m" />
-            <P noMargin>{i18n.loginPage.applying.mapText}</P>
-            <Gap size="xs" />
-            <MapLink to="/map">
-              <FontAwesomeIcon icon={farMap} />
-              <Gap size="xs" horizontal />
-              {i18n.loginPage.applying.mapLink}
-            </MapLink>
+            {!featureFlags.hideMapLink && (
+              <>
+                <Gap size="m" />
+                <P noMargin>{i18n.loginPage.applying.mapText}</P>
+                <Gap size="xs" />
+                <MapLink to="/map">
+                  <FontAwesomeIcon icon={farMap} />
+                  <Gap size="xs" horizontal />
+                  {i18n.loginPage.applying.mapLink}
+                </MapLink>
+              </>
+            )}
           </ContentArea>
         </FixedSpaceColumn>
       </Container>

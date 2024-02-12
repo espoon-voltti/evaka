@@ -25,6 +25,7 @@ import { useTranslation } from '../../../localization'
 import { applicationUnitsQuery } from '../../queries'
 
 import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import { featureFlags } from "../../../../lib-customizations/employee";
 
 export default React.memo(function UnitsSubSection({
   formData,
@@ -65,11 +66,13 @@ export default React.memo(function UnitsSubSection({
       <H3>{t.applications.editor.unitPreference.units.title(maxUnits)}</H3>
       {t.applications.editor.unitPreference.units.info[applicationType]}
 
-      <ExternalLink
-        href="/map"
-        text={t.applications.editor.unitPreference.units.mapLink}
-        newTab
-      />
+      {!featureFlags.hideMapLink && (
+        <ExternalLink
+          href="/map"
+          text={t.applications.editor.unitPreference.units.mapLink}
+          newTab
+        />
+      )}
 
       <Gap size="s" />
 

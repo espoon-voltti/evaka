@@ -345,11 +345,13 @@ export default React.memo(function ApplicationReadView({
             </React.Fragment>
           ))}
           <Label />
-          <InlineButton
-            icon={faExternalLink}
-            text={i18n.application.preferences.unitsOnMap}
-            onClick={() => window.open('/map', '_blank')}
-          />
+          {!featureFlags.hideMapLink && (
+            <InlineButton
+              icon={faExternalLink}
+              text={i18n.application.preferences.unitsOnMap}
+              onClick={() => window.open('/map', '_blank')}
+            />
+          )}
         </ListGrid>
         <Gap size="s" />
         <ListGrid>

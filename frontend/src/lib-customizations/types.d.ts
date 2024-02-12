@@ -217,6 +217,11 @@ interface BaseFeatureFlags {
    * Display time usage info in citizen calendar views
    */
   timeUsageInfo?: boolean
+
+  /**
+   * Hide links to map, along with related labels
+   */
+  hideMapLink?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
