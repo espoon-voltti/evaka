@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
@@ -337,7 +336,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    @ExcludeCodeGen data class FullAclInfo(val role: UserRole, val update: AclUpdate)
+    data class FullAclInfo(val role: UserRole, val update: AclUpdate)
 
     data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
 

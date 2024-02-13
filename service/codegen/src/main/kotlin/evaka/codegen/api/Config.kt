@@ -5,7 +5,6 @@
 package evaka.codegen.api
 
 import evaka.codegen.api.TsProject.LibCommon
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
@@ -35,8 +34,7 @@ val forceIncludes: Set<KType> =
         typeOf<SystemController.CitizenUserResponse>(),
         typeOf<SystemController.EmployeeUserResponse>(),
         typeOf<MobileDeviceDetails>(),
-        typeOf<CurriculumTemplateError>(),
-        typeOf<VoucherValueDecision>()
+        typeOf<CurriculumTemplateError>()
     )
 
 object Imports {

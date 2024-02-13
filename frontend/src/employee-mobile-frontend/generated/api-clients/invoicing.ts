@@ -16,9 +16,11 @@ import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { GenerateDecisionsBody } from 'lib-common/generated/api-types/invoicing'
+import { Income } from 'lib-common/generated/api-types/invoicing'
 import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { IncomeType } from 'lib-common/generated/api-types/invoicing'
+import { IncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
@@ -45,6 +47,7 @@ import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoi
 import { deserializeJsonFeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoice } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
@@ -310,13 +313,13 @@ export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]
 */
 export async function createIncome(
   request: {
-    body: never
+    body: Income
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/incomes`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<never>
+    data: request.body satisfies JsonCompatible<Income>
   })
   return json
 }
@@ -345,15 +348,15 @@ export async function getIncome(
   request: {
     personId: UUID
   }
-): Promise<Wrapper<never[]>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<never[]>>>({
+): Promise<Wrapper<IncomeWithPermittedActions[]>> {
+  const { data: json } = await client.request<JsonOf<Wrapper<IncomeWithPermittedActions[]>>>({
     url: uri`/incomes`.toString(),
     method: 'GET',
     params: {
       personId: request.personId
     }
   })
-  return json
+  return deserializeJsonWrapper((value: JsonOf<IncomeWithPermittedActions[]>) => value.map(e => deserializeJsonIncomeWithPermittedActions(e)), json)
 }
 
 
@@ -406,13 +409,13 @@ export async function getTypes(): Promise<Record<string, IncomeType>> {
 export async function updateIncome(
   request: {
     incomeId: UUID,
-    body: never
+    body: Income
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/incomes/${request.incomeId}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<never>
+    data: request.body satisfies JsonCompatible<Income>
   })
   return json
 }

@@ -24,11 +24,13 @@ import { AssistanceNeedDecisionLanguage } from 'lib-common/generated/api-types/a
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { CareType } from 'lib-common/generated/api-types/daycare'
+import { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { CurriculumType } from 'lib-common/generated/api-types/vasu'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DaycareDecisionCustomization } from 'lib-common/generated/api-types/daycare'
+import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
@@ -37,9 +39,11 @@ import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
 import { ExternalId } from 'lib-common/generated/api-types/identity'
-import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
+import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicing'
+import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
+import { IncomeValue } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import { MailingAddress } from 'lib-common/generated/api-types/daycare'
@@ -62,8 +66,13 @@ import { UnitManager } from 'lib-common/generated/api-types/daycare'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
 import { VisitingAddress } from 'lib-common/generated/api-types/daycare'
+import { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionServiceNeed } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
+import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonApplicationForm } from 'lib-common/generated/api-types/application'
 import { deserializeJsonAssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 
 /**
@@ -867,16 +876,6 @@ export interface Geometry {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeValue
-*/
-export interface IncomeValue {
-  amount: number
-  coefficient: IncomeCoefficient
-  monthlyAmount: number
-  multiplier: number
-}
-
-/**
 * Generated from fi.espoo.evaka.vtjclient.dto.PersonAddress
 */
 export interface PersonAddress {
@@ -935,6 +934,51 @@ export interface SfiMessage {
   postalCode: string
   ssn: string
   streetAddress: string
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+*/
+export interface VoucherValueDecision {
+  approvedAt: HelsinkiDateTime | null
+  approvedById: UUID | null
+  assistanceNeedCoefficient: number
+  baseCoPayment: number
+  baseValue: number
+  child: ChildWithDateOfBirth
+  childIncome: DecisionIncome | null
+  coPayment: number
+  created: HelsinkiDateTime
+  decisionHandler: UUID | null
+  decisionNumber: number | null
+  decisionType: VoucherValueDecisionType
+  difference: VoucherValueDecisionDifference[]
+  documentKey: string | null
+  familySize: number
+  feeAlterations: FeeAlterationWithEffect[]
+  feeThresholds: FeeDecisionThresholds
+  finalCoPayment: number
+  headOfFamilyId: UUID
+  headOfFamilyIncome: DecisionIncome | null
+  id: UUID
+  partnerId: UUID | null
+  partnerIncome: DecisionIncome | null
+  placement: VoucherValueDecisionPlacement | null
+  sentAt: HelsinkiDateTime | null
+  serviceNeed: VoucherValueDecisionServiceNeed | null
+  siblingDiscount: number
+  status: VoucherValueDecisionStatus
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  voucherValue: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+*/
+export interface VoucherValueDecisionPlacement {
+  type: PlacementType
+  unitId: UUID
 }
 
 /**
@@ -1344,6 +1388,19 @@ export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>
   return {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
+  }
+}
+
+
+export function deserializeJsonVoucherValueDecision(json: JsonOf<VoucherValueDecision>): VoucherValueDecision {
+  return {
+    ...json,
+    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
+    child: deserializeJsonChildWithDateOfBirth(json.child),
+    created: HelsinkiDateTime.parseIso(json.created),
+    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 

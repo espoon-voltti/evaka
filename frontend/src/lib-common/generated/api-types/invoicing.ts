@@ -11,6 +11,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { CareType } from './daycare'
+import { IncomeAttachment } from './attachment'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
@@ -374,6 +375,28 @@ export interface GenerateDecisionsBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.Income
+*/
+export interface Income {
+  applicationId: UUID | null
+  attachments: IncomeAttachment[]
+  data: Record<string, IncomeValue>
+  effect: IncomeEffect
+  id: UUID | null
+  isEntrepreneur: boolean
+  notes: string
+  personId: UUID
+  total: number
+  totalExpenses: number
+  totalIncome: number
+  updatedAt: HelsinkiDateTime | null
+  updatedBy: string | null
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  worksAtECHA: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 */
 export const incomeCoefficients = [
@@ -422,6 +445,24 @@ export interface IncomeType {
   multiplier: number
   nameFi: string
   withCoefficient: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.IncomeValue
+*/
+export interface IncomeValue {
+  amount: number
+  coefficient: IncomeCoefficient
+  monthlyAmount: number
+  multiplier: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeWithPermittedActions
+*/
+export interface IncomeWithPermittedActions {
+  data: Income
+  permittedActions: Action.Income[]
 }
 
 /**
@@ -889,43 +930,6 @@ export interface UnitData {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-*/
-export interface VoucherValueDecision {
-  approvedAt: HelsinkiDateTime | null
-  approvedById: UUID | null
-  assistanceNeedCoefficient: number
-  baseCoPayment: number
-  baseValue: number
-  child: ChildWithDateOfBirth
-  childIncome: DecisionIncome | null
-  coPayment: number
-  created: HelsinkiDateTime
-  decisionHandler: UUID | null
-  decisionNumber: number | null
-  decisionType: VoucherValueDecisionType
-  difference: VoucherValueDecisionDifference[]
-  documentKey: string | null
-  familySize: number
-  feeAlterations: FeeAlterationWithEffect[]
-  feeThresholds: FeeDecisionThresholds
-  finalCoPayment: number
-  headOfFamilyId: UUID
-  headOfFamilyIncome: DecisionIncome | null
-  id: UUID
-  partnerId: UUID | null
-  partnerIncome: DecisionIncome | null
-  placement: VoucherValueDecisionPlacement | null
-  sentAt: HelsinkiDateTime | null
-  serviceNeed: VoucherValueDecisionServiceNeed | null
-  siblingDiscount: number
-  status: VoucherValueDecisionStatus
-  validFrom: LocalDate
-  validTo: LocalDate | null
-  voucherValue: number
-}
-
-/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 */
 export interface VoucherValueDecisionDetailed {
@@ -1000,14 +1004,6 @@ export const voucherValueDecisionDistinctiveParams = [
 ] as const
 
 export type VoucherValueDecisionDistinctiveParams = typeof voucherValueDecisionDistinctiveParams[number]
-
-/**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
-*/
-export interface VoucherValueDecisionPlacement {
-  type: PlacementType
-  unitId: UUID
-}
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
@@ -1199,10 +1195,28 @@ export function deserializeJsonFeeThresholdsWithId(json: JsonOf<FeeThresholdsWit
 }
 
 
+export function deserializeJsonIncome(json: JsonOf<Income>): Income {
+  return {
+    ...json,
+    updatedAt: (json.updatedAt != null) ? HelsinkiDateTime.parseIso(json.updatedAt) : null,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
 export function deserializeJsonIncomeNotification(json: JsonOf<IncomeNotification>): IncomeNotification {
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created)
+  }
+}
+
+
+export function deserializeJsonIncomeWithPermittedActions(json: JsonOf<IncomeWithPermittedActions>): IncomeWithPermittedActions {
+  return {
+    ...json,
+    data: deserializeJsonIncome(json.data)
   }
 }
 
@@ -1430,19 +1444,6 @@ export function deserializeJsonSendPaymentsRequest(json: JsonOf<SendPaymentsRequ
     ...json,
     dueDate: LocalDate.parseIso(json.dueDate),
     paymentDate: LocalDate.parseIso(json.paymentDate)
-  }
-}
-
-
-export function deserializeJsonVoucherValueDecision(json: JsonOf<VoucherValueDecision>): VoucherValueDecision {
-  return {
-    ...json,
-    approvedAt: (json.approvedAt != null) ? HelsinkiDateTime.parseIso(json.approvedAt) : null,
-    child: deserializeJsonChildWithDateOfBirth(json.child),
-    created: HelsinkiDateTime.parseIso(json.created),
-    sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-    validFrom: LocalDate.parseIso(json.validFrom),
-    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 

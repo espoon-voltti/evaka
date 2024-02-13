@@ -23,6 +23,7 @@ import { DaycareFields } from 'lib-common/generated/api-types/daycare'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { FullAclInfo } from 'lib-common/generated/api-types/daycare'
 import { GroupUpdateRequest } from 'lib-common/generated/api-types/daycare'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -566,13 +567,13 @@ export async function addFullAclForRole(
   request: {
     daycareId: UUID,
     employeeId: UUID,
-    body: never
+    body: FullAclInfo
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/daycares/${request.daycareId}/full-acl/${request.employeeId}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<never>
+    data: request.body satisfies JsonCompatible<FullAclInfo>
   })
   return json
 }

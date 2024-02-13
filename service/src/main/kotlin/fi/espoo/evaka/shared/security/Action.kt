@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.security
 
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
@@ -77,7 +76,6 @@ import fi.espoo.evaka.shared.security.actionrule.IsMobile
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 
-@ExcludeCodeGen
 sealed interface Action {
     sealed interface UnscopedAction : Action {
         val defaultRules: Array<out UnscopedActionRule>

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import DateRange from 'lib-common/date-range'
 import {
   DecisionIncome,
-  FeeDecision,
-  VoucherValueDecision
+  FeeDecision
 } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -36,8 +37,7 @@ import {
   FeeDecisionStatus,
   FeeThresholds,
   IncomeNotification,
-  Invoice,
-  VoucherValueDecision
+  Invoice
 } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'

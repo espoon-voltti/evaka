@@ -12,6 +12,7 @@ import axios, {
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
+import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -34,8 +35,7 @@ import {
   FeeDecision,
   FeeThresholds,
   IncomeNotification,
-  Invoice,
-  VoucherValueDecision
+  Invoice
 } from 'lib-common/generated/api-types/invoicing'
 import {
   ChildDailyNoteBody,
