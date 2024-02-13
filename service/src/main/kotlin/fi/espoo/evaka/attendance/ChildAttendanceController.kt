@@ -478,28 +478,34 @@ class ChildAttendanceController(
     ) {
         val today = clock.today()
 
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Child.DELETE_ABSENCE,
-                    childId
-                )
-                val placementType =
-                    tx.fetchChildPlacementBasics(childId, unitId, clock.today()).placementType
-                val absenceCategories =
-                    tx.getAbsencesOfChildByDate(childId, today).map { it.category }.toSet()
-                val hasFullDayAbsence = placementType.absenceCategories() == absenceCategories
-                if (hasFullDayAbsence) {
-                    tx.deleteAbsencesByDate(childId, today)
-                } else {
-                    throw Conflict("Cannot cancel full day absence, child is not fully absent")
+        val deletedAbsences =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.DELETE_ABSENCE,
+                        childId
+                    )
+                    val placementType =
+                        tx.fetchChildPlacementBasics(childId, unitId, clock.today()).placementType
+                    val absenceCategories =
+                        tx.getAbsencesOfChildByDate(childId, today).map { it.category }.toSet()
+                    val hasFullDayAbsence = placementType.absenceCategories() == absenceCategories
+                    if (hasFullDayAbsence) {
+                        tx.deleteAbsencesByDate(childId, today)
+                    } else {
+                        throw Conflict("Cannot cancel full day absence, child is not fully absent")
+                    }
                 }
             }
-        }
-        Audit.ChildAttendancesFullDayAbsenceDelete.log(targetId = childId, objectId = unitId)
+
+        Audit.ChildAttendancesFullDayAbsenceDelete.log(
+            targetId = childId,
+            objectId = unitId,
+            meta = mapOf("deletedAbsences" to deletedAbsences, "date" to today)
+        )
     }
 
     data class AbsenceRangeRequest(
