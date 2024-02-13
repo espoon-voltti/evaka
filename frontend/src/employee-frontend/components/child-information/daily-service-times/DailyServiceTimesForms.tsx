@@ -198,6 +198,15 @@ function validateTimeRange(
     errors.end = errors.end ?? time(end)
   }
 
+  if (start && end && !errors.start && !errors.end) {
+    const s = LocalTime.tryParse(start)
+    const e = LocalTime.tryParse(end)
+    if (s !== undefined && e !== undefined && s.isAfter(e)) {
+      errors.start = 'timeRangeNotLinear'
+      errors.end = 'timeRangeNotLinear'
+    }
+  }
+
   return errors
 }
 
