@@ -37,10 +37,7 @@ class NewCustomerIncomeNotification(
             setOf(AsyncJobType(AsyncJob.SendNewCustomerIncomeNotificationEmail::class))
         )
 
-        val guardiansForNotification =
-            tx.newCustomerIdsForIncomeNotifications(
-                clock.today(),
-            )
+        val guardiansForNotification = tx.newCustomerIdsForIncomeNotifications(clock.today(), null)
 
         asyncJobRunner.plan(
             tx,
@@ -82,11 +79,7 @@ class NewCustomerIncomeNotification(
             } ?: return
 
         if (
-            db.read { tx ->
-                    tx.newCustomerIdsForIncomeNotifications(
-                        clock.today(),
-                    )
-                }
+            db.read { tx -> tx.newCustomerIdsForIncomeNotifications(clock.today(), msg.guardianId) }
                 .contains(msg.guardianId)
         ) {
             logger.info(

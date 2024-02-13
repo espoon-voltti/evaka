@@ -107,6 +107,7 @@ ${if (aPersonId != null) " AND person_id = :aPersonId" else ""}
 
 fun Database.Read.newCustomerIdsForIncomeNotifications(
     today: LocalDate,
+    guardianId: PersonId?
 ): List<PersonId> {
     val currentMonth = FiniteDateRange.ofMonth(today)
 
@@ -140,6 +141,7 @@ WITH fridge_parents AS (
             AND child_id != pl.child_id
         )
     )
+    ${if (guardianId != null) "AND (fc_head.head_of_child = :guardianId OR fp_spouse.person_id = :guardianId)" else ""}
 ) 
 SELECT DISTINCT person_id FROM (
     SELECT parent_id AS person_id 
@@ -155,6 +157,7 @@ SELECT DISTINCT person_id FROM (
         .bind("today", today)
         .bind("month_start", currentMonth.start)
         .bind("month_end", currentMonth.end)
+        .bind("guardianId", guardianId)
         .toList<PersonId>()
 }
 
