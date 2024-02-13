@@ -42,10 +42,10 @@ import {
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -148,15 +148,15 @@ export const uuidv4 = (): string =>
     return v.toString(16)
   })
 
-export const fullDayTimeRange: TimeRange = {
-  start: LocalTime.MIN,
-  end: LocalTime.parse('23:59')
-}
+export const fullDayTimeRange: TimeRange = new TimeRange(
+  LocalTime.MIN,
+  LocalTime.parse('23:59')
+)
 
-export const nonFullDayTimeRange: TimeRange = {
-  start: LocalTime.of(1, 0),
-  end: LocalTime.of(23, 0)
-}
+export const nonFullDayTimeRange: TimeRange = new TimeRange(
+  LocalTime.of(1, 0),
+  LocalTime.of(23, 0)
+)
 
 export const preschoolTermFixture2020: DevPreschoolTerm = {
   id: uuidv4(),
@@ -370,8 +370,8 @@ export const daycareFixture: Daycare = {
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen päiväkoti',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
-  dailyPreschoolTime: { start: LocalTime.of(9, 0), end: LocalTime.of(13, 0) },
-  dailyPreparatoryTime: { start: LocalTime.of(9, 0), end: LocalTime.of(14, 0) },
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
   costCenter: '31500',
   streetAddress: 'Kamreerintie 1',
   postalCode: '02210',
@@ -497,8 +497,8 @@ export const preschoolFixture: Daycare = {
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen eskari',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
-  dailyPreschoolTime: { start: LocalTime.of(9, 0), end: LocalTime.of(13, 0) },
-  dailyPreparatoryTime: { start: LocalTime.of(9, 0), end: LocalTime.of(14, 0) },
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
   costCenter: '31501',
   streetAddress: 'Kamreerintie 1',
   postalCode: '02210',
@@ -1328,14 +1328,14 @@ export class Fixture {
       areaId: '',
       name: `daycare_${id}`,
       type: ['CENTRE'],
-      dailyPreschoolTime: {
-        start: LocalTime.of(9, 0),
-        end: LocalTime.of(13, 0)
-      },
-      dailyPreparatoryTime: {
-        start: LocalTime.of(9, 0),
-        end: LocalTime.of(14, 0)
-      },
+      dailyPreschoolTime: new TimeRange(
+        LocalTime.of(9, 0),
+        LocalTime.of(13, 0)
+      ),
+      dailyPreparatoryTime: new TimeRange(
+        LocalTime.of(9, 0),
+        LocalTime.of(14, 0)
+      ),
       costCenter: `costCenter_${id}`,
       streetAddress: `streetAddress_${id}`,
       postalCode: '02230',
@@ -2016,10 +2016,7 @@ export class Fixture {
       id: uuidv4(),
       validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
       type: 'REGULAR',
-      regularTimes: {
-        start: LocalTime.of(1, 0),
-        end: LocalTime.of(15, 0)
-      },
+      regularTimes: new TimeRange(LocalTime.of(1, 0), LocalTime.of(15, 0)),
       childId,
       mondayTimes: null,
       tuesdayTimes: null,

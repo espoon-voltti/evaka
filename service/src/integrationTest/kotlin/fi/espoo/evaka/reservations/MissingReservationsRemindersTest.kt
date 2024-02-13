@@ -47,11 +47,11 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     private val guardianEmail = "guardian@example.com"
     private val operationTimes: List<TimeRange?> =
         listOf(
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             null,
             null
         )

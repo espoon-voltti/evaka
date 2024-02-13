@@ -214,7 +214,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `child has regular daily service times`() {
         val testTimes =
             DailyServiceTimesValue.RegularTimes(
-                regularTimes = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+                regularTimes = TimeRange.of(LocalTime.of(8, 15), LocalTime.of(17, 19)),
                 validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
             )
         db.transaction { tx ->
@@ -228,13 +228,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `child has irregular daily service times`() {
         val testTimes =
             DailyServiceTimesValue.IrregularTimes(
-                monday = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
-                tuesday = TimeRange(LocalTime.of(8, 16), LocalTime.of(17, 19)),
-                wednesday = TimeRange(LocalTime.of(8, 17), LocalTime.of(17, 19)),
+                monday = TimeRange.of(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+                tuesday = TimeRange.of(LocalTime.of(8, 16), LocalTime.of(17, 19)),
+                wednesday = TimeRange.of(LocalTime.of(8, 17), LocalTime.of(17, 19)),
                 thursday = null,
-                friday = TimeRange(LocalTime.of(8, 19), LocalTime.of(17, 19)),
+                friday = TimeRange.of(LocalTime.of(8, 19), LocalTime.of(17, 19)),
                 saturday = null,
-                sunday = TimeRange(LocalTime.of(10, 0), LocalTime.of(17, 30)),
+                sunday = TimeRange.of(LocalTime.of(10, 0), LocalTime.of(17, 30)),
                 validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
             )
         db.transaction { tx ->

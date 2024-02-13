@@ -52,7 +52,7 @@ fun getExpectedAbsenceCategories(
     dailyPreparatoryTime: TimeRange?,
     preschoolTerms: List<PreschoolTerm>
 ): Set<AbsenceCategory>? {
-    val presences = attendanceTimes.map { HelsinkiDateTimeRange.of(date, it.start, it.end) }
+    val presences = attendanceTimes.map { it.asHelsinkiDateTimeRange(date) }
 
     val preschoolEducationOnGoing =
         preschoolTerms.any {
@@ -62,11 +62,8 @@ fun getExpectedAbsenceCategories(
     val preparatoryEducationOnGoing = preschoolEducationOnGoing
 
     val preschoolTime =
-        HelsinkiDateTimeRange.of(
-            date = date,
-            startTime = dailyPreschoolTime?.start ?: LocalTime.of(9, 0),
-            endTime = dailyPreschoolTime?.end ?: LocalTime.of(13, 0)
-        )
+        (dailyPreschoolTime ?: TimeRange.of(LocalTime.of(9, 0), LocalTime.of(13, 0)))
+            .asHelsinkiDateTimeRange(date)
     val beforePreschoolTime =
         HelsinkiDateTimeRange.of(
             date = date,
@@ -81,11 +78,8 @@ fun getExpectedAbsenceCategories(
         )
 
     val preparatoryTime =
-        HelsinkiDateTimeRange.of(
-            date = date,
-            startTime = dailyPreparatoryTime?.start ?: LocalTime.of(9, 0),
-            endTime = dailyPreparatoryTime?.end ?: LocalTime.of(14, 0)
-        )
+        (dailyPreparatoryTime ?: TimeRange.of(LocalTime.of(9, 0), LocalTime.of(14, 0)))
+            .asHelsinkiDateTimeRange(date)
     val beforePreparatoryTime =
         HelsinkiDateTimeRange.of(
             date = date,

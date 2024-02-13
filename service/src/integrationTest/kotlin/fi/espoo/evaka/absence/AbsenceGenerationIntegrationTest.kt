@@ -48,7 +48,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     private val tuesdays = listOf(3, 10, 17, 24).map { today.withDayOfMonth(it) }
     private val wednesdays = listOf(4, 11, 18, 25).map { today.withDayOfMonth(it) }
 
-    private val present = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    private val present = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
 
     @BeforeEach
     fun beforeEach() {

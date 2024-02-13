@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
@@ -285,10 +286,7 @@ describe('Unit group calendar', () => {
       .with({
         validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
         type: 'REGULAR',
-        regularTimes: {
-          start: LocalTime.of(8, 0),
-          end: LocalTime.of(16, 0)
-        }
+        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
       })
       .save()
 
@@ -296,10 +294,7 @@ describe('Unit group calendar', () => {
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
       date: holidayPeriodStart.subDays(1),
-      reservation: {
-        start: LocalTime.of(11, 0),
-        end: LocalTime.of(13, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0)),
       secondReservation: null
     }).save()
 
@@ -308,10 +303,7 @@ describe('Unit group calendar', () => {
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(1),
-      reservation: {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(14, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
       secondReservation: null
     }).save()
     // Absence on the third day
@@ -372,10 +364,7 @@ describe('Unit group calendar', () => {
       .with({
         validityPeriod: new DateRange(dailyServiceTimeStart, null),
         type: 'REGULAR',
-        regularTimes: {
-          start: LocalTime.of(8, 0),
-          end: LocalTime.of(16, 0)
-        }
+        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
       })
       .save()
 
@@ -384,10 +373,7 @@ describe('Unit group calendar', () => {
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
       date: attendanceReservationBeforeHolidayDate,
-      reservation: {
-        start: LocalTime.of(11, 0),
-        end: LocalTime.of(13, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0)),
       secondReservation: null
     }).save()
 
@@ -398,10 +384,7 @@ describe('Unit group calendar', () => {
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
       date: attendanceReservationDuringHolidayDate,
-      reservation: {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(14, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
       secondReservation: null
     }).save()
     // Absence on the third day

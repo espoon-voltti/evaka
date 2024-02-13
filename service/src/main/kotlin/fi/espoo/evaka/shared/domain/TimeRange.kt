@@ -4,11 +4,28 @@
 
 package fi.espoo.evaka.shared.domain
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.data.BoundedRange
+import java.time.LocalDate
 import java.time.LocalTime
 
-private sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
+sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
     val inner: LocalTime
+
+    fun asStart(): Start
+
+    fun asEnd(): End
+
+    fun isMidnight(): Boolean = this.inner == LocalTime.MIDNIGHT
+
+    fun toDbString(): String
 
     /** 00:00:00 means midnight in the same day */
     data class Start(override val inner: LocalTime) : MidnightAwareTime {
@@ -19,6 +36,15 @@ private sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
                     if (this.inner == LocalTime.MIDNIGHT || other.inner == LocalTime.MIDNIGHT) -1
                     else this.inner.compareTo(other.inner)
             }
+
+        override fun asStart() = this
+
+        override fun asEnd(): End =
+            if (this.inner == LocalTime.MIDNIGHT)
+                throw IllegalStateException("Cannot convert midnight start to end")
+            else End(inner)
+
+        override fun toDbString(): String = inner.toString()
     }
 
     /** 00:00:00 means midnight in the next day */
@@ -33,54 +59,60 @@ private sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
                     else if (this.inner == LocalTime.MIDNIGHT) 1
                     else if (other.inner == LocalTime.MIDNIGHT) -1 else inner.compareTo(other.inner)
             }
+
+        override fun asStart(): Start =
+            if (this.inner == LocalTime.MIDNIGHT)
+                throw IllegalStateException("Cannot convert midnight end to start")
+            else Start(inner)
+
+        override fun asEnd() = this
+
+        override fun toDbString(): String =
+            if (this.isMidnight())
+                throw IllegalStateException("Cannot convert midnight end to db string")
+            else inner.toString()
     }
 }
 
 /** `end` is exclusive */
-data class TimeRange(override val start: LocalTime, override val end: LocalTime) :
-    BoundedRange<LocalTime, TimeRange> {
-    private constructor(
+@JsonSerialize(using = TimeRangeJsonSerializer::class)
+@JsonDeserialize(using = TimeRangeJsonDeserializer::class)
+data class TimeRange(
+    override val start: MidnightAwareTime.Start,
+    override val end: MidnightAwareTime.End
+) : BoundedRange<MidnightAwareTime, TimeRange> {
+    constructor(
         start: MidnightAwareTime,
         end: MidnightAwareTime
-    ) : this(start.inner, end.inner) {
+    ) : this(start.asStart(), end.asEnd())
+
+    init {
         require(start < end) {
             "Attempting to initialize invalid TimeRange with start: $start, end: $end"
         }
     }
 
-    init {
-        require(MidnightAwareTime.Start(start) < MidnightAwareTime.End(end)) {
-            "Attempting to initialize invalid TimeRange with start: $start, end: $end"
-        }
-    }
-
-    private fun startT() = MidnightAwareTime.Start(start)
-
-    private fun endT() = MidnightAwareTime.End(end)
-
     override fun overlaps(other: TimeRange): Boolean =
-        this.startT() < other.endT() && other.startT() < this.endT()
+        this.start < other.end && other.start < this.end
 
-    override fun leftAdjacentTo(other: TimeRange): Boolean =
-        this.endT().compareTo(other.startT()) == 0
+    override fun leftAdjacentTo(other: TimeRange): Boolean = this.end.compareTo(other.start) == 0
 
-    override fun rightAdjacentTo(other: TimeRange): Boolean =
-        other.endT().compareTo(this.startT()) == 0
+    override fun rightAdjacentTo(other: TimeRange): Boolean = other.end.compareTo(this.start) == 0
 
-    override fun strictlyLeftTo(other: TimeRange): Boolean = this.endT() <= other.startT()
+    override fun strictlyLeftTo(other: TimeRange): Boolean = this.end <= other.start
 
-    override fun strictlyRightTo(other: TimeRange): Boolean = other.endT() <= this.startT()
+    override fun strictlyRightTo(other: TimeRange): Boolean = other.end <= this.start
 
     override fun intersection(other: TimeRange): TimeRange? =
-        tryCreate(maxOf(this.startT(), other.startT()), minOf(this.endT(), other.endT()))
+        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 
     override fun gap(other: TimeRange): TimeRange? =
-        tryCreate(minOf(this.endT(), other.endT()), maxOf(this.startT(), other.startT()))
+        tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
 
     override fun subtract(other: TimeRange): BoundedRange.SubtractResult<TimeRange> =
         if (this.overlaps(other)) {
-            val left = tryCreate(this.startT(), other.startT())
-            val right = tryCreate(other.endT(), this.endT())
+            val left = tryCreate(this.start, other.start)
+            val right = tryCreate(other.end, this.end)
             if (left != null) {
                 if (right != null) {
                     BoundedRange.SubtractResult.Split(left, right)
@@ -97,45 +129,41 @@ data class TimeRange(override val start: LocalTime, override val end: LocalTime)
         } else BoundedRange.SubtractResult.Original(this)
 
     override fun merge(other: TimeRange): TimeRange =
-        TimeRange(minOf(this.startT(), other.startT()), maxOf(this.endT(), other.endT()))
+        TimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 
     override fun relationTo(other: TimeRange): BoundedRange.Relation<TimeRange> =
         when {
-            this.endT() <= other.startT() ->
-                BoundedRange.Relation.LeftTo(gap = tryCreate(this.endT(), other.startT()))
-            other.endT() <= this.startT() ->
-                BoundedRange.Relation.RightTo(gap = tryCreate(other.endT(), this.startT()))
+            this.end <= other.start ->
+                BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
+            other.end <= this.start ->
+                BoundedRange.Relation.RightTo(gap = tryCreate(other.end, this.start))
             else ->
                 BoundedRange.Relation.Overlap(
                     left =
                         when {
-                            this.startT() < other.startT() ->
+                            this.start < other.start ->
                                 BoundedRange.Relation.Remainder(
-                                    range = TimeRange(this.startT(), other.startT()),
+                                    range = TimeRange(this.start, other.start),
                                     isFirst = true
                                 )
-                            other.startT() < this.startT() ->
+                            other.start < this.start ->
                                 BoundedRange.Relation.Remainder(
-                                    range = TimeRange(other.startT(), this.startT()),
+                                    range = TimeRange(other.start, this.start),
                                     isFirst = false
                                 )
                             else -> null
                         },
-                    overlap =
-                        TimeRange(
-                            maxOf(this.startT(), other.startT()),
-                            minOf(this.endT(), other.endT())
-                        ),
+                    overlap = TimeRange(maxOf(this.start, other.start), minOf(this.end, other.end)),
                     right =
                         when {
-                            other.endT() < this.endT() ->
+                            other.end < this.end ->
                                 BoundedRange.Relation.Remainder(
-                                    range = TimeRange(other.endT(), this.endT()),
+                                    range = TimeRange(other.end, this.end),
                                     isFirst = true
                                 )
-                            this.endT() < other.endT() ->
+                            this.end < other.end ->
                                 BoundedRange.Relation.Remainder(
-                                    range = TimeRange(this.endT(), other.endT()),
+                                    range = TimeRange(this.end, other.end),
                                     isFirst = false
                                 )
                             else -> null
@@ -143,28 +171,59 @@ data class TimeRange(override val start: LocalTime, override val end: LocalTime)
                 )
         }
 
-    override fun includes(point: LocalTime) =
-        this.startT() <= MidnightAwareTime.Start(point) &&
-            MidnightAwareTime.Start(point) < this.endT()
+    override fun includes(point: MidnightAwareTime) = this.start <= point && point < this.end
+
+    fun includes(point: LocalTime) = this.includes(MidnightAwareTime.Start(point))
 
     override fun contains(other: TimeRange): Boolean =
-        this.startT() <= other.startT() && other.endT() <= this.endT()
+        this.start <= other.start && other.end <= this.end
 
     fun toDbString(): String {
-        return "(${this.start},${this.end})"
+        return "(${this.start.toDbString()},${this.end.toDbString()})"
     }
 
     fun durationInMinutes(): Int {
-        val endHour = if (this.end == LocalTime.MIDNIGHT) 24 else this.end.hour
-        return endHour * 60 + this.end.minute - this.start.hour * 60 - this.start.minute
+        val endHour = if (this.end.isMidnight()) 24 else this.end.inner.hour
+        return endHour * 60 + this.end.inner.minute -
+            this.start.inner.hour * 60 -
+            this.start.inner.minute
+    }
+
+    fun asHelsinkiDateTimeRange(date: LocalDate): HelsinkiDateTimeRange {
+        val endDate = if (this.end.isMidnight()) date.plusDays(1) else date
+        return HelsinkiDateTimeRange(
+            HelsinkiDateTime.of(date, this.start.inner),
+            HelsinkiDateTime.of(endDate, this.end.inner)
+        )
     }
 
     companion object {
+        fun of(start: LocalTime, end: LocalTime): TimeRange =
+            TimeRange(MidnightAwareTime.Start(start), MidnightAwareTime.End(end))
+
         private fun tryCreate(start: MidnightAwareTime, end: MidnightAwareTime): TimeRange? =
             try {
-                TimeRange(start, end)
+                TimeRange(start.asStart(), end.asEnd())
             } catch (e: IllegalArgumentException) {
                 null
             }
+    }
+}
+
+private data class SerializableTimeRange(val start: LocalTime, val end: LocalTime)
+
+class TimeRangeJsonSerializer : JsonSerializer<TimeRange>() {
+    override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
+        return serializers.defaultSerializeValue(
+            SerializableTimeRange(value.start.inner, value.end.inner),
+            gen
+        )
+    }
+}
+
+class TimeRangeJsonDeserializer : JsonDeserializer<TimeRange>() {
+    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeRange {
+        val value = parser.readValueAs(SerializableTimeRange::class.java)
+        return TimeRange.of(value.start, value.end)
     }
 }

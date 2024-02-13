@@ -399,21 +399,14 @@ private fun dailyServiceTimesToPerDateTimeRanges(
 
         val times =
             when (dailyServiceTimes) {
-                is DailyServiceTimesValue.RegularTimes ->
-                    dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
+                is DailyServiceTimesValue.RegularTimes -> dailyServiceTimes.regularTimes
                 is DailyServiceTimesValue.IrregularTimes -> {
-                    val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
-                    if (times != null) times.start to times.end else null
+                    dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
                 }
                 is DailyServiceTimesValue.VariableTimes -> null
             }
 
-        times?.let { (start, end) ->
-            HelsinkiDateTimeRange(
-                HelsinkiDateTime.of(date, start),
-                HelsinkiDateTime.of(if (end < start) date.plusDays(1) else date, end)
-            )
-        }
+        times?.asHelsinkiDateTimeRange(date)
     }
 }
 

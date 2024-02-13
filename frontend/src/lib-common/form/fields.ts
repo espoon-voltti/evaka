@@ -5,9 +5,9 @@
 import DateRange from '../date-range'
 import FiniteDateRange from '../finite-date-range'
 import { TimeInterval } from '../generated/api-types/reservations'
-import { TimeRange } from '../generated/api-types/shared'
 import LocalDate from '../local-date'
 import LocalTime from '../local-time'
+import TimeRange from '../time-range'
 
 import { mapped, object, transformed, value } from './form'
 import {
@@ -247,7 +247,7 @@ export const localTimeRange = () =>
       ) {
         return ValidationError.of('timeFormat')
       } else {
-        return ValidationSuccess.of({ start: startTime, end: endTime })
+        return ValidationSuccess.of(new TimeRange(startTime, endTime))
       }
     }
   )

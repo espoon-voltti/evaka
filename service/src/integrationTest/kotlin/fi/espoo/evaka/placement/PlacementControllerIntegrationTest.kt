@@ -465,7 +465,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
 
         // Create reservations
-        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val reservationTime = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(17, 0))
         val firstReservation = activePlacementStart.plusDays(10)
         val secondReservation = activePlacementStart.plusDays(11)
         val thirdReservation = mockClock.today().plusDays(8)
@@ -675,7 +675,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
 
         // Create reservations
-        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val reservationTime = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(17, 0))
         val firstReservation = activePlacementStart.plusDays(10)
         val secondReservation = mockClock.today().plusDays(8)
         val thirdReservation = mockClock.today().plusDays(15)
@@ -856,7 +856,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
 
         // Create reservations
-        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val reservationTime = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(17, 0))
         val firstReservation = activePlacementStart.plusDays(10)
         val secondReservation = activePlacementStart.plusDays(11)
         val thirdReservation = mockClock.today().plusDays(15)

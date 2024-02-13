@@ -225,7 +225,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_5.id,
                     validityPeriod = monFri.asDateRange(),
                     type = DailyServiceTimesType.REGULAR,
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 )
             )
 
@@ -347,7 +347,7 @@ class AttendanceReservationsControllerIntegrationTest :
             response.days.all {
                 it.dateInfo ==
                     UnitAttendanceReservations.UnitDateInfo(
-                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                        time = TimeRange.of(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                         isHoliday = false,
                         isInHolidayPeriod = false
                     )
@@ -564,7 +564,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         dailyServiceTimes =
                             DailyServiceTimesValue.RegularTimes(
                                 validityPeriod = monFri.asDateRange(),
-                                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
                             ),
                         groupId = null,
                         backupGroupId = testGroup2.id,
@@ -745,7 +745,7 @@ class AttendanceReservationsControllerIntegrationTest :
         result.days.forEach { day ->
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
-                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    time = TimeRange.of(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -766,7 +766,7 @@ class AttendanceReservationsControllerIntegrationTest :
         result.days.forEach { day ->
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
-                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    time = TimeRange.of(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -782,7 +782,7 @@ class AttendanceReservationsControllerIntegrationTest :
         val result = getAttendanceReservations()
         assertEquals(
             UnitAttendanceReservations.UnitDateInfo(
-                time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                time = TimeRange.of(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                 isHoliday = true,
                 isInHolidayPeriod = false
             ),
@@ -1330,14 +1330,11 @@ class AttendanceReservationsControllerIntegrationTest :
                                 DailyServiceTimesValue.RegularTimes(
                                     validityPeriod =
                                         DateRange(
-                                            start = LocalDate.of(2021, 3, 5),
-                                            end = LocalDate.of(2021, 3, 5)
+                                            LocalDate.of(2021, 3, 5),
+                                            LocalDate.of(2021, 3, 5)
                                         ),
                                     regularTimes =
-                                        TimeRange(
-                                            start = LocalTime.of(8, 0),
-                                            end = LocalTime.of(15, 0)
-                                        )
+                                        TimeRange.of(LocalTime.of(8, 0), LocalTime.of(15, 0))
                                 )
                         ),
                         child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE)
@@ -1496,7 +1493,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(fri, fri),
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0))
+                    regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(15, 0))
                 )
             )
             it.insertAssistanceFactor(

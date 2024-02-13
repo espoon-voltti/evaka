@@ -43,14 +43,14 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 10), LocalTime.of(12, 45)))
             )
         )
     }
@@ -76,21 +76,21 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(12, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 10), LocalTime.of(12, 45)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 10), LocalTime.of(13, 45)))
             )
         )
     }
@@ -116,14 +116,14 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 10), LocalTime.of(13, 45)))
             )
         )
     }
@@ -149,21 +149,21 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.NONBILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 0), LocalTime.of(9, 30)))
             )
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 10), LocalTime.of(13, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 10), LocalTime.of(13, 45)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.PREPARATORY_DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(8, 10), LocalTime.of(14, 45)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(8, 10), LocalTime.of(14, 45)))
             )
         )
     }
@@ -181,14 +181,14 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 10)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 0), LocalTime.of(9, 10)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 0), LocalTime.of(9, 30)))
             )
         )
     }
@@ -206,14 +206,14 @@ class AbsenceCalculatorTests {
             setOf(AbsenceCategory.BILLABLE),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 5)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 0), LocalTime.of(13, 5)))
             )
         )
         assertEquals(
             setOf(),
             testGetExpectedAbsenceCategories(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                attendanceTimes = listOf(TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 30)))
+                attendanceTimes = listOf(TimeRange.of(LocalTime.of(9, 0), LocalTime.of(13, 30)))
             )
         )
     }
@@ -228,8 +228,8 @@ class AbsenceCalculatorTests {
             attendanceTimes = attendanceTimes,
             placementType = placementType,
             unitLanguage = Language.fi,
-            dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
-            dailyPreparatoryTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
+            dailyPreschoolTime = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+            dailyPreparatoryTime = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(14, 0)),
             preschoolTerms =
                 listOf(
                     PreschoolTerm(

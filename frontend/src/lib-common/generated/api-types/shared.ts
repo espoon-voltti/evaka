@@ -6,7 +6,6 @@
 /* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalTime from '../../local-time'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -107,14 +106,6 @@ export const pilotFeatures = [
 export type PilotFeature = typeof pilotFeatures[number]
 
 /**
-* Generated from fi.espoo.evaka.shared.domain.TimeRange
-*/
-export interface TimeRange {
-  end: LocalTime
-  start: LocalTime
-}
-
-/**
 * Generated from fi.espoo.evaka.shared.domain.Translatable
 */
 export interface Translatable {
@@ -156,14 +147,5 @@ export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTi
     ...json,
     end: HelsinkiDateTime.parseIso(json.end),
     start: HelsinkiDateTime.parseIso(json.start)
-  }
-}
-
-
-export function deserializeJsonTimeRange(json: JsonOf<TimeRange>): TimeRange {
-  return {
-    ...json,
-    end: LocalTime.parseIso(json.end),
-    start: LocalTime.parseIso(json.start)
   }
 }

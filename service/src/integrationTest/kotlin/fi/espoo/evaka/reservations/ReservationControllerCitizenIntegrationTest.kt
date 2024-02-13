@@ -581,7 +581,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         usedServiceMinutes = 420,
                                         usedServiceRanges =
                                             listOf(
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0))
+                                                TimeRange.of(
+                                                    LocalTime.of(9, 0),
+                                                    LocalTime.of(16, 0)
+                                                )
                                             )
                                     ),
                             ),
@@ -614,7 +617,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         reservedMinutes = 420,
                                         attendedMinutes = 455,
                                         usedServiceMinutes = 455,
-                                        listOf(TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20)))
+                                        listOf(
+                                            TimeRange.of(LocalTime.of(8, 45), LocalTime.of(16, 20))
+                                        )
                                     ),
                             ),
                         )
@@ -639,7 +644,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         reservedMinutes = 0,
                                         attendedMinutes = 480,
                                         usedServiceMinutes = 480,
-                                        listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
+                                        listOf(
+                                            TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                        )
                                     ),
                             ),
                         )
@@ -806,7 +813,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             DailyServiceTimesValue.IrregularTimes(
                 validityPeriod = DateRange(mockToday.plusDays(1), null),
                 monday = null,
-                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                tuesday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 wednesday = null,
                 thursday = null,
                 friday = null,
@@ -917,12 +924,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     DailyReservationRequest.Reservations(
                         child,
                         monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange.of(startTime, endTime),
                     ),
                     DailyReservationRequest.Reservations(
                         child,
                         tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange.of(startTime, endTime),
                     )
                 )
             }
@@ -1039,7 +1046,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DailyReservationRequest.Reservations(
                     child.id,
                     monday,
-                    TimeRange(startTime, endTime),
+                    TimeRange.of(startTime, endTime),
                 ),
                 DailyReservationRequest.Absent(
                     child.id,
@@ -1119,12 +1126,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DailyReservationRequest.Reservations(
                     child.id,
                     mockToday,
-                    TimeRange(startTime, endTime),
+                    TimeRange.of(startTime, endTime),
                 ),
                 DailyReservationRequest.Reservations(
                     child.id,
                     mockToday.plusDays(1),
-                    TimeRange(startTime, endTime),
+                    TimeRange.of(startTime, endTime),
                 )
             )
 
@@ -1724,7 +1731,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 DailyReservationRequest.Reservations(
                     child.id,
                     monday,
-                    TimeRange(startTime, endTime),
+                    TimeRange.of(startTime, endTime),
                 ),
             ),
             mockNow = beforeThreshold
@@ -1841,7 +1848,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         childId: ChildId,
         reservableTimeRange: ReservableTimeRange =
             ReservableTimeRange.Normal(
-                TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59"))
+                TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
             ),
         scheduleType: ScheduleType = ScheduleType.RESERVATION_REQUIRED,
         shiftCare: Boolean = false,

@@ -20,10 +20,11 @@ import {
   Language,
   ProviderType
 } from 'lib-common/generated/api-types/daycare'
-import { Coordinate, TimeRange } from 'lib-common/generated/api-types/shared'
+import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -46,7 +47,7 @@ import { faPen } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { Unit, formatTimeRange, parseTimeRange } from '../../../types/unit'
+import { Unit, formatTimeRange } from '../../../types/unit'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -501,9 +502,7 @@ function validateForm(
         key: 'daily-preschool-time'
       })
     } else {
-      const start = LocalTime.parse(form.dailyPreschoolTime.start)
-      const end = LocalTime.parse(form.dailyPreschoolTime.end)
-      dailyPreschoolTime = { start, end }
+      dailyPreschoolTime = TimeRange.parse(form.dailyPreschoolTime)
     }
   }
 
@@ -522,9 +521,7 @@ function validateForm(
         key: 'daily-preparatory-time'
       })
     } else {
-      const start = LocalTime.parse(form.dailyPreparatoryTime.start)
-      const end = LocalTime.parse(form.dailyPreparatoryTime.end)
-      dailyPreparatoryTime = { start, end }
+      dailyPreparatoryTime = TimeRange.parse(form.dailyPreparatoryTime)
     }
   }
 
@@ -534,7 +531,7 @@ function validateForm(
   )
   if (!operationTimesRangeErrors.some((r) => r.start || r.end)) {
     operationTimes = form.operationTimes.map((tr) =>
-      tr ? parseTimeRange(tr) : null
+      tr ? TimeRange.parse(tr) : null
     )
   } else {
     errors.push({

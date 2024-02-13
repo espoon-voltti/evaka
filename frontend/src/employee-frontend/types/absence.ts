@@ -13,8 +13,8 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
 import { parseReservation } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 export const defaultAbsenceType = 'SICKLEAVE'
@@ -59,10 +59,7 @@ const deserializeGroupMonthCalendarDayChild = (
   ...json,
   dailyServiceTimes:
     json.dailyServiceTimes !== null
-      ? {
-          start: LocalTime.parseIso(json.dailyServiceTimes.start),
-          end: LocalTime.parseIso(json.dailyServiceTimes.end)
-        }
+      ? TimeRange.parseJson(json.dailyServiceTimes)
       : null,
   absences: json.absences.map((absence) => ({
     ...absence,

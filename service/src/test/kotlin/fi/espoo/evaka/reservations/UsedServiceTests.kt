@@ -15,7 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class UsedServiceTests {
-    private fun range(h1: Int, h2: Int) = TimeRange(LocalTime.of(h1, 0), LocalTime.of(h2, 0))
+    private fun range(h1: Int, h2: Int) = TimeRange.of(LocalTime.of(h1, 0), LocalTime.of(h2, 0))
 
     private fun compute(
         isFuture: Boolean = false,

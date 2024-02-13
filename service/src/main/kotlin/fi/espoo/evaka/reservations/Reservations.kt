@@ -40,13 +40,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.roundToInt
 
-private fun TimeRange.convertMidnightEndTime() =
-    if (this.end == LocalTime.of(0, 0)) {
-        this.copy(end = LocalTime.of(23, 59))
-    } else {
-        this
-    }
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
     val childId: ChildId
@@ -58,13 +51,7 @@ sealed interface DailyReservationRequest {
         override val date: LocalDate,
         val reservation: TimeRange,
         val secondReservation: TimeRange? = null
-    ) : DailyReservationRequest {
-        fun convertMidnightEndTime() =
-            this.copy(
-                reservation = reservation.convertMidnightEndTime(),
-                secondReservation = secondReservation?.convertMidnightEndTime()
-            )
-    }
+    ) : DailyReservationRequest
 
     @JsonTypeName("PRESENT")
     data class Present(
@@ -107,7 +94,7 @@ sealed class Reservation : Comparable<Reservation> {
     fun asTimeRange(): TimeRange? =
         when (this) {
             is NoTimes -> null
-            is Times -> TimeRange(startTime, endTime)
+            is Times -> TimeRange.of(startTime, endTime)
         }
 
     override fun compareTo(other: Reservation): Int {
@@ -155,7 +142,7 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     fun asTimeRange(): TimeRange? {
         return when (this) {
             is NoTimes -> null
-            is Times -> TimeRange(startTime, endTime)
+            is Times -> TimeRange.of(startTime, endTime)
         }
     }
 
@@ -189,7 +176,7 @@ data class TimeInterval(val startTime: LocalTime, val endTime: LocalTime?) :
         }
     }
 
-    fun asTimeRange(): TimeRange? = endTime?.let { TimeRange(startTime, it) }
+    fun asTimeRange(): TimeRange? = endTime?.let { TimeRange.of(startTime, it) }
 }
 
 data class CreateReservationsResult(
@@ -305,13 +292,6 @@ fun createReservationsAndAbsences(
                         }
                     }
                     else -> request
-                }
-            }
-            .map { request ->
-                if (request is DailyReservationRequest.Reservations) {
-                    request.convertMidnightEndTime()
-                } else {
-                    request
                 }
             }
 

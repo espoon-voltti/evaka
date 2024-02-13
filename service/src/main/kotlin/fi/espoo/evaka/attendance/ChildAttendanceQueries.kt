@@ -98,9 +98,9 @@ data class OngoingAttendance(
     val startTime: LocalTime
 ) {
     fun toTimeRange(departed: HelsinkiDateTime) =
-        TimeRange(
-            start = if (date.isBefore(departed.toLocalDate())) LocalTime.of(0, 0) else startTime,
-            end = departed.toLocalTime()
+        TimeRange.of(
+            if (date.isBefore(departed.toLocalDate())) LocalTime.of(0, 0) else startTime,
+            departed.toLocalTime()
         )
 }
 

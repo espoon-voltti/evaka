@@ -214,7 +214,7 @@ val testGhostUnitDaycare =
         invoicedByMunicipality = false
     )
 
-val allDayTimeRange = TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59"))
+val allDayTimeRange = TimeRange.of(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
 val allWeekOpTimes =
     listOf(
         allDayTimeRange,

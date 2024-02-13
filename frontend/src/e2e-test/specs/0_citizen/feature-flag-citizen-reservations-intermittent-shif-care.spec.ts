@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -217,10 +217,7 @@ async function openCalendarPage(
 
 const addTestData = async (date: LocalDate) => {
   const bulkFixtures = await initializeAreaAndPersonData()
-  const operationTime: TimeRange = {
-    start: LocalTime.of(8, 0),
-    end: LocalTime.of(18, 0)
-  }
+  const operationTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 
   const unit = await Fixture.daycare()
     .with({

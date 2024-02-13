@@ -75,7 +75,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             now.toLocalDate().plusDays(97),
             null
         )
-    private val tenToNoonRange = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0))
+    private val tenToNoonRange = TimeRange.of(LocalTime.of(10, 0), LocalTime.of(12, 0))
 
     @BeforeEach
     fun beforeEach() {
@@ -130,7 +130,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 id,
                 DailyServiceTimesValue.RegularTimes(
                     validityPeriod = DateRange(now.toLocalDate().minusDays(1), null),
-                    regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
+                    regularTimes = TimeRange.of(LocalTime.of(19, 0), LocalTime.of(22, 0))
                 ),
             )
         }
@@ -356,13 +356,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start.minusDays(1),
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 ),
                 // Inside the validity period
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start,
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 ),
                 // Inside the validity period AND inside a holiday period
                 DailyReservationRequest.Present(
@@ -413,7 +413,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             times[0].dailyServiceTimes.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = dailyServiceTimesValidity,
-                regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
+                regularTimes = TimeRange.of(LocalTime.of(19, 0), LocalTime.of(22, 0))
             )
         )
 

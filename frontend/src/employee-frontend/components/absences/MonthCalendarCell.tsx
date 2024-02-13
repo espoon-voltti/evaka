@@ -10,8 +10,8 @@ import {
   AbsenceWithModifierInfo,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/absence'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'

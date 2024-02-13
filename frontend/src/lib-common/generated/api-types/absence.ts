@@ -8,15 +8,14 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import TimeRange from '../../time-range'
 import { EvakaUserType } from './user'
 import { JsonOf } from '../../json'
 import { Reservation } from './reservations'
 import { ScheduleType } from './placement'
 import { ShiftCareType } from './serviceneed'
-import { TimeRange } from './shared'
 import { UUID } from '../../types'
 import { deserializeJsonReservation } from './reservations'
-import { deserializeJsonTimeRange } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.absence.Absence
@@ -218,7 +217,7 @@ export function deserializeJsonGroupMonthCalendar(json: JsonOf<GroupMonthCalenda
   return {
     ...json,
     children: json.children.map(e => deserializeJsonGroupMonthCalendarChild(e)),
-    daycareOperationTimes: json.daycareOperationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    daycareOperationTimes: json.daycareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     days: json.days.map(e => deserializeJsonGroupMonthCalendarDay(e))
   }
 }
@@ -246,7 +245,7 @@ export function deserializeJsonGroupMonthCalendarDayChild(json: JsonOf<GroupMont
   return {
     ...json,
     absences: json.absences.map(e => deserializeJsonAbsenceWithModifierInfo(e)),
-    dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonTimeRange(json.dailyServiceTimes) : null,
+    dailyServiceTimes: (json.dailyServiceTimes != null) ? TimeRange.parseJson(json.dailyServiceTimes) : null,
     reservations: json.reservations.map(e => deserializeJsonChildReservation(e))
   }
 }

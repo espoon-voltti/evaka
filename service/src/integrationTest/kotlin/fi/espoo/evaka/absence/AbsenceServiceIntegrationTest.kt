@@ -214,7 +214,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
-                    regularTimes = TimeRange(LocalTime.of(10, 0), LocalTime.of(15, 0)),
+                    regularTimes = TimeRange.of(LocalTime.of(10, 0), LocalTime.of(15, 0)),
                     validityPeriod =
                         DateRange(firstOfMonth, firstOfMonth.plusWeeks(1).minusDays(1)),
                 )
@@ -732,14 +732,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod1.asDateRange(),
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod2.asDateRange(),
-                    regularTimes = TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
+                    regularTimes = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(15, 0))
                 )
             )
         }
@@ -768,7 +768,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     emptyDayChild.copy(
                                         childId = testChild_1.id,
                                         dailyServiceTimes =
-                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                            TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
                                     )
                                 )
                     )
@@ -785,7 +785,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         emptyDayChild.copy(
                                             childId = testChild_1.id,
                                             dailyServiceTimes =
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
+                                                TimeRange.of(
+                                                    LocalTime.of(9, 0),
+                                                    LocalTime.of(15, 0)
+                                                )
                                         )
                                     )
                         )
@@ -1350,7 +1353,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1389,12 +1392,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
         val dailyServiceTimes =
             DailyServiceTimesValue.IrregularTimes(
-                monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+                monday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                tuesday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(14, 0)),
                 wednesday = null,
                 thursday = null,
                 friday = null,
-                saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                saturday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(20, 0)),
                 sunday = null,
                 validityPeriod = DateRange(placementStart, null)
             )
@@ -1430,7 +1433,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(20, 0))
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1461,7 +1464,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0))
+                regularTimes = TimeRange.of(LocalTime.of(7, 0), LocalTime.of(15, 0))
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1530,7 +1533,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1563,25 +1566,25 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, LocalDate.of(2019, 8, 10)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0))
             )
         )
         insertDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(LocalDate.of(2019, 8, 13), LocalDate.of(2019, 8, 20)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
+                regularTimes = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(18, 0))
             )
         )
         insertDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.IrregularTimes(
-                monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
-                wednesday = TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
-                thursday = TimeRange(LocalTime.of(10, 0), LocalTime.of(17, 0)),
-                friday = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0)),
-                saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                monday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                tuesday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+                wednesday = TimeRange.of(LocalTime.of(9, 0), LocalTime.of(16, 0)),
+                thursday = TimeRange.of(LocalTime.of(10, 0), LocalTime.of(17, 0)),
+                friday = TimeRange.of(LocalTime.of(10, 0), LocalTime.of(12, 0)),
+                saturday = TimeRange.of(LocalTime.of(8, 0), LocalTime.of(20, 0)),
                 sunday = null,
                 validityPeriod = DateRange(LocalDate.of(2019, 8, 21), LocalDate.of(2019, 8, 29))
             )

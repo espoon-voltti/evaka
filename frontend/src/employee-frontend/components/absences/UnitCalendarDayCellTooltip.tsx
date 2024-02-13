@@ -8,8 +8,8 @@ import {
   AbsenceWithModifierInfo,
   ChildReservation
 } from 'lib-common/generated/api-types/absence'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import TimeRange from 'lib-common/time-range'
 
 import { useTranslation } from '../../state/i18n'
 

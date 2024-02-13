@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.MidnightAwareTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
@@ -69,6 +70,14 @@ val dateSetArgumentFactory =
                         "[${range.start},${range.end}]"
                     }
             }
+        }
+    }
+
+val midnightAwareTimeArgumentFactory =
+    pgObjectArgumentFactory<MidnightAwareTime> {
+        PGobject().apply {
+            type = "time"
+            value = it?.toDbString()
         }
     }
 
@@ -281,7 +290,7 @@ val timeRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "timerange" || it.type == "timerange_non_nullable_range")
     it.value?.let { value ->
         val parts = value.trim('(', ')').split(',')
-        TimeRange(LocalTime.parse(parts[0]), LocalTime.parse(parts[1]))
+        TimeRange.of(LocalTime.parse(parts[0]), LocalTime.parse(parts[1]))
     }
 }
 

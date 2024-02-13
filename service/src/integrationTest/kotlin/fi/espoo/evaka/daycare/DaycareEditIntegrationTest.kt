@@ -31,8 +31,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var daycareController: DaycareController
 
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
-    private val standardOpTime =
-        TimeRange(start = LocalTime.parse("08:00"), end = LocalTime.parse("18:00"))
+    private val standardOpTime = TimeRange.of(LocalTime.parse("08:00"), LocalTime.parse("18:00"))
     private val fields =
         DaycareFields(
             name = "Uusi päiväkoti",
@@ -133,8 +132,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val preschoolFields =
             fields.copy(
                 type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
-                dailyPreschoolTime = TimeRange(LocalTime.of(9, 30), LocalTime.of(13, 30)),
-                dailyPreparatoryTime = TimeRange(LocalTime.of(8, 45), LocalTime.of(13, 45)),
+                dailyPreschoolTime = TimeRange.of(LocalTime.of(9, 30), LocalTime.of(13, 30)),
+                dailyPreparatoryTime = TimeRange.of(LocalTime.of(8, 45), LocalTime.of(13, 45)),
                 preschoolApplyPeriod = DateRange(LocalDate.of(2021, 2, 1), null),
                 uploadToKoski = true
             )

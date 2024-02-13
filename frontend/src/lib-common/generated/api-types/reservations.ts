@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import TimeRange from '../../time-range'
 import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
 import { ChildServiceNeedInfo } from './absence'
@@ -15,11 +16,9 @@ import { DailyServiceTimesValue } from './dailyservicetimes'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
-import { TimeRange } from './shared'
 import { UUID } from '../../types'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
-import { deserializeJsonTimeRange } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
@@ -506,8 +505,8 @@ export function deserializeJsonDailyReservationRequestReservations(json: JsonOf<
   return {
     ...json,
     date: LocalDate.parseIso(json.date),
-    reservation: deserializeJsonTimeRange(json.reservation),
-    secondReservation: (json.secondReservation != null) ? deserializeJsonTimeRange(json.secondReservation) : null
+    reservation: TimeRange.parseJson(json.reservation),
+    secondReservation: (json.secondReservation != null) ? TimeRange.parseJson(json.secondReservation) : null
   }
 }
 export function deserializeJsonDailyReservationRequest(json: JsonOf<DailyReservationRequest>): DailyReservationRequest {
@@ -532,7 +531,7 @@ export function deserializeJsonDayReservationStatisticsResult(json: JsonOf<DayRe
 export function deserializeJsonExpectedAbsencesRequest(json: JsonOf<ExpectedAbsencesRequest>): ExpectedAbsencesRequest {
   return {
     ...json,
-    attendances: json.attendances.map(e => deserializeJsonTimeRange(e)),
+    attendances: json.attendances.map(e => TimeRange.parseJson(e)),
     date: LocalDate.parseIso(json.date)
   }
 }
@@ -552,14 +551,14 @@ export function deserializeJsonOperationalDay(json: JsonOf<OperationalDay>): Ope
 export function deserializeJsonReservableTimeRangeIntermittentShiftCare(json: JsonOf<ReservableTimeRange.IntermittentShiftCare>): ReservableTimeRange.IntermittentShiftCare {
   return {
     ...json,
-    placementUnitOperationTime: (json.placementUnitOperationTime != null) ? deserializeJsonTimeRange(json.placementUnitOperationTime) : null
+    placementUnitOperationTime: (json.placementUnitOperationTime != null) ? TimeRange.parseJson(json.placementUnitOperationTime) : null
   }
 }
 
 export function deserializeJsonReservableTimeRangeNormal(json: JsonOf<ReservableTimeRange.Normal>): ReservableTimeRange.Normal {
   return {
     ...json,
-    range: deserializeJsonTimeRange(json.range)
+    range: TimeRange.parseJson(json.range)
   }
 }
 export function deserializeJsonReservableTimeRange(json: JsonOf<ReservableTimeRange>): ReservableTimeRange {
@@ -661,7 +660,7 @@ export function deserializeJsonUnitAttendanceReservations(json: JsonOf<UnitAtten
 export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDateInfo {
   return {
     ...json,
-    time: (json.time != null) ? deserializeJsonTimeRange(json.time) : null
+    time: (json.time != null) ? TimeRange.parseJson(json.time) : null
   }
 }
 
@@ -669,6 +668,6 @@ export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDat
 export function deserializeJsonUsedServiceResult(json: JsonOf<UsedServiceResult>): UsedServiceResult {
   return {
     ...json,
-    usedServiceRanges: json.usedServiceRanges.map(e => deserializeJsonTimeRange(e))
+    usedServiceRanges: json.usedServiceRanges.map(e => TimeRange.parseJson(e))
   }
 }

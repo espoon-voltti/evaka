@@ -105,10 +105,9 @@ class TimeSetTest {
     }
 
     @Test
-    fun `an empty time set includes and contains nothing`() {
+    fun `an empty time set contains nothing`() {
         val set = TimeSet.empty()
         assertFalse(set.contains(testRange(1, 2)))
-        assertFalse(set.includes(testTime(1)))
     }
 
     @Test
@@ -133,5 +132,5 @@ class TimeSetTest {
 
     private fun testTime(hour: Int) = LocalTime.of(hour, 0)
 
-    private fun testRange(from: Int, to: Int) = TimeRange(testTime(from), testTime(to))
+    private fun testRange(from: Int, to: Int) = TimeRange.of(testTime(from), testTime(to))
 }

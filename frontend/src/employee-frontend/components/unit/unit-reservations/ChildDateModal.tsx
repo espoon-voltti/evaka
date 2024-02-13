@@ -39,9 +39,9 @@ import {
   ReservationResponse,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -253,10 +253,7 @@ export default React.memo(function ChildDateModal({
       date.isBefore(LocalDate.todayInHelsinkiTz()) &&
         attendances.isValid() &&
         attendances.value().every(({ endTime }) => endTime !== null)
-        ? attendances.value().map((a) => ({
-            start: a.startTime,
-            end: a.endTime!
-          }))
+        ? attendances.value().map((a) => new TimeRange(a.startTime, a.endTime!))
         : null
     )
   )
