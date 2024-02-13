@@ -138,6 +138,21 @@ const excludedAbsenceTypes: AbsenceType[] = [
 const basicAbsenceTypes = absenceTypes.filter(
   (t) => !excludedAbsenceTypes.includes(t)
 )
+const getAbsenceTypeOptions = (
+  currentSelection: AbsenceType | null,
+  names: Record<AbsenceType, string>
+) => {
+  const availableTypes = [...basicAbsenceTypes]
+  if (currentSelection && !availableTypes.includes(currentSelection)) {
+    availableTypes.push(currentSelection)
+  }
+  return availableTypes.map((at) => ({
+    domValue: at,
+    value: at,
+    label: names[at],
+    dataQa: at
+  }))
+}
 
 export default React.memo(function ChildDateModal({
   target: { date, dateInfo, child, childDayRecord },
@@ -152,40 +167,6 @@ export default React.memo(function ChildDateModal({
 
   const today = LocalDate.todayInHelsinkiTz()
   const editingFuture = date.isAfter(today)
-
-  const availableBillableAbsences = [...basicAbsenceTypes]
-  if (
-    childDayRecord.absenceBillable &&
-    !availableBillableAbsences.includes(
-      childDayRecord.absenceBillable.absenceType
-    )
-  ) {
-    availableBillableAbsences.push(childDayRecord.absenceBillable.absenceType)
-  }
-  const absenceOptionsBillable = availableBillableAbsences.map((at) => ({
-    domValue: at,
-    value: at,
-    label: i18n.absences.absenceTypes[at],
-    dataQa: at
-  }))
-
-  const availableNonbillableAbsences = [...basicAbsenceTypes]
-  if (
-    childDayRecord.absenceNonbillable &&
-    !availableNonbillableAbsences.includes(
-      childDayRecord.absenceNonbillable.absenceType
-    )
-  ) {
-    availableNonbillableAbsences.push(
-      childDayRecord.absenceNonbillable.absenceType
-    )
-  }
-  const absenceOptionsNonbillable = availableNonbillableAbsences.map((at) => ({
-    domValue: at,
-    value: at,
-    label: i18n.absences.absenceTypes[at],
-    dataQa: at
-  }))
 
   const boundForm = useForm(
     form,
@@ -220,7 +201,10 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceBillable
               ? childDayRecord.absenceBillable.absenceType
               : '',
-            options: absenceOptionsBillable
+            options: getAbsenceTypeOptions(
+              childDayRecord.absenceBillable?.absenceType ?? null,
+              i18n.absences.absenceTypes
+            )
           }
         : {
             domValue: '',
@@ -233,7 +217,10 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceNonbillable
               ? childDayRecord.absenceNonbillable.absenceType
               : '',
-            options: absenceOptionsNonbillable
+            options: getAbsenceTypeOptions(
+              childDayRecord.absenceNonbillable?.absenceType ?? null,
+              i18n.absences.absenceTypes
+            )
           }
         : {
             domValue: '',
