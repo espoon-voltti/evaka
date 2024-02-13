@@ -38,12 +38,9 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         if (endDate.minusMonths(6).isAfter(startDate)) throw BadRequest("Maximum date range is 6kk")
         val defaultMealTimes =
             MealReportConfig(
-                breakfastTime =
-                    TimeRange(start = LocalTime.of(8, 0, 0, 0), end = LocalTime.of(8, 45, 0, 0)),
-                lunchTime =
-                    TimeRange(start = LocalTime.of(10, 30, 0, 0), end = LocalTime.of(12, 30, 0, 0)),
-                snackTime =
-                    TimeRange(start = LocalTime.of(13, 45, 0, 0), end = LocalTime.of(15, 0, 0, 0))
+                breakfastTime = TimeRange(LocalTime.of(8, 0, 0, 0), LocalTime.of(8, 45, 0, 0)),
+                lunchTime = TimeRange(LocalTime.of(10, 30, 0, 0), LocalTime.of(12, 30, 0, 0)),
+                snackTime = TimeRange(LocalTime.of(13, 45, 0, 0), LocalTime.of(15, 0, 0, 0))
             )
         return db.connect { dbc ->
                 dbc.read {

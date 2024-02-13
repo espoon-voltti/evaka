@@ -31,8 +31,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var daycareController: DaycareController
 
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
-    private val standardOpTime =
-        TimeRange(start = LocalTime.parse("08:00"), end = LocalTime.parse("18:00"))
+    private val standardOpTime = TimeRange(LocalTime.parse("08:00"), LocalTime.parse("18:00"))
     private val fields =
         DaycareFields(
             name = "Uusi päiväkoti",

@@ -1330,14 +1330,11 @@ class AttendanceReservationsControllerIntegrationTest :
                                 DailyServiceTimesValue.RegularTimes(
                                     validityPeriod =
                                         DateRange(
-                                            start = LocalDate.of(2021, 3, 5),
-                                            end = LocalDate.of(2021, 3, 5)
+                                            LocalDate.of(2021, 3, 5),
+                                            LocalDate.of(2021, 3, 5)
                                         ),
                                     regularTimes =
-                                        TimeRange(
-                                            start = LocalTime.of(8, 0),
-                                            end = LocalTime.of(15, 0)
-                                        )
+                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0))
                                 )
                         ),
                         child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE)

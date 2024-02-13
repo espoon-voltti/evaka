@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-
 import DateRange from '../date-range'
-import { TimeRange } from '../generated/api-types/shared'
+import { DailyServiceTimesValue } from '../generated/api-types/dailyservicetimes'
 import { JsonOf } from '../json'
-import LocalTime from '../local-time'
+import TimeRange from '../time-range'
 
 export function isRegular(
   times: DailyServiceTimesValue
@@ -58,19 +56,21 @@ export function parseDailyServiceTimes(
     case 'REGULAR':
       return {
         type: 'REGULAR',
-        regularTimes: parseIsoTimeRange(times.regularTimes),
+        regularTimes: TimeRange.parseJson(times.regularTimes),
         validityPeriod: DateRange.parseJson(times.validityPeriod)
       }
     case 'IRREGULAR':
       return {
         type: 'IRREGULAR',
-        monday: times.monday ? parseIsoTimeRange(times.monday) : null,
-        tuesday: times.tuesday ? parseIsoTimeRange(times.tuesday) : null,
-        wednesday: times.wednesday ? parseIsoTimeRange(times.wednesday) : null,
-        thursday: times.thursday ? parseIsoTimeRange(times.thursday) : null,
-        friday: times.friday ? parseIsoTimeRange(times.friday) : null,
-        saturday: times.saturday ? parseIsoTimeRange(times.saturday) : null,
-        sunday: times.sunday ? parseIsoTimeRange(times.sunday) : null,
+        monday: times.monday ? TimeRange.parseJson(times.monday) : null,
+        tuesday: times.tuesday ? TimeRange.parseJson(times.tuesday) : null,
+        wednesday: times.wednesday
+          ? TimeRange.parseJson(times.wednesday)
+          : null,
+        thursday: times.thursday ? TimeRange.parseJson(times.thursday) : null,
+        friday: times.friday ? TimeRange.parseJson(times.friday) : null,
+        saturday: times.saturday ? TimeRange.parseJson(times.saturday) : null,
+        sunday: times.sunday ? TimeRange.parseJson(times.sunday) : null,
         validityPeriod: DateRange.parseJson(times.validityPeriod)
       }
     case 'VARIABLE_TIME':
@@ -78,12 +78,5 @@ export function parseDailyServiceTimes(
         type: 'VARIABLE_TIME',
         validityPeriod: DateRange.parseJson(times.validityPeriod)
       }
-  }
-}
-
-export function parseIsoTimeRange(range: JsonOf<TimeRange>): TimeRange {
-  return {
-    start: LocalTime.parseIso(range.start),
-    end: LocalTime.parseIso(range.end)
   }
 }

@@ -4,10 +4,7 @@
 
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
-import {
-  parseDailyServiceTimes,
-  parseIsoTimeRange
-} from 'lib-common/api-types/daily-service-times'
+import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
@@ -59,6 +56,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { parseReservationDto } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { DaycareGroup, Unit } from '../types/unit'
@@ -71,10 +69,10 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
     dailyPreschoolTime: unit.dailyPreschoolTime
-      ? parseIsoTimeRange(unit.dailyPreschoolTime)
+      ? TimeRange.parseJson(unit.dailyPreschoolTime)
       : null,
     dailyPreparatoryTime: unit.dailyPreparatoryTime
-      ? parseIsoTimeRange(unit.dailyPreparatoryTime)
+      ? TimeRange.parseJson(unit.dailyPreparatoryTime)
       : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
       ? DateRange.parseJson(unit.daycareApplyPeriod)
@@ -87,7 +85,7 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
       : null,
     operationTimes: unit.operationTimes
       ? unit.operationTimes.map((item) =>
-          item ? parseIsoTimeRange(item) : null
+          item ? TimeRange.parseJson(item) : null
         )
       : []
   }
@@ -849,10 +847,7 @@ export async function getUnitAttendanceReservations(
           ...day.dateInfo,
           time:
             day.dateInfo.time !== null
-              ? {
-                  start: LocalTime.parseIso(day.dateInfo.time.start),
-                  end: LocalTime.parseIso(day.dateInfo.time.end)
-                }
+              ? TimeRange.parseJson(day.dateInfo.time)
               : null
         }
       }))
@@ -889,10 +884,7 @@ export async function getChildDateExpectedAbsences(
   const body: JsonOf<ExpectedAbsencesRequest> = {
     ...data,
     date: data.date.formatIso(),
-    attendances: data.attendances.map((a) => ({
-      start: a.start.formatIso(),
-      end: a.end.formatIso()
-    }))
+    attendances: data.attendances.map((a) => a.toJSON())
   }
   const result = await client.post<AbsenceCategory[] | null>(
     '/attendance-reservations/child-date/expected-absences',

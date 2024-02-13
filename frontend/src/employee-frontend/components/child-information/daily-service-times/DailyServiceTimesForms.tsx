@@ -19,10 +19,10 @@ import {
   DailyServiceTimesType,
   DailyServiceTimesValue
 } from 'lib-common/generated/api-types/dailyservicetimes'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -127,7 +127,7 @@ function validateFormData(formData: FormState): ValidationResult {
           data: {
             validityPeriod,
             type: 'REGULAR',
-            regularTimes: parseTimeRange(formData.regularTimes)
+            regularTimes: TimeRange.parse(formData.regularTimes)
           }
         }
       case 'IRREGULAR':
@@ -137,7 +137,7 @@ function validateFormData(formData: FormState): ValidationResult {
             validityPeriod,
             type: 'IRREGULAR',
             ...mapValues(pick(formData, weekdays), (tr) =>
-              !tr.start || !tr.end ? null : parseTimeRange(tr)
+              !tr.start || !tr.end ? null : TimeRange.parse(tr)
             )
           }
         }
@@ -152,13 +152,6 @@ function validateFormData(formData: FormState): ValidationResult {
     }
   } else {
     return { type: 'error', errors: validationErrors }
-  }
-}
-
-function parseTimeRange(range: JsonOf<TimeRange>): TimeRange {
-  return {
-    start: LocalTime.parse(range.start),
-    end: LocalTime.parse(range.end)
   }
 }
 

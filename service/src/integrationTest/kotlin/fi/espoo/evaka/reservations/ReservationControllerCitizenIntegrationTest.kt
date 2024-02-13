@@ -1841,7 +1841,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         childId: ChildId,
         reservableTimeRange: ReservableTimeRange =
             ReservableTimeRange.Normal(
-                TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59"))
+                TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
             ),
         scheduleType: ScheduleType = ScheduleType.RESERVATION_REQUIRED,
         shiftCare: Boolean = false,

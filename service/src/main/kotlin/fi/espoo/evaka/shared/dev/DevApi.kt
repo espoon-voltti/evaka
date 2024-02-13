@@ -1817,11 +1817,11 @@ data class DevDaycare(
     val roundTheClock: Boolean? = false,
     val operationTimes: List<TimeRange?> =
         listOf(
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
-            TimeRange(start = LocalTime.parse("00:00"), end = LocalTime.parse("23:59")),
+            TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
+            TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             null,
             null
         ),

@@ -105,10 +105,9 @@ class TimeSetTest {
     }
 
     @Test
-    fun `an empty time set includes and contains nothing`() {
+    fun `an empty time set contains nothing`() {
         val set = TimeSet.empty()
         assertFalse(set.contains(testRange(1, 2)))
-        assertFalse(set.includes(testTime(1)))
     }
 
     @Test

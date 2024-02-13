@@ -35,17 +35,14 @@ import {
   ReservationChild,
   ReservationResponseDay
 } from 'lib-common/generated/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { Repetition } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import { Translations } from 'lib-customizations/citizen'
 
-export const MAX_TIME_RANGE = {
-  start: LocalTime.MIN,
-  end: LocalTime.MAX
-}
+export const MAX_TIME_RANGE = new TimeRange(LocalTime.MIN, LocalTime.MAX)
 
 export const limitedLocalTimeRange = () =>
   transformed(
@@ -692,7 +689,7 @@ const getCommonTimeRanges = (
           .filter(({ childId }) => childIds.includes(childId))
           .map((child) =>
             child.reservations.flatMap((r): TimeRange[] =>
-              r.type === 'TIMES' ? [{ start: r.startTime, end: r.endTime }] : []
+              r.type === 'TIMES' ? [new TimeRange(r.startTime, r.endTime)] : []
             )
           )
       )
@@ -711,10 +708,11 @@ type HolidayPeriodState = 'open' | 'closed' | undefined
 
 function timeRangeIntersection(ranges: TimeRange[]): TimeRange {
   return ranges.reduce(
-    (acc, range) => ({
-      start: range.start.isAfter(acc.start) ? range.start : acc.start,
-      end: range.end.isBefore(acc.end) ? range.end : acc.end
-    }),
+    (acc, range) =>
+      new TimeRange(
+        range.start.isAfter(acc.start) ? range.start : acc.start,
+        range.end.isBefore(acc.end) ? range.end : acc.end
+      ),
     MAX_TIME_RANGE
   )
 }

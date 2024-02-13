@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import { resetDatabase } from '../../dev-api'
 import {
@@ -30,6 +31,7 @@ async function openCalendarPage() {
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, 'desktop')
 }
+
 describe('Monthly summary', () => {
   beforeEach(async () => {
     await resetDatabase()
@@ -81,10 +83,7 @@ describe('Monthly summary', () => {
       type: 'RESERVATIONS',
       date: today,
       childId: enduserChildFixtureKaarina.id,
-      reservation: {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(16, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
     }).save()
 

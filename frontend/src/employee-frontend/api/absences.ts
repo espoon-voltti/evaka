@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Response, Result, Success } from 'lib-common/api'
-import { parseIsoTimeRange } from 'lib-common/api-types/daily-service-times'
 import {
   AbsenceUpsert,
   GroupMonthCalendar,
@@ -17,6 +16,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import {
@@ -45,7 +45,7 @@ export async function getGroupMonthCalendar(
       ...data,
       children: data.children.map(deserializeGroupMonthCalendarChild),
       daycareOperationTimes: data.daycareOperationTimes.map((range) =>
-        range !== null ? parseIsoTimeRange(range) : null
+        range !== null ? TimeRange.parseJson(range) : null
       ),
       days: data.days.map(deserializeGroupMonthCalendarDay)
     }))

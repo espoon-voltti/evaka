@@ -420,8 +420,7 @@ private fun getAttendanceReservationReport(
                 groupName = placementInfo.groupName,
                 age = childAgeYears,
                 capacityFactor = capacityFactor,
-                serviceTimes =
-                    serviceTimes?.let { HelsinkiDateTimeRange.of(date, it.start, it.end) },
+                serviceTimes = serviceTimes?.asHelsinkiDateTimeRange(date),
                 reservations = reservations,
                 absent = absent
             )

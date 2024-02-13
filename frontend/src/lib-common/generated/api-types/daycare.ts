@@ -9,6 +9,7 @@ import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import TimeRange from '../../time-range'
 import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
@@ -19,7 +20,6 @@ import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
 import { TerminatedPlacement } from './placement'
-import { TimeRange } from './shared'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
@@ -28,7 +28,6 @@ import { deserializeJsonMissingGroupPlacement } from './placement'
 import { deserializeJsonOccupancyResponse } from './occupancy'
 import { deserializeJsonPersonJSON } from './pis'
 import { deserializeJsonTerminatedPlacement } from './placement'
-import { deserializeJsonTimeRange } from './shared'
 import { deserializeJsonUnitBackupCare } from './backupcare'
 
 /**
@@ -585,11 +584,11 @@ export function deserializeJsonDaycare(json: JsonOf<Daycare>): Daycare {
     ...json,
     closingDate: (json.closingDate != null) ? LocalDate.parseIso(json.closingDate) : null,
     clubApplyPeriod: (json.clubApplyPeriod != null) ? DateRange.parseJson(json.clubApplyPeriod) : null,
-    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? deserializeJsonTimeRange(json.dailyPreparatoryTime) : null,
-    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? deserializeJsonTimeRange(json.dailyPreschoolTime) : null,
+    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? TimeRange.parseJson(json.dailyPreparatoryTime) : null,
+    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? TimeRange.parseJson(json.dailyPreschoolTime) : null,
     daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
-    operationTimes: json.operationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
   }
 }
@@ -600,11 +599,11 @@ export function deserializeJsonDaycareFields(json: JsonOf<DaycareFields>): Dayca
     ...json,
     closingDate: (json.closingDate != null) ? LocalDate.parseIso(json.closingDate) : null,
     clubApplyPeriod: (json.clubApplyPeriod != null) ? DateRange.parseJson(json.clubApplyPeriod) : null,
-    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? deserializeJsonTimeRange(json.dailyPreparatoryTime) : null,
-    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? deserializeJsonTimeRange(json.dailyPreschoolTime) : null,
+    dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? TimeRange.parseJson(json.dailyPreparatoryTime) : null,
+    dailyPreschoolTime: (json.dailyPreschoolTime != null) ? TimeRange.parseJson(json.dailyPreschoolTime) : null,
     daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
-    operationTimes: json.operationTimes.map(e => (e != null) ? deserializeJsonTimeRange(e) : null),
+    operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
   }
 }

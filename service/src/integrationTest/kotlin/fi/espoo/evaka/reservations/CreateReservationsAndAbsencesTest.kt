@@ -473,8 +473,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
     @Test
     fun `reservations can be replaced by employee in confirmed range`() {
-        val reservation1 = TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0))
-        val reservation2 = TimeRange(LocalTime.of(16, 0), LocalTime.of(19, 0))
+        val reservation1 = LocalTime.of(8, 0) to LocalTime.of(12, 0)
+        val reservation2 = LocalTime.of(16, 0) to LocalTime.of(19, 0)
         val reservation3 = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
 
         // given
@@ -525,8 +525,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         reservations.first().let {
             assertEquals(monday, it.date)
             assertTrue { it.reservation is Reservation.Times }
-            assertEquals(reservation3.start, (it.reservation as Reservation.Times).startTime)
-            assertEquals(reservation3.end, (it.reservation as Reservation.Times).endTime)
+            assertEquals(
+                reservation3,
+                TimeRange(
+                    (it.reservation as Reservation.Times).startTime,
+                    (it.reservation as Reservation.Times).endTime
+                )
+            )
         }
     }
 

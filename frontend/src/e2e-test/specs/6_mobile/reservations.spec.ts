@@ -7,6 +7,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { resetDatabase } from '../../dev-api'
@@ -91,11 +92,8 @@ describe('when placement is ending tomorrow', () => {
       type: 'RESERVATIONS',
       childId: child.data.id,
       date: mockedTomorrow,
-      reservation: { start: LocalTime.of(8, 0), end: LocalTime.of(16, 0) },
-      secondReservation: {
-        start: LocalTime.of(16, 0),
-        end: LocalTime.of(18, 0)
-      }
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+      secondReservation: new TimeRange(LocalTime.of(16, 0), LocalTime.of(18, 0))
     }).save()
 
     const page = await loginToMobile(mockedToday, unit.data.id)
@@ -116,7 +114,7 @@ describe('when placement is ending tomorrow', () => {
       type: 'RESERVATIONS',
       childId: child.data.id,
       date: mockedTomorrow,
-      reservation: { start: LocalTime.of(8, 0), end: LocalTime.of(16, 0) },
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
     }).save()
 
@@ -180,10 +178,7 @@ describe('when placement is ending tomorrow', () => {
       .with({
         validityPeriod: new DateRange(mockedTomorrow, mockedTomorrow),
         type: 'REGULAR',
-        regularTimes: {
-          start: LocalTime.of(8, 0),
-          end: LocalTime.of(16, 0)
-        }
+        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
       })
       .save()
 
