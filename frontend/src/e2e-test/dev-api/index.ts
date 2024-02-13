@@ -457,14 +457,6 @@ export async function insertBackupCareFixtures(
   }
 }
 
-export async function deleteEmployeeFixture(externalId: string): Promise<void> {
-  try {
-    await devClient.delete(`/employee/external-id/${externalId}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertParentshipFixtures(
   fixtures: {
     childId: UUID

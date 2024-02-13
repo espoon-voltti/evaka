@@ -97,7 +97,6 @@ import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.getEmployeeByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -624,46 +623,6 @@ class DevApi(
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
         return db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
-
-    @GetMapping("/employee/external-id/{id}")
-    fun getEmployee(db: Database, @PathVariable id: ExternalId): Employee {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.getEmployeeByExternalId(id) ?: throw NotFound() }
-        }
-    }
-
-    @DeleteMapping("/employee/external-id/{externalId}")
-    fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId) {
-        db.connect { dbc ->
-            dbc.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) }
-        }
-    }
-
-    @PostMapping("/employee/external-id/{externalId}")
-    fun upsertEmployeeByExternalId(
-        db: Database,
-        @PathVariable externalId: ExternalId,
-        @RequestBody employee: DevEmployee
-    ): EmployeeId =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-INSERT INTO employee (first_name, last_name, email, external_id, roles, active)
-VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[], :active)
-ON CONFLICT (external_id) DO UPDATE SET
-    first_name = excluded.first_name,
-    last_name = excluded.last_name,
-    email = excluded.email,
-    roles = excluded.roles
-RETURNING id
-"""
-                    )
-                    .bindKotlin(employee)
-                    .executeAndReturnGeneratedKeys()
-                    .exactlyOne<EmployeeId>()
-            }
-        }
 
     @GetMapping("/citizen/ssn/{ssn}")
     fun getCitizen(@PathVariable ssn: String): Citizen =
@@ -1686,16 +1645,6 @@ fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {
     execute("DELETE FROM message_account WHERE employee_id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
-}
-
-fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: ExternalId) {
-    val employeeId =
-        createQuery("SELECT id FROM employee WHERE external_id = :externalId")
-            .bind("externalId", externalId)
-            .exactlyOneOrNull<EmployeeId>()
-    if (employeeId != null) {
-        deleteAndCascadeEmployee(employeeId)
-    }
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {
