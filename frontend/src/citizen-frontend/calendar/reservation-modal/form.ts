@@ -56,11 +56,6 @@ export const limitedLocalTimeRange = () =>
     }): ValidationResult<TimeRange | undefined, 'timeFormat' | 'range'> => {
       if (value === undefined) return ValidationSuccess.of(undefined)
 
-      // Don't allow reservations with same start and end times
-      if (value.start.isEqual(value.end)) {
-        return ValidationError.field('value', 'timeFormat')
-      }
-
       let errors: FieldErrors<'range'> | undefined = undefined
       if (!timeRangeContains(value.start, validRange)) {
         errors = errors ?? {}
@@ -507,7 +502,10 @@ export function resetDay(
           : c.reservableTimeRange.range
       )
   )
-  const validTimeRange = timeRangeIntersection(validTimeRanges)
+  const validTimeRange =
+    validTimeRanges.length > 0
+      ? TimeRange.merge(validTimeRanges)
+      : MAX_TIME_RANGE
 
   if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
     return holidayPeriodState === 'open' ||
@@ -705,17 +703,6 @@ const getCommonTimeRanges = (
 }
 
 type HolidayPeriodState = 'open' | 'closed' | undefined
-
-function timeRangeIntersection(ranges: TimeRange[]): TimeRange {
-  return ranges.reduce(
-    (acc, range) =>
-      new TimeRange(
-        range.start.isAfter(acc.start) ? range.start : acc.start,
-        range.end.isBefore(acc.end) ? range.end : acc.end
-      ),
-    MAX_TIME_RANGE
-  )
-}
 
 export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>

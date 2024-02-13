@@ -240,15 +240,14 @@ export const localTimeRange = () =>
       if (startTime === undefined && endTime === undefined) {
         return ValidationSuccess.of(undefined)
       }
-      if (
-        startTime === undefined ||
-        endTime === undefined ||
-        !endTime.isAfter(startTime)
-      ) {
+      const result =
+        startTime !== undefined && endTime !== undefined
+          ? TimeRange.tryCreate(startTime, endTime)
+          : undefined
+      if (result === undefined) {
         return ValidationError.of('timeFormat')
-      } else {
-        return ValidationSuccess.of(new TimeRange(startTime, endTime))
       }
+      return ValidationSuccess.of(result)
     }
   )
 
