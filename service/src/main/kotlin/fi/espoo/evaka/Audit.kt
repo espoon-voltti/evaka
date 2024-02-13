@@ -122,6 +122,7 @@ enum class Audit(
     ChildAttendancesDepartureRead,
     ChildAttendancesDepartureCreate,
     ChildAttendancesFullDayAbsenceCreate,
+    ChildAttendancesFullDayAbsenceDelete,
     ChildAttendancesAbsenceRangeCreate,
     ChildAttendancesReturnToComing,
     ChildAttendancesReturnToPresent,

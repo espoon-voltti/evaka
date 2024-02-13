@@ -143,6 +143,18 @@ export async function createFullDayAbsence({
     .then(() => undefined)
 }
 
+export async function cancelFullDayAbsence({
+  unitId,
+  childId
+}: {
+  unitId: string
+  childId: string
+}): Promise<void> {
+  return client
+    .delete(`/attendances/units/${unitId}/children/${childId}/full-day-absence`)
+    .then(() => undefined)
+}
+
 export async function postAbsenceRange(
   unitId: string,
   childId: string,

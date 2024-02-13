@@ -26,18 +26,12 @@ export default React.memo(function ArrivalAndDeparture({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const latestArrival = attendances.length > 0 ? attendances[0].arrived : null
-
-  if (!latestArrival) {
-    return null
-  }
-
-  const arrivalDate = latestArrival.toLocalDate()
-  const dateInfo = arrivalDate.isEqual(LocalDate.todayInSystemTz())
-    ? ''
-    : arrivalDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
-      ? i18n.common.yesterday
-      : arrivalDate.format('d.M.')
+  const dateInfo = (date: LocalDate) =>
+    date.isEqual(LocalDate.todayInSystemTz())
+      ? ''
+      : date.isEqual(LocalDate.todayInSystemTz().subDays(1))
+        ? i18n.common.yesterday
+        : date.format('d.M.')
 
   return (
     <ArrivalTimeContainer>
@@ -47,7 +41,7 @@ export default React.memo(function ArrivalAndDeparture({
             <FixedSpaceRow justifyContent="center" alignItems="center">
               <ArrivalTime data-qa="arrival-time">
                 <span>{i18n.attendances.arrivalTime}</span>
-                <span>{`${dateInfo} ${arrived.toLocalTime().format()}`}</span>
+                <span>{`${dateInfo(arrived.toLocalDate())} ${arrived.toLocalTime().format()}`}</span>
               </ArrivalTime>
               {!departed && (
                 <InlineButton

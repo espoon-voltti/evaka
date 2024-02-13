@@ -25,7 +25,8 @@ import {
   uploadChildImage,
   getChildExpectedAbsencesOnDeparture,
   getUnitConfirmedDayReservations,
-  getUnitConfirmedDaysReservationStatistics
+  getUnitConfirmedDaysReservationStatistics,
+  cancelFullDayAbsence
 } from './api'
 
 const queryKeys = createQueryKeys('childAttendance', {
@@ -145,6 +146,13 @@ export const returnToPresentMutation = mutation({
 
 export const returnToComingMutation = mutation({
   api: returnToComing,
+  invalidateQueryKeys: ({ unitId }) => [
+    attendanceStatusesQuery(unitId).queryKey
+  ]
+})
+
+export const cancelAbsenceMutation = mutation({
+  api: cancelFullDayAbsence,
   invalidateQueryKeys: ({ unitId }) => [
     attendanceStatusesQuery(unitId).queryKey
   ]
