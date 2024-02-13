@@ -42,6 +42,14 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
         return TsCode { "Record<${inline(keyTs)}, ${inline(valueTs)}>" }
     }
 
+    fun tupleType(elementTypes: List<KType?>, compact: Boolean): TsCode =
+        TsCode.join(
+            elementTypes.map { type -> type?.let { tsType(it, compact) } ?: TsCode("never") },
+            separator = ", ",
+            prefix = "[",
+            postfix = "]"
+        )
+
     private fun typeToTsCode(type: KType, f: (tsType: TsType) -> TsCode): TsCode =
         when (val clazz = type.classifier) {
             is KClass<*> ->
@@ -68,6 +76,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is Excluded,
             is TsArray,
             is TsRecord,
+            is TsTuple,
             is TsPlainObject,
             is TsObjectLiteral,
             is TsSealedClass,
@@ -81,6 +90,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsPlain -> TsCode(tsRepr.type)
             is TsArray -> arrayType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsRecord -> recordType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
+            is TsTuple -> tupleType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
             is TsPlainObject -> {
                 val typeArguments =
                     tsRepr.getTypeArgs(tsType.typeArguments).map { typeArg ->
@@ -193,6 +203,8 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                     is TsArray -> tsRepr.getTypeArgs(type.arguments)?.let { check(it) } ?: false
                     is TsRecord ->
                         tsRepr.getTypeArgs(type.arguments).second?.let { check(it) } ?: false
+                    is TsTuple ->
+                        tsRepr.getTypeArgs(type.arguments).filterNotNull().any { check(it) }
                     is TsPlainObject ->
                         tsRepr.applyTypeArguments(type.arguments).values.any { check(it) }
                     is TsObjectLiteral -> tsRepr.properties.values.any { check(it) }
@@ -311,6 +323,21 @@ ${join(propCodes, ",\n").prependIndent("    ")}
 ))"""
                         }
                 }
+                is TsTuple -> {
+                    TsCode.join(
+                        tsRepr.getTypeArgs(type.arguments).withIndex().map {
+                            (elementIndex, elementType) ->
+                            val elementExpression = jsonExpression + "[$elementIndex]"
+                            jsonDeserializerExpression(
+                                requireNotNull(elementType),
+                                elementExpression
+                            ) ?: elementExpression
+                        },
+                        separator = ",",
+                        prefix = "[",
+                        postfix = "]"
+                    )
+                }
                 is TsObjectLiteral,
                 is TsSealedVariant -> TODO()
                 is TsPlainObject ->
@@ -337,6 +364,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
             is TsSealedClass,
             is TsObjectLiteral,
             is TsRecord,
+            is TsTuple,
             is TsSealedVariant,
             is Excluded -> null
         }?.takeUnless { type.isMarkedNullable }
@@ -346,6 +374,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsPlain,
             is TsArray,
+            is TsTuple,
             is TsStringEnum -> valueExpression
             is TsExternalTypeRef ->
                 tsRepr.serializeRequestParam?.invoke(valueExpression, type.isMarkedNullable)

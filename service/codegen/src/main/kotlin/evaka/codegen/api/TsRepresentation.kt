@@ -70,6 +70,13 @@ data object TsArray : TsRepresentation<KType?> {
     }
 }
 
+data class TsTuple(val size: Int) : TsRepresentation<List<KType?>> {
+    override fun getTypeArgs(typeArgs: List<KTypeProjection>): List<KType?> {
+        require(typeArgs.size == size) { "Expected $size type arguments, got $typeArgs" }
+        return typeArgs.map { it.type }
+    }
+}
+
 /** TS record with 2 type parameters: Record<K, V> */
 data object TsRecord : TsRepresentation<Pair<KType?, KType?>> {
     override fun getTypeArgs(typeArgs: List<KTypeProjection>): Pair<KType?, KType?> {

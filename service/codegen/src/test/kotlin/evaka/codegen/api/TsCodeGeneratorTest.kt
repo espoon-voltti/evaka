@@ -62,6 +62,8 @@ class TsCodeGeneratorTest {
 
         assertTsCode("string", type = typeOf<String>())
         assertTsCode("string | null", type = typeOf<String?>())
+        assertTsCode("[string | null, number] | null", type = typeOf<Pair<String?, Int>?>())
+        assertTsCode("[string, number, boolean]", type = typeOf<Triple<String, Int, Boolean>>())
         assertTsCode("PlainObject", PlainObject.import, type = typeOf<PlainObject>())
         assertTsCode("SealedInterface", SealedInterface.import, type = typeOf<SealedInterface>())
         assertTsCode(
@@ -82,6 +84,11 @@ class TsCodeGeneratorTest {
         assertTsCode("string[]", type = typeOf<List<String>>())
         assertTsCode("(string | null)[]", type = typeOf<List<String?>>())
         assertTsCode("(string | null)[] | null", type = typeOf<List<String?>?>())
+        assertTsCode("[string, number][]", type = typeOf<List<Pair<String, Int>>>())
+        assertTsCode(
+            "[string, number, boolean][]",
+            type = typeOf<List<Triple<String, Int, Boolean>>>()
+        )
         assertTsCode("LocalDate[]", Imports.localDate, type = typeOf<List<LocalDate>>())
         assertTsCode("PlainObject[]", PlainObject.import, type = typeOf<List<PlainObject>>())
         assertTsCode(
@@ -96,6 +103,14 @@ class TsCodeGeneratorTest {
 
         assertTsCode("Record<string, number>", type = typeOf<Map<String, Int>>())
         assertTsCode("Record<string, number | null>", type = typeOf<Map<String, Int?>>())
+        assertTsCode(
+            "Record<string, [string, number]>",
+            type = typeOf<Map<String, Pair<String, Int>>>()
+        )
+        assertTsCode(
+            "Record<string, [string, number, boolean]>",
+            type = typeOf<Map<String, Triple<String, Int, Boolean>>>()
+        )
         assertTsCode(
             "Record<string, LocalDate>",
             Imports.localDate,

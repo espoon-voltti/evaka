@@ -61,43 +61,41 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
     }
 
     fun KType.discover() {
-        val clazz = classifier as? KClass<*> ?: return
-        if (!analyzedTypes.add(this)) return
-        val tsRepr = tsReprMap.getOrPut(clazz) { createTsRepr(clazz) }
-
-        fun discoverProperties(obj: TsPlainObject) {
-            obj.applyTypeArguments(arguments).values.forEach { it.discover() }
-        }
-
-        fun discoverTypeParameters() = arguments.forEach { it.type?.discover() }
-
-        fun TsNamedType<*>.discoverRelatedTypes() =
-            when (this) {
-                is TsPlainObject -> discoverProperties(this)
+        fun TsType.discover(): Unit =
+            when (representation) {
+                is TsArray,
+                is TsRecord,
+                is TsTuple -> typeArguments.forEach { it.type?.discover() }
+                is TsPlainObject ->
+                    representation.applyTypeArguments(typeArguments).values.forEach {
+                        it.discover()
+                    }
+                is TsSealedVariant ->
+                    TsType(representation.obj, isNullable = false, typeArguments = emptyList())
+                        .discover()
                 is TsSealedClass -> {
-                    discoverProperties(obj)
-                    variants.forEach { it.starProjectedType.discover() }
+                    TsType(representation.obj, isNullable = false, typeArguments = emptyList())
+                        .discover()
+                    representation.variants.forEach { it.starProjectedType.discover() }
                 }
-                is TsStringEnum -> {}
+                is TsObjectLiteral -> representation.properties.values.forEach { it.discover() }
+                is TsStringEnum,
+                is Excluded,
+                is TsPlain,
+                is TsExternalTypeRef -> {}
             }
 
-        when (tsRepr) {
-            is TsNamedType -> tsRepr.discoverRelatedTypes()
-            is TsSealedVariant -> discoverProperties(tsRepr.obj)
-            is TsArray -> {
-                require(arguments.size == 1) { "Expected 1 type argument, got $this" }
-                discoverTypeParameters()
-            }
-            is TsRecord -> {
-                require(arguments.size == 2) { "Expected 2 type arguments, got $this" }
-                discoverTypeParameters()
-            }
-            is TsObjectLiteral -> tsRepr.properties.values.forEach { it.discover() }
-            is Excluded,
-            is TsPlain,
-            is TsExternalTypeRef -> {}
+        try {
+            val clazz = classifier as? KClass<*> ?: return
+            if (!analyzedTypes.add(this)) return
+            val tsRepr = tsReprMap.getOrPut(clazz) { createTsRepr(clazz) }
+
+            TsType(tsRepr, isMarkedNullable, arguments).discover()
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to discover type $this", e)
         }
     }
+
     rootTypes.forEach { it.discover() }
 
     return TypeMetadata(tsReprMap)

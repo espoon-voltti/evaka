@@ -29,11 +29,15 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
                   ? { [key: string]: JsonOf<U> }
                   : T extends Set<infer U>
                     ? JsonOf<U>[]
-                    : T extends (infer U)[]
-                      ? JsonOf<U>[]
-                      : T extends object // eslint-disable-line @typescript-eslint/ban-types
-                        ? { [P in keyof T]: JsonOf<T[P]> }
-                        : never
+                    : T extends [infer A, infer B]
+                      ? [JsonOf<A>, JsonOf<B>]
+                      : T extends [infer A, infer B, infer C]
+                        ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
+                        : T extends (infer U)[]
+                          ? JsonOf<U>[]
+                          : T extends object // eslint-disable-line @typescript-eslint/ban-types
+                            ? { [P in keyof T]: JsonOf<T[P]> }
+                            : never
 
 /**
  * Type operator to check if the given type can be converted to reasonable JSON without extra code.

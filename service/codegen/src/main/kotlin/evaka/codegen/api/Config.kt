@@ -192,6 +192,8 @@ val defaultMetadata =
         List::class to TsArray,
         Set::class to TsArray,
         Map::class to TsRecord,
+        Pair::class to TsTuple(size = 2),
+        Triple::class to TsTuple(size = 3),
         Void::class to Excluded,
         YearMonth::class to
             TsExternalTypeRef(
