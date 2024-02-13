@@ -9,6 +9,8 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
+import fi.espoo.evaka.pairing.MobileDeviceDetails
+import fi.espoo.evaka.pis.SystemController
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.DateRange
@@ -31,6 +33,9 @@ const val basePackage = "fi.espoo.evaka"
 
 val forceIncludes: Set<KType> =
     setOf(
+        typeOf<SystemController.CitizenUserResponse>(),
+        typeOf<SystemController.EmployeeUserResponse>(),
+        typeOf<MobileDeviceDetails>(),
         typeOf<CurriculumTemplateError>(),
         typeOf<IncomeCoefficient>(),
         typeOf<VoucherValueDecision>()

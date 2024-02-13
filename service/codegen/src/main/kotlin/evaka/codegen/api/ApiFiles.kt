@@ -19,7 +19,7 @@ fun generateApiFiles(): Map<TsFile, String> {
     val endpoints =
         scanEndpoints("fi.espoo.evaka")
             .filter { it.isJsonEndpoint }
-            .filterNot { it.path.startsWith("/integration") }
+            .filterNot { it.path.startsWith("/integration") || it.path.startsWith("/system") }
     endpoints.forEach { it.validate() }
 
     val metadata =

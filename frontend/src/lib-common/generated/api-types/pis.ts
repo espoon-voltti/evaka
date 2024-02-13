@@ -45,13 +45,6 @@ export interface CitizenUserDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.CitizenUserIdentity
-*/
-export interface CitizenUserIdentity {
-  id: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.SystemController.CitizenUserResponse
 */
 export interface CitizenUserResponse {
@@ -158,19 +151,6 @@ export interface EmployeePreferredFirstName {
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeSetPreferredFirstNameUpdateRequest
 */
 export interface EmployeeSetPreferredFirstNameUpdateRequest {
-  preferredFirstName: string | null
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.EmployeeUser
-*/
-export interface EmployeeUser {
-  active: boolean
-  allScopedRoles: UserRole[]
-  firstName: string
-  globalRoles: UserRole[]
-  id: UUID
-  lastName: string
   preferredFirstName: string | null
 }
 
@@ -321,13 +301,6 @@ export interface GetOrCreatePersonBySsnRequest {
 export interface MergeRequest {
   duplicate: UUID
   master: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.pis.SystemController.MobileDeviceTracking
-*/
-export interface MobileDeviceTracking {
-  userAgent: string
 }
 
 /**
