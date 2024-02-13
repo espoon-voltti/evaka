@@ -568,6 +568,7 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

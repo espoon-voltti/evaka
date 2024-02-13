@@ -116,7 +116,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/send")
-    fun sendForDecision(
+    fun sendAssistanceNeedPreschoolDecisionForDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -142,7 +142,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/unsend")
-    fun revertToUnsent(
+    fun revertAssistanceNeedPreschoolDecisionToUnsent(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -165,7 +165,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/mark-as-opened")
-    fun markAsOpened(
+    fun markAssistanceNeedPreschoolDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -188,7 +188,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/decide")
-    fun decideAssistanceNeedDecision(
+    fun decideAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -256,7 +256,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     @PutMapping("/assistance-need-preschool-decisions/{id}/annul")
-    fun annulAssistanceNeedDecision(
+    fun annulAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

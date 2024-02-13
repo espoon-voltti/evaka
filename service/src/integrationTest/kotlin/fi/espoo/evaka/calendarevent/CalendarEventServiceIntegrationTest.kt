@@ -1504,7 +1504,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.delete(
+        this.backupCareController.deleteBackupCare(
             dbInstance(),
             admin,
             clock,

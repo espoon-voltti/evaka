@@ -94,7 +94,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     }
 
     @DeleteMapping("/backup-pickups/{id}")
-    fun delete(
+    fun deleteBackupPickup(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

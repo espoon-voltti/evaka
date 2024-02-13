@@ -51,7 +51,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/mobile-devices/personal")
-    fun getMobileDevices(
+    fun getPersonalMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock

@@ -75,7 +75,7 @@ class VoucherValueDecisionController(
     private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
-    fun search(
+    fun searchVoucherValueDecisions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -115,7 +115,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/{id}")
-    fun getDecision(
+    fun getVoucherValueDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -161,7 +161,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/send")
-    fun sendDrafts(
+    fun sendVoucherValueDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -193,7 +193,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(
+    fun markVoucherValueDecisionSent(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -219,7 +219,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/pdf/{decisionId}")
-    fun getDecisionPdf(
+    fun getVoucherValueDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -261,7 +261,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/ignore")
-    fun ignoreDrafts(
+    fun ignoreVoucherValueDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -283,7 +283,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/unignore")
-    fun unignoreDrafts(
+    fun unignoreVoucherValueDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -316,7 +316,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/set-type/{uuid}")
-    fun setType(
+    fun setVoucherValueDecisionType(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -339,7 +339,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
-    fun generateRetroactiveDecisions(
+    fun generateRetroactiveVoucherValueDecisions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

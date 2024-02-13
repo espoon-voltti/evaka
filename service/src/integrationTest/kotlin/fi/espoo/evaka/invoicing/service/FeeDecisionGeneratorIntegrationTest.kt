@@ -2951,7 +2951,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, decisions.size)
         assertEquals(1, decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size)
 
-        feeDecisionController.confirmDrafts(
+        feeDecisionController.confirmFeeDecisionDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
@@ -3006,7 +3006,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val firstDecision = decisions.filter { it.validDuring.end == subPeriod2.end }.first()
 
-        feeDecisionController.confirmDrafts(
+        feeDecisionController.confirmFeeDecisionDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
@@ -3059,7 +3059,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         getAllFeeDecisions().also { decisions ->
             assertEquals(1, decisions.size)
-            feeDecisionController.confirmDrafts(
+            feeDecisionController.confirmFeeDecisionDrafts(
                 dbInstance(),
                 admin,
                 clock,
@@ -3159,7 +3159,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
 
-        feeDecisionController.confirmDrafts(
+        feeDecisionController.confirmFeeDecisionDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,

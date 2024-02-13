@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class UnitsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/units")
-    fun getDecisionsReport(
+    fun getUnitsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
