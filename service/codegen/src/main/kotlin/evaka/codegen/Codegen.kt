@@ -38,7 +38,8 @@ fun generate() {
     val apiPaths =
         listOf(
             srcPath / "lib-common" / "generated" / "api-types",
-            srcPath / "citizen-frontend" / "generated" / "api-clients"
+            srcPath / "citizen-frontend" / "generated" / "api-clients",
+            srcPath / "e2e-test" / "generated"
         )
     apiPaths.forEach {
         it.toFile().deleteRecursively()
@@ -82,4 +83,5 @@ private fun absolutePath(srcPath: Path, file: TsFile): Path =
     when (file.project) {
         TsProject.LibCommon -> srcPath / "lib-common" / file.path
         TsProject.CitizenFrontend -> srcPath / "citizen-frontend" / file.path
+        TsProject.E2ETest -> srcPath / "e2e-test" / file.path
     }

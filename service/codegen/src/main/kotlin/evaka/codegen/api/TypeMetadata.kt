@@ -18,6 +18,8 @@ import kotlin.reflect.full.starProjectedType
 value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentation<*>>) {
     constructor(vararg classes: Pair<KClass<*>, TsRepresentation<*>>) : this(classes.toMap())
 
+    operator fun contains(clazz: KClass<*>) = tsRepresentationMap.contains(clazz)
+
     operator fun get(clazz: KClass<*>) = tsRepresentationMap[clazz]
 
     operator fun get(type: KType) = type.classifier?.let { tsRepresentationMap[it] }
@@ -25,8 +27,7 @@ value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentatio
     operator fun plus(other: TypeMetadata) =
         TypeMetadata(this.tsRepresentationMap + other.tsRepresentationMap)
 
-    fun namedTypes(): List<TsNamedType<*>> =
-        tsRepresentationMap.values.mapNotNull { it as? TsNamedType }
+    operator fun minus(classes: Set<KClass<*>>) = TypeMetadata(this.tsRepresentationMap - classes)
 }
 
 /**

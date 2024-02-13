@@ -9,6 +9,9 @@ import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 
 abstract class TsCodeGenerator(val metadata: TypeMetadata) {
+    fun namedTypes(): List<TsNamedType<*>> =
+        metadata.tsRepresentationMap.values.mapNotNull { it as? TsNamedType }
+
     abstract fun locateNamedType(namedType: TsNamedType<*>): TsFile
 
     private fun typeRef(namedType: TsNamedType<*>): TsImport =

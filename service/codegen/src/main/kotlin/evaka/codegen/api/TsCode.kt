@@ -10,6 +10,7 @@ import kotlin.io.path.relativeTo
 
 enum class TsProject {
     LibCommon,
+    E2ETest,
     CitizenFrontend;
 
     operator fun div(path: String): TsFile = TsFile(this, Path.of(path))
@@ -17,6 +18,7 @@ enum class TsProject {
     fun absoluteImportPath(path: Path): Path =
         when (this) {
             LibCommon -> Path.of("lib-common") / path
+            E2ETest -> Path.of("e2e-test") / path
             CitizenFrontend -> Path.of("citizen-frontend") / path
         }
 }
