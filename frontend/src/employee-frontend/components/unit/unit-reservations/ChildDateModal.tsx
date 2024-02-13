@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, fasExclamationTriangle, faTrash } from 'Icons'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -168,6 +168,8 @@ export default React.memo(function ChildDateModal({
   const today = LocalDate.todayInHelsinkiTz()
   const editingFuture = date.isAfter(today)
 
+  const [mutationError, setMutationError] = useState<string | null>(null)
+
   const boundForm = useForm(
     form,
     () => ({
@@ -227,7 +229,13 @@ export default React.memo(function ChildDateModal({
             options: []
           }
     }),
-    i18n.validationErrors
+    i18n.validationErrors,
+    {
+      onUpdate: (_, nextState) => {
+        setMutationError(null)
+        return nextState
+      }
+    }
   )
 
   const {
@@ -269,6 +277,12 @@ export default React.memo(function ChildDateModal({
       resolveAction={() => boundForm.value()}
       resolveLabel={i18n.common.save}
       onSuccess={onClose}
+      onFailure={(e) => {
+        // TODO: How to fix type issues?
+        if (e.errorCode && e.errorCode in i18n.unit.attendanceReservations.childDateModal.errorCodes) {
+          setMutationError(i18n.unit.attendanceReservations.childDateModal.errorCodes[e.errorCode])
+        }
+      }}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
@@ -444,6 +458,7 @@ export default React.memo(function ChildDateModal({
           </FixedSpaceColumn>
         )}
       </FixedSpaceColumn>
+      {!!mutationError && <AlertBox message={mutationError} />}
     </MutateFormModal>
   )
 })
