@@ -86,6 +86,54 @@ fun generateApiFiles(): Map<TsFile, String> {
                 )
             }
 
+    val employeeApiClients =
+        endpoints
+            .filterNot { it.path.startsWith("/citizen") }
+            .filter {
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.Employee>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
+            }
+            .groupBy {
+                TsProject.EmployeeFrontend /
+                    "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
+            }
+            .mapValues { (file, citizenEndpoints) ->
+                generateApiClients(
+                    generator,
+                    file,
+                    TsImport.Named(TsProject.EmployeeFrontend / "api/client.ts", "client"),
+                    citizenEndpoints
+                )
+            }
+
+    val employeeMobileApiClients =
+        endpoints
+            .filterNot { it.path.startsWith("/citizen") }
+            .filter {
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.MobileDevice>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
+            }
+            .groupBy {
+                TsProject.EmployeeMobileFrontend /
+                    "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
+            }
+            .mapValues { (file, citizenEndpoints) ->
+                generateApiClients(
+                    generator,
+                    file,
+                    TsImport.Named(TsProject.EmployeeMobileFrontend / "client.ts", "client"),
+                    citizenEndpoints
+                )
+            }
+
     val devApiClients =
         (TsProject.E2ETest / "generated/api-clients.ts").let { file ->
             mapOf(
@@ -99,7 +147,11 @@ fun generateApiFiles(): Map<TsFile, String> {
             )
         }
 
-    return apiTypes + citizenApiClients + devApiClients
+    return apiTypes +
+        citizenApiClients +
+        employeeApiClients +
+        employeeMobileApiClients +
+        devApiClients
 }
 
 fun generateApiTypes(

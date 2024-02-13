@@ -78,7 +78,6 @@ data class IncomeType(
     val isSubType: Boolean
 )
 
-@ExcludeCodeGen // currently customized in different cities
 @ConstList("incomeCoefficients")
 enum class IncomeCoefficient {
     MONTHLY_WITH_HOLIDAY_BONUS,
