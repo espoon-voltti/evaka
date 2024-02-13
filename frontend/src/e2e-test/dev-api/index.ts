@@ -626,8 +626,8 @@ export async function upsertPersonFixture(
   fixture: PersonDetail
 ): Promise<string> {
   try {
-    const { data } = await devClient.post<{ id: UUID }>(`/person`, fixture)
-    return data.id
+    const { data: id } = await devClient.post<UUID>(`/person`, fixture)
+    return id
   } catch (e) {
     throw new DevApiError(e)
   }

@@ -247,7 +247,7 @@ class DevApi(
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/", produces = ["text/plain"])
     fun healthCheck() {
         // HTTP 200
     }
@@ -580,7 +580,7 @@ class DevApi(
     }
 
     @PostMapping("/person")
-    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonDTO {
+    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonId {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -588,9 +588,9 @@ class DevApi(
                 val personDTO = body.toPersonDTO()
 
                 if (person != null) {
-                    tx.updatePersonFromVtj(personDTO)
+                    tx.updatePersonFromVtj(personDTO).id
                 } else {
-                    createPersonFromVtj(tx, personDTO)
+                    createPersonFromVtj(tx, personDTO).id
                 }
             }
         }
@@ -739,10 +739,10 @@ RETURNING id
             }
         }
 
-    @PostMapping("/placement-plan/{application-id}")
+    @PostMapping("/placement-plan/{applicationId}")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable("application-id") applicationId: ApplicationId,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan
     ) {
         db.connect { dbc ->
@@ -784,7 +784,7 @@ RETURNING id
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertPerson(db: Database, @RequestBody person: VtjPerson) {
+    fun upsertVtjPerson(db: Database, @RequestBody person: VtjPerson) {
         MockPersonDetailsService.upsertPerson(person)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -858,7 +858,7 @@ RETURNING id
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
-    fun createPlacementPlan(
+    fun createApplicationPlacementPlan(
         db: Database,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
@@ -1373,7 +1373,7 @@ RETURNING id
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
         db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
 
-    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: Instant?)
+    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: HelsinkiDateTime?)
 
     @PostMapping("/varda/reset-child")
     fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
@@ -1390,7 +1390,7 @@ RETURNING id
 
     data class DevVardaServiceNeed(
         val evakaServiceNeedId: ServiceNeedId,
-        val evakaServiceNeedUpdated: Instant,
+        val evakaServiceNeedUpdated: HelsinkiDateTime,
         val evakaChildId: ChildId,
         val updateFailed: Boolean?,
         val errors: List<String>?
@@ -1471,11 +1471,11 @@ RETURNING id
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) =
+    fun addCalendarEvent(db: Database, @RequestBody body: DevCalendarEvent) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event-attendee")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) =
+    fun addCalendarEventAttendee(db: Database, @RequestBody body: DevCalendarEventAttendee) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/absence")
