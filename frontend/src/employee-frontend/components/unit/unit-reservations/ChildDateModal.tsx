@@ -129,6 +129,31 @@ const form = transformed(
   }
 )
 
+const excludedAbsenceTypes: AbsenceType[] = [
+  'FREE_ABSENCE',
+  'PARENTLEAVE',
+  'PLANNED_ABSENCE',
+  'FORCE_MAJEURE'
+]
+const basicAbsenceTypes = absenceTypes.filter(
+  (t) => !excludedAbsenceTypes.includes(t)
+)
+const getAbsenceTypeOptions = (
+  currentSelection: AbsenceType | null,
+  names: Record<AbsenceType, string>
+) => {
+  const availableTypes = [...basicAbsenceTypes]
+  if (currentSelection && !availableTypes.includes(currentSelection)) {
+    availableTypes.push(currentSelection)
+  }
+  return availableTypes.map((at) => ({
+    domValue: at,
+    value: at,
+    label: names[at],
+    dataQa: at
+  }))
+}
+
 export default React.memo(function ChildDateModal({
   target: { date, dateInfo, child, childDayRecord },
   unitId,
@@ -142,13 +167,6 @@ export default React.memo(function ChildDateModal({
 
   const today = LocalDate.todayInHelsinkiTz()
   const editingFuture = date.isAfter(today)
-
-  const absenceOptions = absenceTypes.map((at) => ({
-    domValue: at,
-    value: at,
-    label: i18n.absences.absenceTypes[at],
-    dataQa: at
-  }))
 
   const boundForm = useForm(
     form,
@@ -183,7 +201,10 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceBillable
               ? childDayRecord.absenceBillable.absenceType
               : '',
-            options: absenceOptions
+            options: getAbsenceTypeOptions(
+              childDayRecord.absenceBillable?.absenceType ?? null,
+              i18n.absences.absenceTypes
+            )
           }
         : {
             domValue: '',
@@ -196,7 +217,10 @@ export default React.memo(function ChildDateModal({
             domValue: childDayRecord.absenceNonbillable
               ? childDayRecord.absenceNonbillable.absenceType
               : '',
-            options: absenceOptions
+            options: getAbsenceTypeOptions(
+              childDayRecord.absenceNonbillable?.absenceType ?? null,
+              i18n.absences.absenceTypes
+            )
           }
         : {
             domValue: '',
