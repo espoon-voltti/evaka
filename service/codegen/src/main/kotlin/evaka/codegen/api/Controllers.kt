@@ -10,6 +10,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.functions
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaMethod
@@ -53,9 +54,18 @@ fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> =
 
 data class EndpointMetadata(
     val controllerClass: KClass<*>,
-    val controllerMethod: String,
+    val controllerMethod: KFunction<*>,
     val isJsonEndpoint: Boolean,
+    val isDeprecated: Boolean,
     val path: String,
+    /**
+     * Index number of the path, counted by the order the paths were scanned.
+     *
+     * For example, a controller method with `@GetMapping(value = ["/units", "/public/units"])`:
+     * - EndpointMetadata(path="/units", pathIndex=0, ...)
+     * - EndpointMetadata(path="/public/units", pathIndex=1, ...)
+     */
+    val pathIndex: Int,
     val httpMethod: RequestMethod,
     val pathVariables: List<NamedParameter>,
     val requestParameters: List<NamedParameter>,
@@ -142,7 +152,15 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         kotlinMethod.returnType.arguments.single().type
                     } else kotlinMethod.returnType
                 } else null
-            val paths = info.patternValues
+            // Extract all possible path patterns manually in order to preserve order if possible.
+            // The underlying Spring types use sets, but they seem to be order-preserving
+            // implementations
+            val paths =
+                listOfNotNull(
+                        info.pathPatternsCondition?.patterns?.map { it.patternString },
+                        info.patternsCondition?.patterns?.toList()
+                    )
+                    .flatten()
             val methods = info.methodsCondition.methods
             val consumesJson =
                 info.consumesCondition.isEmpty ||
@@ -151,14 +169,19 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                 info.producesCondition.isEmpty ||
                     info.producesCondition.producibleMediaTypes.contains(MediaType.APPLICATION_JSON)
             paths
-                .flatMap { path -> methods.map { method -> Pair(path, method) } }
-                .map { (path, method) ->
+                .withIndex()
+                .flatMap { (pathIndex, path) ->
+                    methods.map { method -> Triple(path, pathIndex, method) }
+                }
+                .map { (path, pathIndex, method) ->
                     EndpointMetadata(
                         controllerClass = controllerClass,
-                        controllerMethod = kotlinMethod.name,
+                        controllerMethod = kotlinMethod,
                         isJsonEndpoint =
                             consumesJson && producesJson && responseBodyType != typeOf<Any>(),
+                        isDeprecated = kotlinMethod.hasAnnotation<Deprecated>(),
                         path = path,
+                        pathIndex = pathIndex,
                         httpMethod = method,
                         pathVariables = pathVariables,
                         requestParameters = requestParameters,

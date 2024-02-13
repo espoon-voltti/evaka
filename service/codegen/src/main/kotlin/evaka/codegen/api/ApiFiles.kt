@@ -19,7 +19,11 @@ fun generateApiFiles(): Map<TsFile, String> {
     val endpoints =
         scanEndpoints("fi.espoo.evaka")
             .filter { it.isJsonEndpoint }
-            .filterNot { it.path.startsWith("/integration") || it.path.startsWith("/system") }
+            .filterNot {
+                it.isDeprecated ||
+                    it.path.startsWith("/integration") ||
+                    it.path.startsWith("/system")
+            }
     endpoints.forEach { it.validate() }
 
     val metadata =
@@ -148,10 +152,13 @@ fun generateApiClients(
 ): String {
     val clients =
         endpoints
+            .groupBy { Pair(it.controllerClass, it.controllerMethod) }
+            .values
+            .map { duplicates -> duplicates.minBy { it.pathIndex } }
             .sortedWith(
                 compareBy(
                     { it.controllerClass.jvmName },
-                    { it.controllerMethod },
+                    { it.controllerMethod.name },
                 )
             )
             .map {
@@ -159,7 +166,7 @@ fun generateApiClients(
                     generateApiClient(generator, axiosClient, it)
                 } catch (e: Exception) {
                     throw RuntimeException(
-                        "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod}",
+                        "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
                         e
                     )
                 }
@@ -251,9 +258,9 @@ fun generateApiClient(
     return TsCode {
         """
 /**
-* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod}
+* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export async function ${endpoint.controllerMethod}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
+export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
   const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
 ${join(axiosArguments, ",\n").prependIndent("    ")}
   })
