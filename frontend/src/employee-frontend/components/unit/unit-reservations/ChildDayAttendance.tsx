@@ -23,7 +23,8 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { reservationHasTimes, TimeRange } from 'lib-common/reservations'
+import { reservationHasTimes } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -72,23 +73,15 @@ export default React.memo(function ChildDayAttendance({
             ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
             : null
 
-    return getExpectedAttendanceTimes(
-      reservations,
-      serviceTimeRange
-        ? {
-            startTime: serviceTimeRange.start,
-            endTime: serviceTimeRange.end
-          }
-        : null
-    )
+    return getExpectedAttendanceTimes(reservations, serviceTimeRange)
   }, [dailyServiceTimes, reservations, date])
 
   const isWithinExpectedTimes = useCallback(
     (time: LocalTime) =>
       expectedTimes.some(
         (expected) =>
-          expected.startTime.isEqualOrBefore(time) &&
-          expected.endTime.isEqualOrAfter(time)
+          expected.start.isEqualOrBefore(time) &&
+          expected.end.isEqualOrAfter(time)
       ),
     [expectedTimes]
   )
@@ -176,10 +169,7 @@ const getExpectedAttendanceTimes = (
 ): TimeRange[] => {
   const reservationTimes = reservations
     .filter(reservationHasTimes)
-    .map((r) => ({
-      startTime: r.startTime,
-      endTime: r.endTime
-    }))
+    .map((r) => new TimeRange(r.startTime, r.endTime))
 
   if (reservationTimes.length > 0) return reservationTimes
 
