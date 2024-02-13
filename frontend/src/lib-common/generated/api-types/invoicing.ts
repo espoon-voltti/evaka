@@ -374,6 +374,21 @@ export interface GenerateDecisionsBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+*/
+export const incomeCoefficients = [
+  'MONTHLY_WITH_HOLIDAY_BONUS',
+  'MONTHLY_NO_HOLIDAY_BONUS',
+  'BI_WEEKLY_WITH_HOLIDAY_BONUS',
+  'BI_WEEKLY_NO_HOLIDAY_BONUS',
+  'DAILY_ALLOWANCE_21_5',
+  'DAILY_ALLOWANCE_25',
+  'YEARLY'
+] as const
+
+export type IncomeCoefficient = typeof incomeCoefficients[number]
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeEffect
 */
 export type IncomeEffect =

@@ -37,6 +37,7 @@ import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
 import { ExternalId } from 'lib-common/generated/api-types/identity'
+import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import { IncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 import { JsonOf } from 'lib-common/json'
@@ -870,7 +871,7 @@ export interface Geometry {
 */
 export interface IncomeValue {
   amount: number
-  coefficient: never
+  coefficient: IncomeCoefficient
   monthlyAmount: number
   multiplier: number
 }
