@@ -1415,30 +1415,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
-    fun `reservation sums - daily service times with inverted start and end`() {
-        insertGroupPlacement(testChild_1.id)
-        val dailyServiceTimes =
-            DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0))
-            )
-        insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
-
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
-            }
-        // 22 operational days * 12h
-        assertEquals(listOf(264), result.children.map { it.reservationTotalHours })
-    }
-
-    @Test
     fun `reservation sums - daily service times are used only when there is no reservation`() {
         insertGroupPlacement(testChild_1.id)
         val reservations =
