@@ -50,14 +50,13 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
             clazz.allSuperclasses.firstNotNullOfOrNull { tsReprMap[it] as? TsSealedClass }
         return when {
             parentSealedClass != null -> TsSealedVariant(parentSealedClass, TsPlainObject(clazz))
-            clazz.isData -> TsPlainObject(clazz)
             clazz.java.isEnum -> TsStringEnum(clazz)
             clazz.isSealed -> {
                 val serializer =
                     typeSerializerFor(clazz) ?: error("No Jackson serializer found for $clazz")
                 TsSealedClass(TsPlainObject(clazz), clazz.sealedSubclasses.toSet(), serializer)
             }
-            else -> error("Unsupported $clazz")
+            else -> TsPlainObject(clazz)
         }
     }
 
