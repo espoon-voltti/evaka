@@ -62,8 +62,12 @@ fun generateApiFiles(): Map<TsFile, String> {
         endpoints
             .filter { it.path.startsWith("/citizen") || it.path.startsWith("/public") }
             .filter {
-                it.authenticatedUserType == typeOf<AuthenticatedUser>() ||
-                    it.authenticatedUserType == typeOf<AuthenticatedUser.Citizen>()
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.Citizen>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
             }
             .groupBy {
                 TsProject.CitizenFrontend /
