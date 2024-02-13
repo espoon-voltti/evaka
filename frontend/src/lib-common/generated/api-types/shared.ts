@@ -149,3 +149,11 @@ export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTi
     start: HelsinkiDateTime.parseIso(json.start)
   }
 }
+
+
+export function deserializeJsonWrapper<T>(deserializeT: (value: JsonOf<T>) => T, json: JsonOf<Wrapper<T>>): Wrapper<T> {
+  return {
+    ...json,
+    data: deserializeT(json.data)
+  }
+}
