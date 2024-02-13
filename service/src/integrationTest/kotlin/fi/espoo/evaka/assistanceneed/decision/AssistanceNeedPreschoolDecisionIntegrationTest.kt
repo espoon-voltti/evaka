@@ -282,10 +282,10 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         val messages = MockSfiMessagesClient.getMessages()
         assertEquals(1, messages.size)
-        assertContains(messages[0].first.messageContent, "päätös tuesta")
+        assertContains(messages[0].messageContent, "päätös tuesta")
         assertEquals(
             "assistance-need-preschool-decisions/assistance_need_preschool_decision_${decision.id}.pdf",
-            messages[0].first.documentKey
+            messages[0].documentKey
         )
 
         annulDecision(decision.id, "oops", decisionMaker)

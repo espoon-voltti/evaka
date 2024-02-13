@@ -426,10 +426,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val messages = MockSfiMessagesClient.getMessages()
         assertEquals(1, messages.size)
-        assertContains(messages[0].first.messageContent, "päätös tuesta")
+        assertContains(messages[0].messageContent, "päätös tuesta")
         assertEquals(
             "assistance-need-decisions/assistance_need_decision_${assistanceNeedDecision.id}.pdf",
-            messages[0].first.documentKey
+            messages[0].documentKey
         )
     }
 
