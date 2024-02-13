@@ -38,26 +38,25 @@ const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>,
-): Set<UnreadCountByAccount> {
-    return createQuery<Any> {
+): Set<UnreadCountByAccount> =
+    createQuery<Any> {
             sql(
                 """
-        SELECT 
+        SELECT
             acc.id as account_id,
-            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
+            count(*) FILTER (WHERE mtp.folder_id IS NULL AND NOT mt.is_copy) AS unread_count,
+            count(*) FILTER (WHERE mtp.folder_id IS NULL AND mt.is_copy) AS unread_copy_count
         FROM message_account acc
-        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
-        LEFT JOIN message m ON mr.message_id = m.id
+        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id AND mr.read_at IS NULL
+        LEFT JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE ${predicate(idFilter.forTable("acc"))} AND (m.id IS NULL OR m.sent_at IS NOT NULL)
+        WHERE ${predicate(idFilter.forTable("acc"))}
         GROUP BY acc.id
         """
             )
         }
         .toSet()
-}
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
     daycareId: DaycareId
