@@ -334,7 +334,7 @@ describe('Child Information assistance functionality for employees', () => {
       )
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await row.type.assertTextEquals('Kuljetusetu')
+      await row.type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
 
       await row.edit.click()
       const form = assistance.otherAssistanceMeasureForm
@@ -371,9 +371,10 @@ describe('Child Information assistance functionality for employees', () => {
       await assistance.otherAssistanceMeasureRow(0).delete()
 
       await assistance.assertOtherAssistanceMeasureCount(1)
+
       await assistance
         .otherAssistanceMeasureRow(0)
-        .type.assertTextEquals('Kuljetusetu')
+        .type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
     })
   })
 
