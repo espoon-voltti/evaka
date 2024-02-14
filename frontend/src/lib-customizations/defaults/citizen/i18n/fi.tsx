@@ -340,6 +340,21 @@ export default {
       'Lapsesi ei ole varhaiskasvatuksessa tai esiopetuksessa tänä päivänä',
     attendanceWarning: 'Toteutunut läsnäoloaika ylittää ilmoitetun ajan.',
     eventsCount: 'tapahtumaa',
+    shiftCareInfoLabel: 'Varhaiskasvatus yön yli?',
+    shiftCareInfo: (): React.ReactNode => (
+      <>
+        <P>
+          Jos lapsi tarvitsee varhaiskasvatusta yön yli, merkitse keskiyötä
+          edeltävä osa päättymään klo 23:59, ja keskiyön jälkeinen osa alkamaan
+          seuraavana päivänä klo 00:00.
+        </P>
+        <P>
+          Esimerkiksi jos lapsi on hoidossa yön yli maanantai-illasta klo 20:00
+          tiistai-aamuun klo 06:00, merkitse maanantaille 20:00 - 23:59 ja
+          tiistaille 00:00 - 06:00.
+        </P>
+      </>
+    ),
     reservationModal: {
       title: 'Ilmoita läsnäolo',
       selectChildren: 'Valitse lapset',
