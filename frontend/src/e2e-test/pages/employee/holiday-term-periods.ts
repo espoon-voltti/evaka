@@ -231,6 +231,25 @@ export class HolidayAndTermPeriodsPage {
     return this.#preschoolTermRows.nth(nth).findByDataQa('btn-edit').click()
   }
 
+  async deletePreschoolTerm(nth: number) {
+    return await this.#preschoolTermRows
+      .nth(nth)
+      .findByDataQa('btn-delete')
+      .click()
+    //return this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async confirmPreschoolTermEdit() {
+    await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
+  }
+
+  async confirmPreschoolTermDelete() {
+    await this.page
+      .findByDataQa('deletion-modal')
+      .findByDataQa('modal-okBtn')
+      .click()
+  }
+
   async submit() {
     return this.page.findByDataQa('save-btn').click()
   }

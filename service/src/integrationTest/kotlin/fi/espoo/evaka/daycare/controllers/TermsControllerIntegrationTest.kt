@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.preschoolTerm2024
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PreschoolTermId
@@ -429,6 +430,33 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         // Verify no fields have been updated for preschool term 2024
         assertPreschoolTerm(preschoolTerm2024, preschoolTerm2024.id)
+    }
+
+    @Test
+    fun `delete preschool term`() {
+        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+
+        termsController.deletePreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2024.id)
+        val termsFinal = termsController.getPreschoolTerms(dbInstance())
+
+        assertEquals(4, termsFinal.size)
+        assertNull(termsFinal.find { preschoolTerm -> preschoolTerm.id == preschoolTerm2024.id })
+    }
+
+    @Test
+    fun `should not delete preschool term that has started`() {
+        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+
+        assertThrows<BadRequest> {
+            termsController.deletePreschoolTerm(
+                dbInstance(),
+                adminUser,
+                clock,
+                preschoolTerm2023.id
+            )
+        }
+
+        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
     }
 
     private fun assertPreschoolTerm(expected: DevPreschoolTerm, targetId: PreschoolTermId) {
