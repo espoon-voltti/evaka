@@ -35,6 +35,8 @@ export class HolidayAndTermPeriodsPage {
   #periodRows = this.page.findAllByDataQa('holiday-period-row')
   #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
 
+  #preschoolTermRows = this.page.findAllByDataQa('preschool-term-row')
+
   get visibleQuestionnaires(): Promise<string[]> {
     return this.#questionnaireRows.allTexts()
   }
@@ -55,6 +57,10 @@ export class HolidayAndTermPeriodsPage {
   }
 
   async clickAddPreschoolTermButton() {
+    return this.page.findByDataQa('add-preschool-term-button').click()
+  }
+
+  async clickEditPreschoolTermButton() {
     return this.page.findByDataQa('add-preschool-term-button').click()
   }
 
@@ -158,14 +164,16 @@ export class HolidayAndTermPeriodsPage {
       for (const [i, termBreak] of termBreaks.entries()) {
         await this.#addTermBreakButton.click()
         const startInput = new DatePicker(
-          this.page
-            .findByDataQa(`term-break-entry-${i}`)
+          this.#termBreakRows
+            .nth(i)
+            .findByDataQa(`term-break-input`)
             .findAll('input')
             .first()
         )
         const endInput = new DatePicker(
-          this.page
-            .findByDataQa(`term-break-entry-${i}`)
+          this.#termBreakRows
+            .nth(i)
+            .findByDataQa(`term-break-input`)
             .findAll('input')
             .last()
         )
@@ -176,6 +184,7 @@ export class HolidayAndTermPeriodsPage {
   }
 
   #addTermBreakButton = this.page.findByDataQa('add-term-break-button')
+  #termBreakRows = this.page.findAllByDataQa('term-break')
 
   #preschoolTermInputs = {
     finnishPreschoolStart: new DatePicker(
@@ -190,6 +199,36 @@ export class HolidayAndTermPeriodsPage {
     applicationPeriodStart: new DatePicker(
       this.page.findByDataQa('input-application-period-start')
     )
+  }
+
+  async removeTermBreakEntry(nth: number) {
+    await this.#termBreakRows
+      .nth(nth)
+      .findByDataQa(`remove-term-break-button`)
+      .click()
+  }
+
+  async editTermBreakInput(nth: number, range: FiniteDateRange) {
+    const startInput = new DatePicker(
+      this.#termBreakRows
+        .nth(nth)
+        .findByDataQa(`term-break-input`)
+        .findAll('input')
+        .first()
+    )
+    const endInput = new DatePicker(
+      this.#termBreakRows
+        .nth(nth)
+        .findByDataQa(`term-break-input`)
+        .findAll('input')
+        .last()
+    )
+    await startInput.fill(range.start.format())
+    await endInput.fill(range.end.format())
+  }
+
+  async editPreschoolTerm(nth: number) {
+    return this.#preschoolTermRows.nth(nth).findByDataQa('btn-edit').click()
   }
 
   async submit() {
