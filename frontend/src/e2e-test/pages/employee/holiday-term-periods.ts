@@ -236,7 +236,6 @@ export class HolidayAndTermPeriodsPage {
       .nth(nth)
       .findByDataQa('btn-delete')
       .click()
-    //return this.page.findByDataQa('modal-okBtn').click()
   }
 
   async confirmPreschoolTermEdit() {
