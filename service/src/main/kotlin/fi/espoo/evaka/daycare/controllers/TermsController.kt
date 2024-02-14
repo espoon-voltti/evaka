@@ -7,6 +7,7 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.deleteFuturePreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
@@ -23,6 +24,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -130,6 +132,40 @@ class TermsController(private val accessControl: AccessControl) {
                 }
             }
             .also { termId -> Audit.PreschoolTermUpdate.log(objectId = termId) }
+    }
+
+    @DeleteMapping("/preschool-terms/{id}")
+    fun deletePreschoolTerm(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: PreschoolTermId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.PreschoolTerm.DELETE,
+                        id
+                    )
+
+                    val existingTerm =
+                        tx.getPreschoolTerm(id)
+                            ?: throw NotFound("Preschool term $id does not exist")
+
+                    if (
+                        existingTerm.finnishPreschool.start.isBefore(clock.today()) ||
+                            existingTerm.swedishPreschool.start.isBefore(clock.today())
+                    ) {
+                        throw BadRequest("Cannot delete term if it has started")
+                    }
+
+                    tx.deleteFuturePreschoolTerm(clock, id)
+                }
+            }
+            .also { termId -> Audit.PreschoolTermDelete.log(objectId = termId) }
     }
 
     private fun validatePreschoolTermRequest(

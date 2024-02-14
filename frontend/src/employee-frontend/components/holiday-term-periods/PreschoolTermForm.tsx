@@ -183,7 +183,7 @@ export default React.memo(function PreschoolTermForm({
       term !== undefined
         ? updatePreschoolTerm({ termId: term.id, data: form.value() })
         : createPreschoolTerm(form.value()),
-    [form, createPreschoolTerm, updatePreschoolTerm]
+    [term, form, createPreschoolTerm, updatePreschoolTerm]
   )
 
   const {

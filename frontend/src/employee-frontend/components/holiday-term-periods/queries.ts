@@ -11,6 +11,7 @@ import {
   createHolidayPeriod,
   createPreschoolTerm,
   deleteHolidayPeriod,
+  deletePreschoolTerm,
   deleteQuestionnaire,
   getHolidayPeriod,
   getHolidayPeriods,
@@ -70,6 +71,14 @@ export const createPreschoolTermMutation = mutation({
 export const updatePreschoolTermMutation = mutation({
   api: updatePreschoolTerm,
   invalidateQueryKeys: ({ termId }) => [
+    queryKeys.preschoolTerms(),
+    queryKeys.preschoolTerm(termId)
+  ]
+})
+
+export const deletePreschoolTermMutation = mutation({
+  api: deletePreschoolTerm,
+  invalidateQueryKeys: (termId) => [
     queryKeys.preschoolTerms(),
     queryKeys.preschoolTerm(termId)
   ]

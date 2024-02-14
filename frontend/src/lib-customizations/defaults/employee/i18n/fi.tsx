@@ -4480,6 +4480,20 @@ export const fi = {
       extendedTermStartAfter:
         'Pidennetyn lukukauden aloituspäivämäärä ei voi olla lukukauden aloituspäivämäärän jälkeen.',
       termBreaksOverlap: 'Päällekkäiset opetustauot eivät ole sallittua.'
+    },
+    modals: {
+      editTerm: {
+        title: 'Haluatko varmasti muokata tietoja?',
+        text: 'Haluatko varmasti muokata jo alkanutta lukukautta?',
+        resolve: 'Muokkaa',
+        reject: 'Älä muokkaa'
+      },
+      deleteTerm: {
+        title: 'Haluatko varmasti poistaa lukukauden?',
+        text: 'Lukukausi poistetaan',
+        resolve: 'Poista lukukausi',
+        reject: 'Älä poista'
+      }
     }
   },
   preferredFirstName: {

@@ -1887,6 +1887,7 @@ sealed interface Action {
         override vararg val defaultRules: ScopedActionRule<in PreschoolTermId>
     ) : ScopedAction<PreschoolTermId> {
         UPDATE(HasGlobalRole(ADMIN)),
+        DELETE(HasGlobalRole(ADMIN)),
         READ(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"

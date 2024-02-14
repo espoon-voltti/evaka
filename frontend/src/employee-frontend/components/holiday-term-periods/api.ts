@@ -117,3 +117,7 @@ export function updatePreschoolTerm({
 }): Promise<void> {
   return client.put(`/preschool-terms/${termId}`, data).then(() => undefined)
 }
+
+export function deletePreschoolTerm(termId: UUID): Promise<void> {
+  return client.delete(`/preschool-terms/${termId}`).then(() => undefined)
+}

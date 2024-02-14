@@ -397,6 +397,7 @@ enum class Audit(
     PreschoolAssistanceDelete,
     PreschoolTermCreate,
     PreschoolTermUpdate,
+    PreschoolTermDelete,
     PreschoolTermRead,
     PresenceReportRead,
     PushSettingsRead,

@@ -8,6 +8,7 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
@@ -142,3 +143,16 @@ fun Database.Transaction.updatePreschoolTerm(
         .bind("applicationPeriod", applicationPeriod)
         .bind("termBreaks", termBreaks)
         .updateExactlyOne()
+
+fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: PreschoolTermId) {
+    createUpdate(
+            """
+           DELETE FROM preschool_term
+           WHERE id = :id AND (lower(finnish_preschool) > :today_date AND lower(swedish_preschool) > :today_date)
+        """
+                .trimIndent()
+        )
+        .bind("today_date", clock.today())
+        .bind("id", termId)
+        .updateExactlyOne()
+}
