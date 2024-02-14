@@ -5,24 +5,23 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
+import { Daycare, PersonDetail } from '../../dev-api/types'
 import {
-  Daycare,
-  DaycareGroup,
-  DaycarePlacement,
-  PersonDetail
-} from '../../dev-api/types'
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevDaycareGroup, DevPlacement } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let unitFixture: Daycare
-let groupFixture: DaycareGroup
+let groupFixture: DevDaycareGroup
 let childFixture: PersonDetail
-let placementFixture: DaycarePlacement
+let placementFixture: DevPlacement
 let page: Page
 
 const placementDates = () => ({
@@ -33,7 +32,7 @@ const placementDates = () => ({
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   unitFixture = fixtures.daycareFixture
   childFixture = fixtures.familyWithTwoGuardians.children[0]
   groupFixture = (

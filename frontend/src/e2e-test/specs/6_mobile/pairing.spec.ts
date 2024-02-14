@@ -3,11 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { postPairing, postPairingResponse, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
+import {
+  postPairing,
+  postPairingResponse,
+  resetDatabase
+} from '../../generated/api-clients'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
@@ -29,13 +33,18 @@ describe('Mobile pairing', () => {
     await page.goto(config.mobileUrl)
 
     await pairingFlow.startPairing()
-    const res = await postPairing(fixtures.daycareFixture.id)
+    const res = await postPairing({
+      body: { unitId: fixtures.daycareFixture.id }
+    })
 
     await pairingFlow.submitChallengeKey(res.challengeKey)
     const responseKey = await pairingFlow.getResponseKey()
     expect(responseKey).toBeTruthy()
 
-    await postPairingResponse(res.id, res.challengeKey, responseKey)
+    await postPairingResponse({
+      id: res.id,
+      body: { challengeKey: res.challengeKey, responseKey }
+    })
 
     await waitUntilTrue(() => pairingFlow.isPairingWizardFinished())
     await pairingFlow.clickStartCta()

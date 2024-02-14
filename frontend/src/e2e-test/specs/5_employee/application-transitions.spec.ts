@@ -7,15 +7,10 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  cleanUpMessages,
   createDecisionPdf,
   execSimpleApplicationActions,
-  getDecisionsByApplication,
   insertApplications,
-  insertDecisionFixtures,
-  insertDefaultServiceNeedOptions,
-  rejectDecisionByCitizen,
-  resetDatabase
+  rejectDecisionByCitizen
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -29,7 +24,15 @@ import {
   preschoolFixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application, EmployeeDetail } from '../../dev-api/types'
+import { Application } from '../../dev-api/types'
+import {
+  cleanUpMessages,
+  createDecisions,
+  createDefaultServiceNeedOptions,
+  getApplicationDecisions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -43,7 +46,7 @@ let applicationWorkbench: ApplicationWorkbenchPage
 let applicationReadView: ApplicationReadView
 
 let fixtures: AreaAndPersonFixtures
-let serviceWorker: EmployeeDetail
+let serviceWorker: DevEmployee
 let applicationId: string
 
 beforeEach(async () => {
@@ -51,7 +54,7 @@ beforeEach(async () => {
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
   page = await Page.open({
@@ -368,7 +371,7 @@ describe('Application transitions', () => {
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     expect(
       decisions
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
@@ -431,7 +434,7 @@ describe('Application transitions', () => {
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     expect(
       decisions
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
@@ -640,12 +643,14 @@ describe('Application transitions', () => {
     const decisionId = decision.id
 
     // NOTE: This will NOT generate a PDF, just create the decision
-    await insertDecisionFixtures([
-      {
-        ...decision,
-        employeeId: serviceWorker.id
-      }
-    ])
+    await createDecisions({
+      body: [
+        {
+          ...decision,
+          employeeId: serviceWorker.id
+        }
+      ]
+    })
     await employeeLogin(page, serviceWorker)
 
     await applicationReadView.navigateToApplication(applicationId)

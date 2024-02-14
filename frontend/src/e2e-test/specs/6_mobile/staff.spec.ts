@@ -4,9 +4,12 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import StaffPage from '../../pages/mobile/staff-page'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
@@ -24,7 +27,7 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup().with(daycareGroupFixture).save()
   const daycarePlacementFixture = await Fixture.placement()

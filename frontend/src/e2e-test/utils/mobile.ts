@@ -5,8 +5,11 @@
 import { UUID } from 'lib-common/types'
 
 import config from '../config'
-import { postMobileDevice, postPersonalMobileDevice } from '../dev-api'
 import { uuidv4 } from '../dev-api/fixtures'
+import {
+  postMobileDevice,
+  postPersonalMobileDevice
+} from '../generated/api-clients'
 
 /** Create a mobile device for the given employee and unit
  *
@@ -15,10 +18,13 @@ import { uuidv4 } from '../dev-api/fixtures'
 export async function pairMobileDevice(unitId: UUID): Promise<string> {
   const longTermToken = uuidv4()
   await postMobileDevice({
-    id: uuidv4(),
-    unitId,
-    name: 'testMobileDevice',
-    longTermToken
+    body: {
+      id: uuidv4(),
+      unitId,
+      name: 'testMobileDevice',
+      longTermToken,
+      pushNotificationCategories: []
+    }
   })
   return `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${longTermToken}`
 }
@@ -32,10 +38,12 @@ export async function pairPersonalMobileDevice(
 ): Promise<string> {
   const longTermToken = uuidv4()
   await postPersonalMobileDevice({
-    id: uuidv4(),
-    employeeId,
-    name: 'testMobileDevice',
-    longTermToken
+    body: {
+      id: uuidv4(),
+      employeeId,
+      name: 'testMobileDevice',
+      longTermToken
+    }
   })
   return `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${longTermToken}`
 }

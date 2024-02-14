@@ -6,9 +6,9 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture, PersonBuilder } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { NonSsnChildrenReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -153,7 +153,7 @@ const assertReport = async (report: NonSsnChildrenReport) => {
   await report.assertRows(initialExpectation.reverse())
 }
 
-const navigateToReport = async (page: Page, user: EmployeeDetail) => {
+const navigateToReport = async (page: Page, user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')

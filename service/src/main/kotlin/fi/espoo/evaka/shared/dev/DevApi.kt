@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.dev
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
@@ -29,7 +30,6 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
-import fi.espoo.evaka.assistanceneed.decision.UnitInfo
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
@@ -1813,7 +1813,7 @@ data class DevAssistanceNeedDecision(
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    @Nested("selected_unit") val selectedUnit: UnitInfo?,
+    @Nested("selected_unit") val selectedUnit: DaycareId?,
     @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee?,
     @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee?,
     @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee?,
@@ -1972,14 +1972,14 @@ data class DevEmployee(
     val externalId: ExternalId? = null,
     val employeeNumber: String? = null,
     val roles: Set<UserRole> = setOf(),
-    val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now(),
+    val lastLogin: HelsinkiDateTime = HelsinkiDateTime.now(),
     val active: Boolean = true
 ) {
     val evakaUserId: EvakaUserId
-        get() = EvakaUserId(id.raw)
+        @JsonIgnore get() = EvakaUserId(id.raw)
 
     val user: AuthenticatedUser.Employee
-        get() = AuthenticatedUser.Employee(id, roles)
+        @JsonIgnore get() = AuthenticatedUser.Employee(id, roles)
 }
 
 data class DevMobileDevice(

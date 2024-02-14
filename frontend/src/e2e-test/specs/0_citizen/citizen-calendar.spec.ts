@@ -8,7 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -16,6 +15,10 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -45,8 +48,8 @@ beforeEach(async () => {
   ]
   jariId = fixtures.enduserChildFixtureJari.id
   const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
-  await insertDaycarePlacementFixtures(
-    children.map((child) =>
+  await createDaycarePlacements({
+    body: children.map((child) =>
       createDaycarePlacementFixture(
         placementIds.get(child.id) ?? '',
         child.id,
@@ -55,7 +58,7 @@ beforeEach(async () => {
         today.addYears(1)
       )
     )
-  )
+  })
 
   const daycareGroup = await Fixture.daycareGroup()
     .with({

@@ -8,11 +8,6 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -24,9 +19,14 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
+import {
   DevAssistanceNeedPreschoolDecision,
-  EmployeeDetail
-} from '../../dev-api/types'
+  DevEmployee
+} from '../../generated/api-types'
 import AssistanceNeedPreschoolDecisionPage from '../../pages/employee/assistance-need-decision/assistance-need-preschool-decision-page'
 import AssistanceNeedPreschoolDecisionPreviewPage from '../../pages/employee/assistance-need-decision/assistance-need-preschool-decision-preview-page'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -40,8 +40,8 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
-let serviceWorker: EmployeeDetail
-let staff: EmployeeDetail
+let serviceWorker: DevEmployee
+let staff: DevEmployee
 let decisionPage: AssistanceNeedPreschoolDecisionPage
 let previewPage: AssistanceNeedPreschoolDecisionPreviewPage
 let childId: UUID
@@ -55,7 +55,7 @@ beforeEach(async () => {
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
 
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -67,7 +67,7 @@ beforeEach(async () => {
     unitId
   )
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
 
 const openPage = async (addDays = 0) =>

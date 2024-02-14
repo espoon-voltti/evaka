@@ -11,16 +11,7 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  getSentEmails,
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
-  insertVasuDocument,
-  insertVasuTemplateFixture,
-  resetDatabase,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { insertVasuTemplateFixture, runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -29,11 +20,16 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import { PersonDetailWithDependantsAndGuardians } from '../../dev-api/types'
 import {
-  DaycarePlacement,
-  EmployeeDetail,
-  PersonDetailWithDependantsAndGuardians
-} from '../../dev-api/types'
+  createDaycareGroups,
+  createDaycarePlacements,
+  createVasuDocument,
+  getSentEmails,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
   ChildDocumentsSection
 } from '../../pages/employee/child-information'
@@ -43,12 +39,12 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeDetail
-let unitSupervisor: EmployeeDetail
+let admin: DevEmployee
+let unitSupervisor: DevEmployee
 let childInformationPage: ChildInformationPage
 let child: PersonDetailWithDependantsAndGuardians
 let templateId: UUID
-let daycarePlacementFixture: DaycarePlacement
+let daycarePlacementFixture: DevPlacement
 
 const mockedTime = LocalDate.of(2022, 12, 20)
 
@@ -58,7 +54,7 @@ beforeAll(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   child = fixtures.familyWithTwoGuardians.children[0]
@@ -71,7 +67,7 @@ beforeAll(async () => {
     unitId
   )
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
   await Fixture.groupPlacement()
     .with({
@@ -85,16 +81,18 @@ beforeAll(async () => {
   templateId = await insertVasuTemplateFixture()
 
   const [firstGuardian, secondGuardian] = child.guardians ?? []
-  await insertGuardianFixtures([
-    {
-      guardianId: firstGuardian.id,
-      childId: child.id
-    },
-    {
-      guardianId: secondGuardian.id,
-      childId: child.id
-    }
-  ])
+  await insertGuardians({
+    body: [
+      {
+        guardianId: firstGuardian.id,
+        childId: child.id
+      },
+      {
+        guardianId: secondGuardian.id,
+        childId: child.id
+      }
+    ]
+  })
 })
 
 const openPage = async (addDays = 0) =>
@@ -184,7 +182,9 @@ describe('Vasu document page', () => {
   }
 
   beforeAll(async () => {
-    vasuDocId = await insertVasuDocument(child.id, templateId)
+    vasuDocId = await createVasuDocument({
+      body: { childId: child.id, templateId }
+    })
   })
 
   describe('Fill out document', () => {
@@ -503,7 +503,9 @@ describe('Vasu document page', () => {
 
   describe('Followup questions', () => {
     beforeAll(async () => {
-      vasuDocId = await insertVasuDocument(child.id, templateId)
+      vasuDocId = await createVasuDocument({
+        body: { childId: child.id, templateId }
+      })
     })
 
     test('An unpublished vasu document has no followup questions', async () => {
@@ -616,7 +618,9 @@ describe('Vasu document page', () => {
 
   describe('Publishing of vasu documents', () => {
     beforeEach(async () => {
-      vasuDocId = await insertVasuDocument(child.id, templateId)
+      vasuDocId = await createVasuDocument({
+        body: { childId: child.id, templateId }
+      })
     })
 
     test('Finalize a document', async () => {

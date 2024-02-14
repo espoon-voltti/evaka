@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { insertApplications, resetDatabase } from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

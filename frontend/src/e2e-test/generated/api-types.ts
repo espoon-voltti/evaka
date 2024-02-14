@@ -37,7 +37,6 @@ import { DocumentLanguage } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
-import { ExternalId } from 'lib-common/generated/api-types/identity'
 import { FeeAlterationWithEffect } from 'lib-common/generated/api-types/invoicing'
 import { FeeDecisionThresholds } from 'lib-common/generated/api-types/invoicing'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
@@ -60,7 +59,6 @@ import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { StructuralMotivationOptions } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
-import { UnitInfo } from 'lib-common/generated/api-types/assistanceneed'
 import { UnitManager } from 'lib-common/generated/api-types/daycare'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
@@ -73,17 +71,6 @@ import { deserializeJsonApplicationForm } from 'lib-common/generated/api-types/a
 import { deserializeJsonAssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
-
-/**
-* Generated from fi.espoo.evaka.shared.auth.AuthenticatedUserType
-*/
-export type AuthenticatedUserType =
-  | 'citizen'
-  | 'citizen_weak'
-  | 'employee'
-  | 'mobile'
-  | 'system'
-  | 'integration'
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Autocomplete
@@ -126,7 +113,7 @@ export interface CreateVasuTemplateBody {
 * Generated from fi.espoo.evaka.shared.dev.DaycareAclInsert
 */
 export interface DaycareAclInsert {
-  externalId: ExternalId
+  externalId: string
   role: UserRole | null
 }
 
@@ -214,7 +201,7 @@ export interface DevAssistanceNeedDecision {
   pedagogicalMotivation: string | null
   preparedBy1: AssistanceNeedDecisionEmployee | null
   preparedBy2: AssistanceNeedDecisionEmployee | null
-  selectedUnit: UnitInfo | null
+  selectedUnit: UUID | null
   sentForDecision: LocalDate | null
   serviceOptions: ServiceOptions
   servicesMotivation: string | null
@@ -479,15 +466,13 @@ export interface DevEmployee {
   active: boolean
   email: string | null
   employeeNumber: string | null
-  evakaUserId: UUID
-  externalId: ExternalId | null
+  externalId: string | null
   firstName: string
   id: UUID
-  lastLogin: HelsinkiDateTime | null
+  lastLogin: HelsinkiDateTime
   lastName: string
   preferredFirstName: string | null
   roles: UserRole[]
-  user: Employee
 }
 
 /**
@@ -496,7 +481,7 @@ export interface DevEmployee {
 export interface DevEmployeePin {
   employeeExternalId: string | null
   id: UUID
-  locked: boolean | null
+  locked: boolean
   pin: string
   userId: UUID | null
 }
@@ -839,17 +824,6 @@ export type EmailMessageType =
   | 'DOCUMENT_NOTIFICATION'
   | 'INFORMAL_DOCUMENT_NOTIFICATION'
   | 'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION'
-
-/**
-* Generated from fi.espoo.evaka.shared.auth.AuthenticatedUser.Employee
-*/
-export interface Employee {
-  allScopedRoles: UserRole[]
-  globalRoles: UserRole[]
-  id: UUID
-  isAdmin: boolean
-  type: AuthenticatedUserType
-}
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature
@@ -1198,7 +1172,7 @@ export function deserializeJsonDevDocumentTemplate(json: JsonOf<DevDocumentTempl
 export function deserializeJsonDevEmployee(json: JsonOf<DevEmployee>): DevEmployee {
   return {
     ...json,
-    lastLogin: (json.lastLogin != null) ? HelsinkiDateTime.parseIso(json.lastLogin) : null
+    lastLogin: HelsinkiDateTime.parseIso(json.lastLogin)
   }
 }
 

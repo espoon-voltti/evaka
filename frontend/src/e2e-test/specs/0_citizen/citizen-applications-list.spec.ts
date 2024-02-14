@@ -4,16 +4,13 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import {
-  execSimpleApplicationActions,
-  insertApplications,
-  resetDatabase
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

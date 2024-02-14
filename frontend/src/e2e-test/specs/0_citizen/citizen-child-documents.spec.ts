@@ -5,12 +5,6 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -19,6 +13,12 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -38,20 +38,22 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   child = fixtures.enduserChildFixtureJari
-  await insertGuardianFixtures([
-    {
-      guardianId: fixtures.enduserGuardianFixture.id,
-      childId: child.id
-    }
-  ])
+  await insertGuardians({
+    body: [
+      {
+        guardianId: fixtures.enduserGuardianFixture.id,
+        childId: child.id
+      }
+    ]
+  })
 
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(uuidv4(), child.id, unitId)
-  ])
+  await createDaycarePlacements({
+    body: [createDaycarePlacementFixture(uuidv4(), child.id, unitId)]
+  })
 
   templateIdHojks = (
     await Fixture.documentTemplate()

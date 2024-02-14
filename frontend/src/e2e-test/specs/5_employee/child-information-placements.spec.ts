@@ -9,26 +9,26 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertDefaultServiceNeedOptions,
-  resetDatabase,
-  terminatePlacement
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  Fixture,
   createDaycarePlacementFixture,
   daycareGroupFixture,
   familyWithTwoGuardians,
+  Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  createDefaultServiceNeedOptions,
+  resetDatabase,
+  terminatePlacement
+} from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(resetDatabase)
+beforeEach(async (): Promise<void> => resetDatabase())
 
 const setupPlacement = async (
   placementId: string,
@@ -36,16 +36,18 @@ const setupPlacement = async (
   unitId: UUID,
   childPlacementType: PlacementType
 ) => {
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      placementId,
-      childId,
-      unitId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      childPlacementType
-    )
-  ])
+  await createDaycarePlacements({
+    body: [
+      createDaycarePlacementFixture(
+        placementId,
+        childId,
+        unitId,
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz(),
+        childPlacementType
+      )
+    ]
+  })
 }
 
 async function openChildPlacements(page: Page, childId: UUID) {
@@ -62,8 +64,8 @@ describe('Child Information placement info', () => {
 
   beforeEach(async () => {
     const fixtures = await initializeAreaAndPersonData()
-    await insertDefaultServiceNeedOptions()
-    await insertDaycareGroupFixtures([daycareGroupFixture])
+    await createDefaultServiceNeedOptions()
+    await createDaycareGroups({ body: [daycareGroupFixture] })
 
     unitId = fixtures.daycareFixture.id
     childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -80,12 +82,14 @@ describe('Child Information placement info', () => {
     let childPlacements = await openChildPlacements(page, childId)
     await childPlacements.assertTerminatedByGuardianIsNotShown(placementId)
 
-    await terminatePlacement(
-      placementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      familyWithTwoGuardians.guardian.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        terminatedBy: familyWithTwoGuardians.guardian.id
+      }
+    })
 
     childPlacements = await openChildPlacements(page, childId)
     await childPlacements.assertTerminatedByGuardianIsShown(placementId)

@@ -11,14 +11,8 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
-  getDecisionsByApplication,
-  insertFosterParents,
-  insertVasuDocument,
   insertVasuTemplateFixture,
-  publishVasuDocument,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
+  runPendingAsyncJobs
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -26,6 +20,14 @@ import {
 } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createFosterParent,
+  createMessageAccounts,
+  createVasuDocument,
+  getApplicationDecisions,
+  publishVasuDocument,
+  resetDatabase
+} from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
@@ -57,13 +59,16 @@ beforeEach(async () => {
   fosterChild = (await Fixture.person().with({ ssn: '120220A995L' }).save())
     .data
   await Fixture.child(fosterChild.id).save()
-  await insertFosterParents([
-    {
-      childId: fosterChild.id,
-      parentId: fosterParent.id,
-      validDuring: new DateRange(mockedDate, mockedDate)
-    }
-  ])
+  await createFosterParent({
+    body: [
+      {
+        id: uuidv4(),
+        childId: fosterChild.id,
+        parentId: fosterParent.id,
+        validDuring: new DateRange(mockedDate, mockedDate)
+      }
+    ]
+  })
 
   activeRelationshipPage = await Page.open({
     mockedTime: mockedNow
@@ -120,7 +125,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   )
 
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
-  const decisions = await getDecisionsByApplication(applicationId)
+  const decisions = await getApplicationDecisions({ applicationId })
   const decisionId = decisions[0].id
   await activeRelationshipHeader.selectTab('decisions')
   const responsePage =
@@ -145,13 +150,16 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   const fosterChild = (await Fixture.person().with({ ssn: undefined }).save())
     .data
   await Fixture.child(fosterChild.id).save()
-  await insertFosterParents([
-    {
-      childId: fosterChild.id,
-      parentId: fosterParent.id,
-      validDuring: new DateRange(mockedDate, mockedDate)
-    }
-  ])
+  await createFosterParent({
+    body: [
+      {
+        id: uuidv4(),
+        childId: fosterChild.id,
+        parentId: fosterParent.id,
+        validDuring: new DateRange(mockedDate, mockedDate)
+      }
+    ]
+  })
   await activeRelationshipPage.reload()
   const applicationsPage = new CitizenApplicationsPage(activeRelationshipPage)
 
@@ -191,7 +199,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   )
 
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
-  const decisions = await getDecisionsByApplication(applicationId)
+  const decisions = await getApplicationDecisions({ applicationId })
   const decisionId = decisions[0].id
   await activeRelationshipHeader.selectTab('decisions')
   const responsePage =
@@ -233,7 +241,7 @@ test('Foster parent can receive and reply to messages', async () => {
     .save()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
-  await upsertMessageAccounts()
+  await createMessageAccounts()
   let unitSupervisorPage = await Page.open({
     mockedTime: mockedNow.subMinutes(1)
   })
@@ -276,7 +284,7 @@ test('Foster parent can read an accepted assistance decision', async () => {
   const decision = await Fixture.preFilledAssistanceNeedDecision()
     .withChild(fosterChild.id)
     .with({
-      selectedUnit: { id: fixtures.daycareFixture.id },
+      selectedUnit: fixtures.daycareFixture.id,
       status: 'ACCEPTED',
       assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
       validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
@@ -351,11 +359,13 @@ test('Foster parent can read a daycare curriculum and give permission to share i
       endDate: mockedDate.addYears(1)
     })
     .save()
-  const vasuDocId = await insertVasuDocument(
-    fosterChild.id,
-    await insertVasuTemplateFixture()
-  )
-  await publishVasuDocument(vasuDocId)
+  const vasuDocId = await createVasuDocument({
+    body: {
+      childId: fosterChild.id,
+      templateId: await insertVasuTemplateFixture()
+    }
+  })
+  await publishVasuDocument({ documentId: vasuDocId })
   await activeRelationshipPage.reload()
 
   await activeRelationshipHeader.openChildPage(fosterChild.id)

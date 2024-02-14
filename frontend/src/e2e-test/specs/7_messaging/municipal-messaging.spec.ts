@@ -7,12 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  insertGuardianFixtures,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -24,16 +19,22 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail, PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
+import {
+  createMessageAccounts,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let messagingPage: Page
-let messenger: EmployeeDetail
+let messenger: DevEmployee
 let staffPage: Page
-let staff: EmployeeDetail
+let staff: DevEmployee
 let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
 let childInAreaA: PersonDetail
@@ -99,19 +100,23 @@ beforeEach(async () => {
         })
         .save()
     )
-  await insertGuardianFixtures([
-    {
-      childId: childInAreaA.id,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
-  await insertGuardianFixtures([
-    {
-      childId: childInAreaB.id,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
-  await upsertMessageAccounts()
+  await insertGuardians({
+    body: [
+      {
+        childId: childInAreaA.id,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
+  await insertGuardians({
+    body: [
+      {
+        childId: childInAreaB.id,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
+  await createMessageAccounts()
   messenger = (await Fixture.employeeMessenger().save()).data
   staff = (
     await Fixture.employeeStaff(fixtures.daycareFixture.id)

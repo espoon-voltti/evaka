@@ -8,20 +8,16 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import {
-  insertDaycarePlacementFixtures,
-  insertDefaultServiceNeedOptions,
   insertFeeDecisionFixtures,
   insertFeeThresholds,
   insertParentshipFixtures,
-  insertVoucherValueDecisionFixtures,
-  insertVoucherValues,
-  resetDatabase
+  insertVoucherValueDecisionFixtures
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixturePrivateVoucher,
   daycareFixture,
+  daycareFixturePrivateVoucher,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
   feeDecisionsFixture,
@@ -29,6 +25,12 @@ import {
   uuidv4,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  createDefaultServiceNeedOptions,
+  createVoucherValues,
+  resetDatabase
+} from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -38,7 +40,7 @@ let guardianPage: GuardianInformationPage
 
 beforeEach(async () => {
   await resetDatabase()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await initializeAreaAndPersonData()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
@@ -121,7 +123,7 @@ describe('Person finance decisions', () => {
     const from = LocalDate.todayInSystemTz().subMonths(2)
 
     await insertFeeThresholds(Fixture.feeThresholds().data)
-    await insertVoucherValues()
+    await createVoucherValues()
 
     await insertParentshipFixtures([
       {
@@ -132,15 +134,17 @@ describe('Person finance decisions', () => {
       }
     ])
 
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        enduserChildFixtureKaarina.id,
-        daycareFixturePrivateVoucher.id,
-        from,
-        LocalDate.todayInSystemTz()
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          enduserChildFixtureKaarina.id,
+          daycareFixturePrivateVoucher.id,
+          from,
+          LocalDate.todayInSystemTz()
+        )
+      ]
+    })
 
     const adminUser = await Fixture.employeeAdmin().save()
     page = await Page.open({ acceptDownloads: true })

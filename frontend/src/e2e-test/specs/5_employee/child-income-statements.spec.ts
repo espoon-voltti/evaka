@@ -6,11 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycarePlacementFixtures,
-  insertIncomeStatements,
-  resetDatabase
-} from '../../dev-api'
+import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -19,6 +15,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -46,7 +46,7 @@ describe('Child profile income statements', () => {
       enduserChildFixtureJari.id,
       daycareFixture.id
     )
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
+    await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     await insertIncomeStatements(enduserChildFixtureJari.id, [
       {

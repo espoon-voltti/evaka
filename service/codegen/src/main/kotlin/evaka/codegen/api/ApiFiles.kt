@@ -142,7 +142,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                         generator,
                         file,
                         TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
-                        devEndpoints
+                        devEndpoints.map { it.copy(path = it.path.removePrefix("/dev-api")) }
                     )
             )
         }

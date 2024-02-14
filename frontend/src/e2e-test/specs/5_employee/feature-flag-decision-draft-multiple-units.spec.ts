@@ -6,14 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import {
-  cleanUpMessages,
-  execSimpleApplicationActions,
-  getDecisionsByApplication,
-  insertApplications,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -24,7 +17,13 @@ import {
   Fixture,
   preschoolFixture
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  cleanUpMessages,
+  createDefaultServiceNeedOptions,
+  getApplicationDecisions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
@@ -35,14 +34,14 @@ let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
 
 let fixtures: AreaAndPersonFixtures
-let serviceWorker: EmployeeDetail
+let serviceWorker: DevEmployee
 
 beforeEach(async () => {
   await resetDatabase()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
   page = await Page.open({
@@ -106,7 +105,7 @@ describe('Application transitions', () => {
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     expect(
       decisions
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
@@ -169,7 +168,7 @@ describe('Application transitions', () => {
       HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
     )
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     expect(
       decisions
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))

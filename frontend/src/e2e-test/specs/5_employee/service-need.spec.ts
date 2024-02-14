@@ -5,7 +5,6 @@
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   EmployeeBuilder,
@@ -13,6 +12,7 @@ import {
   PlacementBuilder,
   ServiceNeedOptionBuilder
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

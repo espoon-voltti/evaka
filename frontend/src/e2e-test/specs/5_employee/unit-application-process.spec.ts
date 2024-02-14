@@ -5,11 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import {
-  insertApplications,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
@@ -20,12 +16,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import { Application, Child, Daycare } from '../../dev-api/types'
 import {
-  Application,
-  Child,
-  Daycare,
-  EmployeeDetail
-} from '../../dev-api/types'
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import {
   ApplicationProcessPage,
   UnitPage
@@ -42,7 +38,7 @@ let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
@@ -55,7 +51,7 @@ beforeEach(async () => {
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup()
     .with({

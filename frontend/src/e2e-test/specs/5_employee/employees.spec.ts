@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
 import { waitUntilEqual } from '../../utils'

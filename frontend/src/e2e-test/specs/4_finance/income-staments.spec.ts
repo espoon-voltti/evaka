@@ -5,11 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  insertDaycarePlacementFixtures,
-  insertIncomeStatements,
-  resetDatabase
-} from '../../dev-api'
+import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -19,6 +15,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -111,15 +111,17 @@ describe('Income statements', () => {
     const startDate = today.addYears(-1)
     const endDate = today
 
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        enduserChildFixtureJari.id,
-        daycareFixture.id,
-        startDate,
-        endDate
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          enduserChildFixtureJari.id,
+          daycareFixture.id,
+          startDate,
+          endDate
+        )
+      ]
+    })
 
     await insertIncomeStatements(enduserGuardianFixture.id, [
       {

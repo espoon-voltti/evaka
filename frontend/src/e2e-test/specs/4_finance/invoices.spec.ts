@@ -8,12 +8,10 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  insertDaycarePlacementFixtures,
   insertFeeDecisionFixtures,
   insertInvoiceFixtures,
   insertParentshipFixtures,
-  insertPersonFixture,
-  resetDatabase
+  insertPersonFixture
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -27,6 +25,10 @@ import {
   invoiceFixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -67,15 +69,17 @@ beforeEach(async () => {
     )
   )
   await insertFeeDecisionFixtures([feeDecisionFixture])
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureKaarina.id,
-      fixtures.daycareFixture.id,
-      feeDecisionFixture.validDuring.start,
-      feeDecisionFixture.validDuring.end ?? undefined
-    )
-  ])
+  await createDaycarePlacements({
+    body: [
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureKaarina.id,
+        fixtures.daycareFixture.id,
+        feeDecisionFixture.validDuring.start,
+        feeDecisionFixture.validDuring.end ?? undefined
+      )
+    ]
+  })
 
   await Fixture.feeThresholds().save()
 

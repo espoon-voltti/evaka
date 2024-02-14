@@ -8,22 +8,22 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import {
-  insertApplications,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  Fixture,
   applicationFixture,
   applicationFixtureId,
+  Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement } from '../../dev-api/types'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -47,8 +47,8 @@ describe('Citizen children page', () => {
   })
 
   test('Citizen can see its children and navigate to their page', async () => {
-    await insertDaycarePlacementFixtures(
-      [
+    await createDaycarePlacements({
+      body: [
         fixtures.enduserChildFixtureJari,
         fixtures.enduserChildFixtureKaarina
       ].map((child) => ({
@@ -58,9 +58,11 @@ describe('Citizen children page', () => {
         unitId: fixtures.daycareFixture.id,
         startDate: mockedDate.subMonths(1),
         endDate: mockedDate,
-        placeGuarantee: false
+        placeGuarantee: false,
+        terminatedBy: null,
+        terminationRequestedDate: null
       }))
-    )
+    })
 
     await enduserLogin(page)
     const header = new CitizenHeader(page)
@@ -80,17 +82,21 @@ describe('Citizen children page', () => {
     type: PlacementType = 'DAYCARE',
     startDate: LocalDate = mockedDate.subMonths(2)
   ) {
-    await insertDaycarePlacementFixtures([
-      {
-        id: uuidv4(),
-        type,
-        childId: fixtures.enduserChildFixtureKaarina.id,
-        unitId,
-        startDate: startDate,
-        endDate: endDate,
-        placeGuarantee: false
-      }
-    ])
+    await createDaycarePlacements({
+      body: [
+        {
+          id: uuidv4(),
+          type,
+          childId: fixtures.enduserChildFixtureKaarina.id,
+          unitId,
+          startDate: startDate,
+          endDate: endDate,
+          placeGuarantee: false,
+          terminationRequestedDate: null,
+          terminatedBy: null
+        }
+      ]
+    })
   }
 
   describe('Placement termination', () => {
@@ -228,7 +234,7 @@ describe('Citizen children page', () => {
       const preschool2End = preschool1End.addMonths(6)
       const daycareAfterPreschoolStart = preschool2End.addDays(1)
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
-      const placements: DaycarePlacement[] = [
+      const placements: DevPlacement[] = [
         {
           id: uuidv4(),
           type: 'DAYCARE',
@@ -236,7 +242,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.daycareFixture.id,
           startDate: daycare1Start,
           endDate: daycare1End,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -245,7 +253,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: daycare2start,
           endDate: daycare2end,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -254,7 +264,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool1Start,
           endDate: preschool1End,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -263,7 +275,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool2Start,
           endDate: preschool2End,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -272,10 +286,12 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: daycareAfterPreschoolStart,
           endDate: daycareAfterPreschoolEnd,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         }
       ]
-      await insertDaycarePlacementFixtures(placements)
+      await createDaycarePlacements({ body: placements })
 
       await enduserLogin(page)
       const header = new CitizenHeader(page)
@@ -306,7 +322,7 @@ describe('Citizen children page', () => {
       const daycare1End = mockedDate.addMonths(3)
       const daycare2start = daycare1End.addDays(1)
       const daycare2end = daycare1End.addMonths(2)
-      const placements: DaycarePlacement[] = [
+      const placements: DevPlacement[] = [
         {
           id: uuidv4(),
           type: 'DAYCARE',
@@ -314,7 +330,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.daycareFixture.id,
           startDate: daycare1Start,
           endDate: daycare1End,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -323,10 +341,12 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: daycare2start,
           endDate: daycare2end,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         }
       ]
-      await insertDaycarePlacementFixtures(placements)
+      await createDaycarePlacements({ body: placements })
 
       await enduserLogin(page)
       const header = new CitizenHeader(page)
@@ -374,7 +394,7 @@ describe('Citizen children page', () => {
       const preschool2End = mockedDate.addMonths(3)
       const daycareAfterPreschoolStart = preschool2End.addDays(1)
       const daycareAfterPreschoolEnd = preschool2End.addMonths(6)
-      const placements: DaycarePlacement[] = [
+      const placements: DevPlacement[] = [
         {
           id: uuidv4(),
           type: 'PRESCHOOL_DAYCARE', // this gets grouped with the above
@@ -382,7 +402,9 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: preschool2Start,
           endDate: preschool2End,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         },
         {
           id: uuidv4(),
@@ -391,10 +413,12 @@ describe('Citizen children page', () => {
           unitId: fixtures.preschoolFixture.id,
           startDate: daycareAfterPreschoolStart,
           endDate: daycareAfterPreschoolEnd,
-          placeGuarantee: false
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
         }
       ]
-      await insertDaycarePlacementFixtures(placements)
+      await createDaycarePlacements({ body: placements })
 
       await enduserLogin(page)
       const header = new CitizenHeader(page)

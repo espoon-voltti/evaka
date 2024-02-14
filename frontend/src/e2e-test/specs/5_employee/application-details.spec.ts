@@ -2,16 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
-  cleanUpMessages,
-  createPlacementPlan,
   execSimpleApplicationAction,
-  getMessages,
   insertApplications,
-  resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -19,7 +16,14 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Application, EmployeeDetail } from '../../dev-api/types'
+import { Application } from '../../dev-api/types'
+import {
+  cleanUpMessages,
+  createApplicationPlacementPlan,
+  getMessages,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -32,7 +36,7 @@ let applicationDetailsPage: ApplicationDetailsPage
 let applicationReadView: ApplicationReadView
 
 let fixtures: AreaAndPersonFixtures
-let admin: EmployeeDetail
+let admin: DevEmployee
 
 let singleParentApplication: Application
 let familyWithTwoGuardiansApplication: Application
@@ -149,15 +153,15 @@ describe('Application details', () => {
       'move-to-waiting-placement',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
-    await createPlacementPlan(restrictedDetailsGuardianApplication.id, {
-      unitId: fixtures.preschoolFixture.id,
-      period: {
-        start:
-          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
-          '',
-        end:
-          restrictedDetailsGuardianApplication.form.preferences.preferredStartDate?.formatIso() ??
-          ''
+    const preferredStartDate =
+      // eslint-disable-next-line @typescript-eslint/no-extra-non-null-assertion,@typescript-eslint/no-unnecessary-type-assertion
+      restrictedDetailsGuardianApplication.form.preferences.preferredStartDate!!
+    await createApplicationPlacementPlan({
+      applicationId: restrictedDetailsGuardianApplication.id,
+      body: {
+        unitId: fixtures.preschoolFixture.id,
+        period: new FiniteDateRange(preferredStartDate, preferredStartDate),
+        preschoolDaycarePeriod: null
       }
     })
     await execSimpleApplicationAction(
@@ -194,15 +198,15 @@ describe('Application details', () => {
       'move-to-waiting-placement',
       HelsinkiDateTime.now() // TODO: use mock clock
     )
-    await createPlacementPlan(singleParentApplication.id, {
-      unitId: fixtures.preschoolFixture.id,
-      period: {
-        start:
-          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
-          '',
-        end:
-          singleParentApplication.form.preferences.preferredStartDate?.formatIso() ??
-          ''
+    const preferredStartDate =
+      // eslint-disable-next-line @typescript-eslint/no-extra-non-null-assertion,@typescript-eslint/no-unnecessary-type-assertion
+      singleParentApplication.form.preferences.preferredStartDate!!
+    await createApplicationPlacementPlan({
+      applicationId: singleParentApplication.id,
+      body: {
+        unitId: fixtures.preschoolFixture.id,
+        period: new FiniteDateRange(preferredStartDate, preferredStartDate),
+        preschoolDaycarePeriod: null
       }
     })
     await execSimpleApplicationAction(

@@ -5,8 +5,8 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import MobileAbsencesPage from '../../pages/mobile/absences-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'

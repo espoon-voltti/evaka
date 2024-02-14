@@ -6,11 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -18,6 +13,11 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import ChildInformationPage, {
   PedagogicalDocumentsSection
 } from '../../pages/employee/child-information'
@@ -39,7 +39,7 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -49,7 +49,7 @@ beforeEach(async () => {
     childId,
     unitId
   )
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
   const admin = await Fixture.employeeAdmin().save()
 

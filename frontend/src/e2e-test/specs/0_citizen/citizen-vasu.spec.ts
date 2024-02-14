@@ -7,16 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
-  insertVasuDocument,
-  insertVasuTemplateFixture,
-  publishVasuDocument,
-  resetDatabase,
-  revokeVasuSharingPermission
-} from '../../dev-api'
+import { insertVasuTemplateFixture } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -25,6 +16,15 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  createVasuDocument,
+  insertGuardians,
+  publishVasuDocument,
+  resetDatabase,
+  revokeSharingPermission
+} from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
@@ -44,7 +44,7 @@ beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   child = fixtures.familyWithTwoGuardians.children[0]
@@ -56,10 +56,12 @@ beforeEach(async () => {
     unitId
   )
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
   templateId = await insertVasuTemplateFixture()
-  vasuDocId = await insertVasuDocument(child.id, templateId)
-  await publishVasuDocument(vasuDocId)
+  vasuDocId = await createVasuDocument({
+    body: { childId: child.id, templateId }
+  })
+  await publishVasuDocument({ documentId: vasuDocId })
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
@@ -67,11 +69,10 @@ beforeEach(async () => {
 })
 
 const insertVasu = async (childId: string): Promise<string> => {
-  vasuDocId = await insertVasuDocument(
-    childId,
-    await insertVasuTemplateFixture()
-  )
-  await publishVasuDocument(vasuDocId)
+  vasuDocId = await createVasuDocument({
+    body: { childId, templateId: await insertVasuTemplateFixture() }
+  })
+  await publishVasuDocument({ documentId: vasuDocId })
   return vasuDocId
 }
 
@@ -82,12 +83,14 @@ describe('Citizen vasu document page', () => {
   }
 
   test('View child vasu document and give permission to share', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: child.id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: enduserGuardianFixture.id,
+          childId: child.id
+        }
+      ]
+    })
 
     const vasuPage = await openDocument()
     await header.assertUnreadChildrenCount(1)
@@ -96,7 +99,7 @@ describe('Citizen vasu document page', () => {
 
     await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
     await header.assertUnreadChildrenCount(0)
-    await revokeVasuSharingPermission(vasuDocId)
+    await revokeSharingPermission({ docId: vasuDocId })
     await page.reload()
     await vasuPage.assertGivePermissionToShareSectionIsVisible()
   })
@@ -104,12 +107,14 @@ describe('Citizen vasu document page', () => {
 
 describe('Citizen child documents listing page', () => {
   test('Published vasu document is in the list', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: child.id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: enduserGuardianFixture.id,
+          childId: child.id
+        }
+      ]
+    })
     await page.reload()
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)
@@ -122,16 +127,18 @@ describe('Citizen child documents listing page', () => {
   })
 
   test('Indicators for more than 1 child are shown', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: child.id
-      },
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: child2Id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: enduserGuardianFixture.id,
+          childId: child.id
+        },
+        {
+          guardianId: enduserGuardianFixture.id,
+          childId: child2Id
+        }
+      ]
+    })
     // first child (`child`) has a vasu already created in beforeEach
     await insertVasu(child2Id)
     await page.reload()

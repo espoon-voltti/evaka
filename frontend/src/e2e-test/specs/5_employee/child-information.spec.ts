@@ -2,17 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { EmployeeDetail } from 'e2e-test/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  forceFullVtjRefresh,
-  insertDaycareGroupFixtures,
-  resetDatabase
-} from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -23,6 +17,12 @@ import {
   enduserNonSsnChildFixture,
   Fixture
 } from '../../dev-api/fixtures'
+import {
+  createDaycareGroups,
+  forceFullVtjRefresh,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
   AdditionalInformationSection,
   BackupCaresSection,
@@ -38,7 +38,7 @@ let page: Page
 let childInformationPage: ChildInformationPage
 let fixtures: AreaAndPersonFixtures
 let childId: UUID
-let admin: EmployeeDetail
+let admin: DevEmployee
 
 const mockedDate = LocalDate.of(2022, 3, 1)
 
@@ -46,7 +46,7 @@ beforeEach(async () => {
   await resetDatabase()
 
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
   admin = (await Fixture.employeeAdmin().save()).data
 
   const unitId = fixtures.daycareFixture.id
@@ -70,7 +70,7 @@ beforeEach(async () => {
   // HACK: make sure VTJ guardians are synced between mock VTJ and database,
   // because some parts of the child information page assumes guardian info
   // is up to date or will return wrong results
-  await forceFullVtjRefresh(childId)
+  await forceFullVtjRefresh({ person: childId })
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -474,7 +474,7 @@ describe('Child information - guardian information', () => {
   })
 
   test('guardian information is shown to unit supervisor', async () => {
-    const unitSupervisor: EmployeeDetail = (
+    const unitSupervisor: DevEmployee = (
       await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
     ).data
     page = await Page.open({

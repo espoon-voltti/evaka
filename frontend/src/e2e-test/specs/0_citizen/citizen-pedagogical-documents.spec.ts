@@ -5,11 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import {
-  insertDaycarePlacementFixtures,
-  insertPedagogicalDocumentAttachment,
-  resetDatabase
-} from '../../dev-api'
+import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -19,6 +15,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
@@ -39,13 +39,15 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      fixtures.daycareFixture.id
-    )
-  ])
+  await createDaycarePlacements({
+    body: [
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureJari.id,
+        fixtures.daycareFixture.id
+      )
+    ]
+  })
 
   page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page)

@@ -5,8 +5,8 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'

@@ -6,7 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   daycareFixture,
@@ -14,6 +13,7 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

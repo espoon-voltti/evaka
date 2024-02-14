@@ -10,12 +10,6 @@ import TimeRange from 'lib-common/time-range'
 import { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
 import {
-  insertAbsence,
-  insertDaycarePlacementFixtures,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -32,6 +26,11 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDaycarePlacements,
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -86,8 +85,8 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
         today.addYears(1)
       )
     )
-    await insertDaycarePlacementFixtures(placementFixtures)
-    await insertDefaultServiceNeedOptions()
+    await createDaycarePlacements({ body: placementFixtures })
+    await createDefaultServiceNeedOptions()
 
     const group = await Fixture.daycareGroup()
       .with({ daycareId: fixtures.daycareFixture.id })
@@ -161,13 +160,15 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const employee = await Fixture.employeeStaff(fixtures.daycareFixture.id)
       .save()
       .then((e) => e.data)
-    await insertAbsence(
-      fixtures.enduserChildFixturePorriHatterRestricted.id,
-      'UNKNOWN_ABSENCE',
-      today.addDays(35),
-      'BILLABLE',
-      employee.id
-    )
+    await Fixture.absence()
+      .with({
+        childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
+        absenceType: 'UNKNOWN_ABSENCE',
+        date: today.addDays(35),
+        absenceCategory: 'BILLABLE',
+        modifiedBy: employee.id
+      })
+      .save()
 
     const calendarPage = await openCalendarPage(env)
 
@@ -865,29 +866,31 @@ describe('Citizen calendar child visibility', () => {
     child = fixtures.enduserChildFixtureJari
     child2 = fixtures.enduserChildFixtureKaarina
 
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        fixtures.daycareFixture.id,
-        placement1start,
-        placement1end
-      ),
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        fixtures.daycareFixture.id,
-        placement2start,
-        placement2end
-      ),
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child2.id,
-        fixtures.daycareFixture.id,
-        placement1start.subYears(1),
-        placement1start.subDays(2)
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          fixtures.daycareFixture.id,
+          placement1start,
+          placement1end
+        ),
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          fixtures.daycareFixture.id,
+          placement2start,
+          placement2end
+        ),
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child2.id,
+          fixtures.daycareFixture.id,
+          placement1start.subYears(1),
+          placement1start.subDays(2)
+        )
+      ]
+    })
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -930,15 +933,17 @@ describe('Citizen calendar child visibility', () => {
     await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
 
     // Sibling is in 24/7 daycare
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        fixtures.enduserChildFixtureKaarina.id,
-        daycare2Fixture.id,
-        placement1start,
-        placement1end
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          fixtures.enduserChildFixtureKaarina.id,
+          daycare2Fixture.id,
+          placement1start,
+          placement1end
+        )
+      ]
+    })
 
     await header.selectTab('calendar')
     // Saturday
@@ -957,15 +962,17 @@ describe('Citizen calendar child visibility', () => {
     const child = fixtures.enduserChildFixtureKaarina
 
     // 24/7 daycare
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        daycare2Fixture.id,
-        placement1start,
-        placement1end
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          daycare2Fixture.id,
+          placement1start,
+          placement1end
+        )
+      ]
+    })
 
     const firstReservationDay = today.addDays(14)
     await Fixture.holiday()
@@ -1016,15 +1023,17 @@ describe('Citizen calendar visibility', () => {
   })
 
   test('Child is visible when placement starts within 2 weeks', async () => {
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        daycareId,
-        today.addDays(13),
-        today.addYears(1)
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          daycareId,
+          today.addDays(13),
+          today.addYears(1)
+        )
+      ]
+    })
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -1035,15 +1044,17 @@ describe('Citizen calendar visibility', () => {
   })
 
   test('Child is not visible when placement starts later than 2 weeks', async () => {
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        daycareId,
-        today.addDays(15),
-        today.addYears(1)
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          daycareId,
+          today.addDays(15),
+          today.addYears(1)
+        )
+      ]
+    })
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -1057,15 +1068,17 @@ describe('Citizen calendar visibility', () => {
   })
 
   test('Child is not visible when placement is in the past', async () => {
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        daycareId,
-        today.subYears(1),
-        today.subDays(1)
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child.id,
+          daycareId,
+          today.subYears(1),
+          today.subDays(1)
+        )
+      ]
+    })
 
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -1092,15 +1105,17 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     const careArea = await Fixture.careArea().with(careArea2Fixture).save()
     await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
 
-    await insertDaycarePlacementFixtures([
-      createDaycarePlacementFixture(
-        uuidv4(),
-        fixtures.enduserChildFixtureKaarina.id,
-        daycare2Fixture.id,
-        placement1start,
-        placement1end
-      )
-    ])
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          uuidv4(),
+          fixtures.enduserChildFixtureKaarina.id,
+          daycare2Fixture.id,
+          placement1start,
+          placement1end
+        )
+      ]
+    })
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })

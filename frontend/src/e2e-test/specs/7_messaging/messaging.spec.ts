@@ -2,20 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertBackupCareFixtures,
-  insertDaycareGroupFixtures,
-  insertGuardianFixtures,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -27,7 +21,14 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { CareArea, EmployeeDetail } from '../../dev-api/types'
+import {
+  createBackupCares,
+  createDaycareGroups,
+  createMessageAccounts,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevCareArea, DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
@@ -38,9 +39,9 @@ import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 let fixtures: AreaAndPersonFixtures
-let careArea: CareArea
+let careArea: DevCareArea
 let backupDaycareId: UUID
 let backupGroupFixtureId: UUID
 
@@ -62,7 +63,7 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   careArea = fixtures.careAreaFixture
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   unitSupervisor = (
     await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
@@ -97,22 +98,27 @@ beforeEach(async () => {
 
   backupDaycareId = daycare2Fixture.id
   backupGroupFixtureId = uuidv4()
-  await insertDaycareGroupFixtures([
-    {
-      id: backupGroupFixtureId,
-      daycareId: backupDaycareId,
-      name: 'Varayksikön ryhmä',
-      startDate: LocalDate.of(2000, 1, 1)
-    }
-  ])
+  await createDaycareGroups({
+    body: [
+      {
+        id: backupGroupFixtureId,
+        daycareId: backupDaycareId,
+        name: 'Varayksikön ryhmä',
+        startDate: LocalDate.of(2000, 1, 1),
+        endDate: null
+      }
+    ]
+  })
 
-  await upsertMessageAccounts()
-  await insertGuardianFixtures([
-    {
-      childId: childId,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
+  await createMessageAccounts()
+  await insertGuardians({
+    body: [
+      {
+        childId: childId,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
 })
 
 async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
@@ -187,25 +193,26 @@ describe('Sending and receiving messages', () => {
             endDate: mockedDate
           })
           .save()
-        await insertBackupCareFixtures([
-          {
-            id: uuidv4(),
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixture.id,
-            groupId: daycareGroupFixture.id,
-            period: {
-              start: mockedDate,
-              end: mockedDate
+        await createBackupCares({
+          body: [
+            {
+              id: uuidv4(),
+              childId: enduserChildFixtureKaarina.id,
+              unitId: fixtures.daycareFixture.id,
+              groupId: daycareGroupFixture.id,
+              period: new FiniteDateRange(mockedDate, mockedDate)
             }
-          }
-        ])
+          ]
+        })
 
-        await insertGuardianFixtures([
-          {
-            childId: enduserChildFixtureKaarina.id,
-            guardianId: fixtures.enduserGuardianFixture.id
-          }
-        ])
+        await insertGuardians({
+          body: [
+            {
+              childId: enduserChildFixtureKaarina.id,
+              guardianId: fixtures.enduserGuardianFixture.id
+            }
+          ]
+        })
 
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -241,25 +248,26 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen sends a message to backup care child', async () => {
-        await insertBackupCareFixtures([
-          {
-            id: uuidv4(),
-            childId,
-            unitId: backupDaycareId,
-            groupId: backupGroupFixtureId,
-            period: {
-              start: mockedDate,
-              end: mockedDate
+        await createBackupCares({
+          body: [
+            {
+              id: uuidv4(),
+              childId,
+              unitId: backupDaycareId,
+              groupId: backupGroupFixtureId,
+              period: new FiniteDateRange(mockedDate, mockedDate)
             }
-          }
-        ])
+          ]
+        })
 
-        await insertGuardianFixtures([
-          {
-            childId,
-            guardianId: fixtures.enduserGuardianFixture.id
-          }
-        ])
+        await insertGuardians({
+          body: [
+            {
+              childId,
+              guardianId: fixtures.enduserGuardianFixture.id
+            }
+          ]
+        })
 
         await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
@@ -441,12 +449,14 @@ describe('Sending and receiving messages', () => {
             endDate: mockedDate
           })
           .save()
-        await insertGuardianFixtures([
-          {
-            childId: enduserChildFixtureKaarina.id,
-            guardianId: fixtures.enduserGuardianFixture.id
-          }
-        ])
+        await insertGuardians({
+          body: [
+            {
+              childId: enduserChildFixtureKaarina.id,
+              guardianId: fixtures.enduserGuardianFixture.id
+            }
+          ]
+        })
 
         const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
@@ -496,12 +506,14 @@ describe('Sending and receiving messages', () => {
             endDate: placementEndDate
           })
           .save()
-        await insertGuardianFixtures([
-          {
-            childId: enduserChildFixtureKaarina.id,
-            guardianId: fixtures.enduserGuardianFixture.id
-          }
-        ])
+        await insertGuardians({
+          body: [
+            {
+              childId: enduserChildFixtureKaarina.id,
+              guardianId: fixtures.enduserGuardianFixture.id
+            }
+          ]
+        })
 
         const dayAfterPlacementEnds = placementEndDate
           .addDays(1)
@@ -519,12 +531,14 @@ describe('Sending and receiving messages', () => {
 
       test('The guardian can select another guardian as an recipient', async () => {
         const otherGuardian = fixtures.enduserChildJariOtherGuardianFixture
-        await insertGuardianFixtures([
-          {
-            childId,
-            guardianId: otherGuardian.id
-          }
-        ])
+        await insertGuardians({
+          body: [
+            {
+              childId,
+              guardianId: otherGuardian.id
+            }
+          ]
+        })
 
         const recipients = ['Esimies Essi']
         await openCitizen(mockedDateAt10)

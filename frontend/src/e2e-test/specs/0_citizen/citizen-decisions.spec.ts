@@ -9,9 +9,7 @@ import LocalDate from 'lib-common/local-date'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
-  getDecisionsByApplication,
   insertApplications,
-  resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -19,7 +17,11 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  getApplicationDecisions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import AssistanceNeedPreschoolDecisionPage from '../../pages/citizen/citizen-assistance-need-preschool-decision'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
@@ -32,7 +34,7 @@ let page: Page
 let header: CitizenHeader
 let citizenDecisionsPage: CitizenDecisionsPage
 let fixtures: AreaAndPersonFixtures
-let decisionMaker: EmployeeDetail
+let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
@@ -71,7 +73,7 @@ describe('Citizen application decisions', () => {
       now
     )
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     if (decisions.length !== 2) throw Error('Expected 2 decisions')
     const preschoolDecisionId = decisions.find(
       (d) => d.type === 'PRESCHOOL'
@@ -161,7 +163,7 @@ describe('Citizen application decisions', () => {
     )
     await runPendingAsyncJobs(now)
 
-    const decisions = await getDecisionsByApplication(applicationId)
+    const decisions = await getApplicationDecisions({ applicationId })
     if (decisions.length !== 2) throw Error('Expected 2 decisions')
     const preschoolDecisionId = decisions.find(
       (d) => d.type === 'PRESCHOOL'
@@ -196,7 +198,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'ACCEPTED',
         assistanceLevels: [
           'ASSISTANCE_SERVICES_FOR_TIME',
@@ -229,7 +231,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'REJECTED',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
@@ -255,7 +257,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'ANNULLED',
         annulmentReason: 'Well because',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
@@ -282,7 +284,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'NEEDS_WORK',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         decisionMade: LocalDate.of(2021, 1, 17)
@@ -292,7 +294,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'DRAFT',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         decisionMade: LocalDate.of(2021, 1, 17)
@@ -309,7 +311,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'ACCEPTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2020, 1, 17),
@@ -320,7 +322,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'REJECTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2018, 1, 17),
@@ -331,7 +333,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixturePorriHatterRestricted.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'ACCEPTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2020, 1, 17),
@@ -355,19 +357,22 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         status: 'ACCEPTED',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
         decisionMade: LocalDate.of(2021, 1, 17),
         decisionMaker: {
           employeeId: serviceWorker.id,
-          title: 'head teacher'
+          title: 'head teacher',
+          name: null,
+          phoneNumber: null
         },
         preparedBy1: {
           employeeId: serviceWorker.id,
           title: 'teacher',
-          phoneNumber: '010202020202'
+          phoneNumber: '010202020202',
+          name: null
         }
       })
       .save()

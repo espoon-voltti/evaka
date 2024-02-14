@@ -9,7 +9,6 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -19,7 +18,12 @@ import {
   fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import { Child, Daycare } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   ReservationModal,
@@ -38,7 +42,7 @@ let reservationModal: ReservationModal
 let child1Fixture: Child
 let child1DaycarePlacementId: UUID
 let daycare: Daycare
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 
 const mockedToday = LocalDate.of(2023, 2, 15) // wed
 const placementStartDate = mockedToday.subWeeks(4)
@@ -82,7 +86,7 @@ const insertTestDataAndLogin = async ({
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup()
     .with({
@@ -119,10 +123,7 @@ const insertTestDataAndLogin = async ({
       childId: child1Fixture.id,
       unitId: daycareFixture.id,
       groupId: groupId2,
-      period: {
-        start: backupCareStartDate,
-        end: backupCareEndDate
-      }
+      period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
     })
     .save()
 
@@ -179,10 +180,10 @@ describe('Unit group calendar', () => {
         childId: child1Fixture.id,
         unitId: daycare.id,
         groupId: groupId3,
-        period: {
-          start: backupCareSameUnitStartDate,
-          end: backupCareSameUnitEndDate
-        }
+        period: new FiniteDateRange(
+          backupCareSameUnitStartDate,
+          backupCareSameUnitEndDate
+        )
       })
       .save()
 
@@ -214,10 +215,10 @@ describe('Unit group calendar', () => {
         childId: child1Fixture.id,
         unitId: daycare.id,
         groupId: groupId3,
-        period: {
-          start: backupCareSameUnitStartDate,
-          end: backupCareSameUnitEndDate
-        }
+        period: new FiniteDateRange(
+          backupCareSameUnitStartDate,
+          backupCareSameUnitEndDate
+        )
       })
       .save()
 

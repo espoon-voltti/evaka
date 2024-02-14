@@ -9,7 +9,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { EvakaBrowserContextOptions } from '../../browser'
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   daycare2Fixture,
@@ -22,7 +21,11 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycarePlacement } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevPlacement } from '../../generated/api-types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -57,7 +60,7 @@ const openPage = async (
 
 beforeEach(async () => {
   await resetDatabase()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm().save()
 
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
@@ -109,7 +112,7 @@ async function createPlacements(
 
 const createPlacementAndReload = async (
   placementType: PlacementType
-): Promise<DaycarePlacement> => {
+): Promise<DevPlacement> => {
   const daycarePlacementFixture = await createPlacements(
     familyWithTwoGuardians.children[0].id,
     daycareGroupFixture.id,

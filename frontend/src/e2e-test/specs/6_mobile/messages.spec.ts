@@ -7,24 +7,25 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  insertGuardianFixtures,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  Fixture,
+  daycareFixture,
   enduserChildFixtureJari,
-  uuidv4,
   enduserChildFixtureKaarina,
-  daycareFixture
+  Fixture,
+  uuidv4
 } from '../../dev-api/fixtures'
-import { DaycareGroup, PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
+import {
+  createMessageAccounts,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevDaycareGroup } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -59,9 +60,9 @@ const daycareGroupId = uuidv4()
 const daycareGroup2Id = uuidv4()
 const daycareGroup3Id = uuidv4()
 
-let daycareGroup: DaycareGroup
-let daycareGroup2: DaycareGroup
-let daycareGroup3: DaycareGroup
+let daycareGroup: DevDaycareGroup
+let daycareGroup2: DevDaycareGroup
+let daycareGroup3: DevDaycareGroup
 let child: PersonDetail
 let child2: PersonDetail
 
@@ -188,17 +189,19 @@ beforeEach(async () => {
     .withPlacement(placement2Fixture)
     .save()
 
-  await upsertMessageAccounts()
-  await insertGuardianFixtures([
-    {
-      childId: child.id,
-      guardianId: fixtures.enduserGuardianFixture.id
-    },
-    {
-      childId: child2.id,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
+  await createMessageAccounts()
+  await insertGuardians({
+    body: [
+      {
+        childId: child.id,
+        guardianId: fixtures.enduserGuardianFixture.id
+      },
+      {
+        childId: child2.id,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
 
   page = await Page.open({ mockedTime: mockedDateAt11 })
   listPage = new MobileListPage(page)

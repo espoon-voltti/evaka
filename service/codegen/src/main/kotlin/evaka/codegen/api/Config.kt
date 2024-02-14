@@ -5,6 +5,7 @@
 package evaka.codegen.api
 
 import evaka.codegen.api.TsProject.LibCommon
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
@@ -210,6 +211,7 @@ val defaultMetadata =
         Pair::class to TsTuple(size = 2),
         Triple::class to TsTuple(size = 3),
         Void::class to Excluded,
+        ExternalId::class to TsPlain("string"),
         YearMonth::class to
             TsExternalTypeRef(
                 "LocalDate",

@@ -5,11 +5,6 @@
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 import {
-  insertDefaultServiceNeedOptions,
-  resetDatabase,
-  postChildDailyNote
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -18,6 +13,11 @@ import {
   DaycareGroupBuilder,
   Fixture
 } from '../../dev-api/fixtures'
+import {
+  createDefaultServiceNeedOptions,
+  postChildDailyNote,
+  resetDatabase
+} from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -33,7 +33,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   const admin = await Fixture.employeeAdmin().save()
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   const careArea = await Fixture.careArea().save()
   daycare = await Fixture.daycare().careArea(careArea).save()
@@ -88,7 +88,7 @@ describe('Mobile employee daily notes', () => {
         ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
         : ''
 
-    await postChildDailyNote(childId, daycareDailyNote)
+    await postChildDailyNote({ childId, body: daycareDailyNote })
 
     await unitPage.navigateToUnit(daycare.data.id)
     const group = await unitPage.openGroupsPage()
@@ -125,7 +125,7 @@ describe('Mobile employee daily notes', () => {
       reminderNote: 'Muistakaa muistakaa!'
     }
 
-    await postChildDailyNote(childId1, daycareDailyNote)
+    await postChildDailyNote({ childId: childId1, body: daycareDailyNote })
 
     await unitPage.navigateToUnit(daycare.data.id)
     const groupsSection = await unitPage.openGroupsPage()

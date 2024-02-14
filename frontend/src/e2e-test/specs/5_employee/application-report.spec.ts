@@ -5,12 +5,12 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'

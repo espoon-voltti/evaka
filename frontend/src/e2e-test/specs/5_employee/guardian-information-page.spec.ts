@@ -4,15 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import {
-  deleteDaycareCostCenter,
-  insertApplications,
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  insertDecisionFixtures,
-  insertInvoiceFixtures,
-  resetDatabase
-} from '../../dev-api'
+import { insertApplications, insertInvoiceFixtures } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -31,6 +23,13 @@ import {
   invoiceFixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  createDecisions,
+  deleteDaycareCostCenter,
+  resetDatabase
+} from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -41,7 +40,7 @@ let page: Page
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const admin = await Fixture.employeeAdmin().save()
 
@@ -65,19 +64,21 @@ beforeEach(async () => {
   }
 
   const startDate = LocalDate.of(2021, 8, 16)
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
   await insertApplications([application, application2])
-  await insertDecisionFixtures([
-    {
-      ...decisionFixture(application.id, startDate, startDate),
-      employeeId: admin.data.id
-    },
-    {
-      ...decisionFixture(application2.id, startDate, startDate),
-      employeeId: admin.data.id,
-      id: uuidv4()
-    }
-  ])
+  await createDecisions({
+    body: [
+      {
+        ...decisionFixture(application.id, startDate, startDate),
+        employeeId: admin.data.id
+      },
+      {
+        ...decisionFixture(application2.id, startDate, startDate),
+        employeeId: admin.data.id,
+        id: uuidv4()
+      }
+    ]
+  })
 
   page = await Page.open()
   await employeeLogin(page, admin.data)
@@ -212,7 +213,7 @@ describe('Employee - Guardian Information', () => {
     let row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await row.clickAndAssertUnitVisibility(daycareFixture.name, true)
 
-    await deleteDaycareCostCenter(daycareFixture.id)
+    await deleteDaycareCostCenter({ daycareId: daycareFixture.id })
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
     await guardianPage.openCollapsible('invoiceCorrections')
     await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)

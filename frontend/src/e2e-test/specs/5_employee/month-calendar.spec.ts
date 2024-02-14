@@ -6,7 +6,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   daycareFixture,
@@ -15,6 +14,10 @@ import {
   enduserChildFixtureKaarina,
   Fixture
 } from '../../dev-api/fixtures'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -28,7 +31,7 @@ let group: DaycareGroupBuilder
 beforeEach(async () => {
   await resetDatabase()
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
   await Fixture.person().with(enduserChildFixtureKaarina).save()

@@ -4,13 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import {
-  execSimpleApplicationActions,
-  getApplication,
-  insertApplications,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -20,6 +14,11 @@ import {
   daycareFixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  getApplication,
+  resetDatabase
+} from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import {
@@ -75,7 +74,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
-    const application = await getApplication(applicationId)
+    const application = await getApplication({ applicationId })
     applicationForm.validateResult(application, [
       fixtures.enduserChildFixtureKaarina
     ])
@@ -96,7 +95,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
-    const application = await getApplication(applicationId)
+    const application = await getApplication({ applicationId })
     applicationForm.validateResult(application, [
       fixtures.enduserChildFixtureKaarina
     ])
@@ -127,17 +126,21 @@ describe('Citizen daycare applications', () => {
   })
 
   test('Notification on transfer application is visible', async () => {
-    await insertDaycarePlacementFixtures([
-      {
-        id: uuidv4(),
-        type: 'DAYCARE',
-        childId: fixtures.enduserChildFixtureJari.id,
-        unitId: fixtures.daycareFixture.id,
-        startDate: mockedDate.subYears(1),
-        endDate: mockedDate.addYears(1),
-        placeGuarantee: false
-      }
-    ])
+    await createDaycarePlacements({
+      body: [
+        {
+          id: uuidv4(),
+          type: 'DAYCARE',
+          childId: fixtures.enduserChildFixtureJari.id,
+          unitId: fixtures.daycareFixture.id,
+          startDate: mockedDate.subYears(1),
+          endDate: mockedDate.addYears(1),
+          placeGuarantee: false,
+          terminatedBy: null,
+          terminationRequestedDate: null
+        }
+      ]
+    })
 
     await header.selectTab('applications')
     await applicationsPage.assertTransferNotificationIsShown(

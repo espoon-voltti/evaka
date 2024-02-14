@@ -5,7 +5,7 @@
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 
-import { DaycareGroup } from '../../dev-api/types'
+import { DevDaycareGroup } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
 import {
   AsyncButton,
@@ -187,7 +187,7 @@ export class StaffAttendancePage {
   async markNewExternalStaffArrived(
     time: string,
     name: string,
-    group: DaycareGroup
+    group: DevDaycareGroup
   ) {
     await this.#addNewExternalMemberButton.click()
 
@@ -253,7 +253,7 @@ export class StaffAttendancePage {
   async markStaffArrived(args: {
     pin: string
     time: string
-    group: DaycareGroup
+    group: DevDaycareGroup
   }) {
     await this.staffMemberPage.markArrivedBtn.click()
     await this.pinInput.locator.type(args.pin)

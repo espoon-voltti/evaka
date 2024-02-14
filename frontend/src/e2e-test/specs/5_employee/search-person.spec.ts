@@ -2,26 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  createPlacementPlan,
-  insertApplications,
-  resetDatabase
-} from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createApplicationPlacementPlan,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let admin: EmployeeDetail
+let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
@@ -31,7 +32,7 @@ beforeEach(async () => {
 })
 
 async function openPage(
-  employee: EmployeeDetail = admin
+  employee: DevEmployee = admin
 ): Promise<PersonSearchPage> {
   page = await Page.open()
   await employeeLogin(page, employee)
@@ -90,19 +91,21 @@ describe('Search person', () => {
       appWithoutAssistanceNeeded
     ])
 
-    await createPlacementPlan(appWithAssistanceNeeded.id, {
-      unitId: daycare1.data.id,
-      period: {
-        start: preferredStartDate.formatIso(),
-        end: preferredStartDate.formatIso()
+    await createApplicationPlacementPlan({
+      applicationId: appWithAssistanceNeeded.id,
+      body: {
+        unitId: daycare1.data.id,
+        period: new FiniteDateRange(preferredStartDate, preferredStartDate),
+        preschoolDaycarePeriod: null
       }
     })
 
-    await createPlacementPlan(appWithoutAssistanceNeeded.id, {
-      unitId: daycare1.data.id,
-      period: {
-        start: preferredStartDate.formatIso(),
-        end: preferredStartDate.formatIso()
+    await createApplicationPlacementPlan({
+      applicationId: appWithoutAssistanceNeeded.id,
+      body: {
+        unitId: daycare1.data.id,
+        period: new FiniteDateRange(preferredStartDate, preferredStartDate),
+        preschoolDaycarePeriod: null
       }
     })
 

@@ -6,12 +6,9 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  insertVasuDocument,
-  insertVasuTemplateFixture,
-  resetDatabase
-} from '../../dev-api'
+import { insertVasuTemplateFixture } from '../../dev-api'
 import { EmployeeBuilder, Fixture, PersonBuilder } from '../../dev-api/fixtures'
+import { createVasuDocument, resetDatabase } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
@@ -20,7 +17,7 @@ import { employeeLogin } from '../../utils/user'
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 
-beforeEach(resetDatabase)
+beforeEach(async (): Promise<void> => resetDatabase())
 
 describe('curriculum document with person duplicate', () => {
   let admin: EmployeeBuilder
@@ -88,7 +85,9 @@ describe('curriculum document with person duplicate', () => {
       type: 'PRESCHOOL',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const documentId = await insertVasuDocument(duplicate.data.id, templateId)
+    const documentId = await createVasuDocument({
+      body: { childId: duplicate.data.id, templateId }
+    })
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
@@ -102,15 +101,19 @@ describe('curriculum document with person duplicate', () => {
       type: 'DAYCARE',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    await insertVasuDocument(duplicate.data.id, daycareTemplateId)
+    await createVasuDocument({
+      body: { childId: duplicate.data.id, templateId: daycareTemplateId }
+    })
     const preschoolTemplateId = await insertVasuTemplateFixture({
       type: 'PRESCHOOL',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const preschoolDocumentId = await insertVasuDocument(
-      duplicate.data.id,
-      preschoolTemplateId
-    )
+    const preschoolDocumentId = await createVasuDocument({
+      body: {
+        childId: duplicate.data.id,
+        templateId: preschoolTemplateId
+      }
+    })
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor.data)
@@ -133,7 +136,9 @@ describe('curriculum document with person duplicate', () => {
       type: 'DAYCARE',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const documentId = await insertVasuDocument(child.data.id, templateId)
+    const documentId = await createVasuDocument({
+      body: { childId: child.data.id, templateId }
+    })
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, preschoolSupervisor.data)
@@ -147,15 +152,19 @@ describe('curriculum document with person duplicate', () => {
       type: 'DAYCARE',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const daycareDocumentId = await insertVasuDocument(
-      child.data.id,
-      daycareTemplateId
-    )
+    const daycareDocumentId = await createVasuDocument({
+      body: {
+        childId: child.data.id,
+        templateId: daycareTemplateId
+      }
+    })
     const preschoolTemplateId = await insertVasuTemplateFixture({
       type: 'PRESCHOOL',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    await insertVasuDocument(child.data.id, preschoolTemplateId)
+    await createVasuDocument({
+      body: { childId: child.data.id, templateId: preschoolTemplateId }
+    })
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, preschoolSupervisor.data)
@@ -180,18 +189,22 @@ describe('curriculum document with person duplicate', () => {
       type: 'DAYCARE',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const daycareDocumentId = await insertVasuDocument(
-      duplicate.data.id,
-      daycareTemplateId
-    )
+    const daycareDocumentId = await createVasuDocument({
+      body: {
+        childId: duplicate.data.id,
+        templateId: daycareTemplateId
+      }
+    })
     const preschoolTemplateId = await insertVasuTemplateFixture({
       type: 'PRESCHOOL',
       valid: new FiniteDateRange(mockedDate, mockedDate)
     })
-    const preschoolDocumentId = await insertVasuDocument(
-      duplicate.data.id,
-      preschoolTemplateId
-    )
+    const preschoolDocumentId = await createVasuDocument({
+      body: {
+        childId: duplicate.data.id,
+        templateId: preschoolTemplateId
+      }
+    })
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, admin.data)

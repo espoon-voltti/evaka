@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   DaycareBuilder,
@@ -19,6 +18,7 @@ import {
   Fixture,
   PersonBuilder
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

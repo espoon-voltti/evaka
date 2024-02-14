@@ -7,7 +7,7 @@ import { CareType } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { postPairingChallenge } from '../../../dev-api'
+import { postPairingChallenge } from '../../../generated/api-clients'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import {
   Checkbox,
@@ -686,7 +686,9 @@ class MobileDevicesSection extends Element {
     )
 
     const challengeKey = await phase1.find('[data-qa="challenge-key"]').text
-    const { responseKey } = await postPairingChallenge(challengeKey)
+    const { responseKey } = await postPairingChallenge({
+      body: { challengeKey }
+    })
     if (!responseKey) {
       throw new Error(
         `Did not get responseKey when posting pairing challenge with key ${challengeKey}`

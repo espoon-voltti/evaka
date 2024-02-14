@@ -108,7 +108,7 @@ export async function addAbsence(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/absence`.toString(),
+    url: uri`/absence`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevAbsence>
   })
@@ -126,7 +126,7 @@ export async function addAclRoleForDaycare(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycares/${request.daycareId}/acl`.toString(),
+    url: uri`/daycares/${request.daycareId}/acl`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DaycareAclInsert>
   })
@@ -143,7 +143,7 @@ export async function addCalendarEvent(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/calendar-event`.toString(),
+    url: uri`/calendar-event`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevCalendarEvent>
   })
@@ -160,7 +160,7 @@ export async function addCalendarEventAttendee(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/calendar-event-attendee`.toString(),
+    url: uri`/calendar-event-attendee`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevCalendarEventAttendee>
   })
@@ -177,7 +177,7 @@ export async function addDailyServiceTime(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/daily-service-time`.toString(),
+    url: uri`/daily-service-time`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDailyServiceTimes>
   })
@@ -194,7 +194,7 @@ export async function addDailyServiceTimeNotification(
   }
 ): Promise<number> {
   const { data: json } = await devClient.request<JsonOf<number>>({
-    url: uri`/dev-api/daily-service-time-notification`.toString(),
+    url: uri`/daily-service-time-notification`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDailyServiceTimeNotification>
   })
@@ -211,7 +211,7 @@ export async function addPayment(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/payments`.toString(),
+    url: uri`/payments`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPayment>
   })
@@ -228,7 +228,7 @@ export async function addStaffAttendance(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/realtime-staff-attendance`.toString(),
+    url: uri`/realtime-staff-attendance`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevStaffAttendance>
   })
@@ -245,7 +245,7 @@ export async function addStaffAttendancePlan(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/staff-attendance-plan`.toString(),
+    url: uri`/staff-attendance-plan`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevStaffAttendancePlan>
   })
@@ -258,7 +258,7 @@ export async function addStaffAttendancePlan(
 */
 export async function cleanUpMessages(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/messages/clean-up`.toString(),
+    url: uri`/messages/clean-up`.toString(),
     method: 'POST'
   })
   return json
@@ -275,7 +275,7 @@ export async function createApplicationPlacementPlan(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
+    url: uri`/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycarePlacementPlan>
   })
@@ -292,7 +292,7 @@ export async function createApplications(
   }
 ): Promise<UUID[]> {
   const { data: json } = await devClient.request<JsonOf<UUID[]>>({
-    url: uri`/dev-api/applications`.toString(),
+    url: uri`/applications`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevApplicationWithForm[]>
   })
@@ -309,7 +309,7 @@ export async function createAssistanceFactors(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-factors`.toString(),
+    url: uri`/assistance-factors`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevAssistanceFactor[]>
   })
@@ -326,7 +326,7 @@ export async function createAssistanceNeedDecisions(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-need-decisions`.toString(),
+    url: uri`/assistance-need-decisions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevAssistanceNeedDecision[]>
   })
@@ -343,7 +343,7 @@ export async function createAssistanceNeedPreschoolDecisions(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-need-preschool-decisions`.toString(),
+    url: uri`/assistance-need-preschool-decisions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevAssistanceNeedPreschoolDecision[]>
   })
@@ -360,7 +360,7 @@ export async function createBackupCares(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/backup-cares`.toString(),
+    url: uri`/backup-cares`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevBackupCare[]>
   })
@@ -377,7 +377,7 @@ export async function createBackupPickup(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/backup-pickup`.toString(),
+    url: uri`/backup-pickup`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevBackupPickup[]>
   })
@@ -394,7 +394,7 @@ export async function createCareAreas(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/care-areas`.toString(),
+    url: uri`/care-areas`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevCareArea[]>
   })
@@ -411,7 +411,7 @@ export async function createChildDocument(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/child-documents`.toString(),
+    url: uri`/child-documents`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevChildDocument>
   })
@@ -428,7 +428,7 @@ export async function createChildren(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/children`.toString(),
+    url: uri`/children`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevChild[]>
   })
@@ -445,7 +445,7 @@ export async function createClubTerm(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/club-term`.toString(),
+    url: uri`/club-term`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ClubTerm>
   })
@@ -462,7 +462,7 @@ export async function createDaycareAssistances(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-assistances`.toString(),
+    url: uri`/daycare-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDaycareAssistance[]>
   })
@@ -479,7 +479,7 @@ export async function createDaycareCaretakers(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-caretakers`.toString(),
+    url: uri`/daycare-caretakers`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<Caretaker[]>
   })
@@ -496,7 +496,7 @@ export async function createDaycareGroupAclRows(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-group-acl`.toString(),
+    url: uri`/daycare-group-acl`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDaycareGroupAcl[]>
   })
@@ -513,7 +513,7 @@ export async function createDaycareGroupPlacement(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-group-placements`.toString(),
+    url: uri`/daycare-group-placements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDaycareGroupPlacement[]>
   })
@@ -530,7 +530,7 @@ export async function createDaycareGroups(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-groups`.toString(),
+    url: uri`/daycare-groups`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDaycareGroup[]>
   })
@@ -547,7 +547,7 @@ export async function createDaycarePlacements(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-placements`.toString(),
+    url: uri`/daycare-placements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPlacement[]>
   })
@@ -564,7 +564,7 @@ export async function createDaycares(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycares`.toString(),
+    url: uri`/daycares`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDaycare[]>
   })
@@ -581,7 +581,7 @@ export async function createDecisionPdf(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions/${request.id}/actions/create-pdf`.toString(),
+    url: uri`/decisions/${request.id}/actions/create-pdf`.toString(),
     method: 'POST'
   })
   return json
@@ -597,7 +597,7 @@ export async function createDecisions(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions`.toString(),
+    url: uri`/decisions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DecisionRequest[]>
   })
@@ -614,7 +614,7 @@ export async function createDefaultPlacementPlan(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/create-default-placement-plan`.toString(),
+    url: uri`/applications/${request.applicationId}/actions/create-default-placement-plan`.toString(),
     method: 'POST'
   })
   return json
@@ -626,7 +626,7 @@ export async function createDefaultPlacementPlan(
 */
 export async function createDefaultServiceNeedOptions(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need-options`.toString(),
+    url: uri`/service-need-options`.toString(),
     method: 'POST'
   })
   return json
@@ -642,7 +642,7 @@ export async function createDocumentTemplate(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/document-templates`.toString(),
+    url: uri`/document-templates`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevDocumentTemplate>
   })
@@ -659,7 +659,7 @@ export async function createEmployee(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/employee`.toString(),
+    url: uri`/employee`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevEmployee>
   })
@@ -676,7 +676,7 @@ export async function createEmployeePins(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/employee-pin`.toString(),
+    url: uri`/employee-pin`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevEmployeePin[]>
   })
@@ -693,7 +693,7 @@ export async function createFamilyContact(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/family-contact`.toString(),
+    url: uri`/family-contact`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevFamilyContact[]>
   })
@@ -710,7 +710,7 @@ export async function createFeeDecisions(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fee-decisions`.toString(),
+    url: uri`/fee-decisions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeDecision[]>
   })
@@ -727,7 +727,7 @@ export async function createFeeThresholds(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/fee-thresholds`.toString(),
+    url: uri`/fee-thresholds`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeThresholds>
   })
@@ -744,7 +744,7 @@ export async function createFosterParent(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/foster-parent`.toString(),
+    url: uri`/foster-parent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevFosterParent[]>
   })
@@ -761,7 +761,7 @@ export async function createFridgeChild(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fridge-child`.toString(),
+    url: uri`/fridge-child`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevFridgeChild[]>
   })
@@ -778,7 +778,7 @@ export async function createFridgePartner(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fridge-partner`.toString(),
+    url: uri`/fridge-partner`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevFridgePartner[]>
   })
@@ -795,7 +795,7 @@ export async function createHoliday(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday`.toString(),
+    url: uri`/holiday`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevHoliday>
   })
@@ -813,7 +813,7 @@ export async function createHolidayPeriod(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday-period/${request.id}`.toString(),
+    url: uri`/holiday-period/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<HolidayPeriodBody>
   })
@@ -831,7 +831,7 @@ export async function createHolidayQuestionnaire(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday-period/questionnaire/${request.id}`.toString(),
+    url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
   })
@@ -848,7 +848,7 @@ export async function createIncome(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income`.toString(),
+    url: uri`/income`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevIncome>
   })
@@ -865,7 +865,7 @@ export async function createIncomeNotification(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income-notifications`.toString(),
+    url: uri`/income-notifications`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<IncomeNotification>
   })
@@ -882,7 +882,7 @@ export async function createIncomeStatements(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income-statements`.toString(),
+    url: uri`/income-statements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevCreateIncomeStatements>
   })
@@ -899,7 +899,7 @@ export async function createInvoices(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/invoices`.toString(),
+    url: uri`/invoices`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<Invoice[]>
   })
@@ -912,7 +912,7 @@ export async function createInvoices(
 */
 export async function createMessageAccounts(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/message-account/upsert-all`.toString(),
+    url: uri`/message-account/upsert-all`.toString(),
     method: 'POST'
   })
   return json
@@ -928,7 +928,7 @@ export async function createOtherAssistanceMeasures(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/other-assistance-measures`.toString(),
+    url: uri`/other-assistance-measures`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevOtherAssistanceMeasure[]>
   })
@@ -945,7 +945,7 @@ export async function createParentships(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/parentship`.toString(),
+    url: uri`/parentship`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevParentship[]>
   })
@@ -966,7 +966,7 @@ export async function createPedagogicalDocumentAttachment(
     ['employeeId', request.employeeId]
   )
   const { data: json } = await devClient.request<JsonOf<string>>({
-    url: uri`/dev-api/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
+    url: uri`/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
     method: 'POST',
     params
   })
@@ -983,7 +983,7 @@ export async function createPedagogicalDocuments(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/pedagogical-document`.toString(),
+    url: uri`/pedagogical-document`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPedagogicalDocument[]>
   })
@@ -1000,7 +1000,7 @@ export async function createPerson(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/person/create`.toString(),
+    url: uri`/person/create`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPerson>
   })
@@ -1018,7 +1018,7 @@ export async function createPlacementPlan(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/placement-plan/${request.applicationId}`.toString(),
+    url: uri`/placement-plan/${request.applicationId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PlacementPlan>
   })
@@ -1035,7 +1035,7 @@ export async function createPreschoolAssistances(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/preschool-assistances`.toString(),
+    url: uri`/preschool-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPreschoolAssistance[]>
   })
@@ -1052,7 +1052,7 @@ export async function createPreschoolTerm(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/preschool-term`.toString(),
+    url: uri`/preschool-term`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPreschoolTerm>
   })
@@ -1069,7 +1069,7 @@ export async function createServiceNeedOption(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need-option`.toString(),
+    url: uri`/service-need-option`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ServiceNeedOption[]>
   })
@@ -1086,7 +1086,7 @@ export async function createServiceNeeds(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need`.toString(),
+    url: uri`/service-need`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevServiceNeed[]>
   })
@@ -1103,7 +1103,7 @@ export async function createVardaReset(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/varda/reset-child`.toString(),
+    url: uri`/varda/reset-child`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevVardaReset>
   })
@@ -1120,7 +1120,7 @@ export async function createVardaServiceNeed(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/varda/varda-service-need`.toString(),
+    url: uri`/varda/varda-service-need`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevVardaServiceNeed>
   })
@@ -1137,7 +1137,7 @@ export async function createVasuDocument(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/vasu/doc`.toString(),
+    url: uri`/vasu/doc`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostVasuDocBody>
   })
@@ -1154,7 +1154,7 @@ export async function createVasuTemplate(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/vasu/template`.toString(),
+    url: uri`/vasu/template`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateVasuTemplateBody>
   })
@@ -1171,7 +1171,7 @@ export async function createVoucherValueDecisions(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/value-decisions`.toString(),
+    url: uri`/value-decisions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<VoucherValueDecision[]>
   })
@@ -1184,7 +1184,7 @@ export async function createVoucherValueDecisions(
 */
 export async function createVoucherValues(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/voucher-values`.toString(),
+    url: uri`/voucher-values`.toString(),
     method: 'POST'
   })
   return json
@@ -1200,7 +1200,7 @@ export async function deleteDaycareCostCenter(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare/${request.daycareId}/cost-center`.toString(),
+    url: uri`/daycare/${request.daycareId}/cost-center`.toString(),
     method: 'DELETE'
   })
   return json
@@ -1212,7 +1212,7 @@ export async function deleteDaycareCostCenter(
 */
 export async function deleteVasuTemplates(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/templates`.toString(),
+    url: uri`/vasu/templates`.toString(),
     method: 'DELETE'
   })
   return json
@@ -1224,7 +1224,7 @@ export async function deleteVasuTemplates(): Promise<void> {
 */
 export async function digitransitAutocomplete(): Promise<Autocomplete> {
   const { data: json } = await devClient.request<JsonOf<Autocomplete>>({
-    url: uri`/dev-api/digitransit/autocomplete`.toString(),
+    url: uri`/digitransit/autocomplete`.toString(),
     method: 'GET'
   })
   return json
@@ -1240,7 +1240,7 @@ export async function forceFullVtjRefresh(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/persons/${request.person}/force-full-vtj-refresh`.toString(),
+    url: uri`/persons/${request.person}/force-full-vtj-refresh`.toString(),
     method: 'POST'
   })
   return json
@@ -1256,7 +1256,7 @@ export async function getApplication(
   }
 ): Promise<ApplicationDetails> {
   const { data: json } = await devClient.request<JsonOf<ApplicationDetails>>({
-    url: uri`/dev-api/applications/${request.applicationId}`.toString(),
+    url: uri`/applications/${request.applicationId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonApplicationDetails(json)
@@ -1272,7 +1272,7 @@ export async function getApplicationDecisions(
   }
 ): Promise<Decision[]> {
   const { data: json } = await devClient.request<JsonOf<Decision[]>>({
-    url: uri`/dev-api/applications/${request.applicationId}/decisions`.toString(),
+    url: uri`/applications/${request.applicationId}/decisions`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonDecision(e))
@@ -1288,7 +1288,7 @@ export async function getCitizen(
   }
 ): Promise<Citizen> {
   const { data: json } = await devClient.request<JsonOf<Citizen>>({
-    url: uri`/dev-api/citizen/ssn/${request.ssn}`.toString(),
+    url: uri`/citizen/ssn/${request.ssn}`.toString(),
     method: 'GET'
   })
   return json
@@ -1300,7 +1300,7 @@ export async function getCitizen(
 */
 export async function getCitizens(): Promise<Citizen[]> {
   const { data: json } = await devClient.request<JsonOf<Citizen[]>>({
-    url: uri`/dev-api/citizen`.toString(),
+    url: uri`/citizen`.toString(),
     method: 'GET'
   })
   return json
@@ -1312,7 +1312,7 @@ export async function getCitizens(): Promise<Citizen[]> {
 */
 export async function getEmployees(): Promise<Employee[]> {
   const { data: json } = await devClient.request<JsonOf<Employee[]>>({
-    url: uri`/dev-api/employee`.toString(),
+    url: uri`/employee`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -1324,7 +1324,7 @@ export async function getEmployees(): Promise<Employee[]> {
 */
 export async function getMessages(): Promise<SfiMessage[]> {
   const { data: json } = await devClient.request<JsonOf<SfiMessage[]>>({
-    url: uri`/dev-api/messages`.toString(),
+    url: uri`/messages`.toString(),
     method: 'GET'
   })
   return json
@@ -1336,7 +1336,7 @@ export async function getMessages(): Promise<SfiMessage[]> {
 */
 export async function getSentEmails(): Promise<Email[]> {
   const { data: json } = await devClient.request<JsonOf<Email[]>>({
-    url: uri`/dev-api/emails`.toString(),
+    url: uri`/emails`.toString(),
     method: 'GET'
   })
   return json
@@ -1348,7 +1348,7 @@ export async function getSentEmails(): Promise<Email[]> {
 */
 export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
   const { data: json } = await devClient.request<JsonOf<StaffMemberAttendance[]>>({
-    url: uri`/dev-api/realtime-staff-attendance`.toString(),
+    url: uri`/realtime-staff-attendance`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonStaffMemberAttendance(e))
@@ -1364,7 +1364,7 @@ export async function getVtjPerson(
   }
 ): Promise<VtjPerson> {
   const { data: json } = await devClient.request<JsonOf<VtjPerson>>({
-    url: uri`/dev-api/vtj-persons/${request.ssn}`.toString(),
+    url: uri`/vtj-persons/${request.ssn}`.toString(),
     method: 'GET'
   })
   return deserializeJsonVtjPerson(json)
@@ -1380,7 +1380,7 @@ export async function insertChild(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/child`.toString(),
+    url: uri`/child`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPerson>
   })
@@ -1397,7 +1397,7 @@ export async function insertGuardians(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/guardian`.toString(),
+    url: uri`/guardian`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevGuardian[]>
   })
@@ -1414,7 +1414,7 @@ export async function postAttendances(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/attendances`.toString(),
+    url: uri`/attendances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevChildAttendance[]>
   })
@@ -1432,7 +1432,7 @@ export async function postChildDailyNote(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/children/${request.childId}/child-daily-notes`.toString(),
+    url: uri`/children/${request.childId}/child-daily-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
   })
@@ -1450,7 +1450,7 @@ export async function postChildStickyNote(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/children/${request.childId}/child-sticky-notes`.toString(),
+    url: uri`/children/${request.childId}/child-sticky-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
   })
@@ -1467,7 +1467,7 @@ export async function postDigitransitQuery(
   }
 ): Promise<string> {
   const { data: json } = await devClient.request<JsonOf<string>>({
-    url: uri`/dev-api/digitransit/query`.toString(),
+    url: uri`/digitransit/query`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<string>
   })
@@ -1485,7 +1485,7 @@ export async function postGroupNote(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/daycare-groups/${request.groupId}/group-notes`.toString(),
+    url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupNoteBody>
   })
@@ -1502,7 +1502,7 @@ export async function postMobileDevice(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/mobile/devices`.toString(),
+    url: uri`/mobile/devices`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevMobileDevice>
   })
@@ -1519,7 +1519,7 @@ export async function postPairing(
   }
 ): Promise<Pairing> {
   const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings`.toString(),
+    url: uri`/mobile/pairings`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingReq>
   })
@@ -1536,7 +1536,7 @@ export async function postPairingChallenge(
   }
 ): Promise<Pairing> {
   const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings/challenge`.toString(),
+    url: uri`/mobile/pairings/challenge`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
   })
@@ -1554,7 +1554,7 @@ export async function postPairingResponse(
   }
 ): Promise<Pairing> {
   const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings/${request.id}/response`.toString(),
+    url: uri`/mobile/pairings/${request.id}/response`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingResponseReq>
   })
@@ -1571,7 +1571,7 @@ export async function postPersonalMobileDevice(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/mobile/personal-devices`.toString(),
+    url: uri`/mobile/personal-devices`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPersonalMobileDevice>
   })
@@ -1588,7 +1588,7 @@ export async function postReservations(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/reservations`.toString(),
+    url: uri`/reservations`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
   })
@@ -1605,7 +1605,7 @@ export async function publishVasuDocument(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/doc/publish/${request.documentId}`.toString(),
+    url: uri`/vasu/doc/publish/${request.documentId}`.toString(),
     method: 'POST'
   })
   return json
@@ -1621,7 +1621,7 @@ export async function putDigitransitAutocomplete(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/digitransit/autocomplete`.toString(),
+    url: uri`/digitransit/autocomplete`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<Autocomplete>
   })
@@ -1638,7 +1638,7 @@ export async function rejectDecisionByCitizen(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions/${request.id}/actions/reject-by-citizen`.toString(),
+    url: uri`/decisions/${request.id}/actions/reject-by-citizen`.toString(),
     method: 'POST'
   })
   return json
@@ -1650,7 +1650,7 @@ export async function rejectDecisionByCitizen(
 */
 export async function resetDatabase(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/reset-db`.toString(),
+    url: uri`/reset-db`.toString(),
     method: 'POST'
   })
   return json
@@ -1666,7 +1666,7 @@ export async function revokeSharingPermission(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/revokeSharingPermission/${request.docId}`.toString(),
+    url: uri`/vasu/revokeSharingPermission/${request.docId}`.toString(),
     method: 'POST'
   })
   return json
@@ -1678,7 +1678,7 @@ export async function revokeSharingPermission(
 */
 export async function runJobs(): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/run-jobs`.toString(),
+    url: uri`/run-jobs`.toString(),
     method: 'POST'
   })
   return json
@@ -1697,7 +1697,7 @@ export async function setTestMode(
     ['enabled', request.enabled.toString()]
   )
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/test-mode`.toString(),
+    url: uri`/test-mode`.toString(),
     method: 'POST',
     params
   })
@@ -1715,7 +1715,7 @@ export async function simpleAction(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/${request.action}`.toString(),
+    url: uri`/applications/${request.applicationId}/actions/${request.action}`.toString(),
     method: 'POST'
   })
   return json
@@ -1731,7 +1731,7 @@ export async function terminatePlacement(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/placement/terminate`.toString(),
+    url: uri`/placement/terminate`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevTerminatePlacementRequest>
   })
@@ -1748,7 +1748,7 @@ export async function upsertPerson(
   }
 ): Promise<UUID> {
   const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/person`.toString(),
+    url: uri`/person`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevPerson>
   })
@@ -1765,7 +1765,7 @@ export async function upsertStaffOccupancyCoefficient(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/occupancy-coefficient`.toString(),
+    url: uri`/occupancy-coefficient`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DevUpsertStaffOccupancyCoefficient>
   })
@@ -1782,7 +1782,7 @@ export async function upsertVtjPerson(
   }
 ): Promise<void> {
   const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vtj-persons`.toString(),
+    url: uri`/vtj-persons`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<VtjPerson>
   })
