@@ -62,8 +62,8 @@ export default React.memo(function AttendanceDailyServiceTimes({
         i18n.attendances.serviceTime.variableTimes
       ) : (
         i18n.attendances.serviceTime.serviceToday(
-          todaysTimes.start.format(),
-          todaysTimes.end.format()
+          todaysTimes.formatStart(),
+          todaysTimes.formatEnd()
         )
       )}
     </ServiceTime>

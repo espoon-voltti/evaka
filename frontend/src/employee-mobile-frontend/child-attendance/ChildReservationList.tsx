@@ -103,8 +103,8 @@ export default React.memo(function ChildReservationList({
                 if (times != null) {
                   categoryInfo = {
                     sortCategory: 1,
-                    sortStartTime: times.start,
-                    sortEndTime: times.end
+                    sortStartTime: times.start.asLocalTime(),
+                    sortEndTime: times.end.asLocalTime()
                   }
                 } else {
                   categoryInfo = {

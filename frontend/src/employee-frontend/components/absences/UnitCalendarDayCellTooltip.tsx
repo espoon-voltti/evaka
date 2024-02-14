@@ -38,9 +38,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
     () =>
       dailyServiceTimes !== null ? (
         <div>
-          {`${
-            i18n.absences.dailyServiceTime
-          } ${dailyServiceTimes.start.format()} - ${dailyServiceTimes.end.format()}`}
+          {`${i18n.absences.dailyServiceTime} ${dailyServiceTimes.format()}`}
         </div>
       ) : undefined,
     [i18n, dailyServiceTimes]

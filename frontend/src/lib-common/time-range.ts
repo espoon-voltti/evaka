@@ -150,10 +150,24 @@ function maxOf(a: MidnightAwareTime, b: MidnightAwareTime): MidnightAwareTime {
 }
 
 export default class TimeRange {
+  start: MidnightAwareTime.Start
+  end: MidnightAwareTime.End
+
+  constructor(start: LocalTime, end: LocalTime)
+  constructor(start: MidnightAwareTime.Start, end: MidnightAwareTime.End)
   constructor(
-    public start: MidnightAwareTime.Start,
-    public end: MidnightAwareTime.End
+    start: LocalTime | MidnightAwareTime.Start,
+    end: LocalTime | MidnightAwareTime.End
   ) {
+    if (start instanceof LocalTime) {
+      start = new MidnightAwareTime.Start(start)
+    }
+    if (end instanceof LocalTime) {
+      end = new MidnightAwareTime.End(end)
+    }
+    this.start = start
+    this.end = end
+
     if (start.isEqualOrAfter(end)) {
       throw new Error('TimeRange start must be before end')
     }
@@ -161,17 +175,10 @@ export default class TimeRange {
 
   static tryCreate(start: LocalTime, end: LocalTime): TimeRange | undefined {
     try {
-      return TimeRange.of(start, end)
+      return new TimeRange(start, end)
     } catch (e) {
       return undefined
     }
-  }
-
-  static of(start: LocalTime, end: LocalTime): TimeRange {
-    return new TimeRange(
-      new MidnightAwareTime.Start(start),
-      new MidnightAwareTime.End(end)
-    )
   }
 
   isEqual(other: TimeRange): boolean {
@@ -189,7 +196,7 @@ export default class TimeRange {
     const start = maxOf(this.start, other.start)
     const end = minOf(this.end, other.end)
     try {
-      return new TimeRange(start, end)
+      return new TimeRange(start.asStart(), end.asEnd())
     } catch (e) {
       return undefined
     }
@@ -231,7 +238,7 @@ export default class TimeRange {
 
   /** HH:mm:ss */
   static parseJson(json: JsonOf<TimeRange>): TimeRange {
-    return TimeRange.of(
+    return new TimeRange(
       LocalTime.parseIso(json.start),
       LocalTime.parseIso(json.end)
     )
@@ -239,7 +246,7 @@ export default class TimeRange {
 
   /** HH:mm */
   static parse(json: JsonOf<TimeRange>): TimeRange {
-    return TimeRange.of(LocalTime.parse(json.start), LocalTime.parse(json.end))
+    return new TimeRange(LocalTime.parse(json.start), LocalTime.parse(json.end))
   }
 
   toJSON(): JsonOf<TimeRange> {

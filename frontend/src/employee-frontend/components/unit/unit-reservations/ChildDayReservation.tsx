@@ -24,6 +24,7 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import TimeRange from 'lib-common/time-range'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Light } from 'lib-components/typography'
@@ -83,13 +84,18 @@ export default React.memo(function ChildDayReservation({
     (dateInfo.time === null ||
       dateInfo.isHoliday ||
       (reservation.type === 'TIMES' &&
-        dateInfo.time.start > reservation.startTime))
+        !dateInfo.time.includesStartOf(
+          new TimeRange(reservation.startTime, reservation.endTime)
+        )))
 
   const unitIsNotOpenOnReservationEnd =
     reservation !== undefined &&
     (dateInfo.time === null ||
       dateInfo.isHoliday ||
-      (reservation.type === 'TIMES' && dateInfo.time.end < reservation.endTime))
+      (reservation.type === 'TIMES' &&
+        !dateInfo.time.includesEndOf(
+          new TimeRange(reservation.startTime, reservation.endTime)
+        )))
 
   return (
     <ReservationDateCell>
@@ -173,11 +179,11 @@ export default React.memo(function ChildDayReservation({
             // daily service times
             <>
               <TimeCell data-qa="reservation-start">
-                {serviceTimeOfDay.start.format()}{' '}
+                {serviceTimeOfDay.formatStart()}{' '}
                 {i18n.unit.attendanceReservations.serviceTimeIndicator}
               </TimeCell>
               <TimeCell data-qa="reservation-end">
-                {serviceTimeOfDay.end.format()}{' '}
+                {serviceTimeOfDay.formatEnd()}{' '}
                 {i18n.unit.attendanceReservations.serviceTimeIndicator}
               </TimeCell>
             </>

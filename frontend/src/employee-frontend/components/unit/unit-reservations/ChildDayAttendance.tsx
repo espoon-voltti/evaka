@@ -78,11 +78,7 @@ export default React.memo(function ChildDayAttendance({
 
   const isWithinExpectedTimes = useCallback(
     (time: LocalTime) =>
-      expectedTimes.some(
-        (expected) =>
-          expected.start.isEqualOrBefore(time) &&
-          expected.end.isEqualOrAfter(time)
-      ),
+      expectedTimes.some((expected) => expected.includes(time)),
     [expectedTimes]
   )
 
@@ -94,14 +90,19 @@ export default React.memo(function ChildDayAttendance({
       dateInfo.time === null ||
       dateInfo.isHoliday ||
       (reservation.type === 'TIMES' &&
-        dateInfo.time.start > reservation.startTime)
+        !dateInfo.time.includesStartOf(
+          new TimeRange(reservation.startTime, reservation.endTime)
+        ))
   )
 
   const unitIsNotOpenOnReservationEnd = reservations.some(
     (reservation) =>
       dateInfo.time === null ||
       dateInfo.isHoliday ||
-      (reservation.type === 'TIMES' && dateInfo.time.end < reservation.endTime)
+      (reservation.type === 'TIMES' &&
+        !dateInfo.time.includesEndOf(
+          new TimeRange(reservation.startTime, reservation.endTime)
+        ))
   )
 
   const requiresBackupCare =

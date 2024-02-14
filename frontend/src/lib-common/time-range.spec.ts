@@ -7,7 +7,7 @@ import TimeRange from './time-range'
 
 const testTime = (hour: number) => LocalTime.of(hour, 0)
 const testRange = (a: number, b: number) =>
-  TimeRange.of(testTime(a), testTime(b))
+  new TimeRange(testTime(a), testTime(b))
 
 describe('TimeRange', () => {
   test('can end at midnight', () => {

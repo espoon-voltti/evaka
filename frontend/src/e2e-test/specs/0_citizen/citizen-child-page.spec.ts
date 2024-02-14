@@ -616,11 +616,11 @@ describe.each(['desktop', 'mobile'] as const)(
         },
         {
           dateRange: '01.01.2022 - 31.01.2022',
-          description: 'Ma 08:15 - 14:46, To 07:46 - 16:32'
+          description: 'Ma 08:15–14:46, To 07:46–16:32'
         },
         {
           dateRange: '01.12.2021 - 31.12.2021',
-          description: '08:15 - 14:46'
+          description: '08:15–14:46'
         }
       ])
       await childPage.closeCollapsible()

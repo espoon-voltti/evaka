@@ -42,7 +42,10 @@ import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import { Translations } from 'lib-customizations/citizen'
 
-export const MAX_TIME_RANGE = new TimeRange(LocalTime.MIN, LocalTime.MAX)
+export const MAX_TIME_RANGE = new TimeRange(
+  LocalTime.MIDNIGHT,
+  LocalTime.MIDNIGHT
+)
 
 export const limitedLocalTimeRange = () =>
   transformed(
@@ -57,11 +60,11 @@ export const limitedLocalTimeRange = () =>
       if (value === undefined) return ValidationSuccess.of(undefined)
 
       let errors: FieldErrors<'range'> | undefined = undefined
-      if (!timeRangeContains(value.start, validRange)) {
+      if (!validRange.includesStartOf(value)) {
         errors = errors ?? {}
         errors.startTime = 'range'
       }
-      if (!timeRangeContains(value.end, validRange)) {
+      if (!validRange.includesEndOf(value)) {
         errors = errors ?? {}
         errors.endTime = 'range'
       }
@@ -74,13 +77,6 @@ export const limitedLocalTimeRange = () =>
   )
 
 export type LimitedLocalTimeRangeField = FieldType<typeof limitedLocalTimeRange>
-
-export function timeRangeContains(
-  inputTime: LocalTime,
-  { start, end }: TimeRange
-) {
-  return inputTime.isEqualOrAfter(start) && inputTime.isEqualOrBefore(end)
-}
 
 export function emptyTimeRange(
   validRange: TimeRange
@@ -503,9 +499,8 @@ export function resetDay(
       )
   )
   const validTimeRange =
-    validTimeRanges.length > 0
-      ? TimeRange.merge(validTimeRanges)
-      : MAX_TIME_RANGE
+    TimeRange.intersection([...validTimeRanges, MAX_TIME_RANGE]) ??
+    MAX_TIME_RANGE
 
   if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
     return holidayPeriodState === 'open' ||
@@ -665,8 +660,8 @@ const bindUnboundedTimeRanges = (
   ranges: TimeRange[],
   validRange: TimeRange
 ): StateOf<LimitedLocalTimeRangeField>[] => {
-  const formatted = ranges.map(({ start, end }) => ({
-    value: { startTime: start.format(), endTime: end.format() },
+  const formatted = ranges.map((range) => ({
+    value: { startTime: range.formatStart(), endTime: range.formatEnd() },
     validRange
   }))
 

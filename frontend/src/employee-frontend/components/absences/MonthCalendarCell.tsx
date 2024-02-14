@@ -273,8 +273,9 @@ export default React.memo(function MonthCalendarCell({
         operationTime === null ||
         isHoliday ||
         (reservation.type === 'TIMES' &&
-          (operationTime.start > reservation.startTime ||
-            operationTime.end < reservation.endTime))
+          !operationTime.contains(
+            new TimeRange(reservation.startTime, reservation.endTime)
+          ))
     ) && !day.backupCare
   const requiresBackupCare =
     day.absences.length === 0 &&

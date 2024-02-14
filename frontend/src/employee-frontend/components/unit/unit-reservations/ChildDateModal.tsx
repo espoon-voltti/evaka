@@ -118,8 +118,8 @@ const form = transformed(
         ? [{ type: 'NO_TIMES' }]
         : reservations.map((r) => ({
             type: 'TIMES',
-            startTime: r.start,
-            endTime: r.end
+            startTime: r.start.asLocalTime(),
+            endTime: r.end.asLocalTime()
           })),
       attendances,
       absenceBillable: billableAbsence ?? null,

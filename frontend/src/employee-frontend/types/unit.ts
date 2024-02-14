@@ -9,9 +9,7 @@ import {
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { DayOfWeek } from './index'
@@ -81,8 +79,4 @@ export interface UnitChildrenCapacityFactors {
   childId: UUID
   serviceNeedFactor: number
   assistanceNeedFactor: number
-}
-
-export function formatTimeRange(value: TimeRange): JsonOf<TimeRange> {
-  return { start: value.start.format(), end: value.end.format() }
 }
