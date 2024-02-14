@@ -98,6 +98,22 @@ export async function getPreschoolTermsResult(): Promise<PreschoolTerm[]> {
     .then((res) => res.data.map(deserializePreschoolTerm))
 }
 
+export async function getPreschoolTerm(termId: UUID): Promise<PreschoolTerm> {
+  return client
+    .get<JsonOf<PreschoolTerm>>(`/preschool-terms/${termId}`)
+    .then((res) => deserializePreschoolTerm(res.data))
+}
+
 export function createPreschoolTerm(data: PreschoolTermRequest): Promise<void> {
   return client.post('/preschool-terms', data).then(() => undefined)
+}
+
+export function updatePreschoolTerm({
+  termId,
+  data
+}: {
+  termId: UUID
+  data: PreschoolTermRequest
+}): Promise<void> {
+  return client.put(`/preschool-terms/${termId}`, data).then(() => undefined)
 }

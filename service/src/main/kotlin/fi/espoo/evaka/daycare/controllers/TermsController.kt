@@ -8,19 +8,25 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.insertPreschoolTerm
+import fi.espoo.evaka.daycare.updatePreschoolTerm
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -39,23 +45,45 @@ class TermsController(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
 
+    @GetMapping("/preschool-terms/{id}")
+    fun getPreschoolTerm(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: PreschoolTermId
+    ): PreschoolTerm {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.PreschoolTerm.READ,
+                        id
+                    )
+                    tx.getPreschoolTerm(id) ?: throw NotFound("Preschool term $id does not exist")
+                }
+            }
+            .also { Audit.PreschoolTermRead.log(targetId = id) }
+    }
+
     @PostMapping("/preschool-terms")
     fun createPreschoolTerm(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: PreschoolTermRequest
-    ) {
-        db.connect { dbc ->
+    ): PreschoolTermId {
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_PRESCHOOL_TERMS
+                        Action.Global.CREATE_PRESCHOOL_TERM
                     )
 
-                    validatePreschoolTermRequest(tx, body)
+                    validatePreschoolTermRequest(tx, body, null)
 
                     tx.insertPreschoolTerm(
                         body.finnishPreschool,
@@ -69,13 +97,53 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.PreschoolTermCreate.log(objectId = termId) }
     }
 
+    @PutMapping("/preschool-terms/{id}")
+    fun updatePreschoolTerm(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: PreschoolTermId,
+        @RequestBody body: PreschoolTermRequest
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.PreschoolTerm.UPDATE,
+                        id
+                    )
+
+                    tx.getPreschoolTerm(id) ?: throw NotFound("Preschool term $id does not exist")
+
+                    validatePreschoolTermRequest(tx, body, id)
+
+                    tx.updatePreschoolTerm(
+                        id,
+                        body.finnishPreschool,
+                        body.swedishPreschool,
+                        body.extendedTerm,
+                        body.applicationPeriod,
+                        body.termBreaks
+                    )
+                }
+            }
+            .also { termId -> Audit.PreschoolTermUpdate.log(objectId = termId) }
+    }
+
     private fun validatePreschoolTermRequest(
         tx: Database.Transaction,
-        termReq: PreschoolTermRequest
+        termReq: PreschoolTermRequest,
+        termIdToUpdate: PreschoolTermId?
     ) {
-        val allTerms = tx.getPreschoolTerms()
-
-        allTerms.forEach { term ->
+        val allTermsToCompare =
+            when {
+                termIdToUpdate != null ->
+                    tx.getPreschoolTerms().filter { term -> term.id != termIdToUpdate }
+                else -> tx.getPreschoolTerms()
+            }
+        allTermsToCompare.forEach { term ->
             if (termReq.finnishPreschool.overlaps(term.finnishPreschool)) {
                 throw BadRequest(
                     "Finnish term period ${termReq.finnishPreschool} overlaps with existing one"
@@ -84,6 +152,12 @@ class TermsController(private val accessControl: AccessControl) {
             if (termReq.swedishPreschool.overlaps(term.swedishPreschool)) {
                 throw BadRequest(
                     "Swedish term period ${termReq.swedishPreschool} overlaps with existing one"
+                )
+            }
+
+            if (termReq.extendedTerm.overlaps(term.extendedTerm)) {
+                throw BadRequest(
+                    "Extended term period ${termReq.extendedTerm} overlaps with existing one"
                 )
             }
         }

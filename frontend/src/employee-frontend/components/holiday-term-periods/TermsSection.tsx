@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faPen } from 'Icons'
 import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
@@ -31,6 +35,13 @@ export default React.memo(function TermsSection() {
   const navigateToNewTerm = useCallback(() => {
     navigate('/holiday-periods/preschool-term/new')
   }, [navigate])
+
+  const navigateToEditTerm = useCallback(
+    (termId: UUID) => {
+      navigate(`/holiday-periods/preschool-term/${termId}`)
+    },
+    [navigate]
+  )
 
   return (
     <>
@@ -86,7 +97,16 @@ export default React.memo(function TermsSection() {
                       ))}
                     </Ul>
                   </Td>
-                  <Td />
+                  <Td>
+                    <FixedSpaceRow spacing="s">
+                      <IconButton
+                        icon={faPen}
+                        data-qa="btn-edit"
+                        onClick={() => navigateToEditTerm(row.id)}
+                        aria-label={i18n.common.edit}
+                      />
+                    </FixedSpaceRow>
+                  </Td>
                 </Tr>
               ))}
           </Tbody>

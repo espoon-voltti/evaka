@@ -58,6 +58,23 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
         .toList<PreschoolTerm>()
 }
 
+fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
+    this.createQuery(
+            """
+        SELECT
+            id,
+            finnish_preschool,
+            swedish_preschool,
+            extended_term,
+            application_period,
+            term_breaks
+        FROM preschool_term 
+        WHERE id = :id
+        """
+        )
+        .bind("id", id)
+        .exactlyOneOrNull<PreschoolTerm>()
+
 fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
     return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
 }
@@ -96,3 +113,32 @@ fun Database.Transaction.insertPreschoolTerm(
         .executeAndReturnGeneratedKeys()
         .exactlyOne<PreschoolTermId>()
 }
+
+fun Database.Transaction.updatePreschoolTerm(
+    id: PreschoolTermId,
+    finnishPreschool: FiniteDateRange,
+    swedishPreschool: FiniteDateRange,
+    extendedTerm: FiniteDateRange,
+    applicationPeriod: FiniteDateRange,
+    termBreaks: DateSet
+) =
+    createUpdate(
+            """
+        UPDATE preschool_term 
+        SET 
+            finnish_preschool = :finnishPreschool,
+            swedish_preschool = :swedishPreschool,
+            extended_term = :extendedTerm,
+            application_period = :applicationPeriod,
+            term_breaks =  :termBreaks
+        WHERE id = :id
+        """
+                .trimIndent()
+        )
+        .bind("id", id)
+        .bind("finnishPreschool", finnishPreschool)
+        .bind("swedishPreschool", swedishPreschool)
+        .bind("extendedTerm", extendedTerm)
+        .bind("applicationPeriod", applicationPeriod)
+        .bind("termBreaks", termBreaks)
+        .updateExactlyOne()

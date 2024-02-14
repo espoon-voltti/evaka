@@ -4475,6 +4475,8 @@ export const fi = {
     validationErrors: {
       overlap:
         'Tälle ajanjaksolle on jo päällekkäinen lukukausi. Yritä kirjata merkintä eri ajanjaksolle.',
+      extendedTermOverlap:
+        'Tälle ajanjaksolle on jo päällekkäinen pidennetty lukukausi. Yritä kirjata merkintä eri aloituspäivälle',
       extendedTermStartAfter:
         'Pidennetyn lukukauden aloituspäivämäärä ei voi olla lukukauden aloituspäivämäärän jälkeen.',
       termBreaksOverlap: 'Päällekkäiset opetustauot eivät ole sallittua.'

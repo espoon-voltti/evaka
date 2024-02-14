@@ -42,7 +42,10 @@ import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { useTranslation } from '../../state/i18n'
 
-import { createPreschoolTermMutation } from './queries'
+import {
+  createPreschoolTermMutation,
+  updatePreschoolTermMutation
+} from './queries'
 
 function checkForOverlappingRanges(ranges: FiniteDateRange[]): boolean {
   const rangesProcessed: FiniteDateRange[] = []
@@ -89,6 +92,17 @@ const preschoolTermForm = transformed(
       }
     }
 
+    const extendedTerm = new FiniteDateRange(
+      featureFlags.extendedPreschoolTerm && extendedTermStart
+        ? extendedTermStart
+        : finnishPreschool.start,
+      finnishPreschool.end
+    )
+
+    if (allTerms.some((term) => term.extendedTerm.overlaps(extendedTerm))) {
+      return ValidationError.field('extendedTermStart', 'extendedTermOverlap')
+    }
+
     if (termBreaks.length > 0) {
       if (checkForOverlappingRanges(termBreaks)) {
         return ValidationError.field('termBreaks', 'termBreaksOverlap')
@@ -102,12 +116,7 @@ const preschoolTermForm = transformed(
         applicationPeriodStart,
         finnishPreschool.end
       ),
-      extendedTerm: new FiniteDateRange(
-        featureFlags.extendedPreschoolTerm && extendedTermStart
-          ? extendedTermStart
-          : finnishPreschool.start,
-        finnishPreschool.end
-      ),
+      extendedTerm: extendedTerm,
       termBreaks: termBreaks
     }
     return ValidationSuccess.of(success)
@@ -115,42 +124,66 @@ const preschoolTermForm = transformed(
 )
 
 function initialFormState(
-  allTerms: PreschoolTerm[]
+  allTerms: PreschoolTerm[],
+  term?: PreschoolTerm
 ): StateOf<typeof preschoolTermForm> {
   return {
-    finnishPreschool: localDateRange.empty(),
-    applicationPeriodStart: localDate.empty(),
-    extendedTermStart: localDate.empty(),
-    termBreaks: [],
-    allTerms: allTerms
+    finnishPreschool: term
+      ? localDateRange.fromRange(term.finnishPreschool)
+      : localDateRange.empty(),
+    applicationPeriodStart: term
+      ? localDate.fromDate(term.applicationPeriod.start)
+      : localDate.empty(),
+    extendedTermStart: term
+      ? localDate.fromDate(term.extendedTerm.start)
+      : localDate.empty(),
+    termBreaks: term
+      ? term.termBreaks.map((tb) => localDateRange.fromRange(tb))
+      : [],
+    allTerms: term
+      ? allTerms.filter((existing) => existing.id !== term.id)
+      : allTerms
   }
 }
 
 interface Props {
+  term?: PreschoolTerm
   allTerms: PreschoolTerm[]
   onSuccess: () => void
   onCancel: () => void
 }
 
 export default React.memo(function PreschoolTermForm({
+  term,
   allTerms,
   onCancel,
   onSuccess
 }: Props) {
   const { i18n, lang } = useTranslation()
 
-  const form = useForm(preschoolTermForm, () => initialFormState(allTerms), {
-    ...i18n.validationErrors,
-    ...i18n.terms.validationErrors
-  })
+  const form = useForm(
+    preschoolTermForm,
+    () => initialFormState(allTerms, term),
+    {
+      ...i18n.validationErrors,
+      ...i18n.terms.validationErrors
+    }
+  )
 
   const { mutateAsync: createPreschoolTerm } = useMutationResult(
     createPreschoolTermMutation
   )
 
+  const { mutateAsync: updatePreschoolTerm } = useMutationResult(
+    updatePreschoolTermMutation
+  )
+
   const onSubmit = useCallback(
-    () => createPreschoolTerm(form.value()),
-    [form, createPreschoolTerm]
+    () =>
+      term !== undefined
+        ? updatePreschoolTerm({ termId: term.id, data: form.value() })
+        : createPreschoolTerm(form.value()),
+    [form, createPreschoolTerm, updatePreschoolTerm]
   )
 
   const {
@@ -233,13 +266,18 @@ export default React.memo(function PreschoolTermForm({
           </ExpandingInfo>
 
           {termBreakElems.map((range, i) => (
-            <FixedSpaceRow key={`tb-${i}`} alignItems="center" spacing="m">
+            <FixedSpaceRow
+              key={`tb-${i}`}
+              data-qa="term-break"
+              alignItems="center"
+              spacing="m"
+            >
               <div className="bold">{`${i + 1}.`}</div>
               <DateRangePickerF
                 hideErrorsBeforeTouched
                 bind={range}
                 locale={lang}
-                data-qa={`term-break-entry-${i}`}
+                data-qa="term-break-input"
               />
 
               <InlineButton
