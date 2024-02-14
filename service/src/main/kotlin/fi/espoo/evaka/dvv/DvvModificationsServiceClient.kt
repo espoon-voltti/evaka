@@ -34,7 +34,6 @@ class DvvModificationsServiceClient(
     private val dvvUserId = env.userId
     private val dvvPassword = env.password
     private val dvvXroadClientId: String = env.xroadClientId
-    private val dvvProductCode: String = env.productCode
 
     // Fetch the first modification token of the given date
     fun getFirstModificationToken(
@@ -85,7 +84,6 @@ class DvvModificationsServiceClient(
                 .jsonBody(
                     """{
                     "viimeisinKirjausavain": $updateToken,
-                    "tuotekoodi": "$dvvProductCode",
                     "hetulista": [${ssns.map { "\"$it\"" }.joinToString()}]
                 }
                 """

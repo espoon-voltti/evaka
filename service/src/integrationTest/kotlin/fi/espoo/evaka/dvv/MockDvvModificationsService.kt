@@ -570,8 +570,4 @@ val modifications =
                 .trimIndent()
     )
 
-data class ModificationsRequest(
-    val viimeisinKirjausavain: String,
-    val tuotekoodi: String,
-    val hetulista: List<String>
-)
+data class ModificationsRequest(val viimeisinKirjausavain: String, val hetulista: List<String>)
