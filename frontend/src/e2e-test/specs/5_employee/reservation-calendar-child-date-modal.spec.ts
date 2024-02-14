@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
@@ -50,10 +50,7 @@ const setupTestData = async ({
       .save()
   ).data.id
   const careArea = await Fixture.careArea().save()
-  const operationTime: TimeRange = {
-    start: LocalTime.of(7, 0),
-    end: LocalTime.of(18, 0)
-  }
+  const operationTime = new TimeRange(LocalTime.of(7, 0), LocalTime.of(18, 0))
   const daycare = await Fixture.daycare()
     .careArea(careArea)
     .with({

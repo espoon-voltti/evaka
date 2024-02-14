@@ -4,7 +4,6 @@
 
 import mapValues from 'lodash/mapValues'
 
-import { parseIsoTimeRange } from 'lib-common/api-types/daily-service-times'
 import {
   deserializeActiveQuestionnaire,
   deserializeHolidayPeriod
@@ -27,6 +26,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { parseReservationDto } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
@@ -51,14 +51,14 @@ export async function getReservations(
               child.reservableTimeRange.type === 'NORMAL'
                 ? {
                     type: 'NORMAL',
-                    range: parseIsoTimeRange(child.reservableTimeRange.range)
+                    range: TimeRange.parseJson(child.reservableTimeRange.range)
                   }
                 : {
                     type: 'INTERMITTENT_SHIFT_CARE',
                     placementUnitOperationTime:
                       child.reservableTimeRange.placementUnitOperationTime !==
                       null
-                        ? parseIsoTimeRange(
+                        ? TimeRange.parseJson(
                             child.reservableTimeRange.placementUnitOperationTime
                           )
                         : null
@@ -69,15 +69,14 @@ export async function getReservations(
             })),
             reservations: child.reservations.map(parseReservationDto),
             usedService:
-              child.usedService !== null && child.usedService.type === 'RANGES'
+              child.usedService !== null
                 ? {
                     ...child.usedService,
-                    ranges: child.usedService.ranges.map((r) => ({
-                      start: LocalTime.parseIso(r.start),
-                      end: LocalTime.parseIso(r.end)
-                    }))
+                    usedServiceRanges: child.usedService.usedServiceRanges.map(
+                      (r) => TimeRange.parseJson(r)
+                    )
                   }
-                : child.usedService
+                : null
           }))
         })
       ),

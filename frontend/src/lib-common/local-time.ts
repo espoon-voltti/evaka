@@ -109,6 +109,7 @@ export default class LocalTime implements Ordered<LocalTime> {
   }
 
   static MIN = LocalTime.of(0, 0, 0, 0)
+  static MIDNIGHT = LocalTime.MIN
   static MAX = LocalTime.of(23, 59, 59, 999_999_999)
 
   static parseIso(text: string): LocalTime {

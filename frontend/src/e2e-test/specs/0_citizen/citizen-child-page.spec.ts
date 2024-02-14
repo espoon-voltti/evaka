@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import {
   insertApplications,
@@ -552,10 +553,7 @@ describe.each(['desktop', 'mobile'] as const)(
             mockedDate.subMonths(2).subDays(1)
           ),
           type: 'REGULAR',
-          regularTimes: {
-            start: LocalTime.of(8, 15),
-            end: LocalTime.of(14, 46)
-          }
+          regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
         })
         .save()
       await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)
@@ -566,14 +564,11 @@ describe.each(['desktop', 'mobile'] as const)(
           ),
           type: 'IRREGULAR',
           regularTimes: null,
-          mondayTimes: {
-            start: LocalTime.of(8, 15),
-            end: LocalTime.of(14, 46)
-          },
-          thursdayTimes: {
-            start: LocalTime.of(7, 46),
-            end: LocalTime.of(16, 32)
-          }
+          mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
+          thursdayTimes: new TimeRange(
+            LocalTime.of(7, 46),
+            LocalTime.of(16, 32)
+          )
         })
         .save()
       await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)

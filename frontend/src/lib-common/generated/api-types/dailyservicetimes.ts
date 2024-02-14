@@ -7,11 +7,10 @@
 
 import DateRange from '../../date-range'
 import LocalDate from '../../local-date'
+import TimeRange from '../../time-range'
 import { Action } from '../action'
 import { JsonOf } from '../../json'
-import { TimeRange } from './shared'
 import { UUID } from '../../types'
-import { deserializeJsonTimeRange } from './shared'
 
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimeNotification
@@ -132,21 +131,21 @@ export function deserializeJsonDailyServiceTimesResponse(json: JsonOf<DailyServi
 export function deserializeJsonDailyServiceTimesValueIrregularTimes(json: JsonOf<DailyServiceTimesValue.IrregularTimes>): DailyServiceTimesValue.IrregularTimes {
   return {
     ...json,
-    friday: (json.friday != null) ? deserializeJsonTimeRange(json.friday) : null,
-    monday: (json.monday != null) ? deserializeJsonTimeRange(json.monday) : null,
-    saturday: (json.saturday != null) ? deserializeJsonTimeRange(json.saturday) : null,
-    sunday: (json.sunday != null) ? deserializeJsonTimeRange(json.sunday) : null,
-    thursday: (json.thursday != null) ? deserializeJsonTimeRange(json.thursday) : null,
-    tuesday: (json.tuesday != null) ? deserializeJsonTimeRange(json.tuesday) : null,
+    friday: (json.friday != null) ? TimeRange.parseJson(json.friday) : null,
+    monday: (json.monday != null) ? TimeRange.parseJson(json.monday) : null,
+    saturday: (json.saturday != null) ? TimeRange.parseJson(json.saturday) : null,
+    sunday: (json.sunday != null) ? TimeRange.parseJson(json.sunday) : null,
+    thursday: (json.thursday != null) ? TimeRange.parseJson(json.thursday) : null,
+    tuesday: (json.tuesday != null) ? TimeRange.parseJson(json.tuesday) : null,
     validityPeriod: DateRange.parseJson(json.validityPeriod),
-    wednesday: (json.wednesday != null) ? deserializeJsonTimeRange(json.wednesday) : null
+    wednesday: (json.wednesday != null) ? TimeRange.parseJson(json.wednesday) : null
   }
 }
 
 export function deserializeJsonDailyServiceTimesValueRegularTimes(json: JsonOf<DailyServiceTimesValue.RegularTimes>): DailyServiceTimesValue.RegularTimes {
   return {
     ...json,
-    regularTimes: deserializeJsonTimeRange(json.regularTimes),
+    regularTimes: TimeRange.parseJson(json.regularTimes),
     validityPeriod: DateRange.parseJson(json.validityPeriod)
   }
 }

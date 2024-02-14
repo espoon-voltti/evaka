@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.LocalTimeRange
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.children.Group
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -45,7 +44,6 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
@@ -472,20 +470,23 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
         val result = getReport(date, date)
         val changedRows =
-            LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(15)).map {
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), it),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                )
-            }
+            generateSequence(LocalTime.of(8, 0)) { it.plusMinutes(15) }
+                .takeWhile { it <= LocalTime.of(15, 30) }
+                .map {
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), it),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                }
+                .toList()
         val expected =
-            createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
+            createEmptyReport(date, date).also { addExpectedRow(it, *changedRows.toTypedArray()) }
         assertThat(result).containsExactlyElementsOf(expected.values)
     }
 
@@ -512,20 +513,23 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
         val result = getReport(date, date)
         val changedRows =
-            LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(15)).map {
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), it),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                )
-            }
+            generateSequence(LocalTime.of(8, 0)) { it.plusMinutes(15) }
+                .takeWhile { it <= LocalTime.of(16, 0) }
+                .map {
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), it),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                }
+                .toList()
         val expected =
-            createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
+            createEmptyReport(date, date).also { addExpectedRow(it, *changedRows.toTypedArray()) }
         assertThat(result).containsExactlyElementsOf(expected.values)
     }
 

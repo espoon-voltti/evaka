@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
 import {
@@ -610,10 +611,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       type: 'RESERVATIONS',
       date: today,
       childId: enduserChildFixtureKaarina.id,
-      reservation: {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(16, 0)
-      },
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
     }).save()
 
@@ -632,14 +630,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       type: 'RESERVATIONS',
       date: today,
       childId: enduserChildFixtureKaarina.id,
-      reservation: {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(12, 0)
-      },
-      secondReservation: {
-        start: LocalTime.of(18, 0),
-        end: LocalTime.of(23, 59)
-      }
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+      secondReservation: new TimeRange(
+        LocalTime.of(18, 0),
+        LocalTime.of(23, 59)
+      )
     }).save()
 
     const calendarPage = await openCalendarPage(env)

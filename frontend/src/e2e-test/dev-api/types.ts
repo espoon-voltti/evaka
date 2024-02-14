@@ -42,13 +42,13 @@ import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import {
   Coordinate,
   PilotFeature,
-  TimeRange,
   UserRole
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 export interface CareArea {

@@ -9,9 +9,9 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import { TimeRange } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import { DayProperties, resetTimes } from './form'
 
@@ -47,10 +47,10 @@ const emptyCalendarDays = emptyCalendarDaysIncludingWeekend.filter(
   (day) => !day.date.isWeekend()
 )
 
-const defaultReservableTimeRange = {
-  start: LocalTime.of(7, 0),
-  end: LocalTime.of(17, 30)
-}
+const defaultReservableTimeRange = new TimeRange(
+  LocalTime.of(7, 0),
+  LocalTime.of(17, 30)
+)
 
 const emptyChild: ReservationResponseDayChild = {
   childId: 'child-1',
@@ -1996,10 +1996,7 @@ describe('resetTimes', () => {
             childId: 'child-1',
             reservableTimeRange: {
               type: 'NORMAL' as const,
-              range: {
-                start: LocalTime.of(8, 0),
-                end: LocalTime.of(18, 0)
-              }
+              range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
             }
           },
           {
@@ -2007,10 +2004,7 @@ describe('resetTimes', () => {
             childId: 'child-2',
             reservableTimeRange: {
               type: 'NORMAL' as const,
-              range: {
-                start: LocalTime.of(7, 0),
-                end: LocalTime.of(16, 0)
-              }
+              range: new TimeRange(LocalTime.of(7, 0), LocalTime.of(16, 0))
             }
           },
           {
@@ -2019,10 +2013,10 @@ describe('resetTimes', () => {
             reservableTimeRange: {
               type: 'INTERMITTENT_SHIFT_CARE' as const,
               // Very short operation time -> can still reserve any times
-              placementUnitOperationTime: {
-                start: LocalTime.of(10, 0),
-                end: LocalTime.of(13, 0)
-              }
+              placementUnitOperationTime: new TimeRange(
+                LocalTime.of(10, 0),
+                LocalTime.of(13, 0)
+              )
             }
           },
           {
@@ -2038,10 +2032,10 @@ describe('resetTimes', () => {
       }))
 
       // Intersection of the two normal reservable time ranges
-      const expectedValidRange = {
-        start: LocalTime.of(8, 0),
-        end: LocalTime.of(16, 0)
-      }
+      const expectedValidRange = new TimeRange(
+        LocalTime.of(8, 0),
+        LocalTime.of(16, 0)
+      )
 
       const dayProperties = new DayProperties(calendarDays, reservableRange, [])
 

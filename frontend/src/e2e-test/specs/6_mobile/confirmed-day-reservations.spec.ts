@@ -7,6 +7,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -387,11 +388,8 @@ async function insertConfirmedDaysTestData() {
     type: 'RESERVATIONS',
     childId: enduserChildFixtureJari.id,
     date: LocalDate.of(2022, 5, 19),
-    reservation: { start: LocalTime.of(8, 12), end: LocalTime.of(13, 45) },
-    secondReservation: {
-      start: LocalTime.of(14, 30),
-      end: LocalTime.of(16, 45)
-    }
+    reservation: new TimeRange(LocalTime.of(8, 12), LocalTime.of(13, 45)),
+    secondReservation: new TimeRange(LocalTime.of(14, 30), LocalTime.of(16, 45))
   }).save()
 }
 

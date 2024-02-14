@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.TimeSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -38,13 +39,6 @@ import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.roundToInt
-
-private fun TimeRange.convertMidnightEndTime() =
-    if (this.end == LocalTime.of(0, 0)) {
-        this.copy(end = LocalTime.of(23, 59))
-    } else {
-        this
-    }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
@@ -57,13 +51,7 @@ sealed interface DailyReservationRequest {
         override val date: LocalDate,
         val reservation: TimeRange,
         val secondReservation: TimeRange? = null
-    ) : DailyReservationRequest {
-        fun convertMidnightEndTime() =
-            this.copy(
-                reservation = reservation.convertMidnightEndTime(),
-                secondReservation = secondReservation?.convertMidnightEndTime()
-            )
-    }
+    ) : DailyReservationRequest
 
     @JsonTypeName("PRESENT")
     data class Present(
@@ -179,9 +167,9 @@ data class ReservationRow(
     val staffCreated: Boolean
 )
 
-data class OpenTimeRange(val startTime: LocalTime, val endTime: LocalTime?) :
-    Comparable<OpenTimeRange> {
-    override fun compareTo(other: OpenTimeRange): Int {
+data class TimeInterval(val startTime: LocalTime, val endTime: LocalTime?) :
+    Comparable<TimeInterval> {
+    override fun compareTo(other: TimeInterval): Int {
         return startTime.compareTo(other.startTime).let {
             if (it != 0) it
             else (endTime ?: LocalTime.MAX).compareTo(other.endTime ?: LocalTime.MAX)
@@ -306,13 +294,6 @@ fun createReservationsAndAbsences(
                     else -> request
                 }
             }
-            .map { request ->
-                if (request is DailyReservationRequest.Reservations) {
-                    request.convertMidnightEndTime()
-                } else {
-                    request
-                }
-            }
 
     val deletedAbsences =
         if (isCitizen) {
@@ -378,7 +359,7 @@ data class ChildDatePresence(
     val childId: ChildId,
     val unitId: DaycareId,
     val reservations: List<Reservation>,
-    val attendances: List<OpenTimeRange>,
+    val attendances: List<TimeInterval>,
     val absenceBillable: AbsenceType?,
     val absenceNonbillable: AbsenceType?
 )
@@ -545,50 +526,67 @@ private fun Database.Transaction.insertReservation(
         .exactlyOne<AttendanceReservationId>()
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed interface UsedService {
-    val durationInMinutes: Int
+data class UsedServiceResult(
+    val reservedMinutes: Int,
+    val attendedMinutes: Int,
+    val usedServiceMinutes: Int,
+    val usedServiceRanges: List<TimeRange>
+)
 
-    @JsonTypeName("RANGES")
-    data class Ranges(val ranges: List<TimeRange>) : UsedService {
-        override val durationInMinutes: Int
-            get() = ranges.sumOf { it.durationInMinutes() }
+fun computeUsedService(
+    isFuture: Boolean,
+    serviceNeedHours: Int,
+    placementType: PlacementType,
+    preschoolTime: TimeRange?,
+    preparatoryTime: TimeRange?,
+    absences: List<AbsenceCategory>,
+    reservations: List<TimeRange>,
+    attendances: List<TimeRange>
+): UsedServiceResult {
+    val fixedScheduleTimes =
+        listOfNotNull(
+            placementType.fixedScheduleRange(
+                dailyPreschoolTime = preschoolTime,
+                dailyPreparatoryTime = preparatoryTime
+            )
+        )
+    val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
+    if (isFuture) {
+        return UsedServiceResult(
+            reservedMinutes = effectiveReservations.ranges().sumOf { it.durationInMinutes() },
+            attendedMinutes = 0,
+            usedServiceMinutes = 0,
+            usedServiceRanges = emptyList()
+        )
     }
 
-    @JsonTypeName("AVERAGE") data class Average(override val durationInMinutes: Int) : UsedService
-
-    companion object {
-        fun compute(
-            serviceNeedHours: Int,
-            placementType: PlacementType,
-            absences: List<AbsenceCategory>,
-            reservations: List<TimeRange>,
-            attendances: List<TimeRange>
-        ): UsedService {
-            if (reservations.isEmpty() && attendances.isEmpty()) {
-                val fullyAbsent = absences.toSet() == placementType.absenceCategories()
-                return if (fullyAbsent) {
-                    Ranges(emptyList())
-                } else {
-                    val daysInMonth = 21
-                    Average((serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt())
-                }
-            }
-
-            val result = mutableListOf<TimeRange>()
-            (reservations + attendances)
-                .sortedBy { it.start }
-                .forEach {
-                    val last = result.lastOrNull()
-                    if (last == null || (!it.intersects(last) && !it.isAdjacentTo(last))) {
-                        result.add(it)
-                    } else {
-                        result[result.lastIndex] =
-                            TimeRange(minOf(it.start, last.start), maxOf(it.end, last.end))
-                    }
-                }
-
-            return Ranges(result)
+    if (reservations.isEmpty() && attendances.isEmpty()) {
+        val fullyAbsent = absences.toSet() == placementType.absenceCategories()
+        return if (fullyAbsent) {
+            UsedServiceResult(
+                reservedMinutes = 0,
+                attendedMinutes = 0,
+                usedServiceMinutes = 0,
+                usedServiceRanges = emptyList()
+            )
+        } else {
+            val daysInMonth = 21
+            UsedServiceResult(
+                reservedMinutes = 0,
+                attendedMinutes = 0,
+                usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt(),
+                usedServiceRanges = emptyList()
+            )
         }
     }
+
+    val effectiveAttendances = TimeSet.of(attendances).removeAll(fixedScheduleTimes)
+    val usedService = effectiveReservations + effectiveAttendances
+
+    return UsedServiceResult(
+        reservedMinutes = effectiveReservations.ranges().sumOf { it.durationInMinutes() },
+        attendedMinutes = effectiveAttendances.ranges().sumOf { it.durationInMinutes() },
+        usedServiceMinutes = usedService.ranges().sumOf { it.durationInMinutes() },
+        usedServiceRanges = usedService.ranges().toList()
+    )
 }

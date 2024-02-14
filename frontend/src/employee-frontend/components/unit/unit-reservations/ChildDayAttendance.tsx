@@ -17,7 +17,7 @@ import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  OpenTimeRange,
+  TimeInterval,
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
@@ -37,7 +37,7 @@ interface Props {
   date: LocalDate
   attendanceIndex: number
   dateInfo: UnitDateInfo
-  attendance: OpenTimeRange | undefined
+  attendance: TimeInterval | undefined
   reservations: Reservation[]
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean

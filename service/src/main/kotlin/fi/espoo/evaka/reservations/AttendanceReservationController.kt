@@ -665,7 +665,7 @@ data class UnitAttendanceReservations(
     data class ChildRecordOfDay(
         val childId: ChildId,
         val reservations: List<ReservationResponse>,
-        val attendances: List<OpenTimeRange>,
+        val attendances: List<TimeInterval>,
         val absenceBillable: AbsenceTypeResponse?,
         val absenceNonbillable: AbsenceTypeResponse?,
         val possibleAbsenceCategories: Set<AbsenceCategory>,
@@ -883,7 +883,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
-    val attendances: Map<LocalDate, List<OpenTimeRange>>,
+    val attendances: Map<LocalDate, List<TimeInterval>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>
 )
 
@@ -916,7 +916,7 @@ private data class AttendanceTimesForDate(
     val startTime: LocalTime,
     val endTime: LocalTime?
 ) {
-    fun toOpenTimeRange() = OpenTimeRange(startTime, endTime)
+    fun toTimeInterval() = TimeInterval(startTime, endTime)
 }
 
 private data class AbsenceForDate(
@@ -1002,7 +1002,7 @@ WHERE p.id = ANY(:childIds)
                 attendances =
                     row.attendances.groupBy(
                         keySelector = { it.date },
-                        valueTransform = { it.toOpenTimeRange() }
+                        valueTransform = { it.toTimeInterval() }
                     ),
                 absences =
                     row.absences
