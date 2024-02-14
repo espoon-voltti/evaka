@@ -69,7 +69,7 @@ export default React.memo(function UnitDetailsPanel({
     .join(', ')
 
   const getRouteLink = useCallback(() => {
-    if (!unit.location || !selectedAddress) return null
+    if (!unit.location || !selectedAddress || !routeLinkRootUrl) return null
 
     const start = encodeURIComponent(
       `${selectedAddress.streetAddress}, ${selectedAddress.postOffice}::${selectedAddress.coordinates.lat},${selectedAddress.coordinates.lon}`

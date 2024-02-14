@@ -75,7 +75,7 @@ export interface CitizenCustomizations {
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: ImgProps
   footerLogo?: React.JSX.Element
-  routeLinkRootUrl: string
+  routeLinkRootUrl?: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags
   getMaxPreferredUnits: (type: ApplicationType) => number
