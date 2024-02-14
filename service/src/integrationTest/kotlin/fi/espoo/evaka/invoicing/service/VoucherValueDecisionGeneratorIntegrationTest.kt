@@ -1309,7 +1309,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         val firstDecision = decisions.first { it.validTo == subPeriod2.end }
 
-        voucherValueDecisionController.sendDrafts(
+        voucherValueDecisionController.sendVoucherValueDecisionDrafts(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             testClock,

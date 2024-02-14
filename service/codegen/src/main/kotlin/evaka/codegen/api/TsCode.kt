@@ -10,7 +10,10 @@ import kotlin.io.path.relativeTo
 
 enum class TsProject {
     LibCommon,
-    CitizenFrontend;
+    CitizenFrontend,
+    EmployeeFrontend,
+    EmployeeMobileFrontend,
+    E2ETest;
 
     operator fun div(path: String): TsFile = TsFile(this, Path.of(path))
 
@@ -18,6 +21,9 @@ enum class TsProject {
         when (this) {
             LibCommon -> Path.of("lib-common") / path
             CitizenFrontend -> Path.of("citizen-frontend") / path
+            EmployeeFrontend -> Path.of("employee-frontend") / path
+            EmployeeMobileFrontend -> Path.of("employee-mobile-frontend") / path
+            E2ETest -> Path.of("e2e-test") / path
         }
 }
 

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -295,7 +294,6 @@ class SystemController(
             .also { Audit.MobileDevicesRead.log(targetId = token, objectId = it.id) }
     }
 
-    @ExcludeCodeGen
     data class EmployeeLoginRequest(
         val externalId: ExternalId,
         val firstName: String,
@@ -315,7 +313,6 @@ class SystemController(
             )
     }
 
-    @ExcludeCodeGen
     data class CitizenLoginRequest(
         val socialSecurityNumber: String,
         val firstName: String,

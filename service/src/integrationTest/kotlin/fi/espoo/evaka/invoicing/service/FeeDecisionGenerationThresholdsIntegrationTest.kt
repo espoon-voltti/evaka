@@ -125,7 +125,9 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
         getAllFeeDecisions()
             .filter { it.status == FeeDecisionStatus.DRAFT }
             .map { it.id }
-            .let { ids -> feeDecisionController.confirmDrafts(dbInstance(), admin, now, ids, null) }
+            .let { ids ->
+                feeDecisionController.confirmFeeDecisionDrafts(dbInstance(), admin, now, ids, null)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 }

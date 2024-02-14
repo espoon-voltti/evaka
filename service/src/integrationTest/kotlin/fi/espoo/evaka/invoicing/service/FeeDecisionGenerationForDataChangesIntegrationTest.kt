@@ -374,7 +374,9 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         getAllFeeDecisions()
             .filter { it.status == FeeDecisionStatus.DRAFT }
             .map { it.id }
-            .let { ids -> feeDecisionController.confirmDrafts(dbInstance(), admin, now, ids, null) }
+            .let { ids ->
+                feeDecisionController.confirmFeeDecisionDrafts(dbInstance(), admin, now, ids, null)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 
@@ -382,7 +384,9 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         getAllFeeDecisions()
             .filter { it.status == FeeDecisionStatus.DRAFT }
             .map { it.id }
-            .let { ids -> feeDecisionController.ignoreDrafts(dbInstance(), admin, now, ids) }
+            .let { ids ->
+                feeDecisionController.ignoreFeeDecisionDrafts(dbInstance(), admin, now, ids)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 
@@ -390,7 +394,9 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         getAllFeeDecisions()
             .filter { it.status == FeeDecisionStatus.IGNORED }
             .map { it.id }
-            .let { ids -> feeDecisionController.unignoreDrafts(dbInstance(), admin, now, ids) }
+            .let { ids ->
+                feeDecisionController.unignoreFeeDecisionDrafts(dbInstance(), admin, now, ids)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 }

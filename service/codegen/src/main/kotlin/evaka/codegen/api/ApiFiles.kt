@@ -19,7 +19,11 @@ fun generateApiFiles(): Map<TsFile, String> {
     val endpoints =
         scanEndpoints("fi.espoo.evaka")
             .filter { it.isJsonEndpoint }
-            .filterNot { it.path.startsWith("/integration") }
+            .filterNot {
+                it.isDeprecated ||
+                    it.path.startsWith("/integration") ||
+                    it.path.startsWith("/system")
+            }
     endpoints.forEach { it.validate() }
 
     val metadata =
@@ -28,16 +32,30 @@ fun generateApiFiles(): Map<TsFile, String> {
             rootTypes = endpoints.asSequence().flatMap { it.types() } + forceIncludes.asSequence()
         )
 
+    val devEndpoints =
+        scanEndpoints("fi.espoo.evaka", profiles = listOf("enable_dev_api")).filter {
+            it.isJsonEndpoint && it.path.startsWith("/dev-api/")
+        }
+    val devMetadata =
+        discoverMetadata(
+            initial = defaultMetadata,
+            rootTypes = devEndpoints.asSequence().flatMap { it.types() }
+        )
+
     val generator =
-        object : TsCodeGenerator(metadata) {
+        object : TsCodeGenerator(metadata + devMetadata) {
             override fun locateNamedType(namedType: TsNamedType<*>): TsFile =
-                getBasePackage(namedType.clazz).let { pkg ->
-                    TsProject.LibCommon / "generated/api-types/$pkg.ts"
+                when (namedType.clazz) {
+                    in metadata ->
+                        TsProject.LibCommon /
+                            "generated/api-types/${getBasePackage(namedType.clazz)}.ts"
+                    in devMetadata -> TsProject.E2ETest / "generated/api-types.ts"
+                    else -> error("Unexpected type $namedType")
                 }
         }
 
     val apiTypes =
-        metadata
+        generator
             .namedTypes()
             .groupBy { generator.locateNamedType(it) }
             .mapValues { (file, namedTypes) ->
@@ -48,28 +66,92 @@ fun generateApiFiles(): Map<TsFile, String> {
         endpoints
             .filter { it.path.startsWith("/citizen") || it.path.startsWith("/public") }
             .filter {
-                it.authenticatedUserType == typeOf<AuthenticatedUser>() ||
-                    it.authenticatedUserType == typeOf<AuthenticatedUser.Citizen>()
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.Citizen>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
             }
             .groupBy {
                 TsProject.CitizenFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
             }
-            .mapValues { (file, endpoints) ->
+            .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     generator,
                     file,
                     TsImport.Named(TsProject.CitizenFrontend / "api-client.ts", "client"),
-                    endpoints.sortedWith(
-                        compareBy(
-                            { it.controllerClass.jvmName },
-                            { it.controllerMethod },
-                        )
-                    )
+                    citizenEndpoints
                 )
             }
 
-    return apiTypes + citizenApiClients
+    val employeeApiClients =
+        endpoints
+            .filterNot { it.path.startsWith("/citizen") }
+            .filter {
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.Employee>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
+            }
+            .groupBy {
+                TsProject.EmployeeFrontend /
+                    "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
+            }
+            .mapValues { (file, citizenEndpoints) ->
+                generateApiClients(
+                    generator,
+                    file,
+                    TsImport.Named(TsProject.EmployeeFrontend / "api/client.ts", "client"),
+                    citizenEndpoints
+                )
+            }
+
+    val employeeMobileApiClients =
+        endpoints
+            .filterNot { it.path.startsWith("/citizen") }
+            .filter {
+                when (it.authenticatedUserType) {
+                    typeOf<AuthenticatedUser.MobileDevice>(),
+                    typeOf<AuthenticatedUser>(),
+                    null -> true
+                    else -> false
+                }
+            }
+            .groupBy {
+                TsProject.EmployeeMobileFrontend /
+                    "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
+            }
+            .mapValues { (file, citizenEndpoints) ->
+                generateApiClients(
+                    generator,
+                    file,
+                    TsImport.Named(TsProject.EmployeeMobileFrontend / "client.ts", "client"),
+                    citizenEndpoints
+                )
+            }
+
+    val devApiClients =
+        (TsProject.E2ETest / "generated/api-clients.ts").let { file ->
+            mapOf(
+                file to
+                    generateApiClients(
+                        generator,
+                        file,
+                        TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
+                        devEndpoints
+                    )
+            )
+        }
+
+    return apiTypes +
+        citizenApiClients +
+        employeeApiClients +
+        employeeMobileApiClients +
+        devApiClients
 }
 
 fun generateApiTypes(
@@ -121,24 +203,38 @@ fun generateApiClients(
     endpoints: Collection<EndpointMetadata>,
 ): String {
     val clients =
-        endpoints.map {
-            try {
-                generateApiClient(generator, it)
-            } catch (e: Exception) {
-                throw RuntimeException(
-                    "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod}",
-                    e
+        endpoints
+            .groupBy { Pair(it.controllerClass, it.controllerMethod) }
+            .values
+            .map { duplicates -> duplicates.minBy { it.pathIndex } }
+            .sortedWith(
+                compareBy(
+                    { it.controllerClass.jvmName },
+                    { it.controllerMethod.name },
                 )
+            )
+            .map {
+                try {
+                    generateApiClient(generator, axiosClient, it)
+                } catch (e: Exception) {
+                    throw RuntimeException(
+                        "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
+                        e
+                    )
+                }
             }
-        }
-    val imports = clients.flatMap { it.imports }.toSet() + axiosClient
+    val imports = clients.flatMap { it.imports }.toSet()
     val sections = listOf(generateImports(file, imports)) + clients.map { it.text }
     return """$fileHeader
 ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
 """
 }
 
-fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): TsCode {
+fun generateApiClient(
+    generator: TsCodeGenerator,
+    axiosClient: TsImport,
+    endpoint: EndpointMetadata
+): TsCode {
     val argumentType =
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
@@ -214,10 +310,10 @@ fun generateApiClient(generator: TsCodeGenerator, endpoint: EndpointMetadata): T
     return TsCode {
         """
 /**
-* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod}
+* Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
-export async function ${endpoint.controllerMethod}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
-  const { data: json } = await client.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
+export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
+  const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
 ${join(axiosArguments, ",\n").prependIndent("    ")}
   })
   return ${inline(responseDeserializer ?: TsCode("json"))}

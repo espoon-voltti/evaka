@@ -466,7 +466,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun sendAssistanceNeedDecision(
         id: AssistanceNeedPreschoolDecisionId,
     ) {
-        assistanceNeedDecisionController.sendForDecision(
+        assistanceNeedDecisionController.sendAssistanceNeedPreschoolDecisionForDecision(
             dbInstance(),
             assistanceWorker,
             RealEvakaClock(),
@@ -478,7 +478,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         id: AssistanceNeedPreschoolDecisionId,
         user: AuthenticatedUser
     ) {
-        assistanceNeedDecisionController.markAsOpened(dbInstance(), user, RealEvakaClock(), id)
+        assistanceNeedDecisionController.markAssistanceNeedPreschoolDecisionAsOpened(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id
+        )
     }
 
     private fun decideDecision(
@@ -486,7 +491,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         status: AssistanceNeedDecisionStatus,
         user: AuthenticatedUser,
     ) {
-        assistanceNeedDecisionController.decideAssistanceNeedDecision(
+        assistanceNeedDecisionController.decideAssistanceNeedPreschoolDecision(
             dbInstance(),
             user,
             RealEvakaClock(),
@@ -502,7 +507,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         reason: String,
         user: AuthenticatedUser,
     ) {
-        assistanceNeedDecisionController.annulAssistanceNeedDecision(
+        assistanceNeedDecisionController.annulAssistanceNeedPreschoolDecision(
             dbInstance(),
             user,
             RealEvakaClock(),

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class SextetReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/sextet")
-    fun getApplicationsReport(
+    fun getSextetReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

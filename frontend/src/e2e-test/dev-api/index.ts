@@ -12,6 +12,7 @@ import axios, {
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
+import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -34,8 +35,7 @@ import {
   FeeDecision,
   FeeThresholds,
   IncomeNotification,
-  Invoice,
-  VoucherValueDecision
+  Invoice
 } from 'lib-common/generated/api-types/invoicing'
 import {
   ChildDailyNoteBody,
@@ -457,14 +457,6 @@ export async function insertBackupCareFixtures(
   }
 }
 
-export async function deleteEmployeeFixture(externalId: string): Promise<void> {
-  try {
-    await devClient.delete(`/employee/external-id/${externalId}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertParentshipFixtures(
   fixtures: {
     childId: UUID
@@ -626,8 +618,8 @@ export async function upsertPersonFixture(
   fixture: PersonDetail
 ): Promise<string> {
   try {
-    const { data } = await devClient.post<{ id: UUID }>(`/person`, fixture)
-    return data.id
+    const { data: id } = await devClient.post<UUID>(`/person`, fixture)
+    return id
   } catch (e) {
     throw new DevApiError(e)
   }

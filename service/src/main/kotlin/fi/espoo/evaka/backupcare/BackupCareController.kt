@@ -219,7 +219,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 
     @DeleteMapping("/backup-cares/{id}")
-    fun delete(
+    fun deleteBackupCare(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

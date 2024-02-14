@@ -15,6 +15,15 @@ export type AttachmentType =
   | 'EXTENDED_CARE'
 
 /**
+* Generated from fi.espoo.evaka.attachment.IncomeAttachment
+*/
+export interface IncomeAttachment {
+  contentType: string
+  id: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.attachment.MessageAttachment
 */
 export interface MessageAttachment {

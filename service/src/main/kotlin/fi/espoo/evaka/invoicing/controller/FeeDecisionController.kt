@@ -80,7 +80,7 @@ class FeeDecisionController(
     private val featureConfig: FeatureConfig
 ) {
     @PostMapping("/search")
-    fun search(
+    fun searchFeeDecisions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -123,7 +123,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(
+    fun confirmFeeDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -159,7 +159,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/ignore")
-    fun ignoreDrafts(
+    fun ignoreFeeDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -181,7 +181,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/unignore")
-    fun unignoreDrafts(
+    fun unignoreFeeDecisionDrafts(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -213,7 +213,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(
+    fun setFeeDecisionSent(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -235,7 +235,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/pdf/{decisionId}")
-    fun getDecisionPdf(
+    fun getFeeDecisionPdf(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -275,7 +275,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(
+    fun getFeeDecision(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -328,7 +328,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
-    fun generateRetroactiveDecisions(
+    fun generateRetroactiveFeeDecisions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -351,7 +351,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/set-type/{uuid}")
-    fun setType(
+    fun setFeeDecisionType(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

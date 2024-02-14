@@ -599,7 +599,7 @@ class MessageController(
     }
 
     @PostMapping("/{accountId}/undo-reply")
-    fun undoMessage(
+    fun undoReply(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

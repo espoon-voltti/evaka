@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.controller
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.ExcludeCodeGen
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
@@ -97,7 +96,6 @@ class IncomeController(
         return Wrapper(incomes)
     }
 
-    @ExcludeCodeGen
     data class IncomeWithPermittedActions(
         val data: Income,
         val permittedActions: Set<Action.Income>

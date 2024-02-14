@@ -97,7 +97,6 @@ import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.getEmployeeByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -247,7 +246,7 @@ class DevApi(
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/", produces = ["text/plain"])
     fun healthCheck() {
         // HTTP 200
     }
@@ -580,7 +579,7 @@ class DevApi(
     }
 
     @PostMapping("/person")
-    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonDTO {
+    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonId {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -588,9 +587,9 @@ class DevApi(
                 val personDTO = body.toPersonDTO()
 
                 if (person != null) {
-                    tx.updatePersonFromVtj(personDTO)
+                    tx.updatePersonFromVtj(personDTO).id
                 } else {
-                    createPersonFromVtj(tx, personDTO)
+                    createPersonFromVtj(tx, personDTO).id
                 }
             }
         }
@@ -624,46 +623,6 @@ class DevApi(
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
         return db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
-
-    @GetMapping("/employee/external-id/{id}")
-    fun getEmployee(db: Database, @PathVariable id: ExternalId): Employee {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.getEmployeeByExternalId(id) ?: throw NotFound() }
-        }
-    }
-
-    @DeleteMapping("/employee/external-id/{externalId}")
-    fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId) {
-        db.connect { dbc ->
-            dbc.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) }
-        }
-    }
-
-    @PostMapping("/employee/external-id/{externalId}")
-    fun upsertEmployeeByExternalId(
-        db: Database,
-        @PathVariable externalId: ExternalId,
-        @RequestBody employee: DevEmployee
-    ): EmployeeId =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate(
-                        """
-INSERT INTO employee (first_name, last_name, email, external_id, roles, active)
-VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[], :active)
-ON CONFLICT (external_id) DO UPDATE SET
-    first_name = excluded.first_name,
-    last_name = excluded.last_name,
-    email = excluded.email,
-    roles = excluded.roles
-RETURNING id
-"""
-                    )
-                    .bindKotlin(employee)
-                    .executeAndReturnGeneratedKeys()
-                    .exactlyOne<EmployeeId>()
-            }
-        }
 
     @GetMapping("/citizen/ssn/{ssn}")
     fun getCitizen(@PathVariable ssn: String): Citizen =
@@ -739,10 +698,10 @@ RETURNING id
             }
         }
 
-    @PostMapping("/placement-plan/{application-id}")
+    @PostMapping("/placement-plan/{applicationId}")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable("application-id") applicationId: ApplicationId,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan
     ) {
         db.connect { dbc ->
@@ -784,7 +743,7 @@ RETURNING id
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertPerson(db: Database, @RequestBody person: VtjPerson) {
+    fun upsertVtjPerson(db: Database, @RequestBody person: VtjPerson) {
         MockPersonDetailsService.upsertPerson(person)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -858,7 +817,7 @@ RETURNING id
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
-    fun createPlacementPlan(
+    fun createApplicationPlacementPlan(
         db: Database,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
@@ -1373,7 +1332,7 @@ RETURNING id
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
         db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
 
-    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: Instant?)
+    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: HelsinkiDateTime?)
 
     @PostMapping("/varda/reset-child")
     fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
@@ -1390,7 +1349,7 @@ RETURNING id
 
     data class DevVardaServiceNeed(
         val evakaServiceNeedId: ServiceNeedId,
-        val evakaServiceNeedUpdated: Instant,
+        val evakaServiceNeedUpdated: HelsinkiDateTime,
         val evakaChildId: ChildId,
         val updateFailed: Boolean?,
         val errors: List<String>?
@@ -1471,11 +1430,11 @@ RETURNING id
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) =
+    fun addCalendarEvent(db: Database, @RequestBody body: DevCalendarEvent) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event-attendee")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) =
+    fun addCalendarEventAttendee(db: Database, @RequestBody body: DevCalendarEventAttendee) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/absence")
@@ -1686,16 +1645,6 @@ fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {
     execute("DELETE FROM message_account WHERE employee_id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
-}
-
-fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: ExternalId) {
-    val employeeId =
-        createQuery("SELECT id FROM employee WHERE external_id = :externalId")
-            .bind("externalId", externalId)
-            .exactlyOneOrNull<EmployeeId>()
-    if (employeeId != null) {
-        deleteAndCascadeEmployee(employeeId)
-    }
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {

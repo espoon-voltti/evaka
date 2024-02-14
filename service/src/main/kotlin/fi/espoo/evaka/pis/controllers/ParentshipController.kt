@@ -165,7 +165,7 @@ class ParentshipController(
     }
 
     @PutMapping("/{id}/retry")
-    fun retryPartnership(
+    fun retryParentship(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

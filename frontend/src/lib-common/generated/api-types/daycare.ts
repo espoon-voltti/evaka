@@ -23,6 +23,7 @@ import { TerminatedPlacement } from './placement'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
+import { UserRole } from './shared'
 import { deserializeJsonDaycarePlacementWithDetails } from './placement'
 import { deserializeJsonMissingGroupPlacement } from './placement'
 import { deserializeJsonOccupancyResponse } from './occupancy'
@@ -308,6 +309,14 @@ export interface FinanceDecisionHandler {
   firstName: string
   id: UUID
   lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.FullAclInfo
+*/
+export interface FullAclInfo {
+  role: UserRole
+  update: AclUpdate
 }
 
 /**

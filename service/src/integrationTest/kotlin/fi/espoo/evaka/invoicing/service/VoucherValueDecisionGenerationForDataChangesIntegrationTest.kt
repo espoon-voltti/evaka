@@ -378,7 +378,15 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         getAllVoucherValueDecisions()
             .filter { it.status == VoucherValueDecisionStatus.DRAFT }
             .map { it.id }
-            .let { ids -> decisionController.sendDrafts(dbInstance(), admin, now, ids, null) }
+            .let { ids ->
+                decisionController.sendVoucherValueDecisionDrafts(
+                    dbInstance(),
+                    admin,
+                    now,
+                    ids,
+                    null
+                )
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 
@@ -386,7 +394,9 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         getAllVoucherValueDecisions()
             .filter { it.status == VoucherValueDecisionStatus.DRAFT }
             .map { it.id }
-            .let { ids -> decisionController.ignoreDrafts(dbInstance(), admin, now, ids) }
+            .let { ids ->
+                decisionController.ignoreVoucherValueDecisionDrafts(dbInstance(), admin, now, ids)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 
@@ -394,7 +404,9 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         getAllVoucherValueDecisions()
             .filter { it.status == VoucherValueDecisionStatus.IGNORED }
             .map { it.id }
-            .let { ids -> decisionController.unignoreDrafts(dbInstance(), admin, now, ids) }
+            .let { ids ->
+                decisionController.unignoreVoucherValueDecisionDrafts(dbInstance(), admin, now, ids)
+            }
         asyncJobRunner.runPendingJobsSync(now)
     }
 }

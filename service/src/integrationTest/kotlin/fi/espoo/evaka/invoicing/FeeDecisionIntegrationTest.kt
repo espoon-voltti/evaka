@@ -1969,7 +1969,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {
-        feeDecisionController.getDecisionPdf(dbInstance(), user, RealEvakaClock(), id)
+        feeDecisionController.getFeeDecisionPdf(dbInstance(), user, RealEvakaClock(), id)
     }
 
     private fun createAndConfirmFeeDecisionsForFamily(
@@ -2013,11 +2013,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun searchDecisions(body: SearchFeeDecisionRequest): PagedFeeDecisionSummaries {
-        return feeDecisionController.search(dbInstance(), user, RealEvakaClock(), body)
+        return feeDecisionController.searchFeeDecisions(dbInstance(), user, RealEvakaClock(), body)
     }
 
     private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
-        return feeDecisionController.getDecision(dbInstance(), user, RealEvakaClock(), id).data
+        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id).data
     }
 
     private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
@@ -2030,10 +2030,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         decisionIds: List<FeeDecisionId>,
         now: EvakaClock = RealEvakaClock()
     ) {
-        feeDecisionController.confirmDrafts(dbInstance(), user, now, decisionIds, null)
+        feeDecisionController.confirmFeeDecisionDrafts(dbInstance(), user, now, decisionIds, null)
     }
 
     private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {
-        feeDecisionController.setType(dbInstance(), user, RealEvakaClock(), id, body)
+        feeDecisionController.setFeeDecisionType(dbInstance(), user, RealEvakaClock(), id, body)
     }
 }

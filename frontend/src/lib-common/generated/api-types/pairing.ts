@@ -38,14 +38,6 @@ export interface MobileDeviceDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDeviceIdentity
-*/
-export interface MobileDeviceIdentity {
-  id: UUID
-  longTermToken: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.pairing.Pairing
 */
 export interface Pairing {
@@ -133,14 +125,6 @@ export type PostPairingReq = PostPairingReq.Employee | PostPairingReq.Unit
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingResponseReq
 */
 export interface PostPairingResponseReq {
-  challengeKey: string
-  responseKey: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingValidationReq
-*/
-export interface PostPairingValidationReq {
   challengeKey: string
   responseKey: string
 }
