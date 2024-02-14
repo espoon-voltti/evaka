@@ -10,7 +10,7 @@ export default class TimeRange {
     public start: LocalTime,
     public end: LocalTime
   ) {
-    if (start.isEqualOrAfter(end) && end !== LocalTime.MIDNIGHT) {
+    if (start.isEqualOrAfter(end) && !end.isEqual(LocalTime.MIDNIGHT)) {
       throw new Error('TimeRange start must be before end')
     }
   }
