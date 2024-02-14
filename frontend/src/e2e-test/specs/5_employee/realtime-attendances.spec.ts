@@ -259,6 +259,20 @@ describe('Realtime staff attendances', () => {
     test('Automatically closed attendance is indicated', async () => {
       const yesterday = mockedToday.subDays(1)
 
+      const otherGroupStaff = (
+        await Fixture.employee()
+          .with({
+            email: 'raija.raivo@evaka.test',
+            firstName: 'Raija',
+            lastName: 'Raivo',
+            roles: []
+          })
+          .withDaycareAcl(daycare.id, 'STAFF')
+          .withGroupAcl(groupId)
+          .withGroupAcl(groupId2)
+          .save()
+      ).data
+
       await Fixture.realtimeStaffAttendance()
         .with({
           employeeId: groupStaff.id,
@@ -270,15 +284,55 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          employeeId: otherGroupStaff.id,
+          groupId,
+          type: 'OVERTIME',
+          arrived: yesterday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+          departed: yesterday.toHelsinkiDateTime(LocalTime.of(16, 0)),
+          departedAutomatically: false
+        })
+        .save()
+
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          employeeId: otherGroupStaff.id,
+          groupId,
+          type: 'OVERTIME',
+          arrived: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
+          departed: yesterday
+            .subDays(1)
+            .toHelsinkiDateTime(LocalTime.of(15, 0)),
+          departedAutomatically: false
+        })
+        .save()
+
+      await Fixture.staffAttendancePlan()
+        .with({
+          id: uuidv4(),
+          employeeId: otherGroupStaff.id,
+          startTime: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))
+        })
+        .save()
+
       attendancesSection = await openAttendancesSection()
       await attendancesSection.selectGroup(groupId)
       const staffAttendances = attendancesSection.staffAttendances
 
       await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 1,
+        name: staffName(otherGroupStaff),
+        attendances: [['08:00', '16:00']]
+      })
+
+      await staffAttendances.assertTableRow({
         rowIx: 0,
         nth: 1,
         name: staffName(groupStaff),
-        attendances: [['07:00', '20:00(*)']]
+        attendances: [['07:00', '20:00*']]
       })
 
       await staffAttendances.assertTooltip(0, yesterday, 'Automaattikatkaistu')
