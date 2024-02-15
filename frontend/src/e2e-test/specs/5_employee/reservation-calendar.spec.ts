@@ -412,7 +412,7 @@ describe('Unit group calendar', () => {
       child1Fixture.id,
       attendanceReservationBeforeHolidayDate,
       [
-        'Varaus 11:00 - 13:00',
+        'Varaus 11:00–13:00',
         `${todayStr} Henkilökunta`,
         'Sopimusaika 08:00–16:00'
       ]
@@ -422,7 +422,7 @@ describe('Unit group calendar', () => {
       child1Fixture.id,
       attendanceReservationDuringHolidayDate,
       [
-        'Varaus 08:00 - 14:00',
+        'Varaus 08:00–14:00',
         `${todayStr} Henkilökunta`,
         'Sopimusaika 08:00–16:00'
       ]

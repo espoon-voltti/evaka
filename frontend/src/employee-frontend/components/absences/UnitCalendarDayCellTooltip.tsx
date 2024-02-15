@@ -51,7 +51,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
           res.reservation.type === 'TIMES'
             ? `${
                 i18n.absences.reservation
-              } ${res.reservation.startTime.format()} - ${res.reservation.endTime.format()}`
+              } ${res.reservation.startTime.format()}–${res.reservation.endTime.format()}`
             : i18n.absences.present
         const userTypeText =
           res.createdByEvakaUserType === 'CITIZEN'
