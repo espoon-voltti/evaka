@@ -17,6 +17,7 @@ import {
   createHolidayPeriod,
   deleteHolidayPeriod,
   deleteQuestionnaire,
+  getClubTermsResult,
   getHolidayPeriod,
   getHolidayPeriods,
   getQuestionnaire,
@@ -31,7 +32,8 @@ const queryKeys = createQueryKeys('holidayPeriods', {
   questionnaires: () => ['questionnaires'],
   questionnaire: (id: string) => ['questionnaire', id],
   preschoolTerms: () => ['preschoolTerms'],
-  preschoolTerm: (id: string) => ['preschoolTerm', id]
+  preschoolTerm: (id: string) => ['preschoolTerm', id],
+  clubTerms: () => ['clubTerms']
 })
 
 export const holidayPeriodsQuery = query({
@@ -120,4 +122,9 @@ export const deleteQuestionnaireMutation = mutation({
     queryKeys.questionnaires(),
     queryKeys.questionnaire(id)
   ]
+})
+
+export const clubTermsQuery = query({
+  api: getClubTermsResult,
+  queryKey: () => queryKeys.clubTerms()
 })

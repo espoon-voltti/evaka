@@ -30,7 +30,7 @@ const Ul = styled.ul`
   margin: 0;
 `
 
-export default React.memo(function TermsSection() {
+export default React.memo(function PreschoolTermsSection() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
