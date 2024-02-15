@@ -362,16 +362,14 @@ export function resetTimes(
       dayProperties.isOperationalDayForAnyChild(dayOfWeek) &&
       selectedRangeDates.some((date) => date.getIsoDayOfWeek() === dayOfWeek)
   )
-  if (repetition === 'DAILY') {
-    if (includedWeekDays.length === 0) {
-      // This doesn't happen in practice because selectedRange is limited
-      // so that at least one child has a placement
-      return {
-        branch: 'notInitialized',
-        state: undefined
-      }
+  if (includedWeekDays.length === 0) {
+    return {
+      branch: 'notInitialized',
+      state: undefined
     }
+  }
 
+  if (repetition === 'DAILY') {
     const holidayPeriodState =
       dayProperties.holidayPeriodStateForRange(selectedRange)
 
