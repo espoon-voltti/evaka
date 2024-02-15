@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import DateRange from 'lib-common/date-range'
 import {
   DecisionIncome,
@@ -28,6 +27,7 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import { VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'

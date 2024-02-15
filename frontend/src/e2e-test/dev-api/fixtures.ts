@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -47,6 +46,8 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
+
+import { VoucherValueDecision } from '../generated/api-types'
 
 import {
   Application,

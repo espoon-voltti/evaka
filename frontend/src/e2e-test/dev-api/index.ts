@@ -12,7 +12,6 @@ import axios, {
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
-import { VoucherValueDecision } from 'e2e-test/generated/api-types'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
@@ -53,6 +52,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../config'
+import { VoucherValueDecision } from '../generated/api-types'
 
 import {
   Application,
