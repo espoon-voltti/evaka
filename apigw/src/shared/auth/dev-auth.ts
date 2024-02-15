@@ -9,6 +9,7 @@ import { authenticate, EvakaSessionUser, login, logout } from './index.js'
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
 import { Sessions } from '../session.js'
 import { parseRelayState } from '../saml/index.js'
+import { AxiosError } from 'axios'
 
 export interface DevAuthRouterOptions {
   sessions: Sessions
@@ -57,7 +58,13 @@ export function createDevAuthRouter({
         }
       } catch (err) {
         if (!res.headersSent) {
-          res.redirect(`${root}?loginError=true`)
+          if (err instanceof AxiosError && err.response?.data?.errorCode) {
+            res.redirect(
+              `${root}?loginError=true&errorCode=${err.response.data.errorCode}`
+            )
+          } else {
+            res.redirect(`${root}?loginError=true`)
+          }
         }
         throw err
       }

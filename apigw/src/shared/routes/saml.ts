@@ -16,6 +16,7 @@ import type {
   RequestWithUser
 } from '@node-saml/passport-saml/lib/types.js'
 import { parseRelayState } from '../saml/index.js'
+import { AxiosError } from 'axios'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
@@ -98,7 +99,13 @@ function createLoginHandler({
             `Error logging user in. Error: ${err}`
           )
           if (!res.headersSent) {
-            res.redirect(`${defaultPageUrl}?loginError=true`)
+            if (err instanceof AxiosError && err.response?.data?.errorCode) {
+              res.redirect(
+                `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
+              )
+            } else {
+              res.redirect(`${defaultPageUrl}?loginError=true`)
+            }
           } else {
             next(err)
           }
