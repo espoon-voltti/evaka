@@ -76,7 +76,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.getConfig(ColumnMappers::class.java).coalesceNullPrimitivesToDefaults = false
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
-    jdbi.registerArgument(midnightAwareTimeArgumentFactory)
+    jdbi.registerArgument(timeRangeEndpointArgumentFactory)
     jdbi.registerArgument(timeRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)

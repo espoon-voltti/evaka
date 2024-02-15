@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.data.BoundedRange
 import java.time.LocalDate
 import java.time.LocalTime
 
-sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
+sealed interface TimeRangeEndpoint : Comparable<TimeRangeEndpoint> {
     val inner: LocalTime
 
     fun asStart(): Start
@@ -28,8 +28,8 @@ sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
     fun toDbString(): String
 
     /** 00:00:00 means midnight in the same day */
-    data class Start(override val inner: LocalTime) : MidnightAwareTime {
-        override fun compareTo(other: MidnightAwareTime): Int =
+    data class Start(override val inner: LocalTime) : TimeRangeEndpoint {
+        override fun compareTo(other: TimeRangeEndpoint): Int =
             when (other) {
                 is Start -> this.inner.compareTo(other.inner)
                 is End ->
@@ -48,8 +48,8 @@ sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
     }
 
     /** 00:00:00 means midnight in the next day */
-    data class End(override val inner: LocalTime) : MidnightAwareTime {
-        override fun compareTo(other: MidnightAwareTime): Int =
+    data class End(override val inner: LocalTime) : TimeRangeEndpoint {
+        override fun compareTo(other: TimeRangeEndpoint): Int =
             when (other) {
                 is Start ->
                     if (other.inner == LocalTime.MIDNIGHT || this.inner == LocalTime.MIDNIGHT) 1
@@ -78,18 +78,18 @@ sealed interface MidnightAwareTime : Comparable<MidnightAwareTime> {
 @JsonSerialize(using = TimeRangeJsonSerializer::class)
 @JsonDeserialize(using = TimeRangeJsonDeserializer::class)
 data class TimeRange(
-    override val start: MidnightAwareTime.Start,
-    override val end: MidnightAwareTime.End
-) : BoundedRange<MidnightAwareTime, TimeRange> {
+    override val start: TimeRangeEndpoint.Start,
+    override val end: TimeRangeEndpoint.End
+) : BoundedRange<TimeRangeEndpoint, TimeRange> {
     constructor(
-        start: MidnightAwareTime,
-        end: MidnightAwareTime
+        start: TimeRangeEndpoint,
+        end: TimeRangeEndpoint
     ) : this(start.asStart(), end.asEnd())
 
     constructor(
         start: LocalTime,
         end: LocalTime
-    ) : this(MidnightAwareTime.Start(start), MidnightAwareTime.End(end))
+    ) : this(TimeRangeEndpoint.Start(start), TimeRangeEndpoint.End(end))
 
     init {
         require(start < end) {
@@ -176,9 +176,9 @@ data class TimeRange(
                 )
         }
 
-    override fun includes(point: MidnightAwareTime) = this.start <= point && point < this.end
+    override fun includes(point: TimeRangeEndpoint) = this.start <= point && point < this.end
 
-    fun includes(point: LocalTime) = this.includes(MidnightAwareTime.Start(point))
+    fun includes(point: LocalTime) = this.includes(TimeRangeEndpoint.Start(point))
 
     override fun contains(other: TimeRange): Boolean =
         this.start <= other.start && other.end <= this.end
@@ -203,7 +203,7 @@ data class TimeRange(
     }
 
     companion object {
-        private fun tryCreate(start: MidnightAwareTime, end: MidnightAwareTime): TimeRange? =
+        private fun tryCreate(start: TimeRangeEndpoint, end: TimeRangeEndpoint): TimeRange? =
             try {
                 TimeRange(start.asStart(), end.asEnd())
             } catch (e: IllegalArgumentException) {

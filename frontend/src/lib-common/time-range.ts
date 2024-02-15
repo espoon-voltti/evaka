@@ -6,14 +6,14 @@ import { JsonOf } from './json'
 import LocalTime from './local-time'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-namespace MidnightAwareTime {
+namespace TimeRangeEndpoint {
   export class Start {
     isStart = true
     isEnd = false
 
     constructor(public __inner: LocalTime) {}
 
-    compareTo(other: MidnightAwareTime): number {
+    compareTo(other: TimeRangeEndpoint): number {
       if (other.isStart) {
         return this.__inner.compareTo(other.__inner)
       } else if (other.isEnd) {
@@ -25,7 +25,7 @@ namespace MidnightAwareTime {
         }
         return this.__inner.compareTo(other.__inner)
       } else {
-        throw new Error('Unknown MidnightAwareTime type')
+        throw new Error('Unknown TimeRangeEndpoint type')
       }
     }
 
@@ -44,23 +44,23 @@ namespace MidnightAwareTime {
       return this.__inner
     }
 
-    isBefore(other: MidnightAwareTime): boolean {
+    isBefore(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) < 0
     }
 
-    isEqualOrBefore(other: MidnightAwareTime): boolean {
+    isEqualOrBefore(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) <= 0
     }
 
-    isEqual(other: MidnightAwareTime): boolean {
+    isEqual(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) === 0
     }
 
-    isEqualOrAfter(other: MidnightAwareTime): boolean {
+    isEqualOrAfter(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) >= 0
     }
 
-    isAfter(other: MidnightAwareTime): boolean {
+    isAfter(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) > 0
     }
   }
@@ -89,7 +89,7 @@ namespace MidnightAwareTime {
       return this.__inner
     }
 
-    compareTo(other: MidnightAwareTime): number {
+    compareTo(other: TimeRangeEndpoint): number {
       if (other.isStart) {
         if (
           this.__inner.isEqual(LocalTime.MIDNIGHT) ||
@@ -113,57 +113,57 @@ namespace MidnightAwareTime {
         }
         return this.__inner.compareTo(other.__inner)
       } else {
-        throw new Error('Unknown MidnightAwareTime type')
+        throw new Error('Unknown TimeRangeEndpoint type')
       }
     }
 
-    isBefore(other: MidnightAwareTime): boolean {
+    isBefore(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) < 0
     }
 
-    isEqualOrBefore(other: MidnightAwareTime): boolean {
+    isEqualOrBefore(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) <= 0
     }
 
-    isEqual(other: MidnightAwareTime): boolean {
+    isEqual(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) === 0
     }
 
-    isEqualOrAfter(other: MidnightAwareTime): boolean {
+    isEqualOrAfter(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) >= 0
     }
 
-    isAfter(other: MidnightAwareTime): boolean {
+    isAfter(other: TimeRangeEndpoint): boolean {
       return this.compareTo(other) > 0
     }
   }
 }
 
-type MidnightAwareTime = MidnightAwareTime.Start | MidnightAwareTime.End
+type TimeRangeEndpoint = TimeRangeEndpoint.Start | TimeRangeEndpoint.End
 
-function minOf(a: MidnightAwareTime, b: MidnightAwareTime): MidnightAwareTime {
+function minOf(a: TimeRangeEndpoint, b: TimeRangeEndpoint): TimeRangeEndpoint {
   return a.isBefore(b) ? a : b
 }
 
-function maxOf(a: MidnightAwareTime, b: MidnightAwareTime): MidnightAwareTime {
+function maxOf(a: TimeRangeEndpoint, b: TimeRangeEndpoint): TimeRangeEndpoint {
   return a.isAfter(b) ? a : b
 }
 
 export default class TimeRange {
-  start: MidnightAwareTime.Start
-  end: MidnightAwareTime.End
+  start: TimeRangeEndpoint.Start
+  end: TimeRangeEndpoint.End
 
   constructor(start: LocalTime, end: LocalTime)
-  constructor(start: MidnightAwareTime.Start, end: MidnightAwareTime.End)
+  constructor(start: TimeRangeEndpoint.Start, end: TimeRangeEndpoint.End)
   constructor(
-    start: LocalTime | MidnightAwareTime.Start,
-    end: LocalTime | MidnightAwareTime.End
+    start: LocalTime | TimeRangeEndpoint.Start,
+    end: LocalTime | TimeRangeEndpoint.End
   ) {
     if (start instanceof LocalTime) {
-      start = new MidnightAwareTime.Start(start)
+      start = new TimeRangeEndpoint.Start(start)
     }
     if (end instanceof LocalTime) {
-      end = new MidnightAwareTime.End(end)
+      end = new TimeRangeEndpoint.End(end)
     }
     this.start = start
     this.end = end
@@ -210,7 +210,7 @@ export default class TimeRange {
   }
 
   includes(time: LocalTime): boolean {
-    const t = new MidnightAwareTime.Start(time)
+    const t = new TimeRangeEndpoint.Start(time)
     return t.isEqualOrAfter(this.start) && t.isBefore(this.end)
   }
 

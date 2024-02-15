@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.shared.data
 
-import fi.espoo.evaka.shared.domain.MidnightAwareTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.TimeRangeEndpoint
 import java.util.Objects
 
 /**
@@ -13,10 +13,10 @@ import java.util.Objects
  * operations that use `TimeRange` parameters.
  */
 class TimeSet private constructor(ranges: List<TimeRange>) :
-    RangeBasedSet<MidnightAwareTime, TimeRange, TimeSet>(ranges) {
+    RangeBasedSet<TimeRangeEndpoint, TimeRange, TimeSet>(ranges) {
     override fun List<TimeRange>.toThis(): TimeSet = if (isEmpty()) EMPTY else TimeSet(this)
 
-    override fun range(start: MidnightAwareTime, end: MidnightAwareTime): TimeRange =
+    override fun range(start: TimeRangeEndpoint, end: TimeRangeEndpoint): TimeRange =
         TimeRange(start, end)
 
     override fun equals(other: Any?): Boolean = other is TimeSet && this.ranges == other.ranges

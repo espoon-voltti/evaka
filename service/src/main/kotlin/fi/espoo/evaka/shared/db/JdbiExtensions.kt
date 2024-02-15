@@ -15,8 +15,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
-import fi.espoo.evaka.shared.domain.MidnightAwareTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.TimeRangeEndpoint
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -73,8 +73,8 @@ val dateSetArgumentFactory =
         }
     }
 
-val midnightAwareTimeArgumentFactory =
-    pgObjectArgumentFactory<MidnightAwareTime> {
+val timeRangeEndpointArgumentFactory =
+    pgObjectArgumentFactory<TimeRangeEndpoint> {
         PGobject().apply {
             type = "time"
             value = it?.toDbString()
