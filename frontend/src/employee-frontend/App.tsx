@@ -880,7 +880,7 @@ export default createBrowserRouter(
           )
         },
         {
-          path: '/holiday-periods/preschool-term/new',
+          path: '/holiday-periods/preschool-term/:termId',
           element: (
             <EmployeeRoute title="preschoolTerm">
               <TermPeriodEditor />

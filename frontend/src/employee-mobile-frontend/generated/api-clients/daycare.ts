@@ -28,7 +28,6 @@ import { GroupUpdateRequest } from 'lib-common/generated/api-types/daycare'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
-import { PreschoolTermRequest } from 'lib-common/generated/api-types/daycare'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
@@ -514,23 +513,6 @@ export async function upsertStaffAttendance(
     url: uri`/staff-attendances/group/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.createPreschoolTerm
-*/
-export async function createPreschoolTerm(
-  request: {
-    body: PreschoolTermRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-terms`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PreschoolTermRequest>
   })
   return json
 }

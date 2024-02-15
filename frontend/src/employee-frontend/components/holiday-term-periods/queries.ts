@@ -4,17 +4,21 @@
 
 import { mutation, query } from 'lib-common/query'
 
+import {
+  createPreschoolTerm,
+  deletePreschoolTerm,
+  getPreschoolTerms,
+  updatePreschoolTerm
+} from '../../generated/api-clients/daycare'
 import { createQueryKeys } from '../../query'
 
 import {
   createFixedPeriodQuestionnaire,
   createHolidayPeriod,
-  createPreschoolTerm,
   deleteHolidayPeriod,
   deleteQuestionnaire,
   getHolidayPeriod,
   getHolidayPeriods,
-  getPreschoolTermsResult,
   getQuestionnaire,
   getQuestionnaires,
   updateFixedPeriodQuestionnaire,
@@ -26,7 +30,8 @@ const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriod: (id: string) => ['holidayPeriod', id],
   questionnaires: () => ['questionnaires'],
   questionnaire: (id: string) => ['questionnaire', id],
-  preschoolTerms: () => ['preschoolTerms']
+  preschoolTerms: () => ['preschoolTerms'],
+  preschoolTerm: (id: string) => ['preschoolTerm', id]
 })
 
 export const holidayPeriodsQuery = query({
@@ -50,13 +55,29 @@ export const questionnaireQuery = query({
 })
 
 export const preschoolTermsQuery = query({
-  api: getPreschoolTermsResult,
+  api: getPreschoolTerms,
   queryKey: () => queryKeys.preschoolTerms()
 })
 
 export const createPreschoolTermMutation = mutation({
   api: createPreschoolTerm,
   invalidateQueryKeys: () => [queryKeys.preschoolTerms()]
+})
+
+export const updatePreschoolTermMutation = mutation({
+  api: updatePreschoolTerm,
+  invalidateQueryKeys: ({ id }) => [
+    queryKeys.preschoolTerms(),
+    queryKeys.preschoolTerm(id)
+  ]
+})
+
+export const deletePreschoolTermMutation = mutation({
+  api: deletePreschoolTerm,
+  invalidateQueryKeys: ({ id }) => [
+    queryKeys.preschoolTerms(),
+    queryKeys.preschoolTerm(id)
+  ]
 })
 
 export const createHolidayPeriodMutation = mutation({

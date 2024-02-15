@@ -122,37 +122,37 @@ describe('Holiday and term periods page', () => {
     )
   })
 
-  test('Preschool terms can be created', async () => {
+  test('Preschool terms can be created, updated and deleted', async () => {
     await holidayAndTermPeriodsPage.clickAddPreschoolTermButton()
 
     const firstTermBreaks = [
       new FiniteDateRange(
-        LocalDate.of(2024, 12, 23),
-        LocalDate.of(2024, 12, 27)
+        LocalDate.of(2021, 12, 23),
+        LocalDate.of(2021, 12, 27)
       ),
-      new FiniteDateRange(LocalDate.of(2025, 2, 1), LocalDate.of(2025, 2, 10))
+      new FiniteDateRange(LocalDate.of(2022, 2, 1), LocalDate.of(2022, 2, 10))
     ]
 
     await holidayAndTermPeriodsPage.fillPreschoolTermForm({
-      finnishPreschoolStart: '01.08.2024',
-      finnishPreschoolEnd: '30.05.2025',
-      extendedTermStart: '01.07.2024',
-      applicationPeriodStart: '01.06.2024',
+      finnishPreschoolStart: '01.08.2021',
+      finnishPreschoolEnd: '30.05.2022',
+      extendedTermStart: '01.07.2021',
+      applicationPeriodStart: '01.06.2021',
       termBreaks: firstTermBreaks
     })
     await holidayAndTermPeriodsPage.submit()
 
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['01.08.2024 - 30.05.2025']
+      ['01.08.2021 - 30.05.2022']
     )
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.07.2024']
+      ['01.07.2021']
     )
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2024']
+      ['01.06.2021']
     )
 
     for (const tb of firstTermBreaks) {
@@ -181,18 +181,101 @@ describe('Holiday and term periods page', () => {
     await holidayAndTermPeriodsPage.submit()
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
-      ['01.08.2025 - 30.05.2026', '01.08.2024 - 30.05.2025']
+      ['01.08.2025 - 30.05.2026', '01.08.2021 - 30.05.2022']
     )
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
-      ['01.07.2025', '01.07.2024']
+      ['01.07.2025', '01.07.2021']
     )
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
-      ['01.06.2025', '01.06.2024']
+      ['01.06.2025', '01.06.2021']
     )
 
     for (const tb of secondTermBreaks) {
+      await waitUntilEqual(
+        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
+        [tb.formatCompact()]
+      )
+    }
+
+    // Edit first row
+    await holidayAndTermPeriodsPage.editPreschoolTerm(0)
+    const updatedTermBreaks = [
+      new FiniteDateRange(LocalDate.of(2025, 11, 1), LocalDate.of(2025, 11, 15))
+    ]
+    await holidayAndTermPeriodsPage.fillPreschoolTermForm({
+      finnishPreschoolStart: '01.07.2025',
+      finnishPreschoolEnd: '30.04.2026',
+      extendedTermStart: '01.06.2025',
+      applicationPeriodStart: '01.05.2025'
+    })
+
+    await holidayAndTermPeriodsPage.removeTermBreakEntry(1)
+    await holidayAndTermPeriodsPage.editTermBreakInput(0, updatedTermBreaks[0])
+
+    await holidayAndTermPeriodsPage.submit()
+
+    // Edit second row, should open modal because it has started before current mocked time
+    await holidayAndTermPeriodsPage.editPreschoolTerm(1)
+
+    await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
+
+    await holidayAndTermPeriodsPage.fillPreschoolTermForm({
+      finnishPreschoolStart: '10.08.2021',
+      finnishPreschoolEnd: '01.06.2022',
+      extendedTermStart: '01.08.2021',
+      applicationPeriodStart: '01.05.2021'
+    })
+
+    await holidayAndTermPeriodsPage.submit()
+
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
+      ['01.07.2025 - 30.04.2026', '10.08.2021 - 01.06.2022']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
+      ['01.06.2025', '01.08.2021']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
+      ['01.05.2025', '01.05.2021']
+    )
+
+    for (const tb of updatedTermBreaks) {
+      await waitUntilEqual(
+        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
+        [tb.formatCompact()]
+      )
+    }
+
+    for (const tb of firstTermBreaks) {
+      await waitUntilEqual(
+        () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
+        [tb.formatCompact()]
+      )
+    }
+
+    // Delete latest row
+    await holidayAndTermPeriodsPage.deletePreschoolTerm(0)
+
+    await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
+
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,
+      ['10.08.2021 - 01.06.2022']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleExtendedTermStartDates,
+      ['01.08.2021']
+    )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleApplicationPeriodStartDates,
+      ['01.05.2021']
+    )
+
+    for (const tb of firstTermBreaks) {
       await waitUntilEqual(
         () => holidayAndTermPeriodsPage.visibleTermBreakByDate(tb.start),
         [tb.formatCompact()]

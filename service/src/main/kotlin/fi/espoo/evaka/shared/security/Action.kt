@@ -52,6 +52,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
@@ -304,7 +305,7 @@ sealed interface Action {
         READ_FUTURE_PRESCHOOLERS(HasGlobalRole(ADMIN)),
         READ_NON_SSN_CHILDREN_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         VARDA_OPERATIONS(HasGlobalRole(ADMIN)),
-        CREATE_PRESCHOOL_TERMS(HasGlobalRole(ADMIN));
+        CREATE_PRESCHOOL_TERM(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1878,6 +1879,15 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfPreschoolAssistance(false),
             HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
         );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class PreschoolTerm(
+        override vararg val defaultRules: ScopedActionRule<in PreschoolTermId>
+    ) : ScopedAction<PreschoolTermId> {
+        UPDATE(HasGlobalRole(ADMIN)),
+        DELETE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

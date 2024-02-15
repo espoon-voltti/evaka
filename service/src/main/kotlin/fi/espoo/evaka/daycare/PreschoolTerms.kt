@@ -5,9 +5,11 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
@@ -41,8 +43,9 @@ data class PreschoolTerm(
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
-    return createQuery(
-            """
+    return createQuery<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         SELECT
             id,
             finnish_preschool,
@@ -53,10 +56,28 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
         FROM preschool_term
         ORDER BY extended_term
         """
-                .trimIndent()
-        )
-        .toList<PreschoolTerm>()
+            )
+        }
+        .toList()
 }
+
+fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
+    createQuery<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
+        SELECT
+            id,
+            finnish_preschool,
+            swedish_preschool,
+            extended_term,
+            application_period,
+            term_breaks
+        FROM preschool_term 
+        WHERE id = ${bind(id)}
+        """
+            )
+        }
+        .exactlyOneOrNull()
 
 fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
     return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
@@ -69,8 +90,9 @@ fun Database.Transaction.insertPreschoolTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ): PreschoolTermId {
-    return createUpdate(
-            """
+    return createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         INSERT INTO preschool_term (
             finnish_preschool,
             swedish_preschool,
@@ -78,21 +100,52 @@ fun Database.Transaction.insertPreschoolTerm(
             application_period,
             term_breaks
         ) VALUES (
-            :finnishPreschool,
-            :swedishPreschool,
-            :extendedTerm,
-            :applicationPeriod,
-            :termBreaks
+            ${bind(finnishPreschool)},
+            ${bind(swedishPreschool)},
+            ${bind(extendedTerm)},
+            ${bind(applicationPeriod)},
+            ${bind(termBreaks)}
         )
         RETURNING id
         """
-                .trimIndent()
-        )
-        .bind("finnishPreschool", finnishPreschool)
-        .bind("swedishPreschool", swedishPreschool)
-        .bind("extendedTerm", extendedTerm)
-        .bind("applicationPeriod", applicationPeriod)
-        .bind("termBreaks", termBreaks)
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<PreschoolTermId>()
+        .exactlyOne()
+}
+
+fun Database.Transaction.updatePreschoolTerm(
+    id: PreschoolTermId,
+    finnishPreschool: FiniteDateRange,
+    swedishPreschool: FiniteDateRange,
+    extendedTerm: FiniteDateRange,
+    applicationPeriod: FiniteDateRange,
+    termBreaks: DateSet
+) =
+    createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
+        UPDATE preschool_term 
+        SET 
+            finnish_preschool = ${bind(finnishPreschool)},
+            swedish_preschool = ${bind(swedishPreschool)},
+            extended_term = ${bind(extendedTerm)},
+            application_period = ${bind(applicationPeriod)},
+            term_breaks =  ${bind(termBreaks)}
+        WHERE id = ${bind(id)}
+        """
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: PreschoolTermId) {
+    createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
+           DELETE FROM preschool_term
+           WHERE id = ${bind(termId)} AND (lower(finnish_preschool) > ${bind(clock.today())} AND lower(swedish_preschool) > ${bind(clock.today())})
+        """
+            )
+        }
+        .updateExactlyOne()
 }

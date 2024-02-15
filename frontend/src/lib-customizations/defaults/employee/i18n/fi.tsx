@@ -4475,9 +4475,22 @@ export const fi = {
     validationErrors: {
       overlap:
         'Tälle ajanjaksolle on jo päällekkäinen lukukausi. Yritä kirjata merkintä eri ajanjaksolle.',
+      extendedTermOverlap:
+        'Tälle ajanjaksolle on jo päällekkäinen pidennetty lukukausi. Yritä kirjata merkintä eri aloituspäivälle',
       extendedTermStartAfter:
         'Pidennetyn lukukauden aloituspäivämäärä ei voi olla lukukauden aloituspäivämäärän jälkeen.',
       termBreaksOverlap: 'Päällekkäiset opetustauot eivät ole sallittua.'
+    },
+    modals: {
+      editTerm: {
+        title: 'Haluatko varmasti muokata tietoja?',
+        text: 'Haluatko varmasti muokata jo alkanutta lukukautta?',
+        resolve: 'Muokkaa',
+        reject: 'Älä muokkaa'
+      },
+      deleteTerm: {
+        title: 'Haluatko varmasti poistaa lukukauden?'
+      }
     }
   },
   preferredFirstName: {
