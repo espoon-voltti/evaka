@@ -1512,7 +1512,7 @@ class DevApi(
                         ChildId(UUID.randomUUID())
                     )
                 EmailMessageType.outdatedIncomeNotification ->
-                    emailMessageProvider.outdatedIncomeNotification(
+                    emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
                         Language.fi
                     )

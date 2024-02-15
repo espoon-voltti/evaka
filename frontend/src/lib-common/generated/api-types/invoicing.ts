@@ -436,6 +436,7 @@ export type IncomeNotificationType =
   | 'INITIAL_EMAIL'
   | 'REMINDER_EMAIL'
   | 'EXPIRED_EMAIL'
+  | 'NEW_CUSTOMER'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.IncomeType

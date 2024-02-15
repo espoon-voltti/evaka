@@ -365,7 +365,7 @@ $unsubscribeEn
         )
     }
 
-    override fun outdatedIncomeNotification(
+    override fun incomeNotification(
         notificationType: IncomeNotificationType,
         language: Language
     ): EmailContent {
@@ -373,6 +373,7 @@ $unsubscribeEn
             IncomeNotificationType.INITIAL_EMAIL -> outdatedIncomeNotificationInitial()
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
+            IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
         }
     }
 
@@ -478,6 +479,37 @@ $unsubscribeSv
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """
+        )
+    }
+
+    private fun newCustomerIncomeNotification(): EmailContent {
+        return EmailContent.fromHtml(
+            subject =
+                "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
+            html =
+                """
+<p>Hyvä asiakkaamme</p>
+<p>Lapsenne on aloittamassa varhaiskasvatuksessa tämän kuukauden aikana. Pyydämme teitä toimittamaan tulotiedot eVaka-järjestelmän kautta tämän kuukauden loppuun mennessä.</p>
+<p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
+<p>Tulotiedot: ${incomeLink(Language.fi)}</p>
+<p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+$unsubscribeFi
+<hr>
+<p>Bästä klient</p>
+<p>Ditt barn börjar småbarnspedagogiken under den här månaden. Vi ber dig att lämna in din inkomstinformation via eVaka-systemet senast i slutet av denna månad.</p>
+<p>Mer information: vaka.maksut@espoo.fi</p>
+<p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
+<p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
+$unsubscribeSv
+<hr>
+<p>Dear client</p>
+<p>Your child is starting early childhood education during this month. We ask you to submit your income information via eVaka system by the end of this month.</p>
+<p>Inquiries: vaka.maksut@espoo.fi</p>
+<p>Income information: ${incomeLink(Language.en)}</p>
+<p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
+$unsubscribeEn
+            """
+                    .trimIndent()
         )
     }
 

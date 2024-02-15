@@ -31,7 +31,8 @@ fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: Local
 enum class IncomeNotificationType {
     INITIAL_EMAIL,
     REMINDER_EMAIL,
-    EXPIRED_EMAIL
+    EXPIRED_EMAIL,
+    NEW_CUSTOMER
 }
 
 data class PersonIncomeExpirationDate(val personId: PersonId, val expirationDate: LocalDate)
@@ -102,6 +103,62 @@ ${if (aPersonId != null) " AND person_id = :aPersonId" else ""}
         }
         .applyIf(aPersonId != null) { this.bind("aPersonId", aPersonId) }
         .toList<PersonIncomeExpirationDate>()
+}
+
+fun Database.Read.newCustomerIdsForIncomeNotifications(
+    today: LocalDate,
+    guardianId: PersonId?
+): List<PersonId> {
+    val currentMonth = FiniteDateRange.ofMonth(today)
+
+    return createQuery(
+            """
+WITH fridge_parents AS (
+    SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
+    FROM placement pl
+    
+    -- head of child
+    JOIN fridge_child fc_head ON (
+        fc_head.child_id = pl.child_id AND
+        :today BETWEEN fc_head.start_date AND fc_head.end_date AND fc_head.conflict = false
+    )
+    
+    -- spouse of the head of child
+    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> :today AND fp.conflict = false
+    LEFT JOIN fridge_partner fp_spouse ON (
+        fp_spouse.partnership_id = fp.partnership_id AND
+        fp_spouse.person_id <> fp.person_id AND
+        daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> :today AND fp_spouse.conflict = false
+    ) 
+    WHERE pl.start_date BETWEEN :month_start AND :month_end
+    AND NOT EXISTS(
+        SELECT 1 
+        FROM placement
+        WHERE start_date < :today AND child_id IN (
+            SELECT child_id
+            FROM fridge_child
+            WHERE (head_of_child = fc_head.head_of_child OR head_of_child = fp_spouse.person_id)
+            AND child_id != pl.child_id
+        )
+    )
+    ${if (guardianId != null) "AND (fc_head.head_of_child = :guardianId OR fp_spouse.person_id = :guardianId)" else ""}
+) 
+SELECT DISTINCT person_id FROM (
+    SELECT parent_id AS person_id 
+    FROM fridge_parents
+    UNION ALL
+    SELECT spouse_id AS person_id
+    FROM fridge_parents
+    WHERE spouse_id IS NOT NULL
+) AS parent
+        """
+                .trimIndent()
+        )
+        .bind("today", today)
+        .bind("month_start", currentMonth.start)
+        .bind("month_end", currentMonth.end)
+        .bind("guardianId", guardianId)
+        .toList<PersonId>()
 }
 
 data class IncomeNotification(

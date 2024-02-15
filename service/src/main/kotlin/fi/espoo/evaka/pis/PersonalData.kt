@@ -27,6 +27,9 @@ enum class EmailMessageType {
     /** Reminders about expiring or missing income info */
     OUTDATED_INCOME_NOTIFICATION,
 
+    /** Reminders for new customers about income info */
+    NEW_CUSTOMER_INCOME_NOTIFICATION,
+
     /** Notifications about new calendar events of daycare groups */
     CALENDAR_EVENT_NOTIFICATION,
 
