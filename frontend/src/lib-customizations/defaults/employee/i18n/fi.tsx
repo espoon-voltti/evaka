@@ -2405,6 +2405,7 @@ export const fi = {
       endTime: 'Lähtee',
       requiresBackupCare: 'Tee varasijoitus',
       openReservationModal: 'Tee toistuva varaus',
+      childCount: 'Lapsia läsnä',
       reservationModal: {
         title: 'Tee varaus',
         selectedChildren: 'Lapset, joille varaus tehdään',
