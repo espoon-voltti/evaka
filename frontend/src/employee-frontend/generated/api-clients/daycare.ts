@@ -526,8 +526,8 @@ export async function createPreschoolTerm(
   request: {
     body: PreschoolTermRequest
   }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/preschool-terms`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>

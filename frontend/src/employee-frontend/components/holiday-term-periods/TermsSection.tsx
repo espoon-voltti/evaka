@@ -135,7 +135,7 @@ export default React.memo(function TermsSection() {
                             icon={faTrash}
                             buttonText=""
                             mutation={deletePreschoolTermMutation}
-                            onClick={() => row.id}
+                            onClick={() => ({ id: row.id })}
                             confirmationTitle={
                               i18n.terms.modals.deleteTerm.title
                             }

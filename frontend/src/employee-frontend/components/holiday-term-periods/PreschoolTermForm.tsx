@@ -181,8 +181,8 @@ export default React.memo(function PreschoolTermForm({
   const onSubmit = useCallback(
     () =>
       term !== undefined
-        ? updatePreschoolTerm({ termId: term.id, data: form.value() })
-        : createPreschoolTerm(form.value()),
+        ? updatePreschoolTerm({ id: term.id, body: form.value() })
+        : createPreschoolTerm({ body: form.value() }),
     [term, form, createPreschoolTerm, updatePreschoolTerm]
   )
 

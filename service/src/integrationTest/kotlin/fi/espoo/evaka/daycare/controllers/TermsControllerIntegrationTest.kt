@@ -74,12 +74,15 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
                 )
             )
-        val createdTermId =
-            termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
+        termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
         val terms = termsController.getPreschoolTerms(dbInstance())
 
         assertEquals(6, terms.size)
-        assertPreschoolTermFromRequest(preschoolTerm2025, createdTermId)
+
+        val createdTerm =
+            terms.find { term -> term.finnishPreschool == preschoolTerm2025.finnishPreschool }!!
+
+        assertPreschoolTermFromRequest(preschoolTerm2025, createdTerm.id)
     }
 
     @Test

@@ -24,7 +24,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { getPreschoolTermsResult } from '../components/holiday-term-periods/api'
+import { getPreschoolTerms } from '../generated/api-clients/daycare'
 import { SearchOrder } from '../types'
 import {
   ApplicationResponse,
@@ -409,9 +409,11 @@ export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
   }
 }
 
-export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
+export async function getPreschoolTermsResult(): Promise<
+  Result<PreschoolTerm[]>
+> {
   try {
-    const result = await getPreschoolTermsResult()
+    const result = await getPreschoolTerms()
     return Success.of(result)
   } catch (e) {
     return Failure.fromError(e)

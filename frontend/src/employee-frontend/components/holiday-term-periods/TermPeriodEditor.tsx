@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { combine, Failure, Result, Success } from 'lib-common/api'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -26,25 +27,30 @@ export default React.memo(function TermPeriodEditor() {
     [navigate]
   )
 
-  const findPreschoolTermById = (
-    id: string,
-    allPreschoolTerms: PreschoolTerm[]
-  ) =>
-    termId !== 'new'
-      ? allPreschoolTerms.find((term) => term.id === termId)
-      : undefined
+  const term: Result<PreschoolTerm | undefined> = useMemo(() => {
+    if (termId === 'new') return Success.of(undefined)
+
+    return preschoolTerms
+      .map((allTerms) => allTerms.find((t) => t.id === termId))
+      .chain((t) =>
+        t ? Success.of(t) : Failure.of({ message: 'Term not found' })
+      )
+  }, [termId, preschoolTerms])
 
   return (
     <Container>
       <ContentArea opaque>
-        {renderResult(preschoolTerms, (preschoolTerms) => (
-          <PreschoolTermForm
-            term={findPreschoolTermById(termId, preschoolTerms)}
-            allTerms={preschoolTerms}
-            onSuccess={navigateToList}
-            onCancel={navigateToList}
-          />
-        ))}
+        {renderResult(
+          combine(preschoolTerms, term),
+          ([preschoolTerms, term]) => (
+            <PreschoolTermForm
+              term={term}
+              allTerms={preschoolTerms}
+              onSuccess={navigateToList}
+              onCancel={navigateToList}
+            />
+          )
+        )}
       </ContentArea>
     </Container>
   )

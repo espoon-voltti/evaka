@@ -29,7 +29,7 @@ import { faEnvelope } from 'lib-icons'
 import {
   getApplication,
   getClubTerms,
-  getPreschoolTerms
+  getPreschoolTermsResult
 } from '../api/applications'
 import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
 import { getApplicationUnits } from '../api/daycare'
@@ -120,7 +120,7 @@ export default React.memo(function ApplicationPage() {
       application.map(({ application: { type } }) => type).getOrElse(undefined)
     ) {
       case 'PRESCHOOL':
-        void getPreschoolTerms().then((res) =>
+        void getPreschoolTermsResult().then((res) =>
           setTerms(
             res
               .map((terms) => terms.map((term) => term.extendedTerm))

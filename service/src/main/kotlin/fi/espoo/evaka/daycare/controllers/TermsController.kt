@@ -50,11 +50,11 @@ class TermsController(private val accessControl: AccessControl) {
     @PostMapping("/preschool-terms")
     fun createPreschoolTerm(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PreschoolTermRequest
-    ): PreschoolTermId {
-        return db.connect { dbc ->
+    ) {
+        db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -80,7 +80,7 @@ class TermsController(private val accessControl: AccessControl) {
     @PutMapping("/preschool-terms/{id}")
     fun updatePreschoolTerm(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PreschoolTermId,
         @RequestBody body: PreschoolTermRequest
@@ -115,7 +115,7 @@ class TermsController(private val accessControl: AccessControl) {
     @DeleteMapping("/preschool-terms/{id}")
     fun deletePreschoolTerm(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PreschoolTermId
     ) {
