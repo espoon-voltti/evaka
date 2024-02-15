@@ -124,23 +124,14 @@ export default React.memo(function ChildDayReservation({
               warning={unitIsNotOpenOnReservationStart}
             >
               {reservation.startTime.format()}
-              {unitIsNotOpenOnReservationStart && (
-                <>
-                  {' '}
-                  <FontAwesomeIcon
-                    icon={faExclamationTriangle}
-                    color={colors.status.warning}
-                    data-qa="outside-opening-times"
-                  />
-                </>
-              )}
             </TimeCell>
             <TimeCell
               data-qa="reservation-end"
               warning={unitIsNotOpenOnReservationEnd}
             >
               {reservation.endTime.format()}
-              {unitIsNotOpenOnReservationEnd && (
+              {(unitIsNotOpenOnReservationStart ||
+                unitIsNotOpenOnReservationEnd) && (
                 <>
                   {' '}
                   <FontAwesomeIcon

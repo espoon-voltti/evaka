@@ -131,7 +131,7 @@ test('Add two reservations for tomorrow then update one and remove other', async
   await reservations.nth(0).assertTextEquals('09:00\n16:00*')
   await reservations.nth(1).assertTextEquals('20:30\n23:59 *')
   await reservationsTable
-    .endTimeOutsideOpeningHoursWarning(childId, date, 1)
+    .outsideOpeningHoursWarning(childId, date, 1)
     .waitUntilVisible()
 
   await reservationsTable.openChildDateModal(childId, date)
@@ -372,21 +372,15 @@ test('Intermittent shift care outside opening times', async () => {
   await modal.submit()
 
   await reservationsTable
-    .startTimeOutsideOpeningHoursWarning(childId, date1, 0)
+    .outsideOpeningHoursWarning(childId, date1, 0)
     .waitUntilVisible()
-  await reservationsTable
-    .endTimeOutsideOpeningHoursWarning(childId, date1, 0)
-    .waitUntilHidden()
   await reservationsTable
     .attendanceCells(childId, date1)
     .nth(0)
     .assertTextEquals('Tee varasijoitus ')
 
   await reservationsTable
-    .startTimeOutsideOpeningHoursWarning(childId, date2, 0)
-    .waitUntilHidden()
-  await reservationsTable
-    .endTimeOutsideOpeningHoursWarning(childId, date2, 0)
+    .outsideOpeningHoursWarning(childId, date2, 0)
     .waitUntilVisible()
   await reservationsTable
     .attendanceCells(childId, date2)
