@@ -238,15 +238,8 @@ export class HolidayAndTermPeriodsPage {
       .click()
   }
 
-  async confirmPreschoolTermEdit() {
+  async confirmPreschoolTermModal() {
     await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
-  }
-
-  async confirmPreschoolTermDelete() {
-    await this.page
-      .findByDataQa('deletion-modal')
-      .findByDataQa('modal-okBtn')
-      .click()
   }
 
   async submit() {

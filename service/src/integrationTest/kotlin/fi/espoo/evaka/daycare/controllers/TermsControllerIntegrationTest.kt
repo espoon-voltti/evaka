@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.preschoolTerm2024
@@ -48,28 +49,6 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
-    }
-
-    @Test
-    fun `get preschool term`() {
-        val existingTerm =
-            termsController.getPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2024.id)
-        assertEquals(preschoolTerm2024.swedishPreschool, existingTerm.swedishPreschool)
-        assertEquals(preschoolTerm2024.extendedTerm, existingTerm.extendedTerm)
-        assertEquals(preschoolTerm2024.applicationPeriod, existingTerm.applicationPeriod)
-        assertEquals(preschoolTerm2024.termBreaks, existingTerm.termBreaks)
-    }
-
-    @Test
-    fun `should not get preschool term if user is not admin`() {
-        assertThrows<Forbidden> {
-            termsController.getPreschoolTerm(
-                dbInstance(),
-                serviceWorker,
-                clock,
-                preschoolTerm2024.id
-            )
-        }
     }
 
     @Test
@@ -258,10 +237,10 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `update preschool term`() {
-        assertEquals(5, termsController.getPreschoolTerms(dbInstance()).size)
+        val allTerms = termsController.getPreschoolTerms(dbInstance())
+        assertEquals(5, allTerms.size)
 
-        val existingTerm =
-            termsController.getPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2024.id)
+        val existingTerm = allTerms.find { term -> term.id == preschoolTerm2024.id }!!
         assertEquals(preschoolTerm2024.swedishPreschool, existingTerm.swedishPreschool)
         assertEquals(preschoolTerm2024.extendedTerm, existingTerm.extendedTerm)
         assertEquals(preschoolTerm2024.applicationPeriod, existingTerm.applicationPeriod)
@@ -286,8 +265,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             preschoolTermUpdate
         )
 
-        val updatedTerm =
-            termsController.getPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2024.id)
+        val updatedTerm = db.transaction { tx -> tx.getPreschoolTerm(preschoolTerm2024.id)!! }
         assertEquals(preschoolTermUpdate.swedishPreschool, updatedTerm.swedishPreschool)
         assertEquals(preschoolTermUpdate.extendedTerm, updatedTerm.extendedTerm)
         assertEquals(preschoolTermUpdate.applicationPeriod, updatedTerm.applicationPeriod)
@@ -460,8 +438,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     }
 
     private fun assertPreschoolTerm(expected: DevPreschoolTerm, targetId: PreschoolTermId) {
-        val existingTerm =
-            termsController.getPreschoolTerm(dbInstance(), adminUser, clock, targetId)
+        val existingTerm = db.transaction { tx -> tx.getPreschoolTerm(targetId)!! }
         assertEquals(expected.finnishPreschool, existingTerm.finnishPreschool)
         assertEquals(expected.swedishPreschool, existingTerm.swedishPreschool)
         assertEquals(expected.extendedTerm, existingTerm.extendedTerm)
@@ -473,8 +450,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         expected: TermsController.PreschoolTermRequest,
         targetId: PreschoolTermId
     ) {
-        val existingTerm =
-            termsController.getPreschoolTerm(dbInstance(), adminUser, clock, targetId)
+        val existingTerm = db.transaction { tx -> tx.getPreschoolTerm(targetId)!! }
         assertEquals(expected.finnishPreschool, existingTerm.finnishPreschool)
         assertEquals(expected.swedishPreschool, existingTerm.swedishPreschool)
         assertEquals(expected.extendedTerm, existingTerm.extendedTerm)

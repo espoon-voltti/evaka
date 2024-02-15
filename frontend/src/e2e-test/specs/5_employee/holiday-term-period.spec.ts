@@ -219,7 +219,7 @@ describe('Holiday and term periods page', () => {
     // Edit second row, should open modal because it has started before current mocked time
     await holidayAndTermPeriodsPage.editPreschoolTerm(1)
 
-    await holidayAndTermPeriodsPage.confirmPreschoolTermEdit()
+    await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
 
     await holidayAndTermPeriodsPage.fillPreschoolTermForm({
       finnishPreschoolStart: '10.08.2021',
@@ -260,7 +260,7 @@ describe('Holiday and term periods page', () => {
     // Delete latest row
     await holidayAndTermPeriodsPage.deletePreschoolTerm(0)
 
-    await holidayAndTermPeriodsPage.confirmPreschoolTermDelete()
+    await holidayAndTermPeriodsPage.confirmPreschoolTermModal()
 
     await waitUntilEqual(
       () => holidayAndTermPeriodsPage.visiblePreschoolTermPeriods,

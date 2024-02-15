@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
@@ -42,8 +43,9 @@ data class PreschoolTerm(
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
-    return createQuery(
-            """
+    return createQuery<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         SELECT
             id,
             finnish_preschool,
@@ -54,14 +56,15 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
         FROM preschool_term
         ORDER BY extended_term
         """
-                .trimIndent()
-        )
-        .toList<PreschoolTerm>()
+            )
+        }
+        .toList()
 }
 
 fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
-    this.createQuery(
-            """
+    createQuery<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         SELECT
             id,
             finnish_preschool,
@@ -70,11 +73,11 @@ fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
             application_period,
             term_breaks
         FROM preschool_term 
-        WHERE id = :id
+        WHERE id = ${bind(id)}
         """
-        )
-        .bind("id", id)
-        .exactlyOneOrNull<PreschoolTerm>()
+            )
+        }
+        .exactlyOneOrNull()
 
 fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
     return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
@@ -87,8 +90,9 @@ fun Database.Transaction.insertPreschoolTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ): PreschoolTermId {
-    return createUpdate(
-            """
+    return createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         INSERT INTO preschool_term (
             finnish_preschool,
             swedish_preschool,
@@ -96,23 +100,18 @@ fun Database.Transaction.insertPreschoolTerm(
             application_period,
             term_breaks
         ) VALUES (
-            :finnishPreschool,
-            :swedishPreschool,
-            :extendedTerm,
-            :applicationPeriod,
-            :termBreaks
+            ${bind(finnishPreschool)},
+            ${bind(swedishPreschool)},
+            ${bind(extendedTerm)},
+            ${bind(applicationPeriod)},
+            ${bind(termBreaks)}
         )
         RETURNING id
         """
-                .trimIndent()
-        )
-        .bind("finnishPreschool", finnishPreschool)
-        .bind("swedishPreschool", swedishPreschool)
-        .bind("extendedTerm", extendedTerm)
-        .bind("applicationPeriod", applicationPeriod)
-        .bind("termBreaks", termBreaks)
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<PreschoolTermId>()
+        .exactlyOne()
 }
 
 fun Database.Transaction.updatePreschoolTerm(
@@ -123,36 +122,30 @@ fun Database.Transaction.updatePreschoolTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ) =
-    createUpdate(
-            """
+    createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
         UPDATE preschool_term 
         SET 
-            finnish_preschool = :finnishPreschool,
-            swedish_preschool = :swedishPreschool,
-            extended_term = :extendedTerm,
-            application_period = :applicationPeriod,
-            term_breaks =  :termBreaks
-        WHERE id = :id
+            finnish_preschool = ${bind(finnishPreschool)},
+            swedish_preschool = ${bind(swedishPreschool)},
+            extended_term = ${bind(extendedTerm)},
+            application_period = ${bind(applicationPeriod)},
+            term_breaks =  ${bind(termBreaks)}
+        WHERE id = ${bind(id)}
         """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("finnishPreschool", finnishPreschool)
-        .bind("swedishPreschool", swedishPreschool)
-        .bind("extendedTerm", extendedTerm)
-        .bind("applicationPeriod", applicationPeriod)
-        .bind("termBreaks", termBreaks)
+            )
+        }
         .updateExactlyOne()
 
 fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: PreschoolTermId) {
-    createUpdate(
-            """
+    createUpdate<DatabaseTable.PreschoolTerm> {
+            sql(
+                """
            DELETE FROM preschool_term
-           WHERE id = :id AND (lower(finnish_preschool) > :today_date AND lower(swedish_preschool) > :today_date)
+           WHERE id = ${bind(termId)} AND (lower(finnish_preschool) > ${bind(clock.today())} AND lower(swedish_preschool) > ${bind(clock.today())})
         """
-                .trimIndent()
-        )
-        .bind("today_date", clock.today())
-        .bind("id", termId)
+            )
+        }
         .updateExactlyOne()
 }

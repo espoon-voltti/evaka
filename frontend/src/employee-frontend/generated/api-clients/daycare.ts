@@ -526,11 +526,27 @@ export async function createPreschoolTerm(
   request: {
     body: PreschoolTermRequest
   }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
+): Promise<UUID> {
+  const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/preschool-terms`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.deletePreschoolTerm
+*/
+export async function deletePreschoolTerm(
+  request: {
+    id: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/preschool-terms/${request.id}`.toString(),
+    method: 'DELETE'
   })
   return json
 }
@@ -557,6 +573,24 @@ export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
     method: 'GET'
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.updatePreschoolTerm
+*/
+export async function updatePreschoolTerm(
+  request: {
+    id: UUID,
+    body: PreschoolTermRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/preschool-terms/${request.id}`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<PreschoolTermRequest>
+  })
+  return json
 }
 
 

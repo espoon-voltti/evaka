@@ -4489,10 +4489,7 @@ export const fi = {
         reject: 'Älä muokkaa'
       },
       deleteTerm: {
-        title: 'Haluatko varmasti poistaa lukukauden?',
-        text: 'Lukukausi poistetaan',
-        resolve: 'Poista lukukausi',
-        reject: 'Älä poista'
+        title: 'Haluatko varmasti poistaa lukukauden?'
       }
     }
   },

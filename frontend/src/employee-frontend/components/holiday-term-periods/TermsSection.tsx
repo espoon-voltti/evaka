@@ -9,13 +9,13 @@ import styled from 'styled-components'
 
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -35,51 +35,23 @@ export default React.memo(function TermsSection() {
   const navigate = useNavigate()
 
   const [termToEdit, setTermToEdit] = useState<UUID>()
-  const [showEditModal, setShowEditModal] = useState(false)
-
-  const [termToDelete, setTermToDelete] = useState<UUID>()
-  const [showDeletionModal, setShowDeletionModal] = useState(false)
 
   const preschoolTerms = useQueryResult(preschoolTermsQuery())
-
-  const { mutateAsync: deletePreschoolTerm } = useMutationResult(
-    deletePreschoolTermMutation
-  )
-
-  const onDeletePreschoolTerm = useCallback(
-    (termId: UUID) => {
-      setTermToDelete(termId)
-      setShowDeletionModal(true)
-    },
-    [setTermToDelete, setShowDeletionModal]
-  )
-
-  const deletePreschoolTermHandle = useCallback(
-    () => (termToDelete ? deletePreschoolTerm(termToDelete) : Promise.reject()),
-    [termToDelete, deletePreschoolTerm]
-  )
-
-  const onCloseDeletionModal = useCallback(() => {
-    setTermToDelete(undefined)
-    setShowDeletionModal(false)
-  }, [setTermToDelete, setShowDeletionModal])
 
   const onEditTermHandle = useCallback(
     (term: PreschoolTerm) => {
       if (term.finnishPreschool.start.isBefore(LocalDate.todayInSystemTz())) {
         setTermToEdit(term.id)
-        setShowEditModal(true)
       } else {
         navigate(`/holiday-periods/preschool-term/${term.id}`)
       }
     },
-    [setShowEditModal, navigate]
+    [setTermToEdit, navigate]
   )
 
   const onCloseEditModal = useCallback(() => {
     setTermToEdit(undefined)
-    setShowEditModal(false)
-  }, [setShowEditModal, setTermToEdit])
+  }, [setTermToEdit])
 
   const navigateToNewTerm = useCallback(() => {
     navigate('/holiday-periods/preschool-term/new')
@@ -157,11 +129,16 @@ export default React.memo(function TermsSection() {
                         {row.finnishPreschool.start.isAfter(
                           LocalDate.todayInSystemTz()
                         ) && (
-                          <IconButton
-                            icon={faTrash}
+                          <ConfirmedMutation
+                            buttonStyle="INLINE"
                             data-qa="btn-delete"
-                            onClick={() => onDeletePreschoolTerm(row.id)}
-                            aria-label={i18n.common.edit}
+                            icon={faTrash}
+                            buttonText=""
+                            mutation={deletePreschoolTermMutation}
+                            onClick={() => row.id}
+                            confirmationTitle={
+                              i18n.terms.modals.deleteTerm.title
+                            }
                           />
                         )}
                       </FixedSpaceRow>
@@ -170,7 +147,7 @@ export default React.memo(function TermsSection() {
                 ))}
             </Tbody>
           </Table>
-          {showEditModal ? (
+          {termToEdit ? (
             <InfoModal
               icon={faQuestion}
               type="danger"
@@ -186,20 +163,6 @@ export default React.memo(function TermsSection() {
               }}
             />
           ) : null}
-          {showDeletionModal && (
-            <AsyncFormModal
-              icon={faQuestion}
-              title={i18n.terms.modals.deleteTerm.title}
-              text={i18n.terms.modals.deleteTerm.text}
-              type="warning"
-              resolveAction={deletePreschoolTermHandle}
-              resolveLabel={i18n.terms.modals.deleteTerm.resolve}
-              onSuccess={onCloseDeletionModal}
-              rejectAction={onCloseDeletionModal}
-              rejectLabel={i18n.terms.modals.deleteTerm.reject}
-              data-qa="deletion-modal"
-            />
-          )}
         </>
       ))}
     </>

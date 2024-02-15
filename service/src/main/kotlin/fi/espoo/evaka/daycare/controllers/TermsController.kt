@@ -47,28 +47,6 @@ class TermsController(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
 
-    @GetMapping("/preschool-terms/{id}")
-    fun getPreschoolTerm(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable id: PreschoolTermId
-    ): PreschoolTerm {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.PreschoolTerm.READ,
-                        id
-                    )
-                    tx.getPreschoolTerm(id) ?: throw NotFound("Preschool term $id does not exist")
-                }
-            }
-            .also { Audit.PreschoolTermRead.log(targetId = id) }
-    }
-
     @PostMapping("/preschool-terms")
     fun createPreschoolTerm(
         db: Database,
