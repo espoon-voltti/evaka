@@ -22,9 +22,8 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
 import { reservationHasTimes } from 'lib-common/reservations'
-import TimeRange from 'lib-common/time-range'
+import TimeRange, { TimeRangeEndpoint } from 'lib-common/time-range'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -77,7 +76,7 @@ export default React.memo(function ChildDayAttendance({
   }, [dailyServiceTimes, reservations, date])
 
   const isWithinExpectedTimes = useCallback(
-    (time: LocalTime) =>
+    (time: TimeRangeEndpoint) =>
       expectedTimes.some((expected) => expected.includes(time)),
     [expectedTimes]
   )
@@ -85,22 +84,12 @@ export default React.memo(function ChildDayAttendance({
   const intermittent = serviceNeedInfo?.shiftCare === 'INTERMITTENT'
   if (dateInfo.isHoliday && !attendance && !intermittent) return null
 
-  const unitIsNotOpenOnReservationStart = reservations.some(
+  const unitIsNotOpenOnReservation = reservations.some(
     (reservation) =>
       dateInfo.time === null ||
       dateInfo.isHoliday ||
       (reservation.type === 'TIMES' &&
-        !dateInfo.time.includesStartOf(
-          new TimeRange(reservation.startTime, reservation.endTime)
-        ))
-  )
-
-  const unitIsNotOpenOnReservationEnd = reservations.some(
-    (reservation) =>
-      dateInfo.time === null ||
-      dateInfo.isHoliday ||
-      (reservation.type === 'TIMES' &&
-        !dateInfo.time.includesEndOf(
+        !dateInfo.time.contains(
           new TimeRange(reservation.startTime, reservation.endTime)
         ))
   )
@@ -109,7 +98,7 @@ export default React.memo(function ChildDayAttendance({
     attendanceIndex === 0 &&
     attendance === undefined &&
     intermittent &&
-    (unitIsNotOpenOnReservationStart || unitIsNotOpenOnReservationEnd) &&
+    unitIsNotOpenOnReservation &&
     !inOtherUnit
 
   return (
@@ -130,7 +119,9 @@ export default React.memo(function ChildDayAttendance({
                 data-qa="attendance-start"
                 warning={
                   attendance
-                    ? !isWithinExpectedTimes(attendance.startTime)
+                    ? !isWithinExpectedTimes(
+                        new TimeRangeEndpoint.Start(attendance.startTime)
+                      )
                     : false
                 }
               >
@@ -140,7 +131,9 @@ export default React.memo(function ChildDayAttendance({
                 data-qa="attendance-end"
                 warning={
                   attendance?.endTime
-                    ? !isWithinExpectedTimes(attendance.endTime)
+                    ? !isWithinExpectedTimes(
+                        new TimeRangeEndpoint.End(attendance.endTime)
+                      )
                     : false
                 }
               >

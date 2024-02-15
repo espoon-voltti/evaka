@@ -6,7 +6,7 @@ import { JsonOf } from './json'
 import LocalTime from './local-time'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-namespace TimeRangeEndpoint {
+export namespace TimeRangeEndpoint {
   export class Start {
     isStart = true
     isEnd = false
@@ -139,7 +139,7 @@ namespace TimeRangeEndpoint {
   }
 }
 
-type TimeRangeEndpoint = TimeRangeEndpoint.Start | TimeRangeEndpoint.End
+export type TimeRangeEndpoint = TimeRangeEndpoint.Start | TimeRangeEndpoint.End
 
 function minOf(a: TimeRangeEndpoint, b: TimeRangeEndpoint): TimeRangeEndpoint {
   return a.isBefore(b) ? a : b
@@ -209,19 +209,19 @@ export default class TimeRange {
     )
   }
 
-  includes(time: LocalTime): boolean {
-    const t = new TimeRangeEndpoint.Start(time)
-    return t.isEqualOrAfter(this.start) && t.isBefore(this.end)
-  }
-
-  includesStartOf(other: TimeRange): boolean {
-    return (
-      this.start.isEqualOrBefore(other.start) && other.start.isBefore(this.end)
-    )
-  }
-
-  includesEndOf(other: TimeRange): boolean {
-    return this.start.isBefore(other.end) && other.end.isEqualOrBefore(this.end)
+  includes(time: LocalTime): boolean
+  includes(time: TimeRangeEndpoint): boolean
+  includes(time: LocalTime | TimeRangeEndpoint): boolean {
+    if (time instanceof LocalTime) {
+      const t = new TimeRangeEndpoint.Start(time)
+      return t.isEqualOrAfter(this.start) && t.isBefore(this.end)
+    } else if (time.isStart) {
+      return time.isEqualOrAfter(this.start) && time.isBefore(this.end)
+    } else if (time.isEnd) {
+      return time.isAfter(this.start) && time.isEqualOrBefore(this.end)
+    } else {
+      throw new Error('Unknown TimeRangeEndpoint type')
+    }
   }
 
   formatStart(): string {

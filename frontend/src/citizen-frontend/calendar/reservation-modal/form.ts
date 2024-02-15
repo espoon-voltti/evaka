@@ -60,11 +60,11 @@ export const limitedLocalTimeRange = () =>
       if (value === undefined) return ValidationSuccess.of(undefined)
 
       let errors: FieldErrors<'range'> | undefined = undefined
-      if (!validRange.includesStartOf(value)) {
+      if (!validRange.includes(value.start)) {
         errors = errors ?? {}
         errors.startTime = 'range'
       }
-      if (!validRange.includesEndOf(value)) {
+      if (!validRange.includes(value.end)) {
         errors = errors ?? {}
         errors.endTime = 'range'
       }

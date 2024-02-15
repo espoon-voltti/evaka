@@ -95,7 +95,7 @@ describe('TimeRange', () => {
     expect(TimeRange.intersection([x])?.isEqual(x)).toBe(true)
   })
 
-  test('includes', () => {
+  test('includes with LocalTime', () => {
     const range = testRange(8, 16)
     expect(range.includes(LocalTime.of(7, 59, 59, 999999999))).toBe(false)
     expect(range.includes(LocalTime.of(8, 0))).toBe(true)
@@ -103,25 +103,39 @@ describe('TimeRange', () => {
     expect(range.includes(LocalTime.of(16, 0))).toBe(false)
   })
 
-  test('includesStartOf and includesEndOf work', () => {
+  test('includes with TimeRangeEndpoint', () => {
     //   01 02 03 04 05 06
     // A ---------_
     // B       ---------_
     const a = testRange(1, 4)
     const b = testRange(3, 6)
-    expect(a.includesStartOf(b)).toBe(true)
-    expect(b.includesStartOf(a)).toBe(false)
-    expect(a.includesEndOf(b)).toBe(false)
-    expect(b.includesEndOf(a)).toBe(true)
+    expect(a.includes(a.start)).toBe(true)
+    expect(a.includes(a.end)).toBe(true)
+    expect(b.includes(b.start)).toBe(true)
+    expect(b.includes(b.end)).toBe(true)
+    expect(a.includes(b.start)).toBe(true)
+    expect(b.includes(a.start)).toBe(false)
+    expect(a.includes(b.end)).toBe(false)
+    expect(b.includes(a.end)).toBe(true)
 
     //   01 02 03 04 05 06
     // C ------_
-    // D       -------- _
+    // D       ---------_
     const c = testRange(1, 3)
     const d = testRange(3, 6)
-    expect(c.includesStartOf(d)).toBe(false)
-    expect(d.includesStartOf(c)).toBe(false)
-    expect(c.includesEndOf(d)).toBe(false)
-    expect(d.includesEndOf(c)).toBe(false)
+    expect(c.includes(d.start)).toBe(false)
+    expect(c.includes(d.end)).toBe(false)
+    expect(d.includes(c.start)).toBe(false)
+    expect(d.includes(c.end)).toBe(false)
+
+    //   00 01 02 ... 23 00
+    // e ------_
+    // f              ---_
+    const e = testRange(0, 2)
+    const f = testRange(23, 0)
+    expect(e.includes(f.start)).toBe(false)
+    expect(e.includes(f.end)).toBe(false)
+    expect(f.includes(e.start)).toBe(false)
+    expect(f.includes(e.end)).toBe(false)
   })
 })
