@@ -721,8 +721,8 @@ describe('resetTimes', () => {
           selectedChildren: ['child-1', 'child-2']
         })
       ).toEqual({
-        branch: 'weeklyTimes',
-        state: []
+        branch: 'notInitialized',
+        state: undefined
       })
     })
 
@@ -2085,11 +2085,8 @@ describe('resetTimes', () => {
           selectedChildren: ['child-1', 'child-2']
         })
       ).toEqual({
-        branch: 'irregularTimes',
-        state: selectedRangeWeekDays.map((date) => ({
-          date,
-          day: { branch: 'readOnly', state: 'noChildren' }
-        }))
+        branch: 'notInitialized',
+        state: undefined
       })
     })
 

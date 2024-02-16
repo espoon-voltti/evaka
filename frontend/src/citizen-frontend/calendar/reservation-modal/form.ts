@@ -359,19 +359,17 @@ export function resetTimes(
   const selectedRangeDates = [...selectedRange.dates()]
   const includedWeekDays = [1, 2, 3, 4, 5, 6, 7].filter(
     (dayOfWeek) =>
-      dayProperties.isOperationalDayForAnyChild(dayOfWeek) &&
+      dayProperties.isOperationalDayForAnyChild(dayOfWeek, selectedChildren) &&
       selectedRangeDates.some((date) => date.getIsoDayOfWeek() === dayOfWeek)
   )
-  if (repetition === 'DAILY') {
-    if (includedWeekDays.length === 0) {
-      // This doesn't happen in practice because selectedRange is limited
-      // so that at least one child has a placement
-      return {
-        branch: 'notInitialized',
-        state: undefined
-      }
+  if (includedWeekDays.length === 0) {
+    return {
+      branch: 'notInitialized',
+      state: undefined
     }
+  }
 
+  if (repetition === 'DAILY') {
     const holidayPeriodState =
       dayProperties.holidayPeriodStateForRange(selectedRange)
 
@@ -719,7 +717,7 @@ function timeRangeIntersection(ranges: TimeRange[]): TimeRange {
 
 export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
-  private readonly combinedOperationDays: Set<number>
+  private readonly operationDaysByChild: Record<UUID, Set<number> | undefined>
 
   minDate: LocalDate | undefined
   maxDate: LocalDate | undefined
@@ -730,7 +728,7 @@ export class DayProperties {
     private readonly holidayPeriods: HolidayPeriodInfo[]
   ) {
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
-    const combinedOperationDays = new Set<number>()
+    const operationDaysByChild: Record<UUID, Set<number> | undefined> = {}
     const holidays = new Set<string>()
 
     let minDate: LocalDate | undefined = undefined
@@ -751,14 +749,19 @@ export class DayProperties {
         holidays.add(day.date.formatIso())
       }
       day.children.forEach((child) => {
-        combinedOperationDays.add(dayOfWeek)
-
         let childReservableDays = reservableDaysByChild[child.childId]
         if (!childReservableDays) {
           childReservableDays = new Set()
           reservableDaysByChild[child.childId] = childReservableDays
         }
         childReservableDays.add(day.date.formatIso())
+
+        let childOperationDays = operationDaysByChild[child.childId]
+        if (!childOperationDays) {
+          childOperationDays = new Set()
+          operationDaysByChild[child.childId] = childOperationDays
+        }
+        childOperationDays.add(dayOfWeek)
       })
     })
 
@@ -766,11 +769,16 @@ export class DayProperties {
     this.maxDate = maxDate
     this.calendarDays = calendarDays
     this.reservableDaysByChild = reservableDaysByChild
-    this.combinedOperationDays = combinedOperationDays
+    this.operationDaysByChild = operationDaysByChild
   }
 
-  isOperationalDayForAnyChild(dayOfWeek: number): boolean {
-    return this.combinedOperationDays.has(dayOfWeek)
+  isOperationalDayForAnyChild(
+    dayOfWeek: number,
+    selectedChildren: string[]
+  ): boolean {
+    return selectedChildren.some((childId) =>
+      this.operationDaysByChild[childId]?.has(dayOfWeek)
+    )
   }
 
   getReservableDatesInRangeForChild(range: FiniteDateRange, childId: UUID) {
