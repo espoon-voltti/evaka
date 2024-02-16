@@ -2451,7 +2451,10 @@ export const fi = {
         extraBillableAbsence:
           'Läsnäoloaikojen mukaan lapsi oli läsnä maksullisessa varhaiskasvatuksessa.',
         missingBillableAbsence:
-          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksullisessa varhaiskasvatuksessa.'
+          'Läsnäoloaikojen mukaan lapsi ei ollut läsnä maksullisessa varhaiskasvatuksessa.',
+        errorCodes: {
+          attendanceInFuture: 'Läsnäolo ei voi olla tulevaisuudessa'
+        }
       },
       reservationNoTimes: 'Läsnä',
       missingHolidayReservation: 'Lomavaraus puuttuu',

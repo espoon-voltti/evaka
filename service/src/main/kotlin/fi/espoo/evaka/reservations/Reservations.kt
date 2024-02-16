@@ -459,7 +459,10 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
         .map { HelsinkiDateTime.of(date, it) }
         .forEach {
             if (it.isAfter(now.plusMinutes(30))) {
-                throw BadRequest("Cannot mark attendances into future")
+                throw BadRequest(
+                    "Cannot mark attendances into future",
+                    errorCode = "attendanceInFuture"
+                )
             }
         }
 

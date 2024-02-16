@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, fasExclamationTriangle, faTrash } from 'Icons'
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -76,6 +76,14 @@ const reservationForm = required(localTimeRange())
 const attendanceForm = required(openEndedLocalTimeRange())
 
 const absenceForm = oneOf<AbsenceType>()
+
+const absenceErrorCodes = ['attendanceInFuture'] as const
+type AbsenceErrorCode = (typeof absenceErrorCodes)[number]
+function isAbsenceErrorCode(
+  errorCode: string | undefined
+): errorCode is AbsenceErrorCode {
+  return !!errorCode && absenceErrorCodes.some((e) => e === errorCode)
+}
 
 const form = transformed(
   object({
@@ -164,6 +172,8 @@ export default React.memo(function ChildDateModal({
   const today = LocalDate.todayInHelsinkiTz()
   const editingFuture = date.isAfter(today)
 
+  const [mutationError, setMutationError] = useState<string | null>(null)
+
   const boundForm = useForm(
     form,
     () => ({
@@ -223,7 +233,13 @@ export default React.memo(function ChildDateModal({
             options: []
           }
     }),
-    i18n.validationErrors
+    i18n.validationErrors,
+    {
+      onUpdate: (_, nextState) => {
+        setMutationError(null)
+        return nextState
+      }
+    }
   )
 
   const {
@@ -262,6 +278,15 @@ export default React.memo(function ChildDateModal({
       resolveAction={() => boundForm.value()}
       resolveLabel={i18n.common.save}
       onSuccess={onClose}
+      onFailure={(e) => {
+        if (isAbsenceErrorCode(e.errorCode)) {
+          setMutationError(
+            i18n.unit.attendanceReservations.childDateModal.errorCodes[
+              e.errorCode
+            ]
+          )
+        }
+      }}
       rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
     >
@@ -437,6 +462,7 @@ export default React.memo(function ChildDateModal({
           </FixedSpaceColumn>
         )}
       </FixedSpaceColumn>
+      {!!mutationError && <AlertBox message={mutationError} />}
     </MutateFormModal>
   )
 })
