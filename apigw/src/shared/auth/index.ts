@@ -4,7 +4,6 @@
 
 import express, { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging.js'
-import { gatewayRole } from '../config.js'
 import { Profile } from '@node-saml/passport-saml'
 import { UserType } from '../service-client.js'
 import passport, { AuthenticateCallback } from 'passport'
@@ -12,22 +11,13 @@ import { fromCallback } from '../promise-utils.js'
 import { Sessions } from '../session.js'
 import { randomBytes } from 'node:crypto'
 
-const auditEventGatewayId =
-  (gatewayRole === 'enduser' && 'eugw') ||
-  (gatewayRole === 'internal' && 'ingw') ||
-  (gatewayRole === undefined && 'apigw')
-
 export function requireAuthentication(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   if (!req.user || !req.user.id) {
-    logAuditEvent(
-      `evaka.${auditEventGatewayId}.auth.not_found`,
-      req,
-      'Could not find user'
-    )
+    logAuditEvent(`evaka.apigw.auth.not_found`, req, 'Could not find user')
     res.sendStatus(401)
     return
   }

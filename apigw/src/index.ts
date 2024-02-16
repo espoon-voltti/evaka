@@ -4,12 +4,7 @@
 
 import './tracer.js'
 
-import {
-  configFromEnv,
-  gatewayRole,
-  httpPort,
-  toRedisClientOpts
-} from './shared/config.js'
+import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
 import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
@@ -60,19 +55,13 @@ app.use(loggingMiddleware)
 passport.serializeUser<Express.User>((user, done) => done(null, user))
 passport.deserializeUser<Express.User>((user, done) => done(null, user))
 
-if (!gatewayRole || gatewayRole === 'enduser') {
-  app.use('/api/application', enduserGwRouter(config, redisClient))
-}
-if (!gatewayRole || gatewayRole === 'internal') {
-  app.use('/api/csp', csp)
-  app.use('/api/internal', internalGwRouter(config, redisClient))
-}
+app.use('/api/application', enduserGwRouter(config, redisClient))
+app.use('/api/csp', csp)
+app.use('/api/internal', internalGwRouter(config, redisClient))
 app.use(fallbackErrorHandler)
 
 const server = app.listen(httpPort, () =>
-  logInfo(
-    `Evaka API Gateway (role ${gatewayRole}) listening on port ${httpPort}`
-  )
+  logInfo(`Evaka API Gateway listening on port ${httpPort}`)
 )
 server.keepAliveTimeout = 70 * 1000
 server.headersTimeout = 75 * 1000

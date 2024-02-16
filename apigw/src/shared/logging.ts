@@ -7,14 +7,7 @@ import _ from 'lodash'
 import { pino } from 'pino'
 import { pinoHttp } from 'pino-http'
 import queryString from 'query-string'
-import {
-  appBuild,
-  appCommit,
-  gatewayRole,
-  hostIp,
-  prettyLogs,
-  volttiEnv
-} from './config.js'
+import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.js'
 import { createSha256Hash } from './crypto.js'
 import {
   LogFn,
@@ -29,7 +22,7 @@ import {
 
 const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   base: {
-    appName: `evaka-${gatewayRole || 'api'}-gw`,
+    appName: `evaka-api-gw`,
     appBuild: appBuild,
     appCommit: appCommit,
     env: volttiEnv,
