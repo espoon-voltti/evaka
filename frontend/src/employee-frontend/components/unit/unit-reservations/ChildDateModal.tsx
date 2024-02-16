@@ -77,6 +77,14 @@ const attendanceForm = required(openEndedLocalTimeRange())
 
 const absenceForm = oneOf<AbsenceType>()
 
+const absenceErrorCodes = ['attendanceInFuture'] as const
+type AbsenceErrorCode = (typeof absenceErrorCodes)[number]
+function isAbsenceErrorCode(
+  errorCode: string | undefined
+): errorCode is AbsenceErrorCode {
+  return !!errorCode && absenceErrorCodes.some((e) => e === errorCode)
+}
+
 const form = transformed(
   object({
     date: required(localDate()),
@@ -278,9 +286,12 @@ export default React.memo(function ChildDateModal({
       resolveLabel={i18n.common.save}
       onSuccess={onClose}
       onFailure={(e) => {
-        // TODO: How to fix type issues?
-        if (e.errorCode && e.errorCode in i18n.unit.attendanceReservations.childDateModal.errorCodes) {
-          setMutationError(i18n.unit.attendanceReservations.childDateModal.errorCodes[e.errorCode])
+        if (isAbsenceErrorCode(e.errorCode)) {
+          setMutationError(
+            i18n.unit.attendanceReservations.childDateModal.errorCodes[
+              e.errorCode
+            ]
+          )
         }
       }}
       rejectAction={onClose}
