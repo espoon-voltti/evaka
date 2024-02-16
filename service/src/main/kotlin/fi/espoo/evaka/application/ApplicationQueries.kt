@@ -198,9 +198,9 @@ fun Database.Read.fetchApplicationSummaries(
             else null,
             PredicateSql.all(
                 basis.map { applicationBasis ->
-                    PredicateSql {
-                        when (applicationBasis) {
-                            ApplicationBasis.ADDITIONAL_INFO ->
+                    when (applicationBasis) {
+                        ApplicationBasis.ADDITIONAL_INFO ->
+                            PredicateSql {
                                 where(
                                     """
                             (a.document -> 'additionalDetails' ->> 'dietType') != '' OR 
@@ -208,25 +208,31 @@ fun Database.Read.fetchApplicationSummaries(
                             (a.document -> 'additionalDetails' ->> 'allergyType') != ''
                     """
                                 )
-                            ApplicationBasis.SIBLING_BASIS ->
+                            }
+                        ApplicationBasis.SIBLING_BASIS ->
+                            PredicateSql {
                                 where("(a.document -> 'apply' ->> 'siblingBasis')::boolean = true")
-                            ApplicationBasis.ASSISTANCE_NEED ->
-                                where(
-                                    "(a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
-                                )
-                            ApplicationBasis.CLUB_CARE -> where("was_on_club_care")
-                            ApplicationBasis.DAYCARE ->
+                            }
+                        ApplicationBasis.ASSISTANCE_NEED -> assistanceNeeded(true)
+                        ApplicationBasis.CLUB_CARE -> PredicateSql { where("was_on_club_care") }
+                        ApplicationBasis.DAYCARE ->
+                            PredicateSql {
                                 where("(a.document ->> 'wasOnDaycare')::boolean = true")
-                            ApplicationBasis.EXTENDED_CARE ->
+                            }
+                        ApplicationBasis.EXTENDED_CARE ->
+                            PredicateSql {
                                 where("(a.document ->> 'extendedCare')::boolean = true")
-                            ApplicationBasis.DUPLICATE_APPLICATION -> where("has_duplicates")
-                            ApplicationBasis.URGENT ->
-                                where("(a.document ->> 'urgent')::boolean = true")
-                            ApplicationBasis.HAS_ATTACHMENTS ->
+                            }
+                        ApplicationBasis.DUPLICATE_APPLICATION ->
+                            PredicateSql { where("has_duplicates") }
+                        ApplicationBasis.URGENT ->
+                            PredicateSql { where("(a.document ->> 'urgent')::boolean = true") }
+                        ApplicationBasis.HAS_ATTACHMENTS ->
+                            PredicateSql {
                                 where(
                                     "((a.document ->> 'urgent')::boolean = true OR (a.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
                                 )
-                        }
+                            }
                     }
                 }
             ),
