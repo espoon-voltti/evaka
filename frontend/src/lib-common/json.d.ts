@@ -7,6 +7,7 @@ import FiniteDateRange from './finite-date-range'
 import HelsinkiDateTime from './helsinki-date-time'
 import LocalDate from './local-date'
 import LocalTime from './local-time'
+import TimeInterval from './time-interval'
 import TimeRange from './time-range'
 
 export type JsonOf<T> = T extends string | number | boolean | null | undefined
@@ -23,21 +24,23 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
             ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> }
             : T extends DateRange
               ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> | null }
-              : T extends TimeRange
-                ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> }
-                : T extends Map<string, infer U>
-                  ? { [key: string]: JsonOf<U> }
-                  : T extends Set<infer U>
-                    ? JsonOf<U>[]
-                    : T extends [infer A, infer B]
-                      ? [JsonOf<A>, JsonOf<B>]
-                      : T extends [infer A, infer B, infer C]
-                        ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
-                        : T extends (infer U)[]
-                          ? JsonOf<U>[]
-                          : T extends object // eslint-disable-line @typescript-eslint/ban-types
-                            ? { [P in keyof T]: JsonOf<T[P]> }
-                            : never
+              : T extends TimeInterval
+                ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> | null }
+                : T extends TimeRange
+                  ? { start: JsonOf<LocalTime>; end: JsonOf<LocalTime> }
+                  : T extends Map<string, infer U>
+                    ? { [key: string]: JsonOf<U> }
+                    : T extends Set<infer U>
+                      ? JsonOf<U>[]
+                      : T extends [infer A, infer B]
+                        ? [JsonOf<A>, JsonOf<B>]
+                        : T extends [infer A, infer B, infer C]
+                          ? [JsonOf<A>, JsonOf<B>, JsonOf<C>]
+                          : T extends (infer U)[]
+                            ? JsonOf<U>[]
+                            : T extends object // eslint-disable-line @typescript-eslint/ban-types
+                              ? { [P in keyof T]: JsonOf<T[P]> }
+                              : never
 
 /**
  * Type operator to check if the given type can be converted to reasonable JSON without extra code.
