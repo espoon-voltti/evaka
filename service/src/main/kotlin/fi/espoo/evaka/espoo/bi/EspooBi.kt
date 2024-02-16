@@ -118,7 +118,7 @@ SELECT
     ) AS preferredUnits,
     (document ->> 'preferredStartDate') :: date AS preferred_start_date,
     (document ->> 'urgent') :: boolean AS urgent,
-    (document -> 'careDetails' ->> 'assistanceNeeded') :: boolean AS assistanceNeeded,
+    coalesce(document -> 'careDetails' ->> 'assistanceNeeded', document -> 'clubCare' ->> 'assistanceNeeded') :: boolean AS assistanceNeeded,
     (document ->> 'extendedCare') :: boolean AS shift_care
 FROM application a
 WHERE status != 'CREATED'

@@ -16,6 +16,8 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.application.persistence.DatabaseForm
+import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
@@ -685,12 +687,16 @@ class DevApi(
                             applicationId = id,
                             revision = 1,
                             document =
-                                DaycareFormV0.fromForm2(
-                                    application.form,
-                                    application.type,
-                                    false,
-                                    false
-                                )
+                                if (application.type == ApplicationType.CLUB) {
+                                    ClubFormV0.fromForm2(application.form, false, false)
+                                } else {
+                                    DaycareFormV0.fromForm2(
+                                        application.form,
+                                        application.type,
+                                        false,
+                                        false
+                                    )
+                                }
                         )
                     )
                     id
@@ -2024,7 +2030,7 @@ data class DevApplicationForm(
     val applicationId: ApplicationId,
     val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now(),
     val revision: Int,
-    val document: DaycareFormV0,
+    val document: DatabaseForm,
     val updated: HelsinkiDateTime? = HelsinkiDateTime.now()
 )
 

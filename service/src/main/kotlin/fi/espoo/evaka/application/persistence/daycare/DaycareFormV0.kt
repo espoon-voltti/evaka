@@ -49,6 +49,14 @@ data class DaycareFormV0(
     val additionalDetails: DaycareAdditionalDetails = DaycareAdditionalDetails(),
     val maxFeeAccepted: Boolean = false
 ) : DatabaseForm.DaycareForm() {
+    init {
+        when (type) {
+            ApplicationType.CLUB -> error("Invalid application type $type")
+            ApplicationType.DAYCARE,
+            ApplicationType.PRESCHOOL -> {}
+        }
+    }
+
     override fun hideGuardianAddress(): DaycareFormV0 {
         return this.copy(
             guardian =
