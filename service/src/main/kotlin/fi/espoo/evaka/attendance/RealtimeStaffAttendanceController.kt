@@ -236,7 +236,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     it.arrived,
                                     it.departed,
                                     occupancyCoefficients[it.employeeId],
-                                    it.type
+                                    it.type,
+                                    false
                                 )
                             }
 
@@ -249,7 +250,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     it.arrived,
                                     it.departed,
                                     if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                                    else occupancyCoefficientZero
+                                    else occupancyCoefficientZero,
+                                    false
                                 )
                             }
                         staffAttendanceIds + externalStaffAttendanceIds
@@ -331,7 +333,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             it.arrived,
                             it.departed,
                             occupancyCoefficients[it.groupId],
-                            it.type
+                            it.type,
+                            false
                         )
                     }
                 }
@@ -403,7 +406,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             it.arrived,
                             it.departed,
                             if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                            else occupancyCoefficientZero
+                            else occupancyCoefficientZero,
+                            false
                         )
                     }
                 }

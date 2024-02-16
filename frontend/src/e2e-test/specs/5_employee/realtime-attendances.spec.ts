@@ -256,7 +256,7 @@ describe('Realtime staff attendances', () => {
       })
     })
 
-    test('Automatically closed attendance is indicated', async () => {
+    test('Automatically closed attendance is indicated and cleared on edit', async () => {
       const yesterday = mockedToday.subDays(1)
 
       await Fixture.realtimeStaffAttendance()
@@ -282,6 +282,16 @@ describe('Realtime staff attendances', () => {
       })
 
       await staffAttendances.assertTooltip(0, yesterday, 'Automaattikatkaistu')
+
+      const modal = await staffAttendances.openDetails(0, yesterday)
+      await modal.setDepartureTime(0, '15:00')
+      await modal.save()
+      await staffAttendances.assertTableRow({
+        rowIx: 0,
+        nth: 1,
+        name: staffName(groupStaff),
+        attendances: [['07:00', '15:00']]
+      })
     })
   })
   describe('Details modal', () => {
