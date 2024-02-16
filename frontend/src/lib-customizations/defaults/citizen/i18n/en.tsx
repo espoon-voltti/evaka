@@ -330,7 +330,8 @@ const en: Translations = {
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
     reservationNoTimes: 'Present',
-    realized: 'Realized',
+    attendance: 'Realized',
+    usedService: 'Used service time',
     reservationsAndRealized: 'Period of attendance',
     events: 'Events of the day',
     noActivePlacements:

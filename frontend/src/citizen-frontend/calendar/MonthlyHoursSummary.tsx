@@ -23,14 +23,18 @@ const SummaryContainer = styled.div`
   }
 `
 
-const HoursMinutes = ({ minutes }: { minutes: number }) => {
+export const HoursMinutes = ({ minutes }: { minutes: number }) => {
   const hours = Math.floor(minutes / 60)
   const extraMinutes = minutes % 60
 
   const i18n = useTranslation()
   return (
     <>
-      {hours} {i18n.calendar.monthSummary.hours}
+      {hours > 0 && (
+        <>
+          {hours} {i18n.calendar.monthSummary.hours}
+        </>
+      )}
       {!!extraMinutes &&
         ' ' + extraMinutes + ' ' + i18n.calendar.monthSummary.minutes}
     </>

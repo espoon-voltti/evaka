@@ -327,7 +327,8 @@ const sv: Translations = {
     termBreak: 'Ingen undervisning idag',
     reservation: 'Närvarande',
     reservationNoTimes: 'Närvarande',
-    realized: 'Förverkligad',
+    attendance: 'Förverkligad',
+    usedService: 'TODO: Used service time',
     reservationsAndRealized: 'Närvaroperiod',
     events: 'Dagens händelser',
     noActivePlacements:

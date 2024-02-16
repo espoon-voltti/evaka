@@ -325,9 +325,15 @@ export default {
     missingReservation: 'Ilmoitus puuttuu',
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
-    reservation: 'Ilmoitettu aika',
+    reservation: 'Ilmoitettu läsnäolo',
     reservationNoTimes: 'Läsnä',
-    realized: 'Toteutunut aika',
+    attendance: 'Toteutunut läsnäolo',
+    exceedStart: 'Saapunut ilmoitettua aikaisemmin.',
+    exceedEnd: 'Lähtenyt ilmoitettua myöhemmin.',
+    exceedGeneric: 'Toteunut läsnäoloaika ylittää ilmoitetun ajan.',
+    calculatedUsedServiceTime:
+      'Käytetty palveluntarve määräytyy kuukauden palveluntarpeen mukaan.',
+    usedService: 'Käytetty palveluntarve',
     reservationsAndRealized: 'Läsnäoloaika',
     events: 'Päivän tapahtumat',
     noActivePlacements:

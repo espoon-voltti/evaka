@@ -26,11 +26,11 @@ function timeToMinutes(value: LocalTime): number {
  * The functionality can be improved once the reservation data model supports
  * reservations that span multiple days.
  */
-export function attendanceTimeDiffers(
+function attendanceTimeDiffers(
   first: LocalTime | null | undefined,
-  second: LocalTime | null | undefined,
-  thresholdMinutes = 15
+  second: LocalTime | null | undefined
 ): boolean {
+  const thresholdMinutes = 15
   if (!(first && second)) {
     return false
   }
