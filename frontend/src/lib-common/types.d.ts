@@ -14,6 +14,9 @@ export type DeepReadonlyObject<T> = {
 }
 export type OmitInUnion<T, K extends keyof T> = T extends T ? Omit<T, K> : never
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Arg0<T extends (...args: any) => any> = Parameters<T>[0]
+
 // CONCRETE TYPES
 
 export interface BaseAppConfig {
