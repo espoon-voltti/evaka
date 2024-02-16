@@ -680,7 +680,7 @@ const getCommonTimeRanges = (
           .filter(({ childId }) => childIds.includes(childId))
           .map((child) =>
             child.reservations.flatMap((r): TimeRange[] =>
-              r.type === 'TIMES' ? [new TimeRange(r.startTime, r.endTime)] : []
+              r.type === 'TIMES' ? [r.range] : []
             )
           )
       )

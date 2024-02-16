@@ -589,7 +589,7 @@ class DayView extends Element {
     reservations: FormatterReservation[],
     formatter: (res: FormatterReservation) => string = (
       r: FormatterReservation
-    ) => `${r.startTime} – ${r.endTime}`
+    ) => `${r.startTime}–${r.endTime}`
   ) {
     const child = this.#childSection(childId)
     for (const [i, res] of reservations.entries()) {

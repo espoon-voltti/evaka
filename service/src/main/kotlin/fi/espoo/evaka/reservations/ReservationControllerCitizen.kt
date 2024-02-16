@@ -156,7 +156,7 @@ class ReservationControllerCitizen(
                                                             date > today ||
                                                                 date == today &&
                                                                     childAttendances.all {
-                                                                        it.endTime == null
+                                                                        it.end == null
                                                                     }
                                                         val usedServiceResult =
                                                             placementDay.daycareHoursPerMonth

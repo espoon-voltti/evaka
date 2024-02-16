@@ -5,6 +5,7 @@
 import { Failure, Response, Result, Success } from 'lib-common/api'
 import {
   AbsenceUpsert,
+  deserializeJsonGroupMonthCalendar,
   GroupMonthCalendar,
   HolidayReservationsDelete,
   Presence
@@ -16,13 +17,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
-
-import {
-  deserializeGroupMonthCalendarChild,
-  deserializeGroupMonthCalendarDay
-} from '../types/absence'
 
 import { client } from './client'
 
@@ -40,15 +35,7 @@ export async function getGroupMonthCalendar(
     .get<JsonOf<GroupMonthCalendar>>(`/absences/${groupId}`, {
       params: { ...params, includeNonOperationalDays }
     })
-    .then((res) => res.data)
-    .then((data) => ({
-      ...data,
-      children: data.children.map(deserializeGroupMonthCalendarChild),
-      daycareOperationTimes: data.daycareOperationTimes.map((range) =>
-        range !== null ? TimeRange.parseJson(range) : null
-      ),
-      days: data.days.map(deserializeGroupMonthCalendarDay)
-    }))
+    .then((res) => deserializeJsonGroupMonthCalendar(res.data))
     .then((v) => Success.of(v))
     .catch((e) => {
       console.error(e)

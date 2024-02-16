@@ -292,18 +292,13 @@ const addTestData = async (date: LocalDate) => {
 
 const getFormatterReservationOutput = (res: FormatterReservation) =>
   res.isOverdraft
-    ? `${res.startTime} – ${res.endTime} Ilta-/vuorohoito`
-    : `${res.startTime} – ${res.endTime}`
+    ? `${res.startTime}–${res.endTime} Ilta-/vuorohoito`
+    : `${res.startTime}–${res.endTime}`
 
-const getTwoPartReservationOutput = (
-  reservations: TwoPartReservation,
-  separatorString = '–'
-) =>
+const getTwoPartReservationOutput = (reservations: TwoPartReservation) =>
   reservations
     .map(
       (r) =>
-        `${r.startTime}${separatorString}${r.endTime}${
-          r.isOverdraft ? ' Ilta-/vuorohoito' : ''
-        }`
+        `${r.startTime}–${r.endTime}${r.isOverdraft ? ' Ilta-/vuorohoito' : ''}`
     )
     .join(', ')

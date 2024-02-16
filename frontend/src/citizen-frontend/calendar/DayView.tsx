@@ -520,15 +520,9 @@ function computeModalData(
       duplicateInfo: duplicateChildInfo[child.childId],
       attendances:
         child.attendances.length > 0
-          ? child.attendances.map(({ startTime, endTime }) => {
-              const start = startTime.format()
-              const end = endTime?.format() ?? ''
-              return (
-                <div key={`${start}-${end}`}>
-                  {start} – {end}
-                </div>
-              )
-            })
+          ? child.attendances.map((attendance) => (
+              <div key={attendance.format()}>{attendance.format()}</div>
+            ))
           : '–',
       showAttendanceWarning: reservationsAndAttendancesDiffer(
         child.reservations,
@@ -725,7 +719,7 @@ const Reservations = React.memo(function Reservations({
     <div data-qa="reservations">
       {withTimes.map((reservation, i) => (
         <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
-          {formatReservation(reservation, reservableTimeRange, i18n, ' – ')}
+          {formatReservation(reservation, reservableTimeRange, i18n)}
         </ReservationRow>
       ))}
     </div>

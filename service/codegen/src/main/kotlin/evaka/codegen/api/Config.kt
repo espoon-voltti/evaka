@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
 import fi.espoo.evaka.pis.SystemController
+import fi.espoo.evaka.reservations.TimeInterval
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.domain.DateRange
@@ -44,6 +45,7 @@ object Imports {
         TsImport.Default(LibCommon / "helsinki-date-time.ts", name = "HelsinkiDateTime")
     val finiteDateRange = TsImport.Default(LibCommon / "finite-date-range.ts", "FiniteDateRange")
     val dateRange = TsImport.Default(LibCommon / "date-range.ts", "DateRange")
+    val timeInterval = TsImport.Default(LibCommon / "time-interval.ts", "TimeInterval")
     val timeRange = TsImport.Default(LibCommon / "time-range.ts", "TimeRange")
     val vasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "VasuQuestion")
     val mapVasuQuestion = TsImport.Named(LibCommon / "api-types/vasu.ts", "mapVasuQuestion")
@@ -140,6 +142,17 @@ val defaultMetadata =
                 serializePathVariable = null,
                 serializeRequestParam = null,
                 Imports.finiteDateRange
+            ),
+        TimeInterval::class to
+            TsExternalTypeRef(
+                "TimeInterval",
+                keyRepresentation = null,
+                deserializeJson = { json ->
+                    TsCode { "${ref(Imports.timeInterval)}.parseJson(${inline(json)})" }
+                },
+                serializePathVariable = null,
+                serializeRequestParam = null,
+                Imports.timeInterval
             ),
         TimeRange::class to
             TsExternalTypeRef(

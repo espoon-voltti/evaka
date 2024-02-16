@@ -10,15 +10,14 @@ import styled, { css } from 'styled-components'
 import { mapScheduleType } from 'lib-common/api-types/placement'
 import {
   ReservableTimeRange,
+  Reservation,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import LocalTime from 'lib-common/local-time'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
-import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -164,12 +163,7 @@ const groupChildren = (
           return {
             childId: child.childId,
             type: 'attendance',
-            text: child.attendances
-              .map(
-                ({ startTime, endTime }) =>
-                  `${startTime.format()}–${endTime?.format() ?? ''}`
-              )
-              .join(', ')
+            text: child.attendances.map((a) => a.format()).join(', ')
           }
         }
 
@@ -250,13 +244,11 @@ function groupText(group: GroupedDailyChildren, i18n: Translations) {
 }
 
 export const formatReservation = (
-  reservationTimes: { startTime: LocalTime; endTime: LocalTime },
+  reservation: Reservation.Times,
   reservableTimeRange: ReservableTimeRange,
-  i18n: Translations,
-  separator = '–'
+  i18n: Translations
 ) => {
-  const { startTime, endTime } = reservationTimes
-  const timeOutput = `${startTime.format()}${separator}${endTime.format()}`
+  const timeOutput = reservation.range.format()
 
   if (!featureFlags.intermittentShiftCare) {
     return timeOutput
@@ -265,7 +257,7 @@ export const formatReservation = (
       reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE' &&
       (reservableTimeRange.placementUnitOperationTime === null ||
         !reservableTimeRange.placementUnitOperationTime.contains(
-          new TimeRange(startTime, endTime)
+          reservation.range
         ))
 
     return showIntermittentShiftCareNotice

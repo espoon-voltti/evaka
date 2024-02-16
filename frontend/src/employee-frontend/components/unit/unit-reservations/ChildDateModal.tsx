@@ -104,8 +104,8 @@ const form = transformed(
       }
     }
     for (let i = 1; i < attendances.length; i++) {
-      const prevEnd = attendances[i - 1].endTime
-      if (!prevEnd || attendances[i].startTime.isBefore(prevEnd)) {
+      const prev = attendances[i - 1]
+      if (prev.overlaps(attendances[i])) {
         return ValidationError.field('attendances', 'timeFormat')
       }
     }
@@ -116,11 +116,7 @@ const form = transformed(
       unitId,
       reservations: reservationNoTimes
         ? [{ type: 'NO_TIMES' }]
-        : reservations.map((r) => ({
-            type: 'TIMES',
-            startTime: r.start.asLocalTime(),
-            endTime: r.end.asLocalTime()
-          })),
+        : reservations.map((range) => ({ type: 'TIMES', range })),
       attendances,
       absenceBillable: billableAbsence ?? null,
       absenceNonbillable: nonBillableAbsence ?? null
@@ -179,8 +175,8 @@ export default React.memo(function ChildDateModal({
           ? childDayRecord.reservations
               .filter((r): r is ReservationResponse.Times => r.type === 'TIMES')
               .map((r) => ({
-                startTime: r.startTime.format(),
-                endTime: r.endTime.format()
+                startTime: r.range.formatStart(),
+                endTime: r.range.formatEnd()
               }))
           : [],
       reservationNoTimes:
@@ -191,8 +187,8 @@ export default React.memo(function ChildDateModal({
       attendances: editingFuture
         ? []
         : childDayRecord.attendances.map((a) => ({
-            startTime: a.startTime.format(),
-            endTime: a.endTime?.format() ?? ''
+            startTime: a.formatStart(),
+            endTime: a.formatEnd()
           })),
       billableAbsence: childDayRecord.possibleAbsenceCategories.includes(
         'BILLABLE'
@@ -252,8 +248,8 @@ export default React.memo(function ChildDateModal({
     )(
       date.isBefore(LocalDate.todayInHelsinkiTz()) &&
         attendances.isValid() &&
-        attendances.value().every(({ endTime }) => endTime !== null)
-        ? attendances.value().map((a) => new TimeRange(a.startTime, a.endTime!))
+        attendances.value().every((a) => a.end !== null)
+        ? attendances.value().flatMap((a) => a.asTimeRange()!)
         : null
     )
   )

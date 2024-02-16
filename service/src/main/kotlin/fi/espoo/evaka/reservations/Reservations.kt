@@ -82,24 +82,17 @@ fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRang
 sealed class Reservation : Comparable<Reservation> {
     @JsonTypeName("NO_TIMES") object NoTimes : Reservation()
 
-    @JsonTypeName("TIMES")
-    data class Times(val startTime: LocalTime, val endTime: LocalTime) : Reservation() {
-        init {
-            if (endTime != LocalTime.of(0, 0) && startTime > endTime) {
-                throw IllegalArgumentException("Times must be in order")
-            }
-        }
-    }
+    @JsonTypeName("TIMES") data class Times(val range: TimeRange) : Reservation()
 
     fun asTimeRange(): TimeRange? =
         when (this) {
             is NoTimes -> null
-            is Times -> TimeRange(startTime, endTime)
+            is Times -> range
         }
 
     override fun compareTo(other: Reservation): Int {
         return when {
-            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is Times && other is Times -> this.range.start.compareTo(other.range.start)
             this is NoTimes && other is NoTimes -> 0
             this is NoTimes && other is Times -> -1
             this is Times && other is NoTimes -> 1
@@ -110,7 +103,7 @@ sealed class Reservation : Comparable<Reservation> {
     companion object {
         fun of(startTime: LocalTime?, endTime: LocalTime?) =
             if (startTime != null && endTime != null) {
-                Times(startTime, endTime)
+                Times(TimeRange(startTime, endTime))
             } else if (startTime == null && endTime == null) {
                 NoTimes
             } else {
@@ -126,12 +119,11 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()
 
     @JsonTypeName("TIMES")
-    data class Times(val startTime: LocalTime, val endTime: LocalTime, val staffCreated: Boolean) :
-        ReservationResponse()
+    data class Times(val range: TimeRange, val staffCreated: Boolean) : ReservationResponse()
 
     override fun compareTo(other: ReservationResponse): Int {
         return when {
-            this is Times && other is Times -> this.startTime.compareTo(other.startTime)
+            this is Times && other is Times -> this.range.start.compareTo(other.range.start)
             this is NoTimes && other is NoTimes -> 0
             this is NoTimes && other is Times -> -1
             this is Times && other is NoTimes -> 1
@@ -142,7 +134,7 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
     fun asTimeRange(): TimeRange? {
         return when (this) {
             is NoTimes -> null
-            is Times -> TimeRange(startTime, endTime)
+            is Times -> range
         }
     }
 
@@ -151,11 +143,7 @@ sealed class ReservationResponse : Comparable<ReservationResponse> {
             when (reservationRow.reservation) {
                 is Reservation.NoTimes -> NoTimes(reservationRow.staffCreated)
                 is Reservation.Times ->
-                    Times(
-                        reservationRow.reservation.startTime,
-                        reservationRow.reservation.endTime,
-                        reservationRow.staffCreated
-                    )
+                    Times(reservationRow.reservation.range, reservationRow.staffCreated)
             }
     }
 }
@@ -167,16 +155,14 @@ data class ReservationRow(
     val staffCreated: Boolean
 )
 
-data class TimeInterval(val startTime: LocalTime, val endTime: LocalTime?) :
-    Comparable<TimeInterval> {
+data class TimeInterval(val start: LocalTime, val end: LocalTime?) : Comparable<TimeInterval> {
     override fun compareTo(other: TimeInterval): Int {
-        return startTime.compareTo(other.startTime).let {
-            if (it != 0) it
-            else (endTime ?: LocalTime.MAX).compareTo(other.endTime ?: LocalTime.MAX)
+        return start.compareTo(other.start).let {
+            if (it != 0) it else (end ?: LocalTime.MAX).compareTo(other.end ?: LocalTime.MAX)
         }
     }
 
-    fun asTimeRange(): TimeRange? = endTime?.let { TimeRange(startTime, it) }
+    fun asTimeRange(): TimeRange? = end?.let { TimeRange(start, it) }
 }
 
 data class CreateReservationsResult(
@@ -397,7 +383,7 @@ fun upsertChildDatePresence(
             WHERE date = ${bind(input.date)} AND child_id = ${bind(input.childId)} AND
             ${when (reservation) {
                 is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
-                is Reservation.Times -> "start_time = ${bind(reservation.startTime)} AND end_time = ${bind(reservation.endTime)}"
+                is Reservation.Times -> "start_time = ${bind(reservation.range.start)} AND end_time = ${bind(reservation.range.end)}"
             }}
         """
                         )
@@ -425,8 +411,8 @@ fun upsertChildDatePresence(
                 input.childId,
                 input.unitId,
                 input.date,
-                attendance.startTime,
-                attendance.endTime
+                attendance.start,
+                attendance.end
             )
         }
 
@@ -457,23 +443,19 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
     if (reservations.size > 2) throw BadRequest("Too many reservations")
     if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1)
         throw BadRequest("Mixed reservation types")
-    reservations.filterIsInstance<Reservation.Times>().forEach { r ->
-        if (!r.endTime.isAfter(r.startTime)) throw BadRequest("Inverted time range")
-    }
     reservations.filterIsInstance<Reservation.Times>().zipWithNext().forEach { (r1, r2) ->
-        if (r2.startTime.isBefore(r1.endTime)) throw BadRequest("Overlapping reservation times")
+        if (r2.range.overlaps(r1.range)) throw BadRequest("Overlapping reservation times")
     }
 
     attendances.forEach { a ->
-        if (a.endTime != null && !a.endTime.isAfter(a.startTime))
-            throw BadRequest("Inverted time range")
+        if (a.end != null && !a.end.isAfter(a.start)) throw BadRequest("Inverted time range")
     }
     attendances.zipWithNext().forEach { (a1, a2) ->
-        if (a1.endTime == null || a2.startTime.isBefore(a1.endTime))
+        if (a1.end == null || a2.start.isBefore(a1.end))
             throw BadRequest("Overlapping attendance times")
     }
     attendances
-        .flatMap { listOfNotNull(it.startTime, it.endTime) }
+        .flatMap { listOfNotNull(it.start, it.end) }
         .map { HelsinkiDateTime.of(date, it) }
         .forEach {
             if (it.isAfter(now.plusMinutes(30))) {
