@@ -19,14 +19,11 @@ import {
 import {
   AbsenceRequest,
   DailyReservationRequest,
-  ReservationResponseDay,
+  deserializeJsonReservationsResponse,
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { parseReservationDto } from 'lib-common/reservations'
-import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
@@ -39,49 +36,7 @@ export async function getReservations(
     .get<JsonOf<ReservationsResponse>>('/citizen/reservations', {
       params: { from: from.formatIso(), to: to.formatIso() }
     })
-    .then((res) => ({
-      ...res.data,
-      days: res.data.days.map(
-        (day): ReservationResponseDay => ({
-          ...day,
-          date: LocalDate.parseIso(day.date),
-          children: day.children.map((child) => ({
-            ...child,
-            reservableTimeRange:
-              child.reservableTimeRange.type === 'NORMAL'
-                ? {
-                    type: 'NORMAL',
-                    range: TimeRange.parseJson(child.reservableTimeRange.range)
-                  }
-                : {
-                    type: 'INTERMITTENT_SHIFT_CARE',
-                    placementUnitOperationTime:
-                      child.reservableTimeRange.placementUnitOperationTime !==
-                      null
-                        ? TimeRange.parseJson(
-                            child.reservableTimeRange.placementUnitOperationTime
-                          )
-                        : null
-                  },
-            attendances: child.attendances.map((r) => ({
-              startTime: LocalTime.parseIso(r.startTime),
-              endTime: r.endTime ? LocalTime.parseIso(r.endTime) : null
-            })),
-            reservations: child.reservations.map(parseReservationDto),
-            usedService:
-              child.usedService !== null
-                ? {
-                    ...child.usedService,
-                    usedServiceRanges: child.usedService.usedServiceRanges.map(
-                      (r) => TimeRange.parseJson(r)
-                    )
-                  }
-                : null
-          }))
-        })
-      ),
-      reservableRange: FiniteDateRange.parseJson(res.data.reservableRange)
-    }))
+    .then((res) => deserializeJsonReservationsResponse(res.data))
 }
 
 export async function postReservations(

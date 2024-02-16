@@ -82,12 +82,24 @@ export default class TimeRange {
     }
   }
 
+  formatIsoStart(): string {
+    return this.start.__inner.formatIso()
+  }
+
   formatStart(): string {
     return this.start.__inner.format()
   }
 
+  formatIsoEnd(): string {
+    return this.end.__inner.formatIso()
+  }
+
   formatEnd(): string {
     return this.end.__inner.format()
+  }
+
+  formatIso(): string {
+    return `${this.formatIsoStart()}–${this.formatIsoEnd()}`
   }
 
   format(): string {

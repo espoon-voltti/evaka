@@ -17,13 +17,14 @@ import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
-  TimeInterval,
   Reservation,
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { reservationHasTimes } from 'lib-common/reservations'
-import TimeRange, { TimeRangeEndpoint } from 'lib-common/time-range'
+import TimeInterval from 'lib-common/time-interval'
+import TimeRange from 'lib-common/time-range'
+import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -89,9 +90,7 @@ export default React.memo(function ChildDayAttendance({
       dateInfo.time === null ||
       dateInfo.isHoliday ||
       (reservation.type === 'TIMES' &&
-        !dateInfo.time.contains(
-          new TimeRange(reservation.startTime, reservation.endTime)
-        ))
+        !dateInfo.time.contains(reservation.range))
   )
 
   const requiresBackupCare =
@@ -118,26 +117,20 @@ export default React.memo(function ChildDayAttendance({
               <AttendanceTime
                 data-qa="attendance-start"
                 warning={
-                  attendance
-                    ? !isWithinExpectedTimes(
-                        new TimeRangeEndpoint.Start(attendance.startTime)
-                      )
-                    : false
+                  attendance ? !isWithinExpectedTimes(attendance.start) : false
                 }
               >
-                {attendance?.startTime?.format() ?? '-'}
+                {attendance?.formatStart() ?? '-'}
               </AttendanceTime>
               <AttendanceTime
                 data-qa="attendance-end"
                 warning={
-                  attendance?.endTime
-                    ? !isWithinExpectedTimes(
-                        new TimeRangeEndpoint.End(attendance.endTime)
-                      )
+                  attendance?.end
+                    ? !isWithinExpectedTimes(attendance.end)
                     : false
                 }
               >
-                {attendance?.endTime?.format() ?? '-'}
+                {attendance?.end ? attendance.formatEnd() : '-'}
               </AttendanceTime>
             </>
           )}
@@ -163,7 +156,7 @@ const getExpectedAttendanceTimes = (
 ): TimeRange[] => {
   const reservationTimes = reservations
     .filter(reservationHasTimes)
-    .map((r) => new TimeRange(r.startTime, r.endTime))
+    .map((r) => r.range)
 
   if (reservationTimes.length > 0) return reservationTimes
 

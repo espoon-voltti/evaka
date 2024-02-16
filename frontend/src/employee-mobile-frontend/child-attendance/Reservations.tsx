@@ -33,12 +33,12 @@ export const Reservations = React.memo(function Reservations({
     <>
       {!hideLabel && <span>{label}:</span>}
       <Whitespace />
-      {reservations.map(({ startTime, endTime }, index) => (
-        <Fragment key={startTime.formatIso()}>
+      {reservations.map(({ range }, index) => (
+        <Fragment key={range.formatIsoStart()}>
           {index !== 0 && <Separator />}
-          <span>{startTime.format()}</span>
+          <span>{range.formatStart()}</span>
           <Dash />
-          <span>{endTime.format()}</span>
+          <span>{range.formatEnd()}</span>
         </Fragment>
       ))}
     </>

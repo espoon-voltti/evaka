@@ -220,8 +220,7 @@ describe('resetTimes', () => {
               reservations: [
                 {
                   type: 'TIMES',
-                  startTime: LocalTime.of(8, 0),
-                  endTime: LocalTime.of(16, 0),
+                  range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                   staffCreated: false
                 }
               ]
@@ -232,8 +231,7 @@ describe('resetTimes', () => {
               reservations: [
                 {
                   type: 'TIMES',
-                  startTime: LocalTime.of(8, 0),
-                  endTime: LocalTime.of(16, 0),
+                  range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                   staffCreated: false
                 }
               ]
@@ -1112,8 +1110,10 @@ describe('resetTimes', () => {
               reservations: [
                 {
                   type: 'TIMES',
-                  startTime: LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
-                  endTime: LocalTime.of(16, 0),
+                  range: new TimeRange(
+                    LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
+                    LocalTime.of(16, 0)
+                  ),
                   staffCreated: false
                 }
               ]
@@ -1124,8 +1124,10 @@ describe('resetTimes', () => {
               reservations: [
                 {
                   type: 'TIMES',
-                  startTime: LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
-                  endTime: LocalTime.of(16, 0),
+                  range: new TimeRange(
+                    LocalTime.of(8, day.date.getIsoDayOfWeek() * 5),
+                    LocalTime.of(16, 0)
+                  ),
                   staffCreated: false
                 }
               ]
@@ -1136,8 +1138,10 @@ describe('resetTimes', () => {
               reservations: [
                 {
                   type: 'TIMES',
-                  startTime: LocalTime.of(8, 15),
-                  endTime: LocalTime.of(16, 0),
+                  range: new TimeRange(
+                    LocalTime.of(8, 15),
+                    LocalTime.of(16, 0)
+                  ),
                   staffCreated: false
                 }
               ]
@@ -1801,8 +1805,10 @@ describe('resetTimes', () => {
                   ? [
                       {
                         type: 'TIMES',
-                        startTime: LocalTime.of(8, 15),
-                        endTime: LocalTime.of(16, 0),
+                        range: new TimeRange(
+                          LocalTime.of(8, 15),
+                          LocalTime.of(16, 0)
+                        ),
                         staffCreated: false
                       }
                     ]
@@ -1909,8 +1915,10 @@ describe('resetTimes', () => {
                     ? [
                         {
                           type: 'TIMES',
-                          startTime: LocalTime.of(8, 0),
-                          endTime: LocalTime.of(16, 0),
+                          range: new TimeRange(
+                            LocalTime.of(8, 0),
+                            LocalTime.of(16, 0)
+                          ),
                           staffCreated: false
                         }
                       ]
@@ -2204,8 +2212,7 @@ describe('resetTimes', () => {
 
       const r: ReservationResponse = {
         type: 'TIMES',
-        startTime: LocalTime.of(8, 0),
-        endTime: LocalTime.of(16, 0),
+        range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
         staffCreated: false
       }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }

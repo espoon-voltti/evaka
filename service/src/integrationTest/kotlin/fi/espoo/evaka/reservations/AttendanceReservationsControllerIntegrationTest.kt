@@ -365,16 +365,15 @@ class AttendanceReservationsControllerIntegrationTest :
                             reservations =
                                 listOf(
                                     ReservationResponse.Times(
-                                        startTime = LocalTime.of(8, 0),
-                                        endTime = LocalTime.of(16, 0),
+                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                                         true
                                     )
                                 ),
                             attendances =
                                 listOf(
                                     TimeInterval(
-                                        startTime = LocalTime.of(8, 15),
-                                        endTime = LocalTime.of(16, 5)
+                                        start = LocalTime.of(8, 15),
+                                        end = LocalTime.of(16, 5)
                                     )
                                 ),
                             absenceBillable = null,
@@ -513,8 +512,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         reservations =
                             listOf(
                                 ReservationResponse.Times(
-                                    LocalTime.of(9, 0),
-                                    LocalTime.of(15, 0),
+                                    TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
                                     true
                                 )
                             ),
@@ -663,8 +661,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     reservations =
                         listOf(
                             ReservationResponse.Times(
-                                LocalTime.of(19, 0),
-                                LocalTime.of(23, 59),
+                                TimeRange(LocalTime.of(19, 0), LocalTime.of(23, 59)),
                                 true
                             )
                         ),
@@ -688,10 +685,12 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     reservations =
                         listOf(
-                            ReservationResponse.Times(LocalTime.of(0, 0), LocalTime.of(8, 0), true),
                             ReservationResponse.Times(
-                                LocalTime.of(17, 30),
-                                LocalTime.of(23, 59),
+                                TimeRange(LocalTime.of(0, 0), LocalTime.of(8, 0)),
+                                true
+                            ),
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(17, 30), LocalTime.of(23, 59)),
                                 true
                             ),
                         ),
@@ -719,7 +718,10 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     reservations =
                         listOf(
-                            ReservationResponse.Times(LocalTime.of(0, 0), LocalTime.of(9, 30), true)
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(0, 0), LocalTime.of(9, 30)),
+                                true
+                            )
                         ),
                     attendances = emptyList(),
                     absenceBillable = null,
@@ -869,16 +871,10 @@ class AttendanceReservationsControllerIntegrationTest :
                 unitId = testDaycare.id,
                 reservations =
                     listOf(
-                        Reservation.Times(
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
-                        ),
-                        Reservation.Times(
-                            startTime = LocalTime.of(22, 0),
-                            endTime = LocalTime.of(23, 59)
-                        )
+                        Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))),
+                        Reservation.Times(TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59)))
                     ),
-                attendances = listOf(TimeInterval(startTime = LocalTime.of(12, 30), null)),
+                attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), null)),
                 absenceBillable = AbsenceType.OTHER_ABSENCE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE
             )
@@ -890,18 +886,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations =
                     listOf(
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0),
+                            TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
                             true
                         ),
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(22, 0),
-                            endTime = LocalTime.of(23, 59),
+                            TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59)),
                             true
                         )
                     ),
-                attendances =
-                    listOf(TimeInterval(startTime = LocalTime.of(12, 30), endTime = null)),
+                attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), end = null)),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
@@ -927,17 +920,11 @@ class AttendanceReservationsControllerIntegrationTest :
                 unitId = testDaycare.id,
                 reservations =
                     listOf(
-                        Reservation.Times(
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0)
-                        ),
-                        Reservation.Times(
-                            startTime = LocalTime.of(21, 30),
-                            endTime = LocalTime.of(23, 59)
-                        )
+                        Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))),
+                        Reservation.Times(TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59)))
                     ),
                 attendances =
-                    listOf(TimeInterval(startTime = LocalTime.of(12, 30), LocalTime.of(17, 0))),
+                    listOf(TimeInterval(start = LocalTime.of(12, 30), LocalTime.of(17, 0))),
                 absenceBillable = AbsenceType.FORCE_MAJEURE,
                 absenceNonbillable = AbsenceType.OTHER_ABSENCE
             )
@@ -949,23 +936,16 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations =
                     listOf(
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(9, 0),
-                            endTime = LocalTime.of(17, 0),
+                            TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
                             true
                         ),
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(21, 30),
-                            endTime = LocalTime.of(23, 59),
+                            TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59)),
                             true
                         )
                     ),
                 attendances =
-                    listOf(
-                        TimeInterval(
-                            startTime = LocalTime.of(12, 30),
-                            endTime = LocalTime.of(17, 0)
-                        )
-                    ),
+                    listOf(TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0))),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true),
                 absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
                 possibleAbsenceCategories =
@@ -1263,13 +1243,11 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations =
                     listOf(
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(8, 0),
-                            endTime = LocalTime.of(12, 0),
+                            TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
                             true
                         ),
                         ReservationResponse.Times(
-                            startTime = LocalTime.of(13, 0),
-                            endTime = LocalTime.of(16, 0),
+                            TimeRange(LocalTime.of(13, 0), LocalTime.of(16, 0)),
                             true
                         )
                     ),

@@ -562,8 +562,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 reservations =
                                     listOf(
                                         ReservationResponse.Times(
-                                            LocalTime.of(9, 0),
-                                            LocalTime.of(16, 0),
+                                            TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false
                                         )
                                     ),
@@ -597,8 +596,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 reservations =
                                     listOf(
                                         ReservationResponse.Times(
-                                            LocalTime.of(9, 0),
-                                            LocalTime.of(16, 0),
+                                            TimeRange(LocalTime.of(9, 0), LocalTime.of(16, 0)),
                                             false
                                         )
                                     ),
@@ -966,12 +964,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             child1.id,
                             reservations =
-                                listOf(ReservationResponse.Times(startTime, endTime, false))
+                                listOf(
+                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                )
                         ),
                         dayChild(
                             child2.id,
                             reservations =
-                                listOf(ReservationResponse.Times(startTime, endTime, false))
+                                listOf(
+                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                )
                         )
                     )
                     .sortedBy { it.childId },
@@ -986,12 +988,16 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             child1.id,
                             reservations =
-                                listOf(ReservationResponse.Times(startTime, endTime, false))
+                                listOf(
+                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                )
                         ),
                         dayChild(
                             child2.id,
                             reservations =
-                                listOf(ReservationResponse.Times(startTime, endTime, false))
+                                listOf(
+                                    ReservationResponse.Times(TimeRange(startTime, endTime), false)
+                                )
                         )
                     )
                     .sortedBy { it.childId },
@@ -1059,7 +1065,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                     dayChild(
                         child.id,
-                        reservations = listOf(ReservationResponse.Times(startTime, endTime, false))
+                        reservations =
+                            listOf(ReservationResponse.Times(TimeRange(startTime, endTime), false))
                     )
                 ),
                 day.children

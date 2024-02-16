@@ -607,8 +607,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 ChildReservation(
                                                     reservation =
                                                         Reservation.Times(
-                                                            LocalTime.of(8, 0),
-                                                            LocalTime.of(16, 0)
+                                                            TimeRange(
+                                                                LocalTime.of(8, 0),
+                                                                LocalTime.of(16, 0)
+                                                            )
                                                         ),
                                                     created =
                                                         HelsinkiDateTime.of(

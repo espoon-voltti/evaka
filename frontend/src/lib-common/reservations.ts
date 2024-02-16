@@ -2,13 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  TimeInterval,
-  Reservation,
-  ReservationResponse
-} from './generated/api-types/reservations'
-import { JsonOf } from './json'
+import { Reservation } from './generated/api-types/reservations'
 import LocalTime from './local-time'
+import TimeInterval from './time-interval'
 
 export function reservationHasTimes(
   reservation: Reservation
@@ -17,33 +13,6 @@ export function reservationHasTimes(
 }
 
 export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
-
-export function parseReservation(
-  reservation: JsonOf<Reservation>
-): Reservation {
-  if (reservation.type === 'TIMES') {
-    return {
-      ...reservation,
-      startTime: LocalTime.parseIso(reservation.startTime),
-      endTime: LocalTime.parseIso(reservation.endTime)
-    }
-  } else {
-    return reservation
-  }
-}
-export function parseReservationDto(
-  reservation: JsonOf<ReservationResponse>
-): ReservationResponse {
-  if (reservation.type === 'TIMES') {
-    return {
-      ...reservation,
-      startTime: LocalTime.parseIso(reservation.startTime),
-      endTime: LocalTime.parseIso(reservation.endTime)
-    }
-  } else {
-    return reservation
-  }
-}
 
 function timeToMinutes(value: LocalTime): number {
   return value.hour * 60 + value.minute
@@ -75,20 +44,21 @@ export function reservationsAndAttendancesDiffer(
   return reservations.some((reservation) => {
     if (reservation.type === 'NO_TIMES') return false
 
-    const matchingAttendance = attendances.find(
-      (attendance) =>
-        attendance.startTime <= reservation.endTime &&
-        (!attendance.endTime || reservation.startTime <= attendance.endTime)
+    const matchingAttendance = attendances.find((attendance) =>
+      attendance.overlaps(reservation.range)
     )
 
     if (!matchingAttendance) return false
 
     return (
       attendanceTimeDiffers(
-        reservation.startTime,
-        matchingAttendance.startTime
+        reservation.range.start.asLocalTime(),
+        matchingAttendance.start.asLocalTime()
       ) ||
-      attendanceTimeDiffers(matchingAttendance.endTime, reservation.endTime)
+      attendanceTimeDiffers(
+        matchingAttendance.end?.asLocalTime(),
+        reservation.range.end.asLocalTime()
+      )
     )
   })
 }

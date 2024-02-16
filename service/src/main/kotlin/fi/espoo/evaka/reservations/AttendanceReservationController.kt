@@ -143,7 +143,7 @@ class AttendanceReservationController(
                                                         ?.takeIf {
                                                             !placementStatus.backupOtherUnit
                                                         }
-                                                        ?.sortedBy { it.startTime } ?: emptyList(),
+                                                        ?.sortedBy { it.start } ?: emptyList(),
                                                 absenceBillable =
                                                     childData.absences[date]
                                                         ?.get(AbsenceCategory.BILLABLE)
@@ -907,7 +907,7 @@ private data class ReservationTimesForDate(
     fun toReservationTimes() =
         when {
             startTime == null || endTime == null -> ReservationResponse.NoTimes(staffCreated)
-            else -> ReservationResponse.Times(startTime, endTime, staffCreated)
+            else -> ReservationResponse.Times(TimeRange(startTime, endTime), staffCreated)
         }
 }
 

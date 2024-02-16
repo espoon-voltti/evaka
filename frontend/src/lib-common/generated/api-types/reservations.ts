@@ -262,8 +262,7 @@ export namespace Reservation {
   */
   export interface Times {
     type: 'TIMES'
-    endTime: LocalTime
-    startTime: LocalTime
+    range: TimeRange
   }
 }
 
@@ -321,9 +320,8 @@ export namespace ReservationResponse {
   */
   export interface Times {
     type: 'TIMES'
-    endTime: LocalTime
+    range: TimeRange
     staffCreated: boolean
-    startTime: LocalTime
   }
 }
 
@@ -566,8 +564,7 @@ export function deserializeJsonReservableTimeRange(json: JsonOf<ReservableTimeRa
 export function deserializeJsonReservationTimes(json: JsonOf<Reservation.Times>): Reservation.Times {
   return {
     ...json,
-    endTime: LocalTime.parseIso(json.endTime),
-    startTime: LocalTime.parseIso(json.startTime)
+    range: TimeRange.parseJson(json.range)
   }
 }
 export function deserializeJsonReservation(json: JsonOf<Reservation>): Reservation {
@@ -590,8 +587,7 @@ export function deserializeJsonReservationChildInfo(json: JsonOf<ReservationChil
 export function deserializeJsonReservationResponseTimes(json: JsonOf<ReservationResponse.Times>): ReservationResponse.Times {
   return {
     ...json,
-    endTime: LocalTime.parseIso(json.endTime),
-    startTime: LocalTime.parseIso(json.startTime)
+    range: TimeRange.parseJson(json.range)
   }
 }
 export function deserializeJsonReservationResponse(json: JsonOf<ReservationResponse>): ReservationResponse {

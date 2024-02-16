@@ -337,12 +337,7 @@ private fun supplementReservationsWithDailyServiceTimes(
             .flatMap { (date, reservations) ->
                 reservations.mapNotNull { res ->
                     when (res.reservation) {
-                        is Reservation.Times ->
-                            HelsinkiDateTimeRange.of(
-                                date,
-                                res.reservation.startTime.withNano(0).withSecond(0),
-                                res.reservation.endTime.withNano(0).withSecond(0)
-                            )
+                        is Reservation.Times -> res.reservation.range.asHelsinkiDateTimeRange(date)
 
                         // Reserved but no times -> use daily service times
                         is Reservation.NoTimes -> null

@@ -49,9 +49,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
       reservations.map((res, index) => {
         const reservationText =
           res.reservation.type === 'TIMES'
-            ? `${
-                i18n.absences.reservation
-              } ${res.reservation.startTime.format()}–${res.reservation.endTime.format()}`
+            ? `${i18n.absences.reservation} ${res.reservation.range.format()}`
             : i18n.absences.present
         const userTypeText =
           res.createdByEvakaUserType === 'CITIZEN'

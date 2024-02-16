@@ -165,7 +165,7 @@ describe('Child confirmed reservations', () => {
       {
         date: testDay,
         childId: enduserChildFixtureJari.id,
-        reservationTexts: ['08:12 - 13:45', '14:30 - 16:45'],
+        reservationTexts: ['08:12–13:45', '14:30–16:45'],
         childDetails: {
           firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
           lastName: enduserChildFixtureJari.lastName,
@@ -225,7 +225,7 @@ describe('Child confirmed reservations', () => {
       {
         date: testDay,
         childId: enduserChildFixtureJari.id,
-        reservationTexts: ['08:12 - 13:45', '14:30 - 16:45'],
+        reservationTexts: ['08:12–13:45', '14:30–16:45'],
         childDetails: {
           firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
           lastName: enduserChildFixtureJari.lastName,

@@ -4,7 +4,6 @@
 
 import { DaycareAclRole } from 'employee-frontend/components/unit/tab-unit-information/UnitAccessControl'
 import { Failure, Result, Success } from 'lib-common/api'
-import { parseDailyServiceTimes } from 'lib-common/api-types/daily-service-times'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
@@ -46,16 +45,15 @@ import {
 import {
   ChildDatePresence,
   DailyReservationRequest,
+  deserializeJsonUnitAttendanceReservations,
   ExpectedAbsencesRequest,
   UnitAttendanceReservations
 } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
+import { JsonCompatible, JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { parseReservationDto } from 'lib-common/reservations'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
@@ -819,63 +817,16 @@ export async function getUnitAttendanceReservations(
         includeNonOperationalDays
       }
     })
-    .then(({ data }) => ({
-      ...data,
-      children: data.children.map((child) => ({
-        ...child,
-        dateOfBirth: LocalDate.parseIso(child.dateOfBirth),
-        serviceNeeds: child.serviceNeeds.map((sn) => ({
-          ...sn,
-          validDuring: FiniteDateRange.parseJson(sn.validDuring)
-        }))
-      })),
-      days: data.days.map((day) => ({
-        ...day,
-        children: day.children.map((child) => ({
-          ...child,
-          reservations: child.reservations.map(parseReservationDto),
-          attendances: child.attendances.map(({ startTime, endTime }) => ({
-            startTime: LocalTime.parseIso(startTime),
-            endTime: endTime ? LocalTime.parseIso(endTime) : null
-          })),
-          dailyServiceTimes: child.dailyServiceTimes
-            ? parseDailyServiceTimes(child.dailyServiceTimes)
-            : null
-        })),
-        date: LocalDate.parseIso(day.date),
-        dateInfo: {
-          ...day.dateInfo,
-          time:
-            day.dateInfo.time !== null
-              ? TimeRange.parseJson(day.dateInfo.time)
-              : null
-        }
-      }))
-    }))
+    .then(({ data }) => deserializeJsonUnitAttendanceReservations(data))
 }
 
 export async function postChildDatePresence(
-  data: ChildDatePresence
+  body: ChildDatePresence
 ): Promise<void> {
-  const body: JsonOf<ChildDatePresence> = {
-    ...data,
-    date: data.date.formatIso(),
-    reservations: data.reservations.map((r) =>
-      r.type === 'NO_TIMES'
-        ? r
-        : {
-            ...r,
-            startTime: r.startTime.formatIso(),
-            endTime: r.endTime.formatIso()
-          }
-    ),
-    attendances: data.attendances.map((a) => ({
-      ...a,
-      startTime: a.startTime.formatIso(),
-      endTime: a.endTime?.formatIso() ?? null
-    }))
-  }
-  await client.post('/attendance-reservations/child-date', body)
+  await client.post(
+    '/attendance-reservations/child-date',
+    body satisfies JsonCompatible<ChildDatePresence>
+  )
 }
 
 export async function getChildDateExpectedAbsences(

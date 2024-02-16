@@ -97,8 +97,6 @@ interface ChildSubListItemProps {
   date: LocalDate
 }
 
-const timeFormat = 'HH:mm'
-
 export default React.memo(function ChildSubListItem({
   reservationData,
   date
@@ -117,11 +115,7 @@ export default React.memo(function ChildSubListItem({
 
     const withTimes = filter(reservationData.reservations, reservationHasTimes)
 
-    if (withTimes.length > 0)
-      return withTimes.map(
-        (r) =>
-          `${r.startTime.format(timeFormat)} - ${r.endTime.format(timeFormat)}`
-      )
+    if (withTimes.length > 0) return withTimes.map((r) => r.range.format())
 
     if (reservationData.isInHolidayPeriod) {
       if (reservationData.reservations.length === 0)

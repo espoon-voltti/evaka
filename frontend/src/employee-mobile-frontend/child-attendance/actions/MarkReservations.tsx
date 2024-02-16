@@ -38,6 +38,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
@@ -147,8 +148,8 @@ const reservationForm = mapped(
                 reservation.endTime !== undefined
             )
             .map((reservation) => ({
-              ...reservation,
-              type: 'TIMES'
+              type: 'TIMES',
+              range: new TimeRange(reservation.startTime, reservation.endTime)
             })),
           absenceType: null
         }
@@ -200,8 +201,8 @@ const initialFormState = (
                         ).map((res) =>
                           res.type === 'TIMES'
                             ? {
-                                startTime: res.startTime.format(),
-                                endTime: res.endTime.format()
+                                startTime: res.range.formatStart(),
+                                endTime: res.range.formatEnd()
                               }
                             : { startTime: '', endTime: '' }
                         )
@@ -637,4 +638,6 @@ const getMinDatesByWeek = (items: { date: LocalDate }[]) =>
   }, {})
 
 const reservationStartTime = (reservation: Reservation): LocalTime =>
-  reservation.type === 'TIMES' ? reservation.startTime : LocalTime.MIN
+  reservation.type === 'TIMES'
+    ? reservation.range.start.asLocalTime()
+    : LocalTime.MIN

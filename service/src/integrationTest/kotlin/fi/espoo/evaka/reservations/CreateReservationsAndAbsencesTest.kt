@@ -525,13 +525,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         reservations.first().let {
             assertEquals(monday, it.date)
             assertTrue { it.reservation is Reservation.Times }
-            assertEquals(
-                reservation3,
-                TimeRange(
-                    (it.reservation as Reservation.Times).startTime,
-                    (it.reservation as Reservation.Times).endTime
-                )
-            )
+            assertEquals(reservation3, (it.reservation as Reservation.Times).range)
         }
     }
 
@@ -878,13 +872,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(2, reservations.size)
         assertEquals(monday, reservations[0].date)
         assertEquals(
-            LocalTime.of(12, 0),
-            (reservations[0].reservation as Reservation.Times).startTime
+            TimeRange(LocalTime.of(12, 0), endTime),
+            (reservations[0].reservation as Reservation.Times).range
         )
         assertEquals(tuesday, reservations[1].date)
         assertEquals(
-            LocalTime.of(9, 0),
-            (reservations[1].reservation as Reservation.Times).startTime
+            TimeRange(startTime, endTime),
+            (reservations[1].reservation as Reservation.Times).range
         )
     }
 
@@ -1264,7 +1258,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, allReservations.size)
         allReservations.first().let {
             assertEquals(holidayPeriodStart, it.date)
-            assertEquals(Reservation.Times(startTime, endTime), it.reservation)
+            assertEquals(Reservation.Times(TimeRange(startTime, endTime)), it.reservation)
             assertTrue(it.staffCreated)
         }
         assertEquals(0, absenceDates.size)
@@ -1320,7 +1314,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(1, allReservations.size)
         allReservations.first().let {
             assertEquals(holidayPeriodStart, it.date)
-            assertEquals(Reservation.Times(startTime, endTime), it.reservation)
+            assertEquals(Reservation.Times(TimeRange(startTime, endTime)), it.reservation)
             assertTrue(it.staffCreated)
         }
     }
