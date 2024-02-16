@@ -185,7 +185,8 @@ fun Database.Read.fetchApplicationSummaries(
     val assistanceNeeded = { value: Boolean ->
         PredicateSql {
             where(
-                "(a.document->'careDetails'->>'assistanceNeeded')::boolean = $value" // intentionally inlined parameter
+                // value is intentionally inlined
+                "coalesce(a.document->'careDetails'->>'assistanceNeeded', a.document->'clubCare'->>'assistanceNeeded')::boolean = $value"
             )
         }
     }
