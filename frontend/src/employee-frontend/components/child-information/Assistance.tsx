@@ -81,7 +81,7 @@ const AssistanceContent = ({
   id: UUID
   permittedActions: Set<Action.Child | Action.Person>
 }) => {
-  const assistanceResult = useQueryResult(assistanceQuery(id))
+  const assistanceResult = useQueryResult(assistanceQuery({ child: id }))
   return (
     <>
       {permittedActions.has('READ_ASSISTANCE_FACTORS') && (

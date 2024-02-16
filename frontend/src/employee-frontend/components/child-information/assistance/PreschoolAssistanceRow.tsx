@@ -4,6 +4,7 @@
 
 import React, { useContext } from 'react'
 
+import { Success } from 'lib-common/api'
 import { PreschoolAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -54,7 +55,7 @@ export const PreschoolAssistanceRow = React.memo(
                 deletePreschoolAssistance({
                   id: data.id,
                   childId: data.childId
-                })
+                }).then(() => Success.of())
               }
             />
           )}

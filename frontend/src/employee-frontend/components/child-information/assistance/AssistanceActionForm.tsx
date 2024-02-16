@@ -182,17 +182,17 @@ export default React.memo(function AssistanceActionForm(props: Props) {
 
     if (formHasErrors(formErrors)) return
 
-    const data: AssistanceActionRequest = {
+    const body: AssistanceActionRequest = {
       ...form,
       actions: [...form.actions]
     }
 
     const apiCall = isCreate(props)
-      ? createAssistanceAction({ childId: props.childId, data })
+      ? createAssistanceAction({ childId: props.childId, body })
       : updateAssistanceAction({
           id: props.assistanceAction.id,
           childId: props.assistanceAction.childId,
-          data
+          body
         })
 
     void apiCall.then((res) => {
