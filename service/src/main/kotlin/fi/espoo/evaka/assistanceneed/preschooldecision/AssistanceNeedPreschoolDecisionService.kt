@@ -78,7 +78,7 @@ class AssistanceNeedPreschoolDecisionService(
                     ?.validTo
 
             check(!decision.hasDocument) {
-                "Assistance need preschool decision $decisionId already has a document key"
+                "A pdf already exists for the assistance need preschool decision $decisionId"
             }
 
             val pdf = generatePdf(clock.today(), decision, endDate)

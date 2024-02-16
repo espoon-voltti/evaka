@@ -77,7 +77,7 @@ class AssistanceNeedDecisionService(
             val decision = tx.getAssistanceNeedDecisionById(decisionId)
 
             check(!decision.hasDocument) {
-                "Assistance need decision $decisionId has a document key already"
+                "A pdf already exists for the assistance need decision $decisionId"
             }
 
             val pdf = generatePdf(clock.today(), decision)
