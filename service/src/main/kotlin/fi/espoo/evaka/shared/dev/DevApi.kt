@@ -745,7 +745,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @GetMapping("/messages")
     fun getMessages(db: Database): List<SfiMessage> {
-        return MockSfiMessagesClient.getMessages().map { it.first }
+        return MockSfiMessagesClient.getMessages()
     }
 
     @PostMapping("/messages/clean-up")

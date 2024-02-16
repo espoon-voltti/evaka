@@ -1277,9 +1277,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 assertEquals(1, messages.size)
             } else {
                 assertEquals(2, messages.size)
-                assertEquals(1, messages.filter { it.first.ssn == secondDecisionTo.ssn }.size)
+                assertEquals(1, messages.filter { it.ssn == secondDecisionTo.ssn }.size)
             }
-            assertEquals(1, messages.filter { it.first.ssn == applier.ssn }.size)
+            assertEquals(1, messages.filter { it.ssn == applier.ssn }.size)
         }
     }
 
@@ -1408,7 +1408,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             }
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(2, messages.size)
-            assertEquals(2, messages.filter { it.first.ssn == testAdult_1.ssn }.size)
+            assertEquals(2, messages.filter { it.ssn == testAdult_1.ssn }.size)
         }
     }
 
