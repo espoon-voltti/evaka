@@ -740,7 +740,7 @@ class DevApi(
 
     @GetMapping("/messages")
     fun getMessages(db: Database): List<SfiMessage> {
-        return MockSfiMessagesClient.getMessages().map { it.first }
+        return MockSfiMessagesClient.getMessages()
     }
 
     @PostMapping("/messages/clean-up")
