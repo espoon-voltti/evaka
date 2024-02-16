@@ -173,7 +173,7 @@ class SoapStackIntegrationTest {
                 ::dummyGetDocument
             )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
-        val exception = assertThrows<Exception> { client.send(message) }
+        val exception = assertThrows<Exception> { client.send(message, null) }
         val cause = exception.cause as WebServiceFaultException
         assertEquals(
             QName("http://ws.apache.org/wss4j", "SecurityError"),
@@ -194,7 +194,7 @@ class SoapStackIntegrationTest {
                 ::dummyGetDocument
             )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
-        val exception = assertThrows<Exception> { client.send(message) }
+        val exception = assertThrows<Exception> { client.send(message, null) }
         val cause = exception.cause as WebServiceIOException
         assertTrue(cause.contains(SSLHandshakeException::class.java))
     }
@@ -249,7 +249,7 @@ class SoapStackIntegrationTest {
 
             successResponse(viranomainen)
         }
-        client.send(message)
+        client.send(message, null)
     }
 }
 

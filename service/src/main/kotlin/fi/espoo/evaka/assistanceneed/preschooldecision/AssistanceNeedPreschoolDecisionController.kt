@@ -237,7 +237,11 @@ class AssistanceNeedPreschoolDecisionController(
                     if (decided) {
                         asyncJobRunner.plan(
                             tx,
-                            listOf(AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id)),
+                            listOf(
+                                AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(id),
+                                AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id),
+                                AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(id)
+                            ),
                             runAt = clock.now()
                         )
                     }

@@ -27,6 +27,7 @@ import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -55,58 +56,17 @@ class AssistanceNeedDecisionService(
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val messageProvider: IMessageProvider,
+    private val sfiClient: SfiMessagesClient,
     bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     private val bucket = bucketEnv.data
 
     init {
-        asyncJobRunner.registerHandler(::runCreateAssistanceNeedDecisionPdf)
         asyncJobRunner.registerHandler(::runSendAssistanceNeedDecisionEmail)
+        asyncJobRunner.registerHandler(::runCreateAssistanceNeedDecisionPdf)
         asyncJobRunner.registerHandler(::runSendSfiDecision)
-    }
-
-    fun runCreateAssistanceNeedDecisionPdf(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.CreateAssistanceNeedDecisionPdf
-    ) {
-        val decisionId = msg.decisionId
-        db.transaction { tx ->
-            val decision = tx.getAssistanceNeedDecisionById(decisionId)
-
-            check(!decision.hasDocument) {
-                "A pdf already exists for the assistance need decision $decisionId"
-            }
-
-            val pdf = generatePdf(clock.today(), decision)
-            val key =
-                documentClient
-                    .upload(
-                        bucket,
-                        Document(
-                            "${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf",
-                            pdf,
-                            "application/pdf"
-                        )
-                    )
-                    .key
-            tx.updateAssistanceNeedDocumentKey(decision.id, key)
-
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.SendAssistanceNeedDecisionEmail(msg.decisionId),
-                    AsyncJob.SendAssistanceNeedDecisionSfiMessage(msg.decisionId)
-                ),
-                runAt = clock.now()
-            )
-
-            logger.info {
-                "Successfully created assistance need decision pdf (id: ${msg.decisionId})."
-            }
-        }
     }
 
     fun runSendAssistanceNeedDecisionEmail(
@@ -114,10 +74,16 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail
     ) {
-        val decisionId = msg.decisionId
-        val today = clock.today()
+        this.sendDecisionEmail(db, msg.decisionId, clock.today())
+        logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
+    }
 
-        val decision = db.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
+    fun sendDecisionEmail(
+        dbc: Database.Connection,
+        decisionId: AssistanceNeedDecisionId,
+        today: LocalDate
+    ) {
+        val decision = dbc.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
 
         if (decision.child?.id == null) {
             throw IllegalStateException(
@@ -128,7 +94,7 @@ class AssistanceNeedDecisionService(
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
         val guardians =
-            db.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
+            dbc.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
 
         val language =
             when (decision.language) {
@@ -140,7 +106,7 @@ class AssistanceNeedDecisionService(
 
         guardians.forEach { guardianId ->
             Email.create(
-                    db,
+                    dbc,
                     guardianId,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
@@ -149,8 +115,19 @@ class AssistanceNeedDecisionService(
                 )
                 ?.also { emailClient.send(it) }
         }
+    }
 
-        logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
+    fun runCreateAssistanceNeedDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.CreateAssistanceNeedDecisionPdf
+    ) {
+        db.transaction { tx ->
+            this.createDecisionPdf(tx, clock, msg.decisionId)
+            logger.info {
+                "Successfully created assistance need decision pdf (id: ${msg.decisionId})."
+            }
+        }
     }
 
     fun runSendSfiDecision(
@@ -158,75 +135,97 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionSfiMessage
     ) {
-        val decisionId = msg.decisionId
         db.transaction { tx ->
-            val decision = tx.getAssistanceNeedDecisionById(decisionId)
-
-            if (decision.child?.id == null) {
-                throw IllegalStateException(
-                    "Assistance need decision has to be associated with a child"
-                )
-            }
-
-            val documentKey =
-                tx.getAssistanceNeedDecisionDocumentKey(decisionId)
-                    ?: throw IllegalStateException(
-                        "Assistance need decision pdf has not yet been generated"
-                    )
-
-            val lang =
-                if (decision.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
-                else DocumentLang.FI
-
-            tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
-                .mapNotNull { tx.getPersonById(it) }
-                .forEach { guardian ->
-                    if (guardian.identity !is ExternalIdentifier.SSN) {
-                        logger.info {
-                            "Cannot deliver assistance need decision ${decision.id} to guardian via Sfi. SSN is missing."
-                        }
-                        return@forEach
-                    }
-
-                    val sendAddress = getSendAddress(messageProvider, guardian, lang)
-
-                    val messageHeader =
-                        messageProvider.getAssistanceNeedDecisionHeader(lang.messageLang)
-                    val messageContent =
-                        messageProvider.getAssistanceNeedDecisionContent(lang.messageLang)
-                    val messageId = "${decision.id}_${guardian.id}"
-
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.SendMessage(
-                                SfiMessage(
-                                    messageId = messageId,
-                                    documentId = messageId,
-                                    documentDisplayName =
-                                        suomiFiDocumentFileName(decision.language),
-                                    documentKey = documentKey,
-                                    documentBucket = bucket,
-                                    language = lang.langCode,
-                                    firstName = guardian.firstName,
-                                    lastName = guardian.lastName,
-                                    streetAddress = sendAddress.street,
-                                    postalCode = sendAddress.postalCode,
-                                    postOffice = sendAddress.postOffice,
-                                    ssn = guardian.identity.ssn,
-                                    messageHeader = messageHeader,
-                                    messageContent = messageContent
-                                )
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
-
+            this.createAndSendSfiDecisionPdf(tx, clock, msg.decisionId)
             logger.info {
-                "Successfully scheduled assistance need decision pdf for Suomi.fi sending (id: ${msg.decisionId})."
+                "Successfully created assistance need decision pdf for Suomi.fi (id: ${msg.decisionId})."
             }
         }
+    }
+
+    fun createDecisionPdf(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisionId: AssistanceNeedDecisionId
+    ) {
+        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+
+        check(!decision.hasDocument) {
+            "Assistance need decision $decisionId has a document key already"
+        }
+
+        val pdf = generatePdf(clock.today(), decision)
+        val key =
+            documentClient
+                .upload(
+                    bucket,
+                    Document(
+                        "${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf",
+                        pdf,
+                        "application/pdf"
+                    )
+                )
+                .key
+        tx.updateAssistanceNeedDocumentKey(decision.id, key)
+    }
+
+    fun createAndSendSfiDecisionPdf(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisionId: AssistanceNeedDecisionId
+    ) {
+        val decision = tx.getAssistanceNeedDecisionById(decisionId)
+
+        if (decision.child?.id == null) {
+            throw IllegalStateException(
+                "Assistance need decision has to be associated with a child"
+            )
+        }
+
+        val lang =
+            if (decision.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
+            else DocumentLang.FI
+
+        tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
+            .mapNotNull { tx.getPersonById(it) }
+            .forEach { guardian ->
+                if (guardian.identity !is ExternalIdentifier.SSN) {
+                    logger.info {
+                        "Cannot deliver assistance need decision ${decision.id} to guardian via Sfi. SSN is missing."
+                    }
+                    return@forEach
+                }
+
+                val sendAddress = getSendAddress(messageProvider, guardian, lang)
+
+                val pdf = generatePdf(clock.today(), decision, sendAddress, guardian)
+
+                val messageHeader =
+                    messageProvider.getAssistanceNeedDecisionHeader(lang.messageLang)
+                val messageContent =
+                    messageProvider.getAssistanceNeedDecisionContent(lang.messageLang)
+                val messageId = "${decision.id}_${guardian.id}"
+
+                sfiClient.send(
+                    SfiMessage(
+                        messageId = messageId,
+                        documentId = messageId,
+                        documentDisplayName = suomiFiDocumentFileName(decision.language),
+                        documentKey = "",
+                        documentBucket = "",
+                        language = lang.langCode,
+                        firstName = guardian.firstName,
+                        lastName = guardian.lastName,
+                        streetAddress = sendAddress.street,
+                        postalCode = sendAddress.postalCode,
+                        postOffice = sendAddress.postOffice,
+                        ssn = guardian.identity.ssn,
+                        messageHeader = messageHeader,
+                        messageContent = messageContent
+                    ),
+                    pdf
+                )
+            }
     }
 
     fun getDecisionPdfResponse(

@@ -14,16 +14,23 @@ private typealias MessageId = String
 class MockSfiMessagesClient : SfiMessagesClient {
     private val logger = KotlinLogging.logger {}
 
-    override fun send(msg: SfiMessage) {
+    override fun send(msg: SfiMessage, bytes: ByteArray?) {
         logger.info("Mock message client got $msg")
-        lock.write { data[msg.messageId] = msg }
+        lock.write {
+            data[msg.messageId] = msg
+            if (bytes != null) {
+                dataBytes[msg.messageId] = bytes
+            }
+        }
     }
 
     companion object {
         private val data = mutableMapOf<MessageId, SfiMessage>()
+        private val dataBytes = mutableMapOf<MessageId, ByteArray?>()
         private val lock = ReentrantReadWriteLock()
 
-        fun getMessages() = lock.read { data.values.toList() }
+        fun getMessages() =
+            lock.read { data.values.toList().map { Pair(it, dataBytes[it.messageId]) } }
 
         fun clearMessages() = lock.write { data.clear() }
     }
