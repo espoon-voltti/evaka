@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -25,6 +25,7 @@ import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -52,64 +53,17 @@ class AssistanceNeedPreschoolDecisionService(
     private val documentClient: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val messageProvider: IMessageProvider,
+    private val sfiClient: SfiMessagesClient,
     bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     private val bucket = bucketEnv.data
 
     init {
-        asyncJobRunner.registerHandler(::runCreateAssistanceNeedPreschoolDecisionPdf)
         asyncJobRunner.registerHandler(::runSendAssistanceNeedPreschoolDecisionEmail)
+        asyncJobRunner.registerHandler(::runCreateAssistanceNeedPreschoolDecisionPdf)
         asyncJobRunner.registerHandler(::runSendSfiDecision)
-    }
-
-    fun runCreateAssistanceNeedPreschoolDecisionPdf(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf
-    ) {
-        val decisionId = msg.decisionId
-        db.transaction { tx ->
-            val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
-            val endDate =
-                tx.getAssistanceNeedPreschoolDecisionsByChildId(decision.child.id)
-                    .find { it.id == decisionId }
-                    ?.validTo
-
-            check(!decision.hasDocument) {
-                "A pdf already exists for the assistance need preschool decision $decisionId"
-            }
-
-            val pdf = generatePdf(clock.today(), decision, endDate)
-
-            val key =
-                documentClient
-                    .upload(
-                        bucket,
-                        Document(
-                            "${assistanceNeedDecisionsBucketPrefix}assistance_need_preschool_decision_$decisionId.pdf",
-                            pdf,
-                            "application/pdf"
-                        )
-                    )
-                    .key
-
-            tx.updateAssistanceNeedPreschoolDocumentKey(decision.id, key)
-
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(decisionId),
-                    AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId)
-                ),
-                runAt = clock.now()
-            )
-
-            logger.info {
-                "Successfully created assistance need preschool decision pdf (id: $decisionId)."
-            }
-        }
     }
 
     fun runSendAssistanceNeedPreschoolDecisionEmail(
@@ -117,12 +71,20 @@ class AssistanceNeedPreschoolDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail
     ) {
-        val decisionId = msg.decisionId
-        val today = clock.today()
+        this.sendDecisionEmail(db, msg.decisionId, clock.today())
+        logger.info {
+            "Successfully sent assistance need preschool decision email (id: ${msg.decisionId})."
+        }
+    }
 
-        val decision = db.read { tx -> tx.getAssistanceNeedPreschoolDecisionById(decisionId) }
+    fun sendDecisionEmail(
+        dbc: Database.Connection,
+        decisionId: AssistanceNeedPreschoolDecisionId,
+        today: LocalDate
+    ) {
+        val decision = dbc.read { tx -> tx.getAssistanceNeedPreschoolDecisionById(decisionId) }
 
-        logger.info { "Sending assistance need preschool decision email (decisionId: $decision)" }
+        logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
         val language =
             when (decision.form.language) {
@@ -133,10 +95,10 @@ class AssistanceNeedPreschoolDecisionService(
         val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
 
         val guardians =
-            db.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
+            dbc.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
         guardians.forEach { guardianId ->
             Email.create(
-                    db,
+                    dbc,
                     guardianId,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
@@ -145,80 +107,51 @@ class AssistanceNeedPreschoolDecisionService(
                 )
                 ?.also { emailClient.send(it) }
         }
+    }
 
-        logger.info {
-            "Successfully sent assistance need preschool decision email (id: $decisionId)."
+    fun runCreateAssistanceNeedPreschoolDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf
+    ) {
+        db.transaction { tx ->
+            this.createDecisionPdf(tx, clock, msg.decisionId)
+            logger.info {
+                "Successfully created assistance need decision pdf (id: ${msg.decisionId})."
+            }
         }
     }
 
-    fun runSendSfiDecision(
-        db: Database.Connection,
+    fun createDecisionPdf(
+        tx: Database.Transaction,
         clock: EvakaClock,
-        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage
+        decisionId: AssistanceNeedPreschoolDecisionId
     ) {
-        val decisionId = msg.decisionId
-        db.transaction { tx ->
-            val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
+        val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
+        val endDate =
+            tx.getAssistanceNeedPreschoolDecisionsByChildId(decision.child.id)
+                .find { it.id == decisionId }
+                ?.validTo
 
-            val documentKey =
-                tx.getAssistanceNeedPreschoolDecisionDocumentKey(decisionId)
-                    ?: throw IllegalStateException(
-                        "Assistance need preschool decision pdf has not yet been generated"
-                    )
-
-            val lang =
-                if (decision.form.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
-                else DocumentLang.FI
-
-            tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
-                .mapNotNull { tx.getPersonById(it) }
-                .forEach { guardian ->
-                    if (guardian.identity !is ExternalIdentifier.SSN) {
-                        logger.info {
-                            "Cannot deliver assistance need decision ${decision.id} to guardian via Sfi. SSN is missing."
-                        }
-                        return@forEach
-                    }
-
-                    val sendAddress = getSendAddress(messageProvider, guardian, lang)
-
-                    val messageHeader =
-                        messageProvider.getAssistanceNeedPreschoolDecisionHeader(lang.messageLang)
-                    val messageContent =
-                        messageProvider.getAssistanceNeedPreschoolDecisionContent(lang.messageLang)
-                    val messageId = "${decision.id}_${guardian.id}"
-
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.SendMessage(
-                                SfiMessage(
-                                    messageId = messageId,
-                                    documentId = messageId,
-                                    documentDisplayName =
-                                        suomiFiDocumentFileName(decision.form.language),
-                                    documentKey = documentKey,
-                                    documentBucket = bucket,
-                                    language = lang.langCode,
-                                    firstName = guardian.firstName,
-                                    lastName = guardian.lastName,
-                                    streetAddress = sendAddress.street,
-                                    postalCode = sendAddress.postalCode,
-                                    postOffice = sendAddress.postOffice,
-                                    ssn = guardian.identity.ssn,
-                                    messageHeader = messageHeader,
-                                    messageContent = messageContent
-                                )
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
-
-            logger.info {
-                "Successfully scheduled assistance need preschool decision pdf for Suomi.fi sending (id: $decisionId)."
-            }
+        check(!decision.hasDocument) {
+            "Assistance need preschool decision $decisionId already has a document key"
         }
+
+        val pdf = generatePdf(clock.today(), decision, endDate)
+
+        val key =
+            documentClient
+                .upload(
+                    bucket,
+                    Document(
+                        "${assistanceNeedDecisionsBucketPrefix}assistance_need_preschool_decision_$decisionId.pdf",
+                        pdf,
+                        "application/pdf"
+                    )
+                )
+                .key
+
+        tx.updateAssistanceNeedPreschoolDocumentKey(decision.id, key)
     }
 
     fun getDecisionPdfResponse(
@@ -254,6 +187,76 @@ class AssistanceNeedPreschoolDecisionService(
                 }
             )
         )
+    }
+
+    fun runSendSfiDecision(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage
+    ) {
+        db.transaction { tx ->
+            this.createAndSendSfiDecisionPdf(tx, clock, msg.decisionId)
+            logger.info {
+                "Successfully created assistance need decision pdf for Suomi.fi (id: ${msg.decisionId})."
+            }
+        }
+    }
+
+    fun createAndSendSfiDecisionPdf(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisionId: AssistanceNeedPreschoolDecisionId
+    ) {
+        val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
+        val endDate =
+            tx.getAssistanceNeedPreschoolDecisionsByChildId(decision.child.id)
+                .find { it.id == decisionId }
+                ?.validTo
+
+        val lang =
+            if (decision.form.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
+            else DocumentLang.FI
+
+        tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
+            .mapNotNull { tx.getPersonById(it) }
+            .forEach { guardian ->
+                if (guardian.identity !is ExternalIdentifier.SSN) {
+                    logger.info {
+                        "Cannot deliver assistance need decision ${decision.id} to guardian via Sfi. SSN is missing."
+                    }
+                    return@forEach
+                }
+
+                val sendAddress = getSendAddress(messageProvider, guardian, lang)
+
+                val pdf = generatePdf(clock.today(), decision, endDate, sendAddress, guardian)
+
+                val messageHeader =
+                    messageProvider.getAssistanceNeedPreschoolDecisionHeader(lang.messageLang)
+                val messageContent =
+                    messageProvider.getAssistanceNeedPreschoolDecisionContent(lang.messageLang)
+                val messageId = "${decision.id}_${guardian.id}"
+
+                sfiClient.send(
+                    SfiMessage(
+                        messageId = messageId,
+                        documentId = messageId,
+                        documentDisplayName = suomiFiDocumentFileName(decision.form.language),
+                        documentKey = "",
+                        documentBucket = "",
+                        language = lang.langCode,
+                        firstName = guardian.firstName,
+                        lastName = guardian.lastName,
+                        streetAddress = sendAddress.street,
+                        postalCode = sendAddress.postalCode,
+                        postOffice = sendAddress.postOffice,
+                        ssn = guardian.identity.ssn,
+                        messageHeader = messageHeader,
+                        messageContent = messageContent
+                    ),
+                    pdf
+                )
+            }
     }
 }
 

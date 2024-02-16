@@ -5,7 +5,7 @@
 package fi.espoo.evaka.sficlient
 
 interface SfiMessagesClient {
-    fun send(msg: SfiMessage)
+    fun send(msg: SfiMessage, bytes: ByteArray?)
 }
 
 data class SfiMessage(

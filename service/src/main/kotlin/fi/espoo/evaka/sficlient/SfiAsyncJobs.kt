@@ -20,6 +20,6 @@ class SfiAsyncJobs(
     }
 
     fun sendMessagePDF(msg: SfiMessage) {
-        sfiClient.send(msg)
+        sfiClient.send(msg, null)
     }
 }
