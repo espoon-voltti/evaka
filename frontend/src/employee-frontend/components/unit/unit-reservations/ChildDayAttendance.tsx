@@ -22,8 +22,8 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
-import { reservationHasTimes, TimeRange } from 'lib-common/reservations'
+import { reservationHasTimes } from 'lib-common/reservations'
+import TimeRange, { TimeRangeEndpoint } from 'lib-common/time-range'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
@@ -72,50 +72,33 @@ export default React.memo(function ChildDayAttendance({
             ? getTimesOnWeekday(dailyServiceTimes, date.getIsoDayOfWeek())
             : null
 
-    return getExpectedAttendanceTimes(
-      reservations,
-      serviceTimeRange
-        ? {
-            startTime: serviceTimeRange.start,
-            endTime: serviceTimeRange.end
-          }
-        : null
-    )
+    return getExpectedAttendanceTimes(reservations, serviceTimeRange)
   }, [dailyServiceTimes, reservations, date])
 
   const isWithinExpectedTimes = useCallback(
-    (time: LocalTime) =>
-      expectedTimes.some(
-        (expected) =>
-          expected.startTime.isEqualOrBefore(time) &&
-          expected.endTime.isEqualOrAfter(time)
-      ),
+    (time: TimeRangeEndpoint) =>
+      expectedTimes.some((expected) => expected.includes(time)),
     [expectedTimes]
   )
 
   const intermittent = serviceNeedInfo?.shiftCare === 'INTERMITTENT'
   if (dateInfo.isHoliday && !attendance && !intermittent) return null
 
-  const unitIsNotOpenOnReservationStart = reservations.some(
+  const unitIsNotOpenOnReservation = reservations.some(
     (reservation) =>
       dateInfo.time === null ||
       dateInfo.isHoliday ||
       (reservation.type === 'TIMES' &&
-        dateInfo.time.start > reservation.startTime)
-  )
-
-  const unitIsNotOpenOnReservationEnd = reservations.some(
-    (reservation) =>
-      dateInfo.time === null ||
-      dateInfo.isHoliday ||
-      (reservation.type === 'TIMES' && dateInfo.time.end < reservation.endTime)
+        !dateInfo.time.contains(
+          new TimeRange(reservation.startTime, reservation.endTime)
+        ))
   )
 
   const requiresBackupCare =
     attendanceIndex === 0 &&
     attendance === undefined &&
     intermittent &&
-    (unitIsNotOpenOnReservationStart || unitIsNotOpenOnReservationEnd) &&
+    unitIsNotOpenOnReservation &&
     !inOtherUnit
 
   return (
@@ -136,7 +119,9 @@ export default React.memo(function ChildDayAttendance({
                 data-qa="attendance-start"
                 warning={
                   attendance
-                    ? !isWithinExpectedTimes(attendance.startTime)
+                    ? !isWithinExpectedTimes(
+                        new TimeRangeEndpoint.Start(attendance.startTime)
+                      )
                     : false
                 }
               >
@@ -146,7 +131,9 @@ export default React.memo(function ChildDayAttendance({
                 data-qa="attendance-end"
                 warning={
                   attendance?.endTime
-                    ? !isWithinExpectedTimes(attendance.endTime)
+                    ? !isWithinExpectedTimes(
+                        new TimeRangeEndpoint.End(attendance.endTime)
+                      )
                     : false
                 }
               >
@@ -176,10 +163,7 @@ const getExpectedAttendanceTimes = (
 ): TimeRange[] => {
   const reservationTimes = reservations
     .filter(reservationHasTimes)
-    .map((r) => ({
-      startTime: r.startTime,
-      endTime: r.endTime
-    }))
+    .map((r) => new TimeRange(r.startTime, r.endTime))
 
   if (reservationTimes.length > 0) return reservationTimes
 

@@ -47,7 +47,7 @@ import { faPen } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { Unit, formatTimeRange } from '../../../types/unit'
+import { Unit } from '../../../types/unit'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -667,14 +667,14 @@ function toFormData(unit: Unit | undefined): FormData {
           : undefined,
     dailyPreschoolTime: unit?.dailyPreschoolTime
       ? {
-          start: unit.dailyPreschoolTime.start.format(),
-          end: unit.dailyPreschoolTime.end.format()
+          start: unit.dailyPreschoolTime.formatStart(),
+          end: unit.dailyPreschoolTime.formatEnd()
         }
       : emptyTimeRange,
     dailyPreparatoryTime: unit?.dailyPreparatoryTime
       ? {
-          start: unit.dailyPreparatoryTime.start.format(),
-          end: unit.dailyPreparatoryTime.end.format()
+          start: unit.dailyPreparatoryTime.formatStart(),
+          end: unit.dailyPreparatoryTime.formatEnd()
         }
       : emptyTimeRange,
     daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
@@ -721,7 +721,7 @@ function toFormData(unit: Unit | undefined): FormData {
       email: unit?.unitManager?.email ?? ''
     },
     operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
-      range ? formatTimeRange(range) : null
+      range ? { start: range.formatStart(), end: range.formatEnd() } : null
     ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',

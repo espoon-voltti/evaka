@@ -239,8 +239,8 @@ function ChildReservationInfo(props: { child: AttendanceChild }) {
           : todaysServiceTime === 'variable_times'
             ? i18n.attendances.serviceTime.variableTimesShort
             : i18n.attendances.serviceTime.serviceTodayShort(
-                todaysServiceTime.start.format(),
-                todaysServiceTime.end.format()
+                todaysServiceTime.formatStart(),
+                todaysServiceTime.formatEnd()
               )}
     </em>
   )

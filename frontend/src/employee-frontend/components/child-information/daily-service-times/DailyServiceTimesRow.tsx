@@ -190,8 +190,7 @@ export const DailyServiceTimesReadOnly = React.memo(
             <Gap size="xs" />
             {i18n.childInformation.dailyServiceTimes.weekdays.monday}–
             {i18n.childInformation.dailyServiceTimes.weekdays.friday}{' '}
-            {times.regularTimes.start.format()}–
-            {times.regularTimes.end.format()}
+            {times.regularTimes.format()}
           </div>
         )
       case 'IRREGULAR':
@@ -204,8 +203,8 @@ export const DailyServiceTimesReadOnly = React.memo(
                 (weekday) =>
                   `${
                     i18n.childInformation.dailyServiceTimes.weekdays[weekday]
-                  } ${times[weekday]?.start.format() ?? ''}–${
-                    times[weekday]?.end.format() ?? ''
+                  } ${times[weekday]?.formatStart() ?? ''}–${
+                    times[weekday]?.formatEnd() ?? ''
                   }`
               )
               .join(', ')}

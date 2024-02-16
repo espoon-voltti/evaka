@@ -143,9 +143,7 @@ export default React.memo(function ChildSubListItem({
           ? i18n.attendances.serviceTime.noServiceTodayShort
           : todaysServiceTime === 'variable_times'
             ? i18n.attendances.serviceTime.variableTimesShort
-            : `${todaysServiceTime.start.format(
-                timeFormat
-              )} - ${todaysServiceTime.end.format(timeFormat)} (s)`
+            : `${todaysServiceTime.format()} (s)`
     ]
   }, [reservationData, i18n])
 

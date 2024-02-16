@@ -382,21 +382,7 @@ export class UnitChildReservationsTable extends Element {
     ).findAllByDataQa('absence')
   }
 
-  startTimeOutsideOpeningHoursWarning = (
-    childId: UUID,
-    date: LocalDate,
-    n: number
-  ) =>
-    this.reservationCells(childId, date)
-      .nth(n)
-      .findByDataQa('reservation-start')
-      .findByDataQa('outside-opening-times')
-
-  endTimeOutsideOpeningHoursWarning = (
-    childId: UUID,
-    date: LocalDate,
-    n: number
-  ) =>
+  outsideOpeningHoursWarning = (childId: UUID, date: LocalDate, n: number) =>
     this.reservationCells(childId, date)
       .nth(n)
       .findByDataQa('reservation-end')

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ErrorKey, regexp, TIME_REGEXP } from './form-validation'
 import {
   TimeInterval,
   Reservation,
@@ -17,57 +16,7 @@ export function reservationHasTimes(
   return reservation.type === 'TIMES'
 }
 
-export function reservationHasNoTimes(
-  reservation: Reservation
-): reservation is Reservation.Times {
-  return reservation.type === 'NO_TIMES'
-}
-
 export type Repetition = 'DAILY' | 'WEEKLY' | 'IRREGULAR'
-
-export interface TimeRange {
-  startTime: LocalTime
-  endTime: LocalTime
-}
-
-export interface TimeRangeErrors {
-  startTime: ErrorKey | undefined
-  endTime: ErrorKey | undefined
-}
-
-export function validateTimeRange(
-  timeRange: JsonOf<TimeRange>,
-  openEnd = false
-): TimeRangeErrors {
-  let startTime: ErrorKey | undefined
-  if (timeRange.startTime === '' && timeRange.endTime !== '') {
-    startTime = 'timeRequired'
-  }
-  startTime =
-    startTime ?? regexp(timeRange.startTime, TIME_REGEXP, 'timeFormat')
-
-  let endTime: ErrorKey | undefined
-  if (!openEnd && timeRange.endTime === '' && timeRange.startTime !== '') {
-    endTime = 'timeRequired'
-  }
-  endTime = endTime ?? regexp(timeRange.endTime, TIME_REGEXP, 'timeFormat')
-
-  if (timeRange.startTime === '00:00' && timeRange.endTime === '00:00')
-    endTime = 'timeFormat'
-
-  if (
-    !startTime &&
-    !endTime &&
-    timeRange.startTime !== '' &&
-    timeRange.endTime !== '' &&
-    timeRange.endTime !== '00:00' &&
-    timeRange.endTime <= timeRange.startTime
-  ) {
-    endTime = 'timeFormat'
-  }
-
-  return { startTime, endTime }
-}
 
 export function parseReservation(
   reservation: JsonOf<Reservation>

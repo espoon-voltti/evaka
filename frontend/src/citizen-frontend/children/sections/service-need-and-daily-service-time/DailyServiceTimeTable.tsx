@@ -146,12 +146,7 @@ const DailyServiceTimeValue = React.memo(function DailyServiceTimeValue({
 
   switch (value.type) {
     case 'REGULAR':
-      return (
-        <>
-          {value.regularTimes.start.format()} -{' '}
-          {value.regularTimes.end.format()}
-        </>
-      )
+      return value.regularTimes.format()
     case 'IRREGULAR':
       return (
         <>
@@ -165,7 +160,7 @@ const DailyServiceTimeValue = React.memo(function DailyServiceTimeValue({
                 ...data,
                 `${
                   t.common.datetime.weekdaysShort[weekDay - 1]
-                } ${range.start.format()} - ${range.end.format()}`
+                } ${range.format()}`
               ]
             }, [])
             .join(', ')}

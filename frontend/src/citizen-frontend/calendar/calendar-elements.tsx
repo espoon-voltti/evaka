@@ -18,6 +18,7 @@ import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
 } from 'lib-common/reservations'
+import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -31,7 +32,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { Translations, useTranslation } from '../localization'
 
 import RoundChildImages, { ChildImageData } from './RoundChildImages'
-import { timeRangeContains } from './reservation-modal/form'
 
 export const Reservations = React.memo(function Reservations({
   data,
@@ -264,13 +264,8 @@ export const formatReservation = (
     const showIntermittentShiftCareNotice =
       reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE' &&
       (reservableTimeRange.placementUnitOperationTime === null ||
-        !timeRangeContains(
-          startTime,
-          reservableTimeRange.placementUnitOperationTime
-        ) ||
-        !timeRangeContains(
-          endTime,
-          reservableTimeRange.placementUnitOperationTime
+        !reservableTimeRange.placementUnitOperationTime.contains(
+          new TimeRange(startTime, endTime)
         ))
 
     return showIntermittentShiftCareNotice

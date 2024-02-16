@@ -157,8 +157,8 @@ function validateFormData(formData: FormState): ValidationResult {
 
 function formatTimeRange(range: TimeRange): JsonOf<TimeRange> {
   return {
-    start: range.start.format(),
-    end: range.end.format()
+    start: range.formatStart(),
+    end: range.formatEnd()
   }
 }
 
