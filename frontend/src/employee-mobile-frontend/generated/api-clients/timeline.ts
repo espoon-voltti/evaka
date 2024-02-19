@@ -10,6 +10,7 @@ import { JsonOf } from 'lib-common/json'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonTimeline } from 'lib-common/generated/api-types/timeline'
 import { uri } from 'lib-common/uri'
 
@@ -24,14 +25,15 @@ export async function getTimeline(
     to: LocalDate
   }
 ): Promise<Timeline> {
+  const params = createUrlSearchParams(
+    ['personId', request.personId],
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<Timeline>>({
     url: uri`/timeline`.toString(),
     method: 'GET',
-    params: {
-      personId: request.personId,
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return deserializeJsonTimeline(json)
 }

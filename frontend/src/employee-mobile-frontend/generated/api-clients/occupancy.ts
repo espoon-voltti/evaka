@@ -14,6 +14,7 @@ import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
 import { UUID } from 'lib-common/types'
 import { UnitOccupancies } from 'lib-common/generated/api-types/occupancy'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonOccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { deserializeJsonOccupancyResponseGroupLevel } from 'lib-common/generated/api-types/occupancy'
 import { deserializeJsonUnitOccupancies } from 'lib-common/generated/api-types/occupancy'
@@ -31,14 +32,15 @@ export async function getOccupancyPeriods(
     type: OccupancyType
   }
 ): Promise<OccupancyResponse> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()],
+    ['type', request.type.toString()]
+  )
   const { data: json } = await client.request<JsonOf<OccupancyResponse>>({
     url: uri`/occupancy/by-unit/${request.unitId}`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso(),
-      type: request.type
-    }
+    params
   })
   return deserializeJsonOccupancyResponse(json)
 }
@@ -55,14 +57,15 @@ export async function getOccupancyPeriodsOnGroups(
     type: OccupancyType
   }
 ): Promise<OccupancyResponseGroupLevel[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()],
+    ['type', request.type.toString()]
+  )
   const { data: json } = await client.request<JsonOf<OccupancyResponseGroupLevel[]>>({
     url: uri`/occupancy/by-unit/${request.unitId}/groups`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso(),
-      type: request.type
-    }
+    params
   })
   return json.map(e => deserializeJsonOccupancyResponseGroupLevel(e))
 }
@@ -81,15 +84,16 @@ export async function getOccupancyPeriodsSpeculated(
     preschoolDaycareTo: LocalDate | null
   }
 ): Promise<OccupancyResponseSpeculated> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()],
+    ['preschoolDaycareFrom', request.preschoolDaycareFrom?.formatIso()],
+    ['preschoolDaycareTo', request.preschoolDaycareTo?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<OccupancyResponseSpeculated>>({
     url: uri`/occupancy/by-unit/${request.unitId}/speculated/${request.applicationId}`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso(),
-      preschoolDaycareFrom: request.preschoolDaycareFrom?.formatIso(),
-      preschoolDaycareTo: request.preschoolDaycareTo?.formatIso()
-    }
+    params
   })
   return json
 }
@@ -105,13 +109,14 @@ export async function getUnitOccupancies(
     to: LocalDate
   }
 ): Promise<UnitOccupancies> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<UnitOccupancies>>({
     url: uri`/occupancy/units/${request.unitId}`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return deserializeJsonUnitOccupancies(json)
 }

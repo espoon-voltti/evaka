@@ -47,6 +47,7 @@ import { UUID } from 'lib-common/types'
 import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonEmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pis'
@@ -137,12 +138,13 @@ export async function deleteEmployeeDaycareRoles(
     daycareId: UUID | null
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['daycareId', request.daycareId]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/${request.id}/daycare-roles`.toString(),
     method: 'DELETE',
-    params: {
-      daycareId: request.daycareId
-    }
+    params
   })
   return json
 }
@@ -339,12 +341,13 @@ export async function getFamilyContactSummary(
     childId: UUID
   }
 ): Promise<FamilyContact[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<FamilyContact[]>>({
     url: uri`/family/contacts`.toString(),
     method: 'GET',
-    params: {
-      childId: request.childId
-    }
+    params
   })
   return json
 }
@@ -525,13 +528,14 @@ export async function getParentships(
     childId: UUID | null
   }
 ): Promise<ParentshipWithPermittedActions[]> {
+  const params = createUrlSearchParams(
+    ['headOfChildId', request.headOfChildId],
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<ParentshipWithPermittedActions[]>>({
     url: uri`/parentships`.toString(),
     method: 'GET',
-    params: {
-      headOfChildId: request.headOfChildId,
-      childId: request.childId
-    }
+    params
   })
   return json.map(e => deserializeJsonParentshipWithPermittedActions(e))
 }
@@ -628,12 +632,13 @@ export async function getPartnerships(
     personId: UUID
   }
 ): Promise<PartnershipWithPermittedActions[]> {
+  const params = createUrlSearchParams(
+    ['personId', request.personId]
+  )
   const { data: json } = await client.request<JsonOf<PartnershipWithPermittedActions[]>>({
     url: uri`/partnerships`.toString(),
     method: 'GET',
-    params: {
-      personId: request.personId
-    }
+    params
   })
   return json.map(e => deserializeJsonPartnershipWithPermittedActions(e))
 }

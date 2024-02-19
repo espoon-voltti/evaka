@@ -10,6 +10,7 @@ import { ChildDocumentCitizenSummary } from 'lib-common/generated/api-types/docu
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentCitizenDetails } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentCitizenSummary } from 'lib-common/generated/api-types/document'
 import { uri } from 'lib-common/uri'
@@ -39,12 +40,13 @@ export async function getDocuments(
     childId: UUID
   }
 ): Promise<ChildDocumentCitizenSummary[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<ChildDocumentCitizenSummary[]>>({
     url: uri`/citizen/child-documents`.toString(),
     method: 'GET',
-    params: {
-      childId: request.childId
-    }
+    params
   })
   return json.map(e => deserializeJsonChildDocumentCitizenSummary(e))
 }

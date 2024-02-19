@@ -20,6 +20,7 @@ import { JsonOf } from 'lib-common/json'
 import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
@@ -103,12 +104,13 @@ export async function getActiveTemplates(
     childId: UUID
   }
 ): Promise<DocumentTemplateSummary[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
     url: uri`/document-templates/active`.toString(),
     method: 'GET',
-    params: {
-      childId: request.childId
-    }
+    params
   })
   return json.map(e => deserializeJsonDocumentTemplateSummary(e))
 }
@@ -268,12 +270,13 @@ export async function getDocuments(
     childId: UUID
   }
 ): Promise<ChildDocumentSummaryWithPermittedActions[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<ChildDocumentSummaryWithPermittedActions[]>>({
     url: uri`/child-documents`.toString(),
     method: 'GET',
-    params: {
-      childId: request.childId
-    }
+    params
   })
   return json.map(e => deserializeJsonChildDocumentSummaryWithPermittedActions(e))
 }

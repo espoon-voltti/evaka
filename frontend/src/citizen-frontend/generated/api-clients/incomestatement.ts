@@ -14,6 +14,7 @@ import { JsonOf } from 'lib-common/json'
 import { PagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonIncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { deserializeJsonPagedIncomeStatements } from 'lib-common/generated/api-types/incomestatement'
 import { uri } from 'lib-common/uri'
@@ -113,13 +114,14 @@ export async function getChildIncomeStatements(
     pageSize: number
   }
 ): Promise<PagedIncomeStatements> {
+  const params = createUrlSearchParams(
+    ['page', request.page.toString()],
+    ['pageSize', request.pageSize.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements/child/${request.childId}`.toString(),
     method: 'GET',
-    params: {
-      page: request.page,
-      pageSize: request.pageSize
-    }
+    params
   })
   return deserializeJsonPagedIncomeStatements(json)
 }
@@ -174,13 +176,14 @@ export async function getIncomeStatements(
     pageSize: number
   }
 ): Promise<PagedIncomeStatements> {
+  const params = createUrlSearchParams(
+    ['page', request.page.toString()],
+    ['pageSize', request.pageSize.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements`.toString(),
     method: 'GET',
-    params: {
-      page: request.page,
-      pageSize: request.pageSize
-    }
+    params
   })
   return deserializeJsonPagedIncomeStatements(json)
 }

@@ -15,6 +15,7 @@ import { NewBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { UUID } from 'lib-common/types'
 import { UnitBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { deserializeJsonUnitBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { uri } from 'lib-common/uri'
@@ -80,13 +81,14 @@ export async function getForDaycare(
     endDate: LocalDate
   }
 ): Promise<UnitBackupCaresResponse> {
+  const params = createUrlSearchParams(
+    ['startDate', request.startDate.formatIso()],
+    ['endDate', request.endDate.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<UnitBackupCaresResponse>>({
     url: uri`/daycares/${request.daycareId}/backup-cares`.toString(),
     method: 'GET',
-    params: {
-      startDate: request.startDate.formatIso(),
-      endDate: request.endDate.formatIso()
-    }
+    params
   })
   return deserializeJsonUnitBackupCaresResponse(json)
 }

@@ -15,6 +15,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { uri } from 'lib-common/uri'
 
@@ -112,13 +113,14 @@ export async function getUnitCalendarEvents(
     end: LocalDate
   }
 ): Promise<CalendarEvent[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
     url: uri`/units/${request.unitId}/calendar-events`.toString(),
     method: 'GET',
-    params: {
-      start: request.start.formatIso(),
-      end: request.end.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonCalendarEvent(e))
 }
