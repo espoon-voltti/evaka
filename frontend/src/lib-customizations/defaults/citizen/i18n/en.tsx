@@ -330,8 +330,13 @@ const en: Translations = {
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
     reservationNoTimes: 'Present',
-    attendance: 'Realized',
-    usedService: 'Used service time',
+    attendance: 'Actual attendance',
+    exceedStart: 'Arrived earlier than reported.',
+    exceedEnd: 'Departed later than reported.',
+    exceedGeneric: 'Actual attendance time exceeds reported time.',
+    calculatedUsedServiceTime:
+      'Used service need is determined by the monthly service need.',
+    usedService: 'Used service need',
     reservationsAndRealized: 'Period of attendance',
     events: 'Events of the day',
     noActivePlacements:
