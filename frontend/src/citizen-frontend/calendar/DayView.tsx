@@ -31,12 +31,12 @@ import {
   ReservationResponse,
   ReservationResponseDay,
   ReservationsResponse,
-  TimeInterval,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { reservationHasTimes } from 'lib-common/reservations'
+import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'

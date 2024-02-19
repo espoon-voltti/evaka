@@ -6,10 +6,10 @@ import React from 'react'
 
 import {
   ReservationResponse,
-  TimeInterval,
   UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
 import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
+import TimeInterval from 'lib-common/time-interval'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 import { useTranslation } from '../localization'
@@ -36,15 +36,9 @@ function AttendanceInfoWithSimpleThreshold({
       </ReservationAttendanceHeading>
       <div>
         {attendances.length > 0
-          ? attendances.map(({ startTime, endTime }) => {
-              const start = startTime.format()
-              const end = endTime?.format() ?? ''
-              return (
-                <div key={`${start}-${end}`}>
-                  {start} – {end}
-                </div>
-              )
-            })
+          ? attendances.map((timeInterval) => (
+              <div key={timeInterval.format()}>{timeInterval.format()}</div>
+            ))
           : '–'}
 
         {showAttendanceWarning && (
@@ -80,13 +74,13 @@ function AttendanceInfoWithServiceUsage({
     attendances.length === 1 &&
     reservations.length === 1 &&
     reservations[0].type === 'TIMES' &&
-    attendances[0].startTime < reservations[0].startTime
+    attendances[0].start < reservations[0].range.start
   const simpleExceedEnd =
     attendances.length === 1 &&
     reservations.length === 1 &&
     reservations[0].type === 'TIMES' &&
-    !!attendances[0].endTime &&
-    attendances[0].endTime > reservations[0].endTime
+    !!attendances[0].end &&
+    attendances[0].end > reservations[0].range.end
   const simpleExceedWarning =
     (simpleExceedStart ? i18n.calendar.exceedStart + ' ' : '') +
     (simpleExceedEnd ? i18n.calendar.exceedEnd : '')
@@ -106,18 +100,17 @@ function AttendanceInfoWithServiceUsage({
       <div>
         {attendances.length > 0 ? (
           <>
-            {attendances.map(({ startTime, endTime }) => {
-              const start = startTime.format()
-              const end = endTime?.format() ?? ''
-              return (
-                <div key={`${start}-${end}`}>
-                  <TimeDisplay highlight={simpleExceedStart}>
-                    {start}
-                  </TimeDisplay>
-                  –<TimeDisplay highlight={simpleExceedEnd}>{end}</TimeDisplay>
-                </div>
-              )
-            })}
+            {attendances.map((timeInterval) => (
+              <div key={timeInterval.format()}>
+                <TimeDisplay highlight={simpleExceedStart}>
+                  {timeInterval.formatStart()}
+                </TimeDisplay>
+                –
+                <TimeDisplay highlight={simpleExceedEnd}>
+                  {timeInterval.formatEnd()}
+                </TimeDisplay>
+              </div>
+            ))}
             {extraUsageMinutes > 0 && (
               <>
                 (
