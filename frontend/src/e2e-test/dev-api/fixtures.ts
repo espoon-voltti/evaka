@@ -136,6 +136,8 @@ import {
 } from './types'
 
 import {
+  insertAssistanceActionFixtures,
+  insertAssistanceActionOptionFixtures,
   insertChildFixtures,
   insertDaycareFixtures,
   insertFeeThresholds,
@@ -145,6 +147,7 @@ import {
   insertReservationFixtures,
   insertVtjPersonFixture
 } from './index'
+import {AssistanceAction, AssistanceActionOption} from "../../lib-common/generated/api-types/assistanceaction";
 
 export const uuidv4 = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -2136,6 +2139,25 @@ export class Fixture {
     })
   }
 
+  static assistanceAction(): AssistanceActionBuilder {
+    return new AssistanceActionBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      actions: ['ASSISTANCE_SERVICE_CHILD'],
+      endDate: LocalDate.todayInSystemTz(),
+      startDate: LocalDate.todayInSystemTz(),
+      otherAction: ''
+    })
+  }
+
+  static assistanceActionOption(): AssistanceActionOptionBuilder {
+    return new AssistanceActionOptionBuilder({
+      descriptionFi: 'a description',
+      nameFi: 'a test assistance action option',
+      value: 'TEST_ASSISTANCE_ACTION_OPTION'
+    })
+  }
+
   static childDocument(): ChildDocumentBuilder {
     return new ChildDocumentBuilder({
       id: uuidv4(),
@@ -2932,5 +2954,29 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 
   copy() {
     return new ChildDocumentBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceActionBuilder extends FixtureBuilder<AssistanceAction> {
+  async save() {
+    await insertAssistanceActionFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceActionBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceActionOptionBuilder extends FixtureBuilder<AssistanceActionOption> {
+  async save() {
+    await insertAssistanceActionOptionFixtures([this.data])
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceActionOptionBuilder({ ...this.data })
   }
 }

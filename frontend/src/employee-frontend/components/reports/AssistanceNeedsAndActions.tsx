@@ -735,7 +735,7 @@ const ReportByGroupTable = ({
         ]}
         filename={filename}
       />
-      <TableScrollable>
+      <TableScrollable data-qa="assistance-needs-and-actions-table">
         <Thead>
           <Tr>
             {groupData.type !== 'NO_GROUPING' && (
@@ -791,7 +791,7 @@ const ReportByGroupTable = ({
           {Object.entries(groupData.data).map(([groupingKey, data]) => (
             <React.Fragment key={`${groupData.type}-${groupingKey}`}>
               {groupData.type !== 'NO_GROUPING' && (
-                <Tr>
+                <Tr data-qa="assistance-needs-and-actions-row">
                   <Td>
                     <div
                       onClick={() =>
@@ -1170,6 +1170,9 @@ const ReportByChildTable = ({
                       />
                       {data.name}
                     </div>
+                  </Td>
+                  <Td>
+                    {/*This is to add an empty Ikä column to daycare row */}
                   </Td>
                   <Td />
                   {selectedDaycareColumns.map((level) => (

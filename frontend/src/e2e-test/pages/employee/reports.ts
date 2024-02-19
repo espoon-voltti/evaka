@@ -464,3 +464,21 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
   status = this.page.findByDataQa('status')
   annulmentReason = this.page.findByDataQa('annulment-reason')
 }
+
+export class AssistanceNeedsAndActionsReport {
+  constructor(private page: Page) {}
+  needsAndActionsRows = this.page.findAllByDataQa(
+    'assistance-needs-and-actions-row'
+  )
+
+  async assertRowAndColumn(row: number, column: number, expected: string) {
+    const tableRow = this.needsAndActionsRows.nth(row)
+    await tableRow.findAll('td').nth(column).assertTextEquals(expected)
+  }
+
+  async assertRow(row: number, expected: string) {
+    await this.needsAndActionsRows
+      .nth(row)
+      .assertText((t) => t.replace(/\s/g, ',') === expected)
+  }
+}

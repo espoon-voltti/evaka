@@ -169,6 +169,19 @@ export interface DevApplicationWithForm {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceAction
+*/
+export interface DevAssistanceAction {
+  actions: string[]
+  childId: UUID
+  endDate: LocalDate
+  id: UUID
+  otherAction: string
+  startDate: LocalDate
+  updatedBy: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevAssistanceFactor
 */
 export interface DevAssistanceFactor {
@@ -1028,6 +1041,15 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
     form: deserializeJsonApplicationForm(json.form),
     modifiedDate: (json.modifiedDate != null) ? HelsinkiDateTime.parseIso(json.modifiedDate) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
+  }
+}
+
+
+export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAction>): DevAssistanceAction {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

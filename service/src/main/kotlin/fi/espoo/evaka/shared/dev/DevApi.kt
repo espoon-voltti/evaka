@@ -23,6 +23,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
+import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
@@ -115,6 +116,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -128,6 +130,7 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
@@ -1305,6 +1308,24 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
+    @PostMapping("/assistance-action-option")
+    fun createAssistanceActionOption(
+        db: Database,
+        @RequestBody assistanceActionOptions: List<DevAssistanceActionOption>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> assistanceActionOptions.forEach { tx.insert(it) } }
+        }
+    }
+
+    @PostMapping("/assistance-action")
+    fun createAssistanceAction(
+        db: Database,
+        @RequestBody assistanceActions: List<DevAssistanceAction>
+    ) {
+        db.connect { dbc -> dbc.transaction { tx -> assistanceActions.forEach { tx.insert(it) } } }
+    }
+
     @PostMapping("/assistance-need-decisions")
     fun createAssistanceNeedDecisions(
         db: Database,
@@ -2242,4 +2263,11 @@ data class DevVardaOrganizerChild(
     val organizerOid: String = "organizerOid123",
     val uploadedAt: HelsinkiDateTime? = null,
     val vardaPersonId: Long = Random.nextLong()
+)
+
+data class DevAssistanceActionOption(
+    val id: AssistanceActionOptionId,
+    val value: String = "TEST_ASSISTANCE_ACTION_OPTION",
+    val nameFi: String = "testAssistanceActionOption",
+    val descriptionFi: String?
 )

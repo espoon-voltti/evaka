@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { Autocomplete } from './api-types'
 import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
@@ -19,6 +20,7 @@ import { DecisionRequest } from './api-types'
 import { DevAbsence } from './api-types'
 import { DevApiError } from '../dev-api'
 import { DevApplicationWithForm } from './api-types'
+import { DevAssistanceAction } from './api-types'
 import { DevAssistanceFactor } from './api-types'
 import { DevAssistanceNeedDecision } from './api-types'
 import { DevAssistanceNeedPreschoolDecision } from './api-types'
@@ -346,6 +348,40 @@ export async function createApplications(
   } catch (e) {
     throw new DevApiError(e)
   }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceAction
+*/
+export async function createAssistanceAction(
+  request: {
+    body: DevAssistanceAction[]
+  }
+): Promise<void> {
+  const { data: json } = await devClient.request<JsonOf<void>>({
+    url: uri`/dev-api/assistance-action`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<DevAssistanceAction[]>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceActionOption
+*/
+export async function createAssistanceActionOption(
+  request: {
+    body: AssistanceActionOption[]
+  }
+): Promise<void> {
+  const { data: json } = await devClient.request<JsonOf<void>>({
+    url: uri`/dev-api/assistance-action-option`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AssistanceActionOption[]>
+  })
+  return json
 }
 
 
