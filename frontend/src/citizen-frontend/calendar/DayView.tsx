@@ -670,13 +670,13 @@ const Absence = React.memo(function Absence({
         </FixedSpaceColumn>
       </FixedSpaceRow>
       {open && (
-        <Colspan2>
+        <ReservationAttendanceSection>
           <ExpandingInfoBox
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
           />
-        </Colspan2>
+        </ReservationAttendanceSection>
       )}
     </>
   )
@@ -706,10 +706,11 @@ const Reservations = React.memo(function Reservations({
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
     <div data-qa="reservations">
-      {withTimes.map((reservation, i) => (
-        <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
+      {withTimes.map((reservation, i, array) => (
+        <React.Fragment key={`res-${i}`}>
           {formatReservation(reservation, reservableTimeRange, i18n)}
-        </ReservationRow>
+          {i < array.length - 1 && ', '}
+        </React.Fragment>
       ))}
     </div>
   ) : (
@@ -815,19 +816,24 @@ const EmptyButtonFooterElement = styled.div`
 `
 
 const ReservationAttendanceInfo = styled.div`
+  @media not all and (max-width: ${tabletMin}) {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    grid-auto-rows: minmax(38px, max-content);
+    row-gap: ${defaultMargins.xxs};
+  }
+
   @media (max-width: ${tabletMin}) {
     margin-left: ${defaultMargins.xs};
   }
 `
 
-const Colspan2 = styled.div`
+export const ReservationAttendanceSection = styled.div`
   grid-column: 1 / span 2;
 `
 
 export const ReservationAttendanceHeading = styled(LabelLike)`
-  margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
-`
-const ReservationRow = styled.p`
-  margin-top: 0px;
-  margin-bottom: ${defaultMargins.xs};
+  @media (max-width: ${tabletMin}) {
+    margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
+  }
 `

@@ -14,7 +14,10 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 import { useTranslation } from '../localization'
 
-import { ReservationAttendanceHeading } from './DayView'
+import {
+  ReservationAttendanceSection,
+  ReservationAttendanceHeading
+} from './DayView'
 import { HoursMinutes } from './MonthlyHoursSummary'
 
 function AttendanceInfoWithSimpleThreshold({
@@ -74,13 +77,13 @@ function AttendanceInfoWithServiceUsage({
     attendances.length === 1 &&
     reservations.length === 1 &&
     reservations[0].type === 'TIMES' &&
-    attendances[0].start < reservations[0].range.start
+    attendances[0].start.isBefore(reservations[0].range.start)
   const simpleExceedEnd =
     attendances.length === 1 &&
     reservations.length === 1 &&
     reservations[0].type === 'TIMES' &&
     !!attendances[0].end &&
-    attendances[0].end > reservations[0].range.end
+    attendances[0].end.isAfter(reservations[0].range.end)
   const simpleExceedWarning =
     (simpleExceedStart ? i18n.calendar.exceedStart + ' ' : '') +
     (simpleExceedEnd ? i18n.calendar.exceedEnd : '')
@@ -100,8 +103,8 @@ function AttendanceInfoWithServiceUsage({
       <div>
         {attendances.length > 0 ? (
           <>
-            {attendances.map((timeInterval) => (
-              <div key={timeInterval.format()}>
+            {attendances.map((timeInterval, index, array) => (
+              <React.Fragment key={index}>
                 <TimeDisplay highlight={simpleExceedStart}>
                   {timeInterval.formatStart()}
                 </TimeDisplay>
@@ -109,10 +112,12 @@ function AttendanceInfoWithServiceUsage({
                 <TimeDisplay highlight={simpleExceedEnd}>
                   {timeInterval.formatEnd()}
                 </TimeDisplay>
-              </div>
+                {index < array.length - 1 && ', '}
+              </React.Fragment>
             ))}
             {extraUsageMinutes > 0 && (
               <>
+                {' '}
                 (
                 <strong>
                   + <HoursMinutes minutes={extraUsageMinutes} />
@@ -123,9 +128,13 @@ function AttendanceInfoWithServiceUsage({
           </>
         ) : (
           '–'
-        )}{' '}
-        {showAttendanceWarning && <AlertBox message={attendanceWarning} wide />}
+        )}
       </div>
+      {showAttendanceWarning && (
+        <ReservationAttendanceSection>
+          <AlertBox message={attendanceWarning} wide />
+        </ReservationAttendanceSection>
+      )}
       <ReservationAttendanceHeading>
         {i18n.calendar.usedService}
       </ReservationAttendanceHeading>
@@ -133,9 +142,12 @@ function AttendanceInfoWithServiceUsage({
         {usedService.usedServiceRanges.length > 0 ||
         usedService.usedServiceMinutes > 0 ? (
           <>
-            {usedService.usedServiceRanges.map((timeRange, index) => (
-              <div key={index}>{timeRange.format()}</div>
-            ))}
+            {usedService.usedServiceRanges.map((timeRange, index, array) => (
+              <React.Fragment key={index}>
+                {timeRange.format()}
+                {index < array.length - 1 && ', '}
+              </React.Fragment>
+            ))}{' '}
             (<HoursMinutes minutes={usedService.usedServiceMinutes} />)
           </>
         ) : (

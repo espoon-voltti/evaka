@@ -591,12 +591,11 @@ class DayView extends Element {
       r: FormatterReservation
     ) => `${r.startTime}–${r.endTime}`
   ) {
-    const child = this.#childSection(childId)
-    for (const [i, res] of reservations.entries()) {
-      await child
-        .findByDataQa(`reservation-output-${i}`)
-        .assertTextEquals(formatter(res))
-    }
+    const reservationsElement =
+      this.#childSection(childId).findByDataQa('reservations')
+    await reservationsElement.assertTextEquals(
+      reservations.map(formatter).join(', ')
+    )
   }
 
   async assertAbsence(childId: UUID, value: string) {
