@@ -263,20 +263,24 @@ fun generateApiClient(
             }
         else emptyMap()
 
-    val requestParameters =
-        if (endpoint.requestParameters.isNotEmpty())
-            TsCode.join(
-                endpoint.requestParameters
-                    .associate {
-                        it.name to
-                            generator.serializeRequestParam(it.type, TsCode("request.${it.name}"))
-                    }
-                    .map { TsCode { "  ${it.key}: ${inline(it.value)}" } },
-                separator = ",\n",
-                prefix = "{\n",
-                postfix = "\n}"
-            )
-        else null
+    val createQueryParameters =
+        if (endpoint.requestParameters.isNotEmpty()) {
+            val nameValuePairs =
+                endpoint.requestParameters.map { param ->
+                    generator.toRequestParamPairs(
+                        param.type,
+                        param.name,
+                        TsCode("request.${param.name}")
+                    )
+                }
+            TsCode {
+                """
+const params = ${ref(Imports.createUrlSearchParams)}(
+${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
+)"""
+                    .removePrefix("\n")
+            }
+        } else null
 
     val url =
         TsCode(
@@ -293,7 +297,7 @@ fun generateApiClient(
         listOfNotNull(
             TsCode { "url: ${ref(Imports.uri)}`${inline(url)}`.toString()" },
             TsCode { "method: '${endpoint.httpMethod}'" },
-            requestParameters?.let { TsCode { "params: ${inline(it)}" } },
+            createQueryParameters?.let { TsCode { "params" } },
             endpoint.requestBodyType?.let {
                 TsCode {
                     "data: request.body satisfies ${ref(Imports.jsonCompatible)}<${inline(tsRequestType)}>"
@@ -307,16 +311,26 @@ fun generateApiClient(
     val responseDeserializer =
         endpoint.responseBodyType?.let { generator.jsonDeserializerExpression(it, TsCode("json")) }
 
+    val statements =
+        listOfNotNull(
+            createQueryParameters,
+            TsCode {
+                """
+const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
+${join(axiosArguments, ",\n").prependIndent("  ")}
+})"""
+                    .removePrefix("\n")
+            },
+            TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" }
+        )
+
     return TsCode {
         """
 /**
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
 export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
-  const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
-${join(axiosArguments, ",\n").prependIndent("    ")}
-  })
-  return ${inline(responseDeserializer ?: TsCode("json"))}
+${join(statements, separator = "\n").prependIndent("  ").removePrefix("\n")}
 }"""
     }
 }

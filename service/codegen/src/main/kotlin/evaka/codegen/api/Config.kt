@@ -55,6 +55,7 @@ object Imports {
     val jsonOf = TsImport.Named(LibCommon / "json.d.ts", "JsonOf")
     val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
+    val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
 }
 
 val defaultMetadata =
