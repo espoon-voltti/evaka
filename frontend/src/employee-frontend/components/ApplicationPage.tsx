@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Loading, Result, Success } from 'lib-common/api'
+import { combine, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -31,13 +31,13 @@ import {
   getClubTermsResult,
   getPreschoolTermsResult
 } from '../api/applications'
-import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
 import { getApplicationUnits } from '../api/daycare'
 import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationNotes from '../components/application-page/ApplicationNotes'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
 import { getEmployeeUrlPrefix } from '../constants'
+import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { ApplicationResponse } from '../types/application'
@@ -45,6 +45,10 @@ import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { renderResult, UnwrapResult } from './async-rendering'
 import { getMessageThreadForApplication } from './messages/api'
+
+const getServiceNeedOptionPublicInfosResult = wrapResult(
+  getServiceNeedOptionPublicInfos
+)
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -185,7 +189,7 @@ export default React.memo(function ApplicationPage() {
   >(Loading.of())
 
   const loadServiceNeedOptions = useRestApi(
-    getServiceNeedOptionPublicInfos,
+    getServiceNeedOptionPublicInfosResult,
     setServiceNeedOptions
   )
 
@@ -201,7 +205,9 @@ export default React.memo(function ApplicationPage() {
 
   useEffect(() => {
     if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(placementTypeFilters[editedApplication.type])
+      void loadServiceNeedOptions({
+        placementTypes: placementTypeFilters[editedApplication.type]
+      })
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }

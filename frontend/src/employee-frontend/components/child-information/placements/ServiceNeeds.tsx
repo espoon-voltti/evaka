@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -21,13 +22,15 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
 import { faPlus, faQuestion } from 'lib-icons'
 
-import { deleteServiceNeed } from '../../../api/child/service-needs'
+import { deleteServiceNeed } from '../../../generated/api-clients/serviceneed'
 import { useTranslation } from '../../../state/i18n'
 import { DateRange } from '../../../utils/date'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
 import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
+
+const deleteServiceNeedResult = wrapResult(deleteServiceNeed)
 
 interface Props {
   placement: DaycarePlacementWithDetails
@@ -197,7 +200,7 @@ export default React.memo(function ServiceNeeds({
           icon={faQuestion}
           resolve={{
             action: () =>
-              deleteServiceNeed(deletingId)
+              deleteServiceNeedResult({ id: deletingId })
                 .then(reload)
                 .finally(() => setDeletingId(null)),
             label: t.deleteServiceNeed.btn
