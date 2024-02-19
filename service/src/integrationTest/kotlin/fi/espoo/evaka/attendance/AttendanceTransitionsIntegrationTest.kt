@@ -46,10 +46,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
     private val daycarePlacementId = PlacementId(UUID.randomUUID())
-    private val placementStart = LocalDate.now().minusDays(30)
-    private val placementEnd = LocalDate.now().plusDays(30)
+    private val today = LocalDate.of(2024, 1, 17)
+    private val placementStart = today.minusDays(30)
+    private val placementEnd = today.plusDays(30)
 
-    private val mockClock = MockEvakaClock(2024, 1, 17, 19, 30)
+    private val mockClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 19, 30)))
     private val roundedNow = mockClock.now().toLocalTime().withSecond(0).withNano(0)
 
     @BeforeEach
