@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -66,7 +67,9 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
+    @Autowired private lateinit var accessContol: AccessControl
+    @Autowired private lateinit var featureConfig: FeatureConfig
+    private lateinit var reservationControllerCitizen: ReservationControllerCitizen
 
     // Monday
     private val mockToday: LocalDate = LocalDate.of(2021, 11, 1)
@@ -88,6 +91,12 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
 
     @BeforeEach
     fun before() {
+        reservationControllerCitizen =
+            ReservationControllerCitizen(
+                accessContol,
+                featureConfig,
+                evakaEnv.copy(plannedAbsenceEnabledForHourBasedServiceNeeds = true)
+            )
         db.transaction { tx ->
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOption(snPreschoolDaycareContractDays13)
@@ -1176,12 +1185,20 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     endDate = tuesday
                 )
                 .also { placementId ->
-                    // contract days on monday and tuesday
+                    // contract days on monday
                     tx.insertTestServiceNeed(
                         confirmedBy = employee.evakaUserId,
                         placementId = placementId,
-                        period = FiniteDateRange(monday, tuesday),
+                        period = FiniteDateRange(monday, monday),
                         optionId = snDaycareContractDays10.id,
+                        shiftCare = ShiftCareType.NONE
+                    )
+                    // hour based service need on tuesday
+                    tx.insertTestServiceNeed(
+                        confirmedBy = employee.evakaUserId,
+                        placementId = placementId,
+                        period = FiniteDateRange(tuesday, tuesday),
+                        optionId = snDaycareHours120.id,
                         shiftCare = ShiftCareType.NONE
                     )
                 }
@@ -1208,7 +1225,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                     dayChild(
                         child2.id,
-                        // no contract days -> OTHER_ABSENCE was kept
+                        // no contract days or hour based service need -> OTHER_ABSENCE was kept
                         absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true)
                     )
                 ),
@@ -1257,9 +1274,17 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         dayChild(
                             child2.id,
                             absence =
-                                // contract days -> OTHER_ABSENCE changed to PLANNED_ABSENCE
-                                AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true)
-                        )
+                                // hours based service need -> OTHER_ABSENCE changed to
+                                // PLANNED_ABSENCE
+                                AbsenceInfo(type = AbsenceType.PLANNED_ABSENCE, editable = true),
+                            usedService =
+                                UsedServiceResult(
+                                    reservedMinutes = 0,
+                                    attendedMinutes = 0,
+                                    usedServiceMinutes = 0,
+                                    usedServiceRanges = emptyList()
+                                )
+                        ),
                     )
                     .sortedBy { it.childId },
                 day.children

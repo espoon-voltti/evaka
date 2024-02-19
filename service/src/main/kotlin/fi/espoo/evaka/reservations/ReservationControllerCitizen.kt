@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -51,7 +52,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ReservationControllerCitizen(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -248,7 +250,8 @@ class ReservationControllerCitizen(
                         clock.now(),
                         user,
                         body,
-                        featureConfig.citizenReservationThresholdHours
+                        featureConfig.citizenReservationThresholdHours,
+                        env.plannedAbsenceEnabledForHourBasedServiceNeeds
                     )
                 }
             }
@@ -300,9 +303,13 @@ class ReservationControllerCitizen(
 
                     val reservableRange =
                         getReservableRange(now, featureConfig.citizenReservationThresholdHours)
-                    val childContractDays =
+                    val childPlannedAbsenceEnabled =
                         body.dateRange.intersection(reservableRange)?.let { range ->
-                            tx.getReservationContractDayRanges(body.childIds, range)
+                            tx.getPlannedAbsenceEnabledRanges(
+                                body.childIds,
+                                range,
+                                env.plannedAbsenceEnabledForHourBasedServiceNeeds
+                            )
                         } ?: emptyMap()
 
                     val deletedAbsences =
@@ -335,9 +342,10 @@ class ReservationControllerCitizen(
                                             reservableRange.includes(date) &&
                                                 body.absenceType == OTHER_ABSENCE
                                         ) {
-                                            val hasContractDays =
-                                                childContractDays[childId]?.includes(date) ?: false
-                                            if (hasContractDays) {
+                                            val plannedAbsenceEnabled =
+                                                childPlannedAbsenceEnabled[childId]?.includes(date)
+                                                    ?: false
+                                            if (plannedAbsenceEnabled) {
                                                 PLANNED_ABSENCE
                                             } else {
                                                 body.absenceType

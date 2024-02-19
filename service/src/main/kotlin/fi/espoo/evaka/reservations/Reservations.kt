@@ -177,7 +177,8 @@ fun createReservationsAndAbsences(
     now: HelsinkiDateTime,
     user: AuthenticatedUser,
     requests: List<DailyReservationRequest>,
-    citizenReservationThresholdHours: Long
+    citizenReservationThresholdHours: Long,
+    plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false
 ): CreateReservationsResult {
     val (userId, isCitizen) =
         when (user) {
@@ -199,7 +200,12 @@ fun createReservationsAndAbsences(
 
     val childIds = requests.map { it.childId }.toSet()
     val placements = tx.getReservationPlacements(childIds, reservationsRange.asDateRange())
-    val contractDayRanges = tx.getReservationContractDayRanges(childIds, reservationsRange)
+    val plannedAbsenceEnabledRanges =
+        tx.getPlannedAbsenceEnabledRanges(
+            childIds,
+            reservationsRange,
+            plannedAbsenceEnabledForHourBasedServiceNeeds
+        )
     val childReservationDates =
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
     val childAbsenceDates = tx.getAbsenceDatesForChildrenInRange(childIds, reservationsRange)
@@ -316,11 +322,12 @@ fun createReservationsAndAbsences(
 
     val absences =
         validated.filterIsInstance<DailyReservationRequest.Absent>().map {
-            val hasContractDays = contractDayRanges[it.childId]?.includes(it.date) ?: false
+            val plannedAbsenceEnabled =
+                plannedAbsenceEnabledRanges[it.childId]?.includes(it.date) ?: false
             FullDayAbsenseUpsert(
                 it.childId,
                 it.date,
-                if (hasContractDays && reservableRange.includes(it.date))
+                if (plannedAbsenceEnabled && reservableRange.includes(it.date))
                     AbsenceType.PLANNED_ABSENCE
                 else AbsenceType.OTHER_ABSENCE
             )
