@@ -94,7 +94,7 @@ describe('Monthly summary', () => {
     )
     await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
     await summary.textElement.assertTextEquals(
-      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 0 h / 140 h'
+      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma - / 140 h'
     )
   })
 
@@ -118,7 +118,7 @@ describe('Monthly summary', () => {
     await summary.textElement.assertTextEquals(
       'Kaarina\n' +
         '\n' +
-        'Suunnitelma 0 h / 140 h\n' +
+        'Suunnitelma - / 140 h\n' +
         'Toteuma 7 h 30 min / 140 h'
     )
   })
