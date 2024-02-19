@@ -559,10 +559,12 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
     [
       updateBackupCareMutation,
       (placement) => ({
+        id: placement.id,
         unitId,
-        backupCareId: placement.id,
-        period: placement.period,
-        groupId: null
+        body: {
+          period: placement.period,
+          groupId: null
+        }
       })
     ]
   )

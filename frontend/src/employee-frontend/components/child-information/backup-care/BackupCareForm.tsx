@@ -165,7 +165,8 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
         formState.unit !== undefined
           ? {
               childId,
-              payload: {
+              body: {
+                groupId: null,
                 unitId: formState.unit.id,
                 period: new FiniteDateRange(
                   formState.startDate,
@@ -178,10 +179,12 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     [
       updateBackupCareMutation,
       (backupCare) => ({
-        backupCareId: backupCare.id,
-        groupId: null,
+        id: backupCare.id,
         unitId: backupCare.unit.id,
-        period: new FiniteDateRange(formState.startDate, formState.endDate)
+        body: {
+          groupId: null,
+          period: new FiniteDateRange(formState.startDate, formState.endDate)
+        }
       })
     ]
   )

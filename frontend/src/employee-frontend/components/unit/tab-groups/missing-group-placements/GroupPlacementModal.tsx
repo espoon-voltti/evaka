@@ -137,10 +137,12 @@ export default React.memo(function GroupPlacementModal({
     [
       updateBackupCareMutation,
       (groupId) => ({
+        id: placementId,
         unitId,
-        backupCareId: placementId,
-        period: new FiniteDateRange(form.startDate, form.endDate),
-        groupId
+        body: {
+          period: new FiniteDateRange(form.startDate, form.endDate),
+          groupId
+        }
       })
     ]
   )

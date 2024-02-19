@@ -11,8 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { getChildBackupCares } from 'employee-frontend/api/child/backup-care'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
@@ -28,6 +27,7 @@ import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 import { getPlacements } from '../api/child/placements'
 import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'
+import { getChildBackupCares } from '../generated/api-clients/backupcare'
 
 export interface ChildState {
   childId: UUID | undefined
@@ -151,7 +151,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [backupCares, loadBackupCares] = useApiState(
     async () =>
       permittedActions.has('READ_BACKUP_CARE')
-        ? getChildBackupCares(id)
+        ? wrapResult(getChildBackupCares)({ childId: id }).then((res) =>
+            res.map((x) => x.backupCares)
+          )
         : Loading.of<ChildBackupCareResponse[]>(),
     [id, permittedActions]
   )

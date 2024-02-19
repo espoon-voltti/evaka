@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { UUID } from 'lib-common/types'
@@ -12,9 +13,9 @@ import Title from 'lib-components/atoms/Title'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import { removeBackupCare } from '../../../api/child/backup-care'
 import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
 import Toolbar from '../../../components/common/Toolbar'
+import { deleteBackupCare } from '../../../generated/api-clients/backupcare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -70,7 +71,7 @@ export default function BackupCareRow({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              removeBackupCare(backupCare.id)
+              wrapResult(deleteBackupCare)({ id: backupCare.id })
                 .then(() => clearUiMode())
                 .then(() => loadBackupCares()),
             label: i18n.common.remove

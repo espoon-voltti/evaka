@@ -75,7 +75,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = backupCareEnd.plusDays(4))
 
-        backupCareController.update(
+        backupCareController.updateBackupCare(
             dbInstance(),
             serviceWorker,
             clock,
@@ -98,7 +98,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     fun testOverlapError() {
         createBackupCareAndAssert()
         assertThrows<Conflict> {
-            backupCareController.createForChild(
+            backupCareController.createBackupCare(
                 dbInstance(),
                 serviceWorker,
                 clock,
@@ -123,7 +123,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val id = createBackupCareAndAssert(groupId = groupId)
         val backupCares =
             backupCareController
-                .getForChild(dbInstance(), serviceWorker, clock, testChild_1.id)
+                .getChildBackupCares(dbInstance(), serviceWorker, clock, testChild_1.id)
                 .backupCares
                 .map { it.backupCare }
 
@@ -160,7 +160,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val id = createBackupCareAndAssert(groupId = groupId)
         val backupCares =
             backupCareController
-                .getForDaycare(
+                .getUnitBackupCares(
                     dbInstance(),
                     serviceWorker,
                     clock,
@@ -196,7 +196,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun `backup care must be created during a placement`() {
         assertThrows<BadRequest> {
-            backupCareController.createForChild(
+            backupCareController.createBackupCare(
                 dbInstance(),
                 serviceWorker,
                 clock,
@@ -221,7 +221,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val newPeriod = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
 
         assertThrows<BadRequest> {
-            backupCareController.update(
+            backupCareController.updateBackupCare(
                 dbInstance(),
                 serviceWorker,
                 clock,
@@ -243,7 +243,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd)
     ): BackupCareId {
         val result =
-            backupCareController.createForChild(
+            backupCareController.createBackupCare(
                 dbInstance(),
                 serviceWorker,
                 clock,

@@ -6,18 +6,13 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
 import {
   acceptPlacementProposal,
   RespondToPlacementProposal,
   respondToPlacementProposal
 } from '../../api/applications'
-import {
-  BackupCareUpdate,
-  createBackupCare,
-  updateBackupCare
-} from '../../api/child/backup-care'
 import { getAreas } from '../../api/daycare'
 import {
   createDaycare,
@@ -43,6 +38,10 @@ import {
   updateDaycare,
   updateGroup
 } from '../../api/unit'
+import {
+  createBackupCare,
+  updateBackupCare
+} from '../../generated/api-clients/backupcare'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
@@ -220,8 +219,8 @@ export const createBackupCareMutation = mutation({
 })
 
 export const updateBackupCareMutation = mutation({
-  api: ({ unitId: _, ...payload }: BackupCareUpdate & { unitId: UUID }) =>
-    updateBackupCare(payload),
+  api: (arg: Arg0<typeof updateBackupCare> & { unitId: UUID }) =>
+    updateBackupCare(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
