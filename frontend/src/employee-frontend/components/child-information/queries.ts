@@ -6,24 +6,9 @@ import {
   AssistanceNeedDecisionStatus,
   AssistanceNeedPreschoolDecisionForm
 } from 'lib-common/generated/api-types/assistanceneed'
-import {
-  ChildDocumentCreateRequest,
-  DocumentContent,
-  DocumentStatus
-} from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
-import {
-  deleteChildDocument,
-  getChildDocument,
-  getChildDocuments,
-  postChildDocument,
-  putChildDocumentContent,
-  putChildDocumentNextStatus,
-  putChildDocumentPrevStatus,
-  putChildDocumentPublish
-} from '../../api/child/child-documents'
 import { getUnitsRaw } from '../../api/daycare'
 import {
   createAssistanceAction,
@@ -43,6 +28,16 @@ import {
   updateOtherAssistanceMeasure,
   updatePreschoolAssistance
 } from '../../generated/api-clients/assistance'
+import {
+  createDocument,
+  deleteDraftDocument,
+  getDocument,
+  getDocuments,
+  nextDocumentStatus,
+  prevDocumentStatus,
+  publishDocument,
+  updateDocumentContent
+} from '../../generated/api-clients/document'
 import { createQueryKeys } from '../../query'
 
 import {
@@ -79,29 +74,28 @@ export const queryKeys = createQueryKeys('childInformation', {
 })
 
 export const childDocumentsQuery = query({
-  api: getChildDocuments,
-  queryKey: queryKeys.childDocuments
+  api: getDocuments,
+  queryKey: ({ childId }) => queryKeys.childDocuments(childId)
 })
 
 export const childDocumentQuery = query({
-  api: getChildDocument,
-  queryKey: queryKeys.childDocument
+  api: getDocument,
+  queryKey: ({ documentId }) => queryKeys.childDocument(documentId)
 })
 
 export const createChildDocumentMutation = mutation({
-  api: (arg: ChildDocumentCreateRequest) => postChildDocument(arg),
-  invalidateQueryKeys: (arg) => [queryKeys.childDocuments(arg.childId)]
+  api: createDocument,
+  invalidateQueryKeys: (arg) => [queryKeys.childDocuments(arg.body.childId)]
 })
 
 export const updateChildDocumentContentMutation = mutation({
-  api: (arg: { id: UUID; content: DocumentContent }) =>
-    putChildDocumentContent(arg.id, arg.content),
+  api: updateDocumentContent,
   invalidateQueryKeys: () => [] // do not invalidate automatically because of auto-save
 })
 
 export const publishChildDocumentMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID }) =>
-    putChildDocumentPublish(arg.documentId),
+  api: (arg: Arg0<typeof publishDocument> & { childId: UUID }) =>
+    publishDocument(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -109,8 +103,8 @@ export const publishChildDocumentMutation = mutation({
 })
 
 export const childDocumentNextStatusMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentNextStatus(arg.documentId, arg.newStatus),
+  api: (arg: Arg0<typeof nextDocumentStatus> & { childId: UUID }) =>
+    nextDocumentStatus(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -118,8 +112,8 @@ export const childDocumentNextStatusMutation = mutation({
 })
 
 export const childDocumentPrevStatusMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentPrevStatus(arg.documentId, arg.newStatus),
+  api: (arg: Arg0<typeof prevDocumentStatus> & { childId: UUID }) =>
+    prevDocumentStatus(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -127,8 +121,8 @@ export const childDocumentPrevStatusMutation = mutation({
 })
 
 export const deleteChildDocumentMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID }) =>
-    deleteChildDocument(arg.documentId),
+  api: (arg: Arg0<typeof deleteDraftDocument> & { childId: UUID }) =>
+    deleteDraftDocument(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)

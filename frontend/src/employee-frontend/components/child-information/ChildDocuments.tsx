@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFile, faQuestion } from 'Icons'
+import { faFile } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -12,7 +12,6 @@ import { combine } from 'lib-common/api'
 import { oneOf, required } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
 import {
-  ChildDocumentSummary,
   ChildDocumentSummaryWithPermittedActions,
   DocumentTemplateSummary
 } from 'lib-common/generated/api-types/document'
@@ -26,18 +25,13 @@ import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildD
 import { Table, Thead, Th, Tbody, Tr, Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { activeDocumentTemplateSummariesQuery } from '../document-templates/queries'
 
-import {
-  childDocumentsQuery,
-  createChildDocumentMutation,
-  deleteChildDocumentMutation
-} from './queries'
+import { childDocumentsQuery, createChildDocumentMutation } from './queries'
 
 const WiderTd = styled(Td)`
   width: 50%;
@@ -53,39 +47,8 @@ const ChildDocuments = React.memo(function ChildDocuments({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { mutateAsync: deleteChildDocument } = useMutationResult(
-    deleteChildDocumentMutation
-  )
-
-  const [confirmingDelete, setConfirmingDelete] =
-    useState<ChildDocumentSummary | null>(null)
-
   return (
     <div>
-      {confirmingDelete && (
-        <InfoModal
-          type="warning"
-          title={i18n.childInformation.childDocuments.removeConfirmation}
-          text={confirmingDelete.templateName}
-          icon={faQuestion}
-          reject={{
-            action: () => setConfirmingDelete(null),
-            label: i18n.common.cancel
-          }}
-          resolve={{
-            action: async () => {
-              const res = await deleteChildDocument({
-                childId,
-                documentId: confirmingDelete.id
-              })
-              if (res.isSuccess) {
-                setConfirmingDelete(null)
-              }
-            },
-            label: i18n.common.remove
-          }}
-        />
-      )}
       <Table data-qa="table-of-child-documents">
         <Thead>
           <Tr>
@@ -163,8 +126,10 @@ const CreationModal = React.memo(function CreationModal({
 
   const submit = async () => {
     const res = await createChildDocument({
-      childId,
-      templateId: bind.value()
+      body: {
+        childId,
+        templateId: bind.value()
+      }
     })
     if (res.isSuccess) {
       navigate(`/child-documents/${res.value}`)
@@ -196,7 +161,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   childId: UUID
 }) {
   const { i18n } = useTranslation()
-  const documentsResult = useQueryResult(childDocumentsQuery(childId))
+  const documentsResult = useQueryResult(childDocumentsQuery({ childId }))
   const documentTemplatesResult = useQueryResult(
     activeDocumentTemplateSummariesQuery(childId)
   )

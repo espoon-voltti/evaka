@@ -282,9 +282,9 @@ export async function getDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.nextStatus
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.nextDocumentStatus
 */
-export async function nextStatus(
+export async function nextDocumentStatus(
   request: {
     documentId: UUID,
     body: StatusChangeRequest
@@ -300,9 +300,9 @@ export async function nextStatus(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.prevStatus
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.prevDocumentStatus
 */
-export async function prevStatus(
+export async function prevDocumentStatus(
   request: {
     documentId: UUID,
     body: StatusChangeRequest

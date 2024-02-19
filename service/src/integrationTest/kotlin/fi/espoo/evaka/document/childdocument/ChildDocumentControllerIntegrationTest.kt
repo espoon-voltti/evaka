@@ -366,7 +366,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
-        controller.nextStatus(
+        controller.nextDocumentStatus(
             dbInstance(),
             employeeUser,
             clock,
@@ -591,7 +591,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         controller.getDocument(dbInstance(), employeeUser, clock, id).data
 
     private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
-        controller.nextStatus(
+        controller.nextDocumentStatus(
             dbInstance(),
             employeeUser,
             clock,
@@ -600,7 +600,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
 
     private fun prevState(id: ChildDocumentId, status: DocumentStatus) =
-        controller.prevStatus(
+        controller.prevDocumentStatus(
             dbInstance(),
             employeeUser,
             clock,

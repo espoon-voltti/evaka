@@ -113,8 +113,8 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
   const save = useCallback(
     async (content: DocumentContent) => {
       const result = await updateChildDocumentContent({
-        id: document.id,
-        content
+        documentId: document.id,
+        body: content
       })
       if (result.isSuccess) {
         setLastSaved(HelsinkiDateTime.now())
@@ -243,7 +243,9 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     onClick={() => ({
                       documentId: document.id,
                       childId: document.child.id,
-                      newStatus: prevStatus
+                      body: {
+                        newStatus: prevStatus
+                      }
                     })}
                     confirmationTitle={
                       i18n.childInformation.childDocuments.editor
@@ -323,7 +325,9 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     onClick={() => ({
                       documentId: document.id,
                       childId: document.child.id,
-                      newStatus: nextStatus
+                      body: {
+                        newStatus: nextStatus
+                      }
                     })}
                     confirmationTitle={
                       i18n.childInformation.childDocuments.editor
@@ -387,7 +391,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 export default React.memo(function ChildDocumentEditor() {
   const { documentId } = useNonNullableParams()
   const [searchParams] = useSearchParams()
-  const documentResult = useQueryResult(childDocumentQuery(documentId))
+  const documentResult = useQueryResult(childDocumentQuery({ documentId }))
 
   return renderResult(documentResult, (documentAndPermissions) => (
     <ChildDocumentEditorView

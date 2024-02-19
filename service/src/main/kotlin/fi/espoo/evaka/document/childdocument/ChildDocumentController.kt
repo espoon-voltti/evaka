@@ -239,7 +239,7 @@ class ChildDocumentController(
     )
 
     @PutMapping("/{documentId}/next-status")
-    fun nextStatus(
+    fun nextDocumentStatus(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -281,7 +281,7 @@ class ChildDocumentController(
     }
 
     @PutMapping("/{documentId}/prev-status")
-    fun prevStatus(
+    fun prevDocumentStatus(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
