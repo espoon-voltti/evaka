@@ -95,7 +95,7 @@ class FamilyController(
                         Action.Child.READ_FAMILY_CONTACTS,
                         childId
                     )
-                    it.fetchFamilyContacts(clock, childId)
+                    it.fetchFamilyContacts(clock.today(), childId)
                 }
             }
             .also {
@@ -253,125 +253,86 @@ SELECT EXISTS (
         .exactlyOne<Boolean>()
 }
 
-fun Database.Read.fetchFamilyContacts(clock: EvakaClock, childId: ChildId): List<FamilyContact> {
-    // language=sql
-    val sql =
-        """
-WITH contact AS (
+fun Database.Read.fetchFamilyContacts(today: LocalDate, childId: ChildId): List<FamilyContact> =
+    createQuery<Any> {
+            sql(
+                """
+WITH child_guardian AS (
+    SELECT guardian_id AS id FROM guardian
+    WHERE child_id = ${bind(childId)}
+), child_foster_parent AS (
+    SELECT parent_id AS id FROM foster_parent
+    WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
+), head_of_child AS (
+    SELECT head_of_child AS id FROM fridge_child fc
+    WHERE fc.child_id = ${bind(childId)} AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
+), head_of_child_partner AS (
+    SELECT partner_person_id AS id FROM head_of_child hoc
+    JOIN fridge_partner_view fp ON hoc.id = fp.person_id AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
+), same_household_adult AS (
+    SELECT id FROM head_of_child
+    UNION ALL
+    SELECT id FROM head_of_child_partner
+), contact AS (
     -- adults in the same household
     SELECT
+        id,
         CASE
-            WHEN EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id) THEN 'LOCAL_GUARDIAN'
-            WHEN EXISTS (SELECT 1 FROM foster_parent f WHERE f.parent_id = p.id AND f.child_id = :id AND valid_during @> :today) THEN 'LOCAL_FOSTER_PARENT'
+            WHEN EXISTS (SELECT FROM child_guardian WHERE id = adult.id) THEN 'LOCAL_GUARDIAN'
+            WHEN EXISTS (SELECT FROM child_foster_parent WHERE id = adult.id) THEN 'LOCAL_FOSTER_PARENT'
             ELSE 'LOCAL_ADULT'
-        END AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
-    FROM person p
-    LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
-    WHERE EXISTS ( -- is either head of child or their partner
-        SELECT 1 FROM fridge_child fc
-        WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
-            fc.head_of_child = p.id OR EXISTS(
-                SELECT 1 FROM fridge_partner_view fp
-                WHERE fp.person_id = fc.head_of_child AND fp.partner_person_id = p.id AND daterange(fp.start_date, fp.end_date, '[]') @> :today
-            )
-        )
-    )
+        END AS role
+    FROM same_household_adult adult
 
-    UNION
+    UNION ALL
 
     -- siblings in the same household
-    SELECT 'LOCAL_SIBLING' AS role, p.id, p.first_name, p.last_name, NULL AS email, '' AS phone, '' AS backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
-    FROM person p
-    LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
-    WHERE EXISTS (
-        SELECT 1 FROM fridge_child fc1
-        WHERE fc1.child_id = :id AND daterange(fc1.start_date, fc1.end_date, '[]') @> :today AND EXISTS (
-            SELECT 1 FROM fridge_child fc2
-            WHERE
-                fc2.head_of_child = fc1.head_of_child
-                AND fc2.child_id = p.id
-                AND fc2.child_id <> fc1.child_id
-                AND daterange(fc1.start_date, fc1.end_date, '[]') @> :today
-        )
-    )
+    SELECT sibling.child_id AS id, 'LOCAL_SIBLING' AS role
+    FROM head_of_child hoc
+    JOIN fridge_child sibling ON hoc.id = sibling.head_of_child
+    WHERE sibling.child_id != ${bind(childId)}
+    AND daterange(sibling.start_date, sibling.end_date, '[]') @> ${bind(today)}
 
-    UNION
+    UNION ALL
 
     -- guardians in other households
-    SELECT 'REMOTE_GUARDIAN' AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
-    FROM person p
-    LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
-    WHERE
-        EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id) -- is a guardian
-        AND NOT EXISTS ( -- but is neither head of child nor their partner
-            SELECT 1 FROM fridge_child fc
-            WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
-                fc.head_of_child = p.id OR EXISTS (
-                    SELECT 1 FROM fridge_partner_view fp
-                    WHERE
-                        fp.person_id = fc.head_of_child
-                        AND fp.partner_person_id = p.id
-                        AND daterange(fp.start_date, fp.end_date, '[]') @> :today
-                )
-            )
-        )
+    SELECT id, 'REMOTE_GUARDIAN' AS role
+    FROM (SELECT id FROM child_guardian EXCEPT ALL (SELECT id FROM same_household_adult)) adult
 
-    UNION
+    UNION ALL
 
     -- foster parents in other households
-    SELECT 'REMOTE_FOSTER_PARENT' AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
-    FROM person p
-    LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
-    WHERE
-        EXISTS (SELECT 1 FROM foster_parent g WHERE g.parent_id = p.id AND g.child_id = :id AND valid_during @> :today) -- is a foster parent
-        AND NOT EXISTS ( -- but is neither head of child nor their partner
-            SELECT 1 FROM fridge_child fc
-            WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
-                fc.head_of_child = p.id OR EXISTS (
-                    SELECT 1 FROM fridge_partner_view fp
-                    WHERE
-                        fp.person_id = fc.head_of_child
-                        AND fp.partner_person_id = p.id
-                        AND daterange(fp.start_date, fp.end_date, '[]') @> :today
-                )
-            )
-        )
+    SELECT id, 'REMOTE_FOSTER_PARENT' AS role
+    FROM (SELECT id FROM child_foster_parent EXCEPT ALL (SELECT id FROM same_household_adult)) adult
 )
 SELECT
-    *,
-    (CASE role
-        WHEN 'LOCAL_GUARDIAN' THEN 1
-        WHEN 'LOCAL_FOSTER_PARENT' THEN 2
-        WHEN 'LOCAL_ADULT' THEN 3
-        WHEN 'LOCAL_SIBLING' THEN 4
-        WHEN 'REMOTE_GUARDIAN' THEN 5
-        WHEN 'REMOTE_FOSTER_PARENT' THEN 6
-    END) AS role_order
+    contact.id, contact.role,
+    first_name, last_name, email, phone, backup_phone, street_address, postal_code, post_office,
+    priority
 FROM contact
-ORDER BY priority ASC, role_order ASC
-    """
-
-    return addDefaultPriorities(
-        createQuery(sql).bind("today", clock.today()).bind("id", childId).toList<FamilyContact>()
-    )
-}
+JOIN person p USING (id)
+LEFT JOIN family_contact ON family_contact.contact_person_id = contact.id AND family_contact.child_id = ${bind(childId)}
+"""
+            )
+        }
+        .toList<FamilyContact>()
+        .let(::addDefaultPriorities)
+        .sortedWith(compareBy({ it.priority ?: Int.MAX_VALUE }, { it.role.ordinal }))
 
 private val defaultContacts =
     setOf(LOCAL_GUARDIAN, LOCAL_FOSTER_PARENT, REMOTE_GUARDIAN, REMOTE_FOSTER_PARENT)
 
 private fun addDefaultPriorities(contacts: List<FamilyContact>): List<FamilyContact> =
-    if (contacts.none { it.priority != null }) {
-        contacts
-            .fold(listOf<FamilyContact>()) { acc, contact ->
-                acc +
-                    if (defaultContacts.contains(contact.role)) {
-                        val highestPriority = acc.mapNotNull { it.priority }.maxOrNull() ?: 0
-                        contact.copy(priority = highestPriority + 1)
-                    } else {
-                        contact
-                    }
-            }
-            .sortedWith(compareBy(nullsLast()) { it.priority })
+    if (contacts.all { it.priority == null }) {
+        contacts.fold(listOf()) { acc, contact ->
+            acc +
+                if (defaultContacts.contains(contact.role)) {
+                    val highestPriority = acc.mapNotNull { it.priority }.maxOrNull() ?: 0
+                    contact.copy(priority = highestPriority + 1)
+                } else {
+                    contact
+                }
+        }
     } else {
         contacts
     }

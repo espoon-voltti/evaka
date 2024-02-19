@@ -23,7 +23,7 @@ fun Database.Read.getChildSensitiveInfo(
     val placementType = getCurrentPlacementForChild(clock, childId)?.let { it.type }
     val child = getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
-    val familyContacts = fetchFamilyContacts(clock, childId)
+    val familyContacts = fetchFamilyContacts(clock.today(), childId)
 
     return ChildSensitiveInformation(
         id = person.id,
