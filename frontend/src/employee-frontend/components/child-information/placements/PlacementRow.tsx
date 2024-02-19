@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ChildContext } from 'employee-frontend/state'
-import { Failure } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
@@ -29,15 +29,14 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  deletePlacement,
-  PlacementUpdate,
-  updatePlacement
-} from '../../../api/child/placements'
 import Toolbar from '../../../components/common/Toolbar'
 import ToolbarAccordion, {
   RestrictedToolbar
 } from '../../../components/common/ToolbarAccordion'
+import {
+  deletePlacement,
+  updatePlacementById
+} from '../../../generated/api-clients/placement'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
 import {
@@ -50,6 +49,14 @@ import RetroactiveConfirmation, {
 } from '../../common/RetroactiveConfirmation'
 
 import ServiceNeeds from './ServiceNeeds'
+
+const updatePlacementResult = wrapResult(updatePlacementById)
+const deletePlacementResult = wrapResult(deletePlacement)
+
+interface PlacementUpdate {
+  startDate: LocalDate
+  endDate: LocalDate
+}
 
 interface Props {
   placement: DaycarePlacementWithDetails
@@ -182,17 +189,19 @@ export default React.memo(function PlacementRow({
 
   const submitUpdate = useCallback(
     () =>
-      updatePlacement(placement.id, form).then((res) => {
-        if (res.isSuccess) {
-          return loadBackupCares()
+      updatePlacementResult({ placementId: placement.id, body: form }).then(
+        (res) => {
+          if (res.isSuccess) {
+            return loadBackupCares()
+          }
+          return res
         }
-        return res
-      }),
+      ),
     [placement.id, form, loadBackupCares]
   )
 
   function submitDelete() {
-    void deletePlacement(placement.id).then((res) => {
+    void deletePlacementResult({ placementId: placement.id }).then((res) => {
       if (res.isSuccess) {
         setConfirmingDelete(false)
         onRefreshNeeded()
