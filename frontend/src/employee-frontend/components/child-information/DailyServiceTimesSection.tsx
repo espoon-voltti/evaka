@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { wrapResult } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -20,14 +21,17 @@ import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
 import {
-  deleteChildDailyServiceTimes,
-  getChildDailyServiceTimes
-} from '../../api/child/daily-service-times'
+  deleteDailyServiceTimes,
+  getDailyServiceTimes
+} from '../../generated/api-clients/dailyservicetimes'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { DailyServiceTimesCreationForm } from './daily-service-times/DailyServiceTimesForms'
 import DailyServiceTimesRow from './daily-service-times/DailyServiceTimesRow'
+
+const getDailyServiceTimesResult = wrapResult(getDailyServiceTimes)
+const deleteDailyServiceTimesResult = wrapResult(deleteDailyServiceTimes)
 
 interface Props {
   id: UUID
@@ -44,7 +48,7 @@ export default React.memo(function DailyServiceTimesSection({
   const [open, setOpen] = useState(startOpen)
 
   const [apiData, loadData] = useApiState(
-    () => getChildDailyServiceTimes(id),
+    () => getDailyServiceTimesResult({ childId: id }),
     [id]
   )
 
@@ -183,7 +187,7 @@ const DeleteDailyServiceTimesModal = React.memo(
         }}
         resolve={{
           async action() {
-            await deleteChildDailyServiceTimes(dailyServiceTimesId)
+            await deleteDailyServiceTimesResult({ id: dailyServiceTimesId })
             onClose(true)
           },
           label: i18n.childInformation.dailyServiceTimes.deleteModal.deleteBtn
