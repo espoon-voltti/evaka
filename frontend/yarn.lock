@@ -7284,7 +7284,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     make-error-cause: "npm:^2.3.0"
     playwright: "npm:^1.41.1"
-    polished: "npm:^4.2.2"
+    polished: "npm:^4.3.1"
     postcss: "npm:^8.4.31"
     postcss-loader: "npm:^8.1.0"
     postcss-preset-env: "npm:^9.3.0"
@@ -10637,12 +10637,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"polished@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "polished@npm:4.2.2"
+"polished@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "polished@npm:4.3.1"
   dependencies:
     "@babel/runtime": "npm:^7.17.8"
-  checksum: da71b15c1e1d98b7f55e143bbf9ebb1b0934286c74c333522e571e52f89e42a61d7d44c5b4f941dc927355c7ae09780877aeb8f23707376fa9f006ab861e758b
+  checksum: 0902fe2eb16aecde1587a00efee7db8081b1331ac7bcfb6e61214d266388723a84858d732ad9395028e0aecd2bb8d0c39cc03d14b4c24c22329a0e40c38141eb
   languageName: node
   linkType: hard
 
