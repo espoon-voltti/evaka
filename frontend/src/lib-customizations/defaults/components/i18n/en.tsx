@@ -89,6 +89,8 @@ const components: Translations = {
     header: 'Login failed',
     message:
       'The identification process failed or was stopped. To log in, go back and try again.',
+    inactiveUserMessage:
+      'The user has been deactivated. Please contact the system admin user.',
     returnMessage: 'Go back'
   },
   messages: {

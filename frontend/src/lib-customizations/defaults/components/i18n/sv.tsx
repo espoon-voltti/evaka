@@ -89,6 +89,8 @@ const components: Translations = {
     header: 'Inloggningen misslyckades',
     message:
       'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
+    inactiveUserMessage:
+      'Användaren har avaktiverats. Vänligen kontakta systemadministratören.',
     returnMessage: 'Gå tillbaka till inloggningen'
   },
   messages: {

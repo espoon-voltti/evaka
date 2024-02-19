@@ -88,6 +88,7 @@ const components: Translations = {
     header: 'Kirjautuminen epäonnistui',
     message:
       'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
+    inactiveUserMessage: 'Käyttäjä on deaktivoitu. Ota yhteys pääkäyttäjään.',
     returnMessage: 'Palaa takaisin'
   },
   messages: {

@@ -26,6 +26,7 @@ export const LoginErrorModal = React.memo(function LoginErrorModal() {
   const [errorModalVisible, setErrorModalVisible] = useState<boolean>(
     queryParams.get(queryParamName) === 'true'
   )
+  const [errorCode] = useState(queryParams.get('errorCode'))
 
   function onClose(event?: React.UIEvent<unknown>) {
     setErrorModalVisible(false)
@@ -44,7 +45,11 @@ export const LoginErrorModal = React.memo(function LoginErrorModal() {
       type="danger"
       icon={faTimes}
     >
-      <P centered>{i18n.loginErrorModal.message}</P>
+      <P centered>
+        {errorCode === 'inactiveUser'
+          ? i18n.loginErrorModal.inactiveUserMessage
+          : i18n.loginErrorModal.message}
+      </P>
       <ReturnContainer>
         <P centered>
           <a href="#" onClick={onClose}>

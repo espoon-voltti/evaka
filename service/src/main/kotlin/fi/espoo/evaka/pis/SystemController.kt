@@ -126,7 +126,7 @@ class SystemController(
                     }
                     val inserted = it.loginEmployee(clock, request.toNewEmployee())
                     if (!inserted.active) {
-                        throw Forbidden("User is not active")
+                        throw Forbidden("User is not active", errorCode = "inactiveUser")
                     }
                     val roles = it.getEmployeeRoles(inserted.id)
                     val employee =
