@@ -5,6 +5,7 @@
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   Attachment,
   PedagogicalDocument
@@ -24,9 +25,11 @@ import {
   getAttachmentUrl,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
-import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents'
+import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+
+const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
 
 interface Props {
   id: UUID
@@ -75,7 +78,10 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     const { childId, description } = pedagogicalDocument
     if (!description) return
     setSubmitting(true)
-    void updatePedagogicalDocument(id, { childId, description }).then((res) => {
+    void updatePedagogicalDocumentResult({
+      documentId: id,
+      body: { childId, description }
+    }).then((res) => {
       setSubmitting(false)
       if (res.isSuccess) {
         endEdit()

@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { PedagogicalDocument } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,13 +26,19 @@ import {
   createPedagogicalDocument,
   deletePedagogicalDocument,
   getChildPedagogicalDocuments
-} from '../../api/child/pedagogical-documents'
+} from '../../generated/api-clients/pedagogicaldocument'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
 import PedagogicalDocumentRow from './PedagogicalDocumentRow'
+
+const createPedagogicalDocumentResult = wrapResult(createPedagogicalDocument)
+const getChildPedagogicalDocumentsResult = wrapResult(
+  getChildPedagogicalDocuments
+)
+const deletePedagogicalDocumentResult = wrapResult(deletePedagogicalDocument)
 
 interface Props {
   id: UUID
@@ -47,7 +54,7 @@ export default React.memo(function PedagogicalDocuments({
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
   const [pedagogicalDocuments, loadData] = useApiState(
-    () => getChildPedagogicalDocuments(id),
+    () => getChildPedagogicalDocumentsResult({ childId: id }),
     [id]
   )
 
@@ -83,12 +90,14 @@ export default React.memo(function PedagogicalDocuments({
 
   const deleteDocument = async () => {
     if (!tobeDeleted) return
-    return deletePedagogicalDocument(tobeDeleted.id).then(loadData)
+    return deletePedagogicalDocumentResult({ documentId: tobeDeleted.id }).then(
+      loadData
+    )
   }
 
   const createNewDocument = () => {
     const emptyDocument = { childId: id, description: '', attachmentId: null }
-    void createPedagogicalDocument(emptyDocument)
+    void createPedagogicalDocumentResult({ body: emptyDocument })
       .then(
         (result) =>
           result.isSuccess &&
