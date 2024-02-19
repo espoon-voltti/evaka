@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -26,10 +26,10 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import {
   createBackupPickup,
-  getChildBackupPickups,
-  removeBackupPickup,
+  deleteBackupPickup,
+  getBackupPickups,
   updateBackupPickup
-} from '../../api/child/backup-pickup'
+} from '../../generated/api-clients/backuppickup'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -39,6 +39,11 @@ import { FlexRow } from '../common/styled/containers'
 interface BackupPickupProps {
   id: UUID
 }
+
+const createBackupPickupResult = wrapResult(createBackupPickup)
+const getBackupPickupsResult = wrapResult(getBackupPickups)
+const updateBackupPickupResult = wrapResult(updateBackupPickup)
+const deleteBackupPickupResult = wrapResult(deleteBackupPickup)
 
 function BackupPickup({ id }: BackupPickupProps) {
   const { i18n } = useTranslation()
@@ -52,9 +57,9 @@ function BackupPickup({ id }: BackupPickupProps) {
     ChildBackupPickup | undefined
   >(undefined)
 
-  const loadBackupPickups = useRestApi(getChildBackupPickups, setResult)
+  const loadBackupPickups = useRestApi(getBackupPickupsResult, setResult)
   useEffect(() => {
-    void loadBackupPickups(id)
+    void loadBackupPickups({ childId: id })
   }, [id, loadBackupPickups])
 
   const openEditBackupPickupModal = (pickup: ChildBackupPickup) => {
@@ -69,9 +74,9 @@ function BackupPickup({ id }: BackupPickupProps) {
 
   const confirmRemoveModal = async () => {
     if (result.isSuccess && backupPickup) {
-      await removeBackupPickup(backupPickup.id)
+      await deleteBackupPickupResult({ id: backupPickup.id })
       setBackupPickup(undefined)
-      void loadBackupPickups(id)
+      void loadBackupPickups({ childId: id })
       clearUiMode()
     }
   }
@@ -82,8 +87,8 @@ function BackupPickup({ id }: BackupPickupProps) {
 
     async function saveBackupPickup() {
       if (name !== '' && phone !== '') {
-        await createBackupPickup(id, { name, phone })
-        void loadBackupPickups(id)
+        await createBackupPickupResult({ childId: id, body: { name, phone } })
+        void loadBackupPickups({ childId: id })
         setBackupPickup(undefined)
         clearUiMode()
       }
@@ -129,11 +134,14 @@ function BackupPickup({ id }: BackupPickupProps) {
 
     async function saveBackupPickup() {
       if (backupPickup) {
-        await updateBackupPickup(backupPickup.id, {
-          name: name !== '' ? name : backupPickup.name,
-          phone: phone !== '' ? phone : backupPickup.phone
+        await updateBackupPickupResult({
+          id: backupPickup.id,
+          body: {
+            name: name !== '' ? name : backupPickup.name,
+            phone: phone !== '' ? phone : backupPickup.phone
+          }
         })
-        void loadBackupPickups(id)
+        void loadBackupPickups({ childId: id })
         setBackupPickup(undefined)
         clearUiMode()
       }
@@ -142,10 +150,10 @@ function BackupPickup({ id }: BackupPickupProps) {
     return (
       <FormModal
         title={i18n.childInformation.backupPickups.edit}
-        resolveAction={clearUiMode}
-        resolveLabel={i18n.common.cancel}
-        rejectAction={saveBackupPickup}
-        rejectLabel={i18n.common.save}
+        resolveAction={saveBackupPickup}
+        resolveLabel={i18n.common.save}
+        rejectAction={clearUiMode}
+        rejectLabel={i18n.common.cancel}
       >
         <FixedSpaceColumn>
           <FixedSpaceColumn spacing="xxs">

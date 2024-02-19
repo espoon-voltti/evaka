@@ -15,9 +15,9 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.createForChild
+* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.createBackupPickup
 */
-export async function createForChild(
+export async function createBackupPickup(
   request: {
     childId: UUID,
     body: ChildBackupPickupContent
@@ -49,9 +49,9 @@ export async function deleteBackupPickup(
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.getForChild
+* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.getBackupPickups
 */
-export async function getForChild(
+export async function getBackupPickups(
   request: {
     childId: UUID
   }
@@ -65,9 +65,9 @@ export async function getForChild(
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.update
+* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.updateBackupPickup
 */
-export async function update(
+export async function updateBackupPickup(
   request: {
     id: UUID,
     body: ChildBackupPickupContent

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class BackupPickupController(private val accessControl: AccessControl) {
     @PostMapping("/children/{childId}/backup-pickups")
-    fun createForChild(
+    fun createBackupPickup(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -50,7 +50,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/children/{childId}/backup-pickups")
-    fun getForChild(
+    fun getBackupPickups(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -77,7 +77,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     }
 
     @PutMapping("/backup-pickups/{id}")
-    fun update(
+    fun updateBackupPickup(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
