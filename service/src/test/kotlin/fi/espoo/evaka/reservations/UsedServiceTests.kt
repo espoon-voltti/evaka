@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalTime
@@ -23,7 +24,7 @@ class UsedServiceTests {
         placementType: PlacementType = PlacementType.DAYCARE,
         dailyPreschoolTimes: TimeRange? = null,
         dailyPreparatoryTimes: TimeRange? = null,
-        absences: List<AbsenceCategory> = listOf(),
+        absences: List<Pair<AbsenceType, AbsenceCategory>> = listOf(),
         reservations: List<TimeRange> = listOf(),
         attendances: List<TimeRange> = listOf()
     ) =
@@ -92,14 +93,41 @@ class UsedServiceTests {
     }
 
     @Test
-    fun `returns no used service for full-day absences`() {
-        compute(placementType = PlacementType.DAYCARE, absences = listOf(AbsenceCategory.BILLABLE))
+    fun `returns no used service for full-day planned absences`() {
+        compute(
+                placementType = PlacementType.DAYCARE,
+                absences = listOf(AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE)
+            )
             .also { assertEquals(it.usedServiceRanges, listOf()) }
         compute(
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
-                absences = listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
+                absences =
+                    listOf(
+                        AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE,
+                        AbsenceType.PLANNED_ABSENCE to AbsenceCategory.NONBILLABLE
+                    )
             )
             .also { assertEquals(it.usedServiceRanges, listOf()) }
+    }
+
+    @Test
+    fun `uses hours divided by 21 if other than planned absences exist without reservation`() {
+        compute(absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)).also {
+            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToInt())
+            assertEquals(it.usedServiceRanges, emptyList())
+        }
+    }
+
+    @Test
+    fun `uses reserved time even if non-planned absences exist`() {
+        compute(
+                reservations = listOf(range(8, 16)),
+                absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)
+            )
+            .also {
+                assertEquals(it.usedServiceMinutes, 480)
+                assertEquals(it.usedServiceRanges, listOf(range(8, 16)))
+            }
     }
 
     @ParameterizedTest(name = "preschool times should be excluded when placement type is {0}")
@@ -107,7 +135,7 @@ class UsedServiceTests {
         value = PlacementType::class,
         names = ["PRESCHOOL", "PRESCHOOL_CLUB", "PRESCHOOL_DAYCARE", "PRESCHOOL_DAYCARE_ONLY"]
     )
-    fun `preschool times should be excluded`(placementType: PlacementType) {
+    fun `preschool times are excluded`(placementType: PlacementType) {
         compute(
                 placementType = placementType,
                 dailyPreschoolTimes = range(9, 13),
@@ -123,7 +151,7 @@ class UsedServiceTests {
         value = PlacementType::class,
         names = ["PREPARATORY", "PREPARATORY_DAYCARE", "PREPARATORY_DAYCARE_ONLY"]
     )
-    fun `preparatory times should be excluded`(placementType: PlacementType) {
+    fun `preparatory times are excluded`(placementType: PlacementType) {
         compute(
                 placementType = placementType,
                 dailyPreschoolTimes = range(9, 13),
@@ -135,7 +163,44 @@ class UsedServiceTests {
     }
 
     @Test
-    fun `preschool or preparatory times should not be excluded when placement type is daycare`() {
+    fun `reservations are used with preschool times excluded preschool if absences are marked`() {
+        compute(
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                dailyPreschoolTimes = range(9, 13),
+                dailyPreparatoryTimes = range(9, 14),
+                absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE),
+                reservations = listOf(range(8, 16)),
+                attendances = listOf(range(9, 13)),
+            )
+            .also { assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(13, 16))) }
+    }
+
+    @Test
+    fun `no service is used if the child attends only preschool`() {
+        // No absence marked
+        compute(
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                dailyPreschoolTimes = range(9, 13),
+                dailyPreparatoryTimes = range(9, 14),
+                reservations = emptyList(),
+                attendances = listOf(range(9, 13))
+            )
+            .also { assertEquals(it.usedServiceRanges, emptyList()) }
+
+        // Absence marked for the billable time
+        compute(
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                dailyPreschoolTimes = range(9, 13),
+                dailyPreparatoryTimes = range(9, 14),
+                reservations = emptyList(),
+                absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE),
+                attendances = listOf(range(9, 13)),
+            )
+            .also { assertEquals(it.usedServiceRanges, emptyList()) }
+    }
+
+    @Test
+    fun `preschool or preparatory times are not excluded when placement type is daycare`() {
         compute(
                 placementType = PlacementType.DAYCARE,
                 dailyPreschoolTimes = range(9, 13),

@@ -171,7 +171,8 @@ class ReservationControllerCitizen(
                                                                         placementDay
                                                                             .preparatoryTime,
                                                                         childAbsences.map {
-                                                                            it.category
+                                                                            it.absenceType to
+                                                                                it.category
                                                                         },
                                                                         childReservations
                                                                             .mapNotNull {

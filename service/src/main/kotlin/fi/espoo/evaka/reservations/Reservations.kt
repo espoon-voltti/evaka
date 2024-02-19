@@ -531,7 +531,7 @@ fun computeUsedService(
     placementType: PlacementType,
     preschoolTime: TimeRange?,
     preparatoryTime: TimeRange?,
-    absences: List<AbsenceCategory>,
+    absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
     attendances: List<TimeRange>
 ): UsedServiceResult {
@@ -552,24 +552,29 @@ fun computeUsedService(
         )
     }
 
+    val isPlannedAbsence = run {
+        val absenceTypes = absences.map { it.first }.toSet()
+        val absenceCategories = absences.map { it.second }.toSet()
+        absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
+            absenceCategories == placementType.absenceCategories()
+    }
+    if (attendances.isEmpty() && isPlannedAbsence) {
+        return UsedServiceResult(
+            reservedMinutes = 0,
+            attendedMinutes = 0,
+            usedServiceMinutes = 0,
+            usedServiceRanges = emptyList()
+        )
+    }
+
     if (reservations.isEmpty() && attendances.isEmpty()) {
-        val fullyAbsent = absences.toSet() == placementType.absenceCategories()
-        return if (fullyAbsent) {
-            UsedServiceResult(
-                reservedMinutes = 0,
-                attendedMinutes = 0,
-                usedServiceMinutes = 0,
-                usedServiceRanges = emptyList()
-            )
-        } else {
-            val daysInMonth = 21
-            UsedServiceResult(
-                reservedMinutes = 0,
-                attendedMinutes = 0,
-                usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt(),
-                usedServiceRanges = emptyList()
-            )
-        }
+        val daysInMonth = 21
+        return UsedServiceResult(
+            reservedMinutes = 0,
+            attendedMinutes = 0,
+            usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt(),
+            usedServiceRanges = emptyList()
+        )
     }
 
     val effectiveAttendances = TimeSet.of(attendances).removeAll(fixedScheduleTimes)
