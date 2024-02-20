@@ -37,7 +37,7 @@ function AttendanceInfoWithSimpleThreshold({
       <ReservationAttendanceHeading>
         {i18n.calendar.attendance}
       </ReservationAttendanceHeading>
-      <div>
+      <div data-qa="attendances">
         {attendances.length > 0
           ? attendances.map((timeInterval) => (
               <div key={timeInterval.format()}>{timeInterval.format()}</div>
@@ -100,7 +100,7 @@ function AttendanceInfoWithServiceUsage({
       <ReservationAttendanceHeading>
         {i18n.calendar.attendance}
       </ReservationAttendanceHeading>
-      <div>
+      <div data-qa="attendances">
         {attendances.length > 0 ? (
           <>
             {attendances.map((timeInterval, index, array) => (
@@ -131,14 +131,14 @@ function AttendanceInfoWithServiceUsage({
         )}
       </div>
       {showAttendanceWarning && (
-        <ReservationAttendanceSection>
+        <ReservationAttendanceSection data-qa="service-usage-warning">
           <AlertBox message={attendanceWarning} wide />
         </ReservationAttendanceSection>
       )}
       <ReservationAttendanceHeading>
         {i18n.calendar.usedService}
       </ReservationAttendanceHeading>
-      <div>
+      <div data-qa="used-service">
         {usedService.usedServiceRanges.length > 0 ||
         usedService.usedServiceMinutes > 0 ? (
           <>

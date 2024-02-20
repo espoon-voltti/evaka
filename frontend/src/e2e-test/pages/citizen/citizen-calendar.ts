@@ -597,6 +597,12 @@ class DayView extends Element {
       reservations.map(formatter).join(', ')
     )
   }
+  getServiceUsageWarning(childId: UUID) {
+    return this.#childSection(childId).findByDataQa('service-usage-warning')
+  }
+  getUsedService(childId: UUID) {
+    return this.#childSection(childId).findByDataQa('used-service')
+  }
 
   async assertAbsence(childId: UUID, value: string) {
     await this.#childSection(childId)
