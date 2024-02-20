@@ -5,7 +5,6 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.deleteFutureNonGeneratedAbsencesByCategoryInRange
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
@@ -16,6 +15,7 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
@@ -50,9 +50,9 @@ class PlacementController(
     private val acl: AccessControlList,
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    env: EvakaEnv
+    featureConfig: FeatureConfig
 ) {
-    private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
+    private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
     @GetMapping("/placements")
     fun getPlacements(
