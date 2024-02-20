@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.data.BoundedRange
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -187,12 +188,17 @@ data class TimeRange(
         return "(${this.start.toDbString()},${this.end.toDbString()})"
     }
 
-    fun durationInMinutes(): Int {
-        val endHour = if (this.end.isMidnight()) 24 else this.end.inner.hour
-        return endHour * 60 + this.end.inner.minute -
-            this.start.inner.hour * 60 -
-            this.start.inner.minute
-    }
+    val duration: Duration
+        get() {
+            val start = this.start.inner
+            val end = this.end.inner
+            return Duration.ofHours(
+                ((if (this.end.isMidnight()) 24 else end.hour) - start.hour).toLong()
+            ) +
+                Duration.ofMinutes((end.minute - start.minute).toLong()) +
+                Duration.ofSeconds((end.second - start.second).toLong()) +
+                Duration.ofNanos((end.nano - start.nano).toLong())
+        }
 
     fun asHelsinkiDateTimeRange(date: LocalDate): HelsinkiDateTimeRange {
         val endDate = if (this.end.isMidnight()) date.plusDays(1) else date

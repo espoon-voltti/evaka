@@ -21,7 +21,7 @@ class TimeRangeTest {
 
     @Test
     fun `a range spans the whole day when start = end = 00`() {
-        assertEquals(24 * 60, testRange(0, 0).durationInMinutes())
+        assertEquals(24 * 60, testRange(0, 0).duration.toMinutes())
     }
 
     @Test
@@ -31,7 +31,7 @@ class TimeRangeTest {
 
     @Test
     fun `end = 00 means midnight`() {
-        assertEquals(60, testRange(23, 0).durationInMinutes())
+        assertEquals(60, testRange(23, 0).duration.toMinutes())
     }
 
     @Test

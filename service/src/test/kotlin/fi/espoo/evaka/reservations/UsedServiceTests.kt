@@ -9,7 +9,7 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalTime
-import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
@@ -51,7 +51,7 @@ class UsedServiceTests {
     @Test
     fun `uses hours divided by 21 if no absences, reservations or attendances exist`() {
         compute(absences = listOf(), reservations = listOf(), attendances = listOf()).also {
-            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToInt())
+            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToLong())
             assertEquals(it.usedServiceRanges, emptyList())
         }
     }
@@ -113,7 +113,7 @@ class UsedServiceTests {
     @Test
     fun `uses hours divided by 21 if other than planned absences exist without reservation`() {
         compute(absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)).also {
-            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToInt())
+            assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToLong())
             assertEquals(it.usedServiceRanges, emptyList())
         }
     }

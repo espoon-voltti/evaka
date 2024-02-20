@@ -57,7 +57,7 @@ import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -664,7 +664,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     UsedServiceResult(
                                         reservedMinutes = 0,
                                         attendedMinutes = 0,
-                                        usedServiceMinutes = (120.0 * 60 / 21).roundToInt(),
+                                        usedServiceMinutes = (120.0 * 60 / 21).roundToLong(),
                                         usedServiceRanges = emptyList()
                                     ),
                             ),
@@ -679,7 +679,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 MonthSummary(
                     year = monday.year,
                     month = monday.monthValue,
-                    serviceNeedMinutes = snDaycareHours120.daycareHoursPerMonth!! * 60,
+                    serviceNeedMinutes = snDaycareHours120.daycareMinutesPerMonth()!!,
                     reservedMinutes = 840,
                     usedServiceMinutes = 1698
                 )
@@ -755,14 +755,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 MonthSummary(
                     year = firstOfMonth1.year,
                     month = firstOfMonth1.monthValue,
-                    serviceNeedMinutes = snDaycareHours120.daycareHoursPerMonth!! * 60,
+                    serviceNeedMinutes = snDaycareHours120.daycareMinutesPerMonth()!!,
                     reservedMinutes = 0,
                     usedServiceMinutes = 0
                 ),
                 MonthSummary(
                     year = firstOfMonth2.year,
                     month = firstOfMonth2.monthValue,
-                    serviceNeedMinutes = snDaycareHours147.daycareHoursPerMonth!! * 60,
+                    serviceNeedMinutes = snDaycareHours147.daycareMinutesPerMonth()!!,
                     reservedMinutes = 0,
                     usedServiceMinutes = 0
                 )
