@@ -13,6 +13,7 @@ import { JsonOf } from 'lib-common/json'
 import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonClubTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycare'
@@ -45,14 +46,15 @@ export async function getApplicationUnits(
     shiftCare: boolean | null
   }
 ): Promise<PublicUnit[]> {
+  const params = createUrlSearchParams(
+    ['type', request.type.toString()],
+    ['date', request.date.formatIso()],
+    ['shiftCare', request.shiftCare?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
     url: uri`/public/units`.toString(),
     method: 'GET',
-    params: {
-      type: request.type,
-      date: request.date.formatIso(),
-      shiftCare: request.shiftCare
-    }
+    params
   })
   return json.map(e => deserializeJsonPublicUnit(e))
 }

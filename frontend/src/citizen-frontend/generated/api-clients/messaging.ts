@@ -14,6 +14,7 @@ import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonPagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
@@ -56,13 +57,14 @@ export async function getReceivedMessages(
     page: number
   }
 ): Promise<PagedCitizenMessageThreads> {
+  const params = createUrlSearchParams(
+    ['pageSize', request.pageSize.toString()],
+    ['page', request.page.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedCitizenMessageThreads>>({
     url: uri`/citizen/messages/received`.toString(),
     method: 'GET',
-    params: {
-      pageSize: request.pageSize,
-      page: request.page
-    }
+    params
   })
   return deserializeJsonPagedCitizenMessageThreads(json)
 }

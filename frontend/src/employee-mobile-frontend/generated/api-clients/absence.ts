@@ -15,6 +15,7 @@ import { JsonOf } from 'lib-common/json'
 import { Presence } from 'lib-common/generated/api-types/absence'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonGroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { uri } from 'lib-common/uri'
@@ -30,13 +31,14 @@ export async function absencesOfChild(
     month: number
   }
 ): Promise<Absence[]> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<Absence[]>>({
     url: uri`/absences/by-child/${request.childId}`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return json.map(e => deserializeJsonAbsence(e))
 }
@@ -123,14 +125,15 @@ export async function groupMonthCalendar(
     includeNonOperationalDays: boolean
   }
 ): Promise<GroupMonthCalendar> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()],
+    ['includeNonOperationalDays', request.includeNonOperationalDays.toString()]
+  )
   const { data: json } = await client.request<JsonOf<GroupMonthCalendar>>({
     url: uri`/absences/${request.groupId}`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month,
-      includeNonOperationalDays: request.includeNonOperationalDays
-    }
+    params
   })
   return deserializeJsonGroupMonthCalendar(json)
 }

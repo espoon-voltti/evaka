@@ -411,19 +411,38 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         }?.takeUnless { type.isMarkedNullable }
             ?: error("$type is not supported as a path variable parameter type")
 
+    fun toRequestParamPairs(type: KType, name: String, valueExpression: TsCode): TsCode =
+        when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
+            is TsArray -> {
+                val elementType = requireNotNull(tsRepr.getTypeArgs(type.arguments))
+                val serializeElement = serializeRequestParam(elementType, TsCode("e"))
+                TsCode {
+                    if (type.isMarkedNullable)
+                        "...(${inline(valueExpression)}?.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]) ?? [])"
+                    else
+                        "...(${inline(valueExpression)}.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]))"
+                }
+            }
+            else -> TsCode { "['$name', ${inline(serializeRequestParam(type, valueExpression))}]" }
+        }
+
     fun serializeRequestParam(type: KType, valueExpression: TsCode): TsCode =
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsPlain,
-            is TsArray,
-            is TsTuple,
-            is TsStringEnum -> valueExpression
+            is TsStringEnum ->
+                if (type.isMarkedNullable) valueExpression + "?.toString()"
+                else valueExpression + ".toString()"
             is TsExternalTypeRef ->
                 tsRepr.serializeRequestParam?.invoke(valueExpression, type.isMarkedNullable)
+                    ?: if (type.isMarkedNullable) valueExpression + "?.toString()"
+                    else valueExpression + ".toString()"
+            is TsArray,
             is TsPlainObject,
             is TsSealedClass,
             is TsObjectLiteral,
             is TsRecord,
             is TsSealedVariant,
+            is TsTuple,
             is Excluded -> null
         } ?: error("$type is not supported as an API request parameter type")
 }

@@ -31,6 +31,7 @@ import { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
@@ -66,13 +67,14 @@ export async function deleteAbsenceRange(
     to: LocalDate
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/attendances/units/${request.unitId}/children/${request.childId}/absence-range`.toString(),
     method: 'DELETE',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json
 }
@@ -91,8 +93,8 @@ export async function getAttendanceStatuses(
     method: 'GET'
   })
   return Object.fromEntries(Object.entries(json).map(
-  ([k, v]) => [k, deserializeJsonChildAttendanceStatusResponse(v)]
-))
+    ([k, v]) => [k, deserializeJsonChildAttendanceStatusResponse(v)]
+  ))
 }
 
 
@@ -249,12 +251,13 @@ export async function getAttendancesByUnit(
     unitId: UUID
   }
 ): Promise<CurrentDayStaffAttendanceResponse> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
     url: uri`/mobile/realtime-staff-attendances`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId
-    }
+    params
   })
   return deserializeJsonCurrentDayStaffAttendanceResponse(json)
 }
@@ -337,12 +340,13 @@ export async function setAttendances(
     body: StaffAttendanceUpdateRequest
   }
 ): Promise<StaffAttendanceUpdateResponse> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<StaffAttendanceUpdateResponse>>({
     url: uri`/mobile/realtime-staff-attendances`.toString(),
     method: 'PUT',
-    params: {
-      unitId: request.unitId
-    },
+    params,
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdateRequest>
   })
   return json
@@ -373,12 +377,13 @@ export async function getUnitStats(
     unitIds: UUID[]
   }
 ): Promise<UnitStats[]> {
+  const params = createUrlSearchParams(
+    ...(request.unitIds.map((e): [string, string | null | undefined] => ['unitIds', e]))
+  )
   const { data: json } = await client.request<JsonOf<UnitStats[]>>({
     url: uri`/mobile/units/stats`.toString(),
     method: 'GET',
-    params: {
-      unitIds: request.unitIds
-    }
+    params
   })
   return json
 }
@@ -428,14 +433,15 @@ export async function getAttendances(
     end: LocalDate
   }
 ): Promise<StaffAttendanceResponse> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<StaffAttendanceResponse>>({
     url: uri`/staff-attendances/realtime`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId,
-      start: request.start.formatIso(),
-      end: request.end.formatIso()
-    }
+    params
   })
   return deserializeJsonStaffAttendanceResponse(json)
 }

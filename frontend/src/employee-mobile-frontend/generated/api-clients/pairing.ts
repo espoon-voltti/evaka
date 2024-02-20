@@ -16,6 +16,7 @@ import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { RenameRequest } from 'lib-common/generated/api-types/pairing'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { uri } from 'lib-common/uri'
 
@@ -44,12 +45,13 @@ export async function getMobileDevices(
     unitId: UUID
   }
 ): Promise<MobileDevice[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
     url: uri`/mobile-devices`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId
-    }
+    params
   })
   return json
 }

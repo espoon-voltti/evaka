@@ -19,6 +19,7 @@ import { VasuTemplate } from 'lib-common/generated/api-types/vasu'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { VasuTemplateUpdate } from 'lib-common/generated/api-types/vasu'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonVasuDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/vasu'
 import { deserializeJsonVasuDocumentWithPermittedActions } from 'lib-common/generated/api-types/vasu'
 import { deserializeJsonVasuTemplate } from 'lib-common/generated/api-types/vasu'
@@ -170,12 +171,13 @@ export async function getTemplates(
     validOnly: boolean
   }
 ): Promise<VasuTemplateSummary[]> {
+  const params = createUrlSearchParams(
+    ['validOnly', request.validOnly.toString()]
+  )
   const { data: json } = await client.request<JsonOf<VasuTemplateSummary[]>>({
     url: uri`/vasu/templates`.toString(),
     method: 'GET',
-    params: {
-      validOnly: request.validOnly
-    }
+    params
   })
   return json.map(e => deserializeJsonVasuTemplateSummary(e))
 }

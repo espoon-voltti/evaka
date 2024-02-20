@@ -24,6 +24,7 @@ import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
 import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDraftContent } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonMessageThread } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageCopies } from 'lib-common/generated/api-types/messaging'
@@ -142,13 +143,14 @@ export async function getArchivedMessages(
     page: number
   }
 ): Promise<PagedMessageThreads> {
+  const params = createUrlSearchParams(
+    ['pageSize', request.pageSize.toString()],
+    ['page', request.page.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
     url: uri`/messages/${request.accountId}/archived`.toString(),
     method: 'GET',
-    params: {
-      pageSize: request.pageSize,
-      page: request.page
-    }
+    params
   })
   return deserializeJsonPagedMessageThreads(json)
 }
@@ -180,13 +182,14 @@ export async function getMessageCopies(
     page: number
   }
 ): Promise<PagedMessageCopies> {
+  const params = createUrlSearchParams(
+    ['pageSize', request.pageSize.toString()],
+    ['page', request.page.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedMessageCopies>>({
     url: uri`/messages/${request.accountId}/copies`.toString(),
     method: 'GET',
-    params: {
-      pageSize: request.pageSize,
-      page: request.page
-    }
+    params
   })
   return deserializeJsonPagedMessageCopies(json)
 }
@@ -202,13 +205,14 @@ export async function getReceivedMessages(
     page: number
   }
 ): Promise<PagedMessageThreads> {
+  const params = createUrlSearchParams(
+    ['pageSize', request.pageSize.toString()],
+    ['page', request.page.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
     url: uri`/messages/${request.accountId}/received`.toString(),
     method: 'GET',
-    params: {
-      pageSize: request.pageSize,
-      page: request.page
-    }
+    params
   })
   return deserializeJsonPagedMessageThreads(json)
 }
@@ -236,13 +240,14 @@ export async function getSentMessages(
     page: number
   }
 ): Promise<PagedSentMessages> {
+  const params = createUrlSearchParams(
+    ['pageSize', request.pageSize.toString()],
+    ['page', request.page.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PagedSentMessages>>({
     url: uri`/messages/${request.accountId}/sent`.toString(),
     method: 'GET',
-    params: {
-      pageSize: request.pageSize,
-      page: request.page
-    }
+    params
   })
   return deserializeJsonPagedSentMessages(json)
 }
@@ -370,12 +375,13 @@ export async function undoMessage(
     contentId: UUID
   }
 ): Promise<UUID> {
+  const params = createUrlSearchParams(
+    ['contentId', request.contentId]
+  )
   const { data: json } = await client.request<JsonOf<UUID>>({
     url: uri`/messages/${request.accountId}/undo-message`.toString(),
     method: 'POST',
-    params: {
-      contentId: request.contentId
-    }
+    params
   })
   return json
 }
@@ -390,12 +396,13 @@ export async function undoReply(
     messageId: UUID
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['messageId', request.messageId]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/messages/${request.accountId}/undo-reply`.toString(),
     method: 'POST',
-    params: {
-      messageId: request.messageId
-    }
+    params
   })
   return json
 }

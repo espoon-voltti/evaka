@@ -42,6 +42,7 @@ import { UnitTypeFilter } from 'lib-common/generated/api-types/daycare'
 import { UpdateFeaturesRequest } from 'lib-common/generated/api-types/daycare'
 import { Wrapper } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonChildResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonClubTerm } from 'lib-common/generated/api-types/daycare'
@@ -246,13 +247,14 @@ export async function getGroups(
     to: LocalDate | null
   }
 ): Promise<DaycareGroup[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from?.formatIso()],
+    ['to', request.to?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
     url: uri`/daycares/${request.daycareId}/groups`.toString(),
     method: 'GET',
-    params: {
-      from: request.from?.formatIso(),
-      to: request.to?.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonDaycareGroup(e))
 }
@@ -268,13 +270,14 @@ export async function getUnitGroupDetails(
     to: LocalDate
   }
 ): Promise<UnitGroupDetails> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<UnitGroupDetails>>({
     url: uri`/daycares/${request.unitId}/group-details`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return deserializeJsonUnitGroupDetails(json)
 }
@@ -414,14 +417,15 @@ export async function getApplicationUnits(
     shiftCare: boolean | null
   }
 ): Promise<PublicUnit[]> {
+  const params = createUrlSearchParams(
+    ['type', request.type.toString()],
+    ['date', request.date.formatIso()],
+    ['shiftCare', request.shiftCare?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
     url: uri`/public/units`.toString(),
     method: 'GET',
-    params: {
-      type: request.type,
-      date: request.date.formatIso(),
-      shiftCare: request.shiftCare
-    }
+    params
   })
   return json.map(e => deserializeJsonPublicUnit(e))
 }
@@ -449,14 +453,15 @@ export async function getUnits(
     from: LocalDate | null
   }
 ): Promise<UnitStub[]> {
+  const params = createUrlSearchParams(
+    ['type', request.type.toString()],
+    ['area', request.area?.toString()],
+    ['from', request.from?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<UnitStub[]>>({
     url: uri`/filters/units`.toString(),
     method: 'GET',
-    params: {
-      type: request.type,
-      area: request.area,
-      from: request.from?.formatIso()
-    }
+    params
   })
   return json
 }
@@ -472,13 +477,14 @@ export async function getAttendancesByGroup(
     month: number
   }
 ): Promise<Wrapper<StaffAttendanceForDates>> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<Wrapper<StaffAttendanceForDates>>>({
     url: uri`/staff-attendances/group/${request.groupId}`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return deserializeJsonWrapper((value: JsonOf<StaffAttendanceForDates>) => deserializeJsonStaffAttendanceForDates(value), json)
 }

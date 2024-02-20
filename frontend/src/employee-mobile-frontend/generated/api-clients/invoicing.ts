@@ -41,6 +41,7 @@ import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invo
 import { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
 import { Wrapper } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoicing'
@@ -101,12 +102,13 @@ export async function getFeeAlterations(
     personId: UUID
   }
 ): Promise<FeeAlterationWithPermittedActions[]> {
+  const params = createUrlSearchParams(
+    ['personId', request.personId]
+  )
   const { data: json } = await client.request<JsonOf<FeeAlterationWithPermittedActions[]>>({
     url: uri`/fee-alterations`.toString(),
     method: 'GET',
-    params: {
-      personId: request.personId
-    }
+    params
   })
   return json.map(e => deserializeJsonFeeAlterationWithPermittedActions(e))
 }
@@ -349,12 +351,13 @@ export async function getIncome(
     personId: UUID
   }
 ): Promise<Wrapper<IncomeWithPermittedActions[]>> {
+  const params = createUrlSearchParams(
+    ['personId', request.personId]
+  )
   const { data: json } = await client.request<JsonOf<Wrapper<IncomeWithPermittedActions[]>>>({
     url: uri`/incomes`.toString(),
     method: 'GET',
-    params: {
-      personId: request.personId
-    }
+    params
   })
   return deserializeJsonWrapper((value: JsonOf<IncomeWithPermittedActions[]>) => value.map(e => deserializeJsonIncomeWithPermittedActions(e)), json)
 }
@@ -368,12 +371,13 @@ export async function getIncomeNotifications(
     personId: UUID
   }
 ): Promise<Wrapper<IncomeNotification[]>> {
+  const params = createUrlSearchParams(
+    ['personId', request.personId]
+  )
   const { data: json } = await client.request<JsonOf<Wrapper<IncomeNotification[]>>>({
     url: uri`/incomes/notifications`.toString(),
     method: 'GET',
-    params: {
-      personId: request.personId
-    }
+    params
   })
   return deserializeJsonWrapper((value: JsonOf<IncomeNotification[]>) => value.map(e => deserializeJsonIncomeNotification(e)), json)
 }
@@ -556,13 +560,14 @@ export async function sendInvoices(
     body: UUID[]
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['invoiceDate', request.invoiceDate?.formatIso()],
+    ['dueDate', request.dueDate?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/invoices/send`.toString(),
     method: 'POST',
-    params: {
-      invoiceDate: request.invoiceDate?.formatIso(),
-      dueDate: request.dueDate?.formatIso()
-    },
+    params,
     data: request.body satisfies JsonCompatible<UUID[]>
   })
   return json

@@ -355,3 +355,13 @@ export function withStaleCancellation<F extends ApiFunction>(
     )
   }
 }
+
+export function createUrlSearchParams(
+  ...nameValuePairs: [string, string | null | undefined][]
+): URLSearchParams {
+  const params = new URLSearchParams()
+  for (const [name, value] of nameValuePairs) {
+    if (value != null) params.append(name, value)
+  }
+  return params
+}

@@ -13,6 +13,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
 import { deserializeJsonCitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { uri } from 'lib-common/uri'
@@ -44,13 +45,14 @@ export async function deleteCalendarEventTimeReservation(
     childId: UUID
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['calendarEventTimeId', request.calendarEventTimeId],
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/calendar-event/reservation`.toString(),
     method: 'DELETE',
-    params: {
-      calendarEventTimeId: request.calendarEventTimeId,
-      childId: request.childId
-    }
+    params
   })
   return json
 }
@@ -65,13 +67,14 @@ export async function getCitizenCalendarEvents(
     end: LocalDate
   }
 ): Promise<CitizenCalendarEvent[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<CitizenCalendarEvent[]>>({
     url: uri`/citizen/calendar-events`.toString(),
     method: 'GET',
-    params: {
-      start: request.start.formatIso(),
-      end: request.end.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonCitizenCalendarEvent(e))
 }
@@ -86,12 +89,13 @@ export async function getReservableCalendarEventTimes(
     childId: UUID
   }
 ): Promise<CalendarEventTime[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
   const { data: json } = await client.request<JsonOf<CalendarEventTime[]>>({
     url: uri`/citizen/calendar-event/${request.eventId}/time`.toString(),
     method: 'GET',
-    params: {
-      childId: request.childId
-    }
+    params
   })
   return json.map(e => deserializeJsonCalendarEventTime(e))
 }

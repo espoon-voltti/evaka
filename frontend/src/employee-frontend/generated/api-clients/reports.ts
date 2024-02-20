@@ -52,6 +52,7 @@ import { UUID } from 'lib-common/types'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
@@ -80,13 +81,14 @@ export async function getApplicationsReport(
     to: LocalDate
   }
 ): Promise<ApplicationsReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<ApplicationsReportRow[]>>({
     url: uri`/reports/applications`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json
 }
@@ -124,12 +126,13 @@ export async function getAssistanceNeedReport(
     date: LocalDate
   }
 ): Promise<AssistanceNeedsAndActionsReport> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReport>>({
     url: uri`/reports/assistance-needs-and-actions`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso()
-    }
+    params
   })
   return json
 }
@@ -143,12 +146,13 @@ export async function getAssistanceNeedReportByChild(
     date: LocalDate
   }
 ): Promise<AssistanceNeedsAndActionsReportByChild> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReportByChild>>({
     url: uri`/reports/assistance-needs-and-actions/by-child`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso()
-    }
+    params
   })
   return json
 }
@@ -165,14 +169,15 @@ export async function getAttendanceReservationReportByUnit(
     groupIds: UUID[] | null
   }
 ): Promise<AttendanceReservationReportRow[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()],
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
+  )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
     url: uri`/reports/attendance-reservation/${request.unitId}`.toString(),
     method: 'GET',
-    params: {
-      start: request.start.formatIso(),
-      end: request.end.formatIso(),
-      groupIds: request.groupIds
-    }
+    params
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
 }
@@ -189,14 +194,15 @@ export async function getAttendanceReservationReportByUnitAndChild(
     groupIds: UUID[] | null
   }
 ): Promise<AttendanceReservationReportByChildRow[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()],
+    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
+  )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportByChildRow[]>>({
     url: uri`/reports/attendance-reservation/${request.unitId}/by-child`.toString(),
     method: 'GET',
-    params: {
-      start: request.start.formatIso(),
-      end: request.end.formatIso(),
-      groupIds: request.groupIds
-    }
+    params
   })
   return json.map(e => deserializeJsonAttendanceReservationReportByChildRow(e))
 }
@@ -210,12 +216,13 @@ export async function getChildAgeLanguageReport(
     date: LocalDate
   }
 ): Promise<ChildAgeLanguageReportRow[]> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<ChildAgeLanguageReportRow[]>>({
     url: uri`/reports/child-age-language`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso()
-    }
+    params
   })
   return json
 }
@@ -242,13 +249,14 @@ export async function getDecisionsReport(
     to: LocalDate
   }
 ): Promise<DecisionsReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<DecisionsReportRow[]>>({
     url: uri`/reports/decisions`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json
 }
@@ -262,12 +270,13 @@ export async function getDuplicatePeopleReport(
     showIntentionalDuplicates: boolean | null
   }
 ): Promise<DuplicatePeopleReportRow[]> {
+  const params = createUrlSearchParams(
+    ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
     url: uri`/reports/duplicate-people`.toString(),
     method: 'GET',
-    params: {
-      showIntentionalDuplicates: request.showIntentionalDuplicates
-    }
+    params
   })
   return json.map(e => deserializeJsonDuplicatePeopleReportRow(e))
 }
@@ -282,13 +291,14 @@ export async function getEndedPlacementsReport(
     month: number
   }
 ): Promise<EndedPlacementsReportRow[]> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<EndedPlacementsReportRow[]>>({
     url: uri`/reports/ended-placements`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return json.map(e => deserializeJsonEndedPlacementsReportRow(e))
 }
@@ -314,12 +324,13 @@ export async function getFamilyContactsReport(
     unitId: UUID
   }
 ): Promise<FamilyContactReportRow[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<FamilyContactReportRow[]>>({
     url: uri`/reports/family-contacts`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId
-    }
+    params
   })
   return json
 }
@@ -357,12 +368,13 @@ export async function getPreschoolGroups(
     municipal: boolean
   }
 ): Promise<PreschoolGroupsReportRow[]> {
+  const params = createUrlSearchParams(
+    ['municipal', request.municipal.toString()]
+  )
   const { data: json } = await client.request<JsonOf<PreschoolGroupsReportRow[]>>({
     url: uri`/reports/future-preschoolers/groups`.toString(),
     method: 'GET',
-    params: {
-      municipal: request.municipal
-    }
+    params
   })
   return json
 }
@@ -376,12 +388,13 @@ export async function getInvoiceReport(
     date: LocalDate
   }
 ): Promise<InvoiceReport> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<InvoiceReport>>({
     url: uri`/reports/invoices`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso()
-    }
+    params
   })
   return json
 }
@@ -395,12 +408,13 @@ export async function getManualDuplicationReport(
     viewMode: ManualDuplicationReportViewMode | null
   }
 ): Promise<ManualDuplicationReportRow[]> {
+  const params = createUrlSearchParams(
+    ['viewMode', request.viewMode?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<ManualDuplicationReportRow[]>>({
     url: uri`/reports/manual-duplication`.toString(),
     method: 'GET',
-    params: {
-      viewMode: request.viewMode
-    }
+    params
   })
   return json.map(e => deserializeJsonManualDuplicationReportRow(e))
 }
@@ -416,14 +430,15 @@ export async function getMissingHeadOfFamilyReport(
     showIntentionalDuplicates: boolean
   }
 ): Promise<MissingHeadOfFamilyReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to?.formatIso()],
+    ['showIntentionalDuplicates', request.showIntentionalDuplicates.toString()]
+  )
   const { data: json } = await client.request<JsonOf<MissingHeadOfFamilyReportRow[]>>({
     url: uri`/reports/missing-head-of-family`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to?.formatIso(),
-      showIntentionalDuplicates: request.showIntentionalDuplicates
-    }
+    params
   })
   return json.map(e => deserializeJsonMissingHeadOfFamilyReportRow(e))
 }
@@ -438,13 +453,14 @@ export async function getMissingServiceNeedReport(
     to: LocalDate | null
   }
 ): Promise<MissingServiceNeedReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<MissingServiceNeedReportRow[]>>({
     url: uri`/reports/missing-service-need`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to?.formatIso()
-    }
+    params
   })
   return json
 }
@@ -475,17 +491,18 @@ export async function getOccupancyGroupReport(
     month: number
   }
 ): Promise<OccupancyGroupReportResultRow[]> {
+  const params = createUrlSearchParams(
+    ['type', request.type.toString()],
+    ['careAreaId', request.careAreaId],
+    ['providerType', request.providerType?.toString()],
+    ...(request.unitTypes?.map((e): [string, string | null | undefined] => ['unitTypes', e.toString()]) ?? []),
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<OccupancyGroupReportResultRow[]>>({
     url: uri`/reports/occupancy-by-group`.toString(),
     method: 'GET',
-    params: {
-      type: request.type,
-      careAreaId: request.careAreaId,
-      providerType: request.providerType,
-      unitTypes: request.unitTypes,
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return json
 }
@@ -504,17 +521,18 @@ export async function getOccupancyUnitReport(
     month: number
   }
 ): Promise<OccupancyUnitReportResultRow[]> {
+  const params = createUrlSearchParams(
+    ['type', request.type.toString()],
+    ['careAreaId', request.careAreaId],
+    ['providerType', request.providerType?.toString()],
+    ...(request.unitTypes?.map((e): [string, string | null | undefined] => ['unitTypes', e.toString()]) ?? []),
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<OccupancyUnitReportResultRow[]>>({
     url: uri`/reports/occupancy-by-unit`.toString(),
     method: 'GET',
-    params: {
-      type: request.type,
-      careAreaId: request.careAreaId,
-      providerType: request.providerType,
-      unitTypes: request.unitTypes,
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return json
 }
@@ -542,14 +560,15 @@ export async function getPlacementCountReport(
     placementTypes: PlacementType[]
   }
 ): Promise<PlacementCountReportResult> {
+  const params = createUrlSearchParams(
+    ['examinationDate', request.examinationDate.formatIso()],
+    ...(request.providerTypes.map((e): [string, string | null | undefined] => ['providerTypes', e.toString()])),
+    ...(request.placementTypes.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]))
+  )
   const { data: json } = await client.request<JsonOf<PlacementCountReportResult>>({
     url: uri`/reports/placement-count`.toString(),
     method: 'GET',
-    params: {
-      examinationDate: request.examinationDate.formatIso(),
-      providerTypes: request.providerTypes,
-      placementTypes: request.placementTypes
-    }
+    params
   })
   return json
 }
@@ -564,13 +583,14 @@ export async function getPlacementGuaranteeReport(
     unitId: UUID | null
   }
 ): Promise<PlacementGuaranteeReportRow[]> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()],
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<PlacementGuaranteeReportRow[]>>({
     url: uri`/reports/placement-guarantee`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso(),
-      unitId: request.unitId
-    }
+    params
   })
   return json.map(e => deserializeJsonPlacementGuaranteeReportRow(e))
 }
@@ -588,16 +608,17 @@ export async function getPlacementSketchingReport(
     latestApplicationSentDate: LocalDate | null
   }
 ): Promise<PlacementSketchingReportRow[]> {
+  const params = createUrlSearchParams(
+    ['placementStartDate', request.placementStartDate.formatIso()],
+    ['earliestPreferredStartDate', request.earliestPreferredStartDate?.formatIso()],
+    ...(request.applicationStatus?.map((e): [string, string | null | undefined] => ['applicationStatus', e.toString()]) ?? []),
+    ['earliestApplicationSentDate', request.earliestApplicationSentDate?.formatIso()],
+    ['latestApplicationSentDate', request.latestApplicationSentDate?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<PlacementSketchingReportRow[]>>({
     url: uri`/reports/placement-sketching`.toString(),
     method: 'GET',
-    params: {
-      placementStartDate: request.placementStartDate.formatIso(),
-      earliestPreferredStartDate: request.earliestPreferredStartDate?.formatIso(),
-      applicationStatus: request.applicationStatus,
-      earliestApplicationSentDate: request.earliestApplicationSentDate?.formatIso(),
-      latestApplicationSentDate: request.latestApplicationSentDate?.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonPlacementSketchingReportRow(e))
 }
@@ -612,13 +633,14 @@ export async function getPresenceReport(
     to: LocalDate
   }
 ): Promise<PresenceReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<PresenceReportRow[]>>({
     url: uri`/reports/presences`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonPresenceReportRow(e))
 }
@@ -633,13 +655,14 @@ export async function getRawReport(
     to: LocalDate
   }
 ): Promise<RawReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<RawReportRow[]>>({
     url: uri`/reports/raw`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonRawReportRow(e))
 }
@@ -665,12 +688,13 @@ export async function getServiceNeedReport(
     date: LocalDate
   }
 ): Promise<ServiceNeedReportRow[]> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<ServiceNeedReportRow[]>>({
     url: uri`/reports/service-need`.toString(),
     method: 'GET',
-    params: {
-      date: request.date.formatIso()
-    }
+    params
   })
   return json
 }
@@ -686,14 +710,15 @@ export async function getServiceVoucherValuesForAllUnits(
     areaId: UUID | null
   }
 ): Promise<ServiceVoucherReport> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()],
+    ['areaId', request.areaId]
+  )
   const { data: json } = await client.request<JsonOf<ServiceVoucherReport>>({
     url: uri`/reports/service-voucher-value/units`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month,
-      areaId: request.areaId
-    }
+    params
   })
   return deserializeJsonServiceVoucherReport(json)
 }
@@ -709,13 +734,14 @@ export async function getServiceVoucherValuesForUnit(
     month: number
   }
 ): Promise<ServiceVoucherUnitReport> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<ServiceVoucherUnitReport>>({
     url: uri`/reports/service-voucher-value/units/${request.unitId}`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return deserializeJsonServiceVoucherUnitReport(json)
 }
@@ -730,13 +756,14 @@ export async function getSextetReport(
     placementType: PlacementType
   }
 ): Promise<SextetReportRow[]> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['placementType', request.placementType.toString()]
+  )
   const { data: json } = await client.request<JsonOf<SextetReportRow[]>>({
     url: uri`/reports/sextet`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      placementType: request.placementType
-    }
+    params
   })
   return json
 }
@@ -751,13 +778,14 @@ export async function getStartingPlacementsReport(
     month: number
   }
 ): Promise<StartingPlacementsRow[]> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
   const { data: json } = await client.request<JsonOf<StartingPlacementsRow[]>>({
     url: uri`/reports/starting-placements`.toString(),
     method: 'GET',
-    params: {
-      year: request.year,
-      month: request.month
-    }
+    params
   })
   return json.map(e => deserializeJsonStartingPlacementsRow(e))
 }
@@ -796,13 +824,14 @@ export async function sendPatuReport(
     to: LocalDate
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/patu-report`.toString(),
     method: 'POST',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json
 }

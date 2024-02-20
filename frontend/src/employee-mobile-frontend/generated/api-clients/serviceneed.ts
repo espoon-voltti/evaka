@@ -14,6 +14,7 @@ import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serv
 import { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/serviceneed'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
 
@@ -42,12 +43,13 @@ export async function getServiceNeedOptionPublicInfos(
     placementTypes: PlacementType[]
   }
 ): Promise<ServiceNeedOptionPublicInfo[]> {
+  const params = createUrlSearchParams(
+    ...(request.placementTypes.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]))
+  )
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
     url: uri`/public/service-needs/options`.toString(),
     method: 'GET',
-    params: {
-      placementTypes: request.placementTypes
-    }
+    params
   })
   return json
 }

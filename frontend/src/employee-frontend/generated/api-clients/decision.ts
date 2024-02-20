@@ -10,6 +10,7 @@ import { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDecisionListResponse } from 'lib-common/generated/api-types/decision'
 import { uri } from 'lib-common/uri'
 
@@ -34,12 +35,13 @@ export async function getDecisionsByApplication(
     id: UUID
   }
 ): Promise<DecisionListResponse> {
+  const params = createUrlSearchParams(
+    ['id', request.id]
+  )
   const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
     url: uri`/decisions2/by-application`.toString(),
     method: 'GET',
-    params: {
-      id: request.id
-    }
+    params
   })
   return deserializeJsonDecisionListResponse(json)
 }
@@ -53,12 +55,13 @@ export async function getDecisionsByChild(
     id: UUID
   }
 ): Promise<DecisionListResponse> {
+  const params = createUrlSearchParams(
+    ['id', request.id]
+  )
   const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
     url: uri`/decisions2/by-child`.toString(),
     method: 'GET',
-    params: {
-      id: request.id
-    }
+    params
   })
   return deserializeJsonDecisionListResponse(json)
 }
@@ -72,12 +75,13 @@ export async function getDecisionsByGuardian(
     id: UUID
   }
 ): Promise<DecisionListResponse> {
+  const params = createUrlSearchParams(
+    ['id', request.id]
+  )
   const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
     url: uri`/decisions2/by-guardian`.toString(),
     method: 'GET',
-    params: {
-      id: request.id
-    }
+    params
   })
   return deserializeJsonDecisionListResponse(json)
 }

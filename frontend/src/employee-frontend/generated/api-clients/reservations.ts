@@ -19,6 +19,7 @@ import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api/client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import { deserializeJsonDailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
 import { deserializeJsonDayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
@@ -37,15 +38,16 @@ export async function getAttendanceReservations(
     includeNonOperationalDays: boolean
   }
 ): Promise<UnitAttendanceReservations> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()],
+    ['includeNonOperationalDays', request.includeNonOperationalDays.toString()]
+  )
   const { data: json } = await client.request<JsonOf<UnitAttendanceReservations>>({
     url: uri`/attendance-reservations`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId,
-      from: request.from.formatIso(),
-      to: request.to.formatIso(),
-      includeNonOperationalDays: request.includeNonOperationalDays
-    }
+    params
   })
   return deserializeJsonUnitAttendanceReservations(json)
 }
@@ -60,13 +62,14 @@ export async function getChildReservationsForDay(
     examinationDate: LocalDate
   }
 ): Promise<DailyChildReservationResult> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['examinationDate', request.examinationDate.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<DailyChildReservationResult>>({
     url: uri`/attendance-reservations/confirmed-days/daily`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId,
-      examinationDate: request.examinationDate.formatIso()
-    }
+    params
   })
   return deserializeJsonDailyChildReservationResult(json)
 }
@@ -113,12 +116,13 @@ export async function getReservationStatisticsForConfirmedDays(
     unitId: UUID
   }
 ): Promise<DayReservationStatisticsResult[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId]
+  )
   const { data: json } = await client.request<JsonOf<DayReservationStatisticsResult[]>>({
     url: uri`/attendance-reservations/confirmed-days/stats`.toString(),
     method: 'GET',
-    params: {
-      unitId: request.unitId
-    }
+    params
   })
   return json.map(e => deserializeJsonDayReservationStatisticsResult(e))
 }

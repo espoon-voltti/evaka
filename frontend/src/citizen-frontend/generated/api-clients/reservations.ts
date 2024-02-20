@@ -12,6 +12,7 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import { uri } from 'lib-common/uri'
 
@@ -25,13 +26,14 @@ export async function getReservations(
     to: LocalDate
   }
 ): Promise<ReservationsResponse> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<ReservationsResponse>>({
     url: uri`/citizen/reservations`.toString(),
     method: 'GET',
-    params: {
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return deserializeJsonReservationsResponse(json)
 }

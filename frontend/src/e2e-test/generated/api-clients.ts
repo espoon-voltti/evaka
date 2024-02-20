@@ -89,6 +89,7 @@ import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
 import { VtjPerson } from './api-types'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecision } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
@@ -962,12 +963,13 @@ export async function createPedagogicalDocumentAttachment(
     employeeId: UUID
   }
 ): Promise<string> {
+  const params = createUrlSearchParams(
+    ['employeeId', request.employeeId]
+  )
   const { data: json } = await devClient.request<JsonOf<string>>({
     url: uri`/dev-api/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
     method: 'POST',
-    params: {
-      employeeId: request.employeeId
-    }
+    params
   })
   return json
 }
@@ -1692,12 +1694,13 @@ export async function setTestMode(
     enabled: boolean
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['enabled', request.enabled.toString()]
+  )
   const { data: json } = await devClient.request<JsonOf<void>>({
     url: uri`/dev-api/test-mode`.toString(),
     method: 'POST',
-    params: {
-      enabled: request.enabled
-    }
+    params
   })
   return json
 }

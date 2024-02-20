@@ -9,6 +9,7 @@ import { JsonOf } from 'lib-common/json'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { client } from '../../api-client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { uri } from 'lib-common/uri'
 
 
@@ -20,12 +21,13 @@ export async function getServiceNeedOptionPublicInfos(
     placementTypes: PlacementType[]
   }
 ): Promise<ServiceNeedOptionPublicInfo[]> {
+  const params = createUrlSearchParams(
+    ...(request.placementTypes.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]))
+  )
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
     url: uri`/public/service-needs/options`.toString(),
     method: 'GET',
-    params: {
-      placementTypes: request.placementTypes
-    }
+    params
   })
   return json
 }

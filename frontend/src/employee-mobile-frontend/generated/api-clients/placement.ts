@@ -17,6 +17,7 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { PlacementUpdateRequestBody } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
+import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonPlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import { deserializeJsonPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { uri } from 'lib-common/uri'
@@ -115,14 +116,15 @@ export async function getPlacementPlans(
     to: LocalDate
   }
 ): Promise<PlacementPlanDetails[]> {
+  const params = createUrlSearchParams(
+    ['daycareId', request.daycareId],
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<PlacementPlanDetails[]>>({
     url: uri`/placements/plans`.toString(),
     method: 'GET',
-    params: {
-      daycareId: request.daycareId,
-      from: request.from.formatIso(),
-      to: request.to.formatIso()
-    }
+    params
   })
   return json.map(e => deserializeJsonPlacementPlanDetails(e))
 }
@@ -139,15 +141,16 @@ export async function getPlacements(
     to: LocalDate | null
   }
 ): Promise<PlacementResponse> {
+  const params = createUrlSearchParams(
+    ['daycareId', request.daycareId],
+    ['childId', request.childId],
+    ['from', request.from?.formatIso()],
+    ['to', request.to?.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<PlacementResponse>>({
     url: uri`/placements`.toString(),
     method: 'GET',
-    params: {
-      daycareId: request.daycareId,
-      childId: request.childId,
-      from: request.from?.formatIso(),
-      to: request.to?.formatIso()
-    }
+    params
   })
   return deserializeJsonPlacementResponse(json)
 }
