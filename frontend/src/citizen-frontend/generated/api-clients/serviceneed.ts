@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import { JsonOf } from 'lib-common/json'
 import { PlacementType } from 'lib-common/generated/api-types/placement'

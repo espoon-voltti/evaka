@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-/* eslint-disable import/order, prettier/prettier, @typescript-eslint/no-namespace, @typescript-eslint/no-redundant-type-constituents */
 
 import LocalDate from 'lib-common/local-date'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
