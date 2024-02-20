@@ -538,6 +538,7 @@ export interface DevFridgeChild {
 * Generated from fi.espoo.evaka.shared.dev.DevFridgePartner
 */
 export interface DevFridgePartner {
+  conflict: boolean
   createdAt: HelsinkiDateTime
   endDate: LocalDate | null
   indx: number
