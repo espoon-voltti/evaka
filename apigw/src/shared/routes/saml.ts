@@ -68,6 +68,13 @@ function createLoginHandler({
             req,
             `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
+
+          if (err instanceof AxiosError && err.response?.data?.errorCode) {
+            return res.redirect(
+              `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
+            )
+          }
+
           return res.redirect(`${defaultPageUrl}?loginError=true`)
         }
         ;(async () => {
