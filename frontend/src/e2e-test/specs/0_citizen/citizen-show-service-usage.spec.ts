@@ -20,6 +20,7 @@ import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const today = LocalDate.of(2022, 1, 14)
+const yesterday = today.subDays(1)
 let page: Page
 
 async function openCalendarPage() {
@@ -32,7 +33,7 @@ async function openCalendarPage() {
   return new CitizenCalendarPage(page, 'desktop')
 }
 
-describe('Monthly summary', () => {
+describe('Service time usage', () => {
   beforeEach(async () => {
     await resetDatabase()
 
@@ -63,14 +64,14 @@ describe('Monthly summary', () => {
         childId: enduserChildFixtureKaarina.id,
         unitId: daycareFixture.id,
         type: 'DAYCARE',
-        startDate: today,
+        startDate: yesterday,
         endDate: today.addYears(1)
       })
       .save()
     await Fixture.serviceNeed()
       .with({
         placementId: placement.data.id,
-        startDate: today,
+        startDate: yesterday,
         endDate: today.addYears(1),
         optionId: serviceNeedOption.data.id,
         confirmedBy: daycareSupervisor.data.id
@@ -78,10 +79,10 @@ describe('Monthly summary', () => {
       .save()
   })
 
-  it('Reservation time shown in summary', async () => {
+  it('Reservation time shown in monthly summary', async () => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
-      date: today,
+      date: yesterday,
       childId: enduserChildFixtureKaarina.id,
       reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
@@ -94,16 +95,16 @@ describe('Monthly summary', () => {
     )
     await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
     await summary.textElement.assertTextEquals(
-      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 0 h / 140 h'
+      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h'
     )
   })
 
-  it('Attendance time shown in summary', async () => {
+  it('Attendance time shown in monthly summary', async () => {
     await Fixture.childAttendance()
       .with({
         childId: enduserChildFixtureKaarina.id,
         unitId: daycareFixture.id,
-        date: today,
+        date: yesterday,
         arrived: LocalTime.of(8, 0),
         departed: LocalTime.of(15, 30)
       })
@@ -118,8 +119,75 @@ describe('Monthly summary', () => {
     await summary.textElement.assertTextEquals(
       'Kaarina\n' +
         '\n' +
-        'Suunnitelma 0 h / 140 h\n' +
+        'Suunnitelma - / 140 h\n' +
         'Toteuma 7 h 30 min / 140 h'
     )
+  })
+
+  it('Service time usage based on reservation shown in day view', async () => {
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      date: yesterday,
+      childId: enduserChildFixtureKaarina.id,
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+      secondReservation: null
+    }).save()
+
+    const calendarPage = await openCalendarPage()
+    const dayView = await calendarPage.openDayView(yesterday)
+    await dayView
+      .getUsedService(enduserChildFixtureKaarina.id)
+      .assertTextEquals('08:00–16:00 (8 h)')
+  })
+
+  it('Service time usage based on attendance shown in day view', async () => {
+    await Fixture.childAttendance()
+      .with({
+        childId: enduserChildFixtureKaarina.id,
+        unitId: daycareFixture.id,
+        date: today,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 30)
+      })
+      .save()
+
+    const calendarPage = await openCalendarPage()
+    const dayView = await calendarPage.openDayView(today)
+    await dayView
+      .getUsedService(enduserChildFixtureKaarina.id)
+      .assertTextEquals('08:00–15:30 (7 h 30 min)')
+    await dayView
+      .getServiceUsageWarning(enduserChildFixtureKaarina.id)
+      .assertTextEquals('Toteunut läsnäoloaika ylittää ilmoitetun ajan.')
+  })
+
+  it('Service time warning when attendance is longer than reservation', async () => {
+    await Fixture.attendanceReservation({
+      type: 'RESERVATIONS',
+      date: today,
+      childId: enduserChildFixtureKaarina.id,
+      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30)),
+      secondReservation: null
+    }).save()
+    await Fixture.childAttendance()
+      .with({
+        childId: enduserChildFixtureKaarina.id,
+        unitId: daycareFixture.id,
+        date: today,
+        arrived: LocalTime.of(7, 55),
+        departed: LocalTime.of(16, 0)
+      })
+      .save()
+
+    const calendarPage = await openCalendarPage()
+    const dayView = await calendarPage.openDayView(today)
+    await dayView
+      .getUsedService(enduserChildFixtureKaarina.id)
+      .assertTextEquals('07:55–16:00 (8 h 5 min)')
+    await dayView
+      .getServiceUsageWarning(enduserChildFixtureKaarina.id)
+      .assertTextEquals(
+        'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.'
+      )
   })
 })

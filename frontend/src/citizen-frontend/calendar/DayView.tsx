@@ -28,15 +28,15 @@ import {
   DailyReservationRequest,
   ReservableTimeRange,
   Reservation,
+  ReservationResponse,
   ReservationResponseDay,
-  ReservationsResponse
+  ReservationsResponse,
+  UsedServiceResult
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import {
-  reservationHasTimes,
-  reservationsAndAttendancesDiffer
-} from 'lib-common/reservations'
+import { reservationHasTimes } from 'lib-common/reservations'
+import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
@@ -54,7 +54,6 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
@@ -68,6 +67,7 @@ import { faChevronLeft, faChevronRight } from 'lib-icons'
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { Translations, useLang, useTranslation } from '../localization'
 
+import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import {
@@ -391,22 +391,17 @@ const DayModal = React.memo(function DayModal({
 
                       <Gap size="s" />
 
-                      <ReservationTable>
-                        <NonGridLabelLike>
+                      <ReservationAttendanceInfo>
+                        <ReservationAttendanceHeading>
                           {i18n.calendar.reservation}
-                        </NonGridLabelLike>
+                        </ReservationAttendanceHeading>
                         {renderReservation(childIndex)}
-                        <NonGridLabelLike>
-                          {i18n.calendar.realized}
-                        </NonGridLabelLike>
-                        <div>{row.attendances}</div>
-                      </ReservationTable>
-                      {row.showAttendanceWarning && (
-                        <AlertBox
-                          message={i18n.calendar.attendanceWarning}
-                          wide
+                        <AttendanceInfo
+                          attendances={row.attendances}
+                          reservations={row.reservations}
+                          usedService={row.usedService}
                         />
-                      )}
+                      </ReservationAttendanceInfo>
 
                       {row.events.length > 0 && (
                         <>
@@ -472,8 +467,9 @@ interface ModalRow {
   lastName: string
   image: ChildImageData
   duplicateInfo: string | undefined
-  attendances: React.ReactNode
-  showAttendanceWarning: boolean
+  attendances: TimeInterval[]
+  usedService: UsedServiceResult | null
+  reservations: ReservationResponse[]
   events: ModalRowEvent[]
 }
 
@@ -518,16 +514,9 @@ function computeModalData(
       lastName: person.lastName,
       image,
       duplicateInfo: duplicateChildInfo[child.childId],
-      attendances:
-        child.attendances.length > 0
-          ? child.attendances.map((attendance) => (
-              <div key={attendance.format()}>{attendance.format()}</div>
-            ))
-          : '–',
-      showAttendanceWarning: reservationsAndAttendancesDiffer(
-        child.reservations,
-        child.attendances
-      ),
+      attendances: child.attendances,
+      reservations: child.reservations,
+      usedService: child.usedService,
       events: events.flatMap((event) => {
         const currentAttending = event.attendingChildren?.[child.childId]?.find(
           ({ periods }) => periods.some((period) => period.includes(date))
@@ -681,13 +670,13 @@ const Absence = React.memo(function Absence({
         </FixedSpaceColumn>
       </FixedSpaceRow>
       {open && (
-        <Colspan2>
+        <ReservationAttendanceSection>
           <ExpandingInfoBox
             width="auto"
             info={i18n.calendar.contactStaffToEditAbsence}
             close={onClick}
           />
-        </Colspan2>
+        </ReservationAttendanceSection>
       )}
     </>
   )
@@ -717,10 +706,11 @@ const Reservations = React.memo(function Reservations({
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
     <div data-qa="reservations">
-      {withTimes.map((reservation, i) => (
-        <ReservationRow data-qa={`reservation-output-${i}`} key={`res-${i}`}>
+      {withTimes.map((reservation, i, array) => (
+        <React.Fragment key={`res-${i}`}>
           {formatReservation(reservation, reservableTimeRange, i18n)}
-        </ReservationRow>
+          {i < array.length - 1 && ', '}
+        </React.Fragment>
       ))}
     </div>
   ) : (
@@ -825,10 +815,10 @@ const EmptyButtonFooterElement = styled.div`
   }
 `
 
-const ReservationTable = styled.div`
+const ReservationAttendanceInfo = styled.div`
   @media not all and (max-width: ${tabletMin}) {
     display: grid;
-    grid-template-columns: 35% 65%;
+    grid-template-columns: 45% 55%;
     grid-auto-rows: minmax(38px, max-content);
     row-gap: ${defaultMargins.xxs};
   }
@@ -838,16 +828,12 @@ const ReservationTable = styled.div`
   }
 `
 
-const Colspan2 = styled.div`
+export const ReservationAttendanceSection = styled.div`
   grid-column: 1 / span 2;
 `
 
-const NonGridLabelLike = styled(LabelLike)`
+export const ReservationAttendanceHeading = styled(LabelLike)`
   @media (max-width: ${tabletMin}) {
     margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
   }
-`
-const ReservationRow = styled.p`
-  margin-top: 0px;
-  margin-bottom: ${defaultMargins.xs};
 `

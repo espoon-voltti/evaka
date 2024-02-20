@@ -23,15 +23,22 @@ const SummaryContainer = styled.div`
   }
 `
 
-const HoursMinutes = ({ minutes }: { minutes: number }) => {
+export const HoursMinutes = ({ minutes }: { minutes: number }) => {
   const hours = Math.floor(minutes / 60)
   const extraMinutes = minutes % 60
 
   const i18n = useTranslation()
+  if (hours === 0 && minutes === 0) {
+    return '-'
+  }
   return (
     <>
-      {hours} {i18n.calendar.monthSummary.hours}
-      {!!extraMinutes &&
+      {hours > 0 && (
+        <>
+          {hours} {i18n.calendar.monthSummary.hours}
+        </>
+      )}
+      {extraMinutes != 0 &&
         ' ' + extraMinutes + ' ' + i18n.calendar.monthSummary.minutes}
     </>
   )

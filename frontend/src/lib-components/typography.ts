@@ -178,7 +178,7 @@ export const H4 = styled.h4<HeadingProps>`
   }
 `
 
-interface LabelProps {
+export interface LabelProps {
   inputRow?: boolean
   primary?: boolean
   white?: boolean

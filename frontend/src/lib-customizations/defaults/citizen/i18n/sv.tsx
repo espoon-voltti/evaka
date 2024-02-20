@@ -325,9 +325,15 @@ const sv: Translations = {
     missingReservation: 'Ingen närvaro',
     reservationNotRequired: 'Närvaroanmälan krävs inte',
     termBreak: 'Ingen undervisning idag',
-    reservation: 'Närvarande',
+    reservation: 'Anmäld närvaro',
     reservationNoTimes: 'Närvarande',
-    realized: 'Förverkligad',
+    attendance: 'Förverkligad närvaro',
+    exceedStart: 'Kommit i förtid.',
+    exceedEnd: 'Blivit avhämtad senare än vad anmälts.',
+    exceedGeneric: 'Förverkligad närvarotid överstiger anmäld tid.',
+    calculatedUsedServiceTime:
+      'Använt servicebehov bestäms enligt månadens servicebehov.',
+    usedService: 'Använt servicebehov',
     reservationsAndRealized: 'Närvaroperiod',
     events: 'Dagens händelser',
     noActivePlacements:
