@@ -93,25 +93,3 @@ export function upsertExternalAttendances(
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
-
-// FIXME: This is not used currently. Should it be used or can the whole endpoint be removed?
-export function deleteStaffAttendance(
-  unitId: UUID,
-  attendanceId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/staff-attendances/realtime/${unitId}/${attendanceId}`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-// FIXME: This is not used currently. Should it be used or can the whole endpoint be removed?
-export function deleteExternalStaffAttendance(
-  unitId: UUID,
-  attendanceId: UUID
-): Promise<Result<void>> {
-  return client
-    .delete(`/staff-attendances/realtime/${unitId}/external/${attendanceId}`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
