@@ -11,6 +11,7 @@ import {
 import { reservationsAndAttendancesDiffer } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { useTranslation } from '../localization'
 
@@ -169,7 +170,7 @@ export default React.memo(function AttendanceInfo({
   reservations,
   usedService
 }: AttendanceInfoProps) {
-  return usedService ? (
+  return featureFlags.timeUsageInfo && usedService ? (
     <AttendanceInfoWithServiceUsage
       attendances={attendances}
       reservations={reservations}
