@@ -153,6 +153,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      * thread.
      */
     open class Read internal constructor(val handle: Handle) {
+        @Deprecated("Use new query API instead")
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
 
         fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
@@ -185,6 +186,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
 
+        @Deprecated("Use new query API instead")
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
 
         fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
