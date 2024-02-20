@@ -143,7 +143,17 @@ fun generateApiFiles(): Map<TsFile, String> {
                         file,
                         TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
                         devEndpoints.map { it.copy(path = it.path.removePrefix("/dev-api")) }
-                    )
+                    ) { body: TsCode ->
+                        TsCode {
+                            """
+try {
+${inline(body).prependIndent("  ")}
+} catch (e) {
+  throw new ${ref(Imports.devApiError)}(e)
+}"""
+                                .removePrefix("\n")
+                        }
+                    }
             )
         }
 
@@ -201,6 +211,7 @@ fun generateApiClients(
     file: TsFile,
     axiosClient: TsImport,
     endpoints: Collection<EndpointMetadata>,
+    wrapBody: (body: TsCode) -> TsCode = { it },
 ): String {
     val clients =
         endpoints
@@ -215,7 +226,7 @@ fun generateApiClients(
             )
             .map {
                 try {
-                    generateApiClient(generator, axiosClient, it)
+                    generateApiClient(generator, axiosClient, it, wrapBody)
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
@@ -233,7 +244,8 @@ ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
 fun generateApiClient(
     generator: TsCodeGenerator,
     axiosClient: TsImport,
-    endpoint: EndpointMetadata
+    endpoint: EndpointMetadata,
+    wrapBody: ((functionBody: TsCode) -> TsCode),
 ): TsCode {
     val argumentType =
         TsObjectLiteral(
@@ -311,17 +323,20 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
     val responseDeserializer =
         endpoint.responseBodyType?.let { generator.jsonDeserializerExpression(it, TsCode("json")) }
 
-    val statements =
-        listOfNotNull(
-            createQueryParameters,
-            TsCode {
-                """
+    val functionBody =
+        TsCode.join(
+            listOfNotNull(
+                createQueryParameters,
+                TsCode {
+                    """
 const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
 ${join(axiosArguments, ",\n").prependIndent("  ")}
 })"""
-                    .removePrefix("\n")
-            },
-            TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" }
+                        .removePrefix("\n")
+                },
+                TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" },
+            ),
+            separator = "\n"
         )
 
     return TsCode {
@@ -330,7 +345,7 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
 * Generated from ${endpoint.controllerClass.qualifiedName ?: endpoint.controllerClass.jvmName}.${endpoint.controllerMethod.name}
 */
 export async function ${endpoint.controllerMethod.name}(${inline(tsArgument ?: TsCode(""))}): Promise<${inline(tsResponseType)}> {
-${join(statements, separator = "\n").prependIndent("  ").removePrefix("\n")}
+${inline(wrapBody(functionBody).prependIndent("  "))}
 }"""
     }
 }

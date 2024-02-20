@@ -4,6 +4,7 @@
 
 package evaka.codegen.api
 
+import evaka.codegen.api.TsProject.E2ETest
 import evaka.codegen.api.TsProject.LibCommon
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.service.ProductKey
@@ -57,6 +58,7 @@ object Imports {
     val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
+    val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }
 
 val defaultMetadata =
