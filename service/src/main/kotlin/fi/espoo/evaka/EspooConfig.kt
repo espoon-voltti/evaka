@@ -189,7 +189,8 @@ class EspooConfig {
             serviceWorkerMessageAccountName =
                 "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
             applyPlacementUnitFromDecision = false,
-            preferredStartRelativeApplicationDueDate = false
+            preferredStartRelativeApplicationDueDate = false,
+            fiveYearsOldDaycareEnabled = true
         )
 
     @Bean

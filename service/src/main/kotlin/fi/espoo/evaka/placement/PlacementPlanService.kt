@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
@@ -16,6 +15,7 @@ import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -34,8 +34,11 @@ import org.springframework.stereotype.Service
 private val logger = KotlinLogging.logger {}
 
 @Service
-class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, env: EvakaEnv) {
-    private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
+class PlacementPlanService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    featureConfig: FeatureConfig
+) {
+    private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
     fun getPlacementPlanDraft(
         tx: Database.Read,

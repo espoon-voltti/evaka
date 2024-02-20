@@ -33,7 +33,6 @@ data class EvakaEnv(
     val feeDecisionMinDate: LocalDate,
     val maxAttachmentsPerUser: Int,
     val httpClientCertificateCheck: Boolean,
-    val fiveYearsOldDaycareEnabled: Boolean,
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long
@@ -72,11 +71,6 @@ data class EvakaEnv(
                 httpClientCertificateCheck =
                     env.lookup("evaka.http_client.certificate_check", "fuel.certificate.check")
                         ?: true,
-                fiveYearsOldDaycareEnabled =
-                    env.lookup(
-                        "evaka.five_years_old_daycare.enabled",
-                        "fi.espoo.evaka.five_years_old_daycare.enabled"
-                    ) ?: true,
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
                 nrOfDaysFeeDecisionCanBeSentInAdvance =
                     env.lookup("evaka.fee_decision.days_in_advance") ?: 0,

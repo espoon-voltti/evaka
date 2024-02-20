@@ -7,8 +7,6 @@ evaka:
     maximum_pool_size: 20
   fee_decision:
     min_date: "2020-03-01"
-  five_years_old_daycare:
-    enabled: true
   max_attachments_per_user: 100
   s3mock:
     url: "https://localhost:9876"

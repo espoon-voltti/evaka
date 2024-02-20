@@ -134,4 +134,7 @@ data class FeatureConfig(
      * start date) false = non-urgent early education application due date is sentDate + 4 months
      */
     val preferredStartRelativeApplicationDueDate: Boolean,
+
+    /** Enable use of special five-year-old daycare placement types */
+    val fiveYearsOldDaycareEnabled: Boolean,
 )
