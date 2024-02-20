@@ -46,7 +46,8 @@ export const Reservations = React.memo(function Reservations({
   const i18n = useTranslation()
   const showAttendanceWarning = data.children.some(
     ({ reservations, attendances, usedService }) =>
-      (usedService != null &&
+      (featureFlags.timeUsageInfo &&
+        usedService != null &&
         usedService.usedServiceMinutes > usedService.reservedMinutes) ||
       reservationsAndAttendancesDiffer(reservations, attendances)
   )
