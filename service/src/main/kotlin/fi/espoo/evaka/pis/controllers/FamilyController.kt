@@ -316,6 +316,7 @@ LEFT JOIN family_contact ON family_contact.contact_person_id = contact.id AND fa
             )
         }
         .toList<FamilyContact>()
+        .sortedBy { it.role.ordinal }
         .let(::addDefaultPriorities)
         .sortedWith(compareBy({ it.priority ?: Int.MAX_VALUE }, { it.role.ordinal }))
 
