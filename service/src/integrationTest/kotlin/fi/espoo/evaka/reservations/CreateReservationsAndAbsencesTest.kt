@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays15
+import fi.espoo.evaka.snDaycareHours120
 import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
@@ -595,20 +596,29 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
 
             tx.insertServiceNeedOption(snDaycareContractDays15)
+            tx.insertServiceNeedOption(snDaycareHours120)
 
             // monday: no service need
             // tuesday: contract days
+            // wednesday: hour based service need
             tx.insertTestPlacement(
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = unlockedDate
+                    endDate = unlockedDate.plusDays(1)
                 )
                 .let { placementId ->
                     tx.insertTestServiceNeed(
                         placementId = placementId,
                         period = FiniteDateRange(tuesday, unlockedDate),
                         optionId = snDaycareContractDays15.id,
+                        confirmedBy = employee.evakaUserId,
+                    )
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period =
+                            FiniteDateRange(unlockedDate.plusDays(1), unlockedDate.plusDays(1)),
+                        optionId = snDaycareHours120.id,
                         confirmedBy = employee.evakaUserId,
                     )
                 }
@@ -633,9 +643,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Absent(
                         childId = child.id,
                         date = unlockedDate,
+                    ),
+                    DailyReservationRequest.Absent(
+                        childId = child.id,
+                        date = unlockedDate.plusDays(1),
                     )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
+                true
             )
         }
 
@@ -654,7 +669,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             listOf(
                 monday to AbsenceType.OTHER_ABSENCE,
                 tuesday to AbsenceType.OTHER_ABSENCE,
-                unlockedDate to AbsenceType.PLANNED_ABSENCE
+                unlockedDate to AbsenceType.PLANNED_ABSENCE,
+                unlockedDate.plusDays(1) to AbsenceType.PLANNED_ABSENCE
             ),
             absences
         )

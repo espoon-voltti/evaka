@@ -417,30 +417,45 @@ WHERE
         .groupBy { it.childId }
 }
 
-fun Database.Read.getReservationContractDayRanges(
+/** Automatic `PLANNED_ABSENCE` logic is enabled for contract days and hour based service needs */
+fun Database.Read.getPlannedAbsenceEnabledRanges(
     childIds: Set<PersonId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
+    enabledForHourBasedServiceNeeds: Boolean
 ): Map<ChildId, DateSet> {
-    return createQuery(
-            """
+    val enabledForHourBasedServiceNeedsPredicate =
+        if (enabledForHourBasedServiceNeeds) {
+            Predicate<Any> {
+                where(
+                    "COALESCE(sno.daycare_hours_per_month, sno_default.daycare_hours_per_month) IS NOT NULL"
+                )
+            }
+        } else {
+            Predicate.alwaysFalse()
+        }
+
+    return createQuery<Any> {
+            sql(
+                """
             SELECT
                 pl.child_id,
-                range_agg(daterange(sn.start_date, sn.end_date, '[]') * :range) AS contract_days
+                range_agg(daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)}) AS enabled_ranges
             FROM placement pl
             JOIN service_need sn ON sn.placement_id = pl.id
             JOIN service_need_option sno ON sno.id = sn.option_id
             LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
             WHERE
-                pl.child_id = ANY(:childIds) AND
-                daterange(pl.start_date, pl.end_date, '[]') && :range AND
-                daterange(sn.start_date, sn.end_date, '[]') && :range AND
-                COALESCE(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL
+                pl.child_id = ANY(${bind(childIds)}) AND
+                daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
+                daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND (
+                    COALESCE(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL OR
+                    ${predicate(enabledForHourBasedServiceNeedsPredicate.forTable(""))}
+                )
             GROUP BY child_id
             """
-        )
-        .bind("childIds", childIds)
-        .bind("range", range)
-        .toMap { columnPair("child_id", "contract_days") }
+            )
+        }
+        .toMap { columnPair("child_id", "enabled_ranges") }
 }
 
 data class DailyChildReservationInfoRow(

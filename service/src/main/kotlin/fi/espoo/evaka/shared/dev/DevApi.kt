@@ -993,7 +993,8 @@ class DevApi(
                     clock.now(),
                     fakeAdmin,
                     body,
-                    featureConfig.citizenReservationThresholdHours
+                    featureConfig.citizenReservationThresholdHours,
+                    true
                 )
             }
         }

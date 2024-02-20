@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
@@ -61,7 +62,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/attendance-reservations")
 class AttendanceReservationController(
     private val ac: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv
 ) {
     @GetMapping
     fun getAttendanceReservations(
@@ -214,7 +216,8 @@ class AttendanceReservationController(
                         clock.now(),
                         user,
                         body,
-                        featureConfig.citizenReservationThresholdHours
+                        featureConfig.citizenReservationThresholdHours,
+                        env.plannedAbsenceEnabledForHourBasedServiceNeeds
                     )
                 }
             }
