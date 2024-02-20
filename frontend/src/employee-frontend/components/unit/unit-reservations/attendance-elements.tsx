@@ -19,6 +19,7 @@ interface CustomThProps {
 }
 
 const CustomTh = styled(Th)<CustomThProps>`
+  width: 100px;
   vertical-align: bottom;
   font-size: 16px;
   text-transform: unset;
@@ -32,7 +33,6 @@ const CustomTh = styled(Th)<CustomThProps>`
 
 // Use min- and max-width to ensure that columns in two tables in the same layout are aligned
 const DateTh = styled(CustomTh)<CustomThProps & { faded: boolean }>`
-  min-width: 150px;
   max-width: 150px;
   ${(p) => p.faded && `color: ${colors.grayscale.g35};`}
 `
@@ -52,6 +52,7 @@ interface StyledTdProps {
   partialRow: boolean
   rowIndex: number
   maxRows?: number
+  width?: number
 }
 
 export const StyledTd = styled(Td)<StyledTdProps>`
@@ -62,6 +63,7 @@ export const StyledTd = styled(Td)<StyledTdProps>`
     p.rowIndex < (p.maxRows ?? 1) &&
     `border-bottom-style: dashed;`}
   ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
+  ${(p) => p.width && `width: ${p.width}px;`}
 `
 
 export const DayTd = styled(StyledTd)`
@@ -88,7 +90,6 @@ export const DayTr = styled(Tr)<TrProps>`
 `
 
 export const NameTd = styled(StyledTd)<StyledTdProps>`
-  width: 350px;
   ${(p) =>
     p.partialRow &&
     p.rowIndex < (p.maxRows ?? 1) &&
@@ -146,7 +147,6 @@ export const AttendanceTableHeader = React.memo(function AttendanceTableHeader({
             </Date>
           </DateTh>
         ))}
-        <CustomTh shrink />
       </Tr>
     </Thead>
   )

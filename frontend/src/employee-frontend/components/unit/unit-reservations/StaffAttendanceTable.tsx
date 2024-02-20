@@ -206,7 +206,6 @@ export default React.memo(function StaffAttendanceTable({
                 {i18n.unit.staffAttendance.personCountAbbr}
               </BottomSumTd>
             ))}
-            <BottomSumTd />
           </BottomSumTr>
         </tfoot>
       </Table>
@@ -497,6 +496,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
             }
             position="bottom"
             width="large"
+            data-qa="coeff-tooltip"
           >
             <RoundIcon
               content="K"
@@ -584,7 +584,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                             </AttendanceTime>
                             <AttendanceTime data-qa="departure-time">
                               {renderTime(attendance.departed, date)}
-                              {tooltip ? `(*)` : ''}
+                              {tooltip ? `*` : ''}
                             </AttendanceTime>
                           </AttendanceCell>
                         </Tooltip>
@@ -951,14 +951,12 @@ const AttendanceTimes = styled.div`
   flex-grow: 1;
   background-color: ${colors.grayscale.g4};
   width: 100%;
-  padding: 0 23px 0 0;
 `
 
 const PlannedAttendanceTimes = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 0 23px 0 0;
 `
 
 const AttendanceCell = styled.div`

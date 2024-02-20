@@ -204,9 +204,9 @@ export default React.memo(function ChildDayReservation({
 })
 
 export const ReservationDateCell = styled(DateCell)`
+  margin: 5px 0px 5px 0px;
   position: relative;
   height: 38px;
-  padding-right: 12px;
 
   &:hover {
     ${DetailsToggle} {

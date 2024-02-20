@@ -237,7 +237,13 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
             )
           })}
           {index === 0 && (
-            <StyledTd partialRow={false} rowIndex={0} rowSpan={rowsCount}>
+            <StyledTd
+              width={50}
+              data-qa="child-reservation-row-menu"
+              partialRow={false}
+              rowIndex={0}
+              rowSpan={rowsCount}
+            >
               <RowMenu
                 i18n={i18n}
                 child={childBasics}
