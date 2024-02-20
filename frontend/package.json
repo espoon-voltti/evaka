@@ -205,7 +205,8 @@
   },
   "eslintConfig": {
     "ignorePatterns": [
-      "**/dist"
+      "**/dist",
+      "src/*/generated"
     ],
     "parserOptions": {
       "ecmaVersion": "latest",
