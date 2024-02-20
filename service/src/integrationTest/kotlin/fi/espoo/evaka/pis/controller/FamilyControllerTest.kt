@@ -155,6 +155,103 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `family contacts do not include people in conflict state`() {
+        lateinit var headOfChild: PersonId
+        lateinit var householdSibling: PersonId
+
+        db.transaction { tx ->
+            headOfChild =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end
+                        )
+                    )
+                }
+            householdSibling =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = it,
+                            headOfChild = headOfChild,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end
+                        )
+                    )
+                }
+            // conflict head of child
+            val conflictHeadOfChild =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                            conflict = true
+                        )
+                    )
+                }
+            // conflict adult in valid household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgePartnership(
+                        first = headOfChild,
+                        second = it,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                        conflict = true
+                    )
+                )
+            }
+            // valid adult in conflict household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgePartnership(
+                        first = conflictHeadOfChild,
+                        second = it,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                    )
+                )
+            }
+            // conflict sibling in valid household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = headOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                        conflict = true
+                    )
+                )
+            }
+            // valid sibling in conflict household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = conflictHeadOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end
+                    )
+                )
+            }
+        }
+        assertEquals(
+            listOf(
+                (headOfChild to FamilyContactRole.LOCAL_ADULT),
+                (householdSibling to FamilyContactRole.LOCAL_SIBLING)
+            ),
+            getFamilyContactSummary().map { (it.id to it.role) }
+        )
+    }
+
     private fun getFamilyContactSummary() =
         controller.getFamilyContactSummary(dbInstance(), user, clock, child)
 }
