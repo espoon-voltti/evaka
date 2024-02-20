@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.absence
 
+import fi.espoo.evaka.attendance.ChildAttendanceRow
+import fi.espoo.evaka.attendance.getChildAttendances
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
@@ -26,7 +28,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
-import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 
 data class AbsenceUpsert(
@@ -603,34 +604,23 @@ AND EXISTS (
         .groupBy({ it.first }, { it.second })
 }
 
-data class ChildAttendance(
-    val childId: ChildId,
-    val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime
-)
-
 fun Database.Read.getGroupAttendances(
     groupId: GroupId,
     dateRange: FiniteDateRange
-): List<ChildAttendance> =
-    createQuery<Any> {
-            sql(
+): List<ChildAttendanceRow> =
+    getChildAttendances(
+        Predicate {
+            where(
                 """
-WITH all_placements AS (
-  ${subquery(placementsQuery(dateRange, groupId))}
-)
-SELECT a.child_id, a.date, a.start_time, a.end_time FROM child_attendance a
-WHERE between_start_and_end(${bind(dateRange)}, a.date) AND a.end_time IS NOT NULL
+between_start_and_end(${bind(dateRange)}, $it.date)
 AND EXISTS (
-    SELECT 1 FROM all_placements p
-    WHERE a.child_id = p.child_id
-    AND between_start_and_end(p.date_range, a.date)
+    SELECT FROM (${subquery(placementsQuery(dateRange, groupId))}) p
+    WHERE $it.child_id = p.child_id AND between_start_and_end(p.date_range, $it.date)
 )
 """
             )
         }
-        .toList<ChildAttendance>()
+    )
 
 fun Database.Read.getGroupDailyServiceTimes(
     groupId: GroupId,

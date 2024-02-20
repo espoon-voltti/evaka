@@ -111,9 +111,13 @@ fun getGroupMonthCalendar(
                     reservationTotalHours =
                         sumOfHours(supplementedReservations, placementDateRanges, range),
                     attendanceTotalHours =
-                        attendances[child.id]
-                            ?.map { HelsinkiDateTimeRange.of(it.date, it.startTime, it.endTime) }
-                            ?.let { sumOfHours(it, placementDateRanges, range) } ?: 0,
+                        (attendances[child.id] ?: emptyList())
+                            .mapNotNull {
+                                it.endTime?.let { endTime ->
+                                    HelsinkiDateTimeRange.of(it.date, it.startTime, endTime)
+                                }
+                            }
+                            .let { sumOfHours(it, placementDateRanges, range) }
                 )
             }
             .sortedWith(compareBy({ it.lastName }, { it.firstName }))
