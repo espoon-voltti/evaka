@@ -265,10 +265,10 @@ WITH child_guardian AS (
     WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
 ), head_of_child AS (
     SELECT head_of_child AS id FROM fridge_child fc
-    WHERE fc.child_id = ${bind(childId)} AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
+    WHERE fc.child_id = ${bind(childId)} AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)} AND conflict IS FALSE
 ), head_of_child_partner AS (
     SELECT partner_person_id AS id FROM head_of_child hoc
-    JOIN fridge_partner_view fp ON hoc.id = fp.person_id AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
+    JOIN fridge_partner_view fp ON hoc.id = fp.person_id AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)} AND conflict IS FALSE
 ), same_household_adult AS (
     SELECT id FROM head_of_child
     UNION ALL
@@ -292,6 +292,7 @@ WITH child_guardian AS (
     JOIN fridge_child sibling ON hoc.id = sibling.head_of_child
     WHERE sibling.child_id != ${bind(childId)}
     AND daterange(sibling.start_date, sibling.end_date, '[]') @> ${bind(today)}
+    AND conflict IS FALSE
 
     UNION ALL
 

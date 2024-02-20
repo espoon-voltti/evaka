@@ -1273,15 +1273,16 @@ data class DevFridgePartner(
     val personId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate? = null,
-    val createdAt: HelsinkiDateTime
+    val createdAt: HelsinkiDateTime,
+    val conflict: Boolean = false
 )
 
 fun Database.Transaction.insert(pickup: DevFridgePartner) =
     insertTestDataRow(
             pickup,
             """
-INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at)
-VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate, :createdAt)
+INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at, conflict)
+VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate, :createdAt, :conflict)
 RETURNING partnership_id
 """
         )
@@ -1293,7 +1294,8 @@ data class DevFridgePartnership(
     val second: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate? = null,
-    val createdAt: HelsinkiDateTime
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val conflict: Boolean = false
 )
 
 fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipId =
@@ -1305,7 +1307,8 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                 personId = partnership.first,
                 startDate = partnership.startDate,
                 endDate = partnership.endDate,
-                createdAt = partnership.createdAt
+                createdAt = partnership.createdAt,
+                conflict = partnership.conflict
             )
         )
         .also {
@@ -1317,7 +1320,8 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                     personId = partnership.second,
                     startDate = partnership.startDate,
                     endDate = partnership.endDate,
-                    createdAt = partnership.createdAt
+                    createdAt = partnership.createdAt,
+                    conflict = partnership.conflict
                 )
             )
         }
