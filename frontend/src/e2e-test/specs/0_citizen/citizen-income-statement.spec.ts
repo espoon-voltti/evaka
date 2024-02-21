@@ -4,7 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { resetDatabase } from '../../dev-api'
+import { resetDatabase } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'

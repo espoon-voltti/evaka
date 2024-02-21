@@ -974,7 +974,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
             .bind("preparer2Title", data.preparedBy2?.title)
             .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
-            .bind("selectedUnit", data.selectedUnit?.id)
+            .bind("selectedUnit", data.selectedUnit)
             .exactlyOne<AssistanceNeedDecisionId>()
 
     // language=sql
@@ -1331,7 +1331,7 @@ data class DevEmployeePin(
     val userId: EmployeeId? = null,
     val employeeExternalId: String? = null,
     val pin: String,
-    val locked: Boolean? = false
+    val locked: Boolean = false
 )
 
 data class DevFosterParent(

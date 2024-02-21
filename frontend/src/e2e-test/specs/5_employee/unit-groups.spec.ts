@@ -6,14 +6,15 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import {
-  insertDefaultServiceNeedOptions,
-  resetDatabase,
-  terminatePlacement
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import { Child, Daycare } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase,
+  terminatePlacement
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -30,7 +31,7 @@ let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
 let daycare2: Daycare
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
@@ -43,7 +44,7 @@ beforeEach(async () => {
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup()
     .with({
@@ -113,40 +114,48 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Child with a terminated placement is shown in terminated placement list', async () => {
-    await terminatePlacement(
-      child1DaycarePlacementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      unitSupervisor.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId: child1DaycarePlacementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        terminatedBy: unitSupervisor.id
+      }
+    })
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
 
   test('Child with a terminated placement is shown not in terminated placement list when termination is older than 2 weeks', async () => {
-    await terminatePlacement(
-      child1DaycarePlacementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      unitSupervisor.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId: child1DaycarePlacementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        terminatedBy: unitSupervisor.id
+      }
+    })
 
-    await terminatePlacement(
-      child2DaycarePlacementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      unitSupervisor.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId: child2DaycarePlacementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        terminatedBy: unitSupervisor.id
+      }
+    })
 
     let groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(2)
 
-    await terminatePlacement(
-      child1DaycarePlacementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz().subDays(15),
-      unitSupervisor.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId: child1DaycarePlacementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz().subDays(15),
+        terminatedBy: unitSupervisor.id
+      }
+    })
     groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(1)
   })
@@ -229,10 +238,7 @@ describe('Unit groups - unit supervisor', () => {
         childId: child3Fixture.id,
         unitId: daycare.id,
         groupId,
-        period: {
-          start: placementStartDate,
-          end: placementEndDate
-        }
+        period: new FiniteDateRange(placementStartDate, placementEndDate)
       })
       .save()
     await Fixture.assistanceFactor()
@@ -292,12 +298,14 @@ describe('Unit groups - staff', () => {
   })
 
   test('Staff will not see terminated placements', async () => {
-    await terminatePlacement(
-      child1DaycarePlacementId,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz(),
-      unitSupervisor.id
-    )
+    await terminatePlacement({
+      body: {
+        placementId: child1DaycarePlacementId,
+        endDate: LocalDate.todayInSystemTz(),
+        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        terminatedBy: unitSupervisor.id
+      }
+    })
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.terminatedPlacementsSection.assertRowCount(0)
   })

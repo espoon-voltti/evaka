@@ -4,7 +4,9 @@
 
 package evaka.codegen.api
 
+import evaka.codegen.api.TsProject.E2ETest
 import evaka.codegen.api.TsProject.LibCommon
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.MessageReceiver
 import fi.espoo.evaka.pairing.MobileDeviceDetails
@@ -56,6 +58,7 @@ object Imports {
     val jsonCompatible = TsImport.Named(LibCommon / "json.d.ts", "JsonCompatible")
     val uri = TsImport.Named(LibCommon / "uri.ts", "uri")
     val createUrlSearchParams = TsImport.Named(LibCommon / "api.ts", "createUrlSearchParams")
+    val devApiError = TsImport.Named(E2ETest / "dev-api", "DevApiError")
 }
 
 val defaultMetadata =
@@ -210,6 +213,7 @@ val defaultMetadata =
         Pair::class to TsTuple(size = 2),
         Triple::class to TsTuple(size = 3),
         Void::class to Excluded,
+        ExternalId::class to TsPlain("string"),
         YearMonth::class to
             TsExternalTypeRef(
                 "LocalDate",

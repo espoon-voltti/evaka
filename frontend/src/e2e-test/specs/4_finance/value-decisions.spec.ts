@@ -7,9 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
-  insertGuardianFixtures,
   insertVoucherValueDecisionFixtures,
-  resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -25,6 +23,7 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
+import { insertGuardians, resetDatabase } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -175,16 +174,18 @@ describe('Value decisions', () => {
   })
 
   test('Partner is shown for elementary family', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      },
-      {
-        guardianId: familyWithTwoGuardians.otherGuardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        },
+        {
+          guardianId: familyWithTwoGuardians.otherGuardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
 
     const valueDecisionDetailsPage =
@@ -195,12 +196,14 @@ describe('Value decisions', () => {
   })
 
   test('Partner is not shown for non elementary family', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions()
 
     const valueDecisionDetailsPage =
@@ -209,12 +212,14 @@ describe('Value decisions', () => {
   })
 
   test('Child income is shown', async () => {
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions(
       DecisionIncomeFixture(54321)
     )

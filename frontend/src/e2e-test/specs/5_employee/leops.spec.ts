@@ -6,14 +6,14 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  deleteVasuTemplates,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  deleteVasuTemplates,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
   ChildDocumentsSection
 } from '../../pages/employee/child-information'
@@ -29,7 +29,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeDetail
+let admin: DevEmployee
 let childInformationPage: ChildInformationPage
 let childId: UUID
 
@@ -39,7 +39,7 @@ beforeAll(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   const unitId = fixtures.preschoolFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id

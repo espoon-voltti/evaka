@@ -9,10 +9,7 @@ import LocalTime from 'lib-common/local-time'
 
 import {
   insertChildFixture,
-  insertDefaultServiceNeedOptions,
   insertFeeThresholds,
-  insertVoucherValues,
-  resetDatabase,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -25,6 +22,11 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  createVoucherValues,
+  resetDatabase
+} from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -50,8 +52,8 @@ const childZeroYo: PersonDetail = {
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
-  await insertVoucherValues()
+  await createDefaultServiceNeedOptions()
+  await createVoucherValues()
   regularPerson = fixtures.familyWithTwoGuardians.guardian
   fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
   child = fixtures.familyWithTwoGuardians.children[0]
@@ -203,6 +205,7 @@ describe('Employee - Head of family details', () => {
         validTo: mockToday.addYears(1),
         data: {
           MAIN_INCOME: {
+            multiplier: 1,
             amount: totalIncome,
             monthlyAmount: totalIncome,
             coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
@@ -222,6 +225,7 @@ describe('Employee - Head of family details', () => {
         validTo: mockToday.addYears(1),
         data: {
           MAIN_INCOME: {
+            multiplier: 1,
             amount: totalChildIncome,
             monthlyAmount: totalChildIncome,
             coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'

@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationDetails,
+  OtherGuardianAgreementStatus
+} from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'

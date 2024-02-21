@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertApplications, resetDatabase } from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -16,13 +16,14 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let admin: EmployeeDetail
+let admin: DevEmployee
 
 beforeEach(async () => {
   await resetDatabase()
@@ -30,7 +31,7 @@ beforeEach(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 })
 
-async function openPage(employee: EmployeeDetail = admin) {
+async function openPage(employee: DevEmployee = admin) {
   const page = await Page.open()
   await employeeLogin(page, employee)
   await page.goto(config.adminUrl)

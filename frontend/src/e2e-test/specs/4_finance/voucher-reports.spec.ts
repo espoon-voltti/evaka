@@ -7,12 +7,7 @@ import assert from 'assert'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  insertDefaultServiceNeedOptions,
-  insertVoucherValueDecisionFixtures,
-  insertVoucherValues,
-  resetDatabase
-} from '../../dev-api'
+import { insertVoucherValueDecisionFixtures } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -22,6 +17,11 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  createVoucherValues,
+  resetDatabase
+} from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, {
   ServiceVoucherUnitReport,
@@ -43,8 +43,8 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  await insertDefaultServiceNeedOptions()
-  await insertVoucherValues()
+  await createDefaultServiceNeedOptions()
+  await createVoucherValues()
 
   startDate = LocalDate.of(2020, 1, 1)
   endDate = LocalDate.of(2020, 12, 31)

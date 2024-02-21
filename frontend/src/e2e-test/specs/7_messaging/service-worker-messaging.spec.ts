@@ -7,22 +7,21 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  insertApplications,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
-} from '../../dev-api'
+import { insertApplications, runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  Fixture,
   applicationFixture,
-  applicationFixtureId
+  applicationFixtureId,
+  Fixture
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createMessageAccounts,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ApplicationsPage from '../../pages/employee/applications'
@@ -34,8 +33,8 @@ import { employeeLogin, enduserLogin } from '../../utils/user'
 let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
 let staffPage: Page
-let serviceWorker: EmployeeDetail
-let messagingAndServiceWorker: EmployeeDetail
+let serviceWorker: DevEmployee
+let messagingAndServiceWorker: DevEmployee
 
 const mockedToday = LocalDate.of(2022, 11, 8)
 const mockedTime = HelsinkiDateTime.fromLocal(
@@ -54,7 +53,7 @@ beforeEach(async () => {
       })
       .save()
   ).data
-  await upsertMessageAccounts()
+  await createMessageAccounts()
 })
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
@@ -64,7 +63,7 @@ async function openCitizenPage(mockedTime: HelsinkiDateTime) {
 
 async function openStaffPage(
   mockedTime: HelsinkiDateTime,
-  employee: EmployeeDetail
+  employee: DevEmployee
 ) {
   staffPage = await Page.open({ mockedTime })
   await employeeLogin(staffPage, employee)

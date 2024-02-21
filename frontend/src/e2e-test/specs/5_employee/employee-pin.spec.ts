@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: EmployeeDetail
+let admin: DevEmployee
 let page: Page
 let nav: EmployeeNav
 let pinPage: EmployeePinPage
@@ -45,7 +45,7 @@ describe('Employees PIN', () => {
   test('shows a warning if PIN is locked, and warning disappears when new PIN is set', async () => {
     await Fixture.employeePin()
       .with({
-        userId: undefined,
+        userId: null,
         employeeExternalId: admin.externalId,
         pin: '2580',
         locked: true

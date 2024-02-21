@@ -7,11 +7,6 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -25,7 +20,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedDecisionsReportDecision
@@ -35,8 +35,8 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let decisionMaker: EmployeeDetail
-let director: EmployeeDetail
+let decisionMaker: DevEmployee
+let director: DevEmployee
 
 let unitId: UUID
 let childId: UUID
@@ -50,7 +50,7 @@ beforeEach(async () => {
   director = (await Fixture.employeeDirector().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   unitId = fixtures.daycareFixture.id
   childId = familyWithTwoGuardians.children[0].id
@@ -61,7 +61,7 @@ beforeEach(async () => {
     unitId
   )
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
 
 describe('Assistance need decisions report', () => {
@@ -86,10 +86,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
     await Fixture.assistanceNeedDecision()
@@ -99,10 +101,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2020, 6, 8),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
     await Fixture.assistanceNeedDecision()
@@ -110,10 +114,12 @@ describe('Assistance need decisions report', () => {
       .with({
         decisionMaker: {
           employeeId: director.id,
-          title: 'director'
+          title: 'director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2020, 1, 1),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
     await Fixture.assistanceNeedDecision()
@@ -122,10 +128,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: { id: unitId },
+        selectedUnit: unitId,
         status: 'ACCEPTED'
       })
       .save()
@@ -166,10 +174,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
 
@@ -207,10 +217,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
 
@@ -236,10 +248,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2020, 6, 8),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
     await employeeLogin(page, decisionMaker)
@@ -263,10 +277,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
     await employeeLogin(page, decisionMaker)
@@ -290,10 +306,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: { id: unitId },
+        selectedUnit: unitId,
         status: 'ACCEPTED'
       })
       .save()
@@ -326,10 +344,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
 
@@ -365,10 +385,12 @@ describe('Assistance need decisions report', () => {
         childId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: unitId }
+        selectedUnit: unitId
       })
       .save()
 
@@ -385,7 +407,7 @@ describe('Assistance need decisions report', () => {
       anotherDaycare.data.id
     )
 
-    await insertDaycarePlacementFixtures([daycarePlacementFixture2])
+    await createDaycarePlacements({ body: [daycarePlacementFixture2] })
 
     await Fixture.assistanceNeedDecision()
       .with({
@@ -393,10 +415,12 @@ describe('Assistance need decisions report', () => {
         childId: anotherChildId,
         decisionMaker: {
           employeeId: decisionMaker.id,
-          title: 'regional director'
+          title: 'regional director',
+          name: null,
+          phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: { id: anotherDaycare.data.id }
+        selectedUnit: anotherDaycare.data.id
       })
       .save()
 

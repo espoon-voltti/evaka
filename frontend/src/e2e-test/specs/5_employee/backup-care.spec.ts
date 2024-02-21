@@ -2,24 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
-  insertBackupCareFixtures,
-  insertDaycareGroupFixtures,
-  resetDatabase
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  createBackupCareFixture,
-  daycareGroupFixture,
-  Fixture
-} from '../../dev-api/fixtures'
-import { BackupCare, PersonDetail } from '../../dev-api/types'
+import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { PersonDetail } from '../../dev-api/types'
+import { createDaycareGroups, resetDatabase } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -27,7 +20,6 @@ import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let childFixture: PersonDetail
-let backupCareFixture: BackupCare
 let page: Page
 let groupsPage: UnitGroupsPage
 
@@ -39,7 +31,7 @@ beforeEach(async () => {
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
     fixtures.daycareFixture.id
   ).save()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
   const startDate = LocalDate.of(2023, 2, 1).subYears(1)
@@ -64,11 +56,16 @@ beforeEach(async () => {
       confirmedBy: unitSupervisor.data.id
     })
     .save()
-  backupCareFixture = createBackupCareFixture(
-    childFixture.id,
-    fixtures.daycareFixture.id
-  )
-  await insertBackupCareFixtures([backupCareFixture])
+  await Fixture.backupCare()
+    .with({
+      childId: childFixture.id,
+      unitId: fixtures.daycareFixture.id,
+      period: new FiniteDateRange(
+        LocalDate.of(2023, 2, 1),
+        LocalDate.of(2023, 2, 3)
+      )
+    })
+    .save()
 
   page = await Page.open({ mockedTime: now })
   await employeeLogin(page, unitSupervisor.data)

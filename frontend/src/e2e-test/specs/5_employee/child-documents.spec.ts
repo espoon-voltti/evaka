@@ -5,13 +5,14 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail, PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import {
@@ -25,8 +26,8 @@ import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let childFixture: PersonDetail
-let admin: EmployeeDetail
-let unitSupervisor: EmployeeDetail
+let admin: DevEmployee
+let unitSupervisor: DevEmployee
 let page: Page
 
 const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)

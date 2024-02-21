@@ -4,10 +4,10 @@
 
 import { UUID } from 'lib-common/types'
 
-import { resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import {
   EmployeeRowEditModal,
   UnitInfoPage,
@@ -40,7 +40,7 @@ const yrjo = {
   lastName: 'Yksikkö',
   email: 'yrjo@evaka.test'
 }
-let admin: EmployeeDetail
+let admin: DevEmployee
 
 beforeEach(async () => {
   await resetDatabase()

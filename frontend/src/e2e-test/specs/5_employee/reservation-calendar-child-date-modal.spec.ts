@@ -8,9 +8,12 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   UnitCalendarPage,
@@ -23,7 +26,7 @@ import { employeeLogin } from '../../utils/user'
 let daycareId: UUID
 let childId: UUID
 let placementId: UUID
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 let daycareServiceNeedOptionId: UUID
 
 let page: Page
@@ -42,7 +45,7 @@ const setupTestData = async ({
 }: {
   placementType?: PlacementType
 } = {}) => {
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm().save()
   daycareServiceNeedOptionId = (
     await Fixture.serviceNeedOption()

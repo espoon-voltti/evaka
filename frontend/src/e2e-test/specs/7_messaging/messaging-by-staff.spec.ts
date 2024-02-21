@@ -8,13 +8,7 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertGuardianFixtures,
-  resetDatabase,
-  runPendingAsyncJobs,
-  upsertMessageAccounts
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -25,7 +19,13 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createMessageAccounts,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
@@ -36,8 +36,8 @@ let staffPage: Page
 let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
-let staff: EmployeeDetail
-let unitSupervisor: EmployeeDetail
+let staff: DevEmployee
+let unitSupervisor: DevEmployee
 let fixtures: AreaAndPersonFixtures
 
 const mockedDate = LocalDate.of(2022, 5, 21)
@@ -56,7 +56,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   staff = (
     await Fixture.employeeStaff(fixtures.daycareFixture.id)
@@ -107,21 +107,25 @@ beforeEach(async () => {
         .save()
     )
 
-  await insertGuardianFixtures([
-    {
-      childId: childId,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
+  await insertGuardians({
+    body: [
+      {
+        childId: childId,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
 
-  await insertGuardianFixtures([
-    {
-      childId: fixtures.enduserChildFixtureKaarina.id,
-      guardianId: fixtures.enduserGuardianFixture.id
-    }
-  ])
+  await insertGuardians({
+    body: [
+      {
+        childId: fixtures.enduserChildFixtureKaarina.id,
+        guardianId: fixtures.enduserGuardianFixture.id
+      }
+    ]
+  })
 
-  await upsertMessageAccounts()
+  await createMessageAccounts()
 })
 
 async function initStaffPage(mockedTime: HelsinkiDateTime) {
@@ -222,7 +226,7 @@ describe('Sending and receiving sensitive messages', () => {
         .save()
     ).data
     // create messaging account for newly created VEO account
-    await upsertMessageAccounts()
+    await createMessageAccounts()
 
     const sensitiveMessage = {
       ...defaultMessage,

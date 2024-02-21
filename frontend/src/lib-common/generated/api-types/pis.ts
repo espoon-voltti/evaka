@@ -11,7 +11,6 @@ import { Action } from '../action'
 import { CitizenAuthLevel } from './shared'
 import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
-import { ExternalId } from './identity'
 import { IncomeEffect } from './invoicing'
 import { JsonOf } from '../../json'
 import { Nationality } from './vtjclient'
@@ -129,7 +128,7 @@ export interface Employee {
   active: boolean
   created: HelsinkiDateTime
   email: string | null
-  externalId: ExternalId | null
+  externalId: string | null
   firstName: string
   id: UUID
   lastName: string
@@ -316,7 +315,7 @@ export interface NewEmployee {
   active: boolean
   email: string | null
   employeeNumber: string | null
-  externalId: ExternalId | null
+  externalId: string | null
   firstName: string
   lastName: string
   roles: UserRole[]

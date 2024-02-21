@@ -13,8 +13,7 @@ import LocalDate from 'lib-common/local-date'
 import config from '../../config'
 import {
   insertFeeDecisionFixtures,
-  insertVoucherValueDecisionFixtures,
-  resetDatabase
+  insertVoucherValueDecisionFixtures
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -27,6 +26,7 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
 import { VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'

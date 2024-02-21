@@ -9,7 +9,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   daycare2Fixture,
@@ -24,6 +23,10 @@ import {
   preschoolTermFixture2021,
   uuidv4
 } from '../../dev-api/fixtures'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import { pairMobileDevice } from '../../utils/mobile'
@@ -43,7 +46,7 @@ const group2 = {
 
 beforeEach(async () => {
   await resetDatabase()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
   await insertConfirmedDaysTestData()
 
   const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
@@ -364,11 +367,11 @@ async function insertConfirmedDaysTestData() {
     .with({
       childId: enduserChildFixtureJari.id,
       unitId: daycare2Fixture.id,
-      period: {
-        start: LocalDate.of(2022, 5, 26),
-        end: LocalDate.of(2022, 5, 26)
-      },
-      groupId: undefined
+      period: new FiniteDateRange(
+        LocalDate.of(2022, 5, 26),
+        LocalDate.of(2022, 5, 26)
+      ),
+      groupId: null
     })
     .save()
 
@@ -376,10 +379,10 @@ async function insertConfirmedDaysTestData() {
     .with({
       childId: enduserChildFixtureJari.id,
       unitId: daycareFixture.id,
-      period: {
-        start: LocalDate.of(2022, 5, 27),
-        end: LocalDate.of(2022, 5, 27)
-      },
+      period: new FiniteDateRange(
+        LocalDate.of(2022, 5, 27),
+        LocalDate.of(2022, 5, 27)
+      ),
       groupId: group2.id
     })
     .save()

@@ -5,14 +5,11 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  execSimpleApplicationActions,
-  insertApplications,
-  resetDatabase
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import { Family } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'

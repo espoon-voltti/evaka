@@ -63,10 +63,10 @@ export async function employeeLogin(
     lastName,
     email
   }: {
-    externalId: string
+    externalId?: string | null
     firstName: string
     lastName: string
-    email?: string
+    email?: string | null
   }
 ) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`

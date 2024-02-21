@@ -6,11 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  insertApplications,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
+import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -23,6 +19,10 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { Application } from '../../dev-api/types'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -128,7 +128,7 @@ describe('Placement sketching report', () => {
       preferredUnit.id,
       placementStartDate
     )
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
+    await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     const report = await openPlacementSketchingReport()
     await report.assertRow(

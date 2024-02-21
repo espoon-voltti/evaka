@@ -8,11 +8,6 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures,
-  resetDatabase
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -24,7 +19,15 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { AssistanceNeedDecision, EmployeeDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
+import {
+  DevAssistanceNeedDecision,
+  DevEmployee
+} from '../../generated/api-types'
 import AssistanceNeedDecisionEditPage from '../../pages/employee/assistance-need-decision/assistance-need-decision-edit-page'
 import AssistanceNeedDecisionPreviewPage from '../../pages/employee/assistance-need-decision/assistance-need-decision-preview-page'
 import { waitUntilEqual } from '../../utils'
@@ -33,12 +36,12 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let fixtures: AreaAndPersonFixtures
-let serviceWorker: EmployeeDetail
-let staff: EmployeeDetail
+let serviceWorker: DevEmployee
+let staff: DevEmployee
 let assistanceNeedDecisionEditPage: AssistanceNeedDecisionEditPage
 let childId: UUID
-let assistanceNeedDecision: AssistanceNeedDecision
-let preFilledAssistanceNeedDecision: AssistanceNeedDecision
+let assistanceNeedDecision: DevAssistanceNeedDecision
+let preFilledAssistanceNeedDecision: DevAssistanceNeedDecision
 
 const mockedTime = LocalDate.of(2022, 12, 20)
 
@@ -48,7 +51,7 @@ beforeEach(async () => {
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
 
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
   staff = (await Fixture.employeeStaff(unitId).save()).data
@@ -68,15 +71,18 @@ beforeEach(async () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
-        selectedUnit: { id: fixtures.daycareFixture.id },
+        selectedUnit: fixtures.daycareFixture.id,
         decisionMaker: {
           employeeId: serviceWorker.id,
-          title: 'head teacher'
+          title: 'head teacher',
+          name: null,
+          phoneNumber: null
         },
         preparedBy1: {
           employeeId: serviceWorker.id,
           title: 'teacher',
-          phoneNumber: '010202020202'
+          phoneNumber: '010202020202',
+          name: null
         },
         guardianInfo: [
           {
@@ -91,7 +97,7 @@ beforeEach(async () => {
       .save()
   ).data
 
-  await insertDaycarePlacementFixtures([daycarePlacementFixture])
+  await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
 
 const openPage = async (addDays = 0) =>
@@ -314,15 +320,18 @@ describe('Assistance Need Decisions - Preview page', () => {
           .withChild(childId)
           .with({
             status: 'ACCEPTED',
-            selectedUnit: { id: fixtures.daycareFixture.id },
+            selectedUnit: fixtures.daycareFixture.id,
             decisionMaker: {
               employeeId: serviceWorker.id,
-              title: 'head teacher'
+              title: 'head teacher',
+              name: null,
+              phoneNumber: null
             },
             preparedBy1: {
               employeeId: serviceWorker.id,
               title: 'teacher',
-              phoneNumber: '010202020202'
+              phoneNumber: '010202020202',
+              name: null
             },
             guardianInfo: [
               {

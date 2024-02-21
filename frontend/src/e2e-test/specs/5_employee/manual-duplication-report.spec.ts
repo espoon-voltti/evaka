@@ -6,15 +6,16 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { insertApplications, resetDatabase } from '../../dev-api'
-import { Fixture, applicationFixture, uuidv4 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { insertApplications } from '../../dev-api'
+import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(resetDatabase)
+beforeEach(async (): Promise<void> => resetDatabase())
 
 describe('Manual duplication report', () => {
   test('works', async () => {
@@ -127,7 +128,7 @@ describe('Manual duplication report', () => {
   })
 })
 
-const navigateToReport = async (page: Page, user: EmployeeDetail) => {
+const navigateToReport = async (page: Page, user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')

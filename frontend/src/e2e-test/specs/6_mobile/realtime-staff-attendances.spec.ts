@@ -7,21 +7,21 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
 
-import {
-  getStaffRealtimeAttendances,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  EmployeeBuilder,
-  Fixture,
   daycare2Fixture,
   daycareGroupFixture,
+  EmployeeBuilder,
+  Fixture,
   fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
-import { DaycareGroup } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  getStaffAttendances,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevDaycareGroup } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import {
   StaffAttendanceEditPage,
@@ -39,7 +39,7 @@ let employeeName: string
 
 const pin = '4242'
 
-const daycareGroup2Fixture: DaycareGroup = {
+const daycareGroup2Fixture: DevDaycareGroup = {
   ...daycareGroupFixture,
   id: uuidv4(),
   name: 'Ryhmä 2'
@@ -48,7 +48,7 @@ const daycareGroup2Fixture: DaycareGroup = {
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycare()
     .with({
@@ -843,7 +843,7 @@ describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.assertEmployeeAttendances([
       `Ylityö ${newArrivalTime}–${newDepartureTime}`
     ])
-    const attendances = await getStaffRealtimeAttendances()
+    const attendances = await getStaffAttendances()
     expect(attendances).toHaveLength(1)
     expect(attendances[0].groupId).toBe(daycareGroup2Fixture.id)
   })

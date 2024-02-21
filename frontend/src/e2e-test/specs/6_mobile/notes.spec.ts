@@ -6,7 +6,6 @@ import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -17,6 +16,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'

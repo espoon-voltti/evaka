@@ -18,6 +18,7 @@ import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { DecisionRequest } from './api-types'
 import { DevAbsence } from './api-types'
+import { DevApiError } from '../dev-api'
 import { DevApplicationWithForm } from './api-types'
 import { DevAssistanceFactor } from './api-types'
 import { DevAssistanceNeedDecision } from './api-types'
@@ -107,12 +108,16 @@ export async function addAbsence(
     body: DevAbsence
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/absence`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevAbsence>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/absence`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAbsence>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -125,12 +130,16 @@ export async function addAclRoleForDaycare(
     body: DaycareAclInsert
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycares/${request.daycareId}/acl`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<DaycareAclInsert>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycares/${request.daycareId}/acl`.toString(),
+      method: 'PUT',
+      data: request.body satisfies JsonCompatible<DaycareAclInsert>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -142,12 +151,16 @@ export async function addCalendarEvent(
     body: DevCalendarEvent
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/calendar-event`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevCalendarEvent>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/calendar-event`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevCalendarEvent>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -159,12 +172,16 @@ export async function addCalendarEventAttendee(
     body: DevCalendarEventAttendee
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/calendar-event-attendee`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevCalendarEventAttendee>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/calendar-event-attendee`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevCalendarEventAttendee>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -176,12 +193,16 @@ export async function addDailyServiceTime(
     body: DevDailyServiceTimes
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/daily-service-time`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDailyServiceTimes>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/daily-service-time`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDailyServiceTimes>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -193,12 +214,16 @@ export async function addDailyServiceTimeNotification(
     body: DevDailyServiceTimeNotification
   }
 ): Promise<number> {
-  const { data: json } = await devClient.request<JsonOf<number>>({
-    url: uri`/dev-api/daily-service-time-notification`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDailyServiceTimeNotification>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<number>>({
+      url: uri`/daily-service-time-notification`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDailyServiceTimeNotification>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -210,12 +235,16 @@ export async function addPayment(
     body: DevPayment
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/payments`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPayment>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/payments`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPayment>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -227,12 +256,16 @@ export async function addStaffAttendance(
     body: DevStaffAttendance
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/realtime-staff-attendance`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevStaffAttendance>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/realtime-staff-attendance`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevStaffAttendance>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -244,12 +277,16 @@ export async function addStaffAttendancePlan(
     body: DevStaffAttendancePlan
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/staff-attendance-plan`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevStaffAttendancePlan>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/staff-attendance-plan`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevStaffAttendancePlan>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -257,11 +294,15 @@ export async function addStaffAttendancePlan(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.cleanUpMessages
 */
 export async function cleanUpMessages(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/messages/clean-up`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/messages/clean-up`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -274,12 +315,16 @@ export async function createApplicationPlacementPlan(
     body: DaycarePlacementPlan
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DaycarePlacementPlan>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DaycarePlacementPlan>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -291,12 +336,16 @@ export async function createApplications(
     body: DevApplicationWithForm[]
   }
 ): Promise<UUID[]> {
-  const { data: json } = await devClient.request<JsonOf<UUID[]>>({
-    url: uri`/dev-api/applications`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevApplicationWithForm[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID[]>>({
+      url: uri`/applications`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevApplicationWithForm[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -308,12 +357,16 @@ export async function createAssistanceFactors(
     body: DevAssistanceFactor[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-factors`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevAssistanceFactor[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-factors`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAssistanceFactor[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -325,12 +378,16 @@ export async function createAssistanceNeedDecisions(
     body: DevAssistanceNeedDecision[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-need-decisions`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevAssistanceNeedDecision[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-need-decisions`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAssistanceNeedDecision[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -342,12 +399,16 @@ export async function createAssistanceNeedPreschoolDecisions(
     body: DevAssistanceNeedPreschoolDecision[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-need-preschool-decisions`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevAssistanceNeedPreschoolDecision[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-need-preschool-decisions`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAssistanceNeedPreschoolDecision[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -359,12 +420,16 @@ export async function createBackupCares(
     body: DevBackupCare[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/backup-cares`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevBackupCare[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/backup-cares`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevBackupCare[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -376,12 +441,16 @@ export async function createBackupPickup(
     body: DevBackupPickup[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/backup-pickup`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevBackupPickup[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/backup-pickup`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevBackupPickup[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -393,12 +462,16 @@ export async function createCareAreas(
     body: DevCareArea[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/care-areas`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevCareArea[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/care-areas`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevCareArea[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -410,12 +483,16 @@ export async function createChildDocument(
     body: DevChildDocument
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/child-documents`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevChildDocument>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/child-documents`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevChildDocument>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -427,12 +504,16 @@ export async function createChildren(
     body: DevChild[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/children`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevChild[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/children`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevChild[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -444,12 +525,16 @@ export async function createClubTerm(
     body: ClubTerm
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/club-term`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ClubTerm>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/club-term`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<ClubTerm>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -461,12 +546,16 @@ export async function createDaycareAssistances(
     body: DevDaycareAssistance[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-assistances`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDaycareAssistance[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-assistances`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDaycareAssistance[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -478,12 +567,16 @@ export async function createDaycareCaretakers(
     body: Caretaker[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-caretakers`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<Caretaker[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-caretakers`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<Caretaker[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -495,12 +588,16 @@ export async function createDaycareGroupAclRows(
     body: DevDaycareGroupAcl[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-group-acl`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDaycareGroupAcl[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-group-acl`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDaycareGroupAcl[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -512,12 +609,16 @@ export async function createDaycareGroupPlacement(
     body: DevDaycareGroupPlacement[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-group-placements`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDaycareGroupPlacement[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-group-placements`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDaycareGroupPlacement[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -529,12 +630,16 @@ export async function createDaycareGroups(
     body: DevDaycareGroup[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-groups`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDaycareGroup[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-groups`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDaycareGroup[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -546,12 +651,16 @@ export async function createDaycarePlacements(
     body: DevPlacement[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare-placements`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPlacement[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare-placements`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPlacement[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -563,12 +672,16 @@ export async function createDaycares(
     body: DevDaycare[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycares`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDaycare[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycares`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDaycare[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -580,11 +693,15 @@ export async function createDecisionPdf(
     id: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions/${request.id}/actions/create-pdf`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/decisions/${request.id}/actions/create-pdf`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -596,12 +713,16 @@ export async function createDecisions(
     body: DecisionRequest[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DecisionRequest[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/decisions`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DecisionRequest[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -613,11 +734,15 @@ export async function createDefaultPlacementPlan(
     applicationId: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/create-default-placement-plan`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/applications/${request.applicationId}/actions/create-default-placement-plan`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -625,11 +750,15 @@ export async function createDefaultPlacementPlan(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createDefaultServiceNeedOptions
 */
 export async function createDefaultServiceNeedOptions(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need-options`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/service-need-options`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -641,12 +770,16 @@ export async function createDocumentTemplate(
     body: DevDocumentTemplate
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/document-templates`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevDocumentTemplate>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/document-templates`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDocumentTemplate>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -658,12 +791,16 @@ export async function createEmployee(
     body: DevEmployee
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/employee`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevEmployee>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/employee`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevEmployee>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -675,12 +812,16 @@ export async function createEmployeePins(
     body: DevEmployeePin[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/employee-pin`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevEmployeePin[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/employee-pin`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevEmployeePin[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -692,12 +833,16 @@ export async function createFamilyContact(
     body: DevFamilyContact[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/family-contact`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevFamilyContact[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/family-contact`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevFamilyContact[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -709,12 +854,16 @@ export async function createFeeDecisions(
     body: FeeDecision[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fee-decisions`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<FeeDecision[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/fee-decisions`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<FeeDecision[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -726,12 +875,16 @@ export async function createFeeThresholds(
     body: FeeThresholds
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/fee-thresholds`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<FeeThresholds>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/fee-thresholds`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<FeeThresholds>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -743,12 +896,16 @@ export async function createFosterParent(
     body: DevFosterParent[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/foster-parent`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevFosterParent[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/foster-parent`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevFosterParent[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -760,12 +917,16 @@ export async function createFridgeChild(
     body: DevFridgeChild[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fridge-child`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevFridgeChild[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/fridge-child`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevFridgeChild[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -777,12 +938,16 @@ export async function createFridgePartner(
     body: DevFridgePartner[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/fridge-partner`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevFridgePartner[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/fridge-partner`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevFridgePartner[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -794,12 +959,16 @@ export async function createHoliday(
     body: DevHoliday
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevHoliday>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/holiday`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevHoliday>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -812,12 +981,16 @@ export async function createHolidayPeriod(
     body: HolidayPeriodBody
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday-period/${request.id}`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<HolidayPeriodBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/holiday-period/${request.id}`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<HolidayPeriodBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -830,12 +1003,16 @@ export async function createHolidayQuestionnaire(
     body: FixedPeriodQuestionnaireBody
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/holiday-period/questionnaire/${request.id}`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -847,12 +1024,16 @@ export async function createIncome(
     body: DevIncome
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevIncome>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/income`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevIncome>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -864,12 +1045,16 @@ export async function createIncomeNotification(
     body: IncomeNotification
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income-notifications`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<IncomeNotification>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/income-notifications`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<IncomeNotification>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -881,12 +1066,16 @@ export async function createIncomeStatements(
     body: DevCreateIncomeStatements
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/income-statements`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevCreateIncomeStatements>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/income-statements`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevCreateIncomeStatements>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -898,12 +1087,16 @@ export async function createInvoices(
     body: Invoice[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/invoices`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<Invoice[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/invoices`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<Invoice[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -911,11 +1104,15 @@ export async function createInvoices(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createMessageAccounts
 */
 export async function createMessageAccounts(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/message-account/upsert-all`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/message-account/upsert-all`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -927,12 +1124,16 @@ export async function createOtherAssistanceMeasures(
     body: DevOtherAssistanceMeasure[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/other-assistance-measures`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevOtherAssistanceMeasure[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/other-assistance-measures`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevOtherAssistanceMeasure[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -944,12 +1145,16 @@ export async function createParentships(
     body: DevParentship[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/parentship`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevParentship[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/parentship`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevParentship[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -962,15 +1167,19 @@ export async function createPedagogicalDocumentAttachment(
     employeeId: UUID
   }
 ): Promise<string> {
-  const params = createUrlSearchParams(
-    ['employeeId', request.employeeId]
-  )
-  const { data: json } = await devClient.request<JsonOf<string>>({
-    url: uri`/dev-api/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
-    method: 'POST',
-    params
-  })
-  return json
+  try {
+    const params = createUrlSearchParams(
+      ['employeeId', request.employeeId]
+    )
+    const { data: json } = await devClient.request<JsonOf<string>>({
+      url: uri`/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
+      method: 'POST',
+      params
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -982,12 +1191,16 @@ export async function createPedagogicalDocuments(
     body: DevPedagogicalDocument[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/pedagogical-document`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPedagogicalDocument[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/pedagogical-document`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPedagogicalDocument[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -999,12 +1212,16 @@ export async function createPerson(
     body: DevPerson
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/person/create`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPerson>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/person/create`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPerson>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1017,12 +1234,16 @@ export async function createPlacementPlan(
     body: PlacementPlan
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/placement-plan/${request.applicationId}`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PlacementPlan>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/placement-plan/${request.applicationId}`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PlacementPlan>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1034,12 +1255,16 @@ export async function createPreschoolAssistances(
     body: DevPreschoolAssistance[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/preschool-assistances`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPreschoolAssistance[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/preschool-assistances`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPreschoolAssistance[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1051,12 +1276,16 @@ export async function createPreschoolTerm(
     body: DevPreschoolTerm
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/preschool-term`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPreschoolTerm>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/preschool-term`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPreschoolTerm>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1068,12 +1297,16 @@ export async function createServiceNeedOption(
     body: ServiceNeedOption[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need-option`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ServiceNeedOption[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/service-need-option`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<ServiceNeedOption[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1085,12 +1318,16 @@ export async function createServiceNeeds(
     body: DevServiceNeed[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/service-need`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevServiceNeed[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/service-need`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevServiceNeed[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1102,12 +1339,16 @@ export async function createVardaReset(
     body: DevVardaReset
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/varda/reset-child`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevVardaReset>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/varda/reset-child`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevVardaReset>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1119,12 +1360,16 @@ export async function createVardaServiceNeed(
     body: DevVardaServiceNeed
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/varda/varda-service-need`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevVardaServiceNeed>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/varda/varda-service-need`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevVardaServiceNeed>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1136,12 +1381,16 @@ export async function createVasuDocument(
     body: PostVasuDocBody
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/vasu/doc`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PostVasuDocBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/vasu/doc`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PostVasuDocBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1153,12 +1402,16 @@ export async function createVasuTemplate(
     body: CreateVasuTemplateBody
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/vasu/template`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<CreateVasuTemplateBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/vasu/template`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<CreateVasuTemplateBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1170,12 +1423,16 @@ export async function createVoucherValueDecisions(
     body: VoucherValueDecision[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/value-decisions`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<VoucherValueDecision[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/value-decisions`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<VoucherValueDecision[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1183,11 +1440,15 @@ export async function createVoucherValueDecisions(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createVoucherValues
 */
 export async function createVoucherValues(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/voucher-values`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/voucher-values`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1199,11 +1460,15 @@ export async function deleteDaycareCostCenter(
     daycareId: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/daycare/${request.daycareId}/cost-center`.toString(),
-    method: 'DELETE'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/daycare/${request.daycareId}/cost-center`.toString(),
+      method: 'DELETE'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1211,11 +1476,15 @@ export async function deleteDaycareCostCenter(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.deleteVasuTemplates
 */
 export async function deleteVasuTemplates(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/templates`.toString(),
-    method: 'DELETE'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/vasu/templates`.toString(),
+      method: 'DELETE'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1223,11 +1492,15 @@ export async function deleteVasuTemplates(): Promise<void> {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.digitransitAutocomplete
 */
 export async function digitransitAutocomplete(): Promise<Autocomplete> {
-  const { data: json } = await devClient.request<JsonOf<Autocomplete>>({
-    url: uri`/dev-api/digitransit/autocomplete`.toString(),
-    method: 'GET'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<Autocomplete>>({
+      url: uri`/digitransit/autocomplete`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1239,11 +1512,15 @@ export async function forceFullVtjRefresh(
     person: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/persons/${request.person}/force-full-vtj-refresh`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/persons/${request.person}/force-full-vtj-refresh`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1255,11 +1532,15 @@ export async function getApplication(
     applicationId: UUID
   }
 ): Promise<ApplicationDetails> {
-  const { data: json } = await devClient.request<JsonOf<ApplicationDetails>>({
-    url: uri`/dev-api/applications/${request.applicationId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonApplicationDetails(json)
+  try {
+    const { data: json } = await devClient.request<JsonOf<ApplicationDetails>>({
+      url: uri`/applications/${request.applicationId}`.toString(),
+      method: 'GET'
+    })
+    return deserializeJsonApplicationDetails(json)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1271,11 +1552,15 @@ export async function getApplicationDecisions(
     applicationId: UUID
   }
 ): Promise<Decision[]> {
-  const { data: json } = await devClient.request<JsonOf<Decision[]>>({
-    url: uri`/dev-api/applications/${request.applicationId}/decisions`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonDecision(e))
+  try {
+    const { data: json } = await devClient.request<JsonOf<Decision[]>>({
+      url: uri`/applications/${request.applicationId}/decisions`.toString(),
+      method: 'GET'
+    })
+    return json.map(e => deserializeJsonDecision(e))
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1287,11 +1572,15 @@ export async function getCitizen(
     ssn: string
   }
 ): Promise<Citizen> {
-  const { data: json } = await devClient.request<JsonOf<Citizen>>({
-    url: uri`/dev-api/citizen/ssn/${request.ssn}`.toString(),
-    method: 'GET'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<Citizen>>({
+      url: uri`/citizen/ssn/${request.ssn}`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1299,11 +1588,15 @@ export async function getCitizen(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getCitizens
 */
 export async function getCitizens(): Promise<Citizen[]> {
-  const { data: json } = await devClient.request<JsonOf<Citizen[]>>({
-    url: uri`/dev-api/citizen`.toString(),
-    method: 'GET'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<Citizen[]>>({
+      url: uri`/citizen`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1311,11 +1604,15 @@ export async function getCitizens(): Promise<Citizen[]> {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getEmployees
 */
 export async function getEmployees(): Promise<Employee[]> {
-  const { data: json } = await devClient.request<JsonOf<Employee[]>>({
-    url: uri`/dev-api/employee`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonEmployee(e))
+  try {
+    const { data: json } = await devClient.request<JsonOf<Employee[]>>({
+      url: uri`/employee`.toString(),
+      method: 'GET'
+    })
+    return json.map(e => deserializeJsonEmployee(e))
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1323,11 +1620,15 @@ export async function getEmployees(): Promise<Employee[]> {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getMessages
 */
 export async function getMessages(): Promise<SfiMessage[]> {
-  const { data: json } = await devClient.request<JsonOf<SfiMessage[]>>({
-    url: uri`/dev-api/messages`.toString(),
-    method: 'GET'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<SfiMessage[]>>({
+      url: uri`/messages`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1335,11 +1636,15 @@ export async function getMessages(): Promise<SfiMessage[]> {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getSentEmails
 */
 export async function getSentEmails(): Promise<Email[]> {
-  const { data: json } = await devClient.request<JsonOf<Email[]>>({
-    url: uri`/dev-api/emails`.toString(),
-    method: 'GET'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<Email[]>>({
+      url: uri`/emails`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1347,11 +1652,15 @@ export async function getSentEmails(): Promise<Email[]> {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.getStaffAttendances
 */
 export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
-  const { data: json } = await devClient.request<JsonOf<StaffMemberAttendance[]>>({
-    url: uri`/dev-api/realtime-staff-attendance`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonStaffMemberAttendance(e))
+  try {
+    const { data: json } = await devClient.request<JsonOf<StaffMemberAttendance[]>>({
+      url: uri`/realtime-staff-attendance`.toString(),
+      method: 'GET'
+    })
+    return json.map(e => deserializeJsonStaffMemberAttendance(e))
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1363,11 +1672,15 @@ export async function getVtjPerson(
     ssn: string
   }
 ): Promise<VtjPerson> {
-  const { data: json } = await devClient.request<JsonOf<VtjPerson>>({
-    url: uri`/dev-api/vtj-persons/${request.ssn}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonVtjPerson(json)
+  try {
+    const { data: json } = await devClient.request<JsonOf<VtjPerson>>({
+      url: uri`/vtj-persons/${request.ssn}`.toString(),
+      method: 'GET'
+    })
+    return deserializeJsonVtjPerson(json)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1379,12 +1692,16 @@ export async function insertChild(
     body: DevPerson
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/child`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPerson>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/child`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPerson>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1396,12 +1713,16 @@ export async function insertGuardians(
     body: DevGuardian[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/guardian`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevGuardian[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/guardian`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevGuardian[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1413,12 +1734,16 @@ export async function postAttendances(
     body: DevChildAttendance[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/attendances`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevChildAttendance[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/attendances`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevChildAttendance[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1431,12 +1756,16 @@ export async function postChildDailyNote(
     body: ChildDailyNoteBody
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/children/${request.childId}/child-daily-notes`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/children/${request.childId}/child-daily-notes`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1449,12 +1778,16 @@ export async function postChildStickyNote(
     body: ChildStickyNoteBody
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/children/${request.childId}/child-sticky-notes`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/children/${request.childId}/child-sticky-notes`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1466,12 +1799,16 @@ export async function postDigitransitQuery(
     body: string
   }
 ): Promise<string> {
-  const { data: json } = await devClient.request<JsonOf<string>>({
-    url: uri`/dev-api/digitransit/query`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<string>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<string>>({
+      url: uri`/digitransit/query`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<string>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1484,12 +1821,16 @@ export async function postGroupNote(
     body: GroupNoteBody
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/daycare-groups/${request.groupId}/group-notes`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<GroupNoteBody>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<GroupNoteBody>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1501,12 +1842,16 @@ export async function postMobileDevice(
     body: DevMobileDevice
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/mobile/devices`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevMobileDevice>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/mobile/devices`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevMobileDevice>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1518,12 +1863,16 @@ export async function postPairing(
     body: PostPairingReq
   }
 ): Promise<Pairing> {
-  const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PostPairingReq>
-  })
-  return deserializeJsonPairing(json)
+  try {
+    const { data: json } = await devClient.request<JsonOf<Pairing>>({
+      url: uri`/mobile/pairings`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PostPairingReq>
+    })
+    return deserializeJsonPairing(json)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1535,12 +1884,16 @@ export async function postPairingChallenge(
     body: PostPairingChallengeReq
   }
 ): Promise<Pairing> {
-  const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings/challenge`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
-  })
-  return deserializeJsonPairing(json)
+  try {
+    const { data: json } = await devClient.request<JsonOf<Pairing>>({
+      url: uri`/mobile/pairings/challenge`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
+    })
+    return deserializeJsonPairing(json)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1553,12 +1906,16 @@ export async function postPairingResponse(
     body: PostPairingResponseReq
   }
 ): Promise<Pairing> {
-  const { data: json } = await devClient.request<JsonOf<Pairing>>({
-    url: uri`/dev-api/mobile/pairings/${request.id}/response`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PostPairingResponseReq>
-  })
-  return deserializeJsonPairing(json)
+  try {
+    const { data: json } = await devClient.request<JsonOf<Pairing>>({
+      url: uri`/mobile/pairings/${request.id}/response`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PostPairingResponseReq>
+    })
+    return deserializeJsonPairing(json)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1570,12 +1927,16 @@ export async function postPersonalMobileDevice(
     body: DevPersonalMobileDevice
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/mobile/personal-devices`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPersonalMobileDevice>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/mobile/personal-devices`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPersonalMobileDevice>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1587,12 +1948,16 @@ export async function postReservations(
     body: DailyReservationRequest[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/reservations`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/reservations`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1604,11 +1969,15 @@ export async function publishVasuDocument(
     documentId: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/doc/publish/${request.documentId}`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/vasu/doc/publish/${request.documentId}`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1620,12 +1989,16 @@ export async function putDigitransitAutocomplete(
     body: Autocomplete
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/digitransit/autocomplete`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<Autocomplete>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/digitransit/autocomplete`.toString(),
+      method: 'PUT',
+      data: request.body satisfies JsonCompatible<Autocomplete>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1637,11 +2010,15 @@ export async function rejectDecisionByCitizen(
     id: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/decisions/${request.id}/actions/reject-by-citizen`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/decisions/${request.id}/actions/reject-by-citizen`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1649,11 +2026,15 @@ export async function rejectDecisionByCitizen(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.resetDatabase
 */
 export async function resetDatabase(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/reset-db`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/reset-db`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1665,11 +2046,15 @@ export async function revokeSharingPermission(
     docId: UUID
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vasu/revokeSharingPermission/${request.docId}`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/vasu/revokeSharingPermission/${request.docId}`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1677,11 +2062,15 @@ export async function revokeSharingPermission(
 * Generated from fi.espoo.evaka.shared.dev.DevApi.runJobs
 */
 export async function runJobs(): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/run-jobs`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/run-jobs`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1693,15 +2082,19 @@ export async function setTestMode(
     enabled: boolean
   }
 ): Promise<void> {
-  const params = createUrlSearchParams(
-    ['enabled', request.enabled.toString()]
-  )
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/test-mode`.toString(),
-    method: 'POST',
-    params
-  })
-  return json
+  try {
+    const params = createUrlSearchParams(
+      ['enabled', request.enabled.toString()]
+    )
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/test-mode`.toString(),
+      method: 'POST',
+      params
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1714,11 +2107,15 @@ export async function simpleAction(
     action: string
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/applications/${request.applicationId}/actions/${request.action}`.toString(),
-    method: 'POST'
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/applications/${request.applicationId}/actions/${request.action}`.toString(),
+      method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1730,12 +2127,16 @@ export async function terminatePlacement(
     body: DevTerminatePlacementRequest
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/placement/terminate`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevTerminatePlacementRequest>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/placement/terminate`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevTerminatePlacementRequest>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1747,12 +2148,16 @@ export async function upsertPerson(
     body: DevPerson
   }
 ): Promise<UUID> {
-  const { data: json } = await devClient.request<JsonOf<UUID>>({
-    url: uri`/dev-api/person`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevPerson>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/person`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPerson>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1764,12 +2169,16 @@ export async function upsertStaffOccupancyCoefficient(
     body: DevUpsertStaffOccupancyCoefficient
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/occupancy-coefficient`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevUpsertStaffOccupancyCoefficient>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/occupancy-coefficient`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevUpsertStaffOccupancyCoefficient>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -1781,10 +2190,14 @@ export async function upsertVtjPerson(
     body: VtjPerson
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/vtj-persons`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<VtjPerson>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/vtj-persons`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<VtjPerson>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }

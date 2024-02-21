@@ -6,15 +6,15 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(resetDatabase)
+beforeEach(async (): Promise<void> => resetDatabase())
 
 describe('Placement guarantee report', () => {
   test('child with placement guarantee is in the report', async () => {
@@ -240,7 +240,7 @@ describe('Placement guarantee report', () => {
   })
 })
 
-const navigateToReport = async (page: Page, user: EmployeeDetail) => {
+const navigateToReport = async (page: Page, user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')

@@ -5,11 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  execSimpleApplicationActions,
-  insertApplications,
-  resetDatabase
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
@@ -20,6 +16,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'

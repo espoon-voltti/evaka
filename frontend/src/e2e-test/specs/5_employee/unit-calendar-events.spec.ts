@@ -6,7 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -14,7 +13,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
+import { Child, Daycare } from '../../dev-api/types'
+import {
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitCalendarPage } from '../../pages/employee/units/unit-attendances-page'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
@@ -28,7 +32,7 @@ let child1Fixture: Child
 let child2Fixture: Child
 let child1DaycarePlacementId: UUID
 let daycare: Daycare
-let unitSupervisor: EmployeeDetail
+let unitSupervisor: DevEmployee
 
 // monday
 const mockedToday = LocalDate.of(2022, 3, 7)
@@ -49,7 +53,7 @@ beforeEach(async () => {
   unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
     .data
 
-  await insertDefaultServiceNeedOptions()
+  await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup()
     .with({

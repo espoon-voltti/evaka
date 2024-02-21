@@ -4,11 +4,6 @@
 
 import config from '../../config'
 import {
-  DigitransitFeature,
-  putDigitransitAutocomplete,
-  resetDatabase
-} from '../../dev-api'
-import {
   careAreaFixture,
   clubFixture,
   daycare2Fixture,
@@ -16,6 +11,11 @@ import {
   preschoolFixture
 } from '../../dev-api/fixtures'
 import { Daycare } from '../../dev-api/types'
+import {
+  putDigitransitAutocomplete,
+  resetDatabase
+} from '../../generated/api-clients'
+import { Feature as DigitransitFeature } from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -38,7 +38,8 @@ const testStreet: DigitransitFeature = {
   properties: {
     name: 'Testikatu 42',
     postalcode: '00000',
-    locality: 'Espoo'
+    locality: 'Espoo',
+    localadmin: null
   }
 }
 
@@ -134,7 +135,9 @@ describe('Citizen map page', () => {
   })
   test('Streets can be searched', async () => {
     await putDigitransitAutocomplete({
-      features: [testStreet]
+      body: {
+        features: [testStreet]
+      }
     })
     await mapPage.searchInput.type('Testikatu')
     await mapPage.searchInput.clickAddressResult(testStreet.properties.name)

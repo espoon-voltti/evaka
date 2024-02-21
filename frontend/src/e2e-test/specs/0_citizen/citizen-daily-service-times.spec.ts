@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { resetDatabase } from '../../dev-api'
 import {
   careAreaFixture,
   DailyServiceTimeBuilder,
@@ -16,6 +15,7 @@ import {
   Fixture,
   PersonBuilder
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'

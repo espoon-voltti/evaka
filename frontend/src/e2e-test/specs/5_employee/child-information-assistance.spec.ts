@@ -10,11 +10,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycareGroupFixtures,
-  insertDefaultServiceNeedOptions,
-  resetDatabase
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   daycareFixture,
@@ -22,7 +17,12 @@ import {
   familyWithTwoGuardians,
   Fixture
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
   AssistanceSection
 } from '../../pages/employee/child-information'
@@ -36,14 +36,14 @@ let assistance: AssistanceSection
 let childId: UUID
 let unitId: UUID
 let voucherUnitId: UUID
-let admin: EmployeeDetail
+let admin: DevEmployee
 
 beforeEach(async () => {
   await resetDatabase()
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDefaultServiceNeedOptions()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDefaultServiceNeedOptions()
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   unitId = fixtures.daycareFixture.id
   voucherUnitId = fixtures.daycareFixturePrivateVoucher.id
@@ -64,7 +64,7 @@ const setupPlacement = async (type: PlacementType, voucher = false) => {
   return fixture
 }
 
-const logUserIn = async (user: EmployeeDetail) => {
+const logUserIn = async (user: DevEmployee) => {
   await employeeLogin(page, user)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
@@ -517,15 +517,18 @@ describe('Child assistance need decisions for employees', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
-        selectedUnit: { id: daycareFixture.id },
+        selectedUnit: daycareFixture.id,
         decisionMaker: {
           employeeId: serviceWorker.id,
-          title: 'head teacher'
+          title: 'head teacher',
+          name: null,
+          phoneNumber: null
         },
         preparedBy1: {
           employeeId: serviceWorker.id,
           title: 'teacher',
-          phoneNumber: '010202020202'
+          phoneNumber: '010202020202',
+          name: null
         },
         guardianInfo: [
           {

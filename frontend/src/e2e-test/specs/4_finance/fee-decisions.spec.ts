@@ -8,12 +8,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  insertFeeDecisionFixtures,
-  insertGuardianFixtures,
-  resetDatabase,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { insertFeeDecisionFixtures, runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -27,6 +22,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import { insertGuardians, resetDatabase } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FeeDecisionsPage,
@@ -117,13 +113,18 @@ describe('Fee decisions', () => {
 
   test('Partner is shown for elementary family', async () => {
     const partner = familyWithTwoGuardians.otherGuardian
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      },
-      { guardianId: partner.id, childId: familyWithTwoGuardians.children[0].id }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        },
+        {
+          guardianId: partner.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
@@ -138,12 +139,14 @@ describe('Fee decisions', () => {
 
   test('Partner is not shown for non elementary family', async () => {
     const partner = familyWithTwoGuardians.otherGuardian
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],
@@ -156,13 +159,18 @@ describe('Fee decisions', () => {
 
   test('Child income is shown', async () => {
     const partner = familyWithTwoGuardians.otherGuardian
-    await insertGuardianFixtures([
-      {
-        guardianId: familyWithTwoGuardians.guardian.id,
-        childId: familyWithTwoGuardians.children[0].id
-      },
-      { guardianId: partner.id, childId: familyWithTwoGuardians.children[0].id }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: familyWithTwoGuardians.guardian.id,
+          childId: familyWithTwoGuardians.children[0].id
+        },
+        {
+          guardianId: partner.id,
+          childId: familyWithTwoGuardians.children[0].id
+        }
+      ]
+    })
     await insertFeeDecisionFixtureAndNavigateToIt(
       familyWithTwoGuardians.guardian,
       familyWithTwoGuardians.children[0],

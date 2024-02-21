@@ -5,14 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import {
-  insertBackupPickups,
-  insertChildFixtures,
-  insertFamilyContacts,
-  insertFridgeChildren,
-  insertFridgePartners,
-  resetDatabase
-} from '../../dev-api'
+import { insertChildFixtures } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -23,6 +16,13 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { Child, PersonDetail } from '../../dev-api/types'
+import {
+  createBackupPickup,
+  createFamilyContact,
+  createFridgeChild,
+  createFridgePartner,
+  resetDatabase
+} from '../../generated/api-clients'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
@@ -97,39 +97,43 @@ describe('Mobile PIN login', () => {
     await insertChildFixtures([childAdditionalInfo])
 
     const parentshipId = uuidv4()
-    await insertFridgePartners([
-      {
-        partnershipId: parentshipId,
-        indx: 1,
-        otherIndx: 2,
-        personId: fixtures.enduserGuardianFixture.id,
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz(),
-        createdAt: HelsinkiDateTime.now()
-      },
-      {
-        partnershipId: parentshipId,
-        indx: 2,
-        otherIndx: 1,
-        personId: fixtures.enduserChildJariOtherGuardianFixture.id,
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz(),
-        createdAt: HelsinkiDateTime.now()
-      }
-    ])
+    await createFridgePartner({
+      body: [
+        {
+          partnershipId: parentshipId,
+          indx: 1,
+          otherIndx: 2,
+          personId: fixtures.enduserGuardianFixture.id,
+          startDate: LocalDate.todayInSystemTz(),
+          endDate: LocalDate.todayInSystemTz(),
+          createdAt: HelsinkiDateTime.now(),
+          conflict: false
+        },
+        {
+          partnershipId: parentshipId,
+          indx: 2,
+          otherIndx: 1,
+          personId: fixtures.enduserChildJariOtherGuardianFixture.id,
+          startDate: LocalDate.todayInSystemTz(),
+          endDate: LocalDate.todayInSystemTz(),
+          createdAt: HelsinkiDateTime.now(),
+          conflict: false
+        }
+      ]
+    })
 
     const contacts = [
       fixtures.enduserGuardianFixture,
       fixtures.enduserChildJariOtherGuardianFixture
     ]
-    await insertFamilyContacts(
-      contacts.map(({ id }, index) => ({
+    await createFamilyContact({
+      body: contacts.map(({ id }, index) => ({
         id: uuidv4(),
         childId: child.id,
         contactPersonId: id,
         priority: index + 1
       }))
-    )
+    })
 
     const backupPickups = [
       {
@@ -142,24 +146,27 @@ describe('Mobile PIN login', () => {
       }
     ]
 
-    await insertBackupPickups(
-      backupPickups.map(({ name, phone }) => ({
+    await createBackupPickup({
+      body: backupPickups.map(({ name, phone }) => ({
         id: uuidv4(),
         childId: child.id,
         name,
         phone
       }))
-    )
+    })
 
-    await insertFridgeChildren([
-      {
-        id: uuidv4(),
-        childId: child.id,
-        headOfChild: fixtures.enduserGuardianFixture.id,
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz()
-      }
-    ])
+    await createFridgeChild({
+      body: [
+        {
+          id: uuidv4(),
+          childId: child.id,
+          headOfChild: fixtures.enduserGuardianFixture.id,
+          startDate: LocalDate.todayInSystemTz(),
+          endDate: LocalDate.todayInSystemTz(),
+          conflict: false
+        }
+      ]
+    })
 
     await listPage.selectChild(child.id)
 

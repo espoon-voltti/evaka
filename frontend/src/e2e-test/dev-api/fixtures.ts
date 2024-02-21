@@ -47,99 +47,103 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { VoucherValueDecision } from '../generated/api-types'
-
 import {
-  Application,
-  AssistanceNeedDecision,
-  BackupCare,
-  CareArea,
-  Child,
-  ChildAttendance,
-  Daycare,
-  DaycareCaretakers,
-  DaycareGroup,
-  DaycareGroupPlacement,
-  DaycarePlacement,
-  DecisionFixture,
+  addAbsence,
+  addAclRoleForDaycare,
+  addCalendarEvent,
+  addCalendarEventAttendee,
+  addDailyServiceTime,
+  addDailyServiceTimeNotification,
+  addPayment,
+  addStaffAttendance,
+  addStaffAttendancePlan,
+  createAssistanceFactors,
+  createAssistanceNeedDecisions,
+  createAssistanceNeedPreschoolDecisions,
+  createBackupCares,
+  createCareAreas,
+  createChildDocument,
+  createClubTerm,
+  createDaycareAssistances,
+  createDaycareCaretakers,
+  createDaycareGroupAclRows,
+  createDaycareGroupPlacement,
+  createDaycareGroups,
+  createDaycarePlacements,
+  createDecisions,
+  createDocumentTemplate,
+  createEmployee,
+  createEmployeePins,
+  createFridgeChild,
+  createHoliday,
+  createHolidayPeriod,
+  createHolidayQuestionnaire,
+  createIncome,
+  createOtherAssistanceMeasures,
+  createPedagogicalDocuments,
+  createPreschoolAssistances,
+  createPreschoolTerm,
+  createServiceNeedOption,
+  createServiceNeeds,
+  createVardaReset,
+  createVardaServiceNeed,
+  insertGuardians,
+  postAttendances,
+  upsertStaffOccupancyCoefficient
+} from '../generated/api-clients'
+import {
+  Caretaker,
+  DecisionRequest,
   DevAbsence,
+  DevAssistanceNeedDecision,
   DevAssistanceNeedPreschoolDecision,
+  DevBackupCare,
   DevCalendarEvent,
   DevCalendarEventAttendee,
+  DevCareArea,
+  DevChildAttendance,
   DevChildDocument,
-  DevDailyServiceTime,
   DevDailyServiceTimeNotification,
+  DevDailyServiceTimes,
+  DevDaycareGroup,
+  DevDaycareGroupPlacement,
   DevDocumentTemplate,
+  DevEmployee,
+  DevEmployeePin,
+  DevFridgeChild,
   DevHoliday,
   DevIncome,
   DevPayment,
+  DevPedagogicalDocument,
+  DevPlacement,
   DevPreschoolTerm,
-  DevRealtimeStaffAttendance,
+  DevServiceNeed,
+  DevStaffAttendance,
   DevStaffAttendancePlan,
-  DevStaffOccupancyCoefficient,
+  DevUpsertStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
-  EmployeeDetail,
-  EmployeePin,
-  FridgeChild,
-  PedagogicalDocument,
+  VoucherValueDecision
+} from '../generated/api-types'
+
+import {
+  Application,
+  Child,
+  Daycare,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
-  PlacementPlan,
-  ServiceNeedFixture
+  PlacementPlan
 } from './types'
 
 import {
-  addVardaReset,
-  addVardaServiceNeed,
-  insertAssistanceNeedDecisionFixtures,
-  insertBackupCareFixtures,
-  insertCareAreaFixtures,
-  insertChildAttendanceFixtures,
   insertChildFixtures,
-  insertDaycareCaretakerFixtures,
   insertDaycareFixtures,
-  insertDaycareGroupFixtures,
-  insertDaycareGroupPlacementFixtures,
-  insertDaycarePlacementFixtures,
-  insertDecisionFixtures,
-  insertEmployeeFixture,
-  insertEmployeePins,
   insertFeeThresholds,
-  insertFridgeChildren,
-  insertGuardianFixtures,
-  insertHolidayPeriod,
-  insertHolidayQuestionnaire,
-  insertIncome,
-  insertPayment,
-  insertPedagogicalDocuments,
+  insertIncomeNotification,
   insertPersonFixture,
   insertPlacementPlan,
-  insertServiceNeedOptions,
-  insertServiceNeeds,
-  insertVtjPersonFixture,
-  setAclForDaycareGroups,
-  setAclForDaycares,
-  upsertOccupancyCoefficient,
-  insertDailyServiceTime,
-  insertDailyServiceTimeNotification,
-  insertStaffAttendancePlan,
-  insertCalendarEvent,
-  insertCalendarEventAttendee,
-  insertStaffRealtimeAttendance,
-  insertHoliday,
-  insertIncomeNotification,
   insertReservationFixtures,
-  insertAssistanceFactorFixtures,
-  insertDaycareAssistanceFixtures,
-  insertPreschoolAssistanceFixtures,
-  insertOtherAssistanceMeasureFixtures,
-  insertAssistanceNeedPreschoolDecisionFixtures,
-  insertDocumentTemplateFixture,
-  insertChildDocumentFixture,
-  insertPreschoolTerm,
-  insertClubTerm,
-  insertAbsenceFixture
+  insertVtjPersonFixture
 } from './index'
 
 export const uuidv4 = (): string =>
@@ -313,19 +317,19 @@ export const clubTermFixtures = [
   clubTermFixture2023
 ]
 
-export const careAreaFixture: CareArea = {
+export const careAreaFixture: DevCareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
   name: 'Superkeskus',
   shortName: 'super-keskus',
-  areaCode: '299',
+  areaCode: 299,
   subCostCenter: '99'
 }
 
-export const careArea2Fixture: CareArea = {
+export const careArea2Fixture: DevCareArea = {
   id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
   name: 'Hyperkeskus',
   shortName: 'hyper-keskus',
-  areaCode: '298',
+  areaCode: 298,
   subCostCenter: '98'
 }
 
@@ -1042,18 +1046,6 @@ export const applicationFixture = (
   transferApplication
 })
 
-export const placementPlanFixture = (
-  applicationId: string,
-  unitId: string,
-  periodStart: LocalDate,
-  periodEnd: LocalDate
-): PlacementPlan => ({
-  applicationId,
-  unitId,
-  periodStart,
-  periodEnd
-})
-
 const feeThresholds = {
   minIncomeThreshold: 210200,
   maxIncomeThreshold: 479900,
@@ -1066,7 +1058,7 @@ export const decisionFixture = (
   applicationId: string,
   startDate: LocalDate,
   endDate: LocalDate
-): DecisionFixture => ({
+): DecisionRequest => ({
   id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
   employeeId: 'SET_THIS',
   applicationId: applicationId,
@@ -1235,17 +1227,12 @@ export const invoiceFixture = (
   totalPrice: 10000
 })
 
-export const daycareGroupFixture: DaycareGroup = {
+export const daycareGroupFixture: DevDaycareGroup = {
   id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
   daycareId: daycareFixture.id,
   name: 'Kosmiset vakiot',
-  startDate: LocalDate.of(2000, 1, 1)
-}
-
-export function createChildFixture(childId: string): Child {
-  return {
-    id: childId
-  }
+  startDate: LocalDate.of(2000, 1, 1),
+  endDate: null
 }
 
 export function createDaycarePlacementFixture(
@@ -1256,7 +1243,7 @@ export function createDaycarePlacementFixture(
   endDate = LocalDate.of(2023, 8, 31),
   type: PlacementType = 'DAYCARE',
   placeGuarantee = false
-): DaycarePlacement {
+): DevPlacement {
   return {
     id,
     type,
@@ -1264,44 +1251,9 @@ export function createDaycarePlacementFixture(
     unitId,
     startDate,
     endDate,
-    placeGuarantee
-  }
-}
-
-export function createPreschoolDaycarePlacementFixture(
-  id: string,
-  childId: string,
-  unitId: string,
-  startDate = LocalDate.of(2022, 5, 1),
-  endDate = LocalDate.of(2023, 8, 31),
-  placeGuarantee = false
-): DaycarePlacement {
-  return {
-    id,
-    type: 'PRESCHOOL_DAYCARE',
-    childId,
-    unitId,
-    startDate,
-    endDate,
-    placeGuarantee
-  }
-}
-
-export function createBackupCareFixture(
-  childId: string,
-  unitId: string,
-  groupId?: string,
-  period: { start: LocalDate; end: LocalDate } = {
-    start: LocalDate.of(2023, 2, 1),
-    end: LocalDate.of(2023, 2, 3)
-  }
-): BackupCare {
-  return {
-    id: 'b501d5e7-efcd-49e9-9371-23262b5cd51f',
-    childId,
-    unitId: unitId,
-    groupId,
-    period
+    placeGuarantee,
+    terminationRequestedDate: null,
+    terminatedBy: null
   }
 }
 
@@ -1370,7 +1322,8 @@ export class Fixture {
       id: uuidv4(),
       daycareId: '',
       name: `daycareGroup_${id}`,
-      startDate: LocalDate.of(2020, 1, 1)
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: null
     })
   }
 
@@ -1380,7 +1333,7 @@ export class Fixture {
       id: uuidv4(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
-      areaCode: '02230',
+      areaCode: 2230,
       subCostCenter: `subCostCenter_${id}`
     })
   }
@@ -1422,7 +1375,11 @@ export class Fixture {
       externalId: `espoo-ad:${uuidv4()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
-      roles: []
+      roles: [],
+      active: true,
+      employeeNumber: null,
+      lastLogin: HelsinkiDateTime.now(),
+      preferredFirstName: null
     })
   }
 
@@ -1529,8 +1486,10 @@ export class Fixture {
   static employeePin(): EmployeePinBuilder {
     return new EmployeePinBuilder({
       id: uuidv4(),
-      userId: 'not_set',
-      pin: uniqueLabel(4)
+      userId: null,
+      pin: uniqueLabel(4),
+      employeeExternalId: null,
+      locked: false
     })
   }
 
@@ -1550,7 +1509,9 @@ export class Fixture {
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz().addYears(1),
-      placeGuarantee: false
+      placeGuarantee: false,
+      terminatedBy: null,
+      terminationRequestedDate: null
     })
   }
 
@@ -1569,11 +1530,11 @@ export class Fixture {
       id: uuidv4(),
       childId: 'not set',
       unitId: 'not set',
-      groupId: 'not set',
-      period: {
-        start: LocalDate.todayInSystemTz(),
-        end: LocalDate.todayInSystemTz()
-      }
+      groupId: null,
+      period: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      )
     })
   }
 
@@ -1688,10 +1649,11 @@ export class Fixture {
       decisionMade: null,
       decisionMaker: {
         employeeId: null,
-        title: null
+        title: null,
+        name: null,
+        phoneNumber: null
       },
       decisionNumber: 1001,
-      endDate: null,
       expertResponsibilities: null,
       guardianInfo: [],
       guardiansHeardOn: null,
@@ -1703,12 +1665,14 @@ export class Fixture {
       preparedBy1: {
         employeeId: null,
         title: null,
-        phoneNumber: null
+        phoneNumber: null,
+        name: null
       },
       preparedBy2: {
         employeeId: null,
         title: null,
-        phoneNumber: null
+        phoneNumber: null,
+        name: null
       },
       selectedUnit: null,
       sentForDecision: null,
@@ -1746,10 +1710,11 @@ export class Fixture {
       decisionMade: null,
       decisionMaker: {
         employeeId: null,
-        title: null
+        title: null,
+        name: null,
+        phoneNumber: null
       },
       decisionNumber: 1001,
-      endDate: null,
       expertResponsibilities: 'Expert responsibilities text',
       guardianInfo: [],
       guardiansHeardOn: LocalDate.of(2020, 4, 5),
@@ -1761,12 +1726,14 @@ export class Fixture {
       preparedBy1: {
         employeeId: null,
         title: null,
-        phoneNumber: null
+        phoneNumber: null,
+        name: null
       },
       preparedBy2: {
         employeeId: null,
         title: null,
-        phoneNumber: null
+        phoneNumber: null,
+        name: null
       },
       selectedUnit: null,
       sentForDecision: null,
@@ -1903,6 +1870,7 @@ export class Fixture {
       validTo: LocalDate.todayInSystemTz().addYears(1),
       data: {
         MAIN_INCOME: {
+          multiplier: 1,
           amount: 100000,
           monthlyAmount: 100000,
           coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
@@ -1910,7 +1878,9 @@ export class Fixture {
       },
       effect: 'INCOME',
       updatedAt: HelsinkiDateTime.now(),
-      updatedBy: 'not_set'
+      updatedBy: 'not_set',
+      isEntrepreneur: false,
+      worksAtEcha: false
     })
   }
 
@@ -2000,7 +1970,8 @@ export class Fixture {
       headOfChild: 'not set',
       childId: 'not set',
       startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2020, 12, 31)
+      endDate: LocalDate.of(2020, 12, 31),
+      conflict: false
     })
   }
 
@@ -2226,14 +2197,14 @@ export class DaycareBuilder extends FixtureBuilder<Daycare> {
   }
 }
 
-export class DaycareGroupBuilder extends FixtureBuilder<DaycareGroup> {
+export class DaycareGroupBuilder extends FixtureBuilder<DevDaycareGroup> {
   daycare(daycare: DaycareBuilder): DaycareGroupBuilder {
     this.data.daycareId = daycare.data.id
     return this
   }
 
   async save() {
-    await insertDaycareGroupFixtures([this.data])
+    await createDaycareGroups({ body: [this.data] })
     return this
   }
 
@@ -2243,14 +2214,14 @@ export class DaycareGroupBuilder extends FixtureBuilder<DaycareGroup> {
   }
 }
 
-export class CareAreaBuilder extends FixtureBuilder<CareArea> {
+export class CareAreaBuilder extends FixtureBuilder<DevCareArea> {
   id(id: string): CareAreaBuilder {
     this.data.id = id
     return this
   }
 
   async save() {
-    await insertCareAreaFixtures([this.data])
+    await createCareAreas({ body: [this.data] })
     return this
   }
 
@@ -2262,7 +2233,7 @@ export class CareAreaBuilder extends FixtureBuilder<CareArea> {
 
 export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
   async save() {
-    await insertPreschoolTerm(this.data)
+    await createPreschoolTerm({ body: this.data })
     return this
   }
 
@@ -2274,7 +2245,7 @@ export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
 
 export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
   async save() {
-    await insertClubTerm(this.data)
+    await createClubTerm({ body: this.data })
     return this
   }
 
@@ -2302,7 +2273,7 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndG
   }
 }
 
-export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
+export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
   daycareAcl: { unitId: string; role: ScopedRole }[] = []
   groupAcl: string[] = []
 
@@ -2317,12 +2288,22 @@ export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
   }
 
   async save() {
-    await insertEmployeeFixture(this.data)
+    await createEmployee({ body: this.data })
     for (const { unitId, role } of this.daycareAcl) {
-      await setAclForDaycares(this.data.externalId, unitId, role)
+      if (!this.data.externalId)
+        throw new Error("Can't add ACL without externalId")
+      await addAclRoleForDaycare({
+        daycareId: unitId,
+        body: { externalId: this.data.externalId, role }
+      })
     }
     if (this.groupAcl.length > 0) {
-      await setAclForDaycareGroups(this.data.id, this.groupAcl)
+      await createDaycareGroupAclRows({
+        body: this.groupAcl.map((groupId) => ({
+          groupId,
+          employeeId: this.data.id
+        }))
+      })
     }
     return this
   }
@@ -2333,9 +2314,9 @@ export class EmployeeBuilder extends FixtureBuilder<EmployeeDetail> {
   }
 }
 
-export class DecisionBuilder extends FixtureBuilder<DecisionFixture> {
+export class DecisionBuilder extends FixtureBuilder<DecisionRequest> {
   async save() {
-    await insertDecisionFixtures([this.data])
+    await createDecisions({ body: [this.data] })
     return this
   }
 
@@ -2345,9 +2326,9 @@ export class DecisionBuilder extends FixtureBuilder<DecisionFixture> {
   }
 }
 
-export class EmployeePinBuilder extends FixtureBuilder<EmployeePin> {
+export class EmployeePinBuilder extends FixtureBuilder<DevEmployeePin> {
   async save() {
-    await insertEmployeePins([this.data])
+    await createEmployeePins({ body: [this.data] })
     return this
   }
 
@@ -2357,9 +2338,9 @@ export class EmployeePinBuilder extends FixtureBuilder<EmployeePin> {
   }
 }
 
-export class PedagogicalDocumentBuilder extends FixtureBuilder<PedagogicalDocument> {
+export class PedagogicalDocumentBuilder extends FixtureBuilder<DevPedagogicalDocument> {
   async save() {
-    await insertPedagogicalDocuments([this.data])
+    await createPedagogicalDocuments({ body: [this.data] })
     return this
   }
 
@@ -2371,7 +2352,7 @@ export class PedagogicalDocumentBuilder extends FixtureBuilder<PedagogicalDocume
 
 export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> {
   async save() {
-    await insertServiceNeedOptions([this.data])
+    await createServiceNeedOption({ body: [this.data] })
     return this
   }
 
@@ -2381,13 +2362,13 @@ export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> 
   }
 }
 
-export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
+export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
   dateRange(): FiniteDateRange {
     return new FiniteDateRange(this.data.startDate, this.data.endDate)
   }
 
   async save() {
-    await insertDaycarePlacementFixtures([this.data])
+    await createDaycarePlacements({ body: [this.data] })
     return this
   }
 
@@ -2413,7 +2394,7 @@ export class PlacementBuilder extends FixtureBuilder<DaycarePlacement> {
   }
 }
 
-export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement> {
+export class GroupPlacementBuilder extends FixtureBuilder<DevDaycareGroupPlacement> {
   withGroup(group: DaycareGroupBuilder): this {
     this.data = {
       ...this.data,
@@ -2433,7 +2414,7 @@ export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement>
   }
 
   async save() {
-    await insertDaycareGroupPlacementFixtures([this.data])
+    await createDaycareGroupPlacement({ body: [this.data] })
     return this
   }
 
@@ -2443,7 +2424,7 @@ export class GroupPlacementBuilder extends FixtureBuilder<DaycareGroupPlacement>
   }
 }
 
-export class BackupCareBuilder extends FixtureBuilder<BackupCare> {
+export class BackupCareBuilder extends FixtureBuilder<DevBackupCare> {
   withChild(child: ChildBuilder) {
     this.data = {
       ...this.data,
@@ -2462,7 +2443,7 @@ export class BackupCareBuilder extends FixtureBuilder<BackupCare> {
   }
 
   async save() {
-    await insertBackupCareFixtures([this.data])
+    await createBackupCares({ body: [this.data] })
     return this
   }
 
@@ -2472,9 +2453,9 @@ export class BackupCareBuilder extends FixtureBuilder<BackupCare> {
   }
 }
 
-export class ServiceNeedBuilder extends FixtureBuilder<ServiceNeedFixture> {
+export class ServiceNeedBuilder extends FixtureBuilder<DevServiceNeed> {
   async save() {
-    await insertServiceNeeds([this.data])
+    await createServiceNeeds({ body: [this.data] })
     return this
   }
 
@@ -2498,7 +2479,7 @@ export class ChildBuilder extends FixtureBuilder<Child> {
 
 export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
   async save() {
-    await insertAssistanceFactorFixtures([this.data])
+    await createAssistanceFactors({ body: [this.data] })
     return this
   }
 
@@ -2510,7 +2491,7 @@ export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
 
 export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> {
   async save() {
-    await insertDaycareAssistanceFixtures([this.data])
+    await createDaycareAssistances({ body: [this.data] })
     return this
   }
 
@@ -2522,7 +2503,7 @@ export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> 
 
 export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistance> {
   async save() {
-    await insertPreschoolAssistanceFixtures([this.data])
+    await createPreschoolAssistances({ body: [this.data] })
     return this
   }
 
@@ -2534,7 +2515,7 @@ export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistan
 
 export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanceMeasure> {
   async save() {
-    await insertOtherAssistanceMeasureFixtures([this.data])
+    await createOtherAssistanceMeasures({ body: [this.data] })
     return this
   }
 
@@ -2544,9 +2525,9 @@ export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanc
   }
 }
 
-export class AssistanceNeedDecisionBuilder extends FixtureBuilder<AssistanceNeedDecision> {
+export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceNeedDecision> {
   async save() {
-    await insertAssistanceNeedDecisionFixtures([this.data])
+    await createAssistanceNeedDecisions({ body: [this.data] })
     return this
   }
 
@@ -2568,7 +2549,7 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<AssistanceNeed
 
 export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAssistanceNeedPreschoolDecision> {
   async save() {
-    await insertAssistanceNeedPreschoolDecisionFixtures([this.data])
+    await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
     return this
   }
 
@@ -2635,31 +2616,31 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
   }
 }
 
-export class DaycareCaretakersBuilder extends FixtureBuilder<DaycareCaretakers> {
-  async save(): Promise<FixtureBuilder<DaycareCaretakers>> {
-    await insertDaycareCaretakerFixtures([this.data])
+export class DaycareCaretakersBuilder extends FixtureBuilder<Caretaker> {
+  async save(): Promise<FixtureBuilder<Caretaker>> {
+    await createDaycareCaretakers({ body: [this.data] })
     return this
   }
 
-  copy(): FixtureBuilder<DaycareCaretakers> {
+  copy(): FixtureBuilder<Caretaker> {
     return new DaycareCaretakersBuilder({ ...this.data })
   }
 }
 
-export class ChildAttendanceBuilder extends FixtureBuilder<ChildAttendance> {
-  async save(): Promise<FixtureBuilder<ChildAttendance>> {
-    await insertChildAttendanceFixtures([this.data])
+export class ChildAttendanceBuilder extends FixtureBuilder<DevChildAttendance> {
+  async save(): Promise<FixtureBuilder<DevChildAttendance>> {
+    await postAttendances({ body: [this.data] })
     return this
   }
 
-  copy(): FixtureBuilder<ChildAttendance> {
+  copy(): FixtureBuilder<DevChildAttendance> {
     return new ChildAttendanceBuilder({ ...this.data })
   }
 }
 
 export class IncomeBuilder extends FixtureBuilder<DevIncome> {
   async save() {
-    await insertIncome(this.data)
+    await createIncome({ body: this.data })
     return this
   }
 
@@ -2681,7 +2662,7 @@ export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification
 
 export class VardaResetBuilder extends FixtureBuilder<DevVardaReset> {
   async save() {
-    await addVardaReset(this.data)
+    await createVardaReset({ body: this.data })
     return this
   }
 
@@ -2692,7 +2673,7 @@ export class VardaResetBuilder extends FixtureBuilder<DevVardaReset> {
 
 export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed> {
   async save() {
-    await addVardaServiceNeed(this.data)
+    await createVardaServiceNeed({ body: this.data })
     return this
   }
 
@@ -2725,7 +2706,8 @@ export class PlacementPlanBuilder extends FixtureBuilder<PlacementPlan> {
 
 export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
   async save() {
-    await insertHolidayPeriod(this.data)
+    const { id, ...body } = this.data
+    await createHolidayPeriod({ id, body })
     return this
   }
 
@@ -2736,7 +2718,8 @@ export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
 
 export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuestionnaire> {
   async save() {
-    await insertHolidayQuestionnaire(this.data)
+    const { id, ...body } = this.data
+    await createHolidayQuestionnaire({ id, body })
     return this
   }
 
@@ -2747,7 +2730,7 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
 
 export class HolidayBuilder extends FixtureBuilder<DevHoliday> {
   async save() {
-    await insertHoliday(this.data)
+    await createHoliday({ body: this.data })
     return this
   }
 
@@ -2761,7 +2744,7 @@ export class GuardianBuilder extends FixtureBuilder<{
   childId: string
 }> {
   async save() {
-    await insertGuardianFixtures([this.data])
+    await insertGuardians({ body: [this.data] })
     return this
   }
 
@@ -2770,9 +2753,9 @@ export class GuardianBuilder extends FixtureBuilder<{
   }
 }
 
-export class FridgeChildBuilder extends FixtureBuilder<FridgeChild> {
+export class FridgeChildBuilder extends FixtureBuilder<DevFridgeChild> {
   async save() {
-    await insertFridgeChildren([this.data])
+    await createFridgeChild({ body: [this.data] })
     return this
   }
 
@@ -2781,9 +2764,9 @@ export class FridgeChildBuilder extends FixtureBuilder<FridgeChild> {
   }
 }
 
-export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevStaffOccupancyCoefficient> {
+export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevUpsertStaffOccupancyCoefficient> {
   async save() {
-    await upsertOccupancyCoefficient(this.data)
+    await upsertStaffOccupancyCoefficient({ body: this.data })
     return this
   }
 
@@ -2792,9 +2775,9 @@ export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevStaffOcc
   }
 }
 
-export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTime> {
+export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTimes> {
   async save() {
-    await insertDailyServiceTime(this.data)
+    await addDailyServiceTime({ body: this.data })
     return this
   }
 
@@ -2805,7 +2788,7 @@ export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTime>
 
 export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDailyServiceTimeNotification> {
   async save() {
-    await insertDailyServiceTimeNotification(this.data)
+    await addDailyServiceTimeNotification({ body: this.data })
     return this
   }
 
@@ -2816,7 +2799,7 @@ export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDaily
 
 export class PaymentBuilder extends FixtureBuilder<DevPayment> {
   async save() {
-    await insertPayment(this.data)
+    await addPayment({ body: this.data })
     return this
   }
 
@@ -2827,7 +2810,7 @@ export class PaymentBuilder extends FixtureBuilder<DevPayment> {
 
 export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
   async save() {
-    await insertCalendarEvent(this.data)
+    await addCalendarEvent({ body: this.data })
     return this
   }
 
@@ -2838,7 +2821,7 @@ export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
 
 export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEventAttendee> {
   async save() {
-    await insertCalendarEventAttendee(this.data)
+    await addCalendarEventAttendee({ body: this.data })
     return this
   }
 
@@ -2847,9 +2830,9 @@ export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEven
   }
 }
 
-export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevRealtimeStaffAttendance> {
+export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevStaffAttendance> {
   async save() {
-    await insertStaffRealtimeAttendance(this.data)
+    await addStaffAttendance({ body: this.data })
     return this
   }
 
@@ -2860,7 +2843,7 @@ export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevRealtimeSt
 
 export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendancePlan> {
   async save() {
-    await insertStaffAttendancePlan(this.data)
+    await addStaffAttendancePlan({ body: this.data })
     return this
   }
 
@@ -2882,7 +2865,7 @@ export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservatio
 
 export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
   async save() {
-    await insertAbsenceFixture(this.data)
+    await addAbsence({ body: this.data })
     return this
   }
 
@@ -2893,7 +2876,7 @@ export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
 
 export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate> {
   async save() {
-    await insertDocumentTemplateFixture(this.data)
+    await createDocumentTemplate({ body: this.data })
     return this
   }
 
@@ -2909,7 +2892,7 @@ export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate>
 
 export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
   async save() {
-    await insertChildDocumentFixture(this.data)
+    await createChildDocument({ body: this.data })
     return this
   }
 
@@ -2928,7 +2911,7 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
     return this
   }
 
-  withModifiedAt(modifiedAt: HelsinkiDateTime | null) {
+  withModifiedAt(modifiedAt: HelsinkiDateTime) {
     this.data.modifiedAt = modifiedAt
     return this
   }

@@ -4,12 +4,12 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { insertDaycareGroupFixtures, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { createDaycareGroups, resetDatabase } from '../../generated/api-clients'
 import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -25,7 +25,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
+  await createDaycareGroups({ body: [daycareGroupFixture] })
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({

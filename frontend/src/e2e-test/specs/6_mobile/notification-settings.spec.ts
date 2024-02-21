@@ -4,12 +4,12 @@
 
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 
-import { resetDatabase } from '../../dev-api'
 import {
   CareAreaBuilder,
   DaycareBuilder,
   Fixture
 } from '../../dev-api/fixtures'
+import { resetDatabase } from '../../generated/api-clients'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
 import UnitListPage from '../../pages/mobile/unit-list-page'

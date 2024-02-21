@@ -5,11 +5,11 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { getApplication, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
+import { getApplication, resetDatabase } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import {
@@ -60,7 +60,7 @@ describe('Citizen preschool applications', () => {
     await editorPage.fillData(minimalPreschoolForm.form)
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
-    const application = await getApplication(applicationId)
+    const application = await getApplication({ applicationId })
     minimalPreschoolForm.validateResult(application)
   })
 
@@ -75,7 +75,7 @@ describe('Citizen preschool applications', () => {
     await editorPage.fillData(fullPreschoolForm.form)
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
-    const application = await getApplication(applicationId)
+    const application = await getApplication({ applicationId })
     fullPreschoolForm.validateResult(application, [
       fixtures.enduserChildFixtureKaarina
     ])

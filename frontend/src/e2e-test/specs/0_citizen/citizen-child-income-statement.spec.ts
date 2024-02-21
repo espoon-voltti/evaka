@@ -4,12 +4,15 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacements,
+  resetDatabase
+} from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -30,22 +33,24 @@ beforeEach(async () => {
 
   fixtures = await initializeAreaAndPersonData()
 
-  await insertDaycarePlacementFixtures([
-    createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      fixtures.daycareFixture.id,
-      LocalDate.todayInSystemTz(),
-      LocalDate.todayInSystemTz()
-    ),
-    createDaycarePlacementFixture(
-      uuidv4(),
-      fixtures.enduserChildFixtureJari.id,
-      fixtures.daycareFixture.id,
-      LocalDate.todayInSystemTz().addDays(1),
-      LocalDate.todayInSystemTz().addDays(1)
-    )
-  ])
+  await createDaycarePlacements({
+    body: [
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureJari.id,
+        fixtures.daycareFixture.id,
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureJari.id,
+        fixtures.daycareFixture.id,
+        LocalDate.todayInSystemTz().addDays(1),
+        LocalDate.todayInSystemTz().addDays(1)
+      )
+    ]
+  })
 
   page = await Page.open()
   await enduserLogin(page)

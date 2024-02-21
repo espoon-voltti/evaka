@@ -6,12 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  insertDaycarePlacementFixtures,
-  insertGuardianFixtures,
-  insertIncomeStatements,
-  resetDatabase
-} from '../../dev-api'
+import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -21,6 +16,11 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
+import {
+  createDaycarePlacements,
+  insertGuardians,
+  resetDatabase
+} from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -51,14 +51,16 @@ describe('Guardian income statements', () => {
       child.id,
       daycareFixture.id
     )
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
+    await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-    await insertGuardianFixtures([
-      {
-        guardianId: enduserGuardianFixture.id,
-        childId: child.id
-      }
-    ])
+    await insertGuardians({
+      body: [
+        {
+          guardianId: enduserGuardianFixture.id,
+          childId: child.id
+        }
+      ]
+    })
 
     await insertIncomeStatements(child.id, [
       {

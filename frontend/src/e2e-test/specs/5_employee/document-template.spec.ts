@@ -6,15 +6,15 @@ import fs from 'fs'
 import { promisify } from 'util'
 
 import config from '../../config'
-import { resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import { resetDatabase } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { DocumentTemplatesListPage } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: EmployeeDetail
+let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {

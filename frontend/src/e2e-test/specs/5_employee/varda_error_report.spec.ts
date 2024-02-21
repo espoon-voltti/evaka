@@ -6,28 +6,28 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  addVardaReset,
-  addVardaServiceNeed,
-  insertDaycareGroupFixtures,
-  insertDefaultServiceNeedOptions,
-  resetDatabase,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   daycareGroupFixture,
   Fixture,
   ServiceNeedBuilder
 } from '../../dev-api/fixtures'
-import { EmployeeDetail } from '../../dev-api/types'
+import {
+  createDaycareGroups,
+  createDefaultServiceNeedOptions,
+  createVardaReset,
+  createVardaServiceNeed,
+  resetDatabase
+} from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { VardaErrorsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeDetail
+let admin: DevEmployee
 let childId: UUID
 let serviceNeed: ServiceNeedBuilder
 
@@ -37,8 +37,8 @@ beforeAll(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 
   const fixtures = await initializeAreaAndPersonData()
-  await insertDaycareGroupFixtures([daycareGroupFixture])
-  await insertDefaultServiceNeedOptions()
+  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDefaultServiceNeedOptions()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -79,17 +79,21 @@ describe('Varda error report', () => {
   test('Varda errors are shown and children successfully reset', async () => {
     await vardaErrorsReportPage.assertErrorRowCount(0)
 
-    await addVardaReset({
-      evakaChildId: childId,
-      resetTimestamp: HelsinkiDateTime.now()
+    await createVardaReset({
+      body: {
+        evakaChildId: childId,
+        resetTimestamp: HelsinkiDateTime.now()
+      }
     })
 
-    await addVardaServiceNeed({
-      evakaServiceNeedId: serviceNeed.data.id,
-      evakaChildId: childId,
-      evakaServiceNeedUpdated: HelsinkiDateTime.now(),
-      updateFailed: true,
-      errors: ['test error']
+    await createVardaServiceNeed({
+      body: {
+        evakaServiceNeedId: serviceNeed.data.id,
+        evakaChildId: childId,
+        evakaServiceNeedUpdated: HelsinkiDateTime.now(),
+        updateFailed: true,
+        errors: ['test error']
+      }
     })
 
     await page.reload()
