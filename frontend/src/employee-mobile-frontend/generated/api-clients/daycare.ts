@@ -446,13 +446,13 @@ export async function getAreas(): Promise<AreaJSON[]> {
 export async function getUnits(
   request: {
     type: UnitTypeFilter,
-    area: string | null,
+    areaIds: UUID[] | null,
     from: LocalDate | null
   }
 ): Promise<UnitStub[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
-    ['area', request.area?.toString()],
+    ...(request.areaIds?.map((e): [string, string | null | undefined] => ['areaIds', e]) ?? []),
     ['from', request.from?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<UnitStub[]>>({

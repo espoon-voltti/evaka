@@ -5,6 +5,7 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import {
   DistinctiveParams,
   FeeDecisionDifference,
@@ -13,8 +14,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../api/daycare'
 import { getFinanceDecisionHandlers } from '../../api/employees'
+import { getUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
@@ -27,6 +28,8 @@ import {
   FinanceDecisionHandlerFilter,
   UnitFilter
 } from '../common/Filters'
+
+const getUnitsResult = wrapResult(getUnits)
 
 function FeeDecisionFilters() {
   const {
@@ -49,7 +52,9 @@ function FeeDecisionFilters() {
   const { i18n } = useTranslation()
 
   useEffect(() => {
-    void getUnits([], 'DAYCARE').then(setUnits)
+    void getUnitsResult({ areaIds: null, type: 'DAYCARE', from: null }).then(
+      setUnits
+    )
   }, [setUnits])
 
   useEffect(() => {

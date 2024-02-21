@@ -4,14 +4,16 @@
 
 import React, { Fragment, useContext, useEffect } from 'react'
 
-import { Loading } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
 import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import { UUID } from 'lib-common/types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../api/daycare'
+import { getUnits } from '../../generated/api-clients/daycare'
 import {
   ApplicationUIContext,
   VoucherApplicationFilter
@@ -36,6 +38,8 @@ import {
   applicationSummaryAllStatuses
 } from '../common/Filters'
 
+const getUnitsResult = wrapResult(getUnits)
+
 export default React.memo(function ApplicationFilters() {
   const {
     allUnits,
@@ -54,10 +58,12 @@ export default React.memo(function ApplicationFilters() {
       const areas =
         applicationSearchFilters.area.length > 0
           ? applicationSearchFilters.area
-          : availableAreas
-              .map((areas) => areas.map(({ shortName }) => shortName))
-              .getOrElse([])
-      void getUnits(areas, applicationSearchFilters.type).then(setAllUnits)
+          : null
+      void getUnitsResult({
+        areaIds: areas,
+        type: applicationSearchFilters.type,
+        from: null
+      }).then(setAllUnits)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -293,9 +299,9 @@ export default React.memo(function ApplicationFilters() {
 })
 
 type AreaMultiSelectProps = {
-  areas: { name: string; shortName: string }[]
-  selected: string[]
-  onSelect: (areas: string[]) => void
+  areas: DaycareCareArea[]
+  selected: UUID[]
+  onSelect: (areaIds: UUID[]) => void
 }
 
 const AreaMultiSelect = React.memo(function AreaMultiSelect({
@@ -304,19 +310,16 @@ const AreaMultiSelect = React.memo(function AreaMultiSelect({
   onSelect
 }: AreaMultiSelectProps) {
   const { i18n } = useTranslation()
-  const value = areas.filter((area) => selected.includes(area.shortName))
-  const onChange = (selected: { shortName: string }[]) =>
-    onSelect(selected.map(({ shortName }) => shortName))
   return (
     <>
       <Label>{i18n.filters.area}</Label>
       <Gap size="xs" />
       <MultiSelect
-        value={value}
+        value={areas.filter((area) => selected.includes(area.id))}
         options={areas}
         getOptionId={({ shortName }) => shortName}
         getOptionLabel={({ name }) => name}
-        onChange={onChange}
+        onChange={(areas) => onSelect(areas.map((area) => area.id))}
         placeholder={i18n.applications.list.areaPlaceholder}
         data-qa="area-filter"
       />

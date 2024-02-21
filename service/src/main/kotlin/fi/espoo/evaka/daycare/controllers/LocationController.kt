@@ -68,11 +68,11 @@ class LocationController {
     fun getUnits(
         db: Database,
         @RequestParam type: UnitTypeFilter,
-        @RequestParam(required = false) area: String?,
+        @RequestParam(required = false) areaIds: List<AreaId>?,
         @RequestParam(required = false) from: LocalDate?
     ): List<UnitStub> {
-        val areas = area?.split(",") ?: listOf()
-        return db.connect { dbc -> dbc.read { it.getUnits(areas, type, from) } }
+        return db.connect { dbc -> dbc.read { it.getUnits(areaIds, type, from) } }
+            .sortedBy { it.name.lowercase() }
     }
 }
 
@@ -113,7 +113,7 @@ enum class UnitTypeFilter {
 }
 
 private fun Database.Read.getUnits(
-    areaShortNames: Collection<String>,
+    areaIds: List<AreaId>?,
     type: UnitTypeFilter,
     from: LocalDate?
 ): List<UnitStub> =
@@ -124,18 +124,17 @@ private fun Database.Read.getUnits(
 SELECT unit.id, unit.name, unit.type as care_types
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
-WHERE (:areaShortNames::text[] IS NULL OR area.short_name = ANY(:areaShortNames))
+WHERE (:areaIds::uuid[] IS NULL OR area.id = ANY(:areaIds))
 AND (:type = 'ALL' OR
     (:type = 'CLUB' AND 'CLUB' = ANY(unit.type)) OR
     (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
     (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
 AND (:from::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(:from, NULL))
-ORDER BY name
     """
                 .trimIndent()
         )
-        .bind("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
+        .bind("areaIds", areaIds?.takeIf { it.isNotEmpty() })
         .bind("type", type)
         .bind("from", from)
         .toList<UnitStub>()

@@ -29,7 +29,6 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
-import { getApplicationUnits } from '../api/daycare'
 import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationNotes from '../components/application-page/ApplicationNotes'
@@ -37,12 +36,14 @@ import ApplicationReadView from '../components/application-page/ApplicationReadV
 import { getEmployeeUrlPrefix } from '../constants'
 import { getApplicationDetails } from '../generated/api-clients/application'
 import {
+  getApplicationUnits,
   getClubTerms,
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
 import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
+import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { renderResult, UnwrapResult } from './async-rendering'
@@ -54,6 +55,7 @@ const getServiceNeedOptionPublicInfosResult = wrapResult(
 const getApplicationResult = wrapResult(getApplicationDetails)
 const getClubTermsResult = wrapResult(getClubTerms)
 const getPreschoolTermsResult = wrapResult(getPreschoolTerms)
+const getApplicationUnitsResult = wrapResult(getApplicationUnits)
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -110,11 +112,13 @@ export default React.memo(function ApplicationPage() {
           ? 'PREPARATORY'
           : editedApplication.type
 
-      void getApplicationUnits(
-        applicationType,
-        editedApplication.form.preferences.preferredStartDate ??
-          LocalDate.todayInSystemTz()
-      ).then(setUnits)
+      void getApplicationUnitsResult({
+        type: asUnitType(applicationType),
+        date:
+          editedApplication.form.preferences.preferredStartDate ??
+          LocalDate.todayInSystemTz(),
+        shiftCare: null
+      }).then(setUnits)
     }
   }, [
     editing,

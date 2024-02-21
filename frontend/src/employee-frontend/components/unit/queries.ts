@@ -8,7 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
-import { getAreas } from '../../api/daycare'
 import {
   createDaycare,
   createGroup,
@@ -41,6 +40,7 @@ import {
   createBackupCare,
   updateBackupCare
 } from '../../generated/api-clients/backupcare'
+import { getAreas } from '../../generated/api-clients/daycare'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {

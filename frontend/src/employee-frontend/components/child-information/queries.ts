@@ -9,7 +9,6 @@ import {
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
-import { getUnitsRaw } from '../../api/daycare'
 import {
   createAssistanceAction,
   createAssistanceFactor,
@@ -28,6 +27,7 @@ import {
   updateOtherAssistanceMeasure,
   updatePreschoolAssistance
 } from '../../generated/api-clients/assistance'
+import { getUnits } from '../../generated/api-clients/daycare'
 import {
   createDocument,
   deleteDraftDocument,
@@ -298,6 +298,6 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const unitsQuery = query({
-  api: () => getUnitsRaw([], 'ALL'),
+  api: getUnits,
   queryKey: queryKeys.units
 })

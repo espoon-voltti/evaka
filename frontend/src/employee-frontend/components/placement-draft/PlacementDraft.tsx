@@ -34,14 +34,15 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getApplicationUnits } from '../../api/daycare'
 import WarningLabel from '../../components/common/WarningLabel'
 import {
   createPlacementPlan,
   getPlacementPlanDraft
 } from '../../generated/api-clients/application'
+import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
+import { asUnitType } from '../../types/daycare'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
@@ -51,6 +52,7 @@ import UnitCards from './UnitCards'
 
 const getPlacementPlanDraftResult = wrapResult(getPlacementPlanDraft)
 const createPlacementPlanResult = wrapResult(createPlacementPlan)
+const getApplicationUnitsResult = wrapResult(getApplicationUnits)
 
 const SendButtonContainer = styled.div`
   display: flex;
@@ -184,10 +186,11 @@ export default React.memo(function PlacementDraft() {
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
-      void getApplicationUnits(
-        placementDraft.value.type,
-        placement.period?.start ?? placementDraft.value.period.start
-      ).then(setUnits)
+      void getApplicationUnitsResult({
+        type: asUnitType(placementDraft.value.type),
+        date: placement.period?.start ?? placementDraft.value.period.start,
+        shiftCare: null
+      }).then(setUnits)
     }
   }, [placementDraft, placement.period?.start])
 
