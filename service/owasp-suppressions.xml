@@ -33,4 +33,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^pkg:maven/org\.flywaydb/flyway\-database\-postgresql@.*$</packageUrl>
         <cpe>cpe:/a:postgresql:postgresql</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        This vulnerability only affects "simple query mode", which is not the default and we don't use it.
+       ]]></notes>
+        <cve>CVE-2024-1597</cve>
+    </suppress>
 </suppressions>
