@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -20,13 +20,19 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { deleteCaretakers, getCaretakers } from '../api/caretakers'
 import StatusLabel from '../components/common/StatusLabel'
 import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
+import {
+  getCaretakers,
+  removeCaretakers
+} from '../generated/api-clients/daycare'
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { getStatusLabelByDateRange } from '../utils/date'
+
+const getCaretakersResult = wrapResult(getCaretakers)
+const removeCaretakersResult = wrapResult(removeCaretakers)
 
 const NarrowContainer = styled.div`
   max-width: 900px;
@@ -73,10 +79,12 @@ export default React.memo(function GroupCaretakers() {
 
   const loadData = () => {
     setCaretakers(Loading.of())
-    void getCaretakers(unitId, groupId).then((response) => {
-      setCaretakers(response)
-      if (response.isSuccess) setTitle(response.value.groupName)
-    })
+    void getCaretakersResult({ daycareId: unitId, groupId }).then(
+      (response) => {
+        setCaretakers(response)
+        if (response.isSuccess) setTitle(response.value.groupName)
+      }
+    )
   }
 
   useEffect(() => {
@@ -84,7 +92,9 @@ export default React.memo(function GroupCaretakers() {
   }, [unitId, groupId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const deleteRow = (id: UUID) => {
-    void deleteCaretakers(unitId, groupId, id).then(loadData)
+    void removeCaretakersResult({ daycareId: unitId, groupId, id }).then(
+      loadData
+    )
     setRowToDelete(null)
   }
 
