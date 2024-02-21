@@ -289,7 +289,7 @@ data class HelsinkiDateTimeRange(
                 )
         }
 
-    fun getDuration() = Duration.between(start.toInstant(), end.toInstant())
+    fun getDuration(): Duration = Duration.between(start.toInstant(), end.toInstant())
 
     companion object {
         fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =

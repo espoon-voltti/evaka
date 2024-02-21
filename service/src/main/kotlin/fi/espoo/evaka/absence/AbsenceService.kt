@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.data.DateTimeSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -30,7 +31,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isOperationalDate
@@ -38,7 +38,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.Month
 
 fun getGroupMonthCalendar(
@@ -114,10 +113,12 @@ fun getGroupMonthCalendar(
                         (attendances[child.id] ?: emptyList())
                             .mapNotNull {
                                 it.endTime?.let { endTime ->
-                                    HelsinkiDateTimeRange.of(it.date, it.startTime, endTime)
+                                    TimeRange(it.startTime, endTime)
+                                        .fixMidnightEndTime()
+                                        .asHelsinkiDateTimeRange(it.date)
                                 }
                             }
-                            .let { sumOfHours(it, placementDateRanges, range) }
+                            .let { sumOfHours(DateTimeSet.of(it), placementDateRanges, range) }
                 )
             }
             .sortedWith(compareBy({ it.lastName }, { it.firstName }))
@@ -335,104 +336,75 @@ private fun supplementReservationsWithDailyServiceTimes(
     reservations: List<Pair<LocalDate, List<ChildReservation>>>,
     dailyServiceTimesList: List<DailyServiceTimesValue>?,
     absenceDates: Set<LocalDate>
-): List<HelsinkiDateTimeRange> {
+): DateTimeSet {
     val reservationRanges =
-        reservations
-            .flatMap { (date, reservations) ->
-                reservations.mapNotNull { res ->
-                    when (res.reservation) {
-                        is Reservation.Times -> res.reservation.range.asHelsinkiDateTimeRange(date)
-
-                        // Reserved but no times -> use daily service times
-                        is Reservation.NoTimes -> null
-                    }
-                }
-            }
-            .sortedBy { it.start }
-            .fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->
-                if (timeRanges.isEmpty()) {
-                    listOf(timeRange)
+        DateTimeSet.of(
+            reservations.flatMap { (date, reservations) ->
+                if (absenceDates.contains(date)) {
+                    emptyList()
                 } else {
-                    if (timeRange.start.durationSince(timeRanges.last().end).toMinutes() <= 1) {
-                        timeRanges.dropLast(1) +
-                            HelsinkiDateTimeRange(timeRanges.last().start, timeRange.end)
-                    } else {
-                        timeRanges + timeRange
+                    reservations.mapNotNull { res ->
+                        when (res.reservation) {
+                            is Reservation.Times ->
+                                res.reservation.range
+                                    .fixMidnightEndTime()
+                                    .asHelsinkiDateTimeRange(date)
+
+                            // Reserved but no times -> use daily service times
+                            is Reservation.NoTimes -> null
+                        }
                     }
                 }
             }
-            .filterNot { absenceDates.contains(it.start.toLocalDate()) }
+        )
 
-    val reservedDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
+    val reservedDates = reservationRanges.ranges().map { it.start.toLocalDate() }.toSet()
 
     val dailyServiceTimeRanges =
         if (dailyServiceTimesList.isNullOrEmpty()) {
-            listOf()
+            DateTimeSet.empty()
         } else {
             val dates = possibleAttendanceDates.filterNot { reservedDates.contains(it) }
             dailyServiceTimesToPerDateTimeRanges(dates, dailyServiceTimesList)
         }
 
-    return (reservationRanges + dailyServiceTimeRanges)
-        .sortedBy { it.start }
-        .fold(listOf()) { timeRanges, timeRange ->
-            val lastTimeRange = timeRanges.lastOrNull()
-            when {
-                lastTimeRange == null -> listOf(timeRange)
-                lastTimeRange.contains(timeRange) -> timeRanges
-                lastTimeRange.overlaps(timeRange) ->
-                    timeRanges + timeRange.copy(start = lastTimeRange.end)
-                else -> timeRanges + timeRange
-            }
-        }
+    return reservationRanges + dailyServiceTimeRanges
 }
 
 private fun dailyServiceTimesToPerDateTimeRanges(
     dates: List<LocalDate>,
     dailyServiceTimesList: List<DailyServiceTimesValue>
-): List<HelsinkiDateTimeRange> {
-    return dates.mapNotNull { date ->
-        val dailyServiceTimes =
-            dailyServiceTimesList.find { it.validityPeriod.includes(date) }
-                ?: return@mapNotNull null
+): DateTimeSet {
+    return DateTimeSet.of(
+        dates.mapNotNull { date ->
+            val dailyServiceTimes =
+                dailyServiceTimesList.find { it.validityPeriod.includes(date) }
+                    ?: return@mapNotNull null
 
-        val times =
             when (dailyServiceTimes) {
-                is DailyServiceTimesValue.RegularTimes -> dailyServiceTimes.regularTimes
+                is DailyServiceTimesValue.RegularTimes ->
+                    dailyServiceTimes.regularTimes.asHelsinkiDateTimeRange(date)
                 is DailyServiceTimesValue.IrregularTimes -> {
-                    dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
+                    dailyServiceTimes
+                        .timesForDayOfWeek(date.dayOfWeek)
+                        ?.asHelsinkiDateTimeRange(date)
                 }
                 is DailyServiceTimesValue.VariableTimes -> null
             }
-
-        times?.asHelsinkiDateTimeRange(date)
-    }
+        }
+    )
 }
 
 private fun sumOfHours(
-    dateTimeRanges: List<HelsinkiDateTimeRange>,
+    dateTimeRanges: DateTimeSet,
     placementDateRanges: List<FiniteDateRange>,
     spanningDateRange: FiniteDateRange
 ): Int {
-    val placementDateTimeRanges =
-        placementDateRanges
-            .mapNotNull { it.intersection(spanningDateRange) }
-            .map {
-                HelsinkiDateTimeRange(
-                    HelsinkiDateTime.of(it.start, LocalTime.of(0, 0)),
-                    HelsinkiDateTime.of(it.end.plusDays(1), LocalTime.of(0, 0))
-                )
-            }
-
     return dateTimeRanges
-        .flatMap { timeRange -> placementDateTimeRanges.mapNotNull { timeRange.intersection(it) } }
-        .fold(0L) { sum, (start, end) ->
-            sum +
-                end.durationSince(start).toMinutes().let {
-                    if (end.toLocalTime().withNano(0).withSecond(0) == LocalTime.of(23, 59)) it + 1
-                    else it
-                }
-        }
+        .intersection(DateTimeSet.of(placementDateRanges.map { it.asHelsinkiDateTimeRange() }))
+        .intersection(listOf(spanningDateRange.asHelsinkiDateTimeRange()))
+        .ranges()
+        .sumOf { it.getDuration().toMinutes() }
         .let { minutes ->
             BigDecimal(minutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt()
         }

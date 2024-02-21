@@ -208,6 +208,14 @@ data class TimeRange(
         )
     }
 
+    fun fixMidnightEndTime(): TimeRange {
+        return if (this.end == TimeRangeEndpoint.End(LocalTime.of(23, 59))) {
+            TimeRange(this.start, TimeRangeEndpoint.End(LocalTime.MIDNIGHT))
+        } else {
+            this
+        }
+    }
+
     companion object {
         private fun tryCreate(start: TimeRangeEndpoint, end: TimeRangeEndpoint): TimeRange? =
             try {
