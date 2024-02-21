@@ -5,10 +5,11 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   ApplicationSortColumn,
-  PagedApplicationSummaries
+  PagedApplicationSummaries,
+  SearchApplicationRequest
 } from 'lib-common/generated/api-types/application'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -17,14 +18,15 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getApplications } from '../../api/applications'
 import ApplicationsList from '../../components/applications/ApplicationsList'
+import { getApplicationSummaries } from '../../generated/api-clients/application'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { SearchOrder } from '../../types'
-import { ApplicationSearchParams } from '../../types/application'
 
 import ApplicationFilters from './ApplicationsFilters'
+
+const getApplicationSummariesResult = wrapResult(getApplicationSummaries)
 
 const PaddedDiv = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.L};
@@ -58,60 +60,68 @@ export default React.memo(function ApplicationsPage() {
     [setApplicationsResult] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const reloadApplications = useRestApi(getApplications, onApplicationsResponse)
+  const reloadApplications = useRestApi(
+    getApplicationSummariesResult,
+    onApplicationsResponse
+  )
 
   const loadApplications = useCallback(() => {
-    const params: ApplicationSearchParams = {
+    const params: SearchApplicationRequest = {
+      page,
+      pageSize,
+      sortBy,
+      sortDir: sortDirection,
       area: debouncedApplicationSearchFilters.area.includes('All')
-        ? undefined
+        ? null
         : debouncedApplicationSearchFilters.area.length > 0
           ? debouncedApplicationSearchFilters.area.join(',')
-          : undefined,
+          : null,
       units:
         debouncedApplicationSearchFilters.units.length > 0
           ? debouncedApplicationSearchFilters.units.join(',')
-          : undefined,
+          : null,
       basis:
         debouncedApplicationSearchFilters.basis.length > 0
           ? debouncedApplicationSearchFilters.basis.join(',')
-          : undefined,
+          : null,
       type: debouncedApplicationSearchFilters.type,
       preschoolType:
         debouncedApplicationSearchFilters.type === 'PRESCHOOL' &&
         debouncedApplicationSearchFilters.preschoolType.length > 0
           ? debouncedApplicationSearchFilters.preschoolType.join(',')
-          : undefined,
+          : null,
       status:
         debouncedApplicationSearchFilters.status === 'ALL'
           ? debouncedApplicationSearchFilters.allStatuses.length > 0
             ? debouncedApplicationSearchFilters.allStatuses.join(',')
-            : undefined
+            : null
           : debouncedApplicationSearchFilters.status,
       dateType:
         debouncedApplicationSearchFilters.dateType.length > 0
           ? debouncedApplicationSearchFilters.dateType.join(',')
-          : undefined,
+          : null,
       distinctions:
         debouncedApplicationSearchFilters.distinctions.length > 0
           ? debouncedApplicationSearchFilters.distinctions.join(',')
-          : undefined,
+          : null,
       periodStart:
         debouncedApplicationSearchFilters.startDate &&
         debouncedApplicationSearchFilters.dateType.length > 0
-          ? debouncedApplicationSearchFilters.startDate.formatIso()
-          : undefined,
+          ? debouncedApplicationSearchFilters.startDate
+          : null,
       periodEnd:
         debouncedApplicationSearchFilters.endDate &&
         debouncedApplicationSearchFilters.dateType.length > 0
-          ? debouncedApplicationSearchFilters.endDate.formatIso()
-          : undefined,
+          ? debouncedApplicationSearchFilters.endDate
+          : null,
       searchTerms: debouncedApplicationSearchFilters.searchTerms,
       transferApplications:
         debouncedApplicationSearchFilters.transferApplications,
-      voucherApplications: debouncedApplicationSearchFilters.voucherApplications
+      voucherApplications:
+        debouncedApplicationSearchFilters.voucherApplications ?? null
     }
 
-    void reloadApplications(page, pageSize, sortBy, sortDirection, params)
+    void reloadApplications({ body: params })
   }, [
     page,
     sortBy,

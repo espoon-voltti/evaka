@@ -62,7 +62,6 @@ import {
 
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
-import { ApplicationSummaryStatus } from '../../types/application'
 import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 
@@ -907,7 +906,15 @@ interface ApplicationStatusFilterProps {
 }
 
 export type ApplicationSummaryStatusAllOptions =
-  | ApplicationSummaryStatus
+  | 'SENT'
+  | 'WAITING_PLACEMENT'
+  | 'WAITING_DECISION'
+  | 'WAITING_UNIT_CONFIRMATION'
+  | 'WAITING_MAILING'
+  | 'WAITING_CONFIRMATION'
+  | 'REJECTED'
+  | 'ACTIVE'
+  | 'CANCELLED'
   | 'ALL'
 
 export type ApplicationSummaryStatusOptions =

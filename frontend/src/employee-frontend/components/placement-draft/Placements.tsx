@@ -14,8 +14,9 @@ import { fasExclamationTriangle } from 'lib-icons'
 
 import StatusLabel from '../../components/common/StatusLabel'
 import { useTranslation } from '../../state/i18n'
-import { PlacementDraftPlacement } from '../../types/placementdraft'
 import { getStatusLabelByDateRange } from '../../utils/date'
+
+import { PlacementSummaryWithOverlaps } from './PlacementDraft'
 
 const Type = styled.span`
   display: inline-block;
@@ -44,7 +45,7 @@ const PlacementRow = styled.div`
 `
 
 interface Props {
-  placements: PlacementDraftPlacement[]
+  placements: PlacementSummaryWithOverlaps[]
 }
 
 export default React.memo(function Placements({ placements }: Props) {

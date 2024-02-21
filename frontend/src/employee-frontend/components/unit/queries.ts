@@ -8,11 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
-import {
-  acceptPlacementProposal,
-  RespondToPlacementProposal,
-  respondToPlacementProposal
-} from '../../api/applications'
 import { getAreas } from '../../api/daycare'
 import {
   createDaycare,
@@ -38,6 +33,10 @@ import {
   updateDaycare,
   updateGroup
 } from '../../api/unit'
+import {
+  acceptPlacementProposal,
+  respondToPlacementProposal
+} from '../../generated/api-clients/application'
 import {
   createBackupCare,
   updateBackupCare
@@ -244,19 +243,15 @@ export const upsertChildDatePresenceMutation = mutation({
 
 export const acceptPlacementProposalMutation = mutation({
   api: acceptPlacementProposal,
-  invalidateQueryKeys: (unitId) => [
+  invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
 
 export const respondToPlacementProposalMutation = mutation({
-  api: ({
-    unitId: _,
-    ...payload
-  }: RespondToPlacementProposal & {
-    unitId: UUID
-  }) => respondToPlacementProposal(payload),
+  api: (arg: Arg0<typeof respondToPlacementProposal> & { unitId: UUID }) =>
+    respondToPlacementProposal(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)

@@ -10,11 +10,11 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import {
-  ApplicationAddress,
+  Address,
   ApplicationDetails,
-  ApplicationFutureAddress,
-  ApplicationPersonBasics
-} from 'lib-common/api-types/application/ApplicationDetails'
+  FutureAddress,
+  PersonBasics
+} from 'lib-common/generated/api-types/application'
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -161,9 +161,9 @@ export default React.memo(function ApplicationEditView({
 
   const otherGuardian = guardians.find((guardian) => guardian.id !== guardianId)
 
-  const formatPersonName = (person: ApplicationPersonBasics) =>
+  const formatPersonName = (person: PersonBasics) =>
     formatName(person.firstName, person.lastName, i18n, true)
-  const formatAddress = (a: ApplicationAddress) =>
+  const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
   const onUploadAttachment =
@@ -191,7 +191,9 @@ export default React.memo(function ApplicationEditView({
                     name: file.name,
                     type,
                     updated: HelsinkiDateTime.now(),
-                    receivedAt: HelsinkiDateTime.now()
+                    receivedAt: HelsinkiDateTime.now(),
+                    uploadedByEmployee: null,
+                    uploadedByPerson: null
                   }
                 ]
               }
@@ -1296,7 +1298,7 @@ function FutureAddressInputs({
   i18n,
   path
 }: {
-  futureAddress: ApplicationFutureAddress
+  futureAddress: FutureAddress
   setApplication: React.Dispatch<
     React.SetStateAction<ApplicationDetails | undefined>
   >

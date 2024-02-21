@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import {
   ApplicationSortColumn,
@@ -47,10 +48,10 @@ import {
   faTrash
 } from 'lib-icons'
 
-import { updateServiceWorkerNote } from '../../api/applications'
 import ActionBar from '../../components/applications/ActionBar'
 import ApplicationActions from '../../components/applications/ApplicationActions'
 import { getEmployeeUrlPrefix } from '../../constants'
+import { updateServiceWorkerNote } from '../../generated/api-clients/application'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -62,6 +63,8 @@ import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
 import { CircleIconGreen, CircleIconRed } from './CircleIcon'
+
+const updateServiceWorkerNoteResult = wrapResult(updateServiceWorkerNote)
 
 const TitleRowContainer = styled.div`
   display: flex;
@@ -595,7 +598,10 @@ const ApplicationsList = React.memo(function Applications({
         <AsyncFormModal
           title={i18n.applications.list.serviceWorkerNote}
           resolveAction={() =>
-            updateServiceWorkerNote(editedNote, editedNoteText)
+            updateServiceWorkerNoteResult({
+              applicationId: editedNote,
+              body: { text: editedNoteText }
+            })
           }
           resolveLabel={i18n.common.save}
           onSuccess={() => {

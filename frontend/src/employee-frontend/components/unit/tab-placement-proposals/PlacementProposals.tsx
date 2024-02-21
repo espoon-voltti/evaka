@@ -115,9 +115,11 @@ export default React.memo(function PlacementProposals({
     const result = await respondToPlacementProposal({
       unitId,
       applicationId,
-      status,
-      reason: null,
-      otherReason: null
+      body: {
+        status,
+        reason: null,
+        otherReason: null
+      }
     })
     if (!isMounted.current) return
     if (result.isSuccess) {
@@ -188,9 +190,11 @@ export default React.memo(function PlacementProposals({
             return {
               unitId,
               applicationId: currentApplicationId,
-              status: 'REJECTED_NOT_CONFIRMED' as const,
-              reason,
-              otherReason
+              body: {
+                status: 'REJECTED_NOT_CONFIRMED' as const,
+                reason,
+                otherReason
+              }
             }
           }}
           onSuccess={() => {
@@ -295,7 +299,7 @@ export default React.memo(function PlacementProposals({
           <MutateButton
             data-qa="placement-proposals-accept-button"
             mutation={acceptPlacementProposalMutation}
-            onClick={() => unitId}
+            onClick={() => ({ unitId })}
             onSuccess={() => undefined}
             onFailure={onAcceptFailure}
             disabled={acceptDisabled}

@@ -732,7 +732,7 @@ class ApplicationControllerV2(
     }
 
     @PostMapping("/{applicationId}/actions/{action}")
-    fun simpleAction(
+    fun simpleApplicationAction(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

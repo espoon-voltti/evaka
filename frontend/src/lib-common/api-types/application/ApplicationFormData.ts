@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ApplicationAttachment,
-  ApplicationDetails,
-  ApplicationFormUpdate
-} from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { throwIfNull } from 'lib-common/form-validation'
 import {
+  Address,
+  ApplicationAttachment,
+  ApplicationDetails,
+  ApplicationFormUpdate,
   CitizenChildren,
   OtherGuardianAgreementStatus,
   ServiceNeedOption
@@ -166,7 +164,7 @@ export function apiDataToFormData(
       socialSecurityNumber: child.socialSecurityNumber ?? ''
     }))
 
-  const formatAddress = (address: ApplicationAddress | null): string => {
+  const formatAddress = (address: Address | null): string => {
     if (address) {
       const formattedAddress =
         `${address.street || ''}, ${address.postalCode || ''} ${
@@ -239,7 +237,7 @@ export function apiDataToFormData(
       guardianPhone: application.form.guardian.phoneNumber || '',
       guardianEmail: application.form.guardian.email || '',
       guardianEmailVerification: application.form.guardian.email || '',
-      noGuardianEmail: !!application.form.guardian.noEmail,
+      noGuardianEmail: !application.form.guardian.email,
       guardianFutureAddressExists:
         application.form.guardian.futureAddress !== null,
       guardianFutureAddressEqualsChild:

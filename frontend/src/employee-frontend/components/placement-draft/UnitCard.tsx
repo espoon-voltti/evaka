@@ -20,10 +20,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { renderResult } from '../async-rendering'
 import WarningLabel from '../common/WarningLabel'
 import { unitSpeculatedOccupancyRatesQuery } from '../unit/queries'
+
+import { DaycarePlacementPlanForm } from './PlacementDraft'
 
 const Numbers = styled.div`
   display: flex;
@@ -138,7 +139,7 @@ interface Props {
   preschoolDaycarePeriod?: FiniteDateRange
   additionalUnits: PublicUnit[]
   setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
-  setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
+  setPlacement: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
   isSelectedUnit: boolean
   displayGhostUnitWarning: boolean
 }

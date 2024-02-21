@@ -7,10 +7,11 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
-  ApplicationAddress,
+  Address,
   ApplicationAttachment,
-  ApplicationPersonBasics
-} from 'lib-common/api-types/application/ApplicationDetails'
+  ApplicationResponse,
+  PersonBasics
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { maxOf } from 'lib-common/ordered'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -36,7 +37,6 @@ import ApplicationTitle from '../../components/application-page/ApplicationTitle
 import VTJGuardian from '../../components/application-page/VTJGuardian'
 import Attachment from '../../components/common/Attachment'
 import { useTranslation } from '../../state/i18n'
-import { ApplicationResponse } from '../../types/application'
 import { formatName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
 
@@ -118,9 +118,9 @@ export default React.memo(function ApplicationReadView({
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
 
-  const formatPersonName = (person: ApplicationPersonBasics) =>
+  const formatPersonName = (person: PersonBasics) =>
     formatName(person.firstName, person.lastName, i18n, true)
-  const formatAddress = (a: ApplicationAddress) =>
+  const formatAddress = (a: Address) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
   const applicationGuardian = guardians.find(

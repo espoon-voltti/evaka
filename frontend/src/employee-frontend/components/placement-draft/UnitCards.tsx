@@ -6,14 +6,11 @@ import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { PlacementPlanDraft } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { defaultMargins } from 'lib-components/white-space'
 
-import {
-  DaycarePlacementPlan,
-  PlacementDraft
-} from '../../types/placementdraft'
-
+import { DaycarePlacementPlanForm } from './PlacementDraft'
 import UnitCard from './UnitCard'
 
 const FlexContainer = styled.div`
@@ -26,9 +23,9 @@ interface Props {
   additionalUnits: PublicUnit[]
   setAdditionalUnits: Dispatch<SetStateAction<PublicUnit[]>>
   applicationId: UUID
-  placement: DaycarePlacementPlan
-  setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
-  placementDraft: PlacementDraft
+  placement: DaycarePlacementPlanForm
+  setPlacement: Dispatch<SetStateAction<DaycarePlacementPlanForm>>
+  placementDraft: PlacementPlanDraft
   selectedUnitIsGhostUnit: boolean
 }
 
@@ -56,7 +53,7 @@ export default React.memo(function UnitCards({
             unitName={unit.name}
             key={unit.id}
             period={period}
-            preschoolDaycarePeriod={preschoolDaycarePeriod}
+            preschoolDaycarePeriod={preschoolDaycarePeriod ?? undefined}
             additionalUnits={additionalUnits}
             setAdditionalUnits={setAdditionalUnits}
             setPlacement={setPlacement}

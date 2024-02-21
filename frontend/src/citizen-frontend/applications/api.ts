@@ -4,7 +4,6 @@
 
 import {
   ApplicationDetails,
-  ApplicationFormUpdate,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
@@ -13,6 +12,7 @@ import {
   deserializePreschoolTerm
 } from 'lib-common/api-types/units/terms'
 import {
+  ApplicationFormUpdate,
   ApplicationsOfChild,
   ApplicationType,
   CitizenApplicationUpdate,
