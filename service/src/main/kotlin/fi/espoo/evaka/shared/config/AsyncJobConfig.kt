@@ -18,6 +18,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 
+// this throttle interval is pessimistic, because it assumes the actual e-mail job is completed
+// instantaneously
+private fun emailThrottleInterval(maxEmailsPerSecondRate: Int, numServiceInstances: Int) =
+    Duration.ofSeconds(1)
+        .dividedBy(maxEmailsPerSecondRate.toLong())
+        .multipliedBy(numServiceInstances.toLong())
+
 @Configuration
 class AsyncJobConfig {
     @Bean
@@ -26,7 +33,10 @@ class AsyncJobConfig {
             AsyncJob::class,
             listOf(
                 AsyncJob.main,
-                AsyncJob.email,
+                // these are reasonable defaults but should probably be configurable
+                AsyncJob.email.withThrottleInterval(
+                    emailThrottleInterval(maxEmailsPerSecondRate = 14, numServiceInstances = 2)
+                ),
                 AsyncJob.urgent,
                 AsyncJob.varda,
                 AsyncJob.suomiFi.withThrottleInterval(

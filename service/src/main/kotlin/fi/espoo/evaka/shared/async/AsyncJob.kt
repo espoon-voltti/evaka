@@ -334,7 +334,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val email =
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "email"),
-                AsyncJobPool.Config(concurrency = 4),
+                AsyncJobPool.Config(concurrency = 1),
                 setOf(
                     SendApplicationEmail::class,
                     SendAssistanceNeedDecisionEmail::class,
