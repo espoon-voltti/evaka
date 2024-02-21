@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   MessageReceiversResponse,
   PostMessageBody
@@ -22,12 +23,9 @@ import Container from 'lib-components/layout/Container'
 import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveMessageAttachment
-} from '../../api/attachments'
+import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'
 import { getPerson } from '../../api/person'
+import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
@@ -38,6 +36,8 @@ import { MessageContext } from './MessageContext'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
+
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 const PanelContainer = styled.div`
   height: calc(
@@ -224,7 +224,7 @@ export default React.memo(function MessagesPage({
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              deleteAttachment={deleteAttachment}
+              deleteAttachment={deleteAttachmentHandlerResult}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
               initDraftRaw={initDraft}

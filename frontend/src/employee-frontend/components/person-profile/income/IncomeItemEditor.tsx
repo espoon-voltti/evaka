@@ -7,7 +7,7 @@ import omit from 'lodash/omit'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Failure, Result, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
   IncomeCoefficient,
@@ -36,7 +36,6 @@ import { H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
@@ -44,6 +43,7 @@ import {
   IncomeCoefficientMultipliers,
   IncomeTypeOptions
 } from '../../../api/income'
+import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { Income, IncomeBody, IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -54,6 +54,8 @@ import IncomeTable, {
   IncomeTableData,
   tableDataFromIncomeFields
 } from './IncomeTable'
+
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -418,7 +420,7 @@ function IncomeAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() => {
+      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

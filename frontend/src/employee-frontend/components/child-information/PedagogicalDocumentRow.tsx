@@ -21,15 +21,16 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
+import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
 import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 interface Props {
   id: UUID
@@ -113,7 +114,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const handleAttachmentDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() =>
+      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() =>
         setPedagogicalDocument(({ ...rest }) => ({
           ...rest,
           attachment: null

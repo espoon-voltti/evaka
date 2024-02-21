@@ -8,7 +8,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   Address,
   ApplicationDetails,
@@ -51,16 +51,18 @@ import {
 } from 'lib-icons'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../api/attachments'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
+import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
+
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -202,7 +204,7 @@ export default React.memo(function ApplicationEditView({
       })
 
   const onDeleteAttachment = (id: UUID) =>
-    deleteAttachment(id).then((res) => {
+    deleteAttachmentHandlerResult({ attachmentId: id }).then((res) => {
       res.isSuccess &&
         setApplication(
           (prev) =>
