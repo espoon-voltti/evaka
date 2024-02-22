@@ -20,14 +20,14 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
+import ClubsTermsSection from './ClubsTermsSection'
+import PreschoolTermsSection from './PreschoolTermsSection'
 import {
   deleteHolidayPeriodMutation,
   deleteQuestionnaireMutation,
   holidayPeriodsQuery,
   questionnairesQuery
 } from './queries'
-import PreschoolTermsSection from './PreschoolTermsSection'
-import ClubsTermsSection from './ClubsTermsSection'
 
 export default React.memo(function HolidayAndTermPeriodsPage() {
   const { i18n } = useTranslation()
