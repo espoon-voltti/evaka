@@ -7,12 +7,17 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.daycare.deleteFutureClubTerm
 import fi.espoo.evaka.daycare.deleteFuturePreschoolTerm
+import fi.espoo.evaka.daycare.getClubTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.insertClubTerm
 import fi.espoo.evaka.daycare.insertPreschoolTerm
+import fi.espoo.evaka.daycare.updateClubTerm
 import fi.espoo.evaka.daycare.updatePreschoolTerm
+import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
@@ -45,6 +50,76 @@ class TermsController(private val accessControl: AccessControl) {
     @GetMapping("/public/preschool-terms")
     fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
+    }
+
+    @PostMapping("/club-terms")
+    fun createClubTerm(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody body: ClubTermRequest
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_CLUB_TERM
+                    )
+
+                    validateClubTermRequest(tx, body, null)
+
+                    tx.insertClubTerm(body.term, body.applicationPeriod, body.termBreaks)
+                }
+            }
+            .also { termId -> Audit.ClubTermCreate.log(objectId = termId) }
+    }
+
+    @PutMapping("/club-terms/{id}")
+    fun updateClubTerm(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: ClubTermId,
+        @RequestBody body: ClubTermRequest
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.ClubTerm.UPDATE, id)
+
+                    tx.getClubTerm(id) ?: throw NotFound("Club term $id does not exist")
+
+                    validateClubTermRequest(tx, body, id)
+
+                    tx.updateClubTerm(id, body.term, body.applicationPeriod, body.termBreaks)
+                }
+            }
+            .also { termId -> Audit.ClubTermUpdate.log(objectId = termId) }
+    }
+
+    @DeleteMapping("/club-terms/{id}")
+    fun deleteClubTerm(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: ClubTermId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.ClubTerm.DELETE, id)
+
+                    val existingTerm =
+                        tx.getClubTerm(id) ?: throw NotFound("Club term $id does not exist")
+
+                    if (existingTerm.term.start.isBefore(clock.today())) {
+                        throw BadRequest("Cannot delete term if it has started")
+                    }
+
+                    tx.deleteFutureClubTerm(clock, id)
+                }
+            }
+            .also { termId -> Audit.ClubTermDelete.log(objectId = termId) }
     }
 
     @PostMapping("/preschool-terms")
@@ -146,6 +221,25 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.PreschoolTermDelete.log(objectId = termId) }
     }
 
+    private fun validateClubTermRequest(
+        tx: Database.Transaction,
+        termReq: ClubTermRequest,
+        termIdToUpdate: ClubTermId?
+    ) {
+        val allTerms =
+            when {
+                termIdToUpdate != null ->
+                    tx.getClubTerms().filter { term -> term.id != termIdToUpdate }
+                else -> tx.getClubTerms()
+            }
+
+        allTerms.forEach {
+            if (termReq.term.overlaps(it.term)) {
+                throw BadRequest("Club term period ${termReq.term} overlaps with existing one")
+            }
+        }
+    }
+
     private fun validatePreschoolTermRequest(
         tx: Database.Transaction,
         termReq: PreschoolTermRequest,
@@ -185,6 +279,12 @@ class TermsController(private val accessControl: AccessControl) {
             )
         }
     }
+
+    data class ClubTermRequest(
+        val term: FiniteDateRange,
+        val applicationPeriod: FiniteDateRange,
+        val termBreaks: DateSet
+    )
 
     data class PreschoolTermRequest(
         val finnishPreschool: FiniteDateRange,

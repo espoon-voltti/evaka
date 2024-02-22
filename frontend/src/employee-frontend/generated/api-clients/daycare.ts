@@ -14,6 +14,7 @@ import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
+import { ClubTermRequest } from 'lib-common/generated/api-types/daycare'
 import { CreateDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { CreateGroupRequest } from 'lib-common/generated/api-types/daycare'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
@@ -525,6 +526,23 @@ export async function upsertStaffAttendance(
 
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.createClubTerm
+*/
+export async function createClubTerm(
+  request: {
+    body: ClubTermRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/club-terms`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ClubTermRequest>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.TermsController.createPreschoolTerm
 */
 export async function createPreschoolTerm(
@@ -536,6 +554,22 @@ export async function createPreschoolTerm(
     url: uri`/preschool-terms`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.deleteClubTerm
+*/
+export async function deleteClubTerm(
+  request: {
+    id: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/club-terms/${request.id}`.toString(),
+    method: 'DELETE'
   })
   return json
 }
@@ -578,6 +612,24 @@ export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
     method: 'GET'
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.updateClubTerm
+*/
+export async function updateClubTerm(
+  request: {
+    id: UUID,
+    body: ClubTermRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/club-terms/${request.id}`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ClubTermRequest>
+  })
+  return json
 }
 
 

@@ -20,7 +20,8 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
-import TermsSection from './TermsSection'
+import ClubsTermsSection from './ClubsTermsSection'
+import PreschoolTermsSection from './PreschoolTermsSection'
 import {
   deleteHolidayPeriodMutation,
   deleteQuestionnaireMutation,
@@ -189,9 +190,13 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
           />
         )}
 
-        <Gap size="m" />
+        <Gap size="L" />
 
-        <TermsSection />
+        <ClubsTermsSection />
+
+        <Gap size="L" />
+
+        <PreschoolTermsSection />
       </ContentArea>
     </Container>
   )

@@ -321,6 +321,16 @@ export interface DevChildDocument {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevClubTerm
+*/
+export interface DevClubTerm {
+  applicationPeriod: FiniteDateRange
+  id: UUID
+  term: FiniteDateRange
+  termBreaks: FiniteDateRange[]
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.DevCreateIncomeStatements
 */
 export interface DevCreateIncomeStatements {
@@ -1083,6 +1093,16 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
     ...json,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
+  }
+}
+
+
+export function deserializeJsonDevClubTerm(json: JsonOf<DevClubTerm>): DevClubTerm {
+  return {
+    ...json,
+    applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
+    term: FiniteDateRange.parseJson(json.term),
+    termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
   }
 }
 

@@ -38,21 +38,19 @@ sealed interface DatabaseTable {
 
     sealed class Attachment : DatabaseTable
 
-    sealed class ChildAttendance : DatabaseTable
-
     sealed class AttendanceReservation : DatabaseTable
 
     sealed class BackupCare : DatabaseTable
 
     sealed class BackupPickup : DatabaseTable
 
-    sealed class Daycare : DatabaseTable
-
     sealed class CalendarEvent : DatabaseTable
 
     sealed class CalendarEventAttendee : DatabaseTable
 
     sealed class CalendarEventTime : DatabaseTable
+
+    sealed class ChildAttendance : DatabaseTable
 
     sealed class ChildDailyNote : DatabaseTable
 
@@ -62,11 +60,15 @@ sealed interface DatabaseTable {
 
     sealed class ChildStickyNote : DatabaseTable
 
+    sealed class ClubTerm : DatabaseTable
+
     sealed class GroupNote : DatabaseTable
 
     sealed class DailyServicesTime : DatabaseTable
 
     sealed class DailyServicesTimeNotification : DatabaseTable
+
+    sealed class Daycare : DatabaseTable
 
     sealed class DaycareAssistance : DatabaseTable
 
@@ -191,20 +193,18 @@ typealias AssistanceActionOptionId = Id<DatabaseTable.AssistanceActionOption>
 
 typealias AssistanceFactorId = Id<DatabaseTable.AssistanceFactor>
 
-typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
-
 typealias AssistanceNeedDecisionGuardianId = Id<DatabaseTable.AssistanceNeedDecisionGuardian>
 
-typealias AssistanceNeedPreschoolDecisionId = Id<DatabaseTable.AssistanceNeedPreschoolDecision>
+typealias AssistanceNeedDecisionId = Id<DatabaseTable.AssistanceNeedDecision>
 
 typealias AssistanceNeedPreschoolDecisionGuardianId =
     Id<DatabaseTable.AssistanceNeedPreschoolDecisionGuardian>
 
+typealias AssistanceNeedPreschoolDecisionId = Id<DatabaseTable.AssistanceNeedPreschoolDecision>
+
 typealias AssistanceNeedVoucherCoefficientId = Id<DatabaseTable.AssistanceNeedVoucherCoefficient>
 
 typealias AttachmentId = Id<DatabaseTable.Attachment>
-
-typealias ChildAttendanceId = Id<DatabaseTable.ChildAttendance>
 
 typealias AttendanceReservationId = Id<DatabaseTable.AttendanceReservation>
 
@@ -212,41 +212,43 @@ typealias BackupCareId = Id<DatabaseTable.BackupCare>
 
 typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
 
-typealias ChildId = Id<DatabaseTable.Person>
-
-typealias DaycareId = Id<DatabaseTable.Daycare>
-
 typealias CalendarEventAttendeeId = Id<DatabaseTable.CalendarEvent>
 
 typealias CalendarEventId = Id<DatabaseTable.CalendarEventAttendee>
 
 typealias CalendarEventTimeId = Id<DatabaseTable.CalendarEventTime>
 
+typealias ChildAttendanceId = Id<DatabaseTable.ChildAttendance>
+
 typealias ChildDailyNoteId = Id<DatabaseTable.ChildDailyNote>
 
 typealias ChildDocumentId = Id<DatabaseTable.ChildDocument>
+
+typealias ChildId = Id<DatabaseTable.Person>
 
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
 
 typealias ChildStickyNoteId = Id<DatabaseTable.ChildStickyNote>
 
-typealias EmployeePinId = Id<DatabaseTable.EmployeePin>
-
-typealias GroupNoteId = Id<DatabaseTable.GroupNote>
-
-typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
+typealias ClubTermId = Id<DatabaseTable.ClubTerm>
 
 typealias DailyServiceTimeNotificationId = Id<DatabaseTable.DailyServicesTimeNotification>
+
+typealias DailyServiceTimesId = Id<DatabaseTable.DailyServicesTime>
 
 typealias DaycareAssistanceId = Id<DatabaseTable.DaycareAssistance>
 
 typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
+
+typealias DaycareId = Id<DatabaseTable.Daycare>
 
 typealias DecisionId = Id<DatabaseTable.Decision>
 
 typealias DocumentTemplateId = Id<DatabaseTable.DocumentTemplate>
 
 typealias EmployeeId = Id<DatabaseTable.Employee>
+
+typealias EmployeePinId = Id<DatabaseTable.EmployeePin>
 
 typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
 
@@ -262,6 +264,8 @@ typealias FosterParentId = Id<DatabaseTable.FosterParent>
 
 typealias GroupId = Id<DatabaseTable.Group>
 
+typealias GroupNoteId = Id<DatabaseTable.GroupNote>
+
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 
 typealias HolidayPeriodId = Id<DatabaseTable.HolidayPeriod>
@@ -274,15 +278,13 @@ typealias IncomeNotificationId = Id<DatabaseTable.IncomeNotification>
 
 typealias IncomeStatementId = Id<DatabaseTable.IncomeStatement>
 
-typealias InvoiceId = Id<DatabaseTable.Invoice>
-
 typealias InvoiceCorrectionId = Id<DatabaseTable.InvoiceCorrection>
+
+typealias InvoiceId = Id<DatabaseTable.Invoice>
 
 typealias InvoiceRowId = Id<DatabaseTable.InvoiceRow>
 
 typealias KoskiStudyRightId = Id<DatabaseTable.KoskiStudyRight>
-
-typealias MessageId = Id<DatabaseTable.Message>
 
 typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
 
@@ -290,11 +292,13 @@ typealias MessageContentId = Id<DatabaseTable.MessageContent>
 
 typealias MessageDraftId = Id<DatabaseTable.MessageDraft>
 
+typealias MessageId = Id<DatabaseTable.Message>
+
 typealias MessageRecipientId = Id<DatabaseTable.MessageRecipients>
 
-typealias MessageThreadId = Id<DatabaseTable.MessageThread>
-
 typealias MessageThreadFolderId = Id<DatabaseTable.MessageThreadFolder>
+
+typealias MessageThreadId = Id<DatabaseTable.MessageThread>
 
 typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 
@@ -326,13 +330,13 @@ typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 
 typealias ServiceNeedOptionVoucherValueId = Id<DatabaseTable.ServiceNeedOptionVoucherValue>
 
-typealias StaffAttendanceId = Id<DatabaseTable.StaffAttendance>
-
-typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
-
 typealias StaffAttendanceExternalId = Id<DatabaseTable.StaffAttendanceExternal>
 
+typealias StaffAttendanceId = Id<DatabaseTable.StaffAttendance>
+
 typealias StaffAttendancePlanId = Id<DatabaseTable.StaffAttendancePlan>
+
+typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 

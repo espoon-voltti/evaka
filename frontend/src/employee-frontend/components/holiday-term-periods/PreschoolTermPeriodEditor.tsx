@@ -16,7 +16,7 @@ import { renderResult } from '../async-rendering'
 import PreschoolTermForm from './PreschoolTermForm'
 import { preschoolTermsQuery } from './queries'
 
-export default React.memo(function TermPeriodEditor() {
+export default React.memo(function PreschoolTermPeriodEditor() {
   const navigate = useNavigate()
   const { termId } = useNonNullableParams<{ termId: string }>()
 

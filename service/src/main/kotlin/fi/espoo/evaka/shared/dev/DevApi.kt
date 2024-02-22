@@ -37,14 +37,12 @@ import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
-import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.insertClubTerm
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -127,6 +125,7 @@ import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareAssistanceId
@@ -1449,8 +1448,8 @@ class DevApi(
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/club-term")
-    fun createClubTerm(db: Database, @RequestBody body: ClubTerm) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.insertClubTerm(body) } }
+    fun createClubTerm(db: Database, @RequestBody body: DevClubTerm) {
+        db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
     @PostMapping("/preschool-term")
@@ -1952,6 +1951,13 @@ data class DevParentship(
     val headOfChildId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate
+)
+
+data class DevClubTerm(
+    val id: ClubTermId = ClubTermId(UUID.randomUUID()),
+    val term: FiniteDateRange,
+    val applicationPeriod: FiniteDateRange,
+    val termBreaks: DateSet
 )
 
 data class DevPreschoolTerm(

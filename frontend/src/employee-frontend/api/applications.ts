@@ -7,7 +7,6 @@ import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
-import { deserializeClubTerm } from 'lib-common/api-types/units/terms'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationNoteResponse,
@@ -24,7 +23,10 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { getPreschoolTerms } from '../generated/api-clients/daycare'
+import {
+  getClubTerms,
+  getPreschoolTerms
+} from '../generated/api-clients/daycare'
 import { SearchOrder } from '../types'
 import {
   ApplicationResponse,
@@ -400,10 +402,10 @@ export async function updateServiceWorkerNote(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
+export async function getClubTermsResult(): Promise<Result<ClubTerm[]>> {
   try {
-    const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
-    return Success.of(result.data.map(deserializeClubTerm))
+    const result = await getClubTerms()
+    return Success.of(result)
   } catch (e) {
     return Failure.fromError(e)
   }

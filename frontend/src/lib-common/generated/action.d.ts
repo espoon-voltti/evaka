@@ -8,6 +8,7 @@ export namespace Action {
 
 export type Global =
   | 'APPLICATIONS_PAGE'
+  | 'CREATE_CLUB_TERM'
   | 'CREATE_DOCUMENT_TEMPLATE'
   | 'CREATE_DRAFT_INVOICES'
   | 'CREATE_DRAFT_PAYMENTS'

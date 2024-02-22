@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.insertClubTerm
@@ -23,18 +22,14 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction { tx ->
             tx.insertClubTerm(
-                ClubTerm(
-                    FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-                    FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-                    DateSet.empty()
-                )
+                FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+                FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+                DateSet.empty()
             )
             tx.insertClubTerm(
-                ClubTerm(
-                    FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
-                    FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-                    DateSet.empty()
-                )
+                FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+                FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+                DateSet.empty()
             )
         }
     }

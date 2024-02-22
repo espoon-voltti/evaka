@@ -143,7 +143,7 @@ class PlacementPlanService(
                 )
             }
             ApplicationType.CLUB -> {
-                val (term) =
+                val (_, term) =
                     tx.getActiveClubTermAt(startDate)
                         ?: throw Exception("No suitable club term found for start date $startDate")
                 val period = FiniteDateRange(startDate, term.end)

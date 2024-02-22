@@ -14,6 +14,10 @@ export class HolidayAndTermPeriodsPage {
     return this.page.findAllByDataQa('holiday-period').allTexts()
   }
 
+  get visibleClubTermPeriods(): Promise<string[]> {
+    return this.page.findAllByDataQa('term').allTexts()
+  }
+
   get visiblePreschoolTermPeriods(): Promise<string[]> {
     return this.page.findAllByDataQa('finnish-preschool').allTexts()
   }
@@ -36,6 +40,7 @@ export class HolidayAndTermPeriodsPage {
   #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
 
   #preschoolTermRows = this.page.findAllByDataQa('preschool-term-row')
+  #clubTermRows = this.page.findAllByDataQa('club-term-row')
 
   get visibleQuestionnaires(): Promise<string[]> {
     return this.#questionnaireRows.allTexts()
@@ -60,8 +65,8 @@ export class HolidayAndTermPeriodsPage {
     return this.page.findByDataQa('add-preschool-term-button').click()
   }
 
-  async clickEditPreschoolTermButton() {
-    return this.page.findByDataQa('add-preschool-term-button').click()
+  async clickAddClubTermButton() {
+    return this.page.findByDataQa('add-club-term-button').click()
   }
 
   #periodInputs = {
@@ -239,6 +244,66 @@ export class HolidayAndTermPeriodsPage {
   }
 
   async confirmPreschoolTermModal() {
+    await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
+  }
+
+  async fillClubTermForm(params: {
+    termStart?: string
+    termEnd?: string
+    applicationPeriodStart?: string
+    termBreaks?: FiniteDateRange[]
+  }) {
+    const { termBreaks, ...baseInputs } = params
+    for (const [key, val] of Object.entries(baseInputs)) {
+      if (val !== undefined) {
+        await this.#clubTermInputs[key as keyof typeof baseInputs].fill(val)
+      }
+    }
+
+    if (termBreaks && termBreaks.length > 0) {
+      for (const [i, termBreak] of termBreaks.entries()) {
+        await this.#addTermBreakButton.click()
+        const startInput = new DatePicker(
+          this.#termBreakRows
+            .nth(i)
+            .findByDataQa(`term-break-input`)
+            .findAll('input')
+            .first()
+        )
+        const endInput = new DatePicker(
+          this.#termBreakRows
+            .nth(i)
+            .findByDataQa(`term-break-input`)
+            .findAll('input')
+            .last()
+        )
+        await startInput.fill(termBreak.start.format())
+        await endInput.fill(termBreak.end.format())
+      }
+    }
+  }
+
+  #clubTermInputs = {
+    termStart: new DatePicker(
+      this.page.findByDataQa('term').findAll('input').first()
+    ),
+    termEnd: new DatePicker(
+      this.page.findByDataQa('term').findAll('input').last()
+    ),
+    applicationPeriodStart: new DatePicker(
+      this.page.findByDataQa('input-application-period-start')
+    )
+  }
+
+  async editClubTerm(nth: number) {
+    return this.#clubTermRows.nth(nth).findByDataQa('btn-edit').click()
+  }
+
+  async deleteClubTerm(nth: number) {
+    return await this.#clubTermRows.nth(nth).findByDataQa('btn-delete').click()
+  }
+
+  async confirmClubTermModal() {
     await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
   }
 

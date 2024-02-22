@@ -32,6 +32,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -667,21 +668,25 @@ val preschoolTerms =
 val clubTerms =
     listOf(
         ClubTerm(
+            ClubTermId(UUID.randomUUID()),
             FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
             FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
             DateSet.empty()
         ),
         ClubTerm(
+            ClubTermId(UUID.randomUUID()),
             FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
             FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
             DateSet.empty()
         ),
         ClubTerm(
+            ClubTermId(UUID.randomUUID()),
             FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
             FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
             DateSet.empty()
         ),
         ClubTerm(
+            ClubTermId(UUID.randomUUID()),
             FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
             FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
             DateSet.of(
@@ -691,6 +696,7 @@ val clubTerms =
             )
         ),
         ClubTerm(
+            ClubTermId(UUID.randomUUID()),
             FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
             FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
             DateSet.of(
@@ -702,7 +708,13 @@ val clubTerms =
     )
 
 fun Database.Transaction.insertClubTerms() {
-    clubTerms.forEach { insertClubTerm(it) }
+    clubTerms.forEach {
+        insertClubTerm(
+            term = it.term,
+            applicationPeriod = it.applicationPeriod,
+            termBreaks = it.termBreaks
+        )
+    }
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {

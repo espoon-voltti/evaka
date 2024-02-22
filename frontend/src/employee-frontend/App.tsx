@@ -50,10 +50,11 @@ import EmployeesPage from './components/employees/EmployeesPage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import FeeDecisionsPage from './components/fee-decisions/FeeDecisionsPage'
 import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
+import ClubTermPeriodEditor from './components/holiday-term-periods/ClubTermPeriodEditor'
 import HolidayAndTermPeriodsPage from './components/holiday-term-periods/HolidayAndTermPeriodsPage'
 import HolidayPeriodEditor from './components/holiday-term-periods/HolidayPeriodEditor'
+import PreschoolTermPeriodEditor from './components/holiday-term-periods/PreschoolTermPeriodEditor'
 import QuestionnaireEditor from './components/holiday-term-periods/QuestionnaireEditor'
-import TermPeriodEditor from './components/holiday-term-periods/TermPeriodEditor'
 import IncomeStatementsPage from './components/income-statements/IncomeStatementsPage'
 import InvoicePage from './components/invoice/InvoicePage'
 import InvoicesPage from './components/invoices/InvoicesPage'
@@ -880,10 +881,18 @@ export default createBrowserRouter(
           )
         },
         {
+          path: '/holiday-periods/club-term/:termId',
+          element: (
+            <EmployeeRoute title="clubTerm">
+              <ClubTermPeriodEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
           path: '/holiday-periods/preschool-term/:termId',
           element: (
             <EmployeeRoute title="preschoolTerm">
-              <TermPeriodEditor />
+              <PreschoolTermPeriodEditor />
             </EmployeeRoute>
           )
         },

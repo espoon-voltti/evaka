@@ -57,7 +57,9 @@ export const fi = {
     welcomePage: 'Tervetuloa eVakaan',
     vasuTemplates: 'Vasu-pohjat',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
-    assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa'
+    assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
+    clubTerm: 'Kerhon lukukausi',
+    clubTerms: 'Kerhojen lukukaudet'
   },
   common: {
     yes: 'Kyllä',

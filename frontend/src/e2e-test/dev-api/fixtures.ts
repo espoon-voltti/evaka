@@ -259,6 +259,7 @@ export const preschoolTermFixtures = [
 ]
 
 export const clubTermFixture2020: ClubTerm = {
+  id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
     LocalDate.of(2021, 6, 4)
@@ -271,6 +272,7 @@ export const clubTermFixture2020: ClubTerm = {
 }
 
 export const clubTermFixture2021: ClubTerm = {
+  id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
     LocalDate.of(2022, 6, 3)
@@ -283,6 +285,7 @@ export const clubTermFixture2021: ClubTerm = {
 }
 
 export const clubTermFixture2022: ClubTerm = {
+  id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2022, 8, 10),
     LocalDate.of(2023, 6, 3)
@@ -295,6 +298,7 @@ export const clubTermFixture2022: ClubTerm = {
 }
 
 export const clubTermFixture2023: ClubTerm = {
+  id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2023, 8, 10),
     LocalDate.of(2024, 6, 3)
