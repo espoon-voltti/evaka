@@ -14,7 +14,7 @@ import React, {
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import {
   DecisionDraft,
@@ -39,15 +39,19 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
+import LabelValueList from '../../components/common/LabelValueList'
 import {
   getDecisionDrafts,
-  getDecisionUnits,
   updateDecisionDrafts
-} from '../../api/decision-draft'
-import LabelValueList from '../../components/common/LabelValueList'
+} from '../../generated/api-clients/application'
+import { getDecisionUnits } from '../../generated/api-clients/decision'
 import { Translations, useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { formatName } from '../../utils'
+
+const getDecisionUnitsResult = wrapResult(getDecisionUnits)
+const updateDecisionDraftsResult = wrapResult(updateDecisionDrafts)
+const getDecisionDraftsResult = wrapResult(getDecisionDrafts)
 
 const ColumnTitle = styled.div`
   font-weight: ${fontWeights.semibold};
@@ -169,17 +173,19 @@ export default React.memo(function Decision() {
 
   useEffect(() => {
     setDecisionDraftGroup(Loading.of())
-    void getDecisionDrafts(applicationId).then((result) => {
-      setDecisionDraftGroup(result)
-      if (result.isSuccess) {
-        setDecisions(result.value.decisions)
-      }
+    void getDecisionDraftsResult({ applicationId: applicationId }).then(
+      (result) => {
+        setDecisionDraftGroup(result)
+        if (result.isSuccess) {
+          setDecisions(result.value.decisions)
+        }
 
-      // Application has already changed its status
-      if (result.isFailure && result.statusCode === 409) {
-        redirectToMainPage(navigate)
+        // Application has already changed its status
+        if (result.isFailure && result.statusCode === 409) {
+          redirectToMainPage(navigate)
+        }
       }
-    })
+    )
   }, [applicationId, navigate])
 
   useEffect(() => {
@@ -193,7 +199,7 @@ export default React.memo(function Decision() {
   }, [decisionDraftGroup, formatTitleName, i18n.titles.decision, setTitle])
 
   useEffect(() => {
-    void getDecisionUnits().then(setUnits)
+    void getDecisionUnitsResult().then(setUnits)
   }, [setUnits])
 
   const unitOptions = useMemo(
@@ -593,7 +599,10 @@ export default React.memo(function Decision() {
                         planned: decisionDraft.planned
                       })
                     )
-                    return updateDecisionDrafts(applicationId, updatedDrafts)
+                    return updateDecisionDraftsResult({
+                      applicationId,
+                      body: updatedDrafts
+                    })
                   }}
                   onSuccess={() => redirectToMainPage(navigate)}
                   text={i18n.common.save}
