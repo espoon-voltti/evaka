@@ -28,7 +28,7 @@ import { faEnvelope } from 'lib-icons'
 
 import {
   getApplication,
-  getClubTerms,
+  getClubTermsResult,
   getPreschoolTermsResult
 } from '../api/applications'
 import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
@@ -129,7 +129,7 @@ export default React.memo(function ApplicationPage() {
         )
         break
       case 'CLUB':
-        void getClubTerms().then((res) =>
+        void getClubTermsResult().then((res) =>
           setTerms(
             res.map((terms) => terms.map(({ term }) => term)).getOrElse([])
           )

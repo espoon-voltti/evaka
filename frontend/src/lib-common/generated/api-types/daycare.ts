@@ -135,6 +135,16 @@ export interface ChildResponse {
 */
 export interface ClubTerm {
   applicationPeriod: FiniteDateRange
+  id: UUID
+  term: FiniteDateRange
+  termBreaks: FiniteDateRange[]
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.TermsController.ClubTermRequest
+*/
+export interface ClubTermRequest {
+  applicationPeriod: FiniteDateRange
   term: FiniteDateRange
   termBreaks: FiniteDateRange[]
 }
@@ -570,6 +580,16 @@ export function deserializeJsonChildResponse(json: JsonOf<ChildResponse>): Child
 
 
 export function deserializeJsonClubTerm(json: JsonOf<ClubTerm>): ClubTerm {
+  return {
+    ...json,
+    applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
+    term: FiniteDateRange.parseJson(json.term),
+    termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonClubTermRequest(json: JsonOf<ClubTermRequest>): ClubTermRequest {
   return {
     ...json,
     applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),

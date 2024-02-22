@@ -8,7 +8,11 @@ import {
   createPreschoolTerm,
   deletePreschoolTerm,
   getPreschoolTerms,
-  updatePreschoolTerm
+  updatePreschoolTerm,
+  createClubTerm,
+  deleteClubTerm,
+  getClubTerms,
+  updateClubTerm
 } from '../../generated/api-clients/daycare'
 import { createQueryKeys } from '../../query'
 
@@ -17,7 +21,6 @@ import {
   createHolidayPeriod,
   deleteHolidayPeriod,
   deleteQuestionnaire,
-  getClubTermsResult,
   getHolidayPeriod,
   getHolidayPeriods,
   getQuestionnaire,
@@ -33,7 +36,8 @@ const queryKeys = createQueryKeys('holidayPeriods', {
   questionnaire: (id: string) => ['questionnaire', id],
   preschoolTerms: () => ['preschoolTerms'],
   preschoolTerm: (id: string) => ['preschoolTerm', id],
-  clubTerms: () => ['clubTerms']
+  clubTerms: () => ['clubTerms'],
+  clubTerm: (id: string) => ['clubTerm', id]
 })
 
 export const holidayPeriodsQuery = query({
@@ -125,6 +129,27 @@ export const deleteQuestionnaireMutation = mutation({
 })
 
 export const clubTermsQuery = query({
-  api: getClubTermsResult,
+  api: getClubTerms,
   queryKey: () => queryKeys.clubTerms()
+})
+
+export const createClubTermMutation = mutation({
+  api: createClubTerm,
+  invalidateQueryKeys: () => [queryKeys.clubTerms()]
+})
+
+export const updateClubTermMutation = mutation({
+  api: updateClubTerm,
+  invalidateQueryKeys: ({ id }) => [
+    queryKeys.clubTerms(),
+    queryKeys.clubTerm(id)
+  ]
+})
+
+export const deleteClubTermMutation = mutation({
+  api: deleteClubTerm,
+  invalidateQueryKeys: ({ id }) => [
+    queryKeys.clubTerms(),
+    queryKeys.clubTerm(id)
+  ]
 })

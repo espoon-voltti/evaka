@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
+import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.DaycareAssistanceId
@@ -305,7 +306,8 @@ sealed interface Action {
         READ_FUTURE_PRESCHOOLERS(HasGlobalRole(ADMIN)),
         READ_NON_SSN_CHILDREN_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         VARDA_OPERATIONS(HasGlobalRole(ADMIN)),
-        CREATE_PRESCHOOL_TERM(HasGlobalRole(ADMIN));
+        CREATE_PRESCHOOL_TERM(HasGlobalRole(ADMIN)),
+        CREATE_CLUB_TERM(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1307,6 +1309,14 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildStickyNote(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote()
         );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class ClubTerm(override vararg val defaultRules: ScopedActionRule<in ClubTermId>) :
+        ScopedAction<ClubTermId> {
+        UPDATE(HasGlobalRole(ADMIN)),
+        DELETE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

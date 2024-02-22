@@ -8,6 +8,7 @@ import { ClubTerm, PreschoolTerm } from 'lib-common/generated/api-types/daycare'
 import { JsonOf } from '../../json'
 
 export const deserializeClubTerm = (clubTerm: JsonOf<ClubTerm>): ClubTerm => ({
+  ...clubTerm,
   applicationPeriod: FiniteDateRange.parseJson(clubTerm.applicationPeriod),
   term: FiniteDateRange.parseJson(clubTerm.term),
   termBreaks: clubTerm.termBreaks.map((t) => FiniteDateRange.parseJson(t))

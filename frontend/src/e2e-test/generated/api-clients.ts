@@ -10,7 +10,6 @@ import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
 import { Citizen } from './api-types'
-import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import { CreateVasuTemplateBody } from './api-types'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { DaycareAclInsert } from './api-types'
@@ -31,6 +30,7 @@ import { DevCareArea } from './api-types'
 import { DevChild } from './api-types'
 import { DevChildAttendance } from './api-types'
 import { DevChildDocument } from './api-types'
+import { DevClubTerm } from './api-types'
 import { DevCreateIncomeStatements } from './api-types'
 import { DevDailyServiceTimeNotification } from './api-types'
 import { DevDailyServiceTimes } from './api-types'
@@ -522,14 +522,14 @@ export async function createChildren(
 */
 export async function createClubTerm(
   request: {
-    body: ClubTerm
+    body: DevClubTerm
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/club-term`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<ClubTerm>
+      data: request.body satisfies JsonCompatible<DevClubTerm>
     })
     return json
   } catch (e) {

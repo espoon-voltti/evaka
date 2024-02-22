@@ -58,6 +58,7 @@ export const fi = {
     vasuTemplates: 'Vasu-pohjat',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
     assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
+    clubTerm: 'Kerhon lukukausi',
     clubTerms: 'Kerhojen lukukaudet'
   },
   common: {
