@@ -110,7 +110,7 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
             """
                 .trimIndent()
 
-        return createQuery(sql).toList<ManualDuplicationReportRow>()
+        @Suppress("DEPRECATION") return createQuery(sql).toList<ManualDuplicationReportRow>()
     }
 
     data class ManualDuplicationReportRow(

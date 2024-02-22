@@ -36,6 +36,7 @@ class MessageNotificationEmailService(
         tx: Database.Transaction,
         messageIds: List<MessageId>
     ): List<AsyncJob.SendMessageNotificationEmail> {
+        @Suppress("DEPRECATION")
         return tx.createQuery(
                 """
             SELECT DISTINCT

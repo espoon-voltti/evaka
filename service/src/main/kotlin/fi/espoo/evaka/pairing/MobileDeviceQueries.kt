@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import java.util.UUID
 
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDeviceDetails {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -34,18 +35,21 @@ GROUP BY md.id, md.name, md.employee_id
 }
 
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
+    @Suppress("DEPRECATION")
     createQuery("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token")
         .bind("token", token)
         .exactlyOneOrNull<MobileDeviceIdentity>()
         ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
         .bind("unitId", unitId)
         .toList<MobileDevice>()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId")
         .bind("employeeId", employeeId)
         .toList<MobileDevice>()
@@ -70,6 +74,7 @@ WHERE id = ${bind(id)}
 fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
     // language=sql
     val deviceUpdate = "UPDATE mobile_device SET name = :name WHERE id = :id"
+    @Suppress("DEPRECATION")
     createUpdate(deviceUpdate)
         .bind("id", id)
         .bind("name", name)
@@ -77,6 +82,7 @@ fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
 }
 
 fun Database.Transaction.deleteDevice(id: MobileDeviceId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM mobile_device WHERE id = :id

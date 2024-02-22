@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
 fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate): List<Child> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 WITH children AS (
@@ -55,6 +56,7 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
         .toList<Child>()
 
 fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT child_id FROM guardian WHERE guardian_id = :userId

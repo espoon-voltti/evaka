@@ -172,6 +172,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         employeeId: EmployeeId,
         timestamp: HelsinkiDateTime
     ) {
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
 ALTER TABLE daycare_acl DISABLE TRIGGER USER;
@@ -191,6 +192,7 @@ ALTER TABLE daycare_acl ENABLE TRIGGER USER;
         employeeId: EmployeeId,
         timestamp: HelsinkiDateTime
     ) {
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
 ALTER TABLE daycare_group_acl DISABLE TRIGGER USER;

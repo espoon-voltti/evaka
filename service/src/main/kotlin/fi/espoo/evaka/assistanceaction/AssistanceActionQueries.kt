@@ -38,6 +38,7 @@ fun Database.Transaction.insertAssistanceAction(
             .trimIndent()
 
     val id =
+        @Suppress("DEPRECATION")
         createQuery(sql)
             .bind("childId", childId)
             .bind("startDate", data.startDate)
@@ -80,7 +81,7 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
         GROUP BY aa.id, child_id, start_date, end_date, other_action
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).exactlyOne<AssistanceAction>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOne<AssistanceAction>()
 }
 
 fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {
@@ -96,6 +97,7 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
         ORDER BY start_date DESC
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("childId", childId).toList<AssistanceAction>()
 }
 
@@ -117,6 +119,7 @@ fun Database.Transaction.updateAssistanceAction(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createQuery(sql)
         .bind("id", id)
         .bind("startDate", data.startDate)
@@ -147,6 +150,7 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("childId", childId)
         .bind("startDate", startDate)
@@ -158,7 +162,7 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(
 fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
     // language=sql
     val sql = "DELETE FROM assistance_action WHERE id = :id"
-    val deleted = createUpdate(sql).bind("id", id).execute()
+    @Suppress("DEPRECATION") val deleted = createUpdate(sql).bind("id", id).execute()
     if (deleted == 0) throw NotFound("Assistance action $id not found")
 }
 
@@ -174,6 +178,7 @@ fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(
         AND option_id NOT IN (SELECT id FROM assistance_action_option WHERE value = ANY(:excluded))
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createUpdate(sql).bind("action_id", actionId).bind("excluded", excluded).execute()
 }
 
@@ -181,5 +186,5 @@ fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> {
     // language=sql
     val sql =
         "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
-    return createQuery(sql).toList<AssistanceActionOption>()
+    @Suppress("DEPRECATION") return createQuery(sql).toList<AssistanceActionOption>()
 }

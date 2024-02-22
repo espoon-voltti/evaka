@@ -78,6 +78,7 @@ private fun getVardaOrganizerChildRows(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return tx.createQuery(sql).bind("evakaPersonId", evakaPersonId).toList<VardaChildOrganizerRow>()
 }
 
@@ -233,6 +234,7 @@ private fun getVardaPersonPayload(
     evakaChildId: ChildId,
     organizerOid: String
 ) =
+    @Suppress("DEPRECATION")
     tx.createQuery(
             """
             SELECT 
@@ -269,6 +271,7 @@ fun insertVardaOrganizerChild(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     tx.createUpdate(sql)
         .bind("evakaPersonId", evakaPersonId)
         .bind("vardaChildId", vardaChildId)

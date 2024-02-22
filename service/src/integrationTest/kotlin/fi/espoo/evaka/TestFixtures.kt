@@ -770,7 +770,7 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
 """
 
-    createUpdate(sql).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).execute()
 }
 
 fun Database.Transaction.insertApplication(

@@ -73,6 +73,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     // language=SQL
                     """

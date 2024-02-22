@@ -234,7 +234,10 @@ class MessageNotificationEmailServiceIntegrationTest :
         // threads are also deleted
         assertEquals(
             0,
-            db.read { it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>()
+            }
         )
     }
 
@@ -309,6 +312,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     private fun markAllRecipientMessagesRead(person: DevPerson, clock: EvakaClock) {
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     """
                 UPDATE message_recipients mr SET read_at = :now

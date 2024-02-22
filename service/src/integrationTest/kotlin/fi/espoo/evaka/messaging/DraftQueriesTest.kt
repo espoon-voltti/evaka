@@ -22,6 +22,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction { tx ->
             val employeeId = tx.insert(DevEmployee(firstName = "Firstname", lastName = "Employee"))
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "INSERT INTO message_account (id, employee_id, type) VALUES (:id, :employeeId, 'PERSONAL')"
                 )

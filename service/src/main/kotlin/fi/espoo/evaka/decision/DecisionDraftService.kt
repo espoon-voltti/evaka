@@ -116,7 +116,7 @@ fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
             ORDER BY name
             """
             .trimIndent()
-    return tx.createQuery(sql).toList<DecisionUnit>()
+    @Suppress("DEPRECATION") return tx.createQuery(sql).toList<DecisionUnit>()
 }
 
 fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
@@ -128,6 +128,7 @@ fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
             """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return tx.createQuery(sql).bind("id", unitId).exactlyOne<DecisionUnit>()
 }
 
@@ -210,7 +211,7 @@ fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>
         """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL"""
             .trimIndent()
 
-    createUpdate(sql).bind("applicationIds", applicationIds).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("applicationIds", applicationIds).execute()
 }
 
 private val decisionUnitQuery =

@@ -164,6 +164,7 @@ WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) 
 ORDER BY p.id, t
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("start_date", from)
         .bind("end_date", to)

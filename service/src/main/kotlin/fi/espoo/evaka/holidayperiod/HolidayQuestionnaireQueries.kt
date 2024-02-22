@@ -29,6 +29,7 @@ FROM holiday_period_questionnaire q
         .trimIndent()
 
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
+    @Suppress("DEPRECATION")
     this.createQuery("$questionnaireSelect WHERE active @> :date")
         .bind("date", date)
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
@@ -38,6 +39,7 @@ fun Database.Read.getChildrenWithContinuousPlacement(
     userId: PersonId,
     period: FiniteDateRange
 ): List<ChildId> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH children AS (
@@ -71,22 +73,26 @@ UNION
 SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("today", today).bind("userId", userId).toList<ChildId>()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId
 ): FixedPeriodQuestionnaire? =
+    @Suppress("DEPRECATION")
     this.createQuery("$questionnaireSelect WHERE q.id = :id")
         .bind("id", id)
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
+    @Suppress("DEPRECATION")
     this.createQuery("$questionnaireSelect").toList<FixedPeriodQuestionnaire>()
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
 ): HolidayQuestionnaireId =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 INSERT INTO holiday_period_questionnaire (
@@ -125,6 +131,7 @@ fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
     data: FixedPeriodQuestionnaireBody
 ) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 UPDATE holiday_period_questionnaire
@@ -149,6 +156,7 @@ WHERE id = :id
         .updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) =
+    @Suppress("DEPRECATION")
     this.createUpdate("DELETE FROM holiday_period_questionnaire WHERE id = :id")
         .bind("id", id)
         .execute()
@@ -187,6 +195,7 @@ fun Database.Read.getQuestionnaireAnswers(
     id: HolidayQuestionnaireId,
     childIds: List<ChildId>
 ): List<HolidayQuestionnaireAnswer> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT questionnaire_id, child_id, fixed_period

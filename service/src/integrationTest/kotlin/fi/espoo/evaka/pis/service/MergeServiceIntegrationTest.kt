@@ -82,6 +82,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countBefore =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
                     .toList<Int>()
@@ -93,6 +94,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countAfter =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
                     .toList<Int>()
@@ -141,6 +143,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countBefore =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultIdDuplicate)
                     .toList<Int>()
@@ -152,6 +155,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countAfter =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultId)
                     .toList<Int>()
@@ -199,6 +203,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countBefore =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childIdDuplicate)
                     .toList<Int>()
@@ -210,6 +215,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val countAfter =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childId)
                     .toList<Int>()
@@ -441,6 +447,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
         db.read {
             val (citizenId, name) =
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
@@ -455,6 +462,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
         db.read {
             val (citizenId, name) =
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }

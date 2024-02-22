@@ -85,6 +85,7 @@ AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
         val (adults, children) =
+            @Suppress("DEPRECATION")
             tx.createQuery(sql)
                 .bind("today", clock.today())
                 .bind("id", adultId)

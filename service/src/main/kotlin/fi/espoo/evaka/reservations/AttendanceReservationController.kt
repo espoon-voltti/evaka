@@ -935,6 +935,7 @@ private fun Database.Read.getChildData(
 ): Map<ChildId, ChildData> {
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT

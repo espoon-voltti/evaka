@@ -42,6 +42,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull(toPartnership("p1", "p2"))
 }
 
@@ -72,6 +73,7 @@ fun Database.Read.getPartnershipsForPerson(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("personId", personId)
         .bind("includeConflicts", includeConflicts)
@@ -103,6 +105,7 @@ fun Database.Read.getPartnersForPerson(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("personId", personId)
         .bind("from", period?.start)
@@ -212,6 +215,7 @@ fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).mapTo<PartnershipId>().useIterable {
         it.firstOrNull()
     } != null

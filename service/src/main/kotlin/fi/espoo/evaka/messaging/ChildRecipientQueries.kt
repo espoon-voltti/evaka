@@ -25,6 +25,7 @@ fun Database.Transaction.addToBlocklist(childId: ChildId, recipientId: PersonId)
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
 }
 
@@ -37,6 +38,7 @@ fun Database.Transaction.removeFromBlocklist(childId: ChildId, recipientId: Pers
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
 }
 
@@ -55,5 +57,6 @@ fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql).bind("childId", childId).toList<Recipient>()
 }

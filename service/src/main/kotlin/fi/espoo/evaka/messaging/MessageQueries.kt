@@ -79,6 +79,7 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql).bind("daycareId", daycareId).toSet<UnreadCountByAccountAndGroup>()
 }
 
@@ -100,6 +101,7 @@ WHERE rec.message_id = msg.id
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createUpdate(sql)
         .bind("now", clock.now())
         .bind("accountId", accountId)
@@ -114,6 +116,7 @@ fun Database.Transaction.archiveThread(
     var archiveFolderId = getArchiveFolderId(accountId)
     if (archiveFolderId == null) {
         archiveFolderId =
+            @Suppress("DEPRECATION")
             this.createUpdate(
                     "INSERT INTO message_thread_folder (owner_id, name) VALUES (:accountId, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
                 )
@@ -122,6 +125,7 @@ fun Database.Transaction.archiveThread(
                 .exactlyOne<MessageThreadFolderId>()
     }
 
+    @Suppress("DEPRECATION")
     return this.createUpdate(
             "UPDATE message_thread_participant SET folder_id = :archiveFolderId WHERE thread_id = :threadId AND participant_id = :accountId"
         )
@@ -165,6 +169,7 @@ fun Database.Transaction.insertMessage(
         RETURNING id
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(insertMessageSql)
         .bind("now", now)
         .bind("contentId", contentId)
@@ -185,6 +190,7 @@ fun Database.Transaction.insertMessageContent(
     // language=SQL
     val messageContentSql =
         "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
+    @Suppress("DEPRECATION")
     return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender)
@@ -243,6 +249,7 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
     contentId: MessageContentId,
     now: HelsinkiDateTime
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
@@ -258,6 +265,7 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         .execute()
 
     // If the receiver has archived the thread, move it back to inbox
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE message_thread_participant mtp
@@ -284,6 +292,7 @@ fun Database.Transaction.markMessagesAsSent(
     contentId: MessageContentId,
     sentAt: HelsinkiDateTime
 ): List<MessageId> =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE message SET sent_at = :sentAt
@@ -370,6 +379,7 @@ fun Database.Transaction.insertThread(
     // language=SQL
     val insertThreadSql =
         "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (:messageType, :title, :urgent, :sensitive, :isCopy) RETURNING id"
+    @Suppress("DEPRECATION")
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
@@ -383,6 +393,7 @@ fun Database.Transaction.reAssociateMessageAttachments(
     attachmentIds: Set<AttachmentId>,
     messageContentId: MessageContentId
 ): Int {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 UPDATE attachment
@@ -439,6 +450,7 @@ fun Database.Read.getThreads(
     serviceWorkerAccountName: String
 ): PagedMessageThreads {
     val threads =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT
@@ -493,6 +505,7 @@ fun Database.Read.getReceivedThreads(
     folderId: MessageThreadFolderId? = null
 ): PagedMessageThreads {
     val threads =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT
@@ -555,6 +568,7 @@ private fun Database.Read.getThreadMessages(
     serviceWorkerAccountName: String
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -721,6 +735,7 @@ ORDER BY m.sent_at DESC
 LIMIT :pageSize OFFSET :offset
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
@@ -760,6 +775,7 @@ FROM message m
 JOIN message_content mc ON mc.id = m.content_id
 WHERE m.id = :messageId AND m.sender_id = :senderId
 """
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("messageId", messageId)
         .bind("senderId", senderId)
@@ -879,6 +895,7 @@ ORDER BY type, name  -- groups first
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("accountId", accountId)
         .bind("today", today)
@@ -942,6 +959,7 @@ ORDER BY msg.sent_at DESC
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
@@ -976,6 +994,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             GROUP BY t.id, t.message_type
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("messageId", messageId)
         .exactlyOneOrNull<ThreadWithParticipants>()
@@ -988,6 +1007,7 @@ fun Database.Read.getMessageThread(
     serviceWorkerAccountName: String
 ): MessageThread {
     val thread =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT
@@ -1041,6 +1061,7 @@ fun Database.Read.getMessageThreadByApplicationId(
     serviceWorkerAccountName: String
 ): MessageThread? {
     val thread =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT
@@ -1258,6 +1279,7 @@ fun Database.Read.getMessageAccountsForRecipients(
     date: LocalDate
 ): List<Pair<MessageAccountId, ChildId?>> {
     val groupedRecipients = recipients.groupBy { it.type }
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
 WITH sender AS (
@@ -1361,6 +1383,7 @@ fun Database.Transaction.markEmailNotificationAsSent(
         WHERE id = :id
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
 }
 
@@ -1391,6 +1414,7 @@ AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g
 }
 
 fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =
+    @Suppress("DEPRECATION")
     this.createQuery(
             "SELECT id FROM message_thread_folder WHERE owner_id = :accountId AND name = 'ARCHIVE'"
         )
@@ -1458,6 +1482,7 @@ fun Database.Transaction.undoNewMessages(
         } ?: throw BadRequest("No messages found with contentId $contentId")
 
     val draftContent =
+        @Suppress("DEPRECATION")
         this.createQuery(
                 """
 SELECT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
@@ -1509,6 +1534,7 @@ fun Database.Transaction.resetSenderThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId
 ) {
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 UPDATE message_thread_participant SET

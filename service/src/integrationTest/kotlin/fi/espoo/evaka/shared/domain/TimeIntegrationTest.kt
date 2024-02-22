@@ -70,6 +70,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `operational days with a weekday holiday and no round the clock units in database`() {
         val newYear = LocalDate.of(2020, 1, 1)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
                 .bind("date", newYear)
                 .execute()
@@ -87,6 +88,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val newYear = LocalDate.of(2020, 1, 1)
         val epiphany = LocalDate.of(2020, 1, 6)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
                 .bind("date1", newYear)
                 .bind("date2", epiphany)
@@ -104,6 +106,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `operational days with a weekend holiday and no round the clock units in database`() {
         val someHoliday = LocalDate.of(2020, 1, 4)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
                 .bind("date", someHoliday)
                 .execute()
@@ -120,6 +123,7 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val newYear = LocalDate.of(2020, 1, 1)
         val epiphany = LocalDate.of(2020, 1, 6)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
                 .bind("date1", newYear)
                 .bind("date2", epiphany)

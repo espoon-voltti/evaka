@@ -445,6 +445,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getAllReservations(): List<Reservation> {
         return db.read { tx ->
+            @Suppress("DEPRECATION")
             tx.createQuery(
                     """
                 SELECT child_id, date, start_time, end_time

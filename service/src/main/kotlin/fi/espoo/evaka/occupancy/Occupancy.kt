@@ -342,6 +342,7 @@ $additionalJoin
 WHERE $daterange && :period AND $groupingId = ANY(:keys)
 """
 
+    @Suppress("DEPRECATION")
     return this.createQuery(query)
         .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
@@ -382,6 +383,7 @@ FROM backup_care bc
 WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = ANY(:childIds)
 """
 
+    @Suppress("DEPRECATION")
     return this.createQuery(query)
         .bind("childIds", childIds)
         .bind("period", period)
@@ -418,6 +420,7 @@ JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end
 WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && :period AND $groupingId = ANY(:keys)
 """
 
+    @Suppress("DEPRECATION")
     return this.createQuery(query)
         .bind("keys", keys.map { it.groupingId })
         .bind("period", period)
@@ -440,11 +443,13 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
     val childBirthdays =
+        @Suppress("DEPRECATION")
         this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
             .bind("childIds", childIds)
             .toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
 
     val serviceNeeds =
+        @Suppress("DEPRECATION")
         this.createQuery(
                 """
 SELECT
@@ -479,6 +484,7 @@ WHERE sn.placement_id = ANY(:placementIds)
             .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
+        @Suppress("DEPRECATION")
         this.createQuery(
                 """
                 SELECT 
@@ -505,6 +511,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED) {
+            @Suppress("DEPRECATION")
             this.createQuery(
                     "SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)"
                 )
@@ -636,6 +643,7 @@ private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
     unitIds: Collection<DaycareId>
 ): List<Placement> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
 SELECT

@@ -29,6 +29,7 @@ private fun Database.Read.getCalendarEventsQuery(
     unitId: DaycareId? = null,
     range: FiniteDateRange? = null
 ) =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT
@@ -83,6 +84,7 @@ fun Database.Transaction.createCalendarEvent(
     createdBy: EvakaUserId
 ): CalendarEventId {
     val eventId =
+        @Suppress("DEPRECATION")
         this.createUpdate(
                 """
 INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at)
@@ -127,6 +129,7 @@ fun Database.Transaction.createCalendarEventAttendees(
 }
 
 fun Database.Transaction.deleteCalendarEventAttendees(eventId: CalendarEventId) =
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM calendar_event_attendee WHERE calendar_event_id = :eventId")
         .bind("eventId", eventId)
         .execute()
@@ -135,6 +138,7 @@ fun Database.Read.getReservableCalendarEventTimes(
     calendarEventId: CalendarEventId,
     childId: ChildId
 ) =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT id, date, start_time, end_time
@@ -153,6 +157,7 @@ fun Database.Transaction.createCalendarEventTime(
     createdAt: HelsinkiDateTime,
     createdBy: EvakaUserId
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO calendar_event_time (created_at, created_by, updated_at, modified_at, modified_by, calendar_event_id, date, start_time, end_time)
@@ -169,12 +174,14 @@ RETURNING id
         .exactlyOne()
 
 fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM calendar_event_time WHERE id = :id").bind("id", id).updateExactlyOne()
 
 fun Database.Read.getCalendarEventById(id: CalendarEventId) =
     getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 DELETE FROM calendar_event WHERE id = :id
@@ -190,6 +197,7 @@ fun Database.Transaction.createCalendarEventAttendee(
     groupId: GroupId?,
     childId: ChildId?
 ) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
@@ -204,11 +212,13 @@ VALUES (:eventId, :unitId, :groupId, :childId)
         .updateExactlyOne()
 
 fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
+    @Suppress("DEPRECATION")
     createQuery("SELECT calendar_event_id FROM calendar_event_time WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<CalendarEventId>()
 
 fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT child_id
@@ -224,6 +234,7 @@ fun Database.Transaction.updateCalendarEvent(
     modifiedAt: HelsinkiDateTime,
     updateForm: CalendarEventUpdateForm
 ) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 UPDATE calendar_event
@@ -259,6 +270,7 @@ fun Database.Transaction.insertCalendarEventTimeReservation(
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE calendar_event_time
@@ -276,6 +288,7 @@ fun Database.Transaction.deleteCalendarEventTimeReservations(
     calendarEventId: CalendarEventId,
     childId: ChildId
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE calendar_event_time
@@ -292,6 +305,7 @@ fun Database.Transaction.deleteCalendarEventTimeReservation(
     calendarEventTimeId: CalendarEventTimeId,
     childId: ChildId?
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE calendar_event_time
@@ -321,6 +335,7 @@ fun Database.Read.getCalendarEventsForGuardian(
     guardianId: PersonId,
     range: FiniteDateRange
 ): List<CitizenCalendarEventRow> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 WITH child AS NOT MATERIALIZED (
@@ -382,6 +397,7 @@ WHERE cp.period && ce.period
         .toList<CitizenCalendarEventRow>()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = :unitId

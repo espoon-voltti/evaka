@@ -22,6 +22,7 @@ private val VARDA_SERVICE_NEED_CUTOFF_DATE: String = "2019-01-01"
 private val VARDA_FINANCIAL_DECICION_CUTOFF_DATE: String = "2019-09-01"
 
 fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             "UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id"
         )
@@ -29,6 +30,7 @@ fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) =
         .execute()
 
 fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
         SELECT EXISTS (
@@ -45,6 +47,7 @@ fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,
     upsertErrors: List<String> = listOf()
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO varda_service_need (
@@ -84,6 +87,7 @@ VALUES (
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: ServiceNeedId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM varda_service_need
@@ -94,6 +98,7 @@ WHERE evaka_service_need_id = :serviceNeedId
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM varda_service_need
@@ -104,6 +109,7 @@ WHERE varda_child_id = :vardaChildId
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByEvakaChildId(evakaChildId: ChildId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM varda_service_need
@@ -114,6 +120,7 @@ WHERE evaka_child_id = :evakaChildId
         .execute()
 
 fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM varda_organizer_child
@@ -127,6 +134,7 @@ fun Database.Transaction.markVardaServiceNeedUpdateFailed(
     serviceNeedId: ServiceNeedId,
     errors: List<String>
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE varda_service_need
@@ -142,6 +150,7 @@ fun Database.Read.getEvakaServiceNeedChanges(
     clock: EvakaClock,
     feeDecisionMinDate: LocalDate
 ): List<ChangedChildServiceNeed> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 WITH potential_missing_varda_service_needs AS (
@@ -235,6 +244,7 @@ WHERE update_failed = true
         .toList<ChangedChildServiceNeed>()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -257,6 +267,7 @@ WHERE evaka_child_id = :evakaChildId
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
     eVakaServiceNeedId: ServiceNeedId
 ): VardaServiceNeed? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -289,6 +300,7 @@ private fun Database.Read.getServiceNeedFeeDataQuery(
     feeDecisionStatus: FeeDecisionStatus,
     voucherValueDecisionStatus: VoucherValueDecisionStatus
 ): List<FeeDataByServiceNeed> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 WITH child_fees AS (
@@ -391,6 +403,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
@@ -402,6 +415,7 @@ fun Database.Transaction.setVardaResetChildResetTimestamp(
     evakaChildId: ChildId,
     resetTimestamp: Instant
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
@@ -413,6 +427,7 @@ WHERE evaka_child_id = :evakaChildId
         .execute()
 
 fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeedId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             """
             SELECT true
@@ -450,6 +465,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("today", clock.today())
         .bind("childId", childId)
@@ -458,10 +474,12 @@ fun Database.Read.getServiceNeedsForVardaByChild(
 }
 
 fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
+    @Suppress("DEPRECATION")
     createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
         .toList<ChildId>()
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE varda_reset_child
@@ -474,6 +492,7 @@ fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
         .execute()
 
 fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
         SELECT varda_child_id, evaka_person_id evaka_child_id
@@ -485,6 +504,7 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
         .toMap { columnPair("varda_child_id", "evaka_child_id") }
 
 fun Database.Read.getDistinctVardaPersonOidsByEvakaPersonId(id: PersonId) =
+    @Suppress("DEPRECATION")
     createQuery(
             "SELECT DISTINCT varda_person_oid FROM varda_organizer_child WHERE evaka_person_id = :id"
         )
@@ -500,6 +520,7 @@ fun Database.Transaction.getVardaChildrenToReset(
         if (!addNewChildren) {
             0
         } else {
+            @Suppress("DEPRECATION")
             createUpdate(
                     """
         with varda_daycare as (
@@ -537,6 +558,7 @@ fun Database.Transaction.getVardaChildrenToReset(
 
     if (updateCount > 0) logger.info("VardaUpdate: added $updateCount new children to be reset")
 
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit"
         )
@@ -547,6 +569,7 @@ fun Database.Transaction.getVardaChildrenToReset(
 fun Database.Read.calculateDeletedChildServiceNeeds(
     clock: EvakaClock
 ): Map<ChildId, List<ServiceNeedId>> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids

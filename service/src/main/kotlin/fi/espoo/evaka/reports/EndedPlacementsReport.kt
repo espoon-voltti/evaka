@@ -76,6 +76,7 @@ private fun Database.Read.getEndedPlacementsRows(
         ORDER BY last_name, first_name, social_security_number
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("from", from).bind("to", to).toList<EndedPlacementsReportRow>()
 }
 

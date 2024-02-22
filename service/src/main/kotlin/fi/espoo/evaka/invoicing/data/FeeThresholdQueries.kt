@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
 fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT

@@ -17,6 +17,7 @@ private fun Database.Read.createDaycareGroupQuery(
     daycareId: DaycareId?,
     period: DateRange?
 ) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -39,6 +40,7 @@ fun Database.Transaction.createDaycareGroup(
     name: String,
     startDate: LocalDate
 ): DaycareGroup =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -62,6 +64,7 @@ fun Database.Transaction.updateGroup(
     // language=SQL
     val sql =
         "UPDATE daycare_group SET name = :name, start_date = :startDate, end_date = :endDate WHERE id = :id"
+    @Suppress("DEPRECATION")
     this.createUpdate(sql)
         .bind("id", groupId)
         .bind("name", name)
@@ -88,6 +91,7 @@ fun Database.Read.getDaycareGroups(
         .toList<DaycareGroup>()
 
 fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """

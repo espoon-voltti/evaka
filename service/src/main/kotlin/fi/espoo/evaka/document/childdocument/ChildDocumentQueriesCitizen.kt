@@ -14,6 +14,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
     user: AuthenticatedUser.Citizen,
     childId: PersonId
 ): List<ChildDocumentCitizenSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT cd.id, cd.status, dt.type, cd.published_at, dt.name as template_name,
@@ -32,6 +33,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
 }
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT 

@@ -47,7 +47,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
-        tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
+        @Suppress("DEPRECATION") tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
         val invoices =
             draftInvoiceGenerator.generateDraftInvoices(
@@ -245,6 +245,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         tx: Database.Read
     ): Map<PersonId, List<InvoiceCorrection>> {
         val uninvoicedCorrectionsWithInvoicedTotals =
+            @Suppress("DEPRECATION")
             tx.createQuery(
                     """
 SELECT
@@ -266,6 +267,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
                         jsonColumn<List<InvoicedTotal>>("invoiced_corrections")
                 }
 
+        @Suppress("DEPRECATION")
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
             .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
             .toList<InvoiceCorrection>()
@@ -321,6 +323,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
+    @Suppress("DEPRECATION")
     return createQuery(
             feeDecisionQuery(
                 Predicate {
@@ -340,6 +343,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
     val sql =
         "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = ANY(:sent::invoice_status[])"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
@@ -366,6 +370,7 @@ fun Database.Read.getAbsenceStubs(
         AND category = ANY(:categories)
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("range", spanningRange)
         .bind("categories", categories)
@@ -382,6 +387,7 @@ private fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange,
     placementTypes: List<PlacementType>
 ): Map<ChildId, List<Pair<DateRange, PlacementStub>>> {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=sql
             """
@@ -488,6 +494,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
             AND conflict = false
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("dateRange", dateRange).bind("childIds", childIds).toList {
         Triple(
             DateRange(column("start_date"), column("end_date")),
@@ -506,7 +513,7 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
         SELECT daycare.id AS unit_id, area.id AS area_id
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
-    return createQuery(sql).toMap { columnPair("unit_id", "area_id") }
+    @Suppress("DEPRECATION") return createQuery(sql).toMap { columnPair("unit_id", "area_id") }
 }
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
@@ -553,6 +560,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).toList<ChildId>()
 }
 

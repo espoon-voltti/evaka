@@ -183,6 +183,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `value decision handler is set to approver for relief decision`() {
         createPlacement(startDate, endDate)
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     "UPDATE voucher_value_decision d SET decision_type = :decisionType WHERE child_id = :childId"
                 )
@@ -355,6 +356,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE placement SET start_date = :now WHERE id = :placementId")
                 .bind("placementId", placementId)
                 .bind("now", now.toLocalDate())
@@ -458,6 +460,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decision = getAllValueDecisions().getOrNull(0)!!
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = :id"
                 )
@@ -617,6 +620,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
         return db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT * FROM voucher_value_decision")
                     .toList<VoucherValueDecision>()
             }

@@ -82,6 +82,7 @@ private fun Database.Read.getStartingPlacementsRows(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))
         .toList<StartingPlacementsRow>()

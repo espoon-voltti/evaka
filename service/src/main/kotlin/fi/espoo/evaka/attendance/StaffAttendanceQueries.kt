@@ -18,6 +18,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT DISTINCT 
@@ -80,6 +81,7 @@ fun Database.Read.getExternalStaffAttendance(
     id: StaffAttendanceExternalId,
     now: HelsinkiDateTime
 ): ExternalStaffMember? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT sae.id, sae.name, sae.group_id, sae.arrived
@@ -95,6 +97,7 @@ fun Database.Read.getExternalStaffAttendances(
     unitId: DaycareId,
     now: HelsinkiDateTime
 ): List<ExternalStaffMember> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT sae.id, sae.name, sae.group_id, sae.arrived
@@ -114,6 +117,7 @@ fun Database.Transaction.markStaffArrival(
     arrivalTime: HelsinkiDateTime,
     occupancyCoefficient: BigDecimal
 ): StaffAttendanceRealtimeId =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
     INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient) VALUES (
@@ -151,6 +155,7 @@ fun Database.Transaction.upsertStaffAttendance(
     departedAutomatically: Boolean = false
 ): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
             INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
@@ -169,6 +174,7 @@ fun Database.Transaction.upsertStaffAttendance(
             .executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceRealtimeId>()
     } else {
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
             UPDATE staff_attendance_realtime
@@ -188,6 +194,7 @@ fun Database.Transaction.upsertStaffAttendance(
     }
 
 fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceRealtimeId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
            DELETE FROM staff_attendance_realtime
@@ -203,6 +210,7 @@ fun Database.Transaction.markStaffDeparture(
     attendanceId: StaffAttendanceRealtimeId,
     departureTime: HelsinkiDateTime
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
     UPDATE staff_attendance_realtime 
@@ -225,6 +233,7 @@ data class ExternalStaffArrival(
 fun Database.Transaction.markExternalStaffArrival(
     params: ExternalStaffArrival
 ): StaffAttendanceExternalId =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
     INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coefficient) VALUES (
@@ -243,6 +252,7 @@ data class ExternalStaffDeparture(
 )
 
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
     UPDATE staff_attendance_external 
@@ -264,6 +274,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     departedAutomatically: Boolean = false
 ): StaffAttendanceExternalId {
     if (attendanceId == null) {
+        @Suppress("DEPRECATION")
         return createUpdate(
                 """
             INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
@@ -281,6 +292,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceExternalId>()
     } else {
+        @Suppress("DEPRECATION")
         return createUpdate(
                 """
             UPDATE staff_attendance_external
@@ -300,6 +312,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
 }
 
 fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttendanceExternalId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         DELETE FROM staff_attendance_external
@@ -329,6 +342,7 @@ fun Database.Read.getStaffAttendancesForDateRange(
     unitId: DaycareId,
     range: FiniteDateRange
 ): List<RawAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """ 
 SELECT
@@ -361,6 +375,7 @@ fun Database.Read.getEmployeeAttendancesForDate(
     employeeId: EmployeeId,
     date: LocalDate
 ): List<RawAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -393,6 +408,7 @@ fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
     employeeIds: Set<EmployeeId>
 ): List<RawAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -429,6 +445,7 @@ fun Database.Read.getCurrentStaffForAttendanceCalendar(
     start: LocalDate,
     end: LocalDate
 ): List<RawAttendanceEmployee> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT DISTINCT dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient
@@ -449,6 +466,7 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
     range: FiniteDateRange
 ): List<ExternalAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
@@ -467,6 +485,7 @@ fun Database.Read.getGroupsForEmployees(
     unitId: DaycareId,
     employeeIds: Set<EmployeeId>
 ): Map<EmployeeId, List<GroupId>> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT employee_id, array_agg(daycare_group_id) AS group_ids
@@ -483,6 +502,7 @@ fun Database.Read.getGroupsForEmployees(
         .toMap { columnPair("employee_id", "group_ids") }
 
 fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """ 
@@ -505,6 +525,7 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
         .execute()
 
     val defaultDepartureTime = now.minusDays(1).withTime(LocalTime.of(20, 0))
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -521,6 +542,7 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
         .bind("defaultDepartureTime", defaultDepartureTime)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -537,6 +559,7 @@ WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND N
         .bind("defaultDepartureTime", defaultDepartureTime)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -552,6 +575,7 @@ WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group
         .bind("now", now)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -569,12 +593,14 @@ WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group
 }
 
 fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> =
+    @Suppress("DEPRECATION")
     createQuery("SELECT * FROM staff_attendance_realtime").toList<StaffMemberAttendance>()
 
 fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
     now: HelsinkiDateTime
 ): List<PlannedStaffAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT start_time AS start, end_time AS end, type FROM staff_attendance_plan
@@ -590,6 +616,7 @@ fun Database.Read.getPlannedStaffAttendanceForDays(
     employeeIds: Collection<EmployeeId>,
     range: FiniteDateRange
 ): Map<EmployeeId, List<PlannedStaffAttendance>> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attendance_plan
@@ -603,6 +630,7 @@ WHERE employee_id = ANY(:employeeIds) AND (tstzrange(start_time, end_time) && ts
         .groupBy({ it.first }, { it.second })
 
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
@@ -616,6 +644,7 @@ fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
     now: HelsinkiDateTime
 ): StaffAttendance? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
@@ -636,6 +665,7 @@ fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     timeRange: HelsinkiDateTimeRange,
     exceptIds: List<StaffAttendanceRealtimeId>
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM staff_attendance_realtime
@@ -657,6 +687,7 @@ fun Database.Transaction.deleteExternalAttendancesInRangeExcept(
     timeRange: HelsinkiDateTimeRange,
     exceptIds: List<StaffAttendanceExternalId>
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM staff_attendance_external

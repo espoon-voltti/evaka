@@ -110,6 +110,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .isEqualTo(original)
         val duplicateOf =
             db.transaction { tx ->
+                @Suppress("DEPRECATION")
                 tx.createQuery("SELECT duplicate_of FROM person WHERE id = :id")
                     .bind("id", duplicateId)
                     .exactlyOne<PersonId>()
@@ -444,6 +445,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("DELETE FROM guardian WHERE child_id = :id")
                 .bind("id", blockedDependant.id)
                 .execute()
@@ -475,6 +477,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate("DELETE FROM guardian WHERE guardian_id = :id")
                 .bind("id", blockedGuardian.id)
                 .execute()

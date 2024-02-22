@@ -55,6 +55,7 @@ class PendingDecisionEmailService(
                 )
 
                 val pendingGuardianDecisions =
+                    @Suppress("DEPRECATION")
                     tx.createQuery(
                             """
 WITH pending_decisions AS (
@@ -141,6 +142,7 @@ GROUP BY application.guardian_id
             // Mark as sent even if the recipient didn't want the email, to stop sending reminders
             // when the count reaches a threshold
             pendingDecision.decisionIds.forEach { decisionId ->
+                @Suppress("DEPRECATION")
                 tx.createUpdate(
                         """
 UPDATE decision

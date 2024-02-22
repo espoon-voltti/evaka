@@ -12,6 +12,7 @@ import java.time.LocalDate
 fun Database.Read.getHolidayPeriodsInRange(
     range: FiniteDateRange,
 ): List<HolidayPeriod> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             "SELECT id, period, reservation_deadline FROM holiday_period h WHERE h.period && :range"
         )
@@ -19,10 +20,12 @@ fun Database.Read.getHolidayPeriodsInRange(
         .toList<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
+    @Suppress("DEPRECATION")
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
         .toList<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
+    @Suppress("DEPRECATION")
     this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<HolidayPeriod>()
@@ -31,6 +34,7 @@ fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
     reservationDeadline: LocalDate
 ): HolidayPeriod =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 INSERT INTO holiday_period (period, reservation_deadline)
@@ -48,6 +52,7 @@ fun Database.Transaction.updateHolidayPeriod(
     period: FiniteDateRange,
     reservationDeadline: LocalDate
 ) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 UPDATE holiday_period
@@ -63,4 +68,5 @@ WHERE id = :id
         .updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
+    @Suppress("DEPRECATION")
     this.createUpdate("DELETE FROM holiday_period WHERE id = :id").bind("id", id).execute()

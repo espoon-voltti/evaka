@@ -15,6 +15,7 @@ fun Database.Read.getOccupancyCoefficientForEmployeeInUnit(
     employeeId: EmployeeId,
     unitId: DaycareId
 ): BigDecimal? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT coefficient
@@ -31,6 +32,7 @@ fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,
     groupId: GroupId
 ): BigDecimal? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT soc.coefficient
@@ -47,6 +49,7 @@ WHERE soc.employee_id = :employeeId
 fun Database.Read.getOccupancyCoefficientsByUnit(
     unitId: DaycareId
 ): List<StaffOccupancyCoefficient> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT soc.id, soc.coefficient, emp.id AS employeeId, emp.first_name, emp.last_name
@@ -62,6 +65,7 @@ WHERE soc.daycare_id = :unitId
 fun Database.Transaction.upsertOccupancyCoefficient(
     params: OccupancyCoefficientUpsert
 ): StaffOccupancyCoefficientId =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)

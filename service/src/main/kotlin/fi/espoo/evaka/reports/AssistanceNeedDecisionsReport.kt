@@ -151,5 +151,5 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
         ) decisions
         """
             .trimIndent()
-    return createQuery(sql).bind("employeeId", userId).exactlyOne<Int>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("employeeId", userId).exactlyOne<Int>()
 }

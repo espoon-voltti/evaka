@@ -613,6 +613,7 @@ private fun Database.Read.fetchChildPlacementBasics(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
@@ -640,6 +641,7 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)

@@ -65,7 +65,7 @@ fun createPaymentDrafts(tx: Database.Transaction) {
         tx.getLastSnapshotMonth() ?: throw BadRequest("No voucher value report snapshot found")
 
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-    tx.createUpdate("LOCK TABLE payment").execute()
+    @Suppress("DEPRECATION") tx.createUpdate("LOCK TABLE payment").execute()
 
     val report =
         getServiceVoucherReport(

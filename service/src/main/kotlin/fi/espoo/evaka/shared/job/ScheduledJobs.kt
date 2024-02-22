@@ -189,6 +189,7 @@ class ScheduledJobs(
 
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     // language=SQL
                     """
@@ -225,6 +226,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     // language=SQL
                     """

@@ -33,6 +33,7 @@ class FinanceDecisionGenerator(
 
     fun scheduleBatchGeneration(tx: Database.Transaction) {
         val inserted =
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     """
 WITH ids AS (

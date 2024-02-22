@@ -172,6 +172,7 @@ data class DailyServiceTimeRow(
 )
 
 fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
 SELECT
@@ -201,6 +202,7 @@ ORDER BY lower(validity_period) DESC
 fun Database.Read.getDailyServiceTimesForChildren(
     childIds: Set<ChildId>
 ): Map<ChildId, List<DailyServiceTimesValue>> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -232,6 +234,7 @@ data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: D
 fun Database.Read.getDailyServiceTimesValidity(
     id: DailyServiceTimesId
 ): DailyServiceTimesValidity? {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
 SELECT child_id, validity_period
@@ -309,6 +312,7 @@ fun Database.Transaction.updateChildDailyServiceTimes(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql).bindKotlin(times.asUpdateRow()).bind("id", id).execute()
 }
 
@@ -331,6 +335,7 @@ SELECT recipient.id, :id, :dateFrom, :hasDeletedReservations FROM recipient
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql)
         .bind("today", today)
         .bind("id", id)
@@ -349,7 +354,7 @@ fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     """
             .trimIndent()
 
-    this.createUpdate(sql).bind("id", id).execute()
+    @Suppress("DEPRECATION") this.createUpdate(sql).bind("id", id).execute()
 }
 
 fun Database.Transaction.createChildDailyServiceTimes(
@@ -386,6 +391,7 @@ fun Database.Transaction.createChildDailyServiceTimes(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bindKotlin(times.asUpdateRow())
         .bind("childId", childId)
@@ -410,6 +416,7 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
           AND :range && validity_period
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)
@@ -428,5 +435,6 @@ fun Database.Transaction.updateChildDailyServiceTimesValidity(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql).bind("id", id).bind("validityPeriod", validityPeriod).execute()
 }

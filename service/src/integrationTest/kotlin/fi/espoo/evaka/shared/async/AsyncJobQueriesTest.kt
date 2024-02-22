@@ -35,6 +35,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val runAt =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT run_at FROM async_job").exactlyOne<HelsinkiDateTime>()
             }
 
@@ -42,6 +43,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT run_at, retry_count FROM async_job").exactlyOne<Retry>()
             }
         assertTrue(retryRunAt > runAt)
@@ -56,6 +58,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val completedAt =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT completed_at FROM async_job").exactlyOne<HelsinkiDateTime>()
             }
         assertTrue(completedAt > runAt)
@@ -129,6 +132,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val remainingJobs =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
                     )
@@ -155,6 +159,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 private data class TestJobParams(val runAt: LocalDate, val completed: Boolean)
 
 private fun Database.Transaction.insertTestJob(params: TestJobParams) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO async_job (type, run_at, retry_count, retry_interval, payload, claimed_at, claimed_by, completed_at)

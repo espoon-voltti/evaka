@@ -25,6 +25,7 @@ internal data class KoskiStudyRightRaw(
 )
 
 internal fun Database.Read.getStoredResults() =
+    @Suppress("DEPRECATION")
     createQuery("select * from koski_study_right").toList<KoskiStudyRightRaw>()
 
 internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =

@@ -6555,6 +6555,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
+        @Suppress("DEPRECATION")
         r.createQuery(
                 """
             $invoiceQueryBase

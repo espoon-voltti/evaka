@@ -189,6 +189,7 @@ private fun Database.Transaction.updateFamilyContactPriority(
         "SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED"
     )
 
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 WITH deleted_contact AS (
@@ -205,6 +206,7 @@ WHERE child_id = :childId AND priority > old_priority
 
     if (priority == null) return
 
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
 UPDATE family_contact SET priority = priority + 1 WHERE child_id = :childId AND priority >= :priority;
@@ -222,6 +224,7 @@ fun Database.Read.isFamilyContactForChild(
     childId: ChildId,
     personId: PersonId
 ): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT EXISTS (

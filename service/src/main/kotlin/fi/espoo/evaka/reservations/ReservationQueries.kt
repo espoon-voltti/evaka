@@ -34,6 +34,7 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
     questionnaireId: HolidayQuestionnaireId,
     childIds: Set<ChildId>
 ) {
+    @Suppress("DEPRECATION")
     this.createUpdate(
             "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
         )
@@ -61,6 +62,7 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
     childId: ChildId,
     range: DateRange
 ): Int {
+    @Suppress("DEPRECATION")
     return this.createUpdate(
             """
             DELETE FROM attendance_reservation
@@ -75,6 +77,7 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
 }
 
 fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
+    @Suppress("DEPRECATION")
     this.createUpdate(
             "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(:range, date)"
         )
@@ -106,6 +109,7 @@ fun Database.Transaction.insertValidReservations(
     reservations: List<ReservationInsert>
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
+        @Suppress("DEPRECATION")
         createQuery(
                 """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
@@ -190,6 +194,7 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
     range: DateRange
 ): List<LocalDate> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT date
@@ -210,6 +215,7 @@ fun Database.Read.getReservationDatesForChildrenInRange(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, Set<LocalDate>> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT child_id, date
@@ -275,6 +281,7 @@ fun Database.Read.getReservationChildren(
     guardianId: PersonId,
     today: LocalDate
 ): List<ReservationChildRow> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH children AS (
@@ -396,6 +403,7 @@ fun Database.Read.getReservationBackupPlacements(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, List<ReservationBackupPlacement>> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -484,6 +492,7 @@ fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
     unitId: DaycareId
 ): List<DailyChildReservationInfoRow> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT pcd.child_id,
@@ -544,6 +553,7 @@ fun Database.Read.getReservationStatisticsForUnit(
     confirmedDays: List<LocalDate>,
     unitId: DaycareId
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 select date,

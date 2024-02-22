@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 
 fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest): DocumentTemplate {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content) 
@@ -23,6 +24,7 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest)
 }
 
 fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): DocumentTemplate =
+    @Suppress("DEPRECATION")
     createQuery(
             """
         INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content)
@@ -37,6 +39,7 @@ fun Database.Transaction.duplicateTemplate(
     id: DocumentTemplateId,
     template: DocumentTemplateCreateRequest
 ): DocumentTemplate {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, content) 
@@ -51,6 +54,7 @@ fun Database.Transaction.duplicateTemplate(
 }
 
 fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT id, name, type, language, validity, published
@@ -62,12 +66,14 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
 }
 
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT * FROM document_template WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<DocumentTemplate>()
 }
 
 fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT * FROM document_template WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<ExportedDocumentTemplate>()
@@ -77,6 +83,7 @@ fun Database.Transaction.updateDraftTemplateContent(
     id: DocumentTemplateId,
     content: DocumentTemplateContent
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE document_template
@@ -91,6 +98,7 @@ fun Database.Transaction.updateDraftTemplateContent(
 }
 
 fun Database.Transaction.updateTemplateValidity(id: DocumentTemplateId, validity: DateRange) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE document_template
@@ -105,6 +113,7 @@ fun Database.Transaction.updateTemplateValidity(id: DocumentTemplateId, validity
 }
 
 fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE document_template
@@ -118,6 +127,7 @@ fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
 }
 
 fun Database.Transaction.deleteDraftTemplate(id: DocumentTemplateId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         DELETE FROM document_template 

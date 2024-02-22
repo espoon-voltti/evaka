@@ -15,10 +15,12 @@ fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("childId", childId).exactlyOne<ChildImageId>()
 }
 
 fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {
+    @Suppress("DEPRECATION")
     return createQuery("DELETE FROM child_images WHERE child_id = :childId RETURNING id")
         .bind("childId", childId)
         .exactlyOneOrNull<ChildImageId>()

@@ -116,6 +116,7 @@ fun Database.Transaction.resetDatabase() {
 }
 
 fun Database.Transaction.ensureDevData() {
+    @Suppress("DEPRECATION")
     if (createQuery("SELECT count(*) FROM care_area").exactlyOne<Int>() == 0) {
         listOf(
                 "dev-data.sql",
@@ -135,6 +136,7 @@ fun Database.Transaction.ensureDevData() {
  * * SQL must return "id" column of type UUID
  */
 private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID =
+    @Suppress("DEPRECATION")
     createUpdate(sql).bindKotlin(row).executeAndReturnGeneratedKeys().exactlyOne<UUID>()
 
 fun Database.Transaction.insert(area: DevCareArea): AreaId =
@@ -183,6 +185,7 @@ fun Database.Transaction.updateDaycareAcl(
     externalId: ExternalId,
     role: UserRole
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)"
         )
@@ -197,6 +200,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(
     employeeId: EmployeeId,
     role: UserRole
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)"
         )
@@ -207,6 +211,7 @@ fun Database.Transaction.updateDaycareAclWithEmployee(
 }
 
 fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: EmployeeId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (:employeeId, :daycare_group_id)"
         )
@@ -229,6 +234,7 @@ fun Database.Transaction.createMobileDeviceToUnit(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", id).bind("unitId", unitId).bind("name", name).execute()
 }
 
@@ -333,6 +339,7 @@ fun Database.Transaction.insertTestParentship(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): ParentshipId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
@@ -406,6 +413,7 @@ fun Database.Transaction.insertTestApplication(
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true
 ): ApplicationId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
@@ -436,6 +444,7 @@ fun Database.Transaction.insertTestApplicationForm(
         "Invalid form type for the application"
     }
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE application SET document = :document, form_modified = now()
@@ -455,6 +464,7 @@ fun Database.Transaction.insertTestClubApplicationForm(
         "Invalid form type for the application"
     }
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE application SET document = :document, form_modified = now()
@@ -501,6 +511,7 @@ fun Database.Transaction.insertTestPlacement(
     terminatedBy: EvakaUserId? = null,
     placeGuarantee: Boolean = false
 ): PlacementId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
@@ -521,6 +532,7 @@ fun Database.Transaction.insertTestPlacement(
 }
 
 fun Database.Transaction.insertTestHoliday(date: LocalDate, description: String = "holiday") {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO holiday (date, description)
@@ -541,6 +553,7 @@ fun Database.Transaction.insertTestServiceNeed(
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
 ): ServiceNeedId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
@@ -560,6 +573,7 @@ VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirm
 }
 
 fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=sql
             """
@@ -572,6 +586,7 @@ VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :fe
 }
 
 fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=sql
             """
@@ -691,6 +706,7 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): GroupPlacementId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
                 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
@@ -718,6 +734,7 @@ fun Database.Transaction.insertTestPlacementPlan(
     updated: HelsinkiDateTime = HelsinkiDateTime.now(),
     deleted: Boolean? = false
 ): PlacementPlanId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
@@ -791,6 +808,7 @@ fun Database.Transaction.insertTestCaretakers(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
@@ -809,6 +827,7 @@ fun Database.Transaction.insertTestCaretakers(
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     decision: DevAssistanceNeedPreschoolDecision
 ): AssistanceNeedPreschoolDecisionId {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         INSERT INTO assistance_need_preschool_decision (
@@ -850,6 +869,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
         .execute()
 
     decision.form.guardianInfo.forEach { guardian ->
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
             INSERT INTO assistance_need_preschool_decision_guardian (
@@ -935,6 +955,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             .trimIndent()
 
     val id =
+        @Suppress("DEPRECATION")
         createQuery(sql)
             .bindKotlin(data)
             .bind("childId", childId)
@@ -1018,6 +1039,7 @@ fun Database.Transaction.insertTestStaffAttendance(
         VALUES (:id, :groupId, :date, :count)
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("groupId", groupId)
@@ -1061,6 +1083,7 @@ fun Database.Transaction.insertTestAbsence(
         VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy, coalesce(:modifiedAt, now()))
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("childId", childId)
@@ -1145,6 +1168,7 @@ fun Database.Transaction.insertTestBackUpCare(
         VALUES (:id, :childId, :unitId, :startDate, :endDate, :groupId)
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("childId", childId)
@@ -1175,6 +1199,7 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", application.id)
         .bind("type", application.type)
@@ -1199,6 +1224,7 @@ fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationFo
         "Invalid form type for the application"
     }
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE application SET document = :document, form_modified = now()
@@ -1365,11 +1391,13 @@ RETURNING id
         .let(::EmployeePinId)
 
 fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
+    @Suppress("DEPRECATION")
     createQuery("SELECT id FROM employee WHERE external_id = :id")
         .bind("id", externalId)
         .exactlyOne<EmployeeId>()
 
 fun Database.Transaction.insert(aclRow: DevDaycareGroupAcl) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
@@ -1438,6 +1466,7 @@ RETURNING id
         .let(::AttendanceReservationId)
 
 fun Database.Transaction.insert(entry: DevGuardianBlocklistEntry) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO guardian_blocklist (guardian_id, child_id)
@@ -1516,6 +1545,7 @@ VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tue
         .let(::DailyServiceTimesId)
 
 fun Database.Transaction.insert(guardian: DevGuardian) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO guardian (guardian_id, child_id)
@@ -1571,6 +1601,7 @@ fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,
     opTimes: List<TimeRange>
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE daycare SET operation_times = :operationTimes WHERE id = :daycareId",
         )

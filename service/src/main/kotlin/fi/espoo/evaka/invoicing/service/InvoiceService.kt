@@ -115,6 +115,7 @@ class InvoiceService(
 
     fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {
         val units =
+            @Suppress("DEPRECATION")
             tx.createQuery(
                     """
         SELECT daycare.id, daycare.name, cost_center
@@ -143,6 +144,7 @@ fun Database.Transaction.markManuallySent(
             .trimIndent()
 
     val updatedIds =
+        @Suppress("DEPRECATION")
         createQuery(sql)
             .bind("status_sent", InvoiceStatus.SENT.toString())
             .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())

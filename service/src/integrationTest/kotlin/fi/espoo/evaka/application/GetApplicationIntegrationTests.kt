@@ -210,6 +210,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             }
 
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     """update application set created = :createdAt where id = :applicationId"""
                 )
@@ -219,6 +220,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         }
 
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             val data = tx.createQuery("""select id from application""").toList<ApplicationId>()
 
             assertEquals(3, data.size)
@@ -227,6 +229,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
 
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             val data = tx.createQuery("""select id from application""").toSet<ApplicationId>()
 
             assertEquals(setOf(id1, id2), data)

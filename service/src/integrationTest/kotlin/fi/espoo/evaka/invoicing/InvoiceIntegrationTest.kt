@@ -584,6 +584,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `send saves cost center information to invoice rows`() {
         fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> =
+            @Suppress("DEPRECATION")
             createQuery(
                     """
                 SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = :invoiceId
@@ -613,6 +614,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.WAITING_FOR_SENDING)
         db.transaction { tx ->
             tx.upsertInvoices(listOf(invoice))
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE invoice_row SET saved_cost_center = '31500'").execute()
         }
 

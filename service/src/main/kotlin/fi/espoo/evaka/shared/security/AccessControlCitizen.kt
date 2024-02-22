@@ -66,6 +66,7 @@ SELECT EXISTS (
     WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
 )
 """
+        @Suppress("DEPRECATION")
         return createQuery(sql)
             .bind("today", clock.today())
             .bind("userId", userId)
@@ -91,6 +92,7 @@ SELECT EXISTS (
     WHERE daterange(pl.start_date, pl.end_date, '[]') @> :today
 )
 """
+        @Suppress("DEPRECATION")
         return createQuery(sql)
             .bind("today", clock.today())
             .bind("userId", userId)
@@ -118,6 +120,7 @@ SELECT EXISTS (
     WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
 """
+        @Suppress("DEPRECATION")
         return createQuery(sql)
             .bind("today", clock.today())
             .bind("userId", userId)
@@ -145,6 +148,7 @@ SELECT EXISTS (
     WHERE 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
 """
+        @Suppress("DEPRECATION")
         return createQuery(sql)
             .bind("today", clock.today())
             .bind("userId", userId)

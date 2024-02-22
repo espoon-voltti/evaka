@@ -54,6 +54,7 @@ class MergeService(
             """
                 .trimIndent()
         val feeAffectingDateRange =
+            @Suppress("DEPRECATION")
             tx.createQuery(feeAffectingDatesSQL).bind("id_duplicate", duplicate).exactlyOneOrNull {
                 DateRange(
                     column("min_date"),
@@ -117,6 +118,7 @@ class MergeService(
                 .trimIndent()
 
         try {
+            @Suppress("DEPRECATION")
             tx.createUpdate(updateSQL)
                 .bind("id_master", master)
                 .bind("id_duplicate", duplicate)
@@ -135,6 +137,7 @@ class MergeService(
                 WHERE head_of_child = :id OR child_id = :id
                 """
                     .trimIndent()
+            @Suppress("DEPRECATION")
             tx.createQuery(parentsSQL).bind("id", master).toList<PersonId>().forEach { parentId ->
                 sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
             }
@@ -160,6 +163,7 @@ class MergeService(
             """
                 .trimIndent()
 
+        @Suppress("DEPRECATION")
         val referenceCount = tx.createQuery(sql1).bind("id", id).exactlyOne<Int>()
         if (referenceCount > 0) {
             throw Conflict("Person is still referenced from somewhere and cannot be deleted")
@@ -179,7 +183,7 @@ class MergeService(
             """
                 .trimIndent()
 
-        tx.createUpdate(sql2).bind("id", id).execute()
+        @Suppress("DEPRECATION") tx.createUpdate(sql2).bind("id", id).execute()
     }
 
     private fun sendFamilyUpdatedMessage(

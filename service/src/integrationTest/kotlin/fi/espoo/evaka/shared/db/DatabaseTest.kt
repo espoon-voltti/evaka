@@ -27,7 +27,10 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
-            db.read { it.createQuery("SELECT date FROM holiday ORDER BY date").toList<LocalDate>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT date FROM holiday ORDER BY date").toList<LocalDate>()
+            }
         )
     }
 
@@ -44,7 +47,10 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(LocalDate.of(2020, 1, 1)),
-            db.read { it.createQuery("SELECT date FROM holiday ORDER BY date").toList<LocalDate>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT date FROM holiday ORDER BY date").toList<LocalDate>()
+            }
         )
     }
 

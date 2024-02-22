@@ -26,6 +26,7 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return tx.createQuery(sql).bind("groupId", groupId).toList<CaretakerAmount>()
 }
 
@@ -53,6 +54,7 @@ fun insertCaretakers(
     }
 
     try {
+        @Suppress("DEPRECATION")
         return tx.createUpdate(
                 """
             INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
@@ -81,6 +83,7 @@ private fun Database.Transaction.endPreviousRow(groupId: GroupId, startDate: Loc
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
 }
 
@@ -105,6 +108,7 @@ fun updateCaretakers(
             .trimIndent()
 
     try {
+        @Suppress("DEPRECATION")
         tx.createUpdate(sql)
             .bind("groupId", groupId)
             .bind("id", id)
@@ -119,6 +123,7 @@ fun updateCaretakers(
 }
 
 fun deleteCaretakers(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
+    @Suppress("DEPRECATION")
     tx.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
         .bind("groupId", groupId)
         .bind("id", id)

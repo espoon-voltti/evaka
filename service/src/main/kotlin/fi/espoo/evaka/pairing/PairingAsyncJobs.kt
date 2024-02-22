@@ -22,6 +22,7 @@ class PairingAsyncJobs(asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         msg: AsyncJob.GarbageCollectPairing
     ) {
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("DELETE FROM pairing WHERE id = :id")
                 .bind("id", msg.pairingId)
                 .execute()

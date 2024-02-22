@@ -184,6 +184,7 @@ WHERE bc.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupI
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("dates", dates.toTypedArray())
         .bind("unitId", unitId)
@@ -204,6 +205,7 @@ WHERE p.id = ANY(:children);
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("children", children.toTypedArray()).toList<ChildRow>()
 }
 
@@ -233,6 +235,7 @@ WHERE pl.child_id = ANY(:children) AND daterange(sn.start_date, sn.end_date, '[]
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)
@@ -286,6 +289,7 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL;
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)
@@ -317,6 +321,7 @@ WHERE ab.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ab.date;
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)
@@ -504,6 +509,7 @@ private fun Database.Read.getAttendanceReservationReportByChild(
         LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date AND r.start_time IS NOT NULL AND r.end_time IS NOT NULL
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)

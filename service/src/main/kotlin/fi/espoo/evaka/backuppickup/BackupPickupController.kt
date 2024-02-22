@@ -123,6 +123,7 @@ fun Database.Transaction.createBackupPickup(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("childId", childId)
         .bind("name", data.name)
@@ -131,6 +132,7 @@ fun Database.Transaction.createBackupPickup(
 }
 
 fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = :id")
         .bind("id", childId)
         .toList<ChildBackupPickup>()
@@ -146,6 +148,7 @@ fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBacku
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     this.createUpdate(sql)
         .bind("id", id)
         .bind("name", data.name)
@@ -154,6 +157,7 @@ fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBacku
 }
 
 fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) {
+    @Suppress("DEPRECATION")
     this.createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).updateExactlyOne()
 }
 

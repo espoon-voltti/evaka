@@ -375,6 +375,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = startDate,
                 endDate = startDate,
             )
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE person set date_of_death = :dod")
                 .bind("dod", startDate.minusDays(1))
                 .execute()

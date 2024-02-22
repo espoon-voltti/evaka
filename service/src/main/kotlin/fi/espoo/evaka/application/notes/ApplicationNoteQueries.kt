@@ -27,6 +27,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
@@ -47,6 +48,7 @@ ORDER BY n.created
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("applicationId", applicationId).toList<ApplicationNote>()
 }
 
@@ -78,6 +80,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("applicationId", applicationId)
         .bind("content", content)
@@ -105,6 +108,7 @@ SELECT
 FROM updated_note n
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("content", content)
         .bind("updatedBy", updatedBy)
@@ -113,6 +117,7 @@ FROM updated_note n
 }
 
 fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) {
+    @Suppress("DEPRECATION")
     return createUpdate("UPDATE application SET service_worker_note = :content WHERE id = :id")
         .bind("id", id)
         .bind("content", content)
@@ -123,5 +128,5 @@ fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) {
     // language=SQL
     val sql = "DELETE FROM application_note WHERE id = :id"
 
-    createUpdate(sql).bind("id", id).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).execute()
 }

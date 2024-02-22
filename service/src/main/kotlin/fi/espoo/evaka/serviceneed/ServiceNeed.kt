@@ -174,6 +174,7 @@ fun validateServiceNeed(
         WHERE pl.id = :placementId AND sno.id = :optionId
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     db.createQuery(sql)
         .bind("placementId", placementId)
         .bind("optionId", optionId)
@@ -188,6 +189,7 @@ fun validateServiceNeed(
         WHERE pl.id = :placementId AND daterange(pl.start_date, pl.end_date, '[]') @> daterange(:startDate, :endDate, '[]')
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     db.createQuery(sql2)
         .bind("placementId", placementId)
         .bind("startDate", startDate)

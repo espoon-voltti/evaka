@@ -10,14 +10,14 @@ fun Database.Read.getSettings(): Map<SettingType, String> {
     // language=SQL
     val sql = "SELECT key, value FROM setting"
 
-    return createQuery(sql).toMap { columnPair("key", "value") }
+    @Suppress("DEPRECATION") return createQuery(sql).toMap { columnPair("key", "value") }
 }
 
 fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     // language=SQL
     val deleteSql = "DELETE FROM setting WHERE key != ALL(:keys::setting_type[])"
 
-    createUpdate(deleteSql).bind("keys", settings.keys).execute()
+    @Suppress("DEPRECATION") createUpdate(deleteSql).bind("keys", settings.keys).execute()
 
     // language=SQL
     val insertSql =

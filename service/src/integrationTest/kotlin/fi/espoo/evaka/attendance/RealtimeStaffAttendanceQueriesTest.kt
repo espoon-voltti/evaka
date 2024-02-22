@@ -228,6 +228,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         db.transaction { tx ->
             val id = tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
 
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE staff_attendance_realtime a SET type = 'JUSTIFIED_CHANGE' WHERE id = :id"
                 )

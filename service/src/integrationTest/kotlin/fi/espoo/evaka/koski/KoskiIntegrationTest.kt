@@ -141,6 +141,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         fun countActiveStudyRights() =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
                     .exactlyOne<Long>()
             }
@@ -174,6 +175,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertSingleStudyRight(version = 0)
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE placement SET end_date = :endDate WHERE id = :id")
                 .bind("id", placementId)
                 .bind("endDate", preschoolTerm2019.end.minusDays(1))
@@ -578,7 +580,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today)
 
         val oldOid = koskiServer.getStudyRights().keys.single()
-        db.transaction { it.createUpdate("DELETE FROM placement").execute() }
+        db.transaction {
+            @Suppress("DEPRECATION") it.createUpdate("DELETE FROM placement").execute()
+        }
         koskiTester.triggerUploads(today.plusDays(1))
         assertTrue(koskiServer.getStudyRights().isEmpty())
 
@@ -802,6 +806,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         insertPlacement(child = testChild_7)
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE person SET oph_person_oid = :oid WHERE id = :id")
                 .bind("id", testChild_7.id)
                 .bind("oid", personOid)
@@ -1037,6 +1042,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 }
 
 private fun Database.Transaction.clearKoskiInputCache() =
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL"
         )

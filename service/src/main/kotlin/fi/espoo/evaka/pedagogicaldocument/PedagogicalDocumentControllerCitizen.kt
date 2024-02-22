@@ -101,6 +101,7 @@ private fun Database.Transaction.markDocumentReadByGuardian(
     documentId: PedagogicalDocumentId,
     guardianId: PersonId
 ) =
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
             INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
@@ -118,6 +119,7 @@ private fun Database.Read.countUnreadDocumentsByUser(
     today: LocalDate,
     userId: PersonId
 ): Map<ChildId, Int> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 WITH children AS (

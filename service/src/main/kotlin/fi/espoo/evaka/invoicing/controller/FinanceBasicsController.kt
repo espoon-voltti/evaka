@@ -179,6 +179,7 @@ private fun calculateMaxFeeFromThresholds(
 }
 
 fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -215,6 +216,7 @@ FROM fee_thresholds
         .toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO fee_thresholds (
@@ -281,12 +283,14 @@ RETURNING id
         .exactlyOne<FeeThresholdsId>()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")
         .bind("id", id)
         .bind("validDuring", newValidity)
         .execute()
 
 fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE fee_thresholds

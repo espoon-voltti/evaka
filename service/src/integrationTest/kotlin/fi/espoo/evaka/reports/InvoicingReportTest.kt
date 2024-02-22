@@ -112,6 +112,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
             it.upsertInvoices(testInvoices)
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     """
                 UPDATE invoice SET sent_at = :sentAt

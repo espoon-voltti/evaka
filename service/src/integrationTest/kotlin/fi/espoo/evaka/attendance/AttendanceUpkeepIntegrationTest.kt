@@ -190,6 +190,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     private fun getAttendanceEndTimes() =
         db.read {
+            @Suppress("DEPRECATION")
             it.createQuery("SELECT id, end_time FROM child_attendance").toList {
                 column<LocalTime?>("end_time")
             }

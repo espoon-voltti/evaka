@@ -298,6 +298,7 @@ class DevApi(
     fun deleteDaycareCostCenter(db: Database, @PathVariable daycareId: DaycareId) {
         db.connect { dbc ->
             dbc.transaction { tx ->
+                @Suppress("DEPRECATION")
                 tx.createUpdate("UPDATE daycare SET cost_center = NULL WHERE id = :daycareId")
                     .bind("daycareId", daycareId)
                     .execute()
@@ -401,6 +402,7 @@ class DevApi(
     ) {
         db.connect { dbc ->
             dbc.transaction {
+                    @Suppress("DEPRECATION")
                     it.createUpdate(
                         "UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId "
                     )
@@ -571,6 +573,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction {
                 val id = it.createIncomeNotification(body.receiverId, body.notificationType)
+                @Suppress("DEPRECATION")
                 it.createUpdate("UPDATE income_notification SET created = :created WHERE id = :id")
                     .bind("id", id)
                     .bind("created", body.created)
@@ -753,6 +756,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val uuid =
+                    @Suppress("DEPRECATION")
                     tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                         .bind("ssn", person.socialSecurityNumber)
                         .exactlyOneOrNull<PersonId>()
@@ -933,6 +937,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
+                    @Suppress("DEPRECATION")
                     tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
                         .bind("id", id)
                         .bind("prevId", it.id)
@@ -948,6 +953,7 @@ class DevApi(
     fun createHoliday(db: Database, @RequestBody holiday: DevHoliday) {
         db.connect { dbc ->
             dbc.transaction { tx ->
+                @Suppress("DEPRECATION")
                 tx.createUpdate(
                         "INSERT INTO holiday(date, description) VALUES(:date, :description)"
                     )
@@ -967,6 +973,7 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createFixedPeriodQuestionnaire(body).let {
+                    @Suppress("DEPRECATION")
                     tx.createUpdate(
                             "UPDATE holiday_period_questionnaire SET id = :id WHERE id = :prevId"
                         )
@@ -1196,7 +1203,10 @@ class DevApi(
     @DeleteMapping("/vasu/templates")
     fun deleteVasuTemplates(db: Database) {
         db.connect { dbc ->
-            dbc.transaction { it.createUpdate("DELETE FROM curriculum_template").execute() }
+            dbc.transaction {
+                @Suppress("DEPRECATION")
+                it.createUpdate("DELETE FROM curriculum_template").execute()
+            }
         }
     }
 
@@ -1344,6 +1354,7 @@ class DevApi(
     fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
         db.connect { dbc ->
             dbc.transaction {
+                @Suppress("DEPRECATION")
                 it.createUpdate(
                         "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, :resetTimestamp)"
                     )
@@ -1365,6 +1376,7 @@ class DevApi(
     fun createVardaServiceNeed(db: Database, @RequestBody body: DevVardaServiceNeed) {
         db.connect { dbc ->
             dbc.transaction {
+                @Suppress("DEPRECATION")
                 it.createUpdate(
                         "INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors) " +
                             "VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :updateFailed, :errors)"
@@ -1382,6 +1394,7 @@ class DevApi(
     ) {
         db.connect { dbc ->
             dbc.transaction {
+                @Suppress("DEPRECATION")
                 it.createUpdate(
                         """
                     INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
@@ -1419,6 +1432,7 @@ class DevApi(
     ) =
         db.connect { dbc ->
             dbc.transaction {
+                @Suppress("DEPRECATION")
                 it.createUpdate(
                         """
                     INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
@@ -1623,6 +1637,7 @@ private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
 }
 
 private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
@@ -1643,7 +1658,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
         """
             .trimIndent()
 
-    createUpdate(sql).bind("id", fakeAdmin.id).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", fakeAdmin.id).execute()
     upsertEmployeeUser(fakeAdmin.id)
 }
 
@@ -1692,6 +1707,7 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
 }
 
 fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE fee_decision SET sent_at = :sentAt WHERE id = :id    

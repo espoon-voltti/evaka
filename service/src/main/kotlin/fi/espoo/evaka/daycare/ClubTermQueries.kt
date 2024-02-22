@@ -54,6 +54,7 @@ fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
         .exactlyOneOrNull()
 
 fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? {
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> :date LIMIT 1"
         )

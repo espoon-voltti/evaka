@@ -15,6 +15,7 @@ internal fun insertVardaUnit(
     unitOid: String? = "1.2.3"
 ) {
     db.transaction {
+        @Suppress("DEPRECATION")
         it.createUpdate(
                 """
 INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, created_at, uploaded_at)
@@ -29,6 +30,7 @@ VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
             .bind("uploadedAt", Instant.now())
             .execute()
 
+        @Suppress("DEPRECATION")
         it.createUpdate("UPDATE daycare SET oph_unit_oid = :unitOid WHERE daycare.id = :unitId")
             .bind("unitId", unitId)
             .bind("unitOid", unitOid)

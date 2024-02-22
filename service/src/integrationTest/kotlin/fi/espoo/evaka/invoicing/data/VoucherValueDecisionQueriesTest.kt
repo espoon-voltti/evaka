@@ -149,6 +149,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     )
                 )
                 val ids =
+                    @Suppress("DEPRECATION")
                     tx.createQuery("SELECT id FROM voucher_value_decision")
                         .toList<VoucherValueDecisionId>()
                 ids.map { id -> tx.getVoucherValueDecision(id)!! }

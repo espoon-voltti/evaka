@@ -337,6 +337,7 @@ class PlacementPlanService(
     }
 
     fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
+        @Suppress("DEPRECATION")
         return tx.createQuery(
                 """
             SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi

@@ -54,6 +54,7 @@ class VasuNotificationService(
         tx: Database.Read,
         vasuDocumentId: VasuDocumentId
     ): List<AsyncJob.SendVasuNotificationEmail> {
+        @Suppress("DEPRECATION")
         return tx.createQuery(
                 """
 SELECT 

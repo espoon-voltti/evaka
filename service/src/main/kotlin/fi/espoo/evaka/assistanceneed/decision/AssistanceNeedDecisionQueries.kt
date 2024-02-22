@@ -77,6 +77,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             .trimIndent()
 
     val id =
+        @Suppress("DEPRECATION")
         createQuery(sql)
             .bindKotlin(data)
             .bind("childId", childId)
@@ -187,6 +188,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
         GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecision>()
         ?: throw NotFound("Assistance need decision $id not found")
 }
@@ -241,6 +243,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
@@ -320,6 +323,7 @@ fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecision
         RETURNING id;
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 }
 
@@ -333,7 +337,7 @@ fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDe
         """
             .trimIndent()
 
-    createUpdate(sql).bind("id", id).updateExactlyOne()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedDecisionsForCitizen(
@@ -357,6 +361,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
         WHERE status IN ('REJECTED', 'ACCEPTED', 'ANNULLED') AND decision_made IS NOT NULL
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
@@ -372,7 +377,7 @@ fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisio
         WHERE ad.id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
 fun Database.Transaction.updateAssistanceNeedDocumentKey(
@@ -387,7 +392,7 @@ fun Database.Transaction.updateAssistanceNeedDocumentKey(
         WHERE id = :id
         """
             .trimIndent()
-    createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
 }
 
 fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
@@ -403,6 +408,7 @@ fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", assistanceNeedDecisionId)
         .bind("guardianId", guardianId)
@@ -428,6 +434,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
         GROUP BY ad.child_id
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
@@ -451,6 +458,7 @@ fun Database.Transaction.decideAssistanceNeedDecision(
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("status", status)
@@ -475,6 +483,7 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
           AND status = 'ACCEPTED'
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("excludingId", excludingId)
         .bind("endDate", endDate.minusDays(1))
@@ -486,6 +495,7 @@ fun Database.Read.hasLaterAssistanceNeedDecisions(
     childId: ChildId,
     startDate: LocalDate,
 ): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT EXISTS (
@@ -507,6 +517,7 @@ fun Database.Transaction.annulAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
     reason: String,
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE assistance_need_decision

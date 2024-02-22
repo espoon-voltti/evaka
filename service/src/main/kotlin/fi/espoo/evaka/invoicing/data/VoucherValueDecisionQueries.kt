@@ -138,6 +138,7 @@ INSERT INTO voucher_value_decision (
 
     decisions.forEach { decision ->
         // TODO: use batch once JDBI makes it less buggy
+        @Suppress("DEPRECATION")
         createUpdate(sql)
             .bindKotlin(decision)
             .bind("headOfFamilyId", decision.headOfFamilyId)
@@ -171,6 +172,7 @@ INSERT INTO voucher_value_decision (
 fun Database.Read.getValueDecisionsByIds(
     ids: List<VoucherValueDecisionId>
 ): List<VoucherValueDecision> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -276,6 +278,7 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
 ${if (lockForUpdate) "FOR UPDATE" else ""}
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("period", period)
@@ -286,6 +289,7 @@ ${if (lockForUpdate) "FOR UPDATE" else ""}
 fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>) {
     if (ids.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
         .bind("ids", ids)
         .execute()
@@ -448,6 +452,7 @@ WHERE
 ORDER BY $sortColumn $sortDirection, decision.id $sortDirection
 LIMIT :pageSize OFFSET :pageSize * :page
 """
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
@@ -509,6 +514,7 @@ LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = 
 WHERE decision.id = :id
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<VoucherValueDecisionDetailed>()?.let {
         it.copy(
             partnerIsCodebtor =
@@ -525,6 +531,7 @@ WHERE decision.id = :id
 fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
     headOfFamilyId: PersonId
 ): List<VoucherValueDecisionSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -605,12 +612,13 @@ fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId)
     // language=sql
     val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
 
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }
 
 fun Database.Read.getVoucherValueDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<VoucherValueDecisionCitizenInfoRow> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT vvd.id,
@@ -649,6 +657,7 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     // language=sql
     val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", id).bind("documentKey", documentKey).execute()
 }
 
@@ -660,7 +669,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
     val sql =
         "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
-    createUpdate(sql).bind("ids", ids).bind("status", status).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("ids", ids).bind("status", status).execute()
 }
 
 fun Database.Transaction.setVoucherValueDecisionType(
@@ -676,6 +685,7 @@ fun Database.Transaction.setVoucherValueDecisionType(
           AND status = :requiredStatus::voucher_value_decision_status
     """
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("type", type.toString())
@@ -687,6 +697,7 @@ fun Database.Transaction.markVoucherValueDecisionsSent(
     ids: List<VoucherValueDecisionId>,
     now: HelsinkiDateTime
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)"
         )
@@ -721,6 +732,7 @@ fun Database.Transaction.annulVoucherValueDecisions(
 ) {
     if (ids.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)"
         )
@@ -731,6 +743,7 @@ fun Database.Transaction.annulVoucherValueDecisions(
 }
 
 fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'"
         )
@@ -739,18 +752,21 @@ fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisi
 }
 
 fun Database.Transaction.removeVoucherValueDecisionIgnore(id: VoucherValueDecisionId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM voucher_value_decision WHERE id = :id AND status = 'IGNORED'")
         .bind("id", id)
         .updateExactlyOne()
 }
 
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
+    @Suppress("DEPRECATION")
     createUpdate("SELECT id FROM voucher_value_decision WHERE child_id = :childId FOR UPDATE")
         .bind("childId", childId)
         .execute()
 }
 
 fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
+    @Suppress("DEPRECATION")
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids)
         .execute()

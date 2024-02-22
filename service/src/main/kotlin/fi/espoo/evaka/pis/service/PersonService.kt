@@ -742,12 +742,14 @@ private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
 }
 
 private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: PersonId) =
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE person SET vtj_dependants_queried = :now WHERE id = :personId")
         .bind("personId", personId)
         .bind("now", HelsinkiDateTime.now())
         .execute()
 
 private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: ChildId) =
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE person SET vtj_guardians_queried = :now WHERE id = :personId")
         .bind("personId", personId)
         .bind("now", HelsinkiDateTime.now())

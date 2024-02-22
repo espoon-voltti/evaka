@@ -153,10 +153,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      * thread.
      */
     open class Read internal constructor(val handle: Handle) {
+        @Deprecated("Use new query API instead")
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
 
         fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
-            createQuery(QuerySql.Builder<Tag>().run { f(this) })
+            @Suppress("DEPRECATION") createQuery(QuerySql.Builder<Tag>().run { f(this) })
 
         fun createQuery(fragment: QuerySql<*>): Query {
             val raw = handle.createQuery(fragment.sql.toString())
@@ -185,10 +186,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
 
+        @Deprecated("Use new query API instead")
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
 
         fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
-            createUpdate(QuerySql.Builder<Tag>().run { f(this) })
+            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder<Tag>().run { f(this) })
 
         fun createUpdate(fragment: QuerySql<*>): Update {
             val raw = handle.createUpdate(fragment.sql.toString())
@@ -561,9 +563,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     }
 
     class PreparedBatch
-    internal constructor(override val raw: org.jdbi.v3.core.statement.PreparedBatch) :
-        SqlStatement<PreparedBatch>() {
-        override fun self(): PreparedBatch = this
+    internal constructor(private val raw: org.jdbi.v3.core.statement.PreparedBatch) {
 
         fun add(): PreparedBatch {
             raw.add()
@@ -573,6 +573,63 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         fun execute(): IntArray = raw.execute()
 
         fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
+
+        inline fun <reified T> bind(
+            name: String,
+            value: T,
+        ): PreparedBatch = bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
+
+        inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): PreparedBatch =
+            registerColumnMapper(createQualifiedType(), mapper)
+
+        fun <T> registerColumnMapper(
+            type: QualifiedType<T>,
+            mapper: ColumnMapper<T>
+        ): PreparedBatch {
+            raw.registerColumnMapper(type, mapper)
+            return this
+        }
+
+        fun addBinding(binding: Binding<*>): PreparedBatch {
+            raw.bindByType(binding.name, binding.value, binding.type)
+            return this
+        }
+
+        fun addBindings(bindings: Iterable<Binding<*>>): PreparedBatch {
+            for (binding in bindings) {
+                raw.bindByType(binding.name, binding.value, binding.type)
+            }
+            return this
+        }
+
+        fun addBindings(bindings: Sequence<Binding<*>>): PreparedBatch {
+            for (binding in bindings) {
+                raw.bindByType(binding.name, binding.value, binding.type)
+            }
+            return this
+        }
+
+        fun bindJson(name: String, value: Any): PreparedBatch =
+            bindByType(
+                name,
+                value,
+                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+            )
+
+        fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): PreparedBatch {
+            raw.bindByType(name, value, type)
+            return this
+        }
+
+        fun bindKotlin(value: Any): PreparedBatch {
+            raw.bindKotlin(value)
+            return this
+        }
+
+        fun bindKotlin(name: String, value: Any): PreparedBatch {
+            raw.bindKotlin(name, value)
+            return this
+        }
     }
 
     @JvmInline

@@ -74,6 +74,7 @@ data class EmployeeWithDaycareRoles(
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
 
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -91,6 +92,7 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
     externalId: ExternalId
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE employee SET external_id = :externalId WHERE employee_number = :employeeNumber AND (external_id != :externalId OR external_id IS NULL)"
         )
@@ -99,6 +101,7 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
         .updateNoneOrOne()
 
 fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee): Employee =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -116,6 +119,7 @@ RETURNING id, preferred_first_name, first_name, last_name, email, external_id, c
         .exactlyOne<Employee>()
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT employee.roles AS global_roles, (
@@ -132,6 +136,7 @@ WHERE id = :id
         .exactlyOne<EmployeeRoles>()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT employee_number
@@ -148,6 +153,7 @@ private fun Database.Read.searchEmployees(
     externalId: ExternalId? = null,
     temporaryInUnitId: DaycareId? = null
 ): Database.Result<Employee> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -164,6 +170,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.exte
         .mapTo<Employee>()
 
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -192,6 +199,7 @@ fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? =
     searchEmployees(externalId = externalId).exactlyOneOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) =
+    @Suppress("DEPRECATION")
     createQuery(
         """
 SELECT id, preferred_first_name, first_name, last_name, email, active, employee.roles AS global_roles, (
@@ -205,6 +213,7 @@ $where
     )
 
 fun Database.Transaction.markEmployeeLastLogin(clock: EvakaClock, id: EmployeeId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE employee 
@@ -256,10 +265,12 @@ WHERE employee.id = :id
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE employee SET first_name = :firstName, last_name = :lastName WHERE id = :id"
         )
@@ -269,6 +280,7 @@ fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastN
         .updateExactlyOne()
 
 fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE employee SET active = :active WHERE id = :id")
         .bind("id", id)
         .bind("active", active)
@@ -403,6 +415,7 @@ ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return tx.createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
@@ -410,6 +423,7 @@ LIMIT :pageSize OFFSET :offset
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -435,17 +449,20 @@ ON CONFLICT (user_id) DO UPDATE SET
         failure_count = 0
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     val updated = this.createUpdate(sql).bind("userId", userId).bind("pin", pinCode.pin).execute()
 
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
 fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
+    @Suppress("DEPRECATION")
     createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
         .bind("userId", userId)
         .exactlyOneOrNull<PinCode>()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT EXISTS (
@@ -463,6 +480,7 @@ SELECT EXISTS (
         .exactlyOne<Boolean>()
 
 fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE employee_pin
@@ -477,6 +495,7 @@ WHERE user_id = :employeeId
 fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(
     employeeId: EmployeeId
 ): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 UPDATE employee_pin
@@ -497,11 +516,13 @@ RETURNING locked
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH employees_to_reset AS (
@@ -528,6 +549,7 @@ RETURNING id
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT id, concat(first_name, ' ', last_name) AS name
@@ -545,6 +567,7 @@ fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
     preferredFirstName: String?
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE employee SET preferred_first_name = :preferredFirstName WHERE id = :employeeId"
         )
@@ -556,6 +579,7 @@ fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?):
     val globalRoles = roles.filter { it.isGlobalRole() }
     val unitScopedRoles = roles.filter { it.isUnitScopedRole() }
     return if (unitId == null) {
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT id, first_name, last_name, email, external_id, created, updated, active
@@ -567,6 +591,7 @@ ORDER BY last_name, first_name
             .bind("globalRoles", globalRoles)
             .toList<Employee>()
     } else {
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT id, first_name, last_name, email, external_id, created, updated, active

@@ -73,6 +73,7 @@ fun Database.Transaction.upsertIncome(
     """
 
     val update =
+        @Suppress("DEPRECATION")
         createUpdate(sql)
             .bind("now", clock.now())
             .bind("id", income.id)
@@ -102,6 +103,7 @@ fun Database.Read.getIncome(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId
 ): Income? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT income.*, evaka_user.name AS updated_by_name,
@@ -155,6 +157,7 @@ fun Database.Read.getIncomesForPerson(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("personId", personId).bind("validAt", validAt).toList {
         toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
     }
@@ -179,12 +182,14 @@ fun Database.Read.getIncomesFrom(
             AND (valid_to IS NULL OR valid_to >= :from)
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("personIds", personIds).bind("from", from).toList {
         toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
     }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
+    @Suppress("DEPRECATION")
     val update = createUpdate("DELETE FROM income WHERE id = :id").bind("id", incomeId)
 
     handlingExceptions { update.execute() }
@@ -202,6 +207,7 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
         """
 
     val update =
+        @Suppress("DEPRECATION")
         createUpdate(sql)
             .bind("personId", personId)
             .bind("newValidTo", period.start.minusDays(1))

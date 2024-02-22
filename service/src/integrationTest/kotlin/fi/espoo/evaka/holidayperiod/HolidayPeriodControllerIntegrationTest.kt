@@ -151,6 +151,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val reservations =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT date FROM attendance_reservation ORDER BY date")
                     .toList<LocalDate>()
             }

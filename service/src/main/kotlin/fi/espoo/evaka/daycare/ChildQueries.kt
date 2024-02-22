@@ -13,7 +13,7 @@ fun Database.Read.getChild(id: ChildId): Child? {
     val sql =
         "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
 
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<Child>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<Child>()
 }
 
 fun Database.Transaction.createChild(child: Child): Child {
@@ -21,6 +21,7 @@ fun Database.Transaction.createChild(child: Child): Child {
     val sql =
         "INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details) VALUES (:id, :allergies, :diet, :additionalInfo, :medication, :languageAtHome, :languageAtHomeDetails) RETURNING *"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)
@@ -41,6 +42,7 @@ fun Database.Transaction.upsertChild(child: Child) {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)
@@ -53,6 +55,7 @@ fun Database.Transaction.updateChild(child: Child) {
     val sql =
         "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails WHERE id = :id"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)

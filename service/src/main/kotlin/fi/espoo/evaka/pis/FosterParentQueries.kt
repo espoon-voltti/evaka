@@ -24,6 +24,7 @@ private fun Database.Read.getFosterParentRelationships(
 ): List<FosterParentRelationship> {
     if (parentId == null && childId == null) error("Either parentId or childId must be provided")
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -59,6 +60,7 @@ WHERE fp.parent_id = :parentId OR fp.child_id = :childId
 fun Database.Transaction.createFosterParentRelationship(
     data: CreateFosterParentRelationshipBody
 ): FosterParentId =
+    @Suppress("DEPRECATION")
     createUpdate(
             "INSERT INTO foster_parent (child_id, parent_id, valid_during) VALUES (:childId, :parentId, :validDuring) RETURNING id"
         )
@@ -70,6 +72,7 @@ fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,
     validDuring: DateRange
 ) =
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE foster_parent SET valid_during = :validDuring WHERE id = :id")
         .bind("id", id)
         .bind("validDuring", validDuring)
@@ -80,6 +83,7 @@ fun Database.Transaction.updateFosterParentRelationshipValidity(
         }
 
 fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) =
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM foster_parent WHERE id = :id").bind("id", id).execute().also {
         if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id")
     }

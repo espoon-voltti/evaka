@@ -396,6 +396,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             // The placement ends on the same day as the income, and there is no billable placement
             // afterwards,
             // so no notification should be sent
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     "UPDATE placement SET end_date = :expirationDate WHERE child_id = :personId"
                 )
@@ -409,6 +410,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // There is a billable placement a day after the income has expired, so a notification
         // should be sent
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     "UPDATE placement SET end_date = :expirationDate + INTERVAL '1 day' WHERE child_id = :personId"
                 )
@@ -432,6 +434,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 )
             )
 
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE service_need_option SET fee_coefficient = 0 WHERE id = :snoId")
                 .bind("snoId", snDaycareContractDays15.id)
                 .execute()

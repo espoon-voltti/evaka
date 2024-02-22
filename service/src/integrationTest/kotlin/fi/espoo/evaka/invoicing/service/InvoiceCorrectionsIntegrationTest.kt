@@ -481,6 +481,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT id, applied_completely FROM invoice_correction").toList {
                     column<InvoiceCorrectionId>("id") to column<Boolean>("applied_completely")
                 }
@@ -509,6 +510,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT id, applied_completely FROM invoice_correction").toList {
                     column<InvoiceCorrectionId>("id") to column<Boolean>("applied_completely")
                 }

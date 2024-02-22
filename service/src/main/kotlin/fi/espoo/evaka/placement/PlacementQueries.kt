@@ -23,6 +23,7 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
@@ -36,6 +37,7 @@ WHERE p.id = :id
 }
 
 fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_date, p.end_date
@@ -50,6 +52,7 @@ fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> 
 }
 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
@@ -67,6 +70,7 @@ fun Database.Read.getPlacementsForChildDuring(
     start: LocalDate,
     end: LocalDate?
 ): List<Placement> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
@@ -83,6 +87,7 @@ AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')
 }
 
 fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildId): Placement? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee
@@ -108,6 +113,7 @@ fun Database.Read.getChildPlacementTypesByRange(
     childId: ChildId,
     period: DateRange
 ): List<ChildPlacementType> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -133,6 +139,7 @@ fun Database.Transaction.insertPlacement(
     endDate: LocalDate,
     placeGuarantee: Boolean
 ): Placement {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             INSERT INTO placement (type, child_id, unit_id, start_date, end_date, place_guarantee)
@@ -159,6 +166,7 @@ data class PlacementChildAndRange(
 )
 
 fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
+    @Suppress("DEPRECATION")
     createQuery("SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = :id")
         .bind("id", placementId)
         .exactlyOne<PlacementChildAndRange>()
@@ -166,6 +174,7 @@ fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
 fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
 
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -182,6 +191,7 @@ fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date
 
 fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
     val placement = getPlacementChildAndRange(placementId)
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -204,6 +214,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
     endDate: LocalDate
 ) {
     val placement = getPlacementChildAndRange(placementId)
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
@@ -216,6 +227,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
 }
 
 fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: PlacementType) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE placement SET type = :type WHERE id = :id")
         .bind("id", placementId)
         .bind("type", type)
@@ -223,6 +235,7 @@ fun Database.Transaction.updatePlacementType(placementId: PlacementId, type: Pla
 }
 
 fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM service_need WHERE placement_id = :id")
         .bind("id", placementId)
         .execute()
@@ -243,12 +256,14 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult
         FiniteDateRange(placement.startDate, placement.endDate)
     )
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id")
         .bind("id", id)
         .execute()
 
     deleteServiceNeedsFromPlacement(id)
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM placement WHERE id = :id").bind("id", id).execute()
 
     recreateBackupCares(
@@ -264,6 +279,7 @@ fun Database.Transaction.cancelPlacement(id: PlacementId): CancelPlacementResult
 }
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             DELETE from daycare_group_placement
@@ -275,6 +291,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
         .bind("date", date)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             UPDATE daycare_group_placement SET end_date = :date
@@ -298,6 +315,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
 }
 
 fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, date: LocalDate) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -310,6 +328,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
         .bind("date", date)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -338,6 +357,7 @@ fun Database.Transaction.clearCalendarEventAttendees(
     unitId: DaycareId,
     range: FiniteDateRange?
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -362,6 +382,7 @@ fun Database.Transaction.clearCalendarEventAttendees(
         .execute()
 
     // clear events that no longer have any attendees
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -420,6 +441,7 @@ fun Database.Read.getDaycarePlacements(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("from", startDate)
         .bind("to", endDate)
@@ -456,6 +478,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull(toDaycarePlacement)
 }
 
@@ -465,6 +488,7 @@ fun Database.Read.getTerminatedPlacements(
     terminationRequestedMinDate: LocalDate?,
     terminationRequestedMaxDate: LocalDate?
 ): List<TerminatedPlacement> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -530,6 +554,7 @@ fun Database.Read.getCitizenChildPlacements(
     today: LocalDate,
     childId: ChildId
 ): List<ChildPlacement> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -576,6 +601,7 @@ fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPl
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
@@ -600,6 +626,7 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementId", daycarePlacementId)
         .bind("groupId", groupId)
@@ -628,6 +655,7 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementId", daycarePlacementId)
         .bind("groupId", groupId)
@@ -636,6 +664,7 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
 }
 
 fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = :groupId)"
         )
@@ -667,6 +696,7 @@ fun Database.Read.getGroupPlacementsAtDaycare(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("daycareId", daycareId)
         .bind("placementRange", placementRange)
@@ -691,6 +721,7 @@ fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPl
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("childId", childId).toList<DaycareGroupPlacement>()
 }
 
@@ -708,6 +739,7 @@ fun Database.Read.getGroupPlacementChildren(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("groupId", groupId).bind("range", range).toList<ChildId>()
 }
 
@@ -726,6 +758,7 @@ fun Database.Transaction.createGroupPlacement(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementId", placementId)
         .bind("groupId", groupId)
@@ -742,6 +775,7 @@ fun Database.Transaction.updateGroupPlacementStartDate(
     val sql =
         "UPDATE daycare_group_placement SET start_date = :startDate WHERE id = :id RETURNING id"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("startDate", startDate)
@@ -755,6 +789,7 @@ fun Database.Transaction.updateGroupPlacementEndDate(
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET end_date = :endDate WHERE id = :id RETURNING id"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("endDate", endDate)
@@ -774,6 +809,7 @@ fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<GroupPlacementId>() != null
 }
 
@@ -804,6 +840,7 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
 }
 
 fun Database.Transaction.deleteServiceNeedsFromPlacementAfter(id: PlacementId, date: LocalDate) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM service_need
@@ -816,6 +853,7 @@ WHERE placement_id = :placementId
         .bind("date", date)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE service_need
@@ -841,6 +879,7 @@ fun Database.Transaction.terminatePlacementFrom(
 
     val placement = getPlacementChildAndRange(placementId)
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE placement
@@ -870,6 +909,7 @@ fun Database.Transaction.updatePlacementTermination(
     terminationDate: LocalDate,
     terminatedBy: EvakaUserId
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE placement SET
@@ -888,6 +928,7 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
     childId: ChildId,
     range: FiniteDateRange
 ): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -903,6 +944,7 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
         .exactlyOne<Boolean>()
 
 fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDate): Language? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
             SELECT d.language

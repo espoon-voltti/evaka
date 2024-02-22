@@ -339,6 +339,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
         )
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
                 )
@@ -392,6 +393,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         // when
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
                 )
@@ -399,6 +401,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.plusWeeks(1))
                 .execute()
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
                 )

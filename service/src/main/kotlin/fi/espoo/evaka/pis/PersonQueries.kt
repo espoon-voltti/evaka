@@ -83,11 +83,13 @@ FROM person WHERE id = ${bind(id)}
         .exactlyOneOrNull()
 
 fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? =
+    @Suppress("DEPRECATION")
     createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
         .bind("ssn", ssn)
         .exactlyOneOrNull<CitizenUserIdentity>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -104,6 +106,7 @@ WHERE id = :id
 data class PersonNameDetails(val id: PersonId, val firstName: String, val lastName: String)
 
 fun Database.Read.getPersonNameDetailsById(personIds: Set<PersonId>): List<PersonNameDetails> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -118,11 +121,13 @@ WHERE id = ANY(:personIds)
 }
 
 fun Database.Read.isDuplicate(id: PersonId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery("SELECT duplicate_of IS NOT NULL FROM person WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -137,6 +142,7 @@ FOR UPDATE
         .exactlyOneOrNull(toPersonDTO)
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -151,11 +157,13 @@ WHERE social_security_number = :ssn
 }
 
 fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
+    @Suppress("DEPRECATION")
     createQuery("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = :id")
         .bind("id", id)
         .toList(toPersonDTO)
 
 fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? =
+    @Suppress("DEPRECATION")
     createQuery("SELECT duplicate_of FROM person WHERE id = :id")
         .bind("id", id)
         .mapTo<PersonId>()
@@ -219,6 +227,7 @@ fun Database.Read.searchPeople(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .addBindings(freeTextParams)
         .applyIf(restricted) { this.bind("userId", user.id) }
@@ -235,7 +244,7 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         """
             .trimIndent()
 
-    return createQuery(sql).bindKotlin(person).exactlyOne<PersonId>()
+    @Suppress("DEPRECATION") return createQuery(sql).bindKotlin(person).exactlyOne<PersonId>()
 }
 
 fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
@@ -248,6 +257,7 @@ fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("firstName", "Etunimi")
         .bind("lastName", "Sukunimi")
@@ -294,12 +304,14 @@ fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
         RETURNING *
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .exactlyOne(toPersonDTO)
 }
 
 fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO person (
@@ -387,6 +399,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         RETURNING *
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = HelsinkiDateTime.now()))
         .bind("ssn", person.identity)
@@ -409,6 +422,7 @@ fun Database.Transaction.updatePersonBasicContactInfo(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("email", email)
@@ -436,6 +450,7 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
@@ -464,6 +479,7 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPa
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).bindKotlin(patch).exactlyOneOrNull<PersonId>() != null
 }
 
@@ -471,7 +487,7 @@ fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
     // language=SQL
     val sql = "UPDATE person SET social_security_number = :ssn WHERE id = :id"
 
-    createUpdate(sql).bind("id", id).bind("ssn", ssn).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).bind("ssn", ssn).execute()
 }
 
 private val toPersonDTO: Row.() -> PersonDTO = {
@@ -546,10 +562,11 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
         order by source.relname, attr.attname
     """
             .trimIndent()
-    return createQuery(sql).toList<PersonReference>()
+    @Suppress("DEPRECATION") return createQuery(sql).toList<PersonReference>()
 }
 
 fun Database.Read.getGuardianDependants(personId: PersonId) =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -563,6 +580,7 @@ WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)
         .toList(toPersonDTO)
 
 fun Database.Read.getDependantGuardians(personId: ChildId) =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -576,6 +594,7 @@ WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)
         .toList(toPersonDTO)
 
 fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: Boolean) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE person SET ssn_adding_disabled = :disabled WHERE id = :id")
         .bind("id", id)
         .bind("disabled", disabled)
@@ -583,6 +602,7 @@ fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: B
 }
 
 fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE person SET preferred_name = :preferredName WHERE id = :id")
         .bind("id", id)
         .bind("preferredName", preferredName)
@@ -590,6 +610,7 @@ fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String
 }
 
 fun Database.Transaction.updateOphPersonOid(id: PersonId, ophPersonOid: String) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE person SET oph_person_oid = :ophPersonOid WHERE id = :id")
         .bind("id", id)
         .bind("ophPersonOid", ophPersonOid)

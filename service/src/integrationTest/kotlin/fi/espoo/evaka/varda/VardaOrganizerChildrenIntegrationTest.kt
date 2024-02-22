@@ -103,6 +103,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
 
         db.transaction {
             val rows =
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT * FROM varda_organizer_child")
                     .toList<VardaChildOrganizerRow>()
 
@@ -123,6 +124,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
     fun `getOrCreateVardaChildByOrganizer won't create person if she doesn't have ssn nor oid`() {
         val childId = testChild_1.id
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     """
                 UPDATE person SET social_security_number = null, oph_person_oid = null
@@ -152,6 +154,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
     fun `getOrCreateVardaChildByOrganizer creates person if she does have oid but no ssn`() {
         val childId = testChild_1.id
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     """
                 UPDATE person SET social_security_number = null, oph_person_oid = '1.2.3.4.5'
@@ -180,6 +183,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
     fun `getOrCreateVardaChildByOrganizer creates person if she does have ssn but no oid`() {
         val childId = testChild_1.id
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     """
                 UPDATE person SET social_security_number = '111121-1234', oph_person_oid = null
