@@ -8,6 +8,7 @@ import range from 'lodash/range'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 
 import {
   Child,
@@ -17,7 +18,9 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { Table, Tbody } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import { Translations, useTranslation } from '../../../state/i18n'
@@ -48,7 +51,7 @@ interface Props {
   selectedGroup: AttendanceGroupFilter
 }
 
-const childFilter = (
+const childVisibleFilter = (
   child: ChildRecordOfDay,
   selectedGroup: AttendanceGroupFilter
 ): boolean =>
@@ -58,6 +61,45 @@ const childFilter = (
     : selectedGroup.type === 'no-group'
       ? child.groupId === null
       : selectedGroup.type === 'all-children'
+
+const childPresentFilter = (
+  child: ChildRecordOfDay,
+  day: OperationalDay,
+  selectedGroup: AttendanceGroupFilter
+): boolean => {
+  if (child.inOtherUnit) return false
+
+  if (selectedGroup.type === 'group') {
+    const inSelectedGroup =
+      (child.groupId === selectedGroup.id && child.backupGroupId === null) ||
+      child.backupGroupId === selectedGroup.id
+    if (!inSelectedGroup) return false
+  }
+
+  if (selectedGroup.type === 'no-group') {
+    if (child.backupGroupId !== null) return false
+  }
+
+  if (child.attendances.length > 0) return true
+
+  if (child.scheduleType === 'TERM_BREAK') return false
+
+  if (day.dateInfo.isHoliday) {
+    return child.reservations.length > 0 && !isFullyAbsent(child)
+  }
+
+  return !isFullyAbsent(child)
+}
+
+const isFullyAbsent = (child: ChildRecordOfDay) =>
+  child.possibleAbsenceCategories.every((c) => {
+    switch (c) {
+      case 'BILLABLE':
+        return child.absenceBillable !== null
+      case 'NONBILLABLE':
+        return child.absenceNonbillable !== null
+    }
+  })
 
 export default React.memo(function ChildReservationsTable({
   days,
@@ -74,7 +116,7 @@ export default React.memo(function ChildReservationsTable({
     const filteredChildren = childBasics.filter((c) =>
       days.some((d) =>
         d.children.some(
-          (c2) => c2.childId === c.id && childFilter(c2, selectedGroup)
+          (c2) => c2.childId === c.id && childVisibleFilter(c2, selectedGroup)
         )
       )
     )
@@ -84,6 +126,17 @@ export default React.memo(function ChildReservationsTable({
       (child) => child.firstName
     )
   }, [childBasics, days, selectedGroup])
+
+  const childrenCounts = useMemo(
+    () =>
+      days.map(
+        (day) =>
+          day.children.filter((child) =>
+            childPresentFilter(child, day, selectedGroup)
+          ).length
+      ),
+    [days, selectedGroup]
+  )
 
   return (
     <Table data-qa="child-reservations-table">
@@ -110,6 +163,13 @@ export default React.memo(function ChildReservationsTable({
             />
           )
         })}
+        <SumRow>
+          <Td>{i18n.unit.attendanceReservations.childCount}</Td>
+          {childrenCounts.map((day, i) => (
+            <Td key={i}>{day}</Td>
+          ))}
+          <Td />
+        </SumRow>
       </Tbody>
     </Table>
   )
@@ -184,16 +244,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
             </NameTd>
           )}
           {days.map(({ date, dateInfo, child }) => {
-            const fullyAbsent =
-              !!child &&
-              child.possibleAbsenceCategories.every((c) => {
-                switch (c) {
-                  case 'BILLABLE':
-                    return child.absenceBillable !== null
-                  case 'NONBILLABLE':
-                    return child.absenceNonbillable !== null
-                }
-              })
+            const fullyAbsent = !!child && isFullyAbsent(child)
             const hasReservations = !!child && child.reservations.length > 0
             const displayAbsence = fullyAbsent || !hasReservations
             const absence =
@@ -208,7 +259,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                 rowIndex={index}
                 maxRows={reservationRowCount}
               >
-                {child && childFilter(child, selectedGroup) && (
+                {child && childVisibleFilter(child, selectedGroup) && (
                   <ChildDayReservation
                     date={date}
                     reservationIndex={index}
@@ -269,7 +320,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
               rowIndex={index}
               maxRows={attendanceRowCount}
             >
-              {child && childFilter(child, selectedGroup) && (
+              {child && childVisibleFilter(child, selectedGroup) && (
                 <ChildDayAttendance
                   date={date}
                   attendanceIndex={index}
@@ -321,3 +372,25 @@ const RowMenu = React.memo(function RowMenu({
     />
   )
 })
+
+const SumRow = styled(Tr)`
+  td {
+    border-top: 2px solid ${colors.grayscale.g15};
+    border-right: 1px solid ${colors.grayscale.g15};
+    border-bottom: none;
+    text-align: center;
+    padding: ${defaultMargins.xs} ${defaultMargins.s};
+    background-color: ${colors.grayscale.g4};
+  }
+
+  & > :first-child {
+    font-weight: 600;
+    text-align: start;
+    background-color: unset;
+  }
+
+  & > :last-child {
+    border-right: none;
+    background-color: unset;
+  }
+`
