@@ -21,11 +21,13 @@ fun Database.Transaction.insertVasuDocument(
     template: VasuTemplate
 ): VasuDocumentId {
     val child =
+        @Suppress("DEPRECATION")
         createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
             .bind("id", childId)
             .exactlyOne<VasuChild>(qualifiers = emptyArray())
 
     val guardiansAndFosterParents =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
         SELECT p.id, p.first_name, p.last_name
@@ -59,6 +61,7 @@ fun Database.Transaction.insertVasuDocument(
         )
 
     val documentId =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
         INSERT INTO curriculum_document (created, updated, child_id, basics, template_id, modified_at)
@@ -73,6 +76,7 @@ fun Database.Transaction.insertVasuDocument(
             .bind("templateId", template.id)
             .exactlyOne<VasuDocumentId>()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         INSERT INTO curriculum_content (created, updated, document_id, content)
@@ -120,6 +124,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
@@ -170,6 +175,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuDocument>()?.let { document ->
         if (document.basics.placements == null) {
             document.copy(basics = document.basics.copy(placements = getVasuPlacements(today, id)))
@@ -189,8 +195,10 @@ fun Database.Transaction.updateVasuDocumentMaster(
     val updateContentSql =
         "UPDATE curriculum_content SET content = :content WHERE document_id = :id AND master"
 
+    @Suppress("DEPRECATION")
     createUpdate(updateContentSql).bind("id", id).bind("content", content).updateExactlyOne()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE curriculum_document SET
@@ -217,8 +225,10 @@ fun Database.Transaction.publishVasuDocument(now: HelsinkiDateTime, id: VasuDocu
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(insertContentSql).bind("now", now).bind("id", id).updateExactlyOne()
 
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE curriculum_document SET modified_at = :now WHERE id = :id")
         .bind("now", now)
         .bind("id", id)
@@ -269,6 +279,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .toList<SummaryResultRow>()
@@ -323,6 +334,7 @@ fun Database.Transaction.insertVasuDocumentEvent(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("documentId", documentId)
         .bind("createdBy", createdBy)
@@ -331,10 +343,12 @@ fun Database.Transaction.insertVasuDocumentEvent(
 }
 
 fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
+    @Suppress("DEPRECATION")
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?.let { basics ->
+            @Suppress("DEPRECATION")
             createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
                 .bind("basics", basics.copy(placements = getVasuPlacements(today, id)))
@@ -346,6 +360,7 @@ private fun Database.Read.getVasuPlacements(
     today: LocalDate,
     id: VasuDocumentId
 ): List<VasuPlacement> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT 
@@ -371,6 +386,7 @@ private fun Database.Read.getVasuPlacements(
 }
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
+    @Suppress("DEPRECATION")
     createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
@@ -389,6 +405,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
         if (guardianFromDocument.size == 1) {
             guardianFromDocument[0]
         } else {
+            @Suppress("DEPRECATION")
             createQuery(
                     """
         SELECT p.id, p.first_name, p.last_name
@@ -401,6 +418,7 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
                 .exactlyOne<VasuGuardian>(qualifiers = emptyArray())
         }
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE curriculum_document
@@ -423,6 +441,7 @@ WHERE id = :id
 fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId) {
     val currentBasics = getVasuDocumentBasics(docId)
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE curriculum_document
@@ -445,10 +464,13 @@ WHERE id = :id
 }
 
 fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM curriculum_content WHERE document_id = :id").bind("id", id).execute()
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM curriculum_document_event WHERE curriculum_document_id = :id")
         .bind("id", id)
         .execute()
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM curriculum_document WHERE id = :id").bind("id", id).execute()
 }
 

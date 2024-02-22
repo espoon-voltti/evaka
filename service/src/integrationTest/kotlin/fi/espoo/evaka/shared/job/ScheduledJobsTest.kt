@@ -411,6 +411,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 )
                 .let { id ->
+                    @Suppress("DEPRECATION")
                     it.createUpdate(
                             "UPDATE child_daily_note SET modified_at = :date WHERE id = :id"
                         )
@@ -547,6 +548,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getApplicationStatus(applicationId: ApplicationId): ApplicationStatus {
         return db.read {
+            @Suppress("DEPRECATION")
             it.createQuery("SELECT status FROM application WHERE id = :id")
                 .bind("id", applicationId)
                 .exactlyOne<ApplicationStatus>()

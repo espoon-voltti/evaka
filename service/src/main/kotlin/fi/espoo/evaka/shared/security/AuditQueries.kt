@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Transaction.upsertCitizenUser(id: PersonId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO evaka_user (id, type, citizen_id, name)
@@ -23,6 +24,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name
         .execute()
 
 fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO evaka_user (id, type, employee_id, name)
@@ -36,6 +38,7 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name
         .execute()
 
 fun Database.Transaction.upsertMobileDeviceUser(id: MobileDeviceId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO evaka_user (id, type, mobile_device_id, name)

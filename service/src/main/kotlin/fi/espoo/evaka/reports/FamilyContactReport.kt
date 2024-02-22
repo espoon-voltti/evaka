@@ -105,6 +105,7 @@ private fun Database.Read.getFamilyContacts(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("today", today)
         .bind("unitId", unitId)

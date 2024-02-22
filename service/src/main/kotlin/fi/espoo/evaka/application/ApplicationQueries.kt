@@ -80,6 +80,7 @@ fun Database.Transaction.insertApplication(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createUpdate(sql)
         .bind("type", type)
         .bind("guardianId", guardianId)
@@ -145,6 +146,7 @@ fun Database.Read.activePlacementExists(
                 :today <= end_date
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("types", placementTypes)
@@ -581,6 +583,7 @@ fun Database.Read.fetchApplicationSummaries(
             summary.preferredUnits.map { unit -> unit.id }
         }
     val unitMap =
+        @Suppress("DEPRECATION")
         createQuery(unitSql).bind("unitIds", unitIds).toMap {
             columnPair<DaycareId, String>("id", "name")
         }
@@ -623,6 +626,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("guardianId", guardianId).toList<PersonApplicationSummary>()
 }
 
@@ -731,6 +735,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("citizenId", citizenId)
         .bind("today", today)
@@ -794,6 +799,7 @@ fun Database.Read.fetchApplicationDetails(
             .trimIndent()
 
     val application =
+        @Suppress("DEPRECATION")
         createQuery(sql).bind("id", applicationId).exactlyOneOrNull {
             val childRestricted = column("child_restricted") ?: false
             val guardianRestricted = column("guardian_restricted") ?: false
@@ -845,6 +851,7 @@ fun Database.Read.fetchApplicationDetails(
                 .trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap =
+            @Suppress("DEPRECATION")
             createQuery(unitSql).bind("unitIds", unitIds).toMap {
                 columnPair<DaycareId, String>("id", "name")
             }
@@ -907,6 +914,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("unitId", unitId).toList {
         ApplicationUnitSummary(
             applicationId = column("id"),
@@ -968,6 +976,7 @@ fun Row.mapRequestedPlacementType(colName: String): PlacementType =
     }
 
 fun Database.Read.getApplicationType(id: ApplicationId): ApplicationType =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT type FROM application WHERE id = :id
@@ -997,6 +1006,7 @@ fun Database.Transaction.updateForm(
     val sql =
         "UPDATE application SET document = :document, form_modified = :now WHERE id = :applicationId;"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("applicationId", id)
         .bindJson("document", transformedForm)
@@ -1014,6 +1024,7 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: App
             form.child.diet.isBlank() &&
             form.otherInfo.isBlank()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("applicationId", id).bind("checked", default).execute()
 }
 
@@ -1021,7 +1032,7 @@ fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: Appl
     // language=SQL
     val sql = "UPDATE application SET status = :status WHERE id = :id"
 
-    createUpdate(sql).bind("id", id).bind("status", status).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).bind("status", status).execute()
 }
 
 fun Database.Transaction.updateApplicationDates(
@@ -1032,6 +1043,7 @@ fun Database.Transaction.updateApplicationDates(
     // language=SQL
     val sql = "UPDATE application SET sentdate = :sentDate, duedate = :dueDate WHERE id = :id"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", id).bind("sentDate", sentDate).bind("dueDate", dueDate).execute()
 }
 
@@ -1039,6 +1051,7 @@ fun Database.Transaction.updateApplicationFlags(
     id: ApplicationId,
     applicationFlags: ApplicationFlags
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
                 UPDATE application
@@ -1077,6 +1090,7 @@ fun Database.Transaction.updateApplicationOtherGuardian(
     val sql =
         "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("applicationId", applicationId)
         .bind("otherGuardianId", otherGuardianId)
@@ -1126,10 +1140,11 @@ fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boo
     // language=SQL
     val sql = "UPDATE application SET checkedByAdmin = :verified WHERE id = :id"
 
-    createUpdate(sql).bind("verified", verified).bind("id", id).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("verified", verified).bind("id", id).execute()
 }
 
 fun Database.Transaction.deleteApplication(id: ApplicationId) =
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM application WHERE id = :id").bind("id", id).execute()
 
 fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
@@ -1151,12 +1166,14 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
         )
 
         // language=SQL
+        @Suppress("DEPRECATION")
         createUpdate(
                 """DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])"""
             )
             .bind("applicationIds", applicationIds)
             .execute()
 
+        @Suppress("DEPRECATION")
         createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
             .bind("applicationIds", applicationIds)
             .execute()
@@ -1166,6 +1183,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 fun Database.Transaction.cancelOutdatedSentTransferApplications(
     clock: EvakaClock
 ): List<ApplicationId> =
+    @Suppress("DEPRECATION")
     createUpdate(
             // only include applications that don't have decisions
             // placement type checks are doing in inverse so that the addition and accidental
@@ -1241,6 +1259,7 @@ RETURNING id
 fun Database.Read.getApplicationAttachments(
     applicationId: ApplicationId
 ): List<ApplicationAttachment> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT
@@ -1258,6 +1277,7 @@ WHERE application_id = :applicationId
 fun Database.Transaction.cancelAllActiveTransferApplications(
     childId: ChildId
 ): List<ApplicationId> =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=sql
             """
@@ -1308,6 +1328,7 @@ fun Database.Read.personHasSentApplicationWithId(
     )
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("citizenId", citizenId)
         .bind("applicationId", applicationId)

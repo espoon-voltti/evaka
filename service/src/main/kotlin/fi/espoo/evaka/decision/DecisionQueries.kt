@@ -200,6 +200,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     val rows = createQuery(sql).bind("guardianId", guardianId).toList<ApplicationDecisionRow>()
 
     return rows
@@ -226,6 +227,7 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("applicationId", applicationId).toList<DecisionDraft>()
 }
 
@@ -234,6 +236,7 @@ fun Database.Transaction.finalizeDecisions(
     today: LocalDate
 ): List<DecisionId> {
     // discard unplanned drafts
+    @Suppress("DEPRECATION")
     createUpdate(
             "DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false"
         )
@@ -241,6 +244,7 @@ fun Database.Transaction.finalizeDecisions(
         .execute()
 
     // confirm planned drafts
+    @Suppress("DEPRECATION")
     return createQuery(
             "UPDATE decision SET sent_date = :today WHERE application_id = :applicationId RETURNING id"
         )
@@ -253,6 +257,7 @@ fun Database.Transaction.markApplicationDecisionsSent(
     applicationId: ApplicationId,
     sentDate: LocalDate
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE decision SET sent_date = :sentDate
@@ -265,6 +270,7 @@ WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
 }
 
 fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE decision SET sent_date = :sentDate
@@ -281,6 +287,7 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(
     documentKey: String
 ) {
     // language=SQL
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
         .bind("documentKey", documentKey)
@@ -292,6 +299,7 @@ fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(
     documentKey: String
 ) {
     // language=SQL
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE decision SET other_guardian_document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
         .bind("documentKey", documentKey)
@@ -299,6 +307,7 @@ fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(
 }
 
 fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -313,6 +322,7 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -336,6 +346,7 @@ fun Database.Transaction.markDecisionAccepted(
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -365,6 +376,7 @@ fun Database.Transaction.markDecisionRejected(
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """

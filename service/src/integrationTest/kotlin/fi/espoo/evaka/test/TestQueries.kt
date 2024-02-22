@@ -23,6 +23,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -54,6 +55,7 @@ data class DecisionTableRow(
 }
 
 fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
@@ -62,6 +64,7 @@ fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) =
         .mapTo<DecisionTableRow>()
 
 fun Database.Read.getDecisionRowById(id: DecisionId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM decision WHERE id = :id"
@@ -81,6 +84,7 @@ data class PlacementTableRow(
 }
 
 fun Database.Read.getPlacementRowsByChild(childId: ChildId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
@@ -112,6 +116,7 @@ data class PlacementPlanTableRow(
 }
 
 fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM placement_plan WHERE application_id = :applicationId"
@@ -131,6 +136,7 @@ data class BackupCareTableRow(
 }
 
 fun Database.Read.getBackupCareRowById(id: BackupCareId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM backup_care WHERE id = :id"
@@ -139,6 +145,7 @@ fun Database.Read.getBackupCareRowById(id: BackupCareId) =
         .exactlyOne<BackupCareTableRow>()
 
 fun Database.Read.getBackupCareRowsByChild(childId: ChildId) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"

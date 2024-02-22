@@ -499,6 +499,7 @@ class PlacementController(
                         Action.Person.READ_CHILD_PLACEMENT_PERIODS,
                         adultId
                     )
+                    @Suppress("DEPRECATION")
                     tx.createQuery(
                             """
 WITH all_fridge_children AS (

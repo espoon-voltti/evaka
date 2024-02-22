@@ -30,6 +30,7 @@ fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
     includeStaffOccupancy: Boolean
 ): List<DaycareAclRow> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -61,6 +62,7 @@ WHERE daycare_id = :daycareId
         .toList<DaycareAclRow>()
 
 fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             """
         SELECT EXISTS(
@@ -78,6 +80,7 @@ fun Database.Transaction.insertDaycareAclRow(
     employeeId: EmployeeId,
     role: UserRole
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -97,6 +100,7 @@ fun Database.Transaction.deleteDaycareAclRow(
     employeeId: EmployeeId,
     role: UserRole
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -113,6 +117,7 @@ AND role = :role
         .execute()
 
 fun Database.Transaction.clearDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 DELETE FROM daycare_group_acl

@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.utils.applyIf
 import java.time.LocalDate
 
 fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: LocalDate): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
                     SELECT 1
@@ -51,6 +52,7 @@ fun Database.Read.expiringIncomes(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH latest_income AS (
@@ -111,6 +113,7 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
 ): List<PersonId> {
     val currentMonth = FiniteDateRange.ofMonth(today)
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH fridge_parents AS (
@@ -171,6 +174,7 @@ fun Database.Transaction.createIncomeNotification(
     receiverId: PersonId,
     notificationType: IncomeNotificationType
 ): IncomeNotificationId {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
         INSERT INTO income_notification(receiver_id, notification_type)
@@ -186,6 +190,7 @@ fun Database.Transaction.createIncomeNotification(
 }
 
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
+    @Suppress("DEPRECATION")
     createQuery(
             """SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = :receiverId"""
         )

@@ -49,6 +49,7 @@ fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: F
         """
 
     val update =
+        @Suppress("DEPRECATION")
         createUpdate(sql)
             .bind("now", clock.now())
             .bind("id", feeAlteration.id)
@@ -65,6 +66,7 @@ fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: F
 }
 
 fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -98,6 +100,7 @@ WHERE id = :id
 }
 
 fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -137,6 +140,7 @@ fun Database.Read.getFeeAlterationsFrom(
 ): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -164,6 +168,7 @@ WHERE
 }
 
 fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
+    @Suppress("DEPRECATION")
     val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id").bind("id", id)
 
     handlingExceptions { update.execute() }

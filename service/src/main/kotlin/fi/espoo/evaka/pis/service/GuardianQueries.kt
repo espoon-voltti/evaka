@@ -21,6 +21,7 @@ fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: Lis
     insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
 
 fun Database.Read.isGuardianBlocked(guardianId: PersonId, childId: ChildId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT EXISTS (
@@ -37,12 +38,14 @@ SELECT EXISTS (
         .exactlyOne<Boolean>()
 
 fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT guardian_id FROM guardian_blocklist WHERE child_id = :childId")
         .bind("childId", childId)
         .toList<PersonId>()
 }
 
 fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (:childId, :guardianId)"
         )
@@ -52,6 +55,7 @@ fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: Pe
 }
 
 fun Database.Transaction.deleteFromGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "DELETE FROM guardian_blocklist WHERE child_id = :childId AND guardian_id = :guardianId"
         )
@@ -61,6 +65,7 @@ fun Database.Transaction.deleteFromGuardianBlocklist(childId: ChildId, guardianI
 }
 
 fun Database.Transaction.deleteGuardianRelationship(childId: ChildId, guardianId: PersonId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM guardian WHERE child_id = :childId AND guardian_id = :guardianId")
         .bind("childId", childId)
         .bind("guardianId", guardianId)
@@ -86,13 +91,14 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).toList<PersonId>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("childId", childId).toList<PersonId>()
 }
 
 fun Database.Read.getChildGuardiansAndFosterParents(
     childId: ChildId,
     today: LocalDate
 ): List<PersonId> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
     SELECT guardian_id AS id FROM guardian WHERE child_id = :childId
@@ -115,6 +121,7 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("guardianId", guardianId).toList<ChildId>()
 }
 
@@ -127,7 +134,7 @@ fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId):
         """
             .trimIndent()
 
-    return createUpdate(sql).bind("guardianId", guardianId).execute()
+    @Suppress("DEPRECATION") return createUpdate(sql).bind("guardianId", guardianId).execute()
 }
 
 fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int {
@@ -139,5 +146,5 @@ fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int
         """
             .trimIndent()
 
-    return createUpdate(sql).bind("childId", childId).execute()
+    @Suppress("DEPRECATION") return createUpdate(sql).bind("childId", childId).execute()
 }

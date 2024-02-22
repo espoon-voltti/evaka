@@ -226,6 +226,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         assertEquals(2, unitResult.groups.size)
         assertEquals(
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT MAX(updated) FROM staff_attendance WHERE date = :date")
                     .bind("date", firstDay)
                     .exactlyOne<HelsinkiDateTime>()

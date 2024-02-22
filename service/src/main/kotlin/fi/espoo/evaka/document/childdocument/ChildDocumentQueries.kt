@@ -16,6 +16,7 @@ fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,
     now: HelsinkiDateTime
 ): ChildDocumentId {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             INSERT INTO child_document(child_id, template_id, status, content, modified_at)
@@ -30,6 +31,7 @@ fun Database.Transaction.insertChildDocument(
 }
 
 fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name
@@ -43,6 +45,7 @@ fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummar
 }
 
 fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT 
@@ -93,6 +96,7 @@ fun Database.Transaction.updateChildDocumentContent(
 }
 
 fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT (published_content IS NOT NULL AND content = published_content) AS up_to_date 
@@ -105,6 +109,7 @@ fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boole
 }
 
 fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             UPDATE child_document
@@ -115,6 +120,7 @@ fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: Helsinki
         .bind("id", id)
         .bind("now", now)
         .updateExactlyOne()
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             DELETE FROM child_document_read
@@ -201,6 +207,7 @@ fun Database.Transaction.markCompletedAndPublish(
 }
 
 fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             DELETE FROM child_document_read
@@ -210,6 +217,7 @@ fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
         .bind("id", id)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate(
             """
             DELETE FROM child_document

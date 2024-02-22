@@ -597,6 +597,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newCreated = HelsinkiDateTime.now().minusDays(2)
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
                 .bind("newCreated", newCreated)
                 .bind("id", incomeStatement1.id)
@@ -709,6 +710,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newCreated = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
                 .bind("newCreated", newCreated)
                 .bind("id", incomeStatement1.id)
@@ -860,6 +862,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newCreated = HelsinkiDateTime.now().minusDays(2)
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("UPDATE income_statement SET created = :newCreated")
                 .bind("newCreated", newCreated)
                 .execute()

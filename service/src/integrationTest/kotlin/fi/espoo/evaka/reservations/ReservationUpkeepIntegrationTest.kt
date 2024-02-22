@@ -100,6 +100,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val reservations =
             db.read { tx ->
+                @Suppress("DEPRECATION")
                 tx.createQuery("""SELECT id FROM attendance_reservation""")
                     .toSet<AttendanceReservationId>()
             }

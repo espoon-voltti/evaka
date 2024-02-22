@@ -25,6 +25,7 @@ fun Database.Transaction.insertVasuTemplate(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("name", name)
         .bind("valid", valid)
@@ -44,13 +45,14 @@ fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
     """
             .trimIndent()
 
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplate>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplate>()
 }
 
 fun Database.Read.getVasuTemplates(
     clock: EvakaClock,
     validOnly: Boolean
 ): List<VasuTemplateSummary> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT 
@@ -78,6 +80,7 @@ fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: 
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", id).bind("content", content).updateExactlyOne()
 }
 
@@ -98,6 +101,7 @@ FOR UPDATE
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<VasuTemplateSummary>()
 }
 
@@ -111,6 +115,7 @@ fun Database.Transaction.updateVasuTemplate(id: VasuTemplateId, params: VasuTemp
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("name", params.name)
@@ -127,6 +132,7 @@ fun Database.Transaction.deleteUnusedVasuTemplate(id: VasuTemplateId) {
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .updateExactlyOne(notFoundMsg = "template $id not found or is in use")

@@ -31,6 +31,7 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull(toParentship("child", "head"))
 }
 
@@ -60,6 +61,7 @@ fun Database.Read.getParentships(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("headOfChild", headOfChildId)
         .bind("child", childId)
@@ -94,6 +96,7 @@ fun Database.Transaction.createParentship(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("headOfChild", headOfChildId)
@@ -111,6 +114,7 @@ fun Database.Transaction.updateParentshipDuration(
     // language=sql
     val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
+    @Suppress("DEPRECATION")
     return createUpdate(sql)
         .bind("id", id)
         .bind("startDate", startDate)
@@ -121,17 +125,19 @@ fun Database.Transaction.updateParentshipDuration(
 fun Database.Transaction.retryParentship(id: ParentshipId) {
     // language=SQL
     val sql = "UPDATE fridge_child SET conflict = false WHERE id = :id"
-    createUpdate(sql).bind("id", id).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).execute()
 }
 
 fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<ParentshipId>() != null
 }
 
 fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT EXISTS(

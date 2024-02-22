@@ -604,7 +604,7 @@ class ApplicationStateService(
             """
                 .trimIndent()
 
-        tx.createUpdate(rejectSQL).bind("unitId", unitId).execute()
+        @Suppress("DEPRECATION") tx.createUpdate(rejectSQL).bind("unitId", unitId).execute()
 
         // language=sql
         val acceptSQL =
@@ -619,6 +619,7 @@ class ApplicationStateService(
             """
                 .trimIndent()
 
+        @Suppress("DEPRECATION")
         val validIds = tx.createQuery(acceptSQL).bind("unitId", unitId).toList<ApplicationId>()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
@@ -895,6 +896,7 @@ class ApplicationStateService(
     }
 
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
+        @Suppress("DEPRECATION")
         return createQuery("SELECT 1 FROM preschool_term WHERE application_period @> :date")
             .bind("date", sentDate)
             .toList<Boolean>()
@@ -941,6 +943,7 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         manuallySetDueDate: LocalDate
     ) {
+        @Suppress("DEPRECATION")
         createUpdate(
                 "UPDATE application SET duedate = :dueDate, duedate_set_manually_at = :dueDateSetManuallyAt WHERE id = :id"
             )
@@ -973,6 +976,7 @@ class ApplicationStateService(
 
         if (newDueDate == original.dueDate) return
 
+        @Suppress("DEPRECATION")
         createUpdate("UPDATE application SET duedate = :dueDate WHERE id = :id")
             .bind("id", original.id)
             .bind("dueDate", newDueDate)

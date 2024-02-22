@@ -361,6 +361,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(expectedStatus, response.statusCode)
 
         return db.read { tx ->
+            @Suppress("DEPRECATION")
             tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
                 .toList<PaymentId>()
         }

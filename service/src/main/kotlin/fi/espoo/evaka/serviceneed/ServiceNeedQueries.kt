@@ -35,7 +35,7 @@ fun Database.Read.getServiceNeedsByChild(childId: ChildId): List<ServiceNeed> {
         """
             .trimIndent()
 
-    return createQuery(sql).bind("childId", childId).toList<ServiceNeed>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("childId", childId).toList<ServiceNeed>()
 }
 
 fun Database.Read.getServiceNeedsByUnit(
@@ -58,6 +58,7 @@ fun Database.Read.getServiceNeedsByUnit(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("start", startDate)
@@ -86,6 +87,7 @@ WHERE p.child_id = :childId
 """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("childId", childId).toList<ServiceNeedSummary>()
 }
 
@@ -104,6 +106,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeed>()
         ?: throw NotFound("Service need $id not found")
 }
@@ -119,6 +122,7 @@ fun Database.Read.getServiceNeedChildRange(id: ServiceNeedId): ServiceNeedChildR
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeedChildRange>()
         ?: throw NotFound("Service need $id not found")
 }
@@ -140,6 +144,7 @@ fun Database.Transaction.insertServiceNeed(
         RETURNING id;
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementId", placementId)
         .bind("startDate", startDate)
@@ -169,6 +174,7 @@ fun Database.Transaction.updateServiceNeed(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("startDate", startDate)
@@ -181,6 +187,7 @@ fun Database.Transaction.updateServiceNeed(
 }
 
 fun Database.Transaction.deleteServiceNeed(id: ServiceNeedId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM service_need WHERE id = :id").bind("id", id).execute()
 }
 
@@ -204,6 +211,7 @@ fun Database.Read.getOverlappingServiceNeeds(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementId", placementId)
         .bind("startDate", startDate)
@@ -213,6 +221,7 @@ fun Database.Read.getOverlappingServiceNeeds(
 }
 
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -247,6 +256,7 @@ ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_f
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -295,6 +305,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
         ORDER BY display_order
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementTypes", placementTypes)
         .toList<ServiceNeedOptionPublicInfo>()
@@ -305,6 +316,7 @@ fun Database.Read.getChildServiceNeedInfos(
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange
 ): List<ChildServiceNeedInfo> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
     SELECT p.child_id,
@@ -380,6 +392,7 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
 ORDER BY child_id, valid_during
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
@@ -387,6 +400,7 @@ ORDER BY child_id, valid_during
 }
 
 fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT
@@ -407,6 +421,7 @@ WHERE validity && daterange(:from, null, '[]')
 }
 
 fun Database.Read.getServiceNeedOptionFees(): List<ServiceNeedOptionFee> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT

@@ -510,6 +510,7 @@ private fun getChildVardaGuardians(
     childId: ChildId
 ): List<VardaGuardianWithId> {
     return db.read {
+        @Suppress("DEPRECATION")
         it.createQuery(
                 """
             SELECT

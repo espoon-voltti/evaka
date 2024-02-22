@@ -58,6 +58,7 @@ class LocationController {
     fun getAreas(db: Database, user: AuthenticatedUser): List<AreaJSON> {
         return db.connect { dbc ->
             dbc.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT id, name, short_name FROM care_area").toList<AreaJSON>()
             }
         }
@@ -116,6 +117,7 @@ private fun Database.Read.getUnits(
     type: UnitTypeFilter,
     from: LocalDate?
 ): List<UnitStub> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """

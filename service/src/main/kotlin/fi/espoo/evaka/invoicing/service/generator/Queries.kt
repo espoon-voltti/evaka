@@ -67,6 +67,7 @@ FROM service_need_option_voucher_value
 fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, List<ChildRelation>> {
     if (parentIds.isEmpty()) return emptyMap()
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT 
@@ -94,6 +95,7 @@ fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, Lis
 }
 
 fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT 

@@ -14,6 +14,7 @@ fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
 }
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
@@ -26,6 +27,7 @@ private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<
         .toList<GroupNote>()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 INSERT INTO group_note (group_id, note, expires)
@@ -45,6 +47,7 @@ fun Database.Transaction.updateGroupNote(
     id: GroupNoteId,
     note: GroupNoteBody
 ): GroupNote {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 UPDATE group_note SET
@@ -64,5 +67,6 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM group_note WHERE id = :noteId").bind("noteId", noteId).execute()
 }

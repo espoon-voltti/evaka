@@ -101,25 +101,36 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             setOf(accounts.person1.id, accounts.person2.id),
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT recipient_id FROM message_recipients")
                     .toSet<MessageAccountId>()
             }
         )
         assertEquals(
             content,
-            db.read { it.createQuery("SELECT content FROM message_content").exactlyOne<String>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT content FROM message_content").exactlyOne<String>()
+            }
         )
         assertEquals(
             title,
-            db.read { it.createQuery("SELECT title FROM message_thread").exactlyOne<String>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT title FROM message_thread").exactlyOne<String>()
+            }
         )
         assertEquals(
             "Employee Firstname",
-            db.read { it.createQuery("SELECT sender_name FROM message").exactlyOne<String>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT sender_name FROM message").exactlyOne<String>()
+            }
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
             db.read {
+                    @Suppress("DEPRECATION")
                     it.createQuery("SELECT recipient_names FROM message")
                         .exactlyOne<Array<String>>()
                 }
@@ -343,6 +354,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val participants =
             db.read {
                 val messageId =
+                    @Suppress("DEPRECATION")
                     it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
                         .bind("threadId", threadId)
                         .exactlyOne<MessageId>()

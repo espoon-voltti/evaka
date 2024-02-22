@@ -334,6 +334,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             created: HelsinkiDateTime,
             sentAt: HelsinkiDateTime
         ) =
+            @Suppress("DEPRECATION")
             createUpdate(
                     """
                 UPDATE fee_decision SET created = :created, sent_at = :sentAt WHERE id = :id

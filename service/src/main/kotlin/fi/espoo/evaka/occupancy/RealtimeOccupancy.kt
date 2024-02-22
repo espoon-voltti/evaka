@@ -126,6 +126,7 @@ fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
 ): List<ChildOccupancyAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT 
@@ -162,6 +163,7 @@ fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
 ): List<StaffOccupancyAttendance> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity

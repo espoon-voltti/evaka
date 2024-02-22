@@ -125,7 +125,7 @@ private fun Database.Read.getDuplicatePeople(
         """
             .trimIndent()
 
-    return createQuery(sql).toList<DuplicatePeopleReportRow>()
+    @Suppress("DEPRECATION") return createQuery(sql).toList<DuplicatePeopleReportRow>()
 }
 
 data class ReferenceCount(val table: String, val column: String, val count: Int)

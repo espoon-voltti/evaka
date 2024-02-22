@@ -239,6 +239,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
             createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate(
                     "UPDATE assistance_need_decision SET selected_unit = :selectedUnit WHERE id = :id"
                 )

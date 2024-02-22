@@ -16,6 +16,7 @@ fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, 
     val sql =
         "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (:groupId, :startDate, NULL, :amount)"
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("groupId", groupId)
         .bind("startDate", startDate)
@@ -50,6 +51,7 @@ fun Database.Read.getUnitStats(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("startDate", startDate)
@@ -78,6 +80,7 @@ fun Database.Read.getGroupStats(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("startDate", startDate)
         .bind("endDate", endDate)

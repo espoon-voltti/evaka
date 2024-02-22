@@ -22,6 +22,7 @@ fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
     childId: ChildId,
     language: AssistanceNeedDecisionLanguage = AssistanceNeedDecisionLanguage.FI
 ): AssistanceNeedPreschoolDecision =
+    @Suppress("DEPRECATION")
     createQuery(
             """
         INSERT INTO assistance_need_preschool_decision (child_id, language)
@@ -33,6 +34,7 @@ fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
         .bind("language", language)
         .exactlyOne<AssistanceNeedPreschoolDecisionId>()
         .also { decisionId ->
+            @Suppress("DEPRECATION")
             createUpdate(
                     """
             INSERT INTO assistance_need_preschool_decision_guardian (
@@ -137,6 +139,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
         GROUP BY ad.id, child.id, d.id, preparer1.id, preparer2.id, decision_maker.id;
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedPreschoolDecision>()
         ?: throw NotFound("Assistance need preschool decision $id not found")
 }
@@ -190,6 +193,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
         WHERE id = :id AND (status = 'NEEDS_WORK' OR (status = 'DRAFT' AND sent_for_decision IS NULL))
         """
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
@@ -214,6 +218,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToSent(
     id: AssistanceNeedPreschoolDecisionId,
     today: LocalDate
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE assistance_need_preschool_decision
@@ -229,6 +234,7 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToSent(
 fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToNotSent(
     id: AssistanceNeedPreschoolDecisionId
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE assistance_need_preschool_decision
@@ -256,6 +262,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         """
 
     val decisions =
+        @Suppress("DEPRECATION")
         createQuery(sql).bind("childId", childId).toList<AssistanceNeedPreschoolDecisionBasics>()
 
     return fillInValidToForDecisionResults(decisions)
@@ -320,6 +327,7 @@ fun Database.Transaction.deleteAssistanceNeedPreschoolDecision(
         RETURNING id;
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 }
 
@@ -334,7 +342,7 @@ fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsOpened(
         WHERE id = :id
         """
 
-    createUpdate(sql).bind("id", id).updateExactlyOne()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
 fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
@@ -354,6 +362,7 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("status", status)
@@ -374,13 +383,14 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
         WHERE id = :id
         """
             .trimIndent()
-    createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
 }
 
 fun Database.Transaction.annulAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     reason: String,
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE assistance_need_preschool_decision
@@ -398,6 +408,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsForCitizen(
     userId: PersonId
 ): List<AssistanceNeedPreschoolDecisionCitizenListItem> {
     val childIds =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
         SELECT child_id FROM guardian WHERE guardian_id = :userId
@@ -449,6 +460,7 @@ fun Database.Transaction.markAssistanceNeedPreschoolDecisionAsReadByGuardian(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", decisionId).bind("guardianId", guardianId).updateExactlyOne()
 }
 
@@ -470,6 +482,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
         GROUP BY ad.child_id
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
@@ -487,5 +500,5 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentKey(
         WHERE ad.id = :id
         """
             .trimIndent()
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
+    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
 }

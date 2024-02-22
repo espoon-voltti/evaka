@@ -23,6 +23,7 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bindKotlin(data)
         .bind("childId", childId)
@@ -40,6 +41,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientById(
         WHERE id = :id
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
         ?: throw NotFound("Assistance need voucher coefficient $id not found")
 }
@@ -55,6 +57,7 @@ fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
         WHERE child_id = :childId
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("childId", childId).toList<AssistanceNeedVoucherCoefficient>()
 }
 
@@ -73,6 +76,7 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bindKotlin(data)
         .bind("id", id)
@@ -90,6 +94,7 @@ fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
         RETURNING id, child_id, coefficient, validity_period
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
 }
 
@@ -106,6 +111,7 @@ fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
           AND :range && validity_period
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)

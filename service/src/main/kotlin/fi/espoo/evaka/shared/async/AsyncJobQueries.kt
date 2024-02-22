@@ -15,6 +15,7 @@ import org.jdbi.v3.json.Json
 private val logger = KotlinLogging.logger {}
 
 fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -77,6 +78,7 @@ fun <T : AsyncJobPayload> Database.Transaction.startJob(
     job: ClaimedJobRef<T>,
     now: HelsinkiDateTime
 ): T? =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -104,6 +106,7 @@ RETURNING payload
         }
 
 fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -117,6 +120,7 @@ WHERE id = :jobId
         .execute()
 
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
+    @Suppress("DEPRECATION")
     createUpdate("""
 DELETE FROM async_job
 WHERE completed_at < :completedBefore
@@ -139,6 +143,7 @@ AND type = ANY(${bind(jobTypes.map { it.name })})
         .execute()
 
 fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int =
+    @Suppress("DEPRECATION")
     createUpdate("""
 DELETE FROM async_job
 WHERE completed_at IS NULL

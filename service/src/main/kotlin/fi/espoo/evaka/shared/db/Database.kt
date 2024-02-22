@@ -157,7 +157,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
 
         fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
-            createQuery(QuerySql.Builder<Tag>().run { f(this) })
+            @Suppress("DEPRECATION") createQuery(QuerySql.Builder<Tag>().run { f(this) })
 
         fun createQuery(fragment: QuerySql<*>): Query {
             val raw = handle.createQuery(fragment.sql.toString())
@@ -190,7 +190,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
 
         fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
-            createUpdate(QuerySql.Builder<Tag>().run { f(this) })
+            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder<Tag>().run { f(this) })
 
         fun createUpdate(fragment: QuerySql<*>): Update {
             val raw = handle.createUpdate(fragment.sql.toString())

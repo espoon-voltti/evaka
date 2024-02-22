@@ -1447,6 +1447,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
                 )
@@ -1541,6 +1542,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
@@ -1564,8 +1566,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
-            tx.createUpdate("DELETE FROM placement").execute()
+            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM placement").execute()
         }
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE_PART_TIME, testDaycare2.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
@@ -1609,6 +1612,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
@@ -2967,6 +2971,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
+            @Suppress("DEPRECATION")
             it.createUpdate("DELETE FROM placement WHERE id=:id").bind("id", placementId).execute()
         }
 
@@ -3169,7 +3174,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         asyncJobRunner.runPendingJobsSync(clock)
 
-        db.transaction { it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute() }
+        db.transaction {
+            @Suppress("DEPRECATION")
+            it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute()
+        }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -3321,7 +3329,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deleteIncomes() {
-        db.transaction { tx -> tx.createUpdate("DELETE FROM income").execute() }
+        db.transaction { tx ->
+            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM income").execute()
+        }
     }
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {

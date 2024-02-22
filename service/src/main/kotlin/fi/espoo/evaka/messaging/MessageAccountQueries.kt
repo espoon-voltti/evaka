@@ -21,6 +21,7 @@ fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
 """
+    @Suppress("DEPRECATION")
     return this.createQuery(sql).bind("personId", personId).exactlyOne<MessageAccountId>()
 }
 
@@ -91,6 +92,7 @@ fun Database.Read.getAccountNames(
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return this.createQuery(sql)
         .bind("ids", accountIds)
         .bind("serviceWorkerAccountName", serviceWorkerAccountName)
@@ -115,6 +117,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(
         RETURNING id
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("daycareGroupId", daycareGroupId).exactlyOne<MessageAccountId>()
 }
 
@@ -125,7 +128,7 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupI
         DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId
     """
             .trimIndent()
-    createUpdate(sql).bind("daycareGroupId", daycareGroupId).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("daycareGroupId", daycareGroupId).execute()
 }
 
 fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
@@ -136,6 +139,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
         RETURNING id
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("personId", personId).exactlyOne<MessageAccountId>()
 }
 
@@ -151,6 +155,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(
         RETURNING id
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("employeeId", employeeId)
         .bind("accountType", accountType)
@@ -165,21 +170,24 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId
         WHERE employee_id = :employeeId
     """
             .trimIndent()
-    createUpdate(sql).bind("employeeId", employeeId).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("employeeId", employeeId).execute()
 }
 
 fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {
+    @Suppress("DEPRECATION")
     return this.createQuery("SELECT type FROM message_account WHERE id = :accountId")
         .bind("accountId", accountId)
         .exactlyOne<AccountType>()
 }
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
+    @Suppress("DEPRECATION")
     createQuery("SELECT account_id FROM message_draft WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT msg.sender_id
@@ -199,5 +207,6 @@ WHERE content.id = :id
         .toList<MessageAccountId>()
 
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
+    @Suppress("DEPRECATION")
     createQuery("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")
         .exactlyOneOrNull<MessageAccountId>()

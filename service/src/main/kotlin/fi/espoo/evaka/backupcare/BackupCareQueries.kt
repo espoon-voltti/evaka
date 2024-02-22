@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -40,6 +41,7 @@ fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
     period: FiniteDateRange
 ): List<UnitBackupCare> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -90,6 +92,7 @@ fun Database.Read.getBackupCareChildrenInGroup(
     groupId: GroupId,
     period: FiniteDateRange
 ): List<ChildId> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT child_id FROM backup_care
@@ -107,6 +110,7 @@ fun Database.Read.getBackupCareChildrenInGroup(
 data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 
 fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
@@ -121,6 +125,7 @@ fun Database.Transaction.createBackupCare(
     childId: ChildId,
     backupCare: NewBackupCare
 ): BackupCareId =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -142,6 +147,7 @@ fun Database.Transaction.updateBackupCare(
     period: FiniteDateRange,
     groupId: GroupId?
 ) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -160,6 +166,7 @@ WHERE id = :id
         .execute()
 
 fun Database.Transaction.deleteBackupCare(id: BackupCareId) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -171,6 +178,7 @@ WHERE id = :id
         .execute()
 
 fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """

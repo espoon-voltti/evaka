@@ -52,6 +52,7 @@ class PedagogicalDocumentNotificationService(
         """
                 .trimIndent()
 
+        @Suppress("DEPRECATION")
         return tx.createQuery(sql)
             .bind("id", id)
             .bind("date", HelsinkiDateTime.now().toLocalDate())
@@ -68,6 +69,7 @@ class PedagogicalDocumentNotificationService(
         id: PedagogicalDocumentId,
         date: HelsinkiDateTime
     ) {
+        @Suppress("DEPRECATION")
         this.createUpdate(
                 "UPDATE pedagogical_document SET email_job_created_at = :date WHERE id = :id"
             )
@@ -81,6 +83,7 @@ class PedagogicalDocumentNotificationService(
     ): Boolean {
         // notification job should be created only if description is set or an attachment is
         // uploaded
+        @Suppress("DEPRECATION")
         return this.createQuery(
                 """
 SELECT EXISTS(
@@ -150,6 +153,7 @@ SELECT EXISTS(
 private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
     id: PedagogicalDocumentId
 ) {
+    @Suppress("DEPRECATION")
     this.createUpdate(
             """
             UPDATE pedagogical_document

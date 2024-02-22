@@ -713,6 +713,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     """
             UPDATE income_statement

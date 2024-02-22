@@ -102,6 +102,7 @@ fun Database.Transaction.insertAttachment(
         VALUES (:now, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
         RETURNING id
         """
+    @Suppress("DEPRECATION")
     return this.createUpdate(sql)
         .bind("now", now)
         .bind("name", name)
@@ -148,6 +149,7 @@ fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     type: AttachmentType,
     userId: EvakaUserId
 ): List<AttachmentId> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
             UPDATE attachment

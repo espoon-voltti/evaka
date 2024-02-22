@@ -167,6 +167,7 @@ class FridgeFamilyService(
             """
                 .trimIndent()
 
+        @Suppress("DEPRECATION")
         return tx.createQuery(sql)
             .bind("today", clock.today())
             .bind("personId", personId)
@@ -185,6 +186,7 @@ class FridgeFamilyService(
             WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> :today AND conflict = false
             """
                 .trimIndent()
+        @Suppress("DEPRECATION")
         return tx.createQuery(sql)
             .bind("today", clock.today())
             .bind("personId", personId)

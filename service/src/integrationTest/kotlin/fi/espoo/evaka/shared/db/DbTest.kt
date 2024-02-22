@@ -13,6 +13,7 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
     private data class Foo(val value: String)
 
     private fun Database.Read.fooJsonQuery() =
+        @Suppress("DEPRECATION")
         createQuery("SELECT jsonb_agg(jsonb_build_object('value', 'foo')) AS json")
 
     @Test

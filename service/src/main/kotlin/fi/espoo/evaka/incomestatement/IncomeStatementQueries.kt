@@ -232,6 +232,7 @@ fun Database.Read.readIncomeStatementsForPerson(
     page: Int,
     pageSize: Int
 ): PagedIncomeStatements =
+    @Suppress("DEPRECATION")
     createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("offset", (page - 1) * pageSize)
@@ -245,6 +246,7 @@ fun Database.Read.readIncomeStatementForPerson(
     incomeStatementId: IncomeStatementId,
     includeEmployeeContent: Boolean
 ): IncomeStatement? =
+    @Suppress("DEPRECATION")
     createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
         .bind("personId", personId)
         .bind("id", incomeStatementId)
@@ -340,6 +342,7 @@ fun Database.Transaction.createIncomeStatement(
     personId: PersonId,
     body: IncomeStatementBody
 ): IncomeStatementId {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 INSERT INTO income_statement (
@@ -413,6 +416,7 @@ fun Database.Transaction.updateIncomeStatement(
     body: IncomeStatementBody
 ): Boolean {
     val rowCount =
+        @Suppress("DEPRECATION")
         createUpdate(
                 """
 UPDATE income_statement SET
@@ -458,6 +462,7 @@ fun Database.Transaction.updateIncomeStatementHandled(
     note: String,
     handlerId: EmployeeId?
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             "UPDATE income_statement SET handler_id = :handlerId, handler_note = :note WHERE id = :id"
         )
@@ -468,9 +473,11 @@ fun Database.Transaction.updateIncomeStatementHandled(
 }
 
 fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = :id")
         .bind("id", id)
         .execute()
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM income_statement WHERE id = :id").bind("id", id).execute()
 }
 
@@ -567,6 +574,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     sortDirection: SortDirection
 ): PagedIncomeStatementsAwaitingHandler {
     val count =
+        @Suppress("DEPRECATION")
         createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
             .bind("today", today)
             .bind("areas", areas)
@@ -581,6 +589,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
             IncomeStatementSortParam.START_DATE -> "i.start_date ${sortDirection.name}, i.created"
         }
     val rows =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 $awaitingHandlerQuery
@@ -607,6 +616,7 @@ LIMIT :pageSize OFFSET :offset
 }
 
 fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalDate> =
+    @Suppress("DEPRECATION")
     createQuery("SELECT start_date FROM income_statement WHERE person_id = :personId")
         .bind("personId", personId)
         .toList<LocalDate>()
@@ -615,6 +625,7 @@ fun Database.Read.incomeStatementExistsForStartDate(
     personId: PersonId,
     startDate: LocalDate
 ): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
         )
@@ -628,6 +639,7 @@ fun Database.Read.getIncomeStatementChildrenByGuardian(
     guardianId: PersonId,
     today: LocalDate
 ): List<ChildBasicInfo> =
+    @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT

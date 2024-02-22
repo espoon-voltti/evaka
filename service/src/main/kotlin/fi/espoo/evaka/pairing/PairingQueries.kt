@@ -30,6 +30,7 @@ fun Database.Transaction.initPairing(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("employeeId", employeeId)
@@ -48,6 +49,7 @@ fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: Strin
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("challenge", challengeKey)
         .bind("response", generatePairingKey())
@@ -85,6 +87,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("challenge", challengeKey)
@@ -114,6 +117,7 @@ WHERE id = (SELECT mobile_device_id FROM target_pairing)
 RETURNING id, long_term_token
         """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("challenge", challengeKey)
@@ -125,6 +129,7 @@ RETURNING id, long_term_token
 }
 
 fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, EmployeeId?> {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT unit_id, employee_id FROM pairing WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull { columnPair("unit_id", "employee_id") }
@@ -140,6 +145,7 @@ fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingS
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .bind("now", clock.now())
@@ -158,6 +164,7 @@ fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) 
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("id", id).bind("challenge", challengeKey).execute()
 }
 

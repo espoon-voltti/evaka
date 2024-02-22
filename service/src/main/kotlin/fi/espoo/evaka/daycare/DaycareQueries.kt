@@ -144,7 +144,7 @@ WHERE ${predicate(predicate.forTable("daycare"))}
     }
 
 fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> =
-    createQuery(daycaresQuery(filter.toPredicate())).toList<Daycare>()
+    @Suppress("DEPRECATION") createQuery(daycaresQuery(filter.toPredicate())).toList<Daycare>()
 
 data class UnitApplyPeriods(
     val id: DaycareId,
@@ -154,6 +154,7 @@ data class UnitApplyPeriods(
 )
 
 fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -167,10 +168,12 @@ WHERE id = ANY(:ids)
         .toList<UnitApplyPeriods>()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
+    @Suppress("DEPRECATION")
     createQuery(daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }))
         .exactlyOneOrNull<Daycare>()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -182,6 +185,7 @@ SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
         .exactlyOne<Boolean>()
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -194,6 +198,7 @@ WHERE id = :daycareId
         .exactlyOneOrNull<UnitStub>()
 
 fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -207,6 +212,7 @@ SELECT :name, :areaId
         .exactlyOne<DaycareId>()
 
 fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE daycare
@@ -222,6 +228,7 @@ WHERE id = :daycareId
         .execute()
 
 fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -316,6 +323,7 @@ WHERE :date <= COALESCE(closing_date, 'infinity'::date)
 ORDER BY name ASC
     """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("date", date)
         .bind("onlyApplicable", onlyApplicable)
@@ -365,10 +373,12 @@ ORDER BY name ASC
     """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("today", HelsinkiDateTime.now().toLocalDate()).toList<PublicUnit>()
 }
 
 fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             """
@@ -382,6 +392,7 @@ fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
         .exactlyOneOrNull<DaycareManager>()
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT id, name, end_date
@@ -393,6 +404,7 @@ WHERE daycare_id = :daycareId
         .toList<DaycareGroupSummary>()
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT id, name, enabled_pilot_features AS features, provider_type, type
@@ -407,6 +419,7 @@ fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
     features: List<PilotFeature>
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE daycare
@@ -424,6 +437,7 @@ fun Database.Transaction.removeUnitFeatures(
     daycareIds: List<DaycareId>,
     features: List<PilotFeature>
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
         UPDATE daycare
@@ -442,6 +456,7 @@ fun Database.Transaction.removeUnitFeatures(
 }
 
 fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
+    @Suppress("DEPRECATION")
     createQuery(
             """
     SELECT id, name, enabled_pilot_features AS features, provider_type, type
@@ -471,6 +486,7 @@ SELECT EXISTS(
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 
 fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
+    @Suppress("DEPRECATION")
     createQuery("""
     SELECT id, operation_days
     FROM daycare

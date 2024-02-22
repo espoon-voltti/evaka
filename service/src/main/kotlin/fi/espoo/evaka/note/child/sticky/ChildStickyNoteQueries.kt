@@ -58,6 +58,7 @@ fun Database.Transaction.createChildStickyNote(
     childId: ChildId,
     note: ChildStickyNoteBody
 ): ChildStickyNoteId {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 INSERT INTO child_sticky_note (child_id, note, expires)
@@ -77,6 +78,7 @@ fun Database.Transaction.updateChildStickyNote(
     id: ChildStickyNoteId,
     note: ChildStickyNoteBody
 ): ChildStickyNote {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 UPDATE child_sticky_note SET
@@ -96,6 +98,7 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteChildStickyNote(noteId: ChildStickyNoteId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM child_sticky_note WHERE id = :noteId")
         .bind("noteId", noteId)
         .execute()

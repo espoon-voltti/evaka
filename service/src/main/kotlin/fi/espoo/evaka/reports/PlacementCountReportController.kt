@@ -112,6 +112,7 @@ ORDER BY ca.name, d.name ASC;
             """
                 .trimIndent()
         val resultRows =
+            @Suppress("DEPRECATION")
             createQuery(sql)
                 .bind("examinationDate", examinationDate)
                 .bind("providerTypes", providerTypes)

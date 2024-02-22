@@ -12,6 +12,7 @@ fun Database.Transaction.storeDvvModificationToken(
     ssnsSent: Int,
     modificationsReceived: Int
 ) {
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
@@ -27,6 +28,7 @@ VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
 }
 
 fun Database.Read.getNextDvvModificationToken(): String {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT next_token
@@ -40,6 +42,7 @@ LIMIT 1
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT token, next_token, ssns_sent, modifications_received
@@ -53,6 +56,7 @@ WHERE token = :token
 }
 
 fun Database.Transaction.deleteDvvModificationToken(token: String) {
+    @Suppress("DEPRECATION")
     createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""")
         .bind("token", token)
         .execute()

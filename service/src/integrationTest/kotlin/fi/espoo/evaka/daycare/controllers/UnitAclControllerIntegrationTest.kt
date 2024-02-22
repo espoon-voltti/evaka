@@ -601,6 +601,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun employeeMessageAccountState(): MessageAccountState =
         db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         """
                     SELECT active FROM message_account

@@ -57,6 +57,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
 
 private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
     val queryResult =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 SELECT 

@@ -131,6 +131,7 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
         ORDER BY invoice.id, row.idx
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("ids", ids).map(Row::toDetailedInvoice).useIterable {
         flattenDetailed(it)
     }
@@ -144,6 +145,7 @@ fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
         ORDER BY invoice.id, row.idx
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .map(Row::toInvoice)
@@ -158,6 +160,7 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
         WHERE invoice.id = :id
         ORDER BY invoice.id, row.idx
     """
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", id)
         .map(Row::toDetailedInvoice)
@@ -172,6 +175,7 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invo
         WHERE invoice.head_of_family = :headOfFamilyId
         ORDER BY invoice.id, row.idx
     """
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyUuid)
         .map(Row::toInvoice)
@@ -190,6 +194,7 @@ fun Database.Read.getInvoiceIdsByDates(
         AND status = :draft::invoice_status
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("range", range)
         .bind("areas", areas)
@@ -323,6 +328,7 @@ fun Database.Read.paginatedSearch(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
@@ -357,12 +363,14 @@ ORDER BY status DESC, due_date, invoice.id, row.idx
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT max(number) FROM invoice").exactlyOneOrNull<Long?>() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
     if (draftIds.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate(
             "DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)"
         )
@@ -407,6 +415,7 @@ WHERE id = :id
 }
 
 fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
+    @Suppress("DEPRECATION")
     createUpdate(
             """
 UPDATE invoice_row
@@ -451,10 +460,12 @@ fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
             AND daterange(period_start, period_end, '[]') && :range
         """
 
+    @Suppress("DEPRECATION")
     createUpdate(sql).bind("range", range).bind("status", InvoiceStatus.DRAFT.toString()).execute()
 }
 
 fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
+    @Suppress("DEPRECATION")
     createUpdate("SELECT id FROM invoice WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids)
         .execute()
@@ -506,6 +517,7 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
 private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) {
     if (invoiceIds.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM invoice_row WHERE invoice_id = ANY(:invoiceIds)")
         .bind("invoiceIds", invoiceIds)
         .execute()

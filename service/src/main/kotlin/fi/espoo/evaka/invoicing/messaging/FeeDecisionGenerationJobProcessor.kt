@@ -63,6 +63,7 @@ fun planFinanceDecisionGeneration(
 ) {
     val heads =
         targetHeadsOfFamily.ifEmpty {
+            @Suppress("DEPRECATION")
             tx.createQuery(
                     "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && :dateRange AND conflict = false"
                 )

@@ -62,6 +62,7 @@ private fun Database.Read.selectAuthorizedDaycares(
 ): Set<DaycareId> {
     if (roles?.isEmpty() == true) return emptySet()
 
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
         )

@@ -156,6 +156,7 @@ private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
 ): PedagogicalDocument {
+    @Suppress("DEPRECATION")
     return this.createUpdate(
             """
             INSERT INTO pedagogical_document(child_id, created_by, description)
@@ -176,6 +177,7 @@ private fun Database.Transaction.updateDocument(
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument {
+    @Suppress("DEPRECATION")
     return this.createUpdate(
             """
             UPDATE pedagogical_document
@@ -196,6 +198,7 @@ private fun Database.Transaction.updateDocument(
 private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
             SELECT 
@@ -215,11 +218,13 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
 }
 
 private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
+    @Suppress("DEPRECATION")
     this.createUpdate(
             "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = :document_id"
         )
         .bind("document_id", documentId)
         .execute()
+    @Suppress("DEPRECATION")
     this.createUpdate("DELETE FROM pedagogical_document WHERE id = :document_id")
         .bind("document_id", documentId)
         .execute()

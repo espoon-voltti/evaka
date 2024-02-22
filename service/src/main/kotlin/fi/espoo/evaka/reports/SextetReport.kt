@@ -58,6 +58,7 @@ fun Database.Read.sextetReport(
     to: LocalDate,
     placementType: PlacementType
 ): List<SextetReportRow> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH operational_days AS (

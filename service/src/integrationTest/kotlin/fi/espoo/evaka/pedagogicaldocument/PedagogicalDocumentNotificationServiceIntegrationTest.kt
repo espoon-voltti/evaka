@@ -137,6 +137,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
         db.read {
             val emailJobCreatedAt =
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT email_job_created_at FROM pedagogical_document WHERE id = :id"
                     )
@@ -189,6 +190,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(
             sent,
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
                     .bind("id", id)
                     .exactlyOne<Boolean>()

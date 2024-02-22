@@ -108,6 +108,7 @@ fun freezeVoucherValueReportRows(
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =
+        @Suppress("DEPRECATION")
         tx.createUpdate(
                 "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (:month, :year, :takenAt) RETURNING id"
             )
@@ -449,6 +450,7 @@ WHERE (:areaId::uuid IS NULL OR area.id = :areaId) AND (:unitIds::uuid[] IS NULL
 ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("effective", VoucherValueDecisionStatus.effective)
         .bind("reportDate", LocalDate.of(year, month, 1))
@@ -458,6 +460,7 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month LIMIT 1"
         )
@@ -470,6 +473,7 @@ private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
 data class MonthOfYear(val year: Int, val month: Int)
 
 fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
         )
@@ -533,6 +537,7 @@ private fun Database.Read.getSnapshotVoucherValues(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("year", year)

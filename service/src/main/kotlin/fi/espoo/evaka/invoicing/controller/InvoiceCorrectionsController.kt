@@ -50,6 +50,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         personId
                     )
                     val invoiceCorrections =
+                        @Suppress("DEPRECATION")
                         tx.createQuery(
                                 """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
@@ -117,6 +118,7 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                         Action.Person.CREATE_INVOICE_CORRECTION,
                         body.headOfFamilyId
                     )
+                    @Suppress("DEPRECATION")
                     tx.createUpdate(
                             """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
@@ -152,6 +154,7 @@ RETURNING id
                     id
                 )
                 try {
+                    @Suppress("DEPRECATION")
                     tx.createUpdate(
                             """
 WITH deleted_invoice_row AS (
@@ -196,6 +199,7 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
                     Action.InvoiceCorrection.UPDATE_NOTE,
                     id
                 )
+                @Suppress("DEPRECATION")
                 tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
                     .bind("id", id)
                     .bind("note", body.note)

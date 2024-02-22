@@ -27,6 +27,7 @@ import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Test
 
 private inline fun <reified T : Any> Database.Read.passThrough(input: T) =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=SQL
             "SELECT :input AS output"
@@ -37,7 +38,7 @@ private inline fun <reified T : Any> Database.Read.passThrough(input: T) =
 private inline fun <reified T : Any> Database.Read.checkMatch(
     @Language("sql") sql: String,
     input: T
-) = createQuery(sql).bind("input", input).exactlyOne<Boolean>()
+) = @Suppress("DEPRECATION") createQuery(sql).bind("input", input).exactlyOne<Boolean>()
 
 class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     private val utc: ZoneId = ZoneId.of("UTC")
@@ -58,7 +59,10 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         data class QueryResult(val value: Coordinate?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::point AS value").exactlyOne<QueryResult>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT NULL::point AS value").exactlyOne<QueryResult>()
+            }
         assertNull(result.value)
     }
 
@@ -68,6 +72,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT array[point(22.0, 11.0), point(44.0, 33.0)]::point[] AS values"
                     )
@@ -124,7 +129,10 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         data class QueryResult(val value: DateRange?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::daterange AS value").exactlyOne<QueryResult>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT NULL::daterange AS value").exactlyOne<QueryResult>()
+            }
         assertNull(result.value)
     }
 
@@ -134,6 +142,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT array[daterange('2020-06-07', NULL, '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
                     )
@@ -167,7 +176,10 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         data class QueryResult(val value: FiniteDateRange?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::daterange AS value").exactlyOne<QueryResult>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT NULL::daterange AS value").exactlyOne<QueryResult>()
+            }
         assertNull(result.value)
     }
 
@@ -177,6 +189,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT array[daterange('2020-06-07', '2021-01-01', '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
                     )
@@ -224,6 +237,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT NULL::datemultirange AS value").exactlyOne<QueryResult>()
             }
         assertNull(result.value)
@@ -245,7 +259,10 @@ SELECT :input = datemultirange(
         data class QueryResult(val value: ExternalId?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::text AS value").exactlyOne<QueryResult>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT NULL::text AS value").exactlyOne<QueryResult>()
+            }
         assertNull(result.value)
     }
 
@@ -255,6 +272,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT array['test:123456', 'more:42']::text[] AS values")
                     .exactlyOne<QueryResult>()
             }
@@ -286,7 +304,10 @@ SELECT :input = datemultirange(
         data class QueryResult(val value: PersonId?)
 
         val result =
-            db.read { it.createQuery("SELECT NULL::uuid AS value").exactlyOne<QueryResult>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT NULL::uuid AS value").exactlyOne<QueryResult>()
+            }
         assertNull(result.value)
     }
 
@@ -296,6 +317,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT array['5ea2618c-3e9d-4fd3-8094-8d2f35311962', '2db6c1c7-402f-4d86-a308-a7f1b19bb313']::uuid[] AS values"
                     )
@@ -317,6 +339,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT jsonb_build_object('value', '5ea2618c-3e9d-4fd3-8094-8d2f35311962'::uuid) AS jsonb"
                     )
@@ -346,6 +369,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery("SELECT NULL::timestamptz AS value").exactlyOne<QueryResult>()
             }
         assertNull(result.value)
@@ -357,6 +381,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT array['2020-05-07T10:59Z', '2021-01-10T06:42Z']::timestamptz[] AS values"
                     )
@@ -379,6 +404,7 @@ SELECT :input = datemultirange(
 
         val result =
             db.read {
+                @Suppress("DEPRECATION")
                 it.createQuery(
                         "SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb"
                     )

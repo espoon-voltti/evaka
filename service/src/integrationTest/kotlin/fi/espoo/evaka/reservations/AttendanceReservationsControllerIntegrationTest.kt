@@ -960,8 +960,10 @@ class AttendanceReservationsControllerIntegrationTest :
         )
         db.read { tx ->
             val reservationCreators =
+                @Suppress("DEPRECATION")
                 tx.createQuery("SELECT created_by FROM attendance_reservation").toSet<EmployeeId>()
             val absenceCreators =
+                @Suppress("DEPRECATION")
                 tx.createQuery("SELECT modified_by FROM absence").toSet<EmployeeId>()
             // original should be preserved when unchanged
             assertEquals(setOf(employeeId, employeeId2), reservationCreators)
@@ -1336,6 +1338,7 @@ class AttendanceReservationsControllerIntegrationTest :
     private fun insertConfirmedReservationTestData() {
         db.transaction {
             // clear existing term that has no term breaks
+            @Suppress("DEPRECATION")
             it.createUpdate("DELETE FROM preschool_term where extended_term @> :day")
                 .bind("day", mon)
                 .execute()

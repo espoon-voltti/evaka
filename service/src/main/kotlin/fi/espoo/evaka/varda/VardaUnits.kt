@@ -100,6 +100,7 @@ fun getNewOrStaleUnits(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return tx.createQuery(sql)
         .bind("ophMunicipalityCode", ophMunicipalityCode)
         .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
@@ -119,6 +120,7 @@ fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: Vard
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     tx.createUpdate(sql)
         .bind("now", clock.now())
         .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
@@ -127,6 +129,7 @@ fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: Vard
 
     val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :evakaDaycareId;"
 
+    @Suppress("DEPRECATION")
     tx.createUpdate(sql2)
         .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
         .bind("ophUnitOid", vardaUnit.ophUnitOid)

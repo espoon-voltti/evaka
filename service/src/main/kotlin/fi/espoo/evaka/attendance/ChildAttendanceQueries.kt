@@ -41,6 +41,7 @@ fun Database.Transaction.insertAttendance(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createUpdate(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
@@ -108,6 +109,7 @@ fun Database.Read.getChildOngoingAttendance(
     childId: ChildId,
     unitId: DaycareId
 ): OngoingAttendance? =
+    @Suppress("DEPRECATION")
     createQuery(
             "SELECT id, date, start_time FROM child_attendance WHERE child_id = :childId AND unit_id = :unitId AND end_time IS NULL"
         )
@@ -255,6 +257,7 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, now: HelsinkiDateTime):
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("unitId", unitId).bind("date", now.toLocalDate()).toList {
         row<ChildBasicsRow>().toChildBasics()
     }
@@ -324,6 +327,7 @@ fun Database.Read.getUnitChildAbsences(
     unitId: DaycareId,
     date: LocalDate,
 ): Map<ChildId, List<ChildAbsence>> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH placed_children AS (
@@ -348,6 +352,7 @@ fun Database.Read.getChildPlacementTypes(
     childIds: Set<ChildId>,
     today: LocalDate
 ): Map<ChildId, PlacementType> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT child_id, type AS placement_type
@@ -364,6 +369,7 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
     childId: ChildId,
     period: DateRange
 ): List<LocalDate> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT date
@@ -379,12 +385,14 @@ fun Database.Read.getChildAttendanceStartDatesByRange(
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: ChildAttendanceId) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE child_attendance SET end_time = NULL WHERE id = :id")
         .bind("id", attendanceId)
         .execute()
 }
 
 fun Database.Transaction.updateAttendanceEnd(attendanceId: ChildAttendanceId, endTime: LocalTime) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE child_attendance SET end_time = :endTime WHERE id = :id")
         .bind("id", attendanceId)
         .bind("endTime", endTime)
@@ -400,7 +408,7 @@ fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
         """
             .trimIndent()
 
-    createUpdate(sql).bind("id", id).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).execute()
 }
 
 fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate): List<AbsenceId> {
@@ -413,6 +421,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createUpdate(sql)
         .bind("childId", childId)
         .bind("date", date)
@@ -424,6 +433,7 @@ fun Database.Transaction.deleteAttendancesByDate(
     childId: ChildId,
     date: LocalDate
 ): List<ChildAttendanceId> =
+    @Suppress("DEPRECATION")
     createUpdate(
             "DELETE FROM child_attendance WHERE child_id = :childId AND date = :date RETURNING id"
         )
@@ -445,6 +455,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createUpdate(sql)
         .bind("childId", childId)
         .bind("dateRange", dateRange)

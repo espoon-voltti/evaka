@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 
 fun Database.Transaction.deletePaymentDraftsByDateRange(range: DateRange) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM payment WHERE status = 'DRAFT' AND period && :range")
         .bind("range", range)
         .execute()
@@ -36,6 +37,7 @@ fun Database.Transaction.insertPaymentDrafts(payments: List<PaymentDraft>) {
 }
 
 fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
         SELECT 
@@ -52,6 +54,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
 }
 
 fun Database.Read.readPayments(): List<Payment> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT
@@ -86,6 +89,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
     val includeMissingDetails =
         params.distinctions.contains(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
 
+    @Suppress("DEPRECATION")
     return createQuery(
             """
             SELECT
@@ -127,6 +131,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
 }
 
 fun Database.Read.getMaxPaymentNumber(): Long {
+    @Suppress("DEPRECATION")
     return createQuery("SELECT max(number) FROM payment").exactlyOneOrNull<Long>() ?: 0
 }
 

@@ -20,7 +20,7 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
         WHERE employee_number = ANY (:employeeNumbers)
     """
             .trimIndent()
-    return createQuery(sql).bind("employeeNumbers", employeeNumbers)
+    @Suppress("DEPRECATION") return createQuery(sql).bind("employeeNumbers", employeeNumbers)
 }
 
 fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> {

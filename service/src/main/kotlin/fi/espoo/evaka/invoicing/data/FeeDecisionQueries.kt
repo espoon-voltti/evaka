@@ -368,6 +368,7 @@ private fun Database.Transaction.insertChildren(
 fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecisionId>) {
     if (decisionIds.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds)
         .execute()
@@ -376,6 +377,7 @@ fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecision
 fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     if (ids.isEmpty()) return
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)").bind("ids", ids).execute()
 }
 
@@ -606,6 +608,7 @@ fun Database.Read.searchFeeDecisions(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .addBindings(params)
         .addBindings(freeTextParams)
@@ -615,6 +618,7 @@ fun Database.Read.searchFeeDecisions(
 
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
+    @Suppress("DEPRECATION")
     return createQuery(feeDecisionQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .toList<FeeDecision>()
 }
@@ -623,11 +627,13 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
     ids: List<FeeDecisionId>
 ): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
+    @Suppress("DEPRECATION")
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
         .toList<FeeDecisionDetailed>()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
+    @Suppress("DEPRECATION")
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
         .exactlyOneOrNull<FeeDecisionDetailed>()
         ?.let { it ->
@@ -662,6 +668,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
                 )
             }
     val predicate = Predicate.all(listOf(headPredicate, validPredicate, statusPredicate))
+    @Suppress("DEPRECATION")
     return createQuery(feeDecisionQuery(predicate, lockForUpdate)).toList<FeeDecision>()
 }
 
@@ -729,6 +736,7 @@ fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: FeeDecisionId
         AND status = :requiredStatus::fee_decision_status
     """
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("status", FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING.toString())
@@ -781,7 +789,7 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: St
         WHERE id = :id
     """
 
-    createUpdate(sql).bind("id", id).bind("key", key).execute()
+    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).bind("key", key).execute()
 }
 
 fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? {
@@ -792,6 +800,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? 
         WHERE id = :id
     """
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("id", decisionId).exactlyOneOrNull<String>()
 }
 
@@ -805,6 +814,7 @@ fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecision
             AND status = :requiredStatus::fee_decision_status
     """
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("id", id)
         .bind("type", type.toString())
@@ -813,24 +823,28 @@ fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecision
 }
 
 fun Database.Transaction.setFeeDecisionToIgnored(id: FeeDecisionId) {
+    @Suppress("DEPRECATION")
     createUpdate("UPDATE fee_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'")
         .bind("id", id)
         .updateExactlyOne()
 }
 
 fun Database.Transaction.removeFeeDecisionIgnore(id: FeeDecisionId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM fee_decision WHERE id = :id AND status = 'IGNORED'")
         .bind("id", id)
         .updateExactlyOne()
 }
 
 fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId) {
+    @Suppress("DEPRECATION")
     createUpdate("SELECT id FROM fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
 }
 
 fun Database.Transaction.lockFeeDecisions(ids: List<FeeDecisionId>) {
+    @Suppress("DEPRECATION")
     createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids)
         .execute()
@@ -843,6 +857,7 @@ fun Database.Read.partnerIsCodebtor(
     dateRange: DateRange
 ): Boolean =
     partnerId != null &&
+        @Suppress("DEPRECATION")
         createQuery(
                 """
 WITH partner_children AS (
@@ -865,6 +880,7 @@ FROM partner_children, partner_fridge_children
 fun Database.Read.getFeeDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<FeeDecisionCitizenInfoRow> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 SELECT fd.id,

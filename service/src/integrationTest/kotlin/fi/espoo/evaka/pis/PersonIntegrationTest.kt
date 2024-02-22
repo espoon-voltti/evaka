@@ -162,6 +162,9 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         """
                 .trimIndent()
-        return db.read { it.createQuery(sql).bind("personId", personId).exactlyOne<Boolean>() }
+        return db.read {
+            @Suppress("DEPRECATION")
+            it.createQuery(sql).bind("personId", personId).exactlyOne<Boolean>()
+        }
     }
 }

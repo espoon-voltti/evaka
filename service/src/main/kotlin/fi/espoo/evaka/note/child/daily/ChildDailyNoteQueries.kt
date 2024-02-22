@@ -60,6 +60,7 @@ fun Database.Transaction.createChildDailyNote(
     childId: ChildId,
     note: ChildDailyNoteBody
 ): ChildDailyNoteId {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
@@ -79,6 +80,7 @@ fun Database.Transaction.updateChildDailyNote(
     id: ChildDailyNoteId,
     note: ChildDailyNoteBody
 ): ChildDailyNote {
+    @Suppress("DEPRECATION")
     return createUpdate(
             """
 UPDATE child_daily_note SET
@@ -102,18 +104,22 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE from child_daily_note WHERE id = :noteId").bind("noteId", noteId).execute()
 }
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM child_daily_note WHERE modified_at < :now - INTERVAL '14 hours'")
         .bind("now", now)
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM child_sticky_note WHERE expires < :thresholdDate")
         .bind("thresholdDate", now.toLocalDate())
         .execute()
 
+    @Suppress("DEPRECATION")
     createUpdate("DELETE FROM group_note WHERE expires < :thresholdDate")
         .bind("thresholdDate", now.toLocalDate())
         .execute()

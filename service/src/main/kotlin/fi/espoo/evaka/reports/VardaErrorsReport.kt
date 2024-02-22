@@ -41,6 +41,7 @@ class VardaErrorReport(private val accessControl: AccessControl) {
 }
 
 private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT

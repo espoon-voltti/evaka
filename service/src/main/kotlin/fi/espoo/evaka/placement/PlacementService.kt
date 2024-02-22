@@ -455,6 +455,7 @@ fun Database.Read.getUnitChildrenCapacities(
     unitId: DaycareId,
     date: LocalDate
 ): List<UnitChildrenCapacityFactors> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
         SELECT
@@ -567,6 +568,7 @@ fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<Missin
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     val missingGroupPlacements =
+        @Suppress("DEPRECATION")
         tx.createQuery(
                 """
 WITH missing_group_placement AS (
@@ -612,6 +614,7 @@ JOIN LATERAL (
             .toList<MissingGroupPlacement>()
 
     val missingBackupCareGroups =
+        @Suppress("DEPRECATION")
         tx.createQuery(
                 """
 SELECT

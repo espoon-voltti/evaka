@@ -14,6 +14,7 @@ import org.jdbi.v3.json.Json
 fun Database.Read.getPedagogicalDocumentAttachments(
     pedagogicalDocumentId: PedagogicalDocumentId
 ): List<Attachment> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
             SELECT 
@@ -43,6 +44,7 @@ fun Database.Read.getChildPedagogicalDocuments(
     childId: ChildId,
     userId: PersonId
 ): List<PedagogicalDocumentCitizen> {
+    @Suppress("DEPRECATION")
     return this.createQuery(
             """
             SELECT 
@@ -78,6 +80,7 @@ fun Database.Read.getChildPedagogicalDocuments(
 fun Database.Read.getPedagogicalDocumentChild(
     pedagogicalDocumentId: PedagogicalDocumentId
 ): ChildId {
+    @Suppress("DEPRECATION")
     return createQuery(
             "SELECT child_id FROM pedagogical_document WHERE id = :pedagogicalDocumentId"
         )

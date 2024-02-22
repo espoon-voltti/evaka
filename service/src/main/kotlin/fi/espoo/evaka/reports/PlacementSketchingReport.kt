@@ -169,6 +169,7 @@ ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
         """
             .trimIndent()
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("placementStartDate", placementStartDate)
         .bind("earliestPreferredStartDate", earliestPreferredStartDate)

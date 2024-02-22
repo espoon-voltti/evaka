@@ -24,6 +24,7 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId
 }
 
 fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -46,6 +47,7 @@ fun Database.Transaction.createPlacementPlan(
     type: PlacementType,
     plan: DaycarePlacementPlan
 ): PlacementPlanId =
+    @Suppress("DEPRECATION")
     createUpdate(
             // language=SQL
             """
@@ -82,6 +84,7 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val preschoolDaycareStartDate: LocalDate?,
         val preschoolDaycareEndDate: LocalDate?
     )
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -112,6 +115,7 @@ WHERE application_id = :applicationId AND deleted = false
 }
 
 fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -152,6 +156,7 @@ fun Database.Read.getPlacementPlans(
         val rejectedByCitizen: Boolean
     )
 
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -230,6 +235,7 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
         SET unit_confirmation_status = :status, unit_reject_reason = :rejectReason, unit_reject_other_reason = :rejectOtherReason
         WHERE application_id = :applicationId AND deleted = false
     """
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("applicationId", applicationId)
         .bind("status", status)
@@ -239,6 +245,7 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
 }
 
 fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild? {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -252,6 +259,7 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
 }
 
 fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
+    @Suppress("DEPRECATION")
     return createQuery(
             // language=SQL
             """
@@ -265,6 +273,7 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
 }
 
 fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int =
+    @Suppress("DEPRECATION")
     createQuery(
             """
 SELECT COUNT(*)

@@ -114,6 +114,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             .trimIndent()
 
     val unit =
+        @Suppress("DEPRECATION")
         createQuery(unitSql).bind("unitId", unitId).toList<UnitBasics>().firstOrNull()
             ?: throw NotFound("Unit $unitId not found")
 
@@ -222,6 +223,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     )
 
     val tmpGroups =
+        @Suppress("DEPRECATION")
         createQuery(groupsSql).bind("unitId", unitId).bind("date", date).toList<TempGroupInfo>()
 
     val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }
@@ -235,6 +237,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }.sortedBy { it.name }
 
     val staff =
+        @Suppress("DEPRECATION")
         createQuery(
                 """
         SELECT
@@ -284,6 +287,7 @@ data class UnitStats(
 )
 
 fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> {
+    @Suppress("DEPRECATION")
     return createQuery(
             """
 WITH present_children AS (

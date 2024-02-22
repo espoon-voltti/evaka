@@ -62,6 +62,7 @@ class NewCustomerIncomeNotification(
     ) {
         val language =
             db.read { tx ->
+                @Suppress("DEPRECATION")
                 tx.createQuery(
                         """
                         SELECT language

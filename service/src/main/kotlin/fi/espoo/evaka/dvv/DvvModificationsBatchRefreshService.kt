@@ -66,6 +66,7 @@ class DvvModificationsBatchRefreshService(
 }
 
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> =
+    @Suppress("DEPRECATION")
     createQuery(
             // language=sql
             """

@@ -76,7 +76,10 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             0,
-            db.read { it.createQuery("SELECT count(*) FROM async_job").exactlyOne<Int>() }
+            db.read {
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT count(*) FROM async_job").exactlyOne<Int>()
+            }
         )
     }
 

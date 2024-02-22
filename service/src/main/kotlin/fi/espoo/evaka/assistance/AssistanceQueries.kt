@@ -26,6 +26,7 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
     }
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
+    @Suppress("DEPRECATION")
     createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
         .toList<AssistanceFactor>()
 
@@ -46,6 +47,7 @@ WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_fa
         .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
+    @Suppress("DEPRECATION")
     createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
         .exactlyOneOrNull<AssistanceFactor>()
 

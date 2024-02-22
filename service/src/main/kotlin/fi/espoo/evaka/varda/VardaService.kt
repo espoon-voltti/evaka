@@ -218,6 +218,7 @@ private fun getVardaChildIdsByEvakaChildId(
     evakaChildId: ChildId
 ): List<Long> {
     return db.read {
+        @Suppress("DEPRECATION")
         it.createQuery(
                 """
             select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId and varda_child_id is not null 
@@ -459,6 +460,7 @@ private fun getChildVardaGuardians(
     childId: ChildId
 ): List<VardaGuardianWithId> {
     return db.read {
+        @Suppress("DEPRECATION")
         it.createQuery(
                 """
             SELECT

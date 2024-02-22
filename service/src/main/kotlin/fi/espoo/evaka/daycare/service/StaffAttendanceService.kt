@@ -110,6 +110,7 @@ fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? {
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql).bind("groupId", groupId).exactlyOneOrNull<GroupInfo>()
 }
 
@@ -126,6 +127,7 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
@@ -153,6 +155,7 @@ fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceU
             }
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     createUpdate(sql)
         .bind("groupId", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
@@ -175,6 +178,7 @@ fun Database.Read.getStaffAttendanceByRange(
         """
             .trimIndent()
 
+    @Suppress("DEPRECATION")
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("range", range)
@@ -197,6 +201,7 @@ fun Database.Read.getUnitStaffAttendanceForDate(
             .trimIndent()
 
     val groupAttendances =
+        @Suppress("DEPRECATION")
         createQuery(sql).bind("unitId", unitId).bind("date", date).toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }

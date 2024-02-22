@@ -440,11 +440,13 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .trimIndent()
         db.transaction { tx ->
             if (pairing.mobileDeviceId != null) {
+                @Suppress("DEPRECATION")
                 tx.createUpdate(
                         "INSERT INTO employee (id, first_name, last_name, active) VALUES (:id, '', '', TRUE)"
                     )
                     .bind("id", pairing.mobileDeviceId)
                     .execute()
+                @Suppress("DEPRECATION")
                 tx.createUpdate(
                         "INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, 'Laite')"
                     )
@@ -452,6 +454,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     .bind("unitId", pairing.unitId)
                     .execute()
             }
+            @Suppress("DEPRECATION")
             tx.createUpdate(sql)
                 .bind("id", pairing.id)
                 .bind("unitId", pairing.unitId)

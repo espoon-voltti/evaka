@@ -1061,6 +1061,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
+            @Suppress("DEPRECATION")
             tx.createUpdate(
                     "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
                 )
@@ -1179,6 +1180,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
@@ -1211,8 +1213,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
-            tx.createUpdate("DELETE FROM placement").execute()
+            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM placement").execute()
         }
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare2.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare.id)
@@ -1270,6 +1273,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
+            @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
@@ -1415,6 +1419,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
+                @Suppress("DEPRECATION")
                 tx.createQuery("SELECT * FROM voucher_value_decision")
                     .toList<VoucherValueDecision>()
             }

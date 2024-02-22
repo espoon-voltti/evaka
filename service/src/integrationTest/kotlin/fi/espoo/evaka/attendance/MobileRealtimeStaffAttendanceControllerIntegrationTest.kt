@@ -1434,6 +1434,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 }
 
 private fun Database.Read.getEmployeeLastLogin(id: EmployeeId) =
+    @Suppress("DEPRECATION")
     createQuery("SELECT last_login FROM employee WHERE id = :id")
         .bind("id", id)
         .exactlyOneOrNull<HelsinkiDateTime>()
