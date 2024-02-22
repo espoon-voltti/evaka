@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Result } from 'lib-common/api'
+import { Failure, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { throwIfNull } from 'lib-common/form-validation'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
@@ -27,11 +27,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 
+import { FeeThresholdsSaveError } from '../../api/finance-basics'
 import {
-  FeeThresholdsSaveError,
   createFeeThresholds,
   updateFeeThresholds
-} from '../../api/finance-basics'
+} from '../../generated/api-clients/invoicing'
 import { Translations } from '../../state/i18n'
 import {
   FamilySize,
@@ -40,6 +40,9 @@ import {
 } from '../../types/finance-basics'
 
 import { FormState } from './FeesSection'
+
+const createFeeThresholdsResult = wrapResult(createFeeThresholds)
+const updateFeeThresholdsResult = wrapResult(updateFeeThresholds)
 
 export default React.memo(function FeeThresholdsEditor({
   i18n,
@@ -427,8 +430,11 @@ export default React.memo(function FeeThresholdsEditor({
             }
 
             return id === undefined
-              ? createFeeThresholds(validationResult.payload)
-              : updateFeeThresholds(id, validationResult.payload)
+              ? createFeeThresholdsResult({ body: validationResult.payload })
+              : updateFeeThresholdsResult({
+                  id,
+                  body: validationResult.payload
+                })
           }}
           onSuccess={() => {
             close()
@@ -457,8 +463,11 @@ export default React.memo(function FeeThresholdsEditor({
                 return
               }
               await (id === undefined
-                ? createFeeThresholds(validationResult.payload)
-                : updateFeeThresholds(id, validationResult.payload))
+                ? createFeeThresholdsResult({ body: validationResult.payload })
+                : updateFeeThresholdsResult({
+                    id,
+                    body: validationResult.payload
+                  }))
               close()
               reloadData()
             },
