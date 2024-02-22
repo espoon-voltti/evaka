@@ -7,7 +7,11 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import { IncomeEffect } from 'lib-common/api-types/income'
+import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
+import {
+  FamilyOverview,
+  FamilyOverviewPerson
+} from 'lib-common/generated/api-types/pis'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -18,8 +22,6 @@ import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import {
-  FamilyOverview,
-  FamilyOverviewPerson,
   FamilyOverviewPersonRole,
   FamilyOverviewRow
 } from '../../types/family-overview'
@@ -102,7 +104,7 @@ export default React.memo(function FamilyOverview({ open: startOpen }: Props) {
   }
 
   const familyIncomeTotal = family
-    .map(({ totalIncome }) => formatCents(totalIncome?.total))
+    .map(({ totalIncome }) => formatCents(totalIncome?.total ?? undefined))
     .getOrElse(undefined)
 
   return (
@@ -184,7 +186,10 @@ export default React.memo(function FamilyOverview({ open: startOpen }: Props) {
                         <Td data-qa="person-age">{age}</Td>
                         {family.totalIncome ? (
                           <Td data-qa="person-income-total">
-                            {getIncomeString(income?.total, income?.effect)}
+                            {getIncomeString(
+                              income?.total ?? undefined,
+                              income?.effect ?? undefined
+                            )}
                           </Td>
                         ) : null}
                         <Td>
