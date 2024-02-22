@@ -33,7 +33,7 @@ import org.jdbi.v3.core.Jdbi
 
 class AsyncJobPool<T : AsyncJobPayload>(
     val id: Id<T>,
-    private val config: Config,
+    config: Config,
     private val jdbi: Jdbi,
     private val tracer: Tracer,
     private val registration: Registration<T>
@@ -63,6 +63,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val logger = KotlinLogging.logger("${AsyncJobPool::class.qualifiedName}.$id")
     private val metrics: AtomicReference<Metrics> = AtomicReference()
 
+    private val throttleInterval = config.throttleInterval ?: Duration.ZERO
     private val executor =
         config.let {
             val corePoolSize = 1
@@ -129,11 +130,29 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private fun runWorker(clock: EvakaClock, maxCount: Int) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
             Database(jdbi, tracer).connect { dbc ->
+                dbc.transaction { it.upsertPermit(this.id) }
                 var executed = 0
                 while (maxCount - executed > 0 && !executor.isTerminating) {
                     val job =
-                        dbc.transaction { it.claimJob(clock.now(), registration.jobTypes()) }
-                            ?: break
+                        dbc.transaction { tx ->
+                            // In the worst case we need to wait for the duration of (N service
+                            // instances) * (M workers per pool) * (throttle interval) if every
+                            // worker in the cluster is queuing and every one sleeps.
+                            //
+                            // The value here is just a guess that should be long enough in all
+                            // valid cases, and we get a loud exception if this assumption is broken
+                            tx.setLockTimeout(Duration.ofSeconds(60))
+                            val permit = tx.claimPermit(this.id)
+                            Thread.sleep(
+                                Duration.between(
+                                    clock.now().toInstant(),
+                                    permit.availableAt.toInstant()
+                                )
+                            )
+                            tx.claimJob(clock.now(), registration.jobTypes())?.also {
+                                tx.updatePermit(this.id, clock.now().plus(throttleInterval))
+                            }
+                        } ?: break
                     tracer.withDetachedSpan(
                         "asyncjob.run ${job.jobType.name}",
                         Tracing.asyncJobId withValue job.jobId,
@@ -143,7 +162,6 @@ class AsyncJobPool<T : AsyncJobPayload>(
                     }
                     metrics.get()?.executedJobs?.increment()
                     executed += 1
-                    config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
                 }
                 executed
             }

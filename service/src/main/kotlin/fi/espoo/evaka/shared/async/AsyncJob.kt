@@ -393,3 +393,5 @@ data class ClaimedJobRef<T : AsyncJobPayload>(
     val txId: Long,
     val remainingAttempts: Int
 )
+
+data class WorkPermit(val availableAt: HelsinkiDateTime)

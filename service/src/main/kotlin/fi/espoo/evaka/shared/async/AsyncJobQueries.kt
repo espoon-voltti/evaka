@@ -31,6 +31,44 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .exactlyOne<UUID>()
 
+fun Database.Transaction.upsertPermit(pool: AsyncJobPool.Id<*>) {
+    createUpdate<Any> {
+            sql(
+                """
+INSERT INTO async_job_work_permit (pool_id, available_at)
+VALUES (${bind(pool.toString())}, '-infinity')
+ON CONFLICT DO NOTHING
+"""
+            )
+        }
+        .execute()
+}
+
+fun Database.Transaction.claimPermit(pool: AsyncJobPool.Id<*>): WorkPermit =
+    createQuery<Any> {
+            sql(
+                """
+SELECT available_at
+FROM async_job_work_permit
+WHERE pool_id = ${bind(pool.toString())}
+FOR UPDATE
+"""
+            )
+        }
+        .exactlyOne()
+
+fun Database.Transaction.updatePermit(pool: AsyncJobPool.Id<*>, availableAt: HelsinkiDateTime) =
+    createUpdate<Any> {
+            sql(
+                """
+UPDATE async_job_work_permit
+SET available_at = ${bind(availableAt)}
+WHERE pool_id = ${bind(pool.toString())}
+"""
+            )
+        }
+        .updateExactlyOne()
+
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
