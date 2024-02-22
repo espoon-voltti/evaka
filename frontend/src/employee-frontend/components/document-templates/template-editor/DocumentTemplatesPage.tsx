@@ -72,8 +72,8 @@ const ValidityEditor = React.memo(function ValidityEditor({
         aria-label={i18n.common.save}
         onClick={async () => {
           const result = await updateDocumentTemplateValidity({
-            id: id,
-            validity: form.value()
+            templateId: id,
+            body: form.value()
           })
           if (result.isSuccess) {
             onClose()
@@ -154,7 +154,7 @@ const TemplateRow = React.memo(function TemplateRow({
             icon={faTrash}
             aria-label={i18n.common.remove}
             disabled={template.published}
-            onClick={() => deleteDocumentTemplate(template.id)}
+            onClick={() => deleteDocumentTemplate({ templateId: template.id })}
           />
           <a data-qa="export" href={exportUrl} target="_blank" rel="noreferrer">
             <FontAwesomeIcon icon={faFileExport} fontSize="20px" />

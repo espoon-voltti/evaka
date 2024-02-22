@@ -2,28 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from 'lib-common/date-range'
-import {
-  DocumentTemplateContent,
-  DocumentTemplateCreateRequest,
-  ExportedDocumentTemplate
-} from 'lib-common/generated/api-types/document'
-import { JsonOf } from 'lib-common/json'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import {
-  deleteDocumentTemplate,
-  getActiveDocumentTemplateSummaries,
-  getDocumentTemplate,
-  getDocumentTemplateSummaries,
-  importDocumentTemplate,
-  postDocumentTemplate,
-  postDocumentTemplateDuplicate,
-  putDocumentTemplateContent,
-  putDocumentTemplatePublish,
-  putDocumentTemplateValidity
-} from '../../api/document-templates'
+  createTemplate,
+  deleteDraftTemplate,
+  duplicateTemplate,
+  getActiveTemplates,
+  getTemplate,
+  getTemplates,
+  importTemplate,
+  publishTemplate,
+  updateDraftTemplateContent,
+  updateTemplateValidity
+} from '../../generated/api-clients/document'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('documentTemplates', {
@@ -36,63 +29,60 @@ const queryKeys = createQueryKeys('documentTemplates', {
 })
 
 export const documentTemplateSummariesQuery = query({
-  api: getDocumentTemplateSummaries,
+  api: getTemplates,
   queryKey: queryKeys.documentTemplateSummaries
 })
 
 export const activeDocumentTemplateSummariesQuery = query({
-  api: getActiveDocumentTemplateSummaries,
-  queryKey: queryKeys.activeDocumentTemplateSummaries
+  api: getActiveTemplates,
+  queryKey: ({ childId }) => queryKeys.activeDocumentTemplateSummaries(childId)
 })
 
 export const documentTemplateQuery = query({
-  api: getDocumentTemplate,
-  queryKey: queryKeys.documentTemplate
+  api: getTemplate,
+  queryKey: ({ templateId }) => queryKeys.documentTemplate(templateId)
 })
 
 export const createDocumentTemplateMutation = mutation({
-  api: postDocumentTemplate,
+  api: createTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
 export const duplicateDocumentTemplateMutation = mutation({
-  api: (arg: { id: UUID; data: DocumentTemplateCreateRequest }) =>
-    postDocumentTemplateDuplicate(arg.id, arg.data),
+  api: duplicateTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
 export const importDocumentTemplateMutation = mutation({
-  api: (data: JsonOf<ExportedDocumentTemplate>) => importDocumentTemplate(data),
+  api: importTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })
 
 export const updateDocumentTemplateContentMutation = mutation({
-  api: (arg: { id: UUID; content: DocumentTemplateContent }) =>
-    putDocumentTemplateContent(arg.id, arg.content),
+  api: updateDraftTemplateContent,
   invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.id)
+    queryKeys.documentTemplate(arg.templateId)
   ]
 })
 
 export const updateDocumentTemplateValidityMutation = mutation({
-  api: (arg: { id: UUID; validity: DateRange }) =>
-    putDocumentTemplateValidity(arg.id, arg.validity),
+  api: updateTemplateValidity,
   invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(arg.id)
+    queryKeys.documentTemplate(arg.templateId)
   ]
 })
 
 export const publishDocumentTemplateMutation = mutation({
-  api: (id: string) => putDocumentTemplatePublish(id),
-  invalidateQueryKeys: (id) => [
+  api: publishTemplate,
+  invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
-    queryKeys.documentTemplate(id)
+    queryKeys.documentTemplate(arg.templateId)
   ]
 })
 
 export const deleteDocumentTemplateMutation = mutation({
-  api: (id: string) => deleteDocumentTemplate(id),
+  api: deleteDraftTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
 })

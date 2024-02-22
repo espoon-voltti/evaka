@@ -163,7 +163,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   const { i18n } = useTranslation()
   const documentsResult = useQueryResult(childDocumentsQuery({ childId }))
   const documentTemplatesResult = useQueryResult(
-    activeDocumentTemplateSummariesQuery(childId)
+    activeDocumentTemplateSummariesQuery({ childId })
   )
   const [creationModalOpen, setCreationModalOpen] = useState(false)
 
