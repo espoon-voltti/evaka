@@ -5,7 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -20,17 +20,24 @@ import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import {
+  createChildStickyNote,
+  createGroupNote,
   deleteChildStickyNote,
   deleteGroupNote,
-  postChildStickyNote,
-  postGroupNote,
-  putChildStickyNote,
-  putGroupNote
-} from '../../../../api/daycare-notes'
+  updateChildStickyNote,
+  updateGroupNote
+} from '../../../../generated/api-clients/note'
 import { Translations, useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 
 import ChildDailyNoteForm from './ChildDailyNoteForm'
+
+const createGroupNoteResult = wrapResult(createGroupNote)
+const updateGroupNoteResult = wrapResult(updateGroupNote)
+const deleteGroupNoteResult = wrapResult(deleteGroupNote)
+const createChildStickyNoteResult = wrapResult(createChildStickyNote)
+const updateChildStickyNoteResult = wrapResult(updateChildStickyNote)
+const deleteChildStickyNoteResult = wrapResult(deleteChildStickyNote)
 
 const getLabels = (i18n: Translations, title: string, placeholder: string) => ({
   addNew: i18n.common.addNew,
@@ -156,13 +163,14 @@ export default React.memo(function NotesModal({
   )
   const saveGroupNote = useCallback(
     ({ id, ...body }: EditedNote) =>
-      (id ? putGroupNote(id, body) : postGroupNote(group.id, body)).then(
-        reloadOnSuccess
-      ),
+      (id
+        ? updateGroupNoteResult({ noteId: id, body })
+        : createGroupNoteResult({ groupId: group.id, body })
+      ).then(reloadOnSuccess),
     [group.id, reloadOnSuccess]
   )
   const removeGroupNote = useCallback(
-    (id: string) => deleteGroupNote(id).then(reloadOnSuccess),
+    (id: string) => deleteGroupNoteResult({ noteId: id }).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
   const saveStickyNote = useCallback(
@@ -171,14 +179,15 @@ export default React.memo(function NotesModal({
         return Promise.reject('invalid usage: childId was not provided')
       }
       const promise = id
-        ? putChildStickyNote(id, body)
-        : postChildStickyNote(child.id, body)
+        ? updateChildStickyNoteResult({ noteId: id, body })
+        : createChildStickyNoteResult({ childId: child.id, body })
       return promise.then(reloadOnSuccess)
     },
     [child, reloadOnSuccess]
   )
   const removeStickyNote = useCallback(
-    (id: string) => deleteChildStickyNote(id).then(reloadOnSuccess),
+    (id: string) =>
+      deleteChildStickyNoteResult({ noteId: id }).then(reloadOnSuccess),
     [reloadOnSuccess]
   )
 
