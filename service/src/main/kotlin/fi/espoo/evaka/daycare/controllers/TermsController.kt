@@ -55,7 +55,7 @@ class TermsController(private val accessControl: AccessControl) {
     @PostMapping("/club-terms")
     fun createClubTerm(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ClubTermRequest
     ) {

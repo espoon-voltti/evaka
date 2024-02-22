@@ -14,7 +14,6 @@ import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
-import { ClubTermRequest } from 'lib-common/generated/api-types/daycare'
 import { CreateDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { CreateGroupRequest } from 'lib-common/generated/api-types/daycare'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
@@ -519,23 +518,6 @@ export async function upsertStaffAttendance(
     url: uri`/staff-attendances/group/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.createClubTerm
-*/
-export async function createClubTerm(
-  request: {
-    body: ClubTermRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/club-terms`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ClubTermRequest>
   })
   return json
 }
