@@ -54,12 +54,13 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import {
   ModalCloseButton,
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import { H1, H2, H3, LabelLike, P } from 'lib-components/typography'
+import { H1, H2, H3, Label, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
@@ -389,6 +390,15 @@ const DayModal = React.memo(function DayModal({
                         {i18n.calendar.reservationsAndRealized}
                       </ColoredH3>
 
+                      {row.shiftCare && (
+                        <ExpandingInfo
+                          width="auto"
+                          info={i18n.calendar.shiftCareInfo()}
+                          inlineChildren
+                        >
+                          <Label>{i18n.calendar.shiftCareInfoLabel}</Label>
+                        </ExpandingInfo>
+                      )}
                       <Gap size="s" />
 
                       <ReservationAttendanceInfo>
@@ -467,6 +477,7 @@ interface ModalRow {
   lastName: string
   image: ChildImageData
   duplicateInfo: string | undefined
+  shiftCare: boolean
   attendances: TimeInterval[]
   usedService: UsedServiceResult | null
   reservations: ReservationResponse[]
@@ -514,6 +525,7 @@ function computeModalData(
       lastName: person.lastName,
       image,
       duplicateInfo: duplicateChildInfo[child.childId],
+      shiftCare: child.shiftCare,
       attendances: child.attendances,
       reservations: child.reservations,
       usedService: child.usedService,

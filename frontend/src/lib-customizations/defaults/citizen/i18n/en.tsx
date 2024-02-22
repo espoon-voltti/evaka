@@ -344,6 +344,21 @@ const en: Translations = {
     attendanceWarning:
       'The realized attendance time exceeds the reported attendance time',
     eventsCount: 'events',
+    shiftCareInfoLabel: 'Early childhood education overnight?',
+    shiftCareInfo: (): React.ReactNode => (
+      <>
+        <P>
+          If the child needs early childhood education overnight, mark the part
+          before midnight to end at 23:59, and the part after midnight to start
+          the next day at 00:00.
+        </P>
+        <P>
+          For example, if the child is in care overnight from Monday evening at
+          20:00 to Tuesday morning at 06:00, mark for Monday 20:00 - 23:59 and
+          for Tuesday 00:00 - 06:00
+        </P>
+      </>
+    ),
     reservationModal: {
       title: 'Register attendance',
       selectChildren: 'Select children',

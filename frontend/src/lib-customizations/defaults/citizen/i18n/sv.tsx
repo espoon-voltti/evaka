@@ -340,6 +340,21 @@ const sv: Translations = {
       'Ditt barn är inte i småbarnspedagogiken eller förskolan på denna dag.',
     attendanceWarning: 'Tiden överskrider den anmälda närvaron',
     eventsCount: 'händelser',
+    shiftCareInfoLabel: 'Småbarnspedagogik över en natt?',
+    shiftCareInfo: (): React.ReactNode => (
+      <>
+        <P>
+          Om barnet behöver småbarnspedagogik över natten, markera delen före
+          midnatt för att sluta kl. 23:59, och delen efter midnatt för att börja
+          nästa dag kl. 00:00.
+        </P>
+        <P>
+          Om barnet t.ex är i småbarnspedagogik över natten från måndag kväll kl
+          20:00 till tisdag morgon kl 06:00, markera för måndag 20:00 - 23:59
+          och för tisdag 00:00 - 06:00
+        </P>
+      </>
+    ),
     reservationModal: {
       title: 'Anmäl närvaro',
       selectChildren: 'Välj barn',

@@ -169,6 +169,11 @@ export default React.memo(function ReservationModal({
 
   const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
 
+  const anyShiftCare = useMemo(
+    () => calendarDays.some((d) => d.children.some((c) => c.shiftCare)),
+    [calendarDays]
+  )
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto" data-qa="reservation-modal">
@@ -237,11 +242,16 @@ export default React.memo(function ReservationModal({
                 <ExpandingInfo
                   width="auto"
                   info={
-                    dayProperties.maxDate !== undefined
-                      ? i18n.calendar.reservationModal.dateRangeInfo(
+                    dayProperties.maxDate !== undefined ? (
+                      <>
+                        {i18n.calendar.reservationModal.dateRangeInfo(
                           dayProperties.maxDate
-                        )
-                      : i18n.calendar.reservationModal.noReservableDays
+                        )}
+                        {anyShiftCare && i18n.calendar.shiftCareInfo()}
+                      </>
+                    ) : (
+                      i18n.calendar.reservationModal.noReservableDays
+                    )
                   }
                   inlineChildren
                 >
