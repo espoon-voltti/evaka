@@ -14,6 +14,7 @@ import React, {
 
 import { Result, Loading } from 'lib-common/api'
 import {
+  ApplicationStatusOption,
   ApplicationTypeToggle,
   PagedApplicationSummaries,
   TransferApplicationFilter
@@ -32,7 +33,6 @@ import {
   ApplicationBasis,
   ApplicationSummaryStatusOptions,
   PreschoolType,
-  ApplicationSummaryStatusAllOptions,
   ApplicationDistinctions
 } from '../components/common/Filters'
 import { areaQuery } from '../components/unit/queries'
@@ -69,7 +69,7 @@ interface ApplicationSearchFilters {
   transferApplications: TransferApplicationFilter
   voucherApplications: VoucherApplicationFilter
   preschoolType: PreschoolType[]
-  allStatuses: ApplicationSummaryStatusAllOptions[]
+  allStatuses: ApplicationStatusOption[]
   distinctions: ApplicationDistinctions[]
 }
 

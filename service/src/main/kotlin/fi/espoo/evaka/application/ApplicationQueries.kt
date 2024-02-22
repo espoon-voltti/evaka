@@ -163,27 +163,29 @@ data class PagedApplicationSummaries(
 
 fun Database.Read.fetchApplicationSummaries(
     today: LocalDate,
-    page: Int,
-    pageSize: Int,
-    sortBy: ApplicationSortColumn,
-    sortDir: ApplicationSortDirection,
-    areas: List<String>,
-    units: List<DaycareId>,
-    basis: List<ApplicationBasis>,
-    type: ApplicationTypeToggle,
-    preschoolType: List<ApplicationPreschoolTypeToggle>,
-    statuses: List<ApplicationStatusOption>,
-    dateType: List<ApplicationDateType>,
-    distinctions: List<ApplicationDistinctions>,
-    periodStart: LocalDate?,
-    periodEnd: LocalDate?,
-    searchTerms: String = "",
-    transferApplications: TransferApplicationFilter,
-    voucherApplications: VoucherApplicationFilter?,
+    params: SearchApplicationRequest,
     readWithAssistanceNeed: AccessControlFilter<ApplicationId>?,
     readWithoutAssistanceNeed: AccessControlFilter<ApplicationId>?,
     canReadServiceWorkerNotes: Boolean
 ): PagedApplicationSummaries {
+    val page = params.page ?: 1
+    val pageSize = params.pageSize ?: 100
+    val sortBy = params.sortBy ?: ApplicationSortColumn.CHILD_NAME
+    val sortDir = params.sortDir ?: ApplicationSortDirection.ASC
+    val areas = params.areas ?: emptyList()
+    val units = params.units ?: emptyList()
+    val basis = params.basis ?: emptyList()
+    val type = params.type
+    val preschoolType = params.preschoolType ?: emptyList()
+    val statuses = params.statuses ?: emptyList()
+    val dateType = params.dateType ?: emptyList()
+    val distinctions = params.distinctions ?: emptyList()
+    val periodStart = params.periodStart
+    val periodEnd = params.periodEnd
+    val searchTerms = params.searchTerms ?: ""
+    val transferApplications = params.transferApplications ?: TransferApplicationFilter.ALL
+    val voucherApplications = params.voucherApplications
+
     val assistanceNeeded = { value: Boolean ->
         PredicateSql {
             where(
@@ -196,8 +198,7 @@ fun Database.Read.fetchApplicationSummaries(
     val predicates =
         PredicateSql.allNotNull(
             PredicateSql { where("a.status = ANY(${bind(statuses)})") },
-            if (areas.isNotEmpty()) PredicateSql { where("ca.short_name = ANY(${bind(areas)})") }
-            else null,
+            if (areas.isNotEmpty()) PredicateSql { where("ca.id = ANY(${bind(areas)})") } else null,
             PredicateSql.all(
                 basis.map { applicationBasis ->
                     when (applicationBasis) {

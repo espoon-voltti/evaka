@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
 import fi.espoo.evaka.decision.DecisionDraftUpdate
@@ -14,7 +15,6 @@ import fi.espoo.evaka.decision.getDecisionUnit
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
@@ -28,6 +28,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -87,6 +88,7 @@ enum class ApplicationDateType {
     ARRIVAL
 }
 
+@ConstList(name = "applicationStatusOptions")
 enum class ApplicationStatusOption : DatabaseEnum {
     SENT,
     WAITING_PLACEMENT,
@@ -250,37 +252,7 @@ class ApplicationControllerV2(
 
                     tx.fetchApplicationSummaries(
                         today = clock.today(),
-                        page = body.page ?: 1,
-                        pageSize = body.pageSize ?: 100,
-                        sortBy = body.sortBy ?: ApplicationSortColumn.CHILD_NAME,
-                        sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
-                        areas = body.area?.split(",") ?: listOf(),
-                        units =
-                            body.units?.split(",")?.map { DaycareId(parseUUID(it)) } ?: listOf(),
-                        basis =
-                            body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) }
-                                ?: listOf(),
-                        type = body.type,
-                        preschoolType =
-                            body.preschoolType?.split(",")?.map {
-                                ApplicationPreschoolTypeToggle.valueOf(it)
-                            } ?: listOf(),
-                        statuses =
-                            body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) }
-                                ?: listOf(),
-                        dateType =
-                            body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) }
-                                ?: listOf(),
-                        distinctions =
-                            body.distinctions?.split(",")?.map {
-                                ApplicationDistinctions.valueOf(it)
-                            } ?: listOf(),
-                        periodStart = body.periodStart,
-                        periodEnd = body.periodEnd,
-                        searchTerms = body.searchTerms ?: "",
-                        transferApplications =
-                            body.transferApplications ?: TransferApplicationFilter.ALL,
-                        voucherApplications = body.voucherApplications,
+                        params = body,
                         readWithoutAssistanceNeed = readWithoutAssistanceNeed,
                         readWithAssistanceNeed = readWithAssistanceNeed,
                         canReadServiceWorkerNotes = canReadServiceWorkerNotes
@@ -822,14 +794,14 @@ data class SearchApplicationRequest(
     val pageSize: Int?,
     val sortBy: ApplicationSortColumn?,
     val sortDir: ApplicationSortDirection?,
-    val area: String?,
-    val units: String?,
-    val basis: String?,
+    val areas: List<AreaId>?,
+    val units: List<DaycareId>?,
+    val basis: List<ApplicationBasis>?,
     val type: ApplicationTypeToggle,
-    val preschoolType: String?,
-    val status: String?,
-    val dateType: String?,
-    val distinctions: String?,
+    val preschoolType: List<ApplicationPreschoolTypeToggle>?,
+    val statuses: List<ApplicationStatusOption>?,
+    val dateType: List<ApplicationDateType>?,
+    val distinctions: List<ApplicationDistinctions>?,
     val periodStart: LocalDate?,
     val periodEnd: LocalDate?,
     val searchTerms: String?,

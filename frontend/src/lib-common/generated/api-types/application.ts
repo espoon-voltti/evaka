@@ -61,6 +61,28 @@ export interface ApplicationAttachment {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationBasis
+*/
+export type ApplicationBasis =
+  | 'ADDITIONAL_INFO'
+  | 'SIBLING_BASIS'
+  | 'ASSISTANCE_NEED'
+  | 'CLUB_CARE'
+  | 'DAYCARE'
+  | 'EXTENDED_CARE'
+  | 'DUPLICATE_APPLICATION'
+  | 'URGENT'
+  | 'HAS_ATTACHMENTS'
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationDateType
+*/
+export type ApplicationDateType =
+  | 'DUE'
+  | 'START'
+  | 'ARRIVAL'
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
@@ -98,6 +120,12 @@ export interface ApplicationDetails {
   transferApplication: boolean
   type: ApplicationType
 }
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationDistinctions
+*/
+export type ApplicationDistinctions =
+  | 'SECONDARY'
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationForm
@@ -162,6 +190,17 @@ export type ApplicationOrigin =
   | 'PAPER'
 
 /**
+* Generated from fi.espoo.evaka.application.ApplicationPreschoolTypeToggle
+*/
+export type ApplicationPreschoolTypeToggle =
+  | 'PRESCHOOL_ONLY'
+  | 'PRESCHOOL_DAYCARE'
+  | 'PRESCHOOL_CLUB'
+  | 'PREPARATORY_ONLY'
+  | 'PREPARATORY_DAYCARE'
+  | 'DAYCARE_ONLY'
+
+/**
 * Generated from fi.espoo.evaka.application.ApplicationResponse
 */
 export interface ApplicationResponse {
@@ -204,6 +243,23 @@ export type ApplicationStatus =
   | 'REJECTED'
   | 'ACTIVE'
   | 'CANCELLED'
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationStatusOption
+*/
+export const applicationStatusOptions = [
+  'SENT',
+  'WAITING_PLACEMENT',
+  'WAITING_UNIT_CONFIRMATION',
+  'WAITING_DECISION',
+  'WAITING_MAILING',
+  'WAITING_CONFIRMATION',
+  'REJECTED',
+  'ACTIVE',
+  'CANCELLED'
+] as const
+
+export type ApplicationStatusOption = typeof applicationStatusOptions[number]
 
 /**
 * Generated from fi.espoo.evaka.application.ApplicationSummary
@@ -615,22 +671,22 @@ export interface RejectDecisionRequest {
 * Generated from fi.espoo.evaka.application.SearchApplicationRequest
 */
 export interface SearchApplicationRequest {
-  area: string | null
-  basis: string | null
-  dateType: string | null
-  distinctions: string | null
+  areas: UUID[] | null
+  basis: ApplicationBasis[] | null
+  dateType: ApplicationDateType[] | null
+  distinctions: ApplicationDistinctions[] | null
   page: number | null
   pageSize: number | null
   periodEnd: LocalDate | null
   periodStart: LocalDate | null
-  preschoolType: string | null
+  preschoolType: ApplicationPreschoolTypeToggle[] | null
   searchTerms: string | null
   sortBy: ApplicationSortColumn | null
   sortDir: ApplicationSortDirection | null
-  status: string | null
+  statuses: ApplicationStatusOption[] | null
   transferApplications: TransferApplicationFilter | null
   type: ApplicationTypeToggle
-  units: string | null
+  units: UUID[] | null
   voucherApplications: VoucherApplicationFilter | null
 }
 

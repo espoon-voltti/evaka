@@ -7,6 +7,8 @@ import React, { Fragment, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
 import {
+  ApplicationStatusOption,
+  applicationStatusOptions,
   ApplicationTypeToggle,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
@@ -900,54 +902,25 @@ export function ApplicationTypeFilter({
 
 interface ApplicationStatusFilterProps {
   toggled: ApplicationSummaryStatusOptions
-  toggledAllStatuses: ApplicationSummaryStatusAllOptions[]
+  toggledAllStatuses: ApplicationStatusOption[]
   toggle: (status: ApplicationSummaryStatusOptions) => () => void
-  toggleAllStatuses: (status: ApplicationSummaryStatusAllOptions) => () => void
+  toggleAllStatuses: (status: ApplicationStatusOption) => () => void
 }
-
-export type ApplicationSummaryStatusAllOptions =
-  | 'SENT'
-  | 'WAITING_PLACEMENT'
-  | 'WAITING_DECISION'
-  | 'WAITING_UNIT_CONFIRMATION'
-  | 'WAITING_MAILING'
-  | 'WAITING_CONFIRMATION'
-  | 'REJECTED'
-  | 'ACTIVE'
-  | 'CANCELLED'
-  | 'ALL'
-
-export type ApplicationSummaryStatusOptions =
-  | 'SENT'
-  | 'WAITING_PLACEMENT'
-  | 'WAITING_DECISION'
-  | 'WAITING_UNIT_CONFIRMATION'
-  | 'ALL'
 
 const CustomDivWithMargin = styled(CustomDiv)`
   margin-top: ${defaultMargins.xs};
 `
 
-export const applicationSummaryStatuses: ApplicationSummaryStatusOptions[] = [
+export const applicationSummaryStatuses = [
   'SENT',
   'WAITING_PLACEMENT',
   'WAITING_DECISION',
   'WAITING_UNIT_CONFIRMATION',
   'ALL'
-]
+] as const
 
-export const applicationSummaryAllStatuses: ApplicationSummaryStatusAllOptions[] =
-  [
-    'SENT',
-    'WAITING_PLACEMENT',
-    'WAITING_DECISION',
-    'WAITING_UNIT_CONFIRMATION',
-    'WAITING_MAILING',
-    'WAITING_CONFIRMATION',
-    'REJECTED',
-    'ACTIVE',
-    'CANCELLED'
-  ]
+export type ApplicationSummaryStatusOptions =
+  (typeof applicationSummaryStatuses)[number]
 
 export function ApplicationStatusFilter({
   toggled,
@@ -989,7 +962,7 @@ export function ApplicationStatusFilter({
       </FixedSpaceColumn>
       {toggled === 'ALL' && (
         <CustomDivWithMargin spacing="xs">
-          {applicationSummaryAllStatuses.map((id) => (
+          {applicationStatusOptions.map((id) => (
             <Checkbox
               key={id}
               label={i18n.application.statuses[id]}

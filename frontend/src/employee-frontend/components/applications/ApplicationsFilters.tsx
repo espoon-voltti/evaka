@@ -5,7 +5,11 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 
 import { Loading, wrapResult } from 'lib-common/api'
-import { ApplicationTypeToggle } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationStatusOption,
+  applicationStatusOptions,
+  ApplicationTypeToggle
+} from 'lib-common/generated/api-types/application'
 import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -31,11 +35,9 @@ import {
   ApplicationSummaryStatusOptions,
   PreschoolType,
   preschoolTypes,
-  ApplicationSummaryStatusAllOptions,
   MultiSelectUnitFilter,
   ApplicationDistinctions,
-  TransferApplicationsFilter,
-  applicationSummaryAllStatuses
+  TransferApplicationsFilter
 } from '../common/Filters'
 
 const getUnitsResult = wrapResult(getUnits)
@@ -106,7 +108,7 @@ export default React.memo(function ApplicationFilters() {
       setApplicationSearchFilters({
         ...applicationSearchFilters,
         status: newStatus,
-        allStatuses: applicationSummaryAllStatuses
+        allStatuses: [...applicationStatusOptions]
       })
     } else if (
       newStatus === 'ALL' &&
@@ -157,16 +159,15 @@ export default React.memo(function ApplicationFilters() {
     })
   }
 
-  const toggleAllStatuses =
-    (status: ApplicationSummaryStatusAllOptions) => () => {
-      setApplicationsResult(Loading.of())
-      setApplicationSearchFilters({
-        ...applicationSearchFilters,
-        allStatuses: applicationSearchFilters.allStatuses.includes(status)
-          ? applicationSearchFilters.allStatuses.filter((v) => v !== status)
-          : [...applicationSearchFilters.allStatuses, status]
-      })
-    }
+  const toggleAllStatuses = (status: ApplicationStatusOption) => () => {
+    setApplicationsResult(Loading.of())
+    setApplicationSearchFilters({
+      ...applicationSearchFilters,
+      allStatuses: applicationSearchFilters.allStatuses.includes(status)
+        ? applicationSearchFilters.allStatuses.filter((v) => v !== status)
+        : [...applicationSearchFilters.allStatuses, status]
+    })
+  }
 
   const changeUnits = (selectedUnits: string[]) => {
     setApplicationsResult(Loading.of())

@@ -71,38 +71,38 @@ export default React.memo(function ApplicationsPage() {
       pageSize,
       sortBy,
       sortDir: sortDirection,
-      area: debouncedApplicationSearchFilters.area.includes('All')
+      areas: debouncedApplicationSearchFilters.area.includes('All')
         ? null
         : debouncedApplicationSearchFilters.area.length > 0
-          ? debouncedApplicationSearchFilters.area.join(',')
+          ? debouncedApplicationSearchFilters.area
           : null,
       units:
         debouncedApplicationSearchFilters.units.length > 0
-          ? debouncedApplicationSearchFilters.units.join(',')
+          ? debouncedApplicationSearchFilters.units
           : null,
       basis:
         debouncedApplicationSearchFilters.basis.length > 0
-          ? debouncedApplicationSearchFilters.basis.join(',')
+          ? debouncedApplicationSearchFilters.basis
           : null,
       type: debouncedApplicationSearchFilters.type,
       preschoolType:
         debouncedApplicationSearchFilters.type === 'PRESCHOOL' &&
         debouncedApplicationSearchFilters.preschoolType.length > 0
-          ? debouncedApplicationSearchFilters.preschoolType.join(',')
+          ? debouncedApplicationSearchFilters.preschoolType
           : null,
-      status:
+      statuses:
         debouncedApplicationSearchFilters.status === 'ALL'
           ? debouncedApplicationSearchFilters.allStatuses.length > 0
-            ? debouncedApplicationSearchFilters.allStatuses.join(',')
+            ? debouncedApplicationSearchFilters.allStatuses
             : null
-          : debouncedApplicationSearchFilters.status,
+          : [debouncedApplicationSearchFilters.status],
       dateType:
         debouncedApplicationSearchFilters.dateType.length > 0
-          ? debouncedApplicationSearchFilters.dateType.join(',')
+          ? debouncedApplicationSearchFilters.dateType
           : null,
       distinctions:
         debouncedApplicationSearchFilters.distinctions.length > 0
-          ? debouncedApplicationSearchFilters.distinctions.join(',')
+          ? debouncedApplicationSearchFilters.distinctions
           : null,
       periodStart:
         debouncedApplicationSearchFilters.startDate &&
