@@ -86,12 +86,9 @@ WHERE id = ${bind(id)}
     fun scheduleOrphanAttachmentDeletion(
         tx: Database.Transaction,
         clock: EvakaClock,
-        dryRun: Boolean
     ) {
         val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
         logger.info("Scheduling deletion for ${ids.size} orphan attachments")
-        if (!dryRun) {
-            asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
-        }
+        asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())
     }
 }
