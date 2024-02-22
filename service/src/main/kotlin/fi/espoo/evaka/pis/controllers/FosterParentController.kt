@@ -76,7 +76,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     }
 
     @PostMapping
-    fun createRelationship(
+    fun createFosterParentRelationship(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -104,7 +104,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     }
 
     @PostMapping("/{id}")
-    fun updateRelationshipValidity(
+    fun updateFosterParentRelationshipValidity(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -132,7 +132,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteRelationship(
+    fun deleteFosterParentRelationship(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
