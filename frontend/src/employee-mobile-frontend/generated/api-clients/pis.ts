@@ -128,7 +128,7 @@ export async function deleteEmployee(
 export async function deleteEmployeeDaycareRoles(
   request: {
     id: UUID,
-    daycareId: UUID | null
+    daycareId?: UUID | null
   }
 ): Promise<void> {
   const params = createUrlSearchParams(
@@ -443,8 +443,8 @@ export async function getParentship(
 */
 export async function getParentships(
   request: {
-    headOfChildId: UUID | null,
-    childId: UUID | null
+    headOfChildId?: UUID | null,
+    childId?: UUID | null
   }
 ): Promise<ParentshipWithPermittedActions[]> {
   const params = createUrlSearchParams(

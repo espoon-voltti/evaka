@@ -134,10 +134,10 @@ export async function getPlacementPlans(
 */
 export async function getPlacements(
   request: {
-    daycareId: UUID | null,
-    childId: UUID | null,
-    from: LocalDate | null,
-    to: LocalDate | null
+    daycareId?: UUID | null,
+    childId?: UUID | null,
+    from?: LocalDate | null,
+    to?: LocalDate | null
   }
 ): Promise<PlacementResponse> {
   const params = createUrlSearchParams(

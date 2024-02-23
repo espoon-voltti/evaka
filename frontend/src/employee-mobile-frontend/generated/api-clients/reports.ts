@@ -148,7 +148,7 @@ export async function getAttendanceReservationReportByUnit(
     unitId: UUID,
     start: LocalDate,
     end: LocalDate,
-    groupIds: UUID[] | null
+    groupIds?: UUID[] | null
   }
 ): Promise<AttendanceReservationReportRow[]> {
   const params = createUrlSearchParams(
@@ -173,7 +173,7 @@ export async function getAttendanceReservationReportByUnitAndChild(
     unitId: UUID,
     start: LocalDate,
     end: LocalDate,
-    groupIds: UUID[] | null
+    groupIds?: UUID[] | null
   }
 ): Promise<AttendanceReservationReportByChildRow[]> {
   const params = createUrlSearchParams(
@@ -249,7 +249,7 @@ export async function getDecisionsReport(
 */
 export async function getDuplicatePeopleReport(
   request: {
-    showIntentionalDuplicates: boolean | null
+    showIntentionalDuplicates?: boolean | null
   }
 ): Promise<DuplicatePeopleReportRow[]> {
   const params = createUrlSearchParams(
@@ -387,7 +387,7 @@ export async function getInvoiceReport(
 */
 export async function getManualDuplicationReport(
   request: {
-    viewMode: ManualDuplicationReportViewMode | null
+    viewMode?: ManualDuplicationReportViewMode | null
   }
 ): Promise<ManualDuplicationReportRow[]> {
   const params = createUrlSearchParams(
@@ -408,7 +408,7 @@ export async function getManualDuplicationReport(
 export async function getMissingHeadOfFamilyReport(
   request: {
     from: LocalDate,
-    to: LocalDate | null,
+    to?: LocalDate | null,
     showIntentionalDuplicates: boolean
   }
 ): Promise<MissingHeadOfFamilyReportRow[]> {
@@ -432,7 +432,7 @@ export async function getMissingHeadOfFamilyReport(
 export async function getMissingServiceNeedReport(
   request: {
     from: LocalDate,
-    to: LocalDate | null
+    to?: LocalDate | null
   }
 ): Promise<MissingServiceNeedReportRow[]> {
   const params = createUrlSearchParams(
@@ -466,9 +466,9 @@ export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenRepor
 export async function getOccupancyGroupReport(
   request: {
     type: OccupancyType,
-    careAreaId: UUID | null,
-    providerType: ProviderType | null,
-    unitTypes: CareType[] | null,
+    careAreaId?: UUID | null,
+    providerType?: ProviderType | null,
+    unitTypes?: CareType[] | null,
     year: number,
     month: number
   }
@@ -496,9 +496,9 @@ export async function getOccupancyGroupReport(
 export async function getOccupancyUnitReport(
   request: {
     type: OccupancyType,
-    careAreaId: UUID | null,
-    providerType: ProviderType | null,
-    unitTypes: CareType[] | null,
+    careAreaId?: UUID | null,
+    providerType?: ProviderType | null,
+    unitTypes?: CareType[] | null,
     year: number,
     month: number
   }
@@ -562,7 +562,7 @@ export async function getPlacementCountReport(
 export async function getPlacementGuaranteeReport(
   request: {
     date: LocalDate,
-    unitId: UUID | null
+    unitId?: UUID | null
   }
 ): Promise<PlacementGuaranteeReportRow[]> {
   const params = createUrlSearchParams(
@@ -584,10 +584,10 @@ export async function getPlacementGuaranteeReport(
 export async function getPlacementSketchingReport(
   request: {
     placementStartDate: LocalDate,
-    earliestPreferredStartDate: LocalDate | null,
-    applicationStatus: ApplicationStatus[] | null,
-    earliestApplicationSentDate: LocalDate | null,
-    latestApplicationSentDate: LocalDate | null
+    earliestPreferredStartDate?: LocalDate | null,
+    applicationStatus?: ApplicationStatus[] | null,
+    earliestApplicationSentDate?: LocalDate | null,
+    latestApplicationSentDate?: LocalDate | null
   }
 ): Promise<PlacementSketchingReportRow[]> {
   const params = createUrlSearchParams(
