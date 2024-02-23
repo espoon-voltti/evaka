@@ -79,7 +79,8 @@ fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMet
                         .discover()
                     representation.variants.forEach { it.starProjectedType.discover() }
                 }
-                is TsObjectLiteral -> representation.properties.values.forEach { it.discover() }
+                is TsObjectLiteral ->
+                    representation.properties.values.forEach { it.type.discover() }
                 is TsStringEnum,
                 is Excluded,
                 is TsPlain,

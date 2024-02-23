@@ -88,7 +88,7 @@ data object TsRecord : TsRepresentation<Pair<KType?, KType?>> {
 data class TsPlainObject(
     override val clazz: KClass<*>,
     override val name: String,
-    val properties: Map<String, KType>
+    val properties: Map<String, TsProperty>
 ) : TsNamedType<List<KType?>> {
     constructor(
         clazz: KClass<*>
@@ -100,12 +100,12 @@ data class TsPlainObject(
 
     fun applyTypeArguments(arguments: List<KTypeProjection>): Map<String, KType> {
         val mapping = clazz.typeParameters.zip(arguments).toMap()
-        return properties.mapValues { (_, propType) ->
-            mapping[propType.classifier]?.type
-                ?: propType.classifier?.createType(
-                    propType.arguments.map { mapping[it.type?.classifier] ?: it }
+        return properties.mapValues { (_, prop) ->
+            mapping[prop.type.classifier]?.type
+                ?: prop.type.classifier?.createType(
+                    prop.type.arguments.map { mapping[it.type?.classifier] ?: it }
                 )
-                ?: propType
+                ?: prop.type
         }
     }
 
@@ -118,7 +118,7 @@ data class TsPlainObject(
 }
 
 /** An anonymous TS object literal, e.g. { a: string, b: number } */
-data class TsObjectLiteral(val properties: Map<String, KType>) : TsRepresentation<Nothing> {
+data class TsObjectLiteral(val properties: Map<String, TsProperty>) : TsRepresentation<Nothing> {
     constructor(clazz: KClass<*>) : this(collectProperties(clazz.declaredMemberProperties))
 }
 
@@ -166,7 +166,10 @@ data class TsType(
     val typeArguments: List<KTypeProjection>
 )
 
-private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, KType> =
+/** A TS object property, which may be optional (not necessarily the same thing as nullable) */
+data class TsProperty(val type: KType, val isOptional: Boolean = false)
+
+private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, TsProperty> =
     props
         .filterNot {
             (it.findAnnotation<JsonIgnore>() ?: it.getter.findAnnotation<JsonIgnore>())?.value ==
@@ -174,8 +177,12 @@ private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, 
         }
         .associate { prop ->
             prop.name to
-                (prop.javaField
-                    ?.getAnnotation(ForceCodeGenType::class.java)
-                    ?.type
-                    ?.createType(nullable = prop.returnType.isMarkedNullable) ?: prop.returnType)
+                TsProperty(
+                    type =
+                        (prop.javaField
+                            ?.getAnnotation(ForceCodeGenType::class.java)
+                            ?.type
+                            ?.createType(nullable = prop.returnType.isMarkedNullable)
+                            ?: prop.returnType)
+                )
         }

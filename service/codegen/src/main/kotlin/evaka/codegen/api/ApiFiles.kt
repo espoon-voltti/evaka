@@ -250,8 +250,8 @@ fun generateApiClient(
     val argumentType =
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
-                    it.name to it.type
-                } + mapOfNotNullValues("body" to endpoint.requestBodyType)
+                    it.name to TsProperty(it.type, isOptional = it.type.isMarkedNullable)
+                } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty))
             )
             .takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }

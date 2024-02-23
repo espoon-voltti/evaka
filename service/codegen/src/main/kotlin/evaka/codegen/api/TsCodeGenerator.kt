@@ -39,6 +39,9 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
         return elementTs + "[]"
     }
 
+    fun tsProperty(name: String, prop: TsProperty, value: TsCode): TsCode =
+        TsCode("$name${if (prop.isOptional) "?" else ""}: ") + value
+
     fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
         val keyTs = type.first?.let { keyType(it) } ?: TsCode("never")
         val valueTs = type.second?.let { tsType(it, compact) } ?: TsCode("never")
@@ -105,9 +108,10 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             }
             is TsObjectLiteral ->
                 TsCode.join(
-                    tsRepr.properties.map { (name, type) ->
-                        TsCode { "$name: ${inline(tsType(type, compact))}" }
-                            .let { if (!compact) it.prependIndent("  ") else it }
+                    tsRepr.properties.map { (name, prop) ->
+                        tsProperty(name, prop, value = tsType(prop.type, compact)).let {
+                            if (!compact) it.prependIndent("  ") else it
+                        }
                     },
                     separator = if (compact) ", " else ",\n",
                     prefix = if (compact) "{ " else "{\n",
@@ -142,9 +146,8 @@ ${enum.values.joinToString("\n") { "| '$it'" }.prependIndent("  ")}"""
         val props =
             obj.properties.entries
                 .sortedBy { it.key }
-                .map { (name, type) ->
-                    val tsRepr = tsType(type, compact = true)
-                    TsCode { "$name: ${inline(tsRepr)}" }
+                .map { (name, prop) ->
+                    tsProperty(name, prop, value = tsType(prop.type, compact = true))
                 }
         return TsCode {
             """${obj.docHeader()}
@@ -167,8 +170,8 @@ ${join(props, "\n").prependIndent("  ")}
                     listOfNotNull(discriminantProp) +
                         variant.obj.properties.entries
                             .sortedBy { it.key }
-                            .map { (name, type) ->
-                                TsCode { "$name: ${inline(tsType(type, compact = true))}" }
+                            .map { (name, prop) ->
+                                tsProperty(name, prop, value = tsType(prop.type, compact = true))
                             }
                 TsCode {
                     """${variant.obj.docHeader()}
@@ -210,11 +213,11 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                         tsRepr.getTypeArgs(type.arguments).filterNotNull().any { check(it) }
                     is TsPlainObject ->
                         tsRepr.applyTypeArguments(type.arguments).values.any { check(it) }
-                    is TsObjectLiteral -> tsRepr.properties.values.any { check(it) }
+                    is TsObjectLiteral -> tsRepr.properties.values.any { check(it.type) }
                     is TsSealedClass ->
                         tsRepr.variants.any { variant ->
                             (metadata[variant] as TsSealedVariant).obj.properties.values.any {
-                                check(it)
+                                check(it.type)
                             }
                         }
                     is TsSealedVariant ->
@@ -245,7 +248,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                                     TsCode(typeRef(variant)),
                                     TsCode(deserializerRef(variant)),
                                     extraArguments = emptyList(),
-                                    variant.obj.properties.toList()
+                                    variant.obj.properties,
                                 )
                             if (deserializer != null) variant to deserializer else null
                         }
@@ -290,7 +293,7 @@ ${cases.prependIndent("    ")}
                                 "deserialize${it.name}: (value: ${ref(Imports.jsonOf)}<${it.name}>) => ${it.name}"
                             }
                         },
-                    namedType.properties.toList()
+                    namedType.properties,
                 )
             }
         }
@@ -299,11 +302,11 @@ ${cases.prependIndent("    ")}
         type: TsCode,
         function: TsCode,
         extraArguments: List<TsCode>,
-        props: Iterable<Pair<String, KType>>
+        props: Map<String, TsProperty>
     ): TsCode? {
         val propDeserializers =
-            props.mapNotNull { (name, type) ->
-                jsonDeserializerExpression(type, TsCode("json.$name"))?.let { name to it }
+            props.mapNotNull { (name, prop) ->
+                jsonDeserializerExpression(prop.type, TsCode("json.$name"))?.let { name to it }
             }
         if (propDeserializers.isEmpty()) return null
         val propCodes =
