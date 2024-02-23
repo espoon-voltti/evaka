@@ -160,7 +160,8 @@ export const testTranslations: Translations = {
     emailsDoNotMatch: '',
     httpUrl: '',
     unselectableDate: '',
-    openAttendance: ''
+    openAttendance: '',
+    generic: ''
   }
 }
 

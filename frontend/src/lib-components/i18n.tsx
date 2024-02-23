@@ -156,6 +156,7 @@ export interface Translations {
     httpUrl: string
     unselectableDate: string
     openAttendance: string
+    generic: string
   }
 }
 

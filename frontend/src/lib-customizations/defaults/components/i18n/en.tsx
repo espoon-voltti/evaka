@@ -179,7 +179,8 @@ const components: Translations = {
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
     unselectableDate: 'Invalid date',
-    openAttendance: 'Open attendance'
+    openAttendance: 'Open attendance',
+    generic: 'Check'
   }
 }
 
