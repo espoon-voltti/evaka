@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Failure, Result } from 'lib-common/api'
+import { combine, Failure, Result, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -17,7 +17,6 @@ import { H2, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getChildPlacementPeriods } from '../../api/child/placements'
 import {
   createIncome,
   deleteIncome,
@@ -29,6 +28,7 @@ import {
   getGuardianIncomeStatementChildren,
   getIncomeStatements
 } from '../../api/income-statement'
+import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
@@ -40,6 +40,8 @@ import IncomeStatementsTable from './IncomeStatementsTable'
 import IncomeList from './income/IncomeList'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 import { incomeCoefficientMultipliersQuery } from './queries'
+
+const getChildPlacementPeriodsResult = wrapResult(getChildPlacementPeriods)
 
 interface Props {
   id: UUID
@@ -139,7 +141,7 @@ export const Incomes = React.memo(function Incomes({
     [personId]
   )
   const [childPlacementPeriods] = useApiState(
-    () => getChildPlacementPeriods(personId),
+    () => getChildPlacementPeriodsResult({ adultId: personId }),
     [personId]
   )
 

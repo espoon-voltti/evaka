@@ -7,7 +7,11 @@ import React from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
+import {
+  PlacementPlanDraft,
+  PlacementSummary,
+  PlacementType
+} from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { fontWeights, H2 } from 'lib-components/typography'
@@ -16,11 +20,8 @@ import colors from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import {
-  DaycarePlacementPlan,
-  PlacementDraft,
-  PlacementDraftPlacement
-} from '../../types/placementdraft'
+
+import { DaycarePlacementPlanForm } from './PlacementDraft'
 
 const DateRow = styled.div`
   display: flex;
@@ -67,8 +68,8 @@ const OverlapError = styled.span`
 `
 
 interface Props {
-  placementDraft: PlacementDraft
-  placement: DaycarePlacementPlan
+  placementDraft: PlacementPlanDraft
+  placement: DaycarePlacementPlanForm
   updateStart: (date: LocalDate) => void
   updateEnd: (date: LocalDate) => void
   updatePreschoolStart: (date: LocalDate) => void
@@ -87,9 +88,9 @@ export default React.memo(function PlacementDraftSection({
 
   function hasOverlap(
     dateRange: FiniteDateRange,
-    oldPlacements: PlacementDraftPlacement[]
+    oldPlacements: PlacementSummary[]
   ) {
-    return !!oldPlacements.find((placement: PlacementDraftPlacement) =>
+    return !!oldPlacements.find((placement: PlacementSummary) =>
       dateRange.overlaps(
         new FiniteDateRange(placement.startDate, placement.endDate)
       )

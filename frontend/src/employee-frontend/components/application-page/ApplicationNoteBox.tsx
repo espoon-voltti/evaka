@@ -129,10 +129,10 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
       isEdit(props)
         ? updateNote({
             applicationId: props.note.applicationId,
-            id: props.note.id,
-            text
+            noteId: props.note.id,
+            body: { text }
           })
-        : createNote({ applicationId: props.applicationId, text })
+        : createNote({ applicationId: props.applicationId, body: { text } })
     )
       .then(() => {
         props.onSave()
@@ -154,7 +154,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
     const { note, onDelete } = props
 
-    void deleteNote({ applicationId: note.applicationId, id: note.id })
+    void deleteNote({ applicationId: note.applicationId, noteId: note.id })
       .then(() => onDelete && onDelete())
       .catch(() =>
         setErrorMessage({

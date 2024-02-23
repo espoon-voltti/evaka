@@ -4,7 +4,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { isLoading } from 'lib-common/api'
+import { isLoading, wrapResult } from 'lib-common/api'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -13,12 +13,14 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
-import { getFeeThresholds } from '../../api/finance-basics'
+import { getFeeThresholds } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import FeeThresholdsEditor from './FeeThresholdsEditor'
 import { FeeThresholdsItem } from './FeeThresholdsItem'
+
+const getFeeThresholdsResult = wrapResult(getFeeThresholds)
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -26,7 +28,7 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, loadData] = useApiState(() => getFeeThresholds(), [])
+  const [data, loadData] = useApiState(() => getFeeThresholdsResult(), [])
 
   const [editorState, setEditorState] = useState<EditorState>({})
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])

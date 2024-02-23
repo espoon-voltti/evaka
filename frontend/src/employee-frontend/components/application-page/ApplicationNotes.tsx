@@ -32,7 +32,7 @@ export default React.memo(function ApplicationNotes({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const notesResponse = useQueryResult(applicationNotesQuery(applicationId))
+  const notesResponse = useQueryResult(applicationNotesQuery({ applicationId }))
   const [editing, setEditing] = useState<UUID | null>(null)
   const [creating, setCreating] = useState<boolean>(false)
 

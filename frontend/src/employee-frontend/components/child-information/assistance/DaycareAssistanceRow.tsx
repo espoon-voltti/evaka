@@ -4,6 +4,7 @@
 
 import React, { useContext } from 'react'
 
+import { Success } from 'lib-common/api'
 import { DaycareAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -50,7 +51,10 @@ export const DaycareAssistanceRow = React.memo(function DaycareAssistanceRow({
             title={t.daycareAssistance.removeConfirmation}
             range={data.validDuring.asDateRange()}
             onSubmit={() =>
-              deleteDaycareAssistance({ id: data.id, childId: data.childId })
+              deleteDaycareAssistance({
+                id: data.id,
+                childId: data.childId
+              }).then(() => Success.of())
             }
           />
         )}

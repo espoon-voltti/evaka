@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class BackupCareController(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/backup-cares")
-    fun getForChild(
+    fun getChildBackupCares(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -74,7 +74,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 
     @PostMapping("/children/{childId}/backup-cares")
-    fun createForChild(
+    fun createBackupCare(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -116,7 +116,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 
     @PostMapping("/backup-cares/{id}")
-    fun update(
+    fun updateBackupCare(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -249,7 +249,7 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
-    fun getForDaycare(
+    fun getUnitBackupCares(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

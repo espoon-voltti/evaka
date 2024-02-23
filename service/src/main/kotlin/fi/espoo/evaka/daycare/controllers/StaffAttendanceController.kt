@@ -12,7 +12,6 @@ import fi.espoo.evaka.daycare.service.UnitStaffAttendance
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -55,16 +54,15 @@ class StaffAttendanceController(
     }
 
     @GetMapping("/group/{groupId}")
-    fun getAttendancesByGroup(
+    fun getStaffAttendancesByGroup(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): Wrapper<StaffAttendanceForDates> {
-        val result =
-            db.connect { dbc ->
+    ): StaffAttendanceForDates {
+        return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -76,8 +74,7 @@ class StaffAttendanceController(
                 }
                 staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
             }
-        Audit.StaffAttendanceRead.log(targetId = groupId)
-        return Wrapper(result)
+            .also { Audit.StaffAttendanceRead.log(targetId = groupId) }
     }
 
     @PostMapping("/group/{groupId}")

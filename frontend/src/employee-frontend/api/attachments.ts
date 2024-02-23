@@ -110,12 +110,6 @@ export const savePedagogicalDocumentAttachment = (
     onUploadProgress
   )
 
-export const deleteAttachment = (id: UUID): Promise<Result<void>> =>
-  client
-    .delete(`/attachments/${id}`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-
 export function getAttachmentUrl(
   attachmentId: UUID,
   requestedFilename: string

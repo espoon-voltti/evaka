@@ -272,9 +272,9 @@ export async function sendApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.simpleAction
+* Generated from fi.espoo.evaka.application.ApplicationControllerV2.simpleApplicationAction
 */
-export async function simpleAction(
+export async function simpleApplicationAction(
   request: {
     applicationId: UUID,
     action: string
@@ -347,12 +347,12 @@ export async function updateDecisionDrafts(
 */
 export async function createNote(
   request: {
-    id: UUID,
+    applicationId: UUID,
     body: NoteRequest
   }
 ): Promise<ApplicationNote> {
   const { data: json } = await client.request<JsonOf<ApplicationNote>>({
-    url: uri`/note/application/${request.id}`.toString(),
+    url: uri`/note/application/${request.applicationId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NoteRequest>
   })

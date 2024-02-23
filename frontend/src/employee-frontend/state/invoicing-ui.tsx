@@ -15,7 +15,8 @@ import React, {
 import { Loading, Result } from 'lib-common/api'
 import {
   DaycareCareArea,
-  ProviderType
+  ProviderType,
+  UnitStub
 } from 'lib-common/generated/api-types/daycare'
 import {
   FeeDecisionStatus,
@@ -34,7 +35,6 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
-import { Unit } from '../api/daycare'
 import { areaQuery } from '../components/unit/queries'
 
 import { UserContext } from './user'
@@ -140,8 +140,8 @@ export interface FinanceDecisionHandlerOption {
 }
 
 interface SharedState {
-  units: Result<Unit[]>
-  setUnits: Dispatch<SetStateAction<Result<Unit[]>>>
+  units: Result<UnitStub[]>
+  setUnits: Dispatch<SetStateAction<Result<UnitStub[]>>>
   financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]>
   setFinanceDecisionHandlers: Dispatch<
     SetStateAction<Result<FinanceDecisionHandlerOption[]>>
@@ -321,7 +321,7 @@ export const InvoicingUIContextProvider = React.memo(
       [setIncomeStatementSearchFilters]
     )
 
-    const [units, setUnits] = useState<Result<Unit[]>>(
+    const [units, setUnits] = useState<Result<UnitStub[]>>(
       defaultState.shared.units
     )
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<

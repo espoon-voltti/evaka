@@ -944,7 +944,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 endDate = placementEnd
             )
         }
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1229,7 +1229,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1269,7 +1269,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1305,7 +1305,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1316,7 +1316,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(10), today.plusDays(20))
             )
         )
-        this.backupCareController.update(
+        this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1352,7 +1352,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1363,7 +1363,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.minusDays(10), today)
             )
         )
-        this.backupCareController.update(
+        this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1390,7 +1390,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `shrinking backup care start date removes child-specific event attendance from backup unit`() {
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1410,7 +1410,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.update(
+        this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1437,7 +1437,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `shrinking backup care end date removes child-specific event attendance from backup unit`() {
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1457,7 +1457,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
-        this.backupCareController.update(
+        this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
@@ -1484,7 +1484,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `removing backup care removes child-specific event attendance from backup unit`() {
-        this.backupCareController.createForChild(
+        this.backupCareController.createBackupCare(
             dbInstance(),
             admin,
             clock,

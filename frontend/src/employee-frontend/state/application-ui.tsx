@@ -14,23 +14,25 @@ import React, {
 
 import { Result, Loading } from 'lib-common/api'
 import {
+  ApplicationStatusOption,
   ApplicationTypeToggle,
   PagedApplicationSummaries,
   TransferApplicationFilter
 } from 'lib-common/generated/api-types/application'
-import { DaycareCareArea } from 'lib-common/generated/api-types/daycare'
+import {
+  DaycareCareArea,
+  UnitStub
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 
-import { Unit } from '../api/daycare'
 import {
   ApplicationDateType,
   ApplicationBasis,
   ApplicationSummaryStatusOptions,
   PreschoolType,
-  ApplicationSummaryStatusAllOptions,
   ApplicationDistinctions
 } from '../components/common/Filters'
 import { areaQuery } from '../components/unit/queries'
@@ -41,8 +43,8 @@ interface UIState {
   applicationsResult: Result<PagedApplicationSummaries>
   setApplicationsResult: (result: Result<PagedApplicationSummaries>) => void
   availableAreas: Result<DaycareCareArea[]>
-  allUnits: Result<Unit[]>
-  setAllUnits: Dispatch<SetStateAction<Result<Unit[]>>>
+  allUnits: Result<UnitStub[]>
+  setAllUnits: Dispatch<SetStateAction<Result<UnitStub[]>>>
   applicationSearchFilters: ApplicationSearchFilters
   setApplicationSearchFilters: (
     applicationFilters: ApplicationSearchFilters
@@ -67,7 +69,7 @@ interface ApplicationSearchFilters {
   transferApplications: TransferApplicationFilter
   voucherApplications: VoucherApplicationFilter
   preschoolType: PreschoolType[]
-  allStatuses: ApplicationSummaryStatusAllOptions[]
+  allStatuses: ApplicationStatusOption[]
   distinctions: ApplicationDistinctions[]
 }
 
@@ -123,7 +125,7 @@ export const ApplicationUIContextProvider = React.memo(
       Result<PagedApplicationSummaries>
     >(Loading.of())
     const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
-    const [allUnits, setAllUnits] = useState<Result<Unit[]>>(
+    const [allUnits, setAllUnits] = useState<Result<UnitStub[]>>(
       defaultState.allUnits
     )
     const [applicationSearchFilters, setApplicationSearchFilters] =

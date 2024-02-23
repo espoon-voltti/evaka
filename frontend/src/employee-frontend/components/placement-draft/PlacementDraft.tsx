@@ -8,14 +8,20 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Loading, Result, Success } from 'lib-common/api'
+import { isLoading, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import {
+  PlacementPlanDraft,
+  PlacementSummary
+} from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -28,22 +34,25 @@ import ListGrid from 'lib-components/layout/ListGrid'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { createPlacementPlan, getPlacementDraft } from '../../api/applications'
-import { getApplicationUnits } from '../../api/daycare'
 import WarningLabel from '../../components/common/WarningLabel'
+import {
+  createPlacementPlan,
+  getPlacementPlanDraft
+} from '../../generated/api-clients/application'
+import { getApplicationUnits } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import {
-  DaycarePlacementPlan,
-  PlacementDraft,
-  PlacementDraftPlacement
-} from '../../types/placementdraft'
+import { asUnitType } from '../../types/daycare'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import UnitCards from './UnitCards'
+
+const getPlacementPlanDraftResult = wrapResult(getPlacementPlanDraft)
+const createPlacementPlanResult = wrapResult(createPlacementPlan)
+const getApplicationUnitsResult = wrapResult(getApplicationUnits)
 
 const SendButtonContainer = styled.div`
   display: flex;
@@ -58,13 +67,23 @@ const FloatRight = styled.div`
   float: right;
 `
 
+export interface PlacementSummaryWithOverlaps extends PlacementSummary {
+  overlap?: boolean
+}
+
+interface PlacementPlanDraftWithOverlaps extends PlacementPlanDraft {
+  placements: PlacementSummaryWithOverlaps[]
+}
+
 function calculateOverLaps(
-  placementDraft: Result<PlacementDraft>,
-  setPlacementDraft: Dispatch<SetStateAction<Result<PlacementDraft>>>
+  placementDraft: Result<PlacementPlanDraft>,
+  setPlacementDraft: Dispatch<
+    SetStateAction<Result<PlacementPlanDraftWithOverlaps>>
+  >
 ) {
   if (placementDraft.isSuccess) {
     const placements = placementDraft.value.placements.map(
-      (placement: PlacementDraftPlacement) => ({
+      (placement: PlacementSummary) => ({
         ...placement,
         overlap: hasOverlap(placement, placementDraft)
       })
@@ -74,9 +93,9 @@ function calculateOverLaps(
 }
 
 function hasOverlap(
-  placement: PlacementDraftPlacement,
-  { value: { period, preschoolDaycarePeriod } }: Success<PlacementDraft>
-) {
+  placement: PlacementSummary,
+  { value: { period, preschoolDaycarePeriod } }: Success<PlacementPlanDraft>
+): boolean {
   const placementDateRange = new FiniteDateRange(
     placement.startDate,
     placement.endDate
@@ -87,18 +106,25 @@ function hasOverlap(
   )
 }
 
+export interface DaycarePlacementPlanForm {
+  unitId: UUID | null
+  period: FiniteDateRange | null
+  preschoolDaycarePeriod: FiniteDateRange | null
+}
+
 export default React.memo(function PlacementDraft() {
   const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const [placementDraft, setPlacementDraft] = useState<Result<PlacementDraft>>(
-    Loading.of()
-  )
+  const [placementDraft, setPlacementDraft] = useState<
+    Result<PlacementPlanDraftWithOverlaps>
+  >(Loading.of())
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
-  const [placement, setPlacement] = useState<DaycarePlacementPlan>({
-    unitId: '',
-    period: undefined
+  const [placement, setPlacement] = useState<DaycarePlacementPlanForm>({
+    unitId: null,
+    period: null,
+    preschoolDaycarePeriod: null
   })
 
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
@@ -119,8 +145,8 @@ export default React.memo(function PlacementDraft() {
   }, [placement, units])
 
   function removeOldPlacements(
-    placementDraft: Result<PlacementDraft>
-  ): Result<PlacementDraft> {
+    placementDraft: Result<PlacementPlanDraft>
+  ): Result<PlacementPlanDraft> {
     return placementDraft.map((draft) => ({
       ...draft,
       placements: draft.placements.filter(
@@ -136,32 +162,35 @@ export default React.memo(function PlacementDraft() {
 
   useEffect(() => {
     setPlacementDraft(Loading.of())
-    void getPlacementDraft(applicationId).then((placementDraft) => {
-      const withoutOldPlacements = removeOldPlacements(placementDraft)
-      setPlacementDraft(withoutOldPlacements)
-      if (withoutOldPlacements.isSuccess) {
-        setPlacement({
-          unitId: undefined,
-          period: withoutOldPlacements.value.period,
-          preschoolDaycarePeriod:
-            withoutOldPlacements.value.preschoolDaycarePeriod
-        })
-        calculateOverLaps(withoutOldPlacements, setPlacementDraft)
-      }
+    void getPlacementPlanDraftResult({ applicationId }).then(
+      (placementDraft) => {
+        const withoutOldPlacements = removeOldPlacements(placementDraft)
+        setPlacementDraft(withoutOldPlacements)
+        if (withoutOldPlacements.isSuccess) {
+          setPlacement({
+            unitId: null,
+            period: withoutOldPlacements.value.period,
+            preschoolDaycarePeriod:
+              withoutOldPlacements.value.preschoolDaycarePeriod
+          })
+          calculateOverLaps(withoutOldPlacements, setPlacementDraft)
+        }
 
-      // Application has already changed its status
-      if (placementDraft.isFailure && placementDraft.statusCode === 409) {
-        redirectToMainPage()
+        // Application has already changed its status
+        if (placementDraft.isFailure && placementDraft.statusCode === 409) {
+          redirectToMainPage()
+        }
       }
-    })
+    )
   }, [applicationId, redirectToMainPage])
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
-      void getApplicationUnits(
-        placementDraft.value.type,
-        placement.period?.start ?? placementDraft.value.period.start
-      ).then(setUnits)
+      void getApplicationUnitsResult({
+        type: asUnitType(placementDraft.value.type),
+        date: placement.period?.start ?? placementDraft.value.period.start,
+        shiftCare: null
+      }).then(setUnits)
     }
   }, [placementDraft, placement.period?.start])
 
@@ -240,6 +269,15 @@ export default React.memo(function PlacementDraft() {
       })
     )
   }
+
+  const validPlan: DaycarePlacementPlan | null = useMemo(() => {
+    const { unitId, period, preschoolDaycarePeriod } = placement
+    if (unitId && period && !selectedUnitIsGhostUnit) {
+      return { unitId, period, preschoolDaycarePeriod }
+    } else {
+      return null
+    }
+  }, [placement, selectedUnitIsGhostUnit])
 
   return (
     <Container
@@ -342,13 +380,14 @@ export default React.memo(function PlacementDraft() {
               <SendButtonContainer>
                 <AsyncButton
                   primary
-                  disabled={
-                    !placement.unitId ||
-                    !placement.period ||
-                    selectedUnitIsGhostUnit
-                  }
+                  disabled={validPlan === null}
                   data-qa="send-placement-button"
-                  onClick={() => createPlacementPlan(applicationId, placement)}
+                  onClick={() =>
+                    createPlacementPlanResult({
+                      applicationId,
+                      body: validPlan!
+                    })
+                  }
                   onSuccess={redirectToMainPage}
                   text={i18n.placementDraft.createPlacementDraft}
                 />

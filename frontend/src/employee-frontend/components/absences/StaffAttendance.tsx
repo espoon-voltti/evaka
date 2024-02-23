@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { isLoading, Result } from 'lib-common/api'
+import { isLoading, Result, wrapResult } from 'lib-common/api'
 import { GroupMonthCalendarDay } from 'lib-common/generated/api-types/absence'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -26,10 +26,16 @@ import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
-import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
+import {
+  getStaffAttendancesByGroup,
+  upsertStaffAttendance
+} from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 
 import { DisabledCell } from './MonthCalendarCell'
+
+const getStaffAttendancesByGroupResult = wrapResult(getStaffAttendancesByGroup)
+const upsertStaffAttendanceResult = wrapResult(upsertStaffAttendance)
 
 interface Props {
   groupId: string
@@ -48,16 +54,19 @@ export default React.memo(function StaffAttendance({
     const year = selectedDate.getYear()
     const month = selectedDate.getMonth()
 
-    return getStaffAttendances(groupId, { year, month })
+    return getStaffAttendancesByGroupResult({ groupId, year, month })
   }, [groupId, selectedDate])
 
   const updateAttendance = useCallback(
     (date: LocalDate, count: number) =>
-      postStaffAttendance({
+      upsertStaffAttendanceResult({
         groupId,
-        date,
-        count,
-        countOther: null
+        body: {
+          groupId,
+          date,
+          count,
+          countOther: null
+        }
       }),
     [groupId]
   )

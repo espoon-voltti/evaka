@@ -58,10 +58,12 @@ export default React.memo(function BackupCareGroupModal({
       resolveAction={() =>
         group !== null
           ? {
-              backupCareId: backupCare.id,
-              period,
-              groupId: group.id,
-              unitId
+              id: backupCare.id,
+              unitId,
+              body: {
+                period,
+                groupId: group.id
+              }
             }
           : cancelMutation
       }

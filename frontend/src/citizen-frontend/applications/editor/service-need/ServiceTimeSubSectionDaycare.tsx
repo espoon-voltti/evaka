@@ -99,7 +99,9 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               contentType: file.type,
               updated: HelsinkiDateTime.now(),
               receivedAt: HelsinkiDateTime.now(),
-              type: 'EXTENDED_CARE'
+              type: 'EXTENDED_CARE',
+              uploadedByEmployee: null,
+              uploadedByPerson: null
             }
           ]
         })

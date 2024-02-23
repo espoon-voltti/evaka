@@ -6,19 +6,8 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
-import {
-  acceptPlacementProposal,
-  RespondToPlacementProposal,
-  respondToPlacementProposal
-} from '../../api/applications'
-import {
-  BackupCareUpdate,
-  createBackupCare,
-  updateBackupCare
-} from '../../api/child/backup-care'
-import { getAreas } from '../../api/daycare'
 import {
   createDaycare,
   createGroup,
@@ -43,6 +32,15 @@ import {
   updateDaycare,
   updateGroup
 } from '../../api/unit'
+import {
+  acceptPlacementProposal,
+  respondToPlacementProposal
+} from '../../generated/api-clients/application'
+import {
+  createBackupCare,
+  updateBackupCare
+} from '../../generated/api-clients/backupcare'
+import { getAreas } from '../../generated/api-clients/daycare'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
@@ -220,8 +218,8 @@ export const createBackupCareMutation = mutation({
 })
 
 export const updateBackupCareMutation = mutation({
-  api: ({ unitId: _, ...payload }: BackupCareUpdate & { unitId: UUID }) =>
-    updateBackupCare(payload),
+  api: (arg: Arg0<typeof updateBackupCare> & { unitId: UUID }) =>
+    updateBackupCare(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
@@ -245,19 +243,15 @@ export const upsertChildDatePresenceMutation = mutation({
 
 export const acceptPlacementProposalMutation = mutation({
   api: acceptPlacementProposal,
-  invalidateQueryKeys: (unitId) => [
+  invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)
   ]
 })
 
 export const respondToPlacementProposalMutation = mutation({
-  api: ({
-    unitId: _,
-    ...payload
-  }: RespondToPlacementProposal & {
-    unitId: UUID
-  }) => respondToPlacementProposal(payload),
+  api: (arg: Arg0<typeof respondToPlacementProposal> & { unitId: UUID }) =>
+    respondToPlacementProposal(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)

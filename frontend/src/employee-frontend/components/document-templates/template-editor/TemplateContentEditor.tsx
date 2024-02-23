@@ -158,10 +158,12 @@ export default React.memo(function TemplateContentEditor({
                 data-qa="save-template"
                 onClick={() =>
                   updateDocumentTemplateContent({
-                    id: template.id,
-                    content: form.value()
+                    templateId: template.id,
+                    body: form.value()
                   }).then((res) =>
-                    readyToPublish ? publishDocumentTemplate(template.id) : res
+                    readyToPublish
+                      ? publishDocumentTemplate({ templateId: template.id })
+                      : res
                   )
                 }
                 onSuccess={() => navigate('/document-templates')}

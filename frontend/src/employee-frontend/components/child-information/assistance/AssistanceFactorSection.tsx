@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
@@ -117,7 +117,11 @@ export const AssistanceFactorSection = React.memo(
               {mode?.type === 'new' ? (
                 <AssistanceFactorForm
                   allRows={rows}
-                  onSubmit={(data) => createAssistanceFactor({ childId, data })}
+                  onSubmit={(body) =>
+                    createAssistanceFactor({ child: childId, body }).then(() =>
+                      Success.of()
+                    )
+                  }
                   onClose={clearMode}
                 />
               ) : undefined}
@@ -127,11 +131,11 @@ export const AssistanceFactorSection = React.memo(
                     key={row.data.id}
                     assistanceFactor={row.data}
                     allRows={rows}
-                    onSubmit={(data) =>
+                    onSubmit={(body) =>
                       updateAssistanceFactor({
                         childId,
                         id: row.data.id,
-                        data
+                        body
                       })
                     }
                     onClose={clearMode}

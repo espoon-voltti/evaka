@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import {
   OtherAssistanceMeasureResponse,
   OtherAssistanceMeasureType
@@ -146,8 +146,10 @@ export const OtherAssistanceMeasureSection = React.memo(
               {mode?.type === 'new' ? (
                 <OtherAssistanceMeasureForm
                   allRows={rows}
-                  onSubmit={(data) =>
-                    createOtherAssistanceMeasure({ childId, data })
+                  onSubmit={(body) =>
+                    createOtherAssistanceMeasure({ child: childId, body }).then(
+                      () => Success.of()
+                    )
                   }
                   onClose={clearMode}
                 />
@@ -158,11 +160,11 @@ export const OtherAssistanceMeasureSection = React.memo(
                     key={row.data.id}
                     otherAssistanceMeasure={row.data}
                     allRows={rows}
-                    onSubmit={(data) =>
+                    onSubmit={(body) =>
                       updateOtherAssistanceMeasure({
                         childId,
                         id: row.data.id,
-                        data
+                        body
                       })
                     }
                     onClose={clearMode}

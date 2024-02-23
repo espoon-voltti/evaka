@@ -21,9 +21,9 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.createForChild
+* Generated from fi.espoo.evaka.backupcare.BackupCareController.createBackupCare
 */
-export async function createForChild(
+export async function createBackupCare(
   request: {
     childId: UUID,
     body: NewBackupCare
@@ -55,9 +55,9 @@ export async function deleteBackupCare(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.getForChild
+* Generated from fi.espoo.evaka.backupcare.BackupCareController.getChildBackupCares
 */
-export async function getForChild(
+export async function getChildBackupCares(
   request: {
     childId: UUID
   }
@@ -71,9 +71,9 @@ export async function getForChild(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.getForDaycare
+* Generated from fi.espoo.evaka.backupcare.BackupCareController.getUnitBackupCares
 */
-export async function getForDaycare(
+export async function getUnitBackupCares(
   request: {
     daycareId: UUID,
     startDate: LocalDate,
@@ -94,9 +94,9 @@ export async function getForDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.update
+* Generated from fi.espoo.evaka.backupcare.BackupCareController.updateBackupCare
 */
-export async function update(
+export async function updateBackupCare(
   request: {
     id: UUID,
     body: BackupCareUpdateRequest

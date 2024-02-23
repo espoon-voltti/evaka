@@ -39,7 +39,6 @@ import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { UnitTypeFilter } from 'lib-common/generated/api-types/daycare'
 import { UpdateFeaturesRequest } from 'lib-common/generated/api-types/daycare'
-import { Wrapper } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCaretakersResponse } from 'lib-common/generated/api-types/daycare'
@@ -54,7 +53,6 @@ import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycar
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
-import { deserializeJsonWrapper } from 'lib-common/generated/api-types/shared'
 import { uri } from 'lib-common/uri'
 
 
@@ -448,13 +446,13 @@ export async function getAreas(): Promise<AreaJSON[]> {
 export async function getUnits(
   request: {
     type: UnitTypeFilter,
-    area: string | null,
+    areaIds: UUID[] | null,
     from: LocalDate | null
   }
 ): Promise<UnitStub[]> {
   const params = createUrlSearchParams(
     ['type', request.type.toString()],
-    ['area', request.area?.toString()],
+    ...(request.areaIds?.map((e): [string, string | null | undefined] => ['areaIds', e]) ?? []),
     ['from', request.from?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<UnitStub[]>>({
@@ -463,29 +461,6 @@ export async function getUnits(
     params
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.StaffAttendanceController.getAttendancesByGroup
-*/
-export async function getAttendancesByGroup(
-  request: {
-    groupId: UUID,
-    year: number,
-    month: number
-  }
-): Promise<Wrapper<StaffAttendanceForDates>> {
-  const params = createUrlSearchParams(
-    ['year', request.year.toString()],
-    ['month', request.month.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<Wrapper<StaffAttendanceForDates>>>({
-    url: uri`/staff-attendances/group/${request.groupId}`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonWrapper((value: JsonOf<StaffAttendanceForDates>) => deserializeJsonStaffAttendanceForDates(value), json)
 }
 
 
@@ -502,6 +477,29 @@ export async function getAttendancesByUnit(
     method: 'GET'
   })
   return deserializeJsonUnitStaffAttendance(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.StaffAttendanceController.getStaffAttendancesByGroup
+*/
+export async function getStaffAttendancesByGroup(
+  request: {
+    groupId: UUID,
+    year: number,
+    month: number
+  }
+): Promise<StaffAttendanceForDates> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<StaffAttendanceForDates>>({
+    url: uri`/staff-attendances/group/${request.groupId}`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonStaffAttendanceForDates(json)
 }
 
 

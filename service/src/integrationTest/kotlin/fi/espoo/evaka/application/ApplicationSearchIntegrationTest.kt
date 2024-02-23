@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -265,7 +266,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         pageSize: Int? = null,
         sortBy: ApplicationSortColumn? = null,
         sortDir: ApplicationSortDirection? = null,
-        area: List<String>? = null,
+        area: List<AreaId>? = null,
         units: List<DaycareId>? = null,
         basis: Set<ApplicationBasis>? = null,
         type: ApplicationTypeToggle,
@@ -288,14 +289,14 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 pageSize = pageSize,
                 sortBy = sortBy,
                 sortDir = sortDir,
-                area = area?.joinToString(","),
-                units = units?.joinToString(","),
-                basis = basis?.joinToString(","),
+                areas = area,
+                units = units,
+                basis = basis?.toList(),
                 type = type,
-                preschoolType = preschoolType?.joinToString(","),
-                status = status.joinToString(","),
-                dateType = dateType?.joinToString(","),
-                distinctions = distinctions?.joinToString(","),
+                preschoolType = preschoolType?.toList(),
+                statuses = status.toList(),
+                dateType = dateType?.toList(),
+                distinctions = distinctions?.toList(),
                 periodStart = periodStart,
                 periodEnd = periodEnd,
                 searchTerms = searchTerms,

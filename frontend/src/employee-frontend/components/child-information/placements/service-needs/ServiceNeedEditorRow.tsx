@@ -5,6 +5,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
@@ -29,14 +30,17 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
 
 import {
-  createServiceNeed,
-  updateServiceNeed
-} from '../../../../api/child/service-needs'
+  postServiceNeed,
+  putServiceNeed
+} from '../../../../generated/api-clients/serviceneed'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../../common/RetroactiveConfirmation'
+
+const postServiceNeedResult = wrapResult(postServiceNeed)
+const putServiceNeedResult = wrapResult(putServiceNeed)
 
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails
@@ -114,18 +118,23 @@ function ServiceNeedEditorRow({
       setSubmitting(true)
 
       const request = editingId
-        ? updateServiceNeed(editingId, {
-            startDate: form.startDate,
-            endDate: form.endDate,
-            optionId: form.optionId,
-            shiftCare: form.shiftCare
+        ? putServiceNeedResult({
+            id: editingId,
+            body: {
+              startDate: form.startDate,
+              endDate: form.endDate,
+              optionId: form.optionId,
+              shiftCare: form.shiftCare
+            }
           })
-        : createServiceNeed({
-            placementId: placement.id,
-            startDate: form.startDate,
-            endDate: form.endDate,
-            optionId: form.optionId,
-            shiftCare: form.shiftCare
+        : postServiceNeedResult({
+            body: {
+              placementId: placement.id,
+              startDate: form.startDate,
+              endDate: form.endDate,
+              optionId: form.optionId,
+              shiftCare: form.shiftCare
+            }
           })
 
       void request

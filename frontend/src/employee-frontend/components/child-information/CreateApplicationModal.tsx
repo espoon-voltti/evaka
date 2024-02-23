@@ -5,7 +5,11 @@
 import sortBy from 'lodash/sortBy'
 import React, { useContext, useMemo, useState } from 'react'
 
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { wrapResult } from 'lib-common/api'
+import {
+  ApplicationType,
+  PaperApplicationCreateRequest
+} from 'lib-common/generated/api-types/application'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
@@ -20,19 +24,18 @@ import { Label } from 'lib-components/typography'
 import { applicationTypes } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
 
-import {
-  createPaperApplication,
-  PaperApplicationRequest
-} from '../../api/applications'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import {
   DbPersonSearch as PersonSearch,
   VtjPersonSearch
 } from '../../components/common/PersonSearch'
 import { getEmployeeUrlPrefix } from '../../constants'
+import { createPaperApplication } from '../../generated/api-clients/application'
 import { Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
+
+const createPaperApplicationResult = wrapResult(createPaperApplication)
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 
@@ -43,6 +46,9 @@ const personToSelectOption = (
   name: formatName(firstName, lastName, i18n),
   id: id
 })
+
+const hasContent = (s: string | undefined): s is string =>
+  typeof s === 'string' && s.length > 0
 
 interface CreateApplicationModalProps {
   child: PersonJSON
@@ -86,19 +92,39 @@ function CreateApplicationModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function createPersonInfoIsValid(): boolean {
-    const hasContent = (s: string | undefined): boolean =>
-      typeof s === 'string' && s.length > 0
-    return (
-      createPersonBody.dateOfBirth != null &&
-      hasContent(createPersonBody.firstName) &&
-      hasContent(createPersonBody.lastName) &&
-      hasContent(createPersonBody.phone) &&
-      hasContent(createPersonBody.streetAddress) &&
-      hasContent(createPersonBody.postalCode) &&
-      hasContent(createPersonBody.postOffice)
-    )
-  }
+  const validCreatePersonInfo: CreatePersonBody | null = useMemo(() => {
+    const {
+      dateOfBirth,
+      firstName,
+      lastName,
+      phone,
+      streetAddress,
+      postalCode,
+      postOffice
+    } = createPersonBody
+    if (
+      !!dateOfBirth &&
+      hasContent(firstName) &&
+      hasContent(lastName) &&
+      hasContent(phone) &&
+      hasContent(streetAddress) &&
+      hasContent(postalCode) &&
+      hasContent(postOffice)
+    ) {
+      return {
+        dateOfBirth,
+        firstName,
+        lastName,
+        phone,
+        streetAddress,
+        postalCode,
+        postOffice,
+        email: createPersonBody.email ?? null
+      }
+    } else {
+      return null
+    }
+  }, [createPersonBody])
 
   function canSubmit() {
     if (isSubmitting) return false
@@ -110,7 +136,7 @@ function CreateApplicationModal({
       case 'VTJ':
         return !!newVtjPersonSsn
       case 'NEW_NO_SSN':
-        return createPersonInfoIsValid()
+        return validCreatePersonInfo !== null
       default:
         return false
     }
@@ -119,37 +145,49 @@ function CreateApplicationModal({
   function submit() {
     if (!canSubmit()) return
 
-    const commonBody: PaperApplicationRequest = {
+    const commonBody: PaperApplicationCreateRequest = {
       childId: child.id,
       type,
       sentDate,
-      hideFromGuardian
+      hideFromGuardian,
+      guardianId: null,
+      guardianSsn: null,
+      guardianToBeCreated: null,
+      transferApplication: false
     }
 
     const apiCall =
       personType === 'GUARDIAN'
         ? () =>
-            createPaperApplication({
-              ...commonBody,
-              guardianId: guardian?.id ?? ''
+            createPaperApplicationResult({
+              body: {
+                ...commonBody,
+                guardianId: guardian?.id ?? ''
+              }
             })
         : personType === 'DB_SEARCH'
           ? () =>
-              createPaperApplication({
-                ...commonBody,
-                guardianId: personId ?? ''
+              createPaperApplicationResult({
+                body: {
+                  ...commonBody,
+                  guardianId: personId ?? ''
+                }
               })
           : personType === 'VTJ'
             ? () =>
-                createPaperApplication({
-                  ...commonBody,
-                  guardianSsn: newVtjPersonSsn
-                })
-            : personType === 'NEW_NO_SSN'
-              ? () =>
-                  createPaperApplication({
+                createPaperApplicationResult({
+                  body: {
                     ...commonBody,
-                    guardianToBeCreated: createPersonBody as CreatePersonBody
+                    guardianSsn: newVtjPersonSsn ?? null
+                  }
+                })
+            : personType === 'NEW_NO_SSN' && !!validCreatePersonInfo
+              ? () =>
+                  createPaperApplicationResult({
+                    body: {
+                      ...commonBody,
+                      guardianToBeCreated: validCreatePersonInfo
+                    }
                   })
               : null
 

@@ -143,7 +143,7 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
 interface Props {
   availableReceivers: MessageReceiversResponse[]
   defaultSender: SelectOption
-  deleteAttachment: (id: UUID) => Promise<Result<void>>
+  deleteAttachment: (arg: { attachmentId: UUID }) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
   initDraftRaw: (accountId: string) => Promise<Result<string>>
@@ -354,7 +354,7 @@ export default React.memo(function MessageEditor({
 
   const handleAttachmentDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() =>
+      (await deleteAttachment({ attachmentId: id })).map(() =>
         setMessage(({ attachments, ...rest }) => ({
           ...rest,
           attachments: attachments.filter((a) => a.id !== id)

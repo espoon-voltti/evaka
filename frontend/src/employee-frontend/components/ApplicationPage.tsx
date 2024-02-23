@@ -5,10 +5,13 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, Loading, Result, Success } from 'lib-common/api'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { combine, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationDetails,
+  ApplicationResponse,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -26,25 +29,33 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
-import {
-  getApplication,
-  getClubTermsResult,
-  getPreschoolTermsResult
-} from '../api/applications'
-import { getServiceNeedOptionPublicInfos } from '../api/child/service-needs'
-import { getApplicationUnits } from '../api/daycare'
 import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationNotes from '../components/application-page/ApplicationNotes'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
 import { getEmployeeUrlPrefix } from '../constants'
+import { getApplicationDetails } from '../generated/api-clients/application'
+import {
+  getApplicationUnits,
+  getClubTerms,
+  getPreschoolTerms
+} from '../generated/api-clients/daycare'
+import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
-import { ApplicationResponse } from '../types/application'
+import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { renderResult, UnwrapResult } from './async-rendering'
 import { getMessageThreadForApplication } from './messages/api'
+
+const getServiceNeedOptionPublicInfosResult = wrapResult(
+  getServiceNeedOptionPublicInfos
+)
+const getApplicationResult = wrapResult(getApplicationDetails)
+const getClubTermsResult = wrapResult(getClubTerms)
+const getPreschoolTermsResult = wrapResult(getPreschoolTerms)
+const getApplicationUnitsResult = wrapResult(getApplicationUnits)
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -101,11 +112,13 @@ export default React.memo(function ApplicationPage() {
           ? 'PREPARATORY'
           : editedApplication.type
 
-      void getApplicationUnits(
-        applicationType,
-        editedApplication.form.preferences.preferredStartDate ??
-          LocalDate.todayInSystemTz()
-      ).then(setUnits)
+      void getApplicationUnitsResult({
+        type: asUnitType(applicationType),
+        date:
+          editedApplication.form.preferences.preferredStartDate ??
+          LocalDate.todayInSystemTz(),
+        shiftCare: null
+      }).then(setUnits)
     }
   }, [
     editing,
@@ -145,7 +158,7 @@ export default React.memo(function ApplicationPage() {
     setPosition(window.scrollY)
 
     setApplication(Loading.of())
-    void getApplication(applicationId).then((result) => {
+    void getApplicationResult({ applicationId }).then((result) => {
       setApplication(result)
       if (result.isSuccess) {
         const { firstName, lastName } =
@@ -185,7 +198,7 @@ export default React.memo(function ApplicationPage() {
   >(Loading.of())
 
   const loadServiceNeedOptions = useRestApi(
-    getServiceNeedOptionPublicInfos,
+    getServiceNeedOptionPublicInfosResult,
     setServiceNeedOptions
   )
 
@@ -201,7 +214,9 @@ export default React.memo(function ApplicationPage() {
 
   useEffect(() => {
     if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(placementTypeFilters[editedApplication.type])
+      void loadServiceNeedOptions({
+        placementTypes: placementTypeFilters[editedApplication.type]
+      })
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
@@ -259,14 +274,14 @@ export default React.memo(function ApplicationPage() {
                   />
                 )}
               </ApplicationArea>
-              {(applicationData.permittedActions.has('READ_NOTES') ||
-                applicationData.permittedActions.has(
+              {(applicationData.permittedActions.includes('READ_NOTES') ||
+                applicationData.permittedActions.includes(
                   'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
                 )) && (
                 <SidebarArea opaque={false}>
                   <ApplicationNotes
                     applicationId={applicationId}
-                    allowCreate={applicationData.permittedActions.has(
+                    allowCreate={applicationData.permittedActions.includes(
                       'CREATE_NOTE'
                     )}
                   />
@@ -293,7 +308,8 @@ export default React.memo(function ApplicationPage() {
         failure={() => null}
       >
         {(application) =>
-          application.permittedActions.has('UPDATE') && editedApplication ? (
+          application.permittedActions.includes('UPDATE') &&
+          editedApplication ? (
             <ApplicationActionsBar
               applicationStatus={application.application.status}
               editing={editing}

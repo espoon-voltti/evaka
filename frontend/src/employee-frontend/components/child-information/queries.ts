@@ -1,57 +1,43 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  AssistanceFactorUpdate,
-  DaycareAssistanceUpdate,
-  OtherAssistanceMeasureUpdate,
-  PreschoolAssistanceUpdate
-} from 'lib-common/generated/api-types/assistance'
-import { AssistanceActionRequest } from 'lib-common/generated/api-types/assistanceaction'
-import {
   AssistanceNeedDecisionStatus,
   AssistanceNeedPreschoolDecisionForm
 } from 'lib-common/generated/api-types/assistanceneed'
-import {
-  ChildDocumentCreateRequest,
-  DocumentContent,
-  DocumentStatus
-} from 'lib-common/generated/api-types/document'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
 import {
+  createAssistanceAction,
   createAssistanceFactor,
   createDaycareAssistance,
   createOtherAssistanceMeasure,
   createPreschoolAssistance,
+  deleteAssistanceAction,
   deleteAssistanceFactor,
   deleteDaycareAssistance,
   deleteOtherAssistanceMeasure,
   deletePreschoolAssistance,
-  getAssistanceData,
+  getChildAssistance,
+  updateAssistanceAction,
   updateAssistanceFactor,
   updateDaycareAssistance,
   updateOtherAssistanceMeasure,
   updatePreschoolAssistance
-} from '../../api/child/assistance'
+} from '../../generated/api-clients/assistance'
+import { getUnits } from '../../generated/api-clients/daycare'
 import {
-  createAssistanceAction,
-  removeAssistanceAction,
-  updateAssistanceAction
-} from '../../api/child/assistance-actions'
-import {
-  deleteChildDocument,
-  getChildDocument,
-  getChildDocuments,
-  postChildDocument,
-  putChildDocumentContent,
-  putChildDocumentNextStatus,
-  putChildDocumentPrevStatus,
-  putChildDocumentPublish
-} from '../../api/child/child-documents'
-import { getUnitsRaw } from '../../api/daycare'
+  createDocument,
+  deleteDraftDocument,
+  getDocument,
+  getDocuments,
+  nextDocumentStatus,
+  prevDocumentStatus,
+  publishDocument,
+  updateDocumentContent
+} from '../../generated/api-clients/document'
 import { createQueryKeys } from '../../query'
 
 import {
@@ -88,29 +74,28 @@ export const queryKeys = createQueryKeys('childInformation', {
 })
 
 export const childDocumentsQuery = query({
-  api: getChildDocuments,
-  queryKey: queryKeys.childDocuments
+  api: getDocuments,
+  queryKey: ({ childId }) => queryKeys.childDocuments(childId)
 })
 
 export const childDocumentQuery = query({
-  api: getChildDocument,
-  queryKey: queryKeys.childDocument
+  api: getDocument,
+  queryKey: ({ documentId }) => queryKeys.childDocument(documentId)
 })
 
 export const createChildDocumentMutation = mutation({
-  api: (arg: ChildDocumentCreateRequest) => postChildDocument(arg),
-  invalidateQueryKeys: (arg) => [queryKeys.childDocuments(arg.childId)]
+  api: createDocument,
+  invalidateQueryKeys: (arg) => [queryKeys.childDocuments(arg.body.childId)]
 })
 
 export const updateChildDocumentContentMutation = mutation({
-  api: (arg: { id: UUID; content: DocumentContent }) =>
-    putChildDocumentContent(arg.id, arg.content),
+  api: updateDocumentContent,
   invalidateQueryKeys: () => [] // do not invalidate automatically because of auto-save
 })
 
 export const publishChildDocumentMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID }) =>
-    putChildDocumentPublish(arg.documentId),
+  api: (arg: Arg0<typeof publishDocument> & { childId: UUID }) =>
+    publishDocument(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -118,8 +103,8 @@ export const publishChildDocumentMutation = mutation({
 })
 
 export const childDocumentNextStatusMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentNextStatus(arg.documentId, arg.newStatus),
+  api: (arg: Arg0<typeof nextDocumentStatus> & { childId: UUID }) =>
+    nextDocumentStatus(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -127,8 +112,8 @@ export const childDocumentNextStatusMutation = mutation({
 })
 
 export const childDocumentPrevStatusMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID; newStatus: DocumentStatus }) =>
-    putChildDocumentPrevStatus(arg.documentId, arg.newStatus),
+  api: (arg: Arg0<typeof prevDocumentStatus> & { childId: UUID }) =>
+    prevDocumentStatus(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -136,8 +121,8 @@ export const childDocumentPrevStatusMutation = mutation({
 })
 
 export const deleteChildDocumentMutation = mutation({
-  api: (arg: { documentId: UUID; childId: UUID }) =>
-    deleteChildDocument(arg.documentId),
+  api: (arg: Arg0<typeof deleteDraftDocument> & { childId: UUID }) =>
+    deleteDraftDocument(arg),
   invalidateQueryKeys: ({ childId, documentId }) => [
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
@@ -145,93 +130,93 @@ export const deleteChildDocumentMutation = mutation({
 })
 
 export const assistanceQuery = query({
-  api: getAssistanceData,
-  queryKey: queryKeys.assistance
+  api: getChildAssistance,
+  queryKey: ({ child }) => queryKeys.assistance(child)
 })
 
 export const createAssistanceActionMutation = mutation({
-  api: (arg: { childId: UUID; data: AssistanceActionRequest }) =>
-    createAssistanceAction(arg.childId, arg.data),
+  api: (arg: Arg0<typeof createAssistanceAction> & { childId: UUID }) =>
+    createAssistanceAction(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const updateAssistanceActionMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID; data: AssistanceActionRequest }) =>
-    updateAssistanceAction(arg.id, arg.data),
+  api: (arg: Arg0<typeof updateAssistanceAction> & { childId: UUID }) =>
+    updateAssistanceAction(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const deleteAssistanceActionMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID }) => removeAssistanceAction(arg.id),
+  api: (arg: Arg0<typeof deleteAssistanceAction> & { childId: UUID }) =>
+    deleteAssistanceAction(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const createAssistanceFactorMutation = mutation({
-  api: (arg: { childId: UUID; data: AssistanceFactorUpdate }) =>
-    createAssistanceFactor(arg.childId, arg.data),
-  invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+  api: createAssistanceFactor,
+  invalidateQueryKeys: ({ child }) => [queryKeys.assistance(child)]
 })
 
 export const updateAssistanceFactorMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID; data: AssistanceFactorUpdate }) =>
-    updateAssistanceFactor(arg.id, arg.data),
+  api: (arg: Arg0<typeof updateAssistanceFactor> & { childId: UUID }) =>
+    updateAssistanceFactor(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const deleteAssistanceFactorMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID }) => deleteAssistanceFactor(arg.id),
+  api: (arg: Arg0<typeof deleteAssistanceFactor> & { childId: UUID }) =>
+    deleteAssistanceFactor(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const createDaycareAssistanceMutation = mutation({
-  api: (arg: { childId: UUID; data: DaycareAssistanceUpdate }) =>
-    createDaycareAssistance(arg.childId, arg.data),
-  invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+  api: createDaycareAssistance,
+  invalidateQueryKeys: ({ child }) => [queryKeys.assistance(child)]
 })
 
 export const updateDaycareAssistanceMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID; data: DaycareAssistanceUpdate }) =>
-    updateDaycareAssistance(arg.id, arg.data),
+  api: (arg: Arg0<typeof updateDaycareAssistance> & { childId: UUID }) =>
+    updateDaycareAssistance(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const deleteDaycareAssistanceMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID }) => deleteDaycareAssistance(arg.id),
+  api: (arg: Arg0<typeof deleteDaycareAssistance> & { childId: UUID }) =>
+    deleteDaycareAssistance(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const createPreschoolAssistanceMutation = mutation({
-  api: (arg: { childId: UUID; data: PreschoolAssistanceUpdate }) =>
-    createPreschoolAssistance(arg.childId, arg.data),
-  invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+  api: createPreschoolAssistance,
+  invalidateQueryKeys: ({ child }) => [queryKeys.assistance(child)]
 })
 
 export const updatePreschoolAssistanceMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID; data: PreschoolAssistanceUpdate }) =>
-    updatePreschoolAssistance(arg.id, arg.data),
+  api: (arg: Arg0<typeof updatePreschoolAssistance> & { childId: UUID }) =>
+    updatePreschoolAssistance(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const deletePreschoolAssistanceMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID }) => deletePreschoolAssistance(arg.id),
+  api: (arg: Arg0<typeof deletePreschoolAssistance> & { childId: UUID }) =>
+    deletePreschoolAssistance(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const createOtherAssistanceMeasureMutation = mutation({
-  api: (arg: { childId: UUID; data: OtherAssistanceMeasureUpdate }) =>
-    createOtherAssistanceMeasure(arg.childId, arg.data),
-  invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+  api: createOtherAssistanceMeasure,
+  invalidateQueryKeys: ({ child }) => [queryKeys.assistance(child)]
 })
 
 export const updateOtherAssistanceMeasureMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID; data: OtherAssistanceMeasureUpdate }) =>
-    updateOtherAssistanceMeasure(arg.id, arg.data),
+  api: (arg: Arg0<typeof updateOtherAssistanceMeasure> & { childId: UUID }) =>
+    updateOtherAssistanceMeasure(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
 export const deleteOtherAssistanceMeasureMutation = mutation({
-  api: (arg: { id: UUID; childId: UUID }) =>
-    deleteOtherAssistanceMeasure(arg.id),
+  api: (arg: Arg0<typeof deleteOtherAssistanceMeasure> & { childId: UUID }) =>
+    deleteOtherAssistanceMeasure(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
@@ -313,6 +298,6 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const unitsQuery = query({
-  api: () => getUnitsRaw([], 'ALL'),
+  api: getUnits,
   queryKey: queryKeys.units
 })

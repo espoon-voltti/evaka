@@ -8,20 +8,9 @@ import styled from 'styled-components'
 
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
 
-import {
-  cancelApplication,
-  cancelPlacementPlan,
-  confirmDecisionMailed,
-  moveToWaitingPlacement,
-  returnToSent,
-  sendDecisionsWithoutProposal,
-  sendPlacementProposal,
-  setUnverified,
-  setVerified,
-  withdrawPlacementProposal
-} from '../../api/applications'
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
+import { simpleApplicationAction } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import EllipsisMenu, { MenuItem } from '../common/EllipsisMenu'
@@ -72,7 +61,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(moveToWaitingPlacement(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'move-to-waiting-placement'
+            })
+          )
         }
       },
       {
@@ -82,7 +76,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(returnToSent(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'return-to-sent'
+            })
+          )
         }
       },
       {
@@ -94,7 +93,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(cancelApplication(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'cancel-application'
+            })
+          )
         }
       },
       {
@@ -106,7 +110,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(setVerified(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'set-verified'
+            })
+          )
         }
       },
       {
@@ -118,7 +127,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(setUnverified(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'set-unverified'
+            })
+          )
         }
       },
       {
@@ -141,7 +155,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(cancelPlacementPlan(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'cancel-placement-plan'
+            })
+          )
         }
       },
       {
@@ -162,7 +181,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(sendDecisionsWithoutProposal(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'send-decisions-without-proposal'
+            })
+          )
         }
       },
       {
@@ -172,7 +196,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(sendPlacementProposal(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'send-placement-proposal'
+            })
+          )
         }
       },
       {
@@ -182,7 +211,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(withdrawPlacementProposal(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'withdraw-placement-proposal'
+            })
+          )
         }
       },
       {
@@ -192,7 +226,12 @@ export default React.memo(function ApplicationActions({
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
-          handlePromise(confirmDecisionMailed(application.id))
+          handlePromise(
+            simpleApplicationAction({
+              applicationId: application.id,
+              action: 'confirm-decision-mailed'
+            })
+          )
         }
       }
     ],

@@ -4,6 +4,7 @@
 
 import React, { Fragment, useCallback, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ChildDailyNote,
@@ -29,11 +30,15 @@ import { Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
 
 import {
+  createChildDailyNote,
   deleteChildDailyNote,
-  postChildDailyNote,
-  putChildDailyNote
-} from '../../../../api/daycare-notes'
+  updateChildDailyNote
+} from '../../../../generated/api-clients/note'
 import { useTranslation } from '../../../../state/i18n'
+
+const createChildDailyNoteResult = wrapResult(createChildDailyNote)
+const updateChildDailyNoteResult = wrapResult(updateChildDailyNote)
+const deleteChildDailyNoteResult = wrapResult(deleteChildDailyNote)
 
 interface ChildDailyNoteFormData
   extends Omit<ChildDailyNoteBody, 'sleepingMinutes'> {
@@ -119,8 +124,8 @@ export default React.memo(function ChildDailyNoteForm({
     setSubmitting(true)
     const body = formDataToRequestBody(form)
     return note
-      ? putChildDailyNote(note.id, body)
-      : postChildDailyNote(childId, body)
+      ? updateChildDailyNoteResult({ noteId: note.id, body })
+      : createChildDailyNoteResult({ childId, body })
   }, [childId, form, note])
   const submitSuccess = useCallback(() => {
     setSubmitting(false)
@@ -136,7 +141,7 @@ export default React.memo(function ChildDailyNoteForm({
       return Promise.reject()
     }
     setDeleting(true)
-    return deleteChildDailyNote(note.id).then((res) => {
+    return deleteChildDailyNoteResult({ noteId: note.id }).then((res) => {
       setDeleting(false)
       if (res.isSuccess) {
         onRemove()
@@ -286,7 +291,7 @@ export default React.memo(function ChildDailyNoteForm({
           />
           <AsyncButton
             primary
-            onClick={submit}
+            onClick={() => submit().then((res) => res.map(() => undefined))}
             text={i18n.common.save}
             onSuccess={submitSuccess}
             onFailure={submitFailure}

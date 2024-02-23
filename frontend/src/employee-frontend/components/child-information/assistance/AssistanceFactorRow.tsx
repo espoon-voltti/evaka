@@ -4,6 +4,7 @@
 
 import React, { useContext } from 'react'
 
+import { Success } from 'lib-common/api'
 import { AssistanceFactorResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -52,7 +53,10 @@ export const AssistanceFactorRow = React.memo(function AssistanceFactorRow({
             title={t.assistanceFactor.removeConfirmation}
             range={data.validDuring.asDateRange()}
             onSubmit={() =>
-              deleteAssistanceFactor({ id: data.id, childId: data.childId })
+              deleteAssistanceFactor({
+                id: data.id,
+                childId: data.childId
+              }).then(() => Success.of())
             }
           />
         )}

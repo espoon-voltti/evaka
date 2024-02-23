@@ -5,11 +5,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveFeeAlterationAttachment
 } from 'employee-frontend/api/attachments'
-import { Result, Success } from 'lib-common/api'
+import { Result, Success, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -25,10 +24,13 @@ import { Gap } from 'lib-components/white-space'
 
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
+import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { PartialFeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
+
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 const newFeeAlteration = (
   personId: UUID,
@@ -215,7 +217,7 @@ function FeeAlterationAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() => {
+      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

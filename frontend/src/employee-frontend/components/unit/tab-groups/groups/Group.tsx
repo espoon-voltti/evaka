@@ -9,7 +9,7 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
@@ -55,8 +55,8 @@ import {
   faUndo
 } from 'lib-icons'
 
-import { getNotesByGroup } from '../../../../api/daycare-notes'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
+import { getNotesByGroup } from '../../../../generated/api-clients/note'
 import { Translations, useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { UserContext } from '../../../../state/user'
@@ -82,6 +82,8 @@ import {
   updateBackupCareMutation
 } from '../../queries'
 import NotesModal from '../notes/NotesModal'
+
+const getNotesByGroupResult = wrapResult(getNotesByGroup)
 
 interface Props {
   unit: Unit
@@ -169,7 +171,9 @@ export default React.memo(function Group({
   const hasNotesPermission = permittedActions.has('READ_NOTES')
   const [notesResponse, loadNotes] = useApiState(
     async (): Promise<Result<NotesByGroupResponse>> =>
-      hasNotesPermission ? await getNotesByGroup(group.id) : Loading.of(),
+      hasNotesPermission
+        ? await getNotesByGroupResult({ groupId: group.id })
+        : Loading.of(),
     [hasNotesPermission, group.id]
   )
 
@@ -559,10 +563,12 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
     [
       updateBackupCareMutation,
       (placement) => ({
+        id: placement.id,
         unitId,
-        backupCareId: placement.id,
-        period: placement.period,
-        groupId: null
+        body: {
+          period: placement.period,
+          groupId: null
+        }
       })
     ]
   )

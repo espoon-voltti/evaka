@@ -144,21 +144,20 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       resolveAction={() => {
         if (mode.type === 'duplicate') {
           return duplicateDocumentTemplate({
-            id: mode.from,
-            data: form.value()
+            templateId: mode.from,
+            body: form.value()
           })
         } else if (mode.type === 'import') {
           const value = form.value()
           return importDocumentTemplate({
-            ...value,
-            validity: {
-              start: value.validity.start.toJSON(),
-              end: value.validity.end?.toJSON() ?? null
-            },
-            content: mode.data.content
+            body: {
+              ...value,
+              validity: value.validity,
+              content: mode.data.content
+            }
           })
         } else {
-          return createDocumentTemplate(form.value())
+          return createDocumentTemplate({ body: form.value() })
         }
       }}
       onSuccess={onClose}

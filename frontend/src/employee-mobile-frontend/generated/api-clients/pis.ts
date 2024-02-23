@@ -307,9 +307,9 @@ export async function updateFamilyContactPriority(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.createRelationship
+* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.createFosterParentRelationship
 */
-export async function createRelationship(
+export async function createFosterParentRelationship(
   request: {
     body: CreateFosterParentRelationshipBody
   }
@@ -324,9 +324,9 @@ export async function createRelationship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.deleteRelationship
+* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.deleteFosterParentRelationship
 */
-export async function deleteRelationship(
+export async function deleteFosterParentRelationship(
   request: {
     id: UUID
   }
@@ -372,9 +372,9 @@ export async function getFosterParents(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.updateRelationshipValidity
+* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.updateFosterParentRelationshipValidity
 */
-export async function updateRelationshipValidity(
+export async function updateFosterParentRelationshipValidity(
   request: {
     id: UUID,
     body: DateRange

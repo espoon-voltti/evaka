@@ -5,6 +5,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -24,13 +25,15 @@ import colors from 'lib-customizations/common'
 import { featureFlags, placementTypes } from 'lib-customizations/employee'
 import { faMapMarkerAlt } from 'lib-icons'
 
-import { createPlacement } from '../../../api/child/placements'
+import { createPlacement } from '../../../generated/api-clients/placement'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
 import { unitsQuery } from '../../unit/queries'
+
+const createPlacementResult = wrapResult(createPlacement)
 
 export interface Props {
   childId: UUID
@@ -112,13 +115,15 @@ function CreatePlacementModal({ childId, reload }: Props) {
     if (!form.unit?.id) return
 
     setSubmitting(true)
-    createPlacement({
-      childId: childId,
-      type: form.type,
-      unitId: form.unit.id,
-      startDate: form.startDate,
-      endDate: form.endDate,
-      placeGuarantee: form.placeGuarantee
+    createPlacementResult({
+      body: {
+        childId: childId,
+        type: form.type,
+        unitId: form.unit.id,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        placeGuarantee: form.placeGuarantee
+      }
     })
       .then((res) => {
         setSubmitting(false)

@@ -11,8 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { getChildBackupCares } from 'employee-frontend/api/child/backup-care'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { ChildBackupCareResponse } from 'lib-common/generated/api-types/backupcare'
@@ -25,9 +24,12 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getPlacements } from '../api/child/placements'
 import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'
+import { getChildBackupCares } from '../generated/api-clients/backupcare'
+import { getPlacements } from '../generated/api-clients/placement'
+
+const getPlacementsResult = wrapResult(getPlacements)
 
 export interface ChildState {
   childId: UUID | undefined
@@ -136,7 +138,12 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [placements, loadPlacements] = useApiState(
     async () =>
       permittedActions.has('READ_PLACEMENT')
-        ? await getPlacements(id)
+        ? await getPlacementsResult({
+            childId: id,
+            daycareId: null,
+            from: null,
+            to: null
+          })
         : Loading.of<PlacementResponse>(),
     [id, permittedActions]
   )
@@ -151,7 +158,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [backupCares, loadBackupCares] = useApiState(
     async () =>
       permittedActions.has('READ_BACKUP_CARE')
-        ? getChildBackupCares(id)
+        ? wrapResult(getChildBackupCares)({ childId: id }).then((res) =>
+            res.map((x) => x.backupCares)
+          )
         : Loading.of<ChildBackupCareResponse[]>(),
     [id, permittedActions]
   )

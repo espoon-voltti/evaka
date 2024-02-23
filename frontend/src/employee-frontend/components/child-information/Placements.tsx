@@ -5,7 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { Fragment, useContext, useState } from 'react'
 
-import { combine } from 'lib-common/api'
+import { combine, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -14,15 +14,17 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getServiceNeedOptions } from '../../api/child/service-needs'
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
+import { getServiceNeedOptions } from '../../generated/api-clients/serviceneed'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
+
+const getServiceNeedOptionsResult = wrapResult(getServiceNeedOptions)
 
 interface Props {
   id: UUID
@@ -37,7 +39,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
     reloadPermittedActions,
     loadBackupCares
   } = useContext<ChildState>(ChildContext)
-  const [serviceNeedOptions] = useApiState(getServiceNeedOptions, [])
+  const [serviceNeedOptions] = useApiState(getServiceNeedOptionsResult, [])
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)

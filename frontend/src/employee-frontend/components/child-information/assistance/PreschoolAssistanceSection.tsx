@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { PreschoolAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -95,8 +95,10 @@ export const PreschoolAssistanceSection = React.memo(
               {mode?.type === 'new' ? (
                 <PreschoolAssistanceForm
                   allRows={rows}
-                  onSubmit={(data) =>
-                    createPreschoolAssistance({ childId, data })
+                  onSubmit={(body) =>
+                    createPreschoolAssistance({ child: childId, body }).then(
+                      () => Success.of()
+                    )
                   }
                   onClose={clearMode}
                 />
@@ -107,11 +109,11 @@ export const PreschoolAssistanceSection = React.memo(
                     key={row.data.id}
                     preschoolAssistance={row.data}
                     allRows={rows}
-                    onSubmit={(data) =>
+                    onSubmit={(body) =>
                       updatePreschoolAssistance({
                         childId,
                         id: row.data.id,
-                        data
+                        body
                       })
                     }
                     onClose={clearMode}

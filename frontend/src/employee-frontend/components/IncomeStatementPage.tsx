@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
+import { combine, Result, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import {
   Accountant,
@@ -35,7 +35,6 @@ import { H1, H2, H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
@@ -44,9 +43,12 @@ import {
   updateIncomeStatementHandled
 } from '../api/income-statement'
 import { getPerson } from '../api/person'
+import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
 import { Translations, useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
+
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function IncomeStatementPage() {
   const { personId, incomeStatementId } = useNonNullableParams<{
@@ -456,7 +458,7 @@ function EmployeeAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() => {
+      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

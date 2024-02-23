@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { wrapResult } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -17,9 +17,15 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faPen, faPlus } from 'lib-icons'
 
-import { postCaretakers, putCaretakers } from '../../api/caretakers'
+import {
+  createCaretakers,
+  updateCaretakers
+} from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
 import { CaretakerAmount } from '../../types/caretakers'
+
+const createCaretakersResult = wrapResult(createCaretakers)
+const updateCaretakersResult = wrapResult(updateCaretakers)
 
 const NumberInputContainer = styled.div`
   width: 150px;
@@ -80,23 +86,27 @@ function GroupCaretakersModal({
     setConflict(false)
     void (
       existing
-        ? putCaretakers(
-            unitId,
+        ? updateCaretakersResult({
+            id: existing.id,
+            daycareId: unitId,
             groupId,
-            existing.id,
-            form.startDate,
-            form.endDate,
-            parseFloat(form.amount)
-          )
-        : postCaretakers(
-            unitId,
+            body: {
+              startDate: form.startDate,
+              endDate: form.endDate,
+              amount: parseFloat(form.amount)
+            }
+          })
+        : createCaretakersResult({
+            daycareId: unitId,
             groupId,
-            form.startDate,
-            form.endDate,
-            parseFloat(form.amount)
-          )
+            body: {
+              startDate: form.startDate,
+              endDate: form.endDate,
+              amount: parseFloat(form.amount)
+            }
+          })
     )
-      .then((res: Result<null>) => {
+      .then((res) => {
         if (res.isSuccess) onSuccess()
         if (res.isFailure && res.statusCode === 409) setConflict(true)
       })

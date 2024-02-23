@@ -3,44 +3,43 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-
-import { createQueryKeys } from '../query'
+import { Arg0, UUID } from 'lib-common/types'
 
 import {
   createNote,
   deleteNote,
-  getApplicationNotes,
+  getNotes,
   updateNote
-} from './applications'
+} from '../generated/api-clients/application'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('applications', {
   applicationNotes: (applicationId: UUID) => ['applicationNotes', applicationId]
 })
 
 export const applicationNotesQuery = query({
-  api: getApplicationNotes,
-  queryKey: queryKeys.applicationNotes
+  api: getNotes,
+  queryKey: ({ applicationId }) => queryKeys.applicationNotes(applicationId)
 })
 
 export const createApplicationNote = mutation({
-  api: (arg: { applicationId: UUID; text: string }) =>
-    createNote(arg.applicationId, arg.text),
+  api: createNote,
   invalidateQueryKeys: ({ applicationId }) => [
     queryKeys.applicationNotes(applicationId)
   ]
 })
 
 export const updateApplicationNote = mutation({
-  api: (arg: { applicationId: UUID; id: UUID; text: string }) =>
-    updateNote(arg.id, arg.text),
+  api: (arg: Arg0<typeof updateNote> & { applicationId: UUID }) =>
+    updateNote(arg),
   invalidateQueryKeys: ({ applicationId }) => [
     queryKeys.applicationNotes(applicationId)
   ]
 })
 
 export const deleteApplicationNote = mutation({
-  api: (arg: { applicationId: UUID; id: UUID }) => deleteNote(arg.id),
+  api: (arg: Arg0<typeof deleteNote> & { applicationId: UUID }) =>
+    deleteNote(arg),
   invalidateQueryKeys: ({ applicationId }) => [
     queryKeys.applicationNotes(applicationId)
   ]

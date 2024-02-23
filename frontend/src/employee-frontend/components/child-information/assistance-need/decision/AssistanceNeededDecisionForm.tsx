@@ -4,12 +4,11 @@
 
 import React, { SetStateAction, useCallback, useMemo } from 'react'
 
-import { getUnits } from 'employee-frontend/api/daycare'
 import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
@@ -30,6 +29,10 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+
+import { getUnits } from '../../../../generated/api-clients/daycare'
+
+const getUnitsResult = wrapResult(getUnits)
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,
@@ -210,7 +213,10 @@ export default React.memo(function AssistanceNeedDecisionForm({
   setFormState,
   fieldInfos
 }: AssistanceNeedDecisionFormProps) {
-  const [units] = useApiState(() => getUnits([], 'ALL'), [])
+  const [units] = useApiState(
+    () => getUnitsResult({ areaIds: null, type: 'ALL', from: null }),
+    []
+  )
   const [employees] = useApiState(() => getEmployees(), [])
 
   const { i18n, lang } = useTranslation()

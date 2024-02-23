@@ -6,7 +6,8 @@ import isEqual from 'lodash/isEqual'
 import range from 'lodash/range'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
-import { isLoading } from 'lib-common/api'
+import { isLoading, wrapResult } from 'lib-common/api'
+import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -22,17 +23,22 @@ import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  getFamilyContacts,
+  getFamilyContactSummary,
   updateFamilyContactDetails,
   updateFamilyContactPriority
-} from '../../api/family-overview'
+} from '../../generated/api-clients/pis'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
-import { FamilyContact } from '../../types/family-overview'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import BackupPickup from './BackupPickup'
+
+const getFamilyContactSummaryResult = wrapResult(getFamilyContactSummary)
+const updateFamilyContactDetailsResult = wrapResult(updateFamilyContactDetails)
+const updateFamilyContactPriorityResult = wrapResult(
+  updateFamilyContactPriority
+)
 
 export interface Props {
   id: UUID
@@ -44,7 +50,7 @@ export default React.memo(function FamilyContacts({ id, startOpen }: Props) {
   const { permittedActions } = useContext(ChildContext)
 
   const [contacts, reloadContacts] = useApiState(
-    () => getFamilyContacts(id),
+    () => getFamilyContactSummaryResult({ childId: id }),
     [id]
   )
   const [open, setOpen] = useState(startOpen)
@@ -86,7 +92,7 @@ const FamilyContactTable = React.memo(function FamilyContactForm({
   const contactPriorityOptions = useMemo(() => {
     const ordinals = contacts
       .map((contact) => contact.priority)
-      .filter((priority) => priority !== null)
+      .filter((priority): priority is number => priority !== null)
     const minMax = Math.min(
       Math.max(...ordinals) + 1,
       contacts.filter(({ role }) => role !== 'LOCAL_SIBLING').length
@@ -154,10 +160,12 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
   const saveContact = useCallback(
     async (formData: FamilyContactFields) => {
       setEditState('saving')
-      await updateFamilyContactDetails({
-        childId,
-        contactPersonId: contact.id,
-        ...formData
+      await updateFamilyContactDetailsResult({
+        body: {
+          childId,
+          contactPersonId: contact.id,
+          ...formData
+        }
       })
       reloadContacts()
       setEditState('viewing')
@@ -169,10 +177,12 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
     async (priority: number | null) => {
       if (priority == null) return
 
-      await updateFamilyContactPriority({
-        childId,
-        contactPersonId: contact.id,
-        priority
+      await updateFamilyContactPriorityResult({
+        body: {
+          childId,
+          contactPersonId: contact.id,
+          priority
+        }
       })
       reloadContacts()
     },

@@ -67,7 +67,9 @@ export default React.memo(function PreferredStartSubSection({
               contentType: file.type,
               updated: HelsinkiDateTime.now(),
               receivedAt: HelsinkiDateTime.now(),
-              type: 'URGENCY'
+              type: 'URGENCY',
+              uploadedByEmployee: null,
+              uploadedByPerson: null
             }
           ]
         })

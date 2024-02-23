@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'

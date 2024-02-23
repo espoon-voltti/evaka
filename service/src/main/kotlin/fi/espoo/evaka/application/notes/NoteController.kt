@@ -80,12 +80,12 @@ class NoteController(private val accessControl: AccessControl) {
             .also { Audit.NoteRead.log(targetId = applicationId, meta = mapOf("count" to it.size)) }
     }
 
-    @PostMapping("/application/{id}")
+    @PostMapping("/application/{applicationId}")
     fun createNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") applicationId: ApplicationId,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest
     ): ApplicationNote {
         return db.connect { dbc ->

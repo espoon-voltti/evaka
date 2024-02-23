@@ -5,6 +5,7 @@
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   Attachment,
   PedagogicalDocument
@@ -20,13 +21,16 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPen, faTrash } from 'lib-icons'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
-import { updatePedagogicalDocument } from '../../api/child/pedagogical-documents'
+import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
+import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+
+const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
+const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 interface Props {
   id: UUID
@@ -75,7 +79,10 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
     const { childId, description } = pedagogicalDocument
     if (!description) return
     setSubmitting(true)
-    void updatePedagogicalDocument(id, { childId, description }).then((res) => {
+    void updatePedagogicalDocumentResult({
+      documentId: id,
+      body: { childId, description }
+    }).then((res) => {
       setSubmitting(false)
       if (res.isSuccess) {
         endEdit()
@@ -107,7 +114,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const handleAttachmentDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() =>
+      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() =>
         setPedagogicalDocument(({ ...rest }) => ({
           ...rest,
           attachment: null

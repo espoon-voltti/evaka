@@ -6,6 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import { UUID } from 'lib-common/types'
@@ -19,11 +20,11 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
 import { faPen } from 'lib-icons'
 
-import {
-  getAdditionalInformation,
-  updateAdditionalInformation
-} from '../../../api/child/additional-information'
 import LabelValueList from '../../../components/common/LabelValueList'
+import {
+  getAdditionalInfo,
+  updateAdditionalInfo
+} from '../../../generated/api-clients/daycare'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
 import { formatParagraphs } from '../../../utils/html-utils'
@@ -58,7 +59,7 @@ interface Props {
 export default React.memo(function AdditionalInformation({ id }: Props) {
   const { i18n } = useTranslation()
   const [additionalInformation, loadData] = useApiState(
-    () => getAdditionalInformation(id),
+    () => wrapResult(getAdditionalInfo)({ childId: id }),
     [id]
   )
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
@@ -90,7 +91,7 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   }, [additionalInformation, toggleUiMode])
 
   const onSubmit = useCallback(
-    () => updateAdditionalInformation(id, form),
+    () => wrapResult(updateAdditionalInfo)({ childId: id, body: form }),
     [id, form]
   )
   const onSuccess = useCallback(() => {

@@ -472,7 +472,7 @@ WHERE id = :unitId
     }
 
     private fun createDecisions(applicationId: ApplicationId): List<DecisionTableRow> {
-        applicationController.simpleAction(
+        applicationController.simpleApplicationAction(
             dbInstance(),
             serviceWorker,
             RealEvakaClock(),

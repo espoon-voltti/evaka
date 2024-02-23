@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,13 +6,8 @@ import mapValues from 'lodash/mapValues'
 import pick from 'lodash/pick'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import {
-  createChildDailyServiceTimes,
-  setChildDailyServiceTimesEndDate,
-  updateChildDailyServiceTimes
-} from 'employee-frontend/api/child/daily-service-times'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
 import {
@@ -38,7 +33,17 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import {
+  postDailyServiceTimes,
+  putDailyServiceTimes,
+  putDailyServiceTimesEnd
+} from '../../../generated/api-clients/dailyservicetimes'
+
 import { DailyServiceTimesReadOnly } from './DailyServiceTimesRow'
+
+const postDailyServiceTimesResult = wrapResult(postDailyServiceTimes)
+const putDailyServiceTimesResult = wrapResult(putDailyServiceTimes)
+const putDailyServiceTimesEndResult = wrapResult(putDailyServiceTimesEnd)
 
 interface FormState {
   startDate: LocalDate | null
@@ -261,7 +266,10 @@ export const DailyServiceTimesCreationForm = React.memo(
         )
       }
 
-      return createChildDailyServiceTimes(childId, validationResult.data)
+      return postDailyServiceTimesResult({
+        childId,
+        body: validationResult.data
+      })
     }, [childId, validationResult])
 
     return (
@@ -422,7 +430,7 @@ const DailyServiceTimesEditFullForm = React.memo(
         )
       }
 
-      return updateChildDailyServiceTimes(id, validationResult.data)
+      return putDailyServiceTimesResult({ id, body: validationResult.data })
     }, [id, validationResult])
 
     return (
@@ -508,7 +516,7 @@ const DailyServiceTimesEditEndForm = React.memo(
     )
 
     const save = useCallback(
-      async () => setChildDailyServiceTimesEndDate(id, { endDate }),
+      async () => putDailyServiceTimesEndResult({ id, body: { endDate } }),
       [id, endDate]
     )
 

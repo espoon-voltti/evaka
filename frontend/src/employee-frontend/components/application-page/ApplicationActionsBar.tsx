@@ -6,16 +6,24 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Success } from 'lib-common/api'
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { Success, wrapResult } from 'lib-common/api'
+import {
+  ApplicationDetails,
+  ApplicationStatus
+} from 'lib-common/generated/api-types/application'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Gap } from 'lib-components/white-space'
 
-import { sendApplication, updateApplication } from '../../api/applications'
+import {
+  sendApplication,
+  updateApplication
+} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
+
+const updateApplicationResult = wrapResult(updateApplication)
+const sendApplicationResult = wrapResult(sendApplication)
 
 type Props = {
   applicationStatus: ApplicationStatus
@@ -76,10 +84,15 @@ export default React.memo(function ApplicationActionsBar({
           textDone={i18n.common.saved}
           disabled={!editedApplication || errors}
           onClick={() =>
-            updateApplication(editedApplication).then((result) => {
+            updateApplicationResult({
+              applicationId: editedApplication.id,
+              body: editedApplication
+            }).then((result) => {
               if (result.isSuccess) {
                 return editedApplication.status === 'CREATED'
-                  ? sendApplication(editedApplication.id)
+                  ? sendApplicationResult({
+                      applicationId: editedApplication.id
+                    })
                   : Success.of()
               } else {
                 return result

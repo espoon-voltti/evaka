@@ -7,15 +7,8 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import {
-  batchCancelPlacementPlan,
-  batchMoveToWaitingPlacement,
-  batchReturnToSent,
-  batchSendDecisionsWithoutProposal,
-  batchSendPlacementProposal,
-  batchWithdrawPlacementProposal
-} from '../../api/applications'
 import StickyActionBar from '../../components/common/StickyActionBar'
+import { simpleBatchAction } from '../../generated/api-clients/application'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -83,7 +76,13 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       primary: true,
       enabled: applicationSearchFilters.status === 'SENT',
       disabled,
-      onClick: () => handlePromise(batchMoveToWaitingPlacement(checkedIds))
+      onClick: () =>
+        handlePromise(
+          simpleBatchAction({
+            action: 'move-to-waiting-placement',
+            body: { applicationIds: checkedIds }
+          })
+        )
     },
     {
       id: 'returnToSent',
@@ -91,7 +90,13 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       primary: false,
       enabled: applicationSearchFilters.status === 'WAITING_PLACEMENT',
       disabled,
-      onClick: () => handlePromise(batchReturnToSent(checkedIds))
+      onClick: () =>
+        handlePromise(
+          simpleBatchAction({
+            action: 'return-to-sent',
+            body: { applicationIds: checkedIds }
+          })
+        )
     },
     {
       id: 'cancelPlacementPlan',
@@ -99,7 +104,13 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       primary: false,
       enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
-      onClick: () => handlePromise(batchCancelPlacementPlan(checkedIds))
+      onClick: () =>
+        handlePromise(
+          simpleBatchAction({
+            action: 'cancel-placement-plan',
+            body: { applicationIds: checkedIds }
+          })
+        )
     },
     {
       id: 'sendDecisionsWithoutProposal',
@@ -108,7 +119,12 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
       onClick: () =>
-        handlePromise(batchSendDecisionsWithoutProposal(checkedIds))
+        handlePromise(
+          simpleBatchAction({
+            action: 'send-decisions-without-proposal',
+            body: { applicationIds: checkedIds }
+          })
+        )
     },
     {
       id: 'sendPlacementProposal',
@@ -116,7 +132,13 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       primary: true,
       enabled: applicationSearchFilters.status === 'WAITING_DECISION',
       disabled,
-      onClick: () => handlePromise(batchSendPlacementProposal(checkedIds))
+      onClick: () =>
+        handlePromise(
+          simpleBatchAction({
+            action: 'send-placement-proposal',
+            body: { applicationIds: checkedIds }
+          })
+        )
     },
     {
       id: 'withdrawPlacementProposal',
@@ -124,7 +146,13 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       primary: false,
       enabled: applicationSearchFilters.status === 'WAITING_UNIT_CONFIRMATION',
       disabled,
-      onClick: () => handlePromise(batchWithdrawPlacementProposal(checkedIds))
+      onClick: () =>
+        handlePromise(
+          simpleBatchAction({
+            action: 'withdraw-placement-proposal',
+            body: { applicationIds: checkedIds }
+          })
+        )
     }
   ].filter(({ enabled }) => enabled)
 

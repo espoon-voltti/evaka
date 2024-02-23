@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import ListGrid from 'lib-components/layout/ListGrid'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'

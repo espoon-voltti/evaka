@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { DaycareAssistanceResponse } from 'lib-common/generated/api-types/assistance'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -95,8 +95,10 @@ export const DaycareAssistanceSection = React.memo(
               {mode?.type === 'new' ? (
                 <DaycareAssistanceForm
                   allRows={rows}
-                  onSubmit={(data) =>
-                    createDaycareAssistance({ childId, data })
+                  onSubmit={(body) =>
+                    createDaycareAssistance({ child: childId, body }).then(() =>
+                      Success.of()
+                    )
                   }
                   onClose={clearMode}
                 />
@@ -107,11 +109,11 @@ export const DaycareAssistanceSection = React.memo(
                     key={row.data.id}
                     daycareAssistance={row.data}
                     allRows={rows}
-                    onSubmit={(data) =>
+                    onSubmit={(body) =>
                       updateDaycareAssistance({
                         childId,
                         id: row.data.id,
-                        data
+                        body
                       })
                     }
                     onClose={clearMode}

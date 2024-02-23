@@ -11,7 +11,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import {
   AbsenceCategory,
@@ -28,11 +28,11 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
-  postGroupPresences,
-  getGroupMonthCalendar,
-  postGroupAbsences,
-  deleteGroupHolidayReservations
-} from '../../api/absences'
+  addPresences,
+  deleteHolidayReservations,
+  groupMonthCalendar,
+  upsertAbsences
+} from '../../generated/api-clients/absence'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
@@ -40,6 +40,11 @@ import { renderResult } from '../async-rendering'
 import { AbsenceLegend } from './AbsenceLegend'
 import AbsenceModal, { AbsenceUpdate } from './AbsenceModal'
 import MonthCalendarTable from './MonthCalendarTable'
+
+const groupMonthCalendarResult = wrapResult(groupMonthCalendar)
+const upsertAbsencesResult = wrapResult(upsertAbsences)
+const addPresencesResult = wrapResult(addPresences)
+const deleteHolidayReservationsResult = wrapResult(deleteHolidayReservations)
 
 interface Props {
   groupId: UUID
@@ -59,14 +64,12 @@ export default React.memo(function GroupMonthCalendarWrapper({
 
   const [groupMonthCalendar, loadGroupMonthCalendar] = useApiState(
     () =>
-      getGroupMonthCalendar(
+      groupMonthCalendarResult({
         groupId,
-        {
-          year: selectedYear,
-          month: selectedMonth
-        },
-        featureFlags.intermittentShiftCare ?? false
-      ),
+        year: selectedYear,
+        month: selectedMonth,
+        includeNonOperationalDays: featureFlags.intermittentShiftCare ?? false
+      }),
     [groupId, selectedYear, selectedMonth]
   )
 
@@ -207,9 +210,9 @@ function sendAbsenceUpdates(
 ): Promise<Result<void>> {
   switch (update.type) {
     case 'absence':
-      return postGroupAbsences(
+      return upsertAbsencesResult({
         groupId,
-        selectedCells.flatMap((cell) => {
+        body: selectedCells.flatMap((cell) => {
           const categoriesToUpdate =
             // No categories selected => update all
             update.absenceCategories.length === 0
@@ -224,11 +227,11 @@ function sendAbsenceUpdates(
             absenceType: update.absenceType
           }))
         })
-      )
+      })
     case 'noAbsence':
-      return postGroupPresences(
+      return addPresencesResult({
         groupId,
-        selectedCells.flatMap((cell) => {
+        body: selectedCells.flatMap((cell) => {
           const categoriesToUpdate =
             // No categories selected => update all
             update.absenceCategories.length === 0
@@ -242,15 +245,15 @@ function sendAbsenceUpdates(
             category
           }))
         })
-      )
+      })
     case 'missingHolidayReservation':
-      return deleteGroupHolidayReservations(
+      return deleteHolidayReservationsResult({
         groupId,
-        selectedCells.map((cell) => ({
+        body: selectedCells.map((cell) => ({
           childId: cell.childId,
           date: cell.date
         }))
-      )
+      })
   }
 }
 

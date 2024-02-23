@@ -4,6 +4,7 @@
 
 import React, { useCallback, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -14,8 +15,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { acceptDecision, rejectDecision } from '../../api/applications'
+import {
+  acceptDecision,
+  rejectDecision
+} from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
+
+const acceptDecisionResult = wrapResult(acceptDecision)
+const rejectDecisionResult = wrapResult(rejectDecision)
 
 interface Props {
   applicationId: UUID
@@ -34,9 +41,15 @@ export default React.memo(function DecisionResponse({
 
   const onSubmit = useCallback(() => {
     if (accept) {
-      return acceptDecision(applicationId, decision.id, acceptDate)
+      return acceptDecisionResult({
+        applicationId,
+        body: { decisionId: decision.id, requestedStartDate: acceptDate }
+      })
     } else {
-      return rejectDecision(applicationId, decision.id)
+      return rejectDecisionResult({
+        applicationId,
+        body: { decisionId: decision.id }
+      })
     }
   }, [accept, acceptDate, applicationId, decision.id])
 

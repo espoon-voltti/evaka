@@ -1006,7 +1006,9 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery(decisionId)
   )
-  const unitsResult = useQueryResult(unitsQuery()).map((units) =>
+  const unitsResult = useQueryResult(
+    unitsQuery({ areaIds: null, type: 'ALL', from: null })
+  ).map((units) =>
     units.filter((u) => u.careTypes.some((type) => type !== 'CLUB'))
   )
   const [employeesResult] = useApiState(() => getEmployees(), [])

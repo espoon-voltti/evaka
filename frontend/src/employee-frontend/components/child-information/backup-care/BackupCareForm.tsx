@@ -12,10 +12,14 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { ChildBackupCare } from 'lib-common/generated/api-types/backupcare'
+import {
+  BackupCareUnit,
+  ChildBackupCare
+} from 'lib-common/generated/api-types/backupcare'
+import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -28,7 +32,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { fontWeights } from 'lib-components/typography'
 
-import { getUnits, Unit } from '../../../api/daycare'
+import { getUnits } from '../../../generated/api-clients/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -42,13 +46,15 @@ import {
   updateBackupCareMutation
 } from '../../unit/queries'
 
+const getUnitsResult = wrapResult(getUnits)
+
 export interface Props {
   childId: UUID
   backupCare?: ChildBackupCare
 }
 
 interface FormState {
-  unit: Unit | undefined
+  unit: UnitStub | BackupCareUnit | undefined
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -81,10 +87,14 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
   const { backupCares, consecutivePlacementRanges, loadBackupCares } =
     useContext(ChildContext)
 
-  const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
+  const [units, setUnits] = useState<Result<UnitStub[]>>(Loading.of())
 
   useEffect(() => {
-    void getUnits([], 'DAYCARE', LocalDate.todayInHelsinkiTz()).then(setUnits)
+    void getUnitsResult({
+      areaIds: null,
+      type: 'DAYCARE',
+      from: LocalDate.todayInHelsinkiTz()
+    }).then(setUnits)
   }, [])
 
   const initialFormState: FormState = {
@@ -165,7 +175,8 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
         formState.unit !== undefined
           ? {
               childId,
-              payload: {
+              body: {
+                groupId: null,
                 unitId: formState.unit.id,
                 period: new FiniteDateRange(
                   formState.startDate,
@@ -178,10 +189,12 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
     [
       updateBackupCareMutation,
       (backupCare) => ({
-        backupCareId: backupCare.id,
-        groupId: null,
+        id: backupCare.id,
         unitId: backupCare.unit.id,
-        period: new FiniteDateRange(formState.startDate, formState.endDate)
+        body: {
+          groupId: null,
+          period: new FiniteDateRange(formState.startDate, formState.endDate)
+        }
       })
     ]
   )

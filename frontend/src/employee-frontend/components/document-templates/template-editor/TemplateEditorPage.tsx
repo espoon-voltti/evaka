@@ -16,7 +16,7 @@ import TemplateContentEditor from './TemplateContentEditor'
 export default React.memo(function TemplateEditorPage() {
   const { templateId } = useNonNullableParams()
 
-  const templateResult = useQueryResult(documentTemplateQuery(templateId))
+  const templateResult = useQueryResult(documentTemplateQuery({ templateId }))
 
   return (
     <Container>

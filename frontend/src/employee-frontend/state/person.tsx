@@ -10,9 +10,10 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import {
+  FamilyOverview,
   ParentshipWithPermittedActions,
   PersonJSON,
   PersonResponse
@@ -20,10 +21,11 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getFamilyOverview } from '../api/family-overview'
 import { getParentshipsByHeadOfChild } from '../api/parentships'
 import { getPersonDetails } from '../api/person'
-import { FamilyOverview } from '../types/family-overview'
+import { getFamilyByPerson } from '../generated/api-clients/pis'
+
+const getFamilyByPersonResult = wrapResult(getFamilyByPerson)
 
 export interface PersonState {
   person: Result<PersonJSON>
@@ -81,7 +83,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   const [family, reloadFamily] = useApiState(
     async () =>
       permittedActions.has('READ_FAMILY_OVERVIEW')
-        ? getFamilyOverview(id)
+        ? getFamilyByPersonResult({ id })
         : Loading.of<FamilyOverview>(),
     [id, permittedActions]
   )
