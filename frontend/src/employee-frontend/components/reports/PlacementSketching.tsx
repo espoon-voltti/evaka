@@ -251,7 +251,7 @@ export default React.memo(function PlacementSketching() {
                 applicationStatus:
                   i18n.application.statuses[row.applicationStatus],
                 otherPreferredUnits: formatOtherPreferredUnits(row),
-                hasAdditionalInfo: row.hasAdditionalInfo ? 'k' : 'e'
+                additionalInfo: row.additionalInfo
               }))}
               headers={[
                 {
@@ -320,7 +320,7 @@ export default React.memo(function PlacementSketching() {
                 },
                 {
                   label: i18n.reports.placementSketching.additionalInfo,
-                  key: 'hasAdditionalInfo'
+                  key: 'additionalInfo'
                 },
                 {
                   label: i18n.reports.placementSketching.childMovingDate,
@@ -430,7 +430,7 @@ export default React.memo(function PlacementSketching() {
                     <Td data-qa="other-preferred-units">
                       {formatOtherPreferredUnits(row)}
                     </Td>
-                    <Td>{yesNo(row.hasAdditionalInfo)}</Td>
+                    <Td>{row.additionalInfo}</Td>
                     <Td>{row.childMovingDate?.format()}</Td>
                     <Td>{row.childCorrectedStreetAddress}</Td>
                     <Td>{row.childCorrectedPostalCode}</Td>
