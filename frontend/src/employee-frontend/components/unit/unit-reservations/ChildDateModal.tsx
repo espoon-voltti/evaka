@@ -71,7 +71,7 @@ export interface ChildDateEditorTarget {
   childDayRecord: ChildRecordOfDay
 }
 
-const reservationForm = required(localTimeRange())
+const reservationForm = required(localTimeRange({ allowMidnightEnd: false }))
 
 const attendanceForm = required(openEndedLocalTimeRange())
 
