@@ -141,7 +141,7 @@ export async function updateFeeAlteration(
 */
 export async function confirmFeeDecisionDrafts(
   request: {
-    decisionHandlerId: UUID | null,
+    decisionHandlerId?: UUID | null,
     body: UUID[]
   }
 ): Promise<void> {
@@ -615,8 +615,8 @@ export async function searchInvoices(
 */
 export async function sendInvoices(
   request: {
-    invoiceDate: LocalDate | null,
-    dueDate: LocalDate | null,
+    invoiceDate?: LocalDate | null,
+    dueDate?: LocalDate | null,
     body: UUID[]
   }
 ): Promise<void> {
@@ -870,7 +870,7 @@ export async function searchVoucherValueDecisions(
 */
 export async function sendVoucherValueDecisionDrafts(
   request: {
-    decisionHandlerId: UUID | null,
+    decisionHandlerId?: UUID | null,
     body: UUID[]
   }
 ): Promise<void> {

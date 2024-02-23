@@ -42,7 +42,7 @@ export async function getApplicationUnits(
   request: {
     type: ApplicationUnitType,
     date: LocalDate,
-    shiftCare: boolean | null
+    shiftCare?: boolean | null
   }
 ): Promise<PublicUnit[]> {
   const params = createUrlSearchParams(

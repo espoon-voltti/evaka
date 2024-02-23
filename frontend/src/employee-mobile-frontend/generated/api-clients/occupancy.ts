@@ -79,8 +79,8 @@ export async function getOccupancyPeriodsSpeculated(
     applicationId: UUID,
     from: LocalDate,
     to: LocalDate,
-    preschoolDaycareFrom: LocalDate | null,
-    preschoolDaycareTo: LocalDate | null
+    preschoolDaycareFrom?: LocalDate | null,
+    preschoolDaycareTo?: LocalDate | null
   }
 ): Promise<OccupancyResponseSpeculated> {
   const params = createUrlSearchParams(

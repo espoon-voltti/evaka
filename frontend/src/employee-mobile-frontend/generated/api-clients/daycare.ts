@@ -240,8 +240,8 @@ export async function getFeatures(): Promise<UnitFeatures[]> {
 export async function getGroups(
   request: {
     daycareId: UUID,
-    from: LocalDate | null,
-    to: LocalDate | null
+    from?: LocalDate | null,
+    to?: LocalDate | null
   }
 ): Promise<DaycareGroup[]> {
   const params = createUrlSearchParams(
@@ -411,7 +411,7 @@ export async function getApplicationUnits(
   request: {
     type: ApplicationUnitType,
     date: LocalDate,
-    shiftCare: boolean | null
+    shiftCare?: boolean | null
   }
 ): Promise<PublicUnit[]> {
   const params = createUrlSearchParams(
@@ -446,8 +446,8 @@ export async function getAreas(): Promise<AreaJSON[]> {
 export async function getUnits(
   request: {
     type: UnitTypeFilter,
-    areaIds: UUID[] | null,
-    from: LocalDate | null
+    areaIds?: UUID[] | null,
+    from?: LocalDate | null
   }
 ): Promise<UnitStub[]> {
   const params = createUrlSearchParams(

@@ -554,8 +554,8 @@ export async function searchInvoices(
 */
 export async function sendInvoices(
   request: {
-    invoiceDate: LocalDate | null,
-    dueDate: LocalDate | null,
+    invoiceDate?: LocalDate | null,
+    dueDate?: LocalDate | null,
     body: UUID[]
   }
 ): Promise<void> {
