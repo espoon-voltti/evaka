@@ -21,11 +21,3 @@ export const incomeEffects = [
   'INCOMPLETE',
   'INCOME'
 ] as const
-
-export type IncomeEffect = (typeof incomeEffects)[number]
-
-export type IncomeValue = {
-  amount: number
-  coefficient: IncomeCoefficient
-  monthlyAmount: number
-}

@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.calculateTotalExpense
 import fi.espoo.evaka.invoicing.calculateTotalIncome
 import fi.espoo.evaka.invoicing.domain.Income
+import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
@@ -23,16 +24,18 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
-import org.postgresql.util.PGobject
+import java.util.UUID
 
-fun Database.Transaction.upsertIncome(
+fun Database.Transaction.insertIncome(
     clock: EvakaClock,
     mapper: JsonMapper,
-    income: Income,
+    income: IncomeRequest,
     updatedBy: EvakaUserId
-) {
-    val sql =
-        """
+): IncomeId {
+    val update =
+        createQuery<Any>() {
+            sql(
+                """
         INSERT INTO income (
             id,
             person_id,
@@ -47,54 +50,56 @@ fun Database.Transaction.upsertIncome(
             updated_by,
             application_id
         ) VALUES (
-            :id,
-            :person_id,
-            :effect::income_effect,
-            :data,
-            :is_entrepreneur,
-            :works_at_echa,
-            :valid_from,
-            :valid_to,
-            :notes,
-            :now,
-            :updated_by,
-            :application_id
-        ) ON CONFLICT (id) DO UPDATE SET
-            effect = :effect::income_effect,
-            data = :data,
-            is_entrepreneur = :is_entrepreneur,
-            works_at_echa = :works_at_echa,
-            valid_from = :valid_from,
-            valid_to = :valid_to,
-            notes = :notes,
-            updated_at = :now,
-            updated_by = :updated_by,
-            application_id = :application_id
+            ${bind(UUID.randomUUID())},
+            ${bind(income.personId)},
+            ${bind(income.effect)},
+            ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            ${bind(income.isEntrepreneur)},
+            ${bind(income.worksAtECHA)},
+            ${bind(income.validFrom)},
+            ${bind(income.validTo)},
+            ${bind(income.notes)},
+            ${bind(clock.now())},
+            ${bind(updatedBy)},
+            NULL
+        )
+        RETURNING id
     """
-
-    val update =
-        @Suppress("DEPRECATION")
-        createUpdate(sql)
-            .bind("now", clock.now())
-            .bind("id", income.id)
-            .bind("person_id", income.personId)
-            .bind("effect", income.effect.toString())
-            .bind(
-                "data",
-                PGobject().apply {
-                    type = "jsonb"
-                    value = mapper.writeValueAsString(income.data)
-                }
             )
-            .bind("is_entrepreneur", income.isEntrepreneur)
-            .bind("works_at_echa", income.worksAtECHA)
-            .bind("valid_from", income.validFrom)
-            .bind("valid_to", income.validTo)
-            .bind("notes", income.notes)
-            .bind("updated_by", updatedBy)
-            .bind("application_id", income.applicationId)
+        }
 
-    handlingExceptions { update.execute() }
+    return handlingExceptions { update.exactlyOne() }
+}
+
+fun Database.Transaction.updateIncome(
+    clock: EvakaClock,
+    mapper: JsonMapper,
+    id: IncomeId,
+    income: IncomeRequest,
+    updatedBy: EvakaUserId
+) {
+    val update =
+        createUpdate<Any> {
+            sql(
+                """
+        UPDATE income
+        SET
+            effect = ${bind(income.effect)},
+            data = ${bind(mapper.writeValueAsString(income.data))}::jsonb,
+            is_entrepreneur = ${bind(income.isEntrepreneur)},
+            works_at_echa = ${bind(income.worksAtECHA)},
+            valid_from = ${bind(income.validFrom)},
+            valid_to = ${bind(income.validTo)},
+            notes = ${bind(income.notes)},
+            updated_at = ${bind(clock.now())},
+            updated_by = ${bind(updatedBy)},
+            application_id = NULL
+        WHERE id = ${bind(id)}
+    """
+            )
+        }
+
+    handlingExceptions { update.updateExactlyOne() }
 }
 
 fun Database.Read.getIncome(

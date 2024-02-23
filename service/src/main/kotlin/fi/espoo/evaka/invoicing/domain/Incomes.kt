@@ -17,7 +17,7 @@ import org.jdbi.v3.json.Json
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Income(
-    val id: IncomeId? = null,
+    val id: IncomeId,
     val personId: PersonId,
     val effect: IncomeEffect,
     val data: Map<String, IncomeValue>,
@@ -26,14 +26,26 @@ data class Income(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val updatedAt: HelsinkiDateTime? = null,
-    val updatedBy: String? = null,
+    val updatedAt: HelsinkiDateTime,
+    val updatedBy: String,
     // applicationId is no longer used, but left here for historical reasons
     val applicationId: ApplicationId? = null,
-    @Json val attachments: List<IncomeAttachment> = listOf(),
+    @Json val attachments: List<IncomeAttachment>,
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int
+)
+
+data class IncomeRequest(
+    val personId: PersonId,
+    val effect: IncomeEffect,
+    val data: Map<String, IncomeValue>,
+    @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
+    val worksAtECHA: Boolean = false,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val notes: String,
+    val attachments: List<IncomeAttachment> = listOf()
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

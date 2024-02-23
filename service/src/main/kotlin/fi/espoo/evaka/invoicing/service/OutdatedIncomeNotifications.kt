@@ -10,11 +10,10 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
-import fi.espoo.evaka.invoicing.data.upsertIncome
-import fi.espoo.evaka.invoicing.domain.Income
+import fi.espoo.evaka.invoicing.data.insertIncome
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -24,7 +23,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -156,22 +154,17 @@ class OutdatedIncomeNotifications(
                 msg.type == IncomeNotificationType.EXPIRED_EMAIL &&
                     !it.personHasActiveIncomeOnDate(msg.guardianId, firstDayAfterExpiration)
             ) {
-                it.upsertIncome(
+                it.insertIncome(
                     clock = clock,
                     mapper = mapper,
                     income =
-                        Income(
-                            id = IncomeId(UUID.randomUUID()),
+                        IncomeRequest(
                             personId = msg.guardianId,
                             effect = IncomeEffect.INCOMPLETE,
-                            updatedBy = AuthenticatedUser.SystemInternalUser.toString(),
                             validFrom = firstDayAfterExpiration,
                             validTo = null,
                             data = emptyMap(),
-                            notes = "Created automatically because previous income expired",
-                            totalIncome = 0,
-                            totalExpenses = 0,
-                            total = 0
+                            notes = "Created automatically because previous income expired"
                         ),
                     updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
                 )

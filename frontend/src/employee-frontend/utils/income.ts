@@ -4,12 +4,13 @@
 
 import { useEffect, useState } from 'react'
 
-import {
-  getIncomeOptions,
-  IncomeTypeOptions
-} from 'employee-frontend/api/income'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
+import { IncomeTypeOptions } from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+
+import { getIncomeTypeOptions } from '../generated/api-clients/invoicing'
+
+const getIncomeTypeOptionsResult = wrapResult(getIncomeTypeOptions)
 
 export function useIncomeTypeOptions() {
   const [incomeTypeOptions, setIncomeTypeOptions] = useState<
@@ -17,7 +18,7 @@ export function useIncomeTypeOptions() {
   >(Loading.of())
 
   const loadIncomeTypeOptions = useRestApi(
-    getIncomeOptions,
+    getIncomeTypeOptionsResult,
     setIncomeTypeOptions
   )
   useEffect(() => {

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { combine, Failure, Result, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { IncomeRequest } from 'lib-common/generated/api-types/invoicing'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -18,21 +19,21 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import {
-  createIncome,
-  deleteIncome,
-  getIncomeNotifications,
-  getIncomes,
-  updateIncome
-} from '../../api/income'
-import {
   getGuardianIncomeStatementChildren,
   getIncomeStatements
 } from '../../api/income-statement'
+import {
+  createIncome,
+  deleteIncome,
+  getIncomeNotifications,
+  getPersonIncomes,
+  updateIncome
+} from '../../generated/api-clients/invoicing'
 import { getChildPlacementPeriods } from '../../generated/api-clients/placement'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
-import { Income, IncomeBody, IncomeId } from '../../types/income'
+import { IncomeId } from '../../types/income'
 import { useIncomeTypeOptions } from '../../utils/income'
 import { renderResult } from '../async-rendering'
 
@@ -42,6 +43,11 @@ import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils
 import { incomeCoefficientMultipliersQuery } from './queries'
 
 const getChildPlacementPeriodsResult = wrapResult(getChildPlacementPeriods)
+const createIncomeResult = wrapResult(createIncome)
+const getPersonIncomesResult = wrapResult(getPersonIncomes)
+const updateIncomeResult = wrapResult(updateIncome)
+const deleteIncomeResult = wrapResult(deleteIncome)
+const getIncomeNotificationsResult = wrapResult(getIncomeNotifications)
 
 interface Props {
   id: UUID
@@ -133,11 +139,11 @@ export const Incomes = React.memo(function Incomes({
   const { setErrorMessage } = useContext(UIContext)
   const { reloadFamily } = useContext(PersonContext)
   const [incomes, loadIncomes] = useApiState(
-    () => getIncomes(personId),
+    () => getPersonIncomesResult({ personId }),
     [personId]
   )
   const [incomeNotifications] = useApiState(
-    () => getIncomeNotifications(personId),
+    () => getIncomeNotificationsResult({ personId }),
     [personId]
   )
   const [childPlacementPeriods] = useApiState(
@@ -242,6 +248,7 @@ export const Incomes = React.memo(function Incomes({
             )}
             <Gap size="m" />
             <IncomeList
+              personId={personId}
               incomes={incomes}
               incomeTypeOptions={incomeTypeOptions}
               coefficientMultipliers={coefficientMultipliers}
@@ -252,13 +259,17 @@ export const Incomes = React.memo(function Incomes({
               setEditing={setEditing}
               deleting={deleting}
               setDeleting={setDeleting}
-              createIncome={(income: IncomeBody) =>
-                createIncome(personId, income).then(toggleCreated)
+              createIncome={(income: IncomeRequest) =>
+                createIncomeResult({ body: { ...income, personId } }).then(
+                  toggleCreated
+                )
               }
-              updateIncome={(incomeId: UUID, income: Income) =>
-                updateIncome(incomeId, income)
+              updateIncome={(incomeId: UUID, income: IncomeRequest) =>
+                updateIncomeResult({ incomeId, body: income })
               }
-              deleteIncome={(incomeId: UUID) => deleteIncome(incomeId)}
+              deleteIncome={(incomeId: UUID) =>
+                deleteIncomeResult({ incomeId })
+              }
               onSuccessfulUpdate={() => {
                 setEditing(undefined)
                 reloadIncomes()

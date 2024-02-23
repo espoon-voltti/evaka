@@ -6,23 +6,21 @@ import React from 'react'
 
 import { Failure, Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
+import {
+  Income,
+  IncomeCoefficient,
+  IncomeNotification,
+  IncomeRequest,
+  IncomeTypeOptions,
+  IncomeWithPermittedActions
+} from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  IncomeCoefficientMultipliers,
-  IncomeTypeOptions
-} from '../../../api/income'
 import { useTranslation } from '../../../state/i18n'
-import {
-  Income,
-  IncomeBody,
-  IncomeId,
-  IncomeWithPermittedActions
-} from '../../../types/income'
+import { IncomeId } from '../../../types/income'
 
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
@@ -30,9 +28,10 @@ import IncomeItemHeader from './IncomeItemHeader'
 import { IncomeNotifications } from './IncomeNotifications'
 
 interface Props {
+  personId: UUID
   incomes: IncomeWithPermittedActions[]
   incomeTypeOptions: IncomeTypeOptions
-  coefficientMultipliers: IncomeCoefficientMultipliers
+  coefficientMultipliers: Record<IncomeCoefficient, number>
   incomeNotifications: IncomeNotification[]
   isRowOpen: (id: IncomeId) => boolean
   toggleRow: (id: IncomeId) => void
@@ -40,14 +39,18 @@ interface Props {
   setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
   deleting: string | undefined
   setDeleting: React.Dispatch<React.SetStateAction<string | undefined>>
-  createIncome: (income: IncomeBody) => Promise<Result<unknown>>
-  updateIncome: (incomeId: UUID, income: Income) => Promise<Result<unknown>>
+  createIncome: (income: IncomeRequest) => Promise<Result<unknown>>
+  updateIncome: (
+    incomeId: UUID,
+    income: IncomeRequest
+  ) => Promise<Result<unknown>>
   deleteIncome: (incomeId: UUID) => Promise<Result<unknown>>
   onSuccessfulUpdate: () => void
   onFailedUpdate: (value: Failure<unknown>) => void
 }
 
 const IncomeList = React.memo(function IncomeList({
+  personId,
   incomes,
   incomeTypeOptions,
   coefficientMultipliers,
@@ -123,11 +126,11 @@ const IncomeList = React.memo(function IncomeList({
           />
           <Gap size="m" />
           <IncomeItemEditor
+            personId={personId}
             incomeTypeOptions={incomeTypeOptions}
             coefficientMultipliers={coefficientMultipliers}
             cancel={() => setEditing(undefined)}
             create={createIncome}
-            update={() => undefined}
             onSuccess={onSuccessfulUpdate}
             onFailure={onFailedUpdate}
           />
@@ -159,11 +162,11 @@ const IncomeList = React.memo(function IncomeList({
               <Gap size="m" />
               {editing === item.id ? (
                 <IncomeItemEditor
+                  personId={personId}
                   baseIncome={item}
                   incomeTypeOptions={incomeTypeOptions}
                   coefficientMultipliers={coefficientMultipliers}
                   cancel={onSuccessfulUpdate}
-                  create={createIncome}
                   update={(income) => updateIncome(item.id, income)}
                   onSuccess={onSuccessfulUpdate}
                   onFailure={onFailedUpdate}
