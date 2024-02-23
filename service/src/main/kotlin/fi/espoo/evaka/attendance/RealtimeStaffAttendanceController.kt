@@ -180,8 +180,12 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             staffAttendances.all { it.groupId != null || !it.type.presentInGroup() }
 
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            staffAttendances.any { it.arrived > timestamp } &&
-                externalAttendances.any { it.arrived > timestamp }
+            staffAttendances.any {
+                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+            } ||
+                externalAttendances.any {
+                    it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+                }
     }
 
     @PostMapping("/{unitId}/upsert")
@@ -200,7 +204,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             throw BadRequest("Attendance must have a groupId if present in group")
         }
 
-        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+        if (body.anyAttendanceAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
         }
 
@@ -278,7 +282,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val entries: List<StaffAttendanceUpsert>
     ) {
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            entries.any { it.arrived > timestamp }
+            entries.any {
+                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+            }
     }
 
     @PostMapping("/upsert")
@@ -288,7 +294,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: StaffAttendanceBody
     ) {
-        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+        if (body.anyAttendanceAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
         }
         if (body.date.isAfter(clock.today())) {
@@ -361,7 +367,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val entries: List<ExternalAttendanceUpsert>
     ) {
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            entries.any { it.arrived > timestamp }
+            entries.any {
+                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+            }
     }
 
     @PostMapping("/upsert-external")
@@ -371,7 +379,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestBody body: ExternalAttendanceBody
     ) {
-        if (body.anyAttendanceAfter(HelsinkiDateTime.atStartOfDay(clock.today().plusDays(1)))) {
+        if (body.anyAttendanceAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
         }
         if (body.date.isAfter(clock.today())) {
