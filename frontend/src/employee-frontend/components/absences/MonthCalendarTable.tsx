@@ -64,7 +64,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
   const hourInfo = useMemo(() => getHourInfo(child), [child])
 
   return (
-    <AbsenceTr data-qa="absence-child-row">
+    <AbsenceTr data-qa={`absence-child-row-${child.id}`}>
       <ChildNameTd>
         <FixedSpaceRow spacing="xs" alignItems="center">
           <AgeIndicatorChip
@@ -104,7 +104,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           <CalendarTd
             key={`${child.id}${date.formatIso()}`}
             $isToday={date.isToday()}
-            data-qa={`absence-cell-${child.id}-${date.formatIso()}`}
+            data-qa={`absence-cell-${date.formatIso()}`}
           >
             <MonthCalendarCell
               date={date}

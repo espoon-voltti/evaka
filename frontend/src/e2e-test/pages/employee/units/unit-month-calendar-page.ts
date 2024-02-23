@@ -32,11 +32,15 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
   #groupSelector = new Select(
     this.page.find('[data-qa="attendances-group-select"]')
   )
+  childRow = (childId: UUID) =>
+    this.page.findByDataQa(`absence-child-row-${childId}`)
+
   absenceCell = (childId: UUID, date: LocalDate) =>
     new AbsenceCell(
-      this.page.findByDataQa(`absence-cell-${childId}-${date.formatIso()}`)
+      this.childRow(childId).findByDataQa(`absence-cell-${date.formatIso()}`)
     )
 
+  previousWeekButton = this.page.findByDataQa('previous-week')
   nextWeekButton = this.page.findByDataQa('next-week')
 
   #staffAttendanceCells = this.page.findAll('[data-qa="staff-attendance-cell"]')
@@ -94,6 +98,34 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     category: AbsenceCategory
   ) {
     await this.absenceCell(childId, date).assertNoAbsence(category)
+  }
+
+  async assertChildTotalHours(
+    childId: UUID,
+    expected: {
+      reservedHours: number
+      reservedHoursWarning: boolean
+      usedHours: number
+      usedHoursWarning: boolean
+    }
+  ) {
+    const childRow = this.childRow(childId)
+    await childRow
+      .findByDataQa('reserved-hours')
+      .assertTextEquals(`${expected.reservedHours} h`)
+    if (expected.reservedHoursWarning) {
+      await childRow.findByDataQa('reserved-hours-warning').waitUntilVisible()
+    } else {
+      await childRow.findByDataQa('reserved-hours-warning').waitUntilHidden()
+    }
+    await childRow
+      .findByDataQa('used-hours')
+      .assertTextEquals(`${expected.usedHours} h`)
+    if (expected.usedHoursWarning) {
+      await childRow.findByDataQa('used-hours-warning').waitUntilVisible()
+    } else {
+      await childRow.findByDataQa('used-hours-warning').waitUntilHidden()
+    }
   }
 
   async fillStaffAttendance(n: number, staffCount: number) {
