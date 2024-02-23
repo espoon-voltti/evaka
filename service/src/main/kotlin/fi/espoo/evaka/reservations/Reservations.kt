@@ -526,7 +526,7 @@ data class UsedServiceResult(
 )
 
 fun computeUsedService(
-    isFuture: Boolean,
+    isDateInFuture: Boolean,
     serviceNeedHours: Int,
     placementType: PlacementType,
     preschoolTime: TimeRange?,
@@ -543,7 +543,7 @@ fun computeUsedService(
             )
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
-    if (isFuture) {
+    if (isDateInFuture) {
         return UsedServiceResult(
             reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
             attendedMinutes = 0,

@@ -58,12 +58,10 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
 }: MonthCalendarRow) {
   const theme = useTheme()
   const { i18n } = useTranslation()
-  const { actualServiceNeeds, attendanceTotalHours, reservationTotalHours } =
-    child
-  const contractDayServiceNeeds = actualServiceNeeds.filter(
+  const contractDayServiceNeeds = child.actualServiceNeeds.filter(
     (c) => c.hasContractDays
   )
-  const showAttendanceWarning = attendanceTotalHours > reservationTotalHours
+  const hourInfo = useMemo(() => getHourInfo(child), [child])
 
   return (
     <AbsenceTr data-qa="absence-child-row">
@@ -114,7 +112,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
               operationTime={operationTimes[date.getIsoDayOfWeek() - 1]}
               childId={child.id}
               day={day}
-              intermittent={actualServiceNeeds.some(
+              intermittent={child.actualServiceNeeds.some(
                 (serviceNeed) =>
                   serviceNeed.childId === child.id &&
                   serviceNeed.validDuring.includes(date) &&
@@ -138,21 +136,31 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
       {reservationEnabled && (
         <>
           <td>
-            <NumbersColumn>
-              {reservationTotalHours} h
+            <NumbersColumn $warning={hourInfo.showReservedHoursWarning}>
+              <span data-qa="reserved-hours">{hourInfo.reservedHours} h</span>
               <Gap size="xs" horizontal />
-              <WarningPlaceholder />
-            </NumbersColumn>
-          </td>
-          <td>
-            <NumbersColumn warning={showAttendanceWarning}>
-              {attendanceTotalHours} h
-              <Gap size="xs" horizontal />
-              {showAttendanceWarning ? (
+              {hourInfo.showReservedHoursWarning ? (
                 <FontAwesomeIcon
                   icon={fasExclamationTriangle}
                   size="1x"
                   color={theme.colors.status.warning}
+                  data-qa="reserved-hours-warning"
+                />
+              ) : (
+                <WarningPlaceholder />
+              )}
+            </NumbersColumn>
+          </td>
+          <td>
+            <NumbersColumn $warning={hourInfo.showUsedHoursWarning}>
+              <span data-qa="used-hours">{hourInfo.usedHours} h</span>
+              <Gap size="xs" horizontal />
+              {hourInfo.showUsedHoursWarning ? (
+                <FontAwesomeIcon
+                  icon={fasExclamationTriangle}
+                  size="1x"
+                  color={theme.colors.status.warning}
+                  data-qa="used-hours-warning"
                 />
               ) : (
                 <WarningPlaceholder />
@@ -165,6 +173,32 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
   )
 })
 
+function getHourInfo(child: GroupMonthCalendarChild): {
+  reservedHours: number
+  showReservedHoursWarning: boolean
+  usedHours: number
+  showUsedHoursWarning: boolean
+} {
+  const { usedService, reservationTotalHours, attendanceTotalHours } = child
+  if (featureFlags.timeUsageInfo && usedService) {
+    return {
+      reservedHours: usedService.reservedHours,
+      showReservedHoursWarning:
+        usedService.reservedHours > usedService.serviceNeedHours,
+      usedHours: usedService.usedServiceHours,
+      showUsedHoursWarning:
+        usedService.usedServiceHours > usedService.serviceNeedHours
+    }
+  } else {
+    return {
+      reservedHours: reservationTotalHours,
+      showReservedHoursWarning: false,
+      usedHours: attendanceTotalHours,
+      showUsedHoursWarning: attendanceTotalHours > reservationTotalHours
+    }
+  }
+}
+
 const shortChildName = (
   firstName: string,
   lastName: string,
@@ -176,14 +210,14 @@ const shortChildName = (
     : i18n.common.noName
 }
 
-const NumbersColumn = styled.div<{ warning?: boolean }>`
+const NumbersColumn = styled.div<{ $warning?: boolean }>`
   width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   flex-wrap: nowrap;
-  ${({ theme, warning }) =>
-    warning &&
+  ${({ theme, $warning }) =>
+    $warning &&
     css`
       color: ${theme.colors.accents.a2orangeDark};
       font-weight: ${fontWeights.semibold};

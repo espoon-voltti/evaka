@@ -16,6 +16,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.reservations.Reservation
+import fi.espoo.evaka.reservations.computeUsedService
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
@@ -42,6 +43,7 @@ import java.time.Month
 
 fun getGroupMonthCalendar(
     tx: Database.Read,
+    today: LocalDate,
     groupId: GroupId,
     year: Int,
     month: Int,
@@ -62,7 +64,9 @@ fun getGroupMonthCalendar(
         tx.getActualServiceNeedInfosByRangeAndGroup(groupId, range).groupBy { it.childId }.toMap()
     val backupCares = tx.getBackupCaresAffectingGroup(groupId, range)
     val reservations = tx.getGroupReservations(groupId, range)
-    val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
+    val allAttendances = tx.getGroupAttendances(groupId, range)
+    val attendancesByChild = allAttendances.groupBy { it.childId }
+    val attendances = allAttendances.groupBy { it.childId to it.date }
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
     val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
@@ -75,53 +79,7 @@ fun getGroupMonthCalendar(
 
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
 
-    val children =
-        placementList
-            .map { (child, placements) ->
-                val placementDateRanges = placements.map { it.dateRange }
-                val absenceDates =
-                    absences.keys
-                        .mapNotNull { if (it.first == child.id) it.second else null }
-                        .toSet()
-
-                val possibleAttendanceDates =
-                    placementDateRanges
-                        .flatMap { it.dates() }
-                        .filterNot { absenceDates.contains(it) }
-                        .filter { operationDates.contains(it) }
-
-                val supplementedReservations =
-                    supplementReservationsWithDailyServiceTimes(
-                        possibleAttendanceDates,
-                        reservations.entries.mapNotNull {
-                            if (it.key.first == child.id) {
-                                it.key.second to it.value
-                            } else null
-                        },
-                        dailyServiceTimes[child.id]?.map { it.times },
-                        absenceDates
-                    )
-                GroupMonthCalendarChild(
-                    id = child.id,
-                    firstName = child.firstName,
-                    lastName = child.lastName,
-                    dateOfBirth = child.dateOfBirth,
-                    actualServiceNeeds = actualServiceNeeds[child.id] ?: emptyList(),
-                    reservationTotalHours =
-                        sumOfHours(supplementedReservations, placementDateRanges, range),
-                    attendanceTotalHours =
-                        (attendances[child.id] ?: emptyList())
-                            .mapNotNull {
-                                it.endTime?.let { endTime ->
-                                    TimeRange(it.startTime, endTime)
-                                        .fixMidnightEndTime()
-                                        .asHelsinkiDateTimeRange(it.date)
-                                }
-                            }
-                            .let { sumOfHours(DateTimeSet.of(it), placementDateRanges, range) }
-                )
-            }
-            .sortedWith(compareBy({ it.lastName }, { it.firstName }))
+    val usedServiceByChild = mutableMapOf<ChildId, UsedServiceData>()
 
     val days =
         FiniteDateRange.ofMonth(year, Month.of(month))
@@ -138,13 +96,57 @@ fun getGroupMonthCalendar(
                             placementList
                                 .mapNotNull { (child, placements) ->
                                     val placement =
-                                        placements.find { it.dateRange.includes(date) }
+                                        placements.find { it.range.includes(date) }
                                             ?: return@mapNotNull null
+                                    val serviceNeed =
+                                        actualServiceNeeds[child.id]?.find {
+                                            it.validDuring.includes(date)
+                                        }
                                     val childAbsences = absences[child.id to date] ?: emptyList()
+                                    val childAttendances =
+                                        attendances[child.id to date] ?: emptyList()
                                     val childReservations =
                                         reservations[child.id to date] ?: emptyList()
                                     val scheduleType =
                                         placement.type.scheduleType(date, clubTerms, preschoolTerms)
+
+                                    serviceNeed?.daycareHoursPerMonth?.let { daycareHoursPerMonth ->
+                                        val usedService =
+                                            computeUsedService(
+                                                isDateInFuture = date > today,
+                                                serviceNeedHours = daycareHoursPerMonth,
+                                                placementType = placement.type,
+                                                preschoolTime = placement.preschoolTime,
+                                                preparatoryTime = placement.preparatoryTime,
+                                                absences =
+                                                    childAbsences.map {
+                                                        it.absenceType to it.category
+                                                    },
+                                                reservations =
+                                                    childReservations.mapNotNull {
+                                                        it.reservation.asTimeRange()
+                                                    },
+                                                attendances =
+                                                    childAttendances.mapNotNull {
+                                                        it.endTime?.let { endTime ->
+                                                            TimeRange(it.startTime, endTime)
+                                                        }
+                                                    }
+                                            )
+                                        usedServiceByChild.updateKey(child.id) {
+                                            (it ?: UsedServiceData(daycareHoursPerMonth)).let {
+                                                totals ->
+                                                totals.copy(
+                                                    reservedMinutes =
+                                                        totals.reservedMinutes +
+                                                            usedService.reservedMinutes,
+                                                    usedServiceMinutes =
+                                                        totals.usedServiceMinutes +
+                                                            usedService.usedServiceMinutes
+                                                )
+                                            }
+                                        }
+                                    }
 
                                     GroupMonthCalendarDayChild(
                                         childId = child.id,
@@ -183,6 +185,55 @@ fun getGroupMonthCalendar(
             }
             .toList()
 
+    val children =
+        placementList
+            .map { (child, placements) ->
+                val placementDateRanges = placements.map { it.range }
+                val absenceDates =
+                    absences.keys
+                        .mapNotNull { if (it.first == child.id) it.second else null }
+                        .toSet()
+
+                val possibleAttendanceDates =
+                    placementDateRanges
+                        .flatMap { it.dates() }
+                        .filterNot { absenceDates.contains(it) }
+                        .filter { operationDates.contains(it) }
+
+                val supplementedReservations =
+                    supplementReservationsWithDailyServiceTimes(
+                        possibleAttendanceDates,
+                        reservations.entries.mapNotNull {
+                            if (it.key.first == child.id) {
+                                it.key.second to it.value
+                            } else null
+                        },
+                        dailyServiceTimes[child.id]?.map { it.times },
+                        absenceDates
+                    )
+                GroupMonthCalendarChild(
+                    id = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    dateOfBirth = child.dateOfBirth,
+                    actualServiceNeeds = actualServiceNeeds[child.id] ?: emptyList(),
+                    reservationTotalHours =
+                        sumOfHours(supplementedReservations, placementDateRanges, range),
+                    attendanceTotalHours =
+                        (attendancesByChild[child.id] ?: emptyList())
+                            .mapNotNull {
+                                it.endTime?.let { endTime ->
+                                    TimeRange(it.startTime, endTime)
+                                        .fixMidnightEndTime()
+                                        .asHelsinkiDateTimeRange(it.date)
+                                }
+                            }
+                            .let { sumOfHours(DateTimeSet.of(it), placementDateRanges, range) },
+                    usedService = usedServiceByChild[child.id]?.asUsedServiceTotals()
+                )
+            }
+            .sortedWith(compareBy({ it.lastName }, { it.firstName }))
+
     return GroupMonthCalendar(
         groupId,
         daycare.name,
@@ -191,6 +242,24 @@ fun getGroupMonthCalendar(
         children,
         days,
     )
+}
+
+fun <K, V> MutableMap<K, V>.updateKey(key: K, fn: (V?) -> V) {
+    val current = this[key]
+    this[key] = fn(current)
+}
+
+private data class UsedServiceData(
+    val serviceNeedHours: Int,
+    val reservedMinutes: Long = 0,
+    val usedServiceMinutes: Long = 0
+) {
+    fun asUsedServiceTotals(): UsedServiceTotals =
+        UsedServiceTotals(
+            serviceNeedHours,
+            BigDecimal(reservedMinutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt(),
+            BigDecimal(usedServiceMinutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt()
+        )
 }
 
 fun getAbsencesOfChildByMonth(
@@ -434,6 +503,13 @@ data class GroupMonthCalendarChild(
     val actualServiceNeeds: List<ChildServiceNeedInfo>,
     val reservationTotalHours: Int,
     val attendanceTotalHours: Int,
+    val usedService: UsedServiceTotals?
+)
+
+data class UsedServiceTotals(
+    val serviceNeedHours: Int,
+    val reservedHours: Int,
+    val usedServiceHours: Int
 )
 
 data class GroupMonthCalendarDay(
@@ -457,12 +533,18 @@ data class GroupMonthCalendarDayChild(
 data class ChildServiceNeedInfo(
     val childId: ChildId,
     val hasContractDays: Boolean,
+    val daycareHoursPerMonth: Int?,
     val optionName: String,
     val validDuring: FiniteDateRange,
     val shiftCare: ShiftCareType
 )
 
-data class AbsencePlacement(val dateRange: FiniteDateRange, val type: PlacementType)
+data class AbsencePlacement(
+    val range: FiniteDateRange,
+    val type: PlacementType,
+    val preschoolTime: TimeRange?,
+    val preparatoryTime: TimeRange?
+)
 
 data class Absence(
     val childId: ChildId,
