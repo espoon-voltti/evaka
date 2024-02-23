@@ -383,3 +383,4 @@ V383__calendar_event_timestamps.sql
 V384__read_at_partial_index.sql
 V385__new_customer_income_notification_type.sql
 V386__async_job_permit.sql
+V387__generate_id_for_incomes.sql

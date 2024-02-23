@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.insertIncome(
     clock: EvakaClock,
@@ -33,11 +32,10 @@ fun Database.Transaction.insertIncome(
     updatedBy: EvakaUserId
 ): IncomeId {
     val update =
-        createQuery<Any>() {
+        createQuery<Any> {
             sql(
                 """
         INSERT INTO income (
-            id,
             person_id,
             effect,
             data,
@@ -50,7 +48,6 @@ fun Database.Transaction.insertIncome(
             updated_by,
             application_id
         ) VALUES (
-            ${bind(UUID.randomUUID())},
             ${bind(income.personId)},
             ${bind(income.effect)},
             ${bind(mapper.writeValueAsString(income.data))}::jsonb,
