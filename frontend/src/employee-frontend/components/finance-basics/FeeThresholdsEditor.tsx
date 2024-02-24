@@ -27,7 +27,6 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 
-import { FeeThresholdsSaveError } from '../../api/finance-basics'
 import {
   createFeeThresholds,
   updateFeeThresholds
@@ -36,7 +35,8 @@ import { Translations } from '../../state/i18n'
 import {
   FamilySize,
   FeeThresholdsWithId,
-  familySizes
+  familySizes,
+  FeeThresholdsSaveError
 } from '../../types/finance-basics'
 
 import { FormState } from './FeesSection'

@@ -10,8 +10,8 @@ import {
   deleteNote,
   getNotes,
   updateNote
-} from '../generated/api-clients/application'
-import { createQueryKeys } from '../query'
+} from '../../generated/api-clients/application'
+import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('applications', {
   applicationNotes: (applicationId: UUID) => ['applicationNotes', applicationId]

@@ -11,3 +11,5 @@ export interface FeeThresholdsWithId {
   id: string
   thresholds: FeeThresholds
 }
+
+export type FeeThresholdsSaveError = 'date-overlap'

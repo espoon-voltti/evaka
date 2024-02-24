@@ -11,7 +11,7 @@ import {
   createApplicationNote,
   deleteApplicationNote,
   updateApplicationNote
-} from 'employee-frontend/api/applications-queries'
+} from 'employee-frontend/components/application-page/applications-queries'
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
