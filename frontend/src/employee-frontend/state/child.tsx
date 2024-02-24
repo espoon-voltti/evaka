@@ -24,12 +24,13 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'
 import { getChildBackupCares } from '../generated/api-clients/backupcare'
+import { getParentships } from '../generated/api-clients/pis'
 import { getPlacements } from '../generated/api-clients/placement'
 
 const getPlacementsResult = wrapResult(getPlacements)
+const getParentshipsResult = wrapResult(getParentships)
 
 export interface ChildState {
   childId: UUID | undefined
@@ -150,7 +151,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [parentships] = useApiState(
     async (): Promise<Result<ParentshipWithPermittedActions[]>> =>
       permittedActions.has('READ_PARENTSHIPS')
-        ? await getParentshipsByChild(id)
+        ? await getParentshipsResult({ childId: id })
         : Loading.of(),
     [id, permittedActions]
   )

@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
@@ -16,15 +17,21 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
-import { removeParentship, retryParentship } from '../../api/parentships'
 import Toolbar from '../../components/common/Toolbar'
 import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
+import {
+  deleteParentship,
+  retryParentship
+} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const deleteParentshipResult = wrapResult(deleteParentship)
+const retryParentshipResult = wrapResult(retryParentship)
 
 interface Props {
   id: UUID
@@ -67,19 +74,21 @@ export default React.memo(function PersonFridgeChild({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              removeParentship(selectedParentshipId).then((res) => {
-                clearUiMode()
-                if (res.isFailure) {
-                  setErrorMessage({
-                    type: 'error',
-                    title: i18n.personProfile.fridgeChild.error.remove.title,
-                    text: i18n.common.tryAgain,
-                    resolveLabel: i18n.common.ok
-                  })
-                } else {
-                  reloadFridgeChildren()
+              deleteParentshipResult({ id: selectedParentshipId }).then(
+                (res) => {
+                  clearUiMode()
+                  if (res.isFailure) {
+                    setErrorMessage({
+                      type: 'error',
+                      title: i18n.personProfile.fridgeChild.error.remove.title,
+                      text: i18n.common.tryAgain,
+                      resolveLabel: i18n.common.ok
+                    })
+                  } else {
+                    reloadFridgeChildren()
+                  }
                 }
-              }),
+              ),
             label: i18n.common.remove
           }}
         />
@@ -154,9 +163,9 @@ export default React.memo(function PersonFridgeChild({
                         onRetry={
                           fridgeChild.conflict
                             ? () => {
-                                void retryParentship(fridgeChild.id).then(
-                                  reloadFridgeChildren
-                                )
+                                void retryParentshipResult({
+                                  id: fridgeChild.id
+                                }).then(reloadFridgeChildren)
                               }
                             : undefined
                         }
