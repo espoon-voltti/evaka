@@ -5,7 +5,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { combine, isLoading } from 'lib-common/api'
+import { combine, isLoading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { Child } from 'lib-common/generated/api-types/reservations'
@@ -24,7 +24,7 @@ import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { getStaffAttendances } from '../../../api/staff-attendance'
+import { getRealtimeStaffAttendances } from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
 import { renderResult } from '../../async-rendering'
@@ -36,6 +36,10 @@ import ChildDateModal, { ChildDateEditorTarget } from './ChildDateModal'
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
 import StaffAttendanceTable from './StaffAttendanceTable'
+
+const getRealtimeStaffAttendancesResult = wrapResult(
+  getRealtimeStaffAttendances
+)
 
 const Time = styled.span`
   font-weight: ${fontWeights.normal};
@@ -82,7 +86,12 @@ export default React.memo(function UnitAttendanceReservationsView({
   )
 
   const [staffAttendances, reloadStaffAttendances] = useApiState(
-    () => getStaffAttendances(unitId, weekRange),
+    () =>
+      getRealtimeStaffAttendancesResult({
+        unitId,
+        start: weekRange.start,
+        end: weekRange.end
+      }),
     [unitId, weekRange]
   )
 

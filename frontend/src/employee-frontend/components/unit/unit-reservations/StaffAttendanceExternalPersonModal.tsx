@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDate, localTime, string, boolean } from 'lib-common/form/fields'
 import { object, oneOf, required, validated } from 'lib-common/form/form'
@@ -38,8 +39,12 @@ import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { postStaffAndExternalAttendances } from '../../../api/staff-attendance'
+import { upsertStaffRealtimeAttendances } from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
+
+const upsertStaffRealtimeAttendancesResult = wrapResult(
+  upsertStaffRealtimeAttendances
+)
 
 type ExternalPersonModalProps = {
   onClose: () => void
@@ -102,7 +107,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
 
   const submit = useCallback(() => {
     const formValue = form.value()
-    const requestBody: UpsertStaffAndExternalAttendanceRequest = {
+    const body: UpsertStaffAndExternalAttendanceRequest = {
       externalAttendances: [
         {
           attendanceId: null,
@@ -123,7 +128,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
       ],
       staffAttendances: []
     }
-    return postStaffAndExternalAttendances(unitId, requestBody)
+    return upsertStaffRealtimeAttendancesResult({ unitId, body })
   }, [form, unitId])
 
   const date = useFormField(form, 'date')
