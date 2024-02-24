@@ -7,6 +7,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -17,19 +18,23 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2 } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
-import {
-  getPartnerships,
-  removePartnership,
-  retryPartnership
-} from '../../api/partnerships'
 import Toolbar from '../../components/common/Toolbar'
 import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
+import {
+  deletePartnership,
+  getPartnerships,
+  retryPartnership
+} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { ButtonsTd, DateTd, NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getPartnershipsResult = wrapResult(getPartnerships)
+const deletePartnershipResult = wrapResult(deletePartnership)
+const retryPartnershipResult = wrapResult(retryPartnership)
 
 const TopBar = styled.div`
   display: flex;
@@ -51,7 +56,10 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const [open, setOpen] = useState(startOpen)
-  const [partnerships, loadData] = useApiState(() => getPartnerships(id), [id])
+  const [partnerships, loadData] = useApiState(
+    () => getPartnershipsResult({ personId: id }),
+    [id]
+  )
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
 
   // FIXME: This component shouldn't know about family's dependency on its data
@@ -91,7 +99,9 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
           resolve={{
             action: () =>
-              removePartnership(selectedPartnershipId).then((res) => {
+              deletePartnershipResult({
+                partnershipId: selectedPartnershipId
+              }).then((res) => {
                 clearUiMode()
                 if (res.isFailure) {
                   setErrorMessage({
@@ -174,9 +184,9 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                           onRetry={
                             fridgePartner.conflict
                               ? () => {
-                                  void retryPartnership(fridgePartner.id).then(
-                                    () => reload()
-                                  )
+                                  void retryPartnershipResult({
+                                    partnershipId: fridgePartner.id
+                                  }).then(() => reload())
                                 }
                               : undefined
                           }

@@ -4,7 +4,7 @@
 
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Partnership, PersonSummary } from 'lib-common/generated/api-types/pis'
@@ -18,15 +18,21 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faUser } from 'lib-icons'
 
-import { addPartnership, updatePartnership } from '../../../api/partnerships'
 import { getPerson } from '../../../api/person'
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
+import {
+  createPartnership,
+  updatePartnership
+} from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
+
+const createPartnershipResult = wrapResult(createPartnership)
+const updatePartnershipResult = wrapResult(updatePartnership)
 
 interface Props {
   headPersonId: UUID
@@ -119,13 +125,18 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
     if (!form.partner) return
 
     const apiCall = partnership
-      ? updatePartnership(partnership.id, form.startDate, form.endDate)
-      : addPartnership(
-          headPersonId,
-          form.partner.id,
-          form.startDate,
-          form.endDate
-        )
+      ? updatePartnershipResult({
+          partnershipId: partnership.id,
+          body: { startDate: form.startDate, endDate: form.endDate }
+        })
+      : createPartnershipResult({
+          body: {
+            person1Id: headPersonId,
+            person2Id: form.partner.id,
+            startDate: form.startDate,
+            endDate: form.endDate
+          }
+        })
 
     void apiCall.then((res) => {
       if (res.isFailure) {
