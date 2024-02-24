@@ -89,7 +89,7 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
           primary
           text={i18n.common.save}
           mutation={updateEmployeeGlobalRolesMutation}
-          onClick={() => ({ id: employee.id, globalRoles: boundForm.value() })}
+          onClick={() => ({ id: employee.id, body: boundForm.value() })}
           onSuccess={onSuccess}
         />
       </FixedSpaceRow>
@@ -169,7 +169,7 @@ const EmployeePage = React.memo(function EmployeePage({
           icon={faTimes}
           confirmationTitle={i18n.employees.editor.unitRoles.deleteAllConfirm}
           mutation={deleteEmployeeDaycareRolesMutation}
-          onClick={() => ({ employeeId: employee.id, daycareId: null })}
+          onClick={() => ({ id: employee.id, daycareId: null })}
           disabled={editingGlobalRoles}
         />
       </FlexRow>
@@ -198,7 +198,7 @@ const EmployeePage = React.memo(function EmployeePage({
                   }
                   mutation={deleteEmployeeDaycareRolesMutation}
                   onClick={() => ({
-                    employeeId: employee.id,
+                    id: employee.id,
                     daycareId: daycareId
                   })}
                   disabled={editingGlobalRoles}
@@ -215,7 +215,7 @@ const EmployeePage = React.memo(function EmployeePage({
 export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
   const { id } = useNonNullableParams<{ id: UUID }>()
-  const employee = useQueryResult(employeeDetailsQuery(id))
+  const employee = useQueryResult(employeeDetailsQuery({ id }))
   const units = useQueryResult(unitsQuery())
 
   return (

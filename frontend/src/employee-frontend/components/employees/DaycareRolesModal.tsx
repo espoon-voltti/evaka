@@ -114,7 +114,7 @@ export default React.memo(function DaycareRolesModal({
     <MutateFormModal
       title={i18n.employees.editor.unitRoles.addRolesModalTitle}
       resolveMutation={upsertEmployeeDaycareRolesMutation}
-      resolveAction={() => ({ id: employeeId, request: boundForm.value() })}
+      resolveAction={() => ({ id: employeeId, body: boundForm.value() })}
       resolveLabel={i18n.common.save}
       resolveDisabled={!boundForm.isValid()}
       onSuccess={onClose}

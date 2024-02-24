@@ -8,6 +8,7 @@ import {
   deleteMobileDevice,
   putMobileDeviceName
 } from 'employee-frontend/api/unit'
+import { wrapResult } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -24,19 +25,21 @@ import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { getPersonalMobileDevices } from '../api/employees'
+import { getPersonalMobileDevices } from '../generated/api-clients/pairing'
 import { useTranslation } from '../state/i18n'
 import { UIContext } from '../state/ui'
 import { UserContext } from '../state/user'
 
 import { renderResult } from './async-rendering'
 
+const getPersonalMobileDevicesResult = wrapResult(getPersonalMobileDevices)
+
 export default React.memo(function PersonalMobileDevicesPage() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const { startPairing } = useContext(UIContext)
   const [mobileDevices, reloadDevices] = useApiState(
-    () => getPersonalMobileDevices(),
+    () => getPersonalMobileDevicesResult(),
     []
   )
   const [openModal, setOpenModal] = useState<{

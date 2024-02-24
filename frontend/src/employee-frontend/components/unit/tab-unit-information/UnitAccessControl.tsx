@@ -7,7 +7,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { combine, isLoading, Success } from 'lib-common/api'
+import { combine, isLoading, Success, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
@@ -27,7 +27,6 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { getEmployees } from '../../../api/employees'
 import {
   DaycareGroupSummary,
   deleteTemporaryEmployee,
@@ -39,6 +38,7 @@ import {
   removeDaycareAclSupervisor,
   updateDaycareGroupAcl
 } from '../../../api/unit'
+import { getEmployees } from '../../../generated/api-clients/pis'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
@@ -48,6 +48,8 @@ import { renderResult } from '../../async-rendering'
 
 import DaycareAclAdditionModal from './DaycareAclAdditionModal'
 import EmployeeAclRowEditModal from './EmployeeAclRowEditModal'
+
+const getEmployeesResult = wrapResult(getEmployees)
 
 type Props = {
   groups: Record<UUID, DaycareGroupSummary>
@@ -345,7 +347,7 @@ export default React.memo(function UnitAccessControl({
   const { unitId, daycareAclRows, reloadDaycareAclRows } =
     useContext(UnitContext)
   const { user } = useContext(UserContext)
-  const [employees] = useApiState(getEmployees, [])
+  const [employees] = useApiState(getEmployeesResult, [])
   const [temporaryEmployees, reloadTemporaryEmployees] = useApiState(
     () =>
       permittedActions.has('READ_TEMPORARY_EMPLOYEE')

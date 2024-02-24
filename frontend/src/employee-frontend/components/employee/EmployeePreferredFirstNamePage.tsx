@@ -4,6 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -15,15 +16,22 @@ import { Label, P } from 'lib-components/typography'
 import {
   getEmployeePreferredFirstName,
   setEmployeePreferredFirstName
-} from '../../api/employees'
+} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+
+const getEmployeePreferredFirstNameResult = wrapResult(
+  getEmployeePreferredFirstName
+)
+const setEmployeePreferredFirstNameResult = wrapResult(
+  setEmployeePreferredFirstName
+)
 
 export default React.memo(function EmployeePreferredFirstNamePage() {
   const { i18n } = useTranslation()
   const { refreshAuthStatus } = useContext(UserContext)
   const [preferredFirstName, loadPreferredFirstName] = useApiState(
-    getEmployeePreferredFirstName,
+    getEmployeePreferredFirstNameResult,
     []
   )
 
@@ -44,8 +52,8 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
   }, [preferredFirstName])
 
   const onSave = () =>
-    setEmployeePreferredFirstName({
-      preferredFirstName: selectedPreferredFirstName
+    setEmployeePreferredFirstNameResult({
+      body: { preferredFirstName: selectedPreferredFirstName }
     }).then(loadPreferredFirstName)
 
   const disableConfirm = () =>

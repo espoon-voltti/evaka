@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
+import { combine, wrapResult } from 'lib-common/api'
 import { boolean, localDate, string } from 'lib-common/form/fields'
 import {
   array,
@@ -64,7 +64,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { featureFlags, translations } from 'lib-customizations/employee'
 
-import { getEmployees } from '../../../../api/employees'
+import { getEmployees } from '../../../../generated/api-clients/pis'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
@@ -74,6 +74,8 @@ import {
   queryKeys,
   updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
+
+const getEmployeesResult = wrapResult(getEmployees)
 
 const WidthLimiter = styled.div`
   max-width: 700px;
@@ -1011,7 +1013,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   ).map((units) =>
     units.filter((u) => u.careTypes.some((type) => type !== 'CLUB'))
   )
-  const [employeesResult] = useApiState(() => getEmployees(), [])
+  const [employeesResult] = useApiState(() => getEmployeesResult(), [])
 
   // invalidate cached decision on onmount
   const queryClient = useQueryClient()

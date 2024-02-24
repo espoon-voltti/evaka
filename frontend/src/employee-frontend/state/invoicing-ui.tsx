@@ -30,6 +30,7 @@ import {
   VoucherValueDecisionDifference,
   FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
+import { Employee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -143,9 +144,7 @@ interface SharedState {
   units: Result<UnitStub[]>
   setUnits: Dispatch<SetStateAction<Result<UnitStub[]>>>
   financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]>
-  setFinanceDecisionHandlers: Dispatch<
-    SetStateAction<Result<FinanceDecisionHandlerOption[]>>
-  >
+  setFinanceDecisionHandlers: (handlers: Result<Employee[]>) => void
   availableAreas: Result<DaycareCareArea[]>
 }
 
@@ -372,7 +371,15 @@ export const InvoicingUIContextProvider = React.memo(
           units,
           setUnits,
           financeDecisionHandlers,
-          setFinanceDecisionHandlers,
+          setFinanceDecisionHandlers: (employeesResult: Result<Employee[]>) =>
+            setFinanceDecisionHandlers(
+              employeesResult.map((employees) =>
+                employees.map((e) => ({
+                  value: e.id,
+                  label: [e.firstName, e.lastName].join(' ')
+                }))
+              )
+            ),
           availableAreas
         }
       }),

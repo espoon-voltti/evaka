@@ -130,14 +130,14 @@ export function EmployeeList({ employees }: Props) {
               buttonText={i18n.employees.deactivate}
               confirmationTitle={i18n.employees.deactivateConfirm}
               mutation={deactivateEmployeeMutation}
-              onClick={() => id}
+              onClick={() => ({ id })}
             />
           ) : (
             <ConfirmedMutation
               buttonText={i18n.employees.activate}
               confirmationTitle={i18n.employees.activateConfirm}
               mutation={activateEmployeeMutation}
-              onClick={() => id}
+              onClick={() => ({ id })}
             />
           )}
         </Td>
