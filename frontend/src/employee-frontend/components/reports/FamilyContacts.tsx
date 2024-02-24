@@ -27,7 +27,7 @@ export default React.memo(function FamilyContacts() {
   const { i18n } = useTranslation()
 
   const rows = useQueryResult(familyContactsReportQuery(unitId))
-  const unit = useQueryResult(unitQuery(unitId))
+  const unit = useQueryResult(unitQuery({ daycareId: unitId }))
 
   return (
     <Container>

@@ -460,7 +460,11 @@ const CreateEventModal = React.memo(function CreateEventModal({
   })
 
   const groupData = useQueryResult(
-    unitGroupDetailsQuery(unitId, form.period.start, form.period.end)
+    unitGroupDetailsQuery({
+      unitId,
+      from: form.period.start,
+      to: form.period.end
+    })
   )
 
   const updateForm = useCallback(

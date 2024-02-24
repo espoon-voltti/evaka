@@ -13,7 +13,7 @@ import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import { Caretakers, Daycare } from 'lib-common/generated/api-types/daycare'
 import {
   ChildDailyNote,
   NotesByGroupResponse
@@ -63,7 +63,6 @@ import { UserContext } from '../../../../state/user'
 import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
-  Unit,
   UnitChildrenCapacityFactors
 } from '../../../../types/unit'
 import { formatPersonName } from '../../../../utils'
@@ -86,7 +85,7 @@ import NotesModal from '../notes/NotesModal'
 const getNotesByGroupResult = wrapResult(getNotesByGroup)
 
 interface Props {
-  unit: Unit
+  unit: Daycare
   filters: UnitFilters
   group: GroupWithDetails
   caretakers?: Caretakers
@@ -98,7 +97,7 @@ interface Props {
   ) => void
   open: boolean
   toggleOpen: () => void
-  permittedActions: Set<Action.Group>
+  permittedActions: Action.Group[]
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
   permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
 }
@@ -168,7 +167,7 @@ export default React.memo(function Group({
   const { roles } = useContext(UserContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
-  const hasNotesPermission = permittedActions.has('READ_NOTES')
+  const hasNotesPermission = permittedActions.includes('READ_NOTES')
   const [notesResponse, loadNotes] = useApiState(
     async (): Promise<Result<NotesByGroupResponse>> =>
       hasNotesPermission
@@ -229,9 +228,9 @@ export default React.memo(function Group({
     unitChildrenCapacityFactors.length > 0
 
   const canManageCaretakers =
-    permittedActions.has('UPDATE_CARETAKERS') ||
-    permittedActions.has('CREATE_CARETAKERS') ||
-    permittedActions.has('DELETE_CARETAKERS')
+    permittedActions.includes('UPDATE_CARETAKERS') ||
+    permittedActions.includes('CREATE_CARETAKERS') ||
+    permittedActions.includes('DELETE_CARETAKERS')
 
   return (
     <DaycareGroup
@@ -290,7 +289,7 @@ export default React.memo(function Group({
         </TitleContainer>
         <Gap size="L" horizontal />
         <Toolbar>
-          {permittedActions.has('UPDATE') && (
+          {permittedActions.includes('UPDATE') && (
             <>
               <InlineButton
                 icon={faPen}
@@ -301,20 +300,20 @@ export default React.memo(function Group({
               <Gap size="s" horizontal />
             </>
           )}
-          {permittedActions.has('DELETE') && (
+          {permittedActions.includes('DELETE') && (
             <>
               <InlineMutateButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
                 mutation={deleteGroupMutation}
-                onClick={() => ({ unitId: unit.id, groupId: group.id })}
+                onClick={() => ({ daycareId: unit.id, groupId: group.id })}
                 disabled={sortedPlacements.length > 0 || !group.deletable}
                 data-qa="btn-remove-group"
               />
               <Gap size="s" horizontal />
             </>
           )}
-          {permittedActions.has('READ_ABSENCES') && (
+          {permittedActions.includes('READ_ABSENCES') && (
             <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
               <InlineButton
                 icon={faCalendarAlt}
@@ -387,25 +386,26 @@ export default React.memo(function Group({
               <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
-                    {mobileEnabled && permittedActions.has('READ_NOTES') && (
-                      <Th>
-                        <IconContainer>
-                          <Tooltip
-                            position="top"
-                            tooltip={
-                              <span>
-                                {i18n.unit.groups.daycareDailyNote.dailyNote}
-                              </span>
-                            }
-                          >
-                            <FontAwesomeIcon
-                              icon={faStickyNote}
-                              color={colors.grayscale.g70}
-                            />
-                          </Tooltip>
-                        </IconContainer>
-                      </Th>
-                    )}
+                    {mobileEnabled &&
+                      permittedActions.includes('READ_NOTES') && (
+                        <Th>
+                          <IconContainer>
+                            <Tooltip
+                              position="top"
+                              tooltip={
+                                <span>
+                                  {i18n.unit.groups.daycareDailyNote.dailyNote}
+                                </span>
+                              }
+                            >
+                              <FontAwesomeIcon
+                                icon={faStickyNote}
+                                color={colors.grayscale.g70}
+                              />
+                            </Tooltip>
+                          </IconContainer>
+                        </Th>
+                      )}
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
                     <Th>{i18n.unit.groups.placementType}</Th>
@@ -451,7 +451,7 @@ export default React.memo(function Group({
                 </Tbody>
               </Table>
               {mobileEnabled &&
-                permittedActions.has('READ_NOTES') &&
+                permittedActions.includes('READ_NOTES') &&
                 notesResponse.isSuccess && (
                   <GroupNoteLinkContainer>
                     <InlineButton
@@ -492,7 +492,7 @@ interface GroupPlacementRowProps {
   showServiceNeed: boolean
   showChildCapacityFactor: boolean
   notesResponse: Result<NotesByGroupResponse>
-  permittedActions: Set<Action.Group>
+  permittedActions: Action.Group[]
   permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
@@ -579,7 +579,7 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
       className="group-placement-row"
       data-qa={`group-placement-row-${placement.child.id}`}
     >
-      {mobileEnabled && permittedActions.has('READ_NOTES') && (
+      {mobileEnabled && permittedActions.includes('READ_NOTES') && (
         <Td data-qa="daily-note">
           <DailyNote
             placement={placement}

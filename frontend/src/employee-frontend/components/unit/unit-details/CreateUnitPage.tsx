@@ -66,8 +66,11 @@ export default React.memo(function CreateUnitPage() {
                     primary
                     preventDefault
                     mutation={createUnitMutation}
-                    onClick={() => getFormData() ?? cancelMutation}
-                    onSuccess={(id) => navigate(`/units/${id}/unit-info`)}
+                    onClick={() => {
+                      const body = getFormData()
+                      return body ? { body } : cancelMutation
+                    }}
+                    onSuccess={({ id }) => navigate(`/units/${id}/unit-info`)}
                     disabled={!isValid}
                     text={i18n.unitEditor.submitNew}
                     data-qa="save-button"

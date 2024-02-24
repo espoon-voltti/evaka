@@ -18,7 +18,7 @@ import { ClubTermRequest } from 'lib-common/generated/api-types/daycare'
 import { CreateDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { CreateGroupRequest } from 'lib-common/generated/api-types/daycare'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
-import { DaycareAclResponse } from 'lib-common/generated/api-types/daycare'
+import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import { DaycareFields } from 'lib-common/generated/api-types/daycare'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
@@ -789,14 +789,14 @@ export async function deleteUnitSupervisor(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getAcl
+* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getDaycareAcl
 */
-export async function getAcl(
+export async function getDaycareAcl(
   request: {
     daycareId: UUID
   }
-): Promise<DaycareAclResponse> {
-  const { data: json } = await client.request<JsonOf<DaycareAclResponse>>({
+): Promise<DaycareAclRow[]> {
+  const { data: json } = await client.request<JsonOf<DaycareAclRow[]>>({
     url: uri`/daycares/${request.daycareId}/acl`.toString(),
     method: 'GET'
   })

@@ -11,6 +11,7 @@ import { combine } from 'lib-common/api'
 import { globalRoles } from 'lib-common/api-types/employee-auth'
 import { array, value } from 'lib-common/form/form'
 import { useForm } from 'lib-common/form/hooks'
+import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
@@ -32,7 +33,6 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { Unit } from '../../types/unit'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitsQuery } from '../unit/queries'
@@ -102,7 +102,7 @@ const EmployeePage = React.memo(function EmployeePage({
   units
 }: {
   employee: EmployeeWithDaycareRoles
-  units: Unit[]
+  units: Daycare[]
 }) {
   const { i18n } = useTranslation()
   const [editingGlobalRoles, setEditingGlobalRoles] = useState(false)

@@ -15,6 +15,7 @@ import { UpdateStateFn } from 'lib-common/form-state'
 import { time } from 'lib-common/form-validation'
 import {
   CareType,
+  Daycare,
   DaycareCareArea,
   DaycareFields,
   Language,
@@ -47,7 +48,6 @@ import { faPen } from 'lib-icons'
 
 import { Translations, useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
-import { Unit } from '../../../types/unit'
 
 // CareType is a mix of these two enums
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
@@ -299,7 +299,7 @@ function parseLocation(value: string): Coordinate | undefined {
 interface Props {
   areas: DaycareCareArea[]
   financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
-  unit?: Unit
+  unit?: Daycare
   editable: boolean
   onClickEdit?: () => void
   children: (
@@ -642,7 +642,7 @@ function validateForm(
   }
 }
 
-function toFormData(unit: Unit | undefined): FormData {
+function toFormData(unit: Daycare | undefined): FormData {
   const type = unit?.type
   return {
     name: unit?.name ?? '',

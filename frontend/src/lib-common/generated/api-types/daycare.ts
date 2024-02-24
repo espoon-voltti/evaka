@@ -11,7 +11,6 @@ import LocalDate from '../../local-date'
 import TimeRange from '../../time-range'
 import { Action } from '../action'
 import { Coordinate } from './shared'
-import { DaycareAclRow } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
 import { JsonOf } from '../../json'
 import { MissingGroupPlacement } from './placement'
@@ -209,13 +208,6 @@ export interface Daycare {
   uploadToVarda: boolean
   url: string | null
   visitingAddress: VisitingAddress
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.DaycareAclResponse
-*/
-export interface DaycareAclResponse {
-  aclRows: DaycareAclRow[]
 }
 
 /**

@@ -57,57 +57,46 @@ class UnitAclController(private val accessControl: AccessControl) {
     val coefficientNegativeValue = BigDecimal("0.00")
 
     @GetMapping("/daycares/{daycareId}/acl")
-    fun getAcl(
+    fun getDaycareAcl(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId
-    ): DaycareAclResponse {
-        return DaycareAclResponse(
-            db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
+    ): List<DaycareAclRow> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Unit.READ_ACL, daycareId)
+                val hasOccupancyPermission =
+                    accessControl.hasPermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_ACL,
+                        Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
                         daycareId
                     )
-                    val hasOccupancyPermission =
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
-                            daycareId
-                        )
 
-                    val aclRows =
-                        tx.getDaycareAclRows(daycareId, hasOccupancyPermission).map {
-                            if (it.employee.active) it
-                            else
-                                it.copy(
-                                    employee =
-                                        it.employee.copy(
-                                            lastName = "${it.employee.lastName} (deaktivoitu)"
-                                        )
-                                )
-                        }
+                val aclRows =
+                    tx.getDaycareAclRows(daycareId, hasOccupancyPermission).map {
+                        if (it.employee.active) it
+                        else
+                            it.copy(
+                                employee =
+                                    it.employee.copy(
+                                        lastName = "${it.employee.lastName} (deaktivoitu)"
+                                    )
+                            )
+                    }
 
-                    Audit.UnitAclRead.log(
+                Audit.UnitAclRead.log(targetId = daycareId, meta = mapOf("count" to aclRows.size))
+                if (hasOccupancyPermission) {
+                    Audit.StaffOccupancyCoefficientRead.log(
                         targetId = daycareId,
                         meta = mapOf("count" to aclRows.size)
                     )
-                    if (hasOccupancyPermission) {
-                        Audit.StaffOccupancyCoefficientRead.log(
-                            targetId = daycareId,
-                            meta = mapOf("count" to aclRows.size)
-                        )
-                    }
-                    aclRows
                 }
+                aclRows
             }
-        )
+        }
     }
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
@@ -339,8 +328,6 @@ class UnitAclController(private val accessControl: AccessControl) {
     data class FullAclInfo(val role: UserRole, val update: AclUpdate)
 
     data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
-
-    data class DaycareAclResponse(val aclRows: List<DaycareAclRow>)
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {

@@ -4,6 +4,7 @@
 
 import React, { useState, useContext } from 'react'
 
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -18,7 +19,6 @@ import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import { DaycareGroup } from '../../../../../types/unit'
 import { updateGroupMutation } from '../../../queries'
 
 interface Props {
@@ -43,7 +43,7 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
       type="info"
       resolveMutation={updateGroupMutation}
       resolveAction={() => ({
-        unitId: group.daycareId,
+        daycareId: group.daycareId,
         groupId: group.id,
         body: {
           ...data,

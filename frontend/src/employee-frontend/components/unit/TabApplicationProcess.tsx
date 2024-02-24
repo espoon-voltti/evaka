@@ -24,7 +24,7 @@ interface Props {
 
 export default React.memo(function TabApplicationProcess({ unitId }: Props) {
   const { i18n } = useTranslation()
-  const applications = useQueryResult(unitApplicationsQuery(unitId))
+  const applications = useQueryResult(unitApplicationsQuery({ unitId }))
 
   return renderResult(
     applications,

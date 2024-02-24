@@ -256,9 +256,11 @@ export default React.memo(function ChildDateModal({
     queryOrDefault(
       (attendances: TimeRange[]) =>
         childDateExpectedAbsencesQuery({
-          childId: child.id,
-          date,
-          attendances
+          body: {
+            childId: child.id,
+            date,
+            attendances
+          }
         }),
       null
     )(
@@ -275,7 +277,7 @@ export default React.memo(function ChildDateModal({
       title={date.formatExotic('EEEEEE d.M.yyyy')}
       resolveMutation={upsertChildDatePresenceMutation}
       resolveDisabled={!boundForm.isValid()}
-      resolveAction={() => boundForm.value()}
+      resolveAction={() => ({ body: boundForm.value() })}
       resolveLabel={i18n.common.save}
       onSuccess={onClose}
       onFailure={(e) => {

@@ -2,45 +2,47 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
-  createDaycare,
-  createGroup,
-  CreateGroupPlacement,
-  createGroupPlacement,
-  deleteGroup,
-  deleteGroupPlacement,
-  getChildDateExpectedAbsences,
-  getDaycare,
-  getDaycareGroups,
-  getDaycares,
-  getSpeculatedOccupancyRates,
-  getUnitApplications,
-  getUnitAttendanceReservations,
-  getUnitGroupDetails,
-  getUnitNotifications,
-  getUnitOccupancies,
-  postChildDatePresence,
-  postReservations,
-  TransferGroup,
-  transferGroup,
-  updateDaycare,
-  updateGroup
-} from '../../api/unit'
-import {
   acceptPlacementProposal,
+  getUnitApplications,
   respondToPlacementProposal
 } from '../../generated/api-clients/application'
 import {
   createBackupCare,
   updateBackupCare
 } from '../../generated/api-clients/backupcare'
-import { getAreas } from '../../generated/api-clients/daycare'
+import {
+  createDaycare,
+  createGroup,
+  deleteGroup,
+  getAreas,
+  getDaycare,
+  getDaycares,
+  getGroups,
+  getUnitGroupDetails,
+  getUnitNotifications,
+  updateDaycare,
+  updateGroup
+} from '../../generated/api-clients/daycare'
+import {
+  getOccupancyPeriodsSpeculated,
+  getUnitOccupancies
+} from '../../generated/api-clients/occupancy'
+import {
+  createGroupPlacement,
+  deleteGroupPlacement,
+  transferGroupPlacement
+} from '../../generated/api-clients/placement'
+import {
+  getAttendanceReservations,
+  getExpectedAbsences,
+  postChildDatePresence,
+  postReservations
+} from '../../generated/api-clients/reservations'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
@@ -56,23 +58,8 @@ export const queryKeys = createQueryKeys('unit', {
   unitApplications: (unitId: UUID) => ['unitApplications', unitId],
   unitGroups: (unitId: UUID) => ['unitGroups', unitId],
   unitSpeculatedOccupancyRates: (
-    applicationId: UUID,
-    unitId: UUID,
-    from: LocalDate,
-    to: LocalDate,
-    preschoolDaycareFrom?: LocalDate,
-    preschoolDaycareTo?: LocalDate
-  ) => [
-    'unitSpeculatedOccupancyRates',
-    {
-      applicationId,
-      unitId,
-      from,
-      to,
-      preschoolDaycareFrom,
-      preschoolDaycareTo
-    }
-  ],
+    params: Arg0<typeof getOccupancyPeriodsSpeculated>
+  ) => ['unitSpeculatedOccupancyRates', params],
   unitGroupDetails: (unitId: UUID) => ['unitGroupDetails', unitId],
   unitGroupDetailsRange: (unitId: UUID, from: LocalDate, to: LocalDate) => [
     'unitGroupDetails',
@@ -82,18 +69,12 @@ export const queryKeys = createQueryKeys('unit', {
 
   unitAttendanceReservations: () => ['unitAttendanceReservations'],
   unitAttendanceReservationsRange: (
-    unitId: UUID,
-    dateRange: FiniteDateRange,
-    includeNonOperationalDays: boolean
-  ) => [
-    'unitAttendanceReservations',
-    unitId,
-    { dateRange, includeNonOperationalDays }
-  ],
+    arg: Arg0<typeof getAttendanceReservations>
+  ) => ['unitAttendanceReservations', arg],
 
-  expectedAbsences: (input: ExpectedAbsencesRequest) => [
+  expectedAbsences: (arg: Arg0<typeof getExpectedAbsences>) => [
     'expectedAbsences',
-    input
+    arg
   ]
 })
 
@@ -109,31 +90,28 @@ export const unitsQuery = query({
 
 export const unitQuery = query({
   api: getDaycare,
-  queryKey: queryKeys.unit
+  queryKey: ({ daycareId }) => queryKeys.unit(daycareId)
 })
 
 export const unitNotificationsQuery = query({
   api: getUnitNotifications,
-  queryKey: queryKeys.unitNotifications
+  queryKey: ({ daycareId }) => queryKeys.unitNotifications(daycareId)
 })
 
 export const unitOccupanciesQuery = query({
   api: getUnitOccupancies,
-  queryKey: queryKeys.unitOccupancies
+  queryKey: ({ unitId, from, to }) =>
+    queryKeys.unitOccupancies(unitId, from, to)
 })
 
 export const unitApplicationsQuery = query({
   api: getUnitApplications,
-  queryKey: queryKeys.unitApplications
+  queryKey: ({ unitId }) => queryKeys.unitApplications(unitId)
 })
 
 export const createGroupPlacementMutation = mutation({
-  api: ({
-    unitId: _,
-    ...payload
-  }: CreateGroupPlacement & {
-    unitId: UUID
-  }) => createGroupPlacement(payload),
+  api: (arg: Arg0<typeof createGroupPlacement> & { unitId: UUID }) =>
+    createGroupPlacement(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
@@ -141,13 +119,8 @@ export const createGroupPlacementMutation = mutation({
 })
 
 export const deleteGroupPlacementMutation = mutation({
-  api: ({
-    unitId: _,
-    groupPlacementId
-  }: {
-    unitId: UUID
-    groupPlacementId: UUID
-  }) => deleteGroupPlacement(groupPlacementId),
+  api: (arg: Arg0<typeof deleteGroupPlacement> & { unitId: UUID }) =>
+    deleteGroupPlacement(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
@@ -155,8 +128,8 @@ export const deleteGroupPlacementMutation = mutation({
 })
 
 export const transferGroupMutation = mutation({
-  api: ({ unitId: _, ...payload }: TransferGroup & { unitId: UUID }) =>
-    transferGroup(payload),
+  api: (arg: Arg0<typeof transferGroupPlacement> & { unitId: UUID }) =>
+    transferGroupPlacement(arg),
   invalidateQueryKeys: ({ unitId }) => [
     queryKeys.unitGroupDetails(unitId),
     queryKeys.unitNotifications(unitId)
@@ -165,32 +138,34 @@ export const transferGroupMutation = mutation({
 
 export const createGroupMutation = mutation({
   api: createGroup,
-  invalidateQueryKeys: ({ unitId }) => [queryKeys.unitNotifications(unitId)]
+  invalidateQueryKeys: ({ daycareId }) => [
+    queryKeys.unitNotifications(daycareId)
+  ]
 })
 
 export const unitGroupsQuery = query({
-  api: getDaycareGroups,
-  queryKey: queryKeys.unitGroups
+  api: getGroups,
+  queryKey: ({ daycareId }) => queryKeys.unitGroups(daycareId)
 })
 
 export const updateGroupMutation = mutation({
   api: updateGroup,
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
+  invalidateQueryKeys: ({ daycareId }) => [
+    queryKeys.unitGroupDetails(daycareId),
+    queryKeys.unitNotifications(daycareId)
   ]
 })
 
 export const deleteGroupMutation = mutation({
   api: deleteGroup,
-  invalidateQueryKeys: ({ unitId }) => [
-    queryKeys.unitGroupDetails(unitId),
-    queryKeys.unitNotifications(unitId)
+  invalidateQueryKeys: ({ daycareId }) => [
+    queryKeys.unitGroupDetails(daycareId),
+    queryKeys.unitNotifications(daycareId)
   ]
 })
 
 export const unitSpeculatedOccupancyRatesQuery = query({
-  api: getSpeculatedOccupancyRates,
+  api: getOccupancyPeriodsSpeculated,
   queryKey: queryKeys.unitSpeculatedOccupancyRates
 })
 
@@ -200,12 +175,13 @@ export const createUnitMutation = mutation({
 
 export const updateUnitMutation = mutation({
   api: updateDaycare,
-  invalidateQueryKeys: ({ id }) => [queryKeys.unit(id)]
+  invalidateQueryKeys: ({ daycareId }) => [queryKeys.unit(daycareId)]
 })
 
 export const unitGroupDetailsQuery = query({
   api: getUnitGroupDetails,
-  queryKey: queryKeys.unitGroupDetailsRange
+  queryKey: ({ unitId, from, to }) =>
+    queryKeys.unitGroupDetailsRange(unitId, from, to)
 })
 
 export const postReservationsMutation = mutation({
@@ -227,12 +203,12 @@ export const updateBackupCareMutation = mutation({
 })
 
 export const unitAttendanceReservationsQuery = query({
-  api: getUnitAttendanceReservations,
+  api: getAttendanceReservations,
   queryKey: queryKeys.unitAttendanceReservationsRange
 })
 
 export const childDateExpectedAbsencesQuery = query({
-  api: getChildDateExpectedAbsences,
+  api: getExpectedAbsences,
   queryKey: queryKeys.expectedAbsences
 })
 

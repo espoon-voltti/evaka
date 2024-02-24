@@ -44,7 +44,7 @@ export default React.memo(function TabUnitInformation() {
         <UnitInformation unit={daycare} permittedActions={permittedActions} />
       </ContentArea>
 
-      {permittedActions.has('READ_ACL') && (
+      {permittedActions.includes('READ_ACL') && (
         <UnitAccessControl
           permittedActions={permittedActions}
           groups={groups}
@@ -52,9 +52,11 @@ export default React.memo(function TabUnitInformation() {
       )}
 
       {daycare.enabledPilotFeatures.includes('MOBILE') &&
-        permittedActions.has('READ_MOBILE_DEVICES') && (
+        permittedActions.includes('READ_MOBILE_DEVICES') && (
           <UnitMobileDevices
-            canAddNew={permittedActions.has('CREATE_MOBILE_DEVICE_PAIRING')}
+            canAddNew={permittedActions.includes(
+              'CREATE_MOBILE_DEVICE_PAIRING'
+            )}
           />
         )}
     </FixedSpaceColumn>

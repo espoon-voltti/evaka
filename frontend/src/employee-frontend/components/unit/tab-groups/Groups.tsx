@@ -9,7 +9,11 @@ import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import {
+  Caretakers,
+  Daycare,
+  DaycareGroup
+} from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
@@ -30,20 +34,18 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UserContext } from '../../../state/user'
 import {
-  DaycareGroup,
   DaycareGroupPlacementDetailed,
   flatMapGroupPlacements,
-  Unit,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'
 import { UnitFilters } from '../../../utils/UnitFilters'
 import { requireRole } from '../../../utils/roles'
 
 function renderGroups(
-  unit: Unit,
+  unit: Daycare,
   filters: UnitFilters,
   groups: DaycareGroup[],
-  groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>,
+  groupPermittedActions: Record<UUID, Action.Group[] | undefined>,
   placements: DaycarePlacementWithDetails[],
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>,
   permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>,
@@ -88,7 +90,7 @@ function renderGroups(
               [group.id]: !current[group.id]
             }))
           }
-          permittedActions={groupPermittedActions[group.id] ?? new Set()}
+          permittedActions={groupPermittedActions[group.id] ?? []}
           permittedBackupCareActions={permittedBackupCareActions}
           permittedGroupPlacementActions={permittedGroupPlacementActions}
           unitChildrenCapacityFactors={unitChildrenCapacities}
@@ -99,14 +101,14 @@ function renderGroups(
 }
 
 type Props = {
-  unit: Unit
-  permittedActions: Set<Action.Unit>
+  unit: Daycare
+  permittedActions: Action.Unit[]
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   groups: DaycareGroup[]
   placements: DaycarePlacementWithDetails[]
   backupCares: UnitBackupCare[]
-  groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>
+  groupPermittedActions: Record<UUID, Action.Group[] | undefined>
   groupCaretakers: Record<string, Caretakers>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
@@ -187,7 +189,7 @@ export default React.memo(function Groups({
               />
             </Link>
           )}
-          {permittedActions.has('CREATE_GROUP') ? (
+          {permittedActions.includes('CREATE_GROUP') ? (
             <AddButton
               text={i18n.unit.groups.create}
               onClick={() => toggleUiMode('create-new-daycare-group')}

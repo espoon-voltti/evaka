@@ -16,6 +16,7 @@ import {
 } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { Form, ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
@@ -29,7 +30,6 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
-import { Unit } from '../../types/unit'
 
 import { upsertEmployeeDaycareRolesMutation } from './queries'
 
@@ -67,7 +67,7 @@ export default React.memo(function DaycareRolesModal({
   onClose
 }: {
   employeeId: UUID
-  units: Unit[]
+  units: Daycare[]
   onClose: () => void
 }) {
   const { i18n } = useTranslation()

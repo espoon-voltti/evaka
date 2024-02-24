@@ -4,11 +4,9 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { UnitFiltersType } from '../types/unit'
-
 export type FilterTimePeriod = '1 day' | '3 months' | '6 months' | '1 year'
 
-export class UnitFilters implements UnitFiltersType {
+export class UnitFilters {
   readonly endDate: LocalDate
 
   constructor(

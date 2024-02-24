@@ -29,7 +29,7 @@ export default React.memo(function UnitDetailsPage() {
   const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const unit = useQueryResult(unitQuery(id))
+  const unit = useQueryResult(unitQuery({ daycareId: id }))
   const areas = useQueryResult(areaQuery())
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
@@ -77,8 +77,8 @@ export default React.memo(function UnitDetailsPage() {
                     preventDefault
                     mutation={updateUnitMutation}
                     onClick={() => {
-                      const fields = getFormData()
-                      return fields ? { id, fields } : cancelMutation
+                      const body = getFormData()
+                      return body ? { daycareId: id, body } : cancelMutation
                     }}
                     onSuccess={useEditable.off}
                     disabled={!isValid}

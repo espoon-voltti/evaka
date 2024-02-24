@@ -73,11 +73,12 @@ export default React.memo(function UnitAttendanceReservationsView({
   const { i18n } = useTranslation()
 
   const childReservations = useQueryResult(
-    unitAttendanceReservationsQuery(
+    unitAttendanceReservationsQuery({
       unitId,
-      weekRange,
-      featureFlags.intermittentShiftCare ?? false
-    )
+      from: weekRange.start,
+      to: weekRange.end,
+      includeNonOperationalDays: featureFlags.intermittentShiftCare ?? false
+    })
   )
 
   const [staffAttendances, reloadStaffAttendances] = useApiState(

@@ -78,7 +78,9 @@ export default React.memo(function AttendanceReservation() {
   )
 
   const units = useQueryResult(unitsQuery())
-  const groups = useQueryResult(queryOrDefault(unitGroupsQuery, [])(unitId))
+  const groups = useQueryResult(
+    queryOrDefault(unitGroupsQuery, [])(unitId ? { daycareId: unitId } : null)
+  )
 
   const [report, setReport] = useState<
     Result<AttendanceReservationReportRow[]>

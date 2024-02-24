@@ -120,14 +120,14 @@ function useSpeculatedOccupancies(
     return { start, end }
   }, [period.end, period.start])
   return useQueryResult(
-    unitSpeculatedOccupancyRatesQuery(
+    unitSpeculatedOccupancyRatesQuery({
       applicationId,
       unitId,
-      start,
-      end,
-      preschoolDaycarePeriod?.start,
-      preschoolDaycarePeriod?.end
-    )
+      from: start,
+      to: end,
+      preschoolDaycareFrom: preschoolDaycarePeriod?.start,
+      preschoolDaycareTo: preschoolDaycarePeriod?.end
+    })
   )
 }
 

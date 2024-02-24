@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { isLoading } from 'lib-common/api'
+import { isLoading, wrapResult } from 'lib-common/api'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,11 +25,15 @@ import {
   deleteMobileDevice,
   getMobileDevices,
   putMobileDeviceName
-} from '../../../api/unit'
+} from '../../../generated/api-clients/pairing'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
 import { renderResult } from '../../async-rendering'
+
+const getMobileDevicesResult = wrapResult(getMobileDevices)
+const deleteMobileDeviceResult = wrapResult(deleteMobileDevice)
+const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
 type Props = {
   canAddNew: boolean
@@ -168,7 +172,7 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
   const { unitId } = useContext(UnitContext)
 
   const [mobileDevices, reloadMobileDevices] = useApiState(
-    () => getMobileDevices(unitId),
+    () => getMobileDevicesResult({ unitId }),
     [unitId]
   )
   const [mobileId, setMobileId] = useState<UUID | undefined>(undefined)
@@ -178,7 +182,7 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
 
   const confirmRemoveDevice = useCallback(async () => {
     if (mobileId) {
-      await deleteMobileDevice(mobileId)
+      await deleteMobileDeviceResult({ id: mobileId })
       void reloadMobileDevices()
     }
     clearUiMode()
@@ -207,7 +211,7 @@ export default React.memo(function UnitMobileDevices({ canAddNew }: Props) {
   const saveMobileDevice = useCallback(
     async (name: string) => {
       if (mobileId) {
-        await putMobileDeviceName(mobileId, name)
+        await putMobileDeviceNameResult({ id: mobileId, body: { name } })
         void reloadMobileDevices()
         clearUiMode()
       }

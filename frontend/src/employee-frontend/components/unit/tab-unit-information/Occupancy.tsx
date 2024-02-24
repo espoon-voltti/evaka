@@ -76,7 +76,7 @@ export default React.memo(function OccupancyContainer({
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
   const occupancies = useQueryResult(
-    unitOccupanciesQuery(unitId, startDate, endDate)
+    unitOccupanciesQuery({ unitId, from: startDate, to: endDate })
   )
   const [selections, setSelections] = useState<SelectionsState>({
     confirmed: true,
