@@ -19,9 +19,9 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import {
-  getGuardianIncomeStatementChildren,
+  getIncomeStatementChildren,
   getIncomeStatements
-} from '../../api/income-statement'
+} from '../../generated/api-clients/incomestatement'
 import {
   createIncome,
   deleteIncome,
@@ -48,6 +48,8 @@ const getPersonIncomesResult = wrapResult(getPersonIncomes)
 const updateIncomeResult = wrapResult(updateIncome)
 const deleteIncomeResult = wrapResult(deleteIncome)
 const getIncomeNotificationsResult = wrapResult(getIncomeNotifications)
+const getIncomeStatementsResult = wrapResult(getIncomeStatements)
+const getIncomeStatementChildrenResult = wrapResult(getIncomeStatementChildren)
 
 interface Props {
   id: UUID
@@ -63,7 +65,7 @@ export default React.memo(function PersonIncome({
   const [open, setOpen] = useState(startOpen)
 
   const [children] = useApiState(
-    () => getGuardianIncomeStatementChildren(id),
+    () => getIncomeStatementChildrenResult({ guardianId: id }),
     [id]
   )
 
@@ -106,7 +108,7 @@ export const IncomeStatements = React.memo(function IncomeStatements({
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
   const [incomeStatements] = useApiState(
-    () => getIncomeStatements(personId, page),
+    () => getIncomeStatementsResult({ personId, page, pageSize: 10 }),
     [personId, page]
   )
 

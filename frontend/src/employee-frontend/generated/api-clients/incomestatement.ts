@@ -95,9 +95,9 @@ export async function getIncomeStatementsAwaitingHandler(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.setHandled
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.setIncomeStatementHandled
 */
-export async function setHandled(
+export async function setIncomeStatementHandled(
   request: {
     incomeStatementId: UUID,
     body: SetIncomeStatementHandledBody

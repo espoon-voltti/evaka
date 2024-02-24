@@ -126,7 +126,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
     data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
 
     @PostMapping("/{incomeStatementId}/handled")
-    fun setHandled(
+    fun setIncomeStatementHandled(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,

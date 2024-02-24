@@ -8,7 +8,7 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading } from 'lib-common/api'
+import { isLoading, Success, wrapResult } from 'lib-common/api'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
@@ -32,12 +32,16 @@ import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { getIncomeStatementsAwaitingHandler } from '../../api/income-statement'
+import { getIncomeStatementsAwaitingHandler } from '../../generated/api-clients/incomestatement'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 
 import IncomeStatementFilters from './IncomeStatementFilters'
+
+const getIncomeStatementsAwaitingHandlerResult = wrapResult(
+  getIncomeStatementsAwaitingHandler
+)
 
 const pageSize = 50
 
@@ -152,17 +156,29 @@ export default React.memo(function IncomeStatementsPage() {
     incomeStatements: { searchFilters }
   } = useContext(InvoicingUiContext)
 
-  const [incomeStatements] = useApiState(
-    () =>
-      getIncomeStatementsAwaitingHandler(
+  const [incomeStatements] = useApiState(() => {
+    const { sentStartDate, sentEndDate } = searchFilters
+    if (sentStartDate && sentEndDate && sentStartDate.isAfter(sentEndDate)) {
+      return Promise.resolve(Success.of({ data: [], pages: 0, total: 0 }))
+    }
+
+    return getIncomeStatementsAwaitingHandlerResult({
+      body: {
         page,
         pageSize,
         sortBy,
         sortDirection,
-        searchFilters
-      ),
-    [page, sortBy, sortDirection, searchFilters]
-  )
+        areas: searchFilters.area.length > 0 ? searchFilters.area : null,
+        providerTypes:
+          searchFilters.providerTypes.length > 0
+            ? searchFilters.providerTypes
+            : null,
+        sentStartDate: searchFilters.sentStartDate ?? null,
+        sentEndDate: searchFilters.sentEndDate ?? null,
+        placementValidDate: searchFilters.placementValidDate ?? null
+      }
+    })
+  }, [page, sortBy, sortDirection, searchFilters])
 
   return (
     <Container

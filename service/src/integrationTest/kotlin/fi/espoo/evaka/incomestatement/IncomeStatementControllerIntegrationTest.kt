@@ -935,7 +935,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         id: IncomeStatementId,
         body: IncomeStatementController.SetIncomeStatementHandledBody
     ) {
-        incomeStatementController.setHandled(dbInstance(), employee, RealEvakaClock(), id, body)
+        incomeStatementController.setIncomeStatementHandled(
+            dbInstance(),
+            employee,
+            RealEvakaClock(),
+            id,
+            body
+        )
     }
 
     private fun getIncomeStatementsAwaitingHandler(

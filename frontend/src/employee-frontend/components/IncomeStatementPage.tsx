@@ -38,17 +38,19 @@ import {
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
-import {
-  getIncomeStatement,
-  updateIncomeStatementHandled
-} from '../api/income-statement'
 import { getPerson } from '../api/person'
 import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
+import {
+  getIncomeStatement,
+  setIncomeStatementHandled
+} from '../generated/api-clients/incomestatement'
 import { Translations, useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 
 const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const getIncomeStatementResult = wrapResult(getIncomeStatement)
+const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
 export default React.memo(function IncomeStatementPage() {
   const { personId, incomeStatementId } = useNonNullableParams<{
@@ -60,13 +62,13 @@ export default React.memo(function IncomeStatementPage() {
 
   const [person] = useApiState(() => getPerson(personId), [personId])
   const [incomeStatement, loadIncomeStatement] = useApiState(
-    () => getIncomeStatement(personId, incomeStatementId),
+    () => getIncomeStatementResult({ personId, incomeStatementId }),
     [personId, incomeStatementId]
   )
 
   const onUpdateHandled = useCallback(
-    (params: SetIncomeStatementHandledBody) =>
-      updateIncomeStatementHandled(incomeStatementId, params),
+    (body: SetIncomeStatementHandledBody) =>
+      setIncomeStatementHandledResult({ incomeStatementId, body }),
     [incomeStatementId]
   )
 
