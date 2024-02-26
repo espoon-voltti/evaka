@@ -4,6 +4,7 @@
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { CareType } from 'lib-common/generated/api-types/daycare'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
@@ -16,11 +17,14 @@ import {
   Modal,
   Page,
   SelectionChip,
-  TextInput
+  TextInput,
+  TreeDropdown
 } from '../../../utils/page'
 
-import { UnitCalendarPage } from './unit-attendances-page'
+import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitGroupsPage } from './unit-groups-page'
+import { UnitMonthCalendarPage } from './unit-month-calendar-page'
+import { UnitWeekCalendarPage } from './unit-week-calendar-page'
 
 type UnitProviderType =
   | 'MUNICIPAL'
@@ -75,6 +79,26 @@ export class UnitPage {
   async openCalendarPage(): Promise<UnitCalendarPage> {
     await this.#calendarTab.click()
     return new UnitCalendarPage(this.page)
+  }
+
+  async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
+    return await (await this.openCalendarPage()).openWeekCalendar()
+  }
+
+  async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
+    return await (await this.openCalendarPage()).openMonthCalendar()
+  }
+}
+
+export class UnitCalendarPage extends UnitCalendarPageBase {
+  async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
+    await this.weekModeButton.click()
+    return new UnitWeekCalendarPage(this.page)
+  }
+
+  async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
+    await this.monthModeButton.click()
+    return new UnitMonthCalendarPage(this.page)
   }
 }
 
@@ -827,3 +851,59 @@ class PlacementProposalsSection {
     )
   }
 }
+
+export class UnitCalendarEventsSection {
+  constructor(private readonly page: Page) {}
+
+  async openEventCreationModal() {
+    await this.page.findByDataQa('create-new-event-btn').click()
+    return new EventCreationModal(this.page.findByDataQa('modal'))
+  }
+
+  getEventOfDay(date: LocalDate, idx: number) {
+    return this.page
+      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
+      .findAllByDataQa('event')
+      .nth(idx)
+  }
+
+  async assertNoEventsForDay(date: LocalDate) {
+    await this.page
+      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
+      .findAllByDataQa('event')
+      .assertCount(0)
+  }
+
+  get eventEditModal() {
+    return new EventEditModal(this.page.findByDataQa('modal'))
+  }
+
+  get eventDeleteModal() {
+    return new EventDeleteModal(
+      this.page.findByDataQa('deletion-modal').findByDataQa('modal')
+    )
+  }
+}
+
+export class EventCreationModal extends Modal {
+  readonly title = new TextInput(this.findByDataQa('title-input'))
+  readonly startDateInput = new TextInput(this.findByDataQa('start-date'))
+  readonly endDateInput = new TextInput(this.findByDataQa('end-date'))
+  readonly description = new TextInput(this.findByDataQa('description-input'))
+  readonly attendees = new TreeDropdown(this.findByDataQa('attendees'))
+}
+
+export class EventEditModal extends Modal {
+  readonly title = new TextInput(this.findByDataQa('title-input'))
+  readonly description = new TextInput(this.findByDataQa('description-input'))
+
+  async submit() {
+    await this.findByDataQa('save').click()
+  }
+
+  async delete() {
+    await this.findByDataQa('delete').click()
+  }
+}
+
+export class EventDeleteModal extends Modal {}

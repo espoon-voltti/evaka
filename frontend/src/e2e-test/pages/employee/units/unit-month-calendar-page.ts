@@ -14,14 +14,19 @@ import {
   Checkbox,
   Element,
   Modal,
-  Page,
   Radio,
   Select,
   TextInput
 } from '../../../utils/page'
 
-export class UnitMonthCalendarPage {
-  constructor(private page: Page) {}
+import { UnitCalendarPageBase } from './unit-calendar-page-base'
+import { UnitWeekCalendarPage } from './unit-week-calendar-page'
+
+export class UnitMonthCalendarPage extends UnitCalendarPageBase {
+  async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
+    await this.weekModeButton.click()
+    return new UnitWeekCalendarPage(this.page)
+  }
 
   #unitName = this.page.find('[data-qa="attendances-unit-name"]')
   #groupSelector = new Select(

@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { waitUntilEqual } from '../../../utils'
 import {
   AsyncButton,
   Checkbox,
@@ -16,162 +15,17 @@ import {
   Modal,
   Page,
   Select,
-  SelectionChip,
-  TextInput,
-  TreeDropdown
+  TextInput
 } from '../../../utils/page'
 
-export class UnitCalendarPage {
-  constructor(private readonly page: Page) {}
+import { UnitCalendarPageBase } from './unit-calendar-page-base'
+import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
-  absenceCell = (childId: UUID, date: LocalDate) =>
-    this.page.findByDataQa(`absence-cell-${childId}-${date.toString()}`)
-
-  attendanceToolTip = (date: LocalDate) =>
-    this.page.findByDataQa(`attendance-tooltip-${date.toString()}`)
-
-  nextWeek = this.page.findByDataQa('next-week')
-
-  get attendancesSection() {
-    return new UnitAttendancesSection(this.page)
+export class UnitWeekCalendarPage extends UnitCalendarPageBase {
+  async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
+    await this.monthModeButton.click()
+    return new UnitMonthCalendarPage(this.page)
   }
-
-  get calendarEventsSection() {
-    return new UnitCalendarEventsSection(this.page)
-  }
-
-  async assertDayTooltip(
-    childId: UUID,
-    date: LocalDate,
-    expectedTexts: string[]
-  ) {
-    if (expectedTexts.length > 0) {
-      await this.absenceCell(childId, date).hover()
-      await this.attendanceToolTip(date).assertText((text) =>
-        text
-          .replace(/\s/g, '')
-          .includes(expectedTexts.join('').replace(/\s/g, ''))
-      )
-    } else {
-      await this.absenceCell(childId, date).waitUntilHidden()
-    }
-  }
-
-  async selectMode(mode: 'week' | 'month') {
-    const selectionChip = new SelectionChip(
-      this.page.find(`[data-qa="choose-calendar-mode-${mode}"]`)
-    )
-    await selectionChip.click()
-  }
-
-  async assertMode(expected: 'week' | 'month') {
-    const selectionChip = new SelectionChip(
-      this.page.find(`[data-qa="choose-calendar-mode-${expected}"]`)
-    )
-    await waitUntilTrue(() => selectionChip.checked)
-  }
-
-  private async getSelectedDateRange() {
-    const rawRange = await this.page
-      .find('[data-qa-date-range]')
-      .getAttribute('data-qa-date-range')
-
-    if (!rawRange) throw Error('Week range cannot be found')
-
-    const [start, end] = rawRange
-      .replace(/^\[/, '')
-      .replace(/\]$/, '')
-      .split(', ')
-    return new FiniteDateRange(
-      LocalDate.parseIso(start),
-      LocalDate.parseIso(end)
-    )
-  }
-
-  async changeWeekToDate(date: LocalDate) {
-    for (let i = 0; i < 50; i++) {
-      const currentRange = await this.getSelectedDateRange()
-      if (currentRange.includes(date)) return
-
-      await this.page
-        .findByDataQa(
-          currentRange.start.isBefore(date) ? 'next-week' : 'previous-week'
-        )
-        .click()
-      await this.waitForWeekLoaded()
-    }
-    throw Error(`Unable to seek to date ${date.formatIso()}`)
-  }
-
-  async waitForWeekLoaded() {
-    await this.page
-      .find('[data-qa="staff-attendances-status"][data-isloading="false"]')
-      .waitUntilVisible()
-  }
-
-  async assertDateRange(expectedRange: FiniteDateRange) {
-    await waitUntilEqual(() => this.getSelectedDateRange(), expectedRange)
-  }
-}
-
-export class UnitCalendarEventsSection {
-  constructor(private readonly page: Page) {}
-
-  async openEventCreationModal() {
-    await this.page.findByDataQa('create-new-event-btn').click()
-    return new EventCreationModal(this.page.findByDataQa('modal'))
-  }
-
-  getEventOfDay(date: LocalDate, idx: number) {
-    return this.page
-      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
-      .findAllByDataQa('event')
-      .nth(idx)
-  }
-
-  async assertNoEventsForDay(date: LocalDate) {
-    await this.page
-      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
-      .findAllByDataQa('event')
-      .assertCount(0)
-  }
-
-  get eventEditModal() {
-    return new EventEditModal(this.page.findByDataQa('modal'))
-  }
-
-  get eventDeleteModal() {
-    return new EventDeleteModal(
-      this.page.findByDataQa('deletion-modal').findByDataQa('modal')
-    )
-  }
-}
-
-export class EventCreationModal extends Modal {
-  readonly title = new TextInput(this.findByDataQa('title-input'))
-  readonly startDateInput = new TextInput(this.findByDataQa('start-date'))
-  readonly endDateInput = new TextInput(this.findByDataQa('end-date'))
-  readonly description = new TextInput(this.findByDataQa('description-input'))
-  readonly attendees = new TreeDropdown(this.findByDataQa('attendees'))
-}
-
-export class EventEditModal extends Modal {
-  readonly title = new TextInput(this.findByDataQa('title-input'))
-  readonly description = new TextInput(this.findByDataQa('description-input'))
-
-  async submit() {
-    await this.findByDataQa('save').click()
-  }
-
-  async delete() {
-    await this.findByDataQa('delete').click()
-  }
-}
-
-export class EventDeleteModal extends Modal {}
-
-export class UnitAttendancesSection {
-  constructor(private readonly page: Page) {}
 
   occupancies = new UnitOccupanciesSection(
     this.page.find('[data-qa="occupancies"]')
@@ -184,12 +38,6 @@ export class UnitAttendancesSection {
     this.page,
     this.page.findByDataQa('child-reservations-table')
   )
-
-  async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
-  }
 
   async setFilterStartDate(date: LocalDate) {
     await new DatePicker(
@@ -366,6 +214,7 @@ export class UnitChildReservationsTable extends Element {
   childReservationRows(childId: UUID) {
     return this.findAllByDataQa(`reservation-row-child-${childId}`)
   }
+
   childAttendanceRows(childId: UUID) {
     return this.findAllByDataQa(`attendance-row-child-${childId}`)
   }
@@ -505,6 +354,7 @@ export class ChildDatePresenceModal extends Modal {
   )
   #warningMissingBillableAbsence = this.findByDataQa('missing-billable-absence')
   #warningExtraBillableAbsence = this.findByDataQa('extra-billable-absence')
+
   async assertWarnings(
     expectedWarnings: (
       | 'missing-nonbillable-absence'
@@ -571,6 +421,7 @@ export class ReservationModal extends Modal {
   async save() {
     await this.submit()
   }
+
   async setAbsent() {
     const absentButton = this.find(`[data-qa="set-absent-button"]`)
     await absentButton.click()
