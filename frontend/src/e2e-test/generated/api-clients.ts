@@ -359,12 +359,16 @@ export async function createAssistanceAction(
     body: DevAssistanceAction[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-action`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DevAssistanceAction[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-action`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAssistanceAction[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 
@@ -376,12 +380,16 @@ export async function createAssistanceActionOption(
     body: AssistanceActionOption[]
   }
 ): Promise<void> {
-  const { data: json } = await devClient.request<JsonOf<void>>({
-    url: uri`/dev-api/assistance-action-option`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<AssistanceActionOption[]>
-  })
-  return json
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-action-option`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<AssistanceActionOption[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
 }
 
 

@@ -8,13 +8,16 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  createDaycareGroups,
+  createDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../generated/api-clients'
 import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
-import {createDaycareGroups, createDefaultServiceNeedOptions, resetDatabase} from "../../generated/api-clients";
 
 let page: Page
 let childId: UUID
@@ -27,7 +30,7 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
-  await createDaycareGroups({body: [daycareGroupFixture]})
+  await createDaycareGroups({ body: [daycareGroupFixture] })
 
   unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -92,7 +95,12 @@ describe('Assistance need and actions report', () => {
       `${config.employeeUrl}/reports/assistance-needs-and-actions`
     )
     const report = new AssistanceNeedsAndActionsReport(page)
-    await report.assertRow(0, 'Superkeskus,,,1,0,0,0,1,0,0,1,0,0')
-    // TODO add test to group view
+    await report.assertUnitRow(0, 'Superkeskus,,,1,0,0,0,1,0,0,1,0,0')
+    await report.selectCareAreaFilter('Superkeskus')
+    await report.openUnit('Alkuräjähdyksen päiväkoti')
+    await report.assertChildRow(
+      0,
+      'Antero,Onni,Leevi,Aatu,Högfors,Kosmiset,Vakiot,10,1,0,0,0,1,0,0,a,test,assistance,action,option'
+    )
   })
 })

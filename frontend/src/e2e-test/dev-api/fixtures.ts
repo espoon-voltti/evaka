@@ -18,6 +18,10 @@ import {
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import {
+  AssistanceAction,
+  AssistanceActionOption
+} from 'lib-common/generated/api-types/assistanceaction'
+import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
@@ -147,7 +151,6 @@ import {
   insertReservationFixtures,
   insertVtjPersonFixture
 } from './index'
-import {AssistanceAction, AssistanceActionOption} from "../../lib-common/generated/api-types/assistanceaction";
 
 export const uuidv4 = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

@@ -14,6 +14,10 @@ import { BaseError } from 'make-error-cause'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  AssistanceAction,
+  AssistanceActionOption
+} from 'lib-common/generated/api-types/assistanceaction'
+import {
   FeeDecision,
   FeeThresholds,
   IncomeNotification,
@@ -40,7 +44,6 @@ import {
   PlacementPlan,
   VtjPerson
 } from './types'
-import {AssistanceAction, AssistanceActionOption} from "../../lib-common/generated/api-types/assistanceaction";
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {

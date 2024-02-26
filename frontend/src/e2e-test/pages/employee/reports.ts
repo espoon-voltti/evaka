@@ -471,14 +471,32 @@ export class AssistanceNeedsAndActionsReport {
     'assistance-needs-and-actions-row'
   )
 
+  childRows = this.page.findAllByDataQa('child-row')
+
+  careAreaSelect = new Combobox(this.page.findByDataQa('care-area-filter'))
+
   async assertRowAndColumn(row: number, column: number, expected: string) {
     const tableRow = this.needsAndActionsRows.nth(row)
     await tableRow.findAll('td').nth(column).assertTextEquals(expected)
   }
 
-  async assertRow(row: number, expected: string) {
+  async assertUnitRow(row: number, expected: string) {
     await this.needsAndActionsRows
       .nth(row)
       .assertText((t) => t.replace(/\s/g, ',') === expected)
+  }
+
+  async assertChildRow(row: number, expected: string) {
+    await this.childRows
+      .nth(row)
+      .assertText((t) => t.replace(/\s/g, ',') === expected)
+  }
+
+  async selectCareAreaFilter(area: string) {
+    await this.careAreaSelect.fillAndSelectFirst(area)
+  }
+
+  async openUnit(unitName: string) {
+    await this.page.findByDataQa(`unit-${unitName}`).click()
   }
 }

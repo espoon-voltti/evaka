@@ -402,6 +402,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 }
                 placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                 getItemLabel={(item) => item.label}
+                data-qa="care-area-filter"
               />
             ))}
           </Wrapper>
@@ -794,6 +795,7 @@ const ReportByGroupTable = ({
                 <Tr data-qa="assistance-needs-and-actions-row">
                   <Td>
                     <div
+                      data-qa={`area-${data.name}`}
                       onClick={() =>
                         setGroupsOpen({
                           ...groupsOpen,
@@ -1153,9 +1155,10 @@ const ReportByChildTable = ({
           {Object.entries(groupData.data).map(([groupingKey, data]) => (
             <React.Fragment key={`${groupData.type}-${groupingKey}`}>
               {groupData.type !== 'NO_GROUPING' && (
-                <Tr>
+                <Tr data-qa="assistance-needs-and-actions-row">
                   <Td>
                     <div
+                      data-qa={`unit-${data.name}`}
                       onClick={() =>
                         setGroupsOpen({
                           ...groupsOpen,
@@ -1200,7 +1203,10 @@ const ReportByChildTable = ({
                     groupsOpen[groupKeyFn(row)]
                 )
                 .map((row: AssistanceNeedsAndActionsReportRowByChild) => (
-                  <Tr key={`${row.unitId}:${row.groupId}.${row.childId}`}>
+                  <Tr
+                    key={`${row.unitId}:${row.groupId}.${row.childId}`}
+                    data-qa="child-row"
+                  >
                     <Td>
                       {groupData.type === 'AREA' ? (
                         row.careAreaName
