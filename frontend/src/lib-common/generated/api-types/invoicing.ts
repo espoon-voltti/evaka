@@ -381,15 +381,15 @@ export interface Income {
   attachments: IncomeAttachment[]
   data: Record<string, IncomeValue>
   effect: IncomeEffect
-  id: UUID | null
+  id: UUID
   isEntrepreneur: boolean
   notes: string
   personId: UUID
   total: number
   totalExpenses: number
   totalIncome: number
-  updatedAt: HelsinkiDateTime | null
-  updatedBy: string | null
+  updatedAt: HelsinkiDateTime
+  updatedBy: string
   validFrom: LocalDate
   validTo: LocalDate | null
   worksAtECHA: boolean
@@ -438,13 +438,37 @@ export type IncomeNotificationType =
   | 'NEW_CUSTOMER'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeType
+* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeOption
 */
-export interface IncomeType {
+export interface IncomeOption {
   isSubType: boolean
   multiplier: number
   nameFi: string
+  value: string
   withCoefficient: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.IncomeRequest
+*/
+export interface IncomeRequest {
+  attachments: IncomeAttachment[]
+  data: Record<string, IncomeValue>
+  effect: IncomeEffect
+  isEntrepreneur: boolean
+  notes: string
+  personId: UUID
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  worksAtECHA: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeTypeOptions
+*/
+export interface IncomeTypeOptions {
+  expenseTypes: IncomeOption[]
+  incomeTypes: IncomeOption[]
 }
 
 /**
@@ -1198,7 +1222,7 @@ export function deserializeJsonFeeThresholdsWithId(json: JsonOf<FeeThresholdsWit
 export function deserializeJsonIncome(json: JsonOf<Income>): Income {
   return {
     ...json,
-    updatedAt: (json.updatedAt != null) ? HelsinkiDateTime.parseIso(json.updatedAt) : null,
+    updatedAt: HelsinkiDateTime.parseIso(json.updatedAt),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
@@ -1209,6 +1233,15 @@ export function deserializeJsonIncomeNotification(json: JsonOf<IncomeNotificatio
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created)
+  }
+}
+
+
+export function deserializeJsonIncomeRequest(json: JsonOf<IncomeRequest>): IncomeRequest {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 

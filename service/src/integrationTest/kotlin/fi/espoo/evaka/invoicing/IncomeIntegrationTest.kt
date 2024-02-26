@@ -5,91 +5,99 @@
 package fi.espoo.evaka.invoicing
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.IncomeController
-import fi.espoo.evaka.invoicing.data.getIncomesForPerson
-import fi.espoo.evaka.invoicing.data.upsertIncome
+import fi.espoo.evaka.invoicing.data.insertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
-import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.controllers.Wrapper
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mapper: JsonMapper
 
-    @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
+    @Autowired lateinit var incomeController: IncomeController
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
-    private fun assertEqualEnough(expected: List<Income>, actual: List<Income>) {
+    val mockClock = MockEvakaClock(2023, 5, 1, 10, 0)
+
+    private fun assertEqualEnough(expected: List<IncomeRequest>, actual: List<Income>) {
         val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        val nullTime = mockClock.now()
         assertEquals(
-            expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
-            actual.map { it.copy(id = nullId, updatedAt = null) }.toSet()
+            expected
+                .map {
+                    Income(
+                        id = nullId,
+                        personId = it.personId,
+                        effect = it.effect,
+                        data = it.data,
+                        isEntrepreneur = it.isEntrepreneur,
+                        worksAtECHA = it.worksAtECHA,
+                        validFrom = it.validFrom,
+                        validTo = it.validTo,
+                        notes = it.notes,
+                        updatedAt = nullTime,
+                        updatedBy = "",
+                        attachments = it.attachments,
+                        totalIncome = calculateTotalIncome(it.data, coefficientMultiplierProvider),
+                        totalExpenses =
+                            calculateTotalExpense(it.data, coefficientMultiplierProvider),
+                        total = calculateIncomeTotal(it.data, coefficientMultiplierProvider)
+                    )
+                }
+                .toSet(),
+            actual.map { it.copy(id = nullId, updatedAt = nullTime, updatedBy = "") }.toSet()
         )
     }
-
-    private fun deserializeResult(json: String) =
-        jsonMapper
-            .readValue<Wrapper<List<IncomeController.IncomeWithPermittedActions>>>(json)
-            .data
-            .map { it.data }
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
-    private fun testIncome(): Income {
-        val data =
-            mapOf(
-                "MAIN_INCOME" to
-                    IncomeValue(
-                        500000,
-                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                        1,
-                        calculateMonthlyAmount(
-                            500000,
-                            coefficientMultiplierProvider.multiplier(
-                                IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                            )
-                        )
-                    )
-            )
-        return Income(
-            id = IncomeId(UUID.randomUUID()),
+    fun testIncomeRequest() =
+        IncomeRequest(
             personId = testAdult_1.id,
             effect = IncomeEffect.INCOME,
-            data = data,
+            data =
+                mapOf(
+                    "MAIN_INCOME" to
+                        IncomeValue(
+                            500000,
+                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                            1,
+                            calculateMonthlyAmount(
+                                500000,
+                                coefficientMultiplierProvider.multiplier(
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                )
+                            )
+                        )
+                ),
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
-            notes = "",
-            totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
-            totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
-            total = calculateIncomeTotal(data, coefficientMultiplierProvider)
+            notes = ""
         )
-    }
 
     private val financeUser =
         AuthenticatedUser.Employee(
@@ -97,409 +105,256 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             roles = setOf(UserRole.FINANCE_ADMIN)
         )
     private val financeUserName = "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}"
-    private val clock = RealEvakaClock()
+    private val clock = MockEvakaClock(2023, 1, 7, 14, 0)
 
     @Test
-    fun `getIncome works with no data in DB`() {
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(listOf(), deserializeResult(result.get()))
-    }
-
-    @Test
-    fun `getIncome works with single income in DB`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
-
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(
-            listOf(testIncome.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get())
-        )
+    fun `getPersonIncomes works with no data in DB`() {
+        val incomes = getPersonIncomes(testAdult_1.id)
+        assertEquals(emptyList(), incomes)
     }
 
     @Test
     fun `getIncome works with multiple incomes in DB`() {
-        val testIncome = testIncome()
-        val incomes =
+        val incomeRequests =
             listOf(
-                testIncome.copy(
-                    id = IncomeId(UUID.randomUUID()),
-                    validFrom = testIncome.validFrom.plusYears(1),
-                    validTo = testIncome.validTo!!.plusYears(1)
-                ),
-                testIncome
+                testIncomeRequest()
+                    .copy(
+                        validFrom = testIncomeRequest().validFrom.plusYears(1),
+                        validTo = testIncomeRequest().validTo!!.plusYears(1)
+                    ),
+                testIncomeRequest()
             )
+
         db.transaction { tx ->
-            incomes.forEach { tx.upsertIncome(clock, mapper, it, financeUser.evakaUserId) }
+            incomeRequests.forEach { tx.insertIncome(clock, mapper, it, financeUser.evakaUserId) }
         }
 
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
+        val incomes = getPersonIncomes(testAdult_1.id)
 
-        assertEqualEnough(
-            incomes.map { it.copy(updatedBy = financeUserName) },
-            deserializeResult(result.get())
-        )
+        assertEqualEnough(incomeRequests, incomes)
     }
 
     @Test
     fun `createIncome works with valid income`() {
-        val testIncome = testIncome()
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(testIncome))
-                .responseString()
-        assertEquals(200, postResponse.statusCode)
-
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(
-            listOf(testIncome.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get())
-        )
+        createIncome(testIncomeRequest())
+        val incomes = getPersonIncomes(testAdult_1.id)
+        assertEqualEnough(listOf(testIncomeRequest()), incomes)
     }
 
     @Test
     fun `createIncome throws with invalid date range`() {
-        val income = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(income))
-                .responseString()
-        assertEquals(400, postResponse.statusCode)
+        val income = testIncomeRequest().copy(validTo = testIncomeRequest().validFrom.minusDays(1))
+        assertThrows<BadRequest> { createIncome(income) }
     }
 
     @Test
     fun `createIncome splits earlier indefinite income`() {
-        val firstIncome = testIncome().copy(validTo = null)
-        db.transaction { tx ->
-            tx.upsertIncome(clock, mapper, firstIncome, financeUser.evakaUserId)
-        }
-
-        val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(secondIncome))
-                .responseString()
-        assertEquals(200, postResponse.statusCode)
-
-        val result =
+        val firstIncome = testIncomeRequest().copy(validTo = null)
+        val firstIncomeId =
             db.transaction { tx ->
-                tx.getIncomesForPerson(
-                    mapper,
-                    incomeTypesProvider,
-                    coefficientMultiplierProvider,
-                    testAdult_1.id
-                )
+                tx.insertIncome(clock, mapper, firstIncome, financeUser.evakaUserId)
             }
 
-        assertEquals(2, result.size)
+        val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
+        createIncome(secondIncome)
 
-        val firstIncomeResult = result.find { it.id == firstIncome.id }!!
+        val incomes = getPersonIncomes(testIncomeRequest().personId)
+
+        assertEquals(2, incomes.size)
+
+        val firstIncomeResult = incomes.find { it.id == firstIncomeId }!!
         assertEquals(firstIncome.validFrom, firstIncomeResult.validFrom)
         assertEquals(secondIncome.validFrom.minusDays(1), firstIncomeResult.validTo)
 
-        val secondIncomeResult = result.find { it.id != firstIncome.id }!!
+        val secondIncomeResult = incomes.find { it.id != firstIncomeId }!!
         assertEquals(secondIncome.validFrom, secondIncomeResult.validFrom)
         assertEquals(secondIncome.validTo, secondIncomeResult.validTo)
     }
 
     @Test
     fun `createIncome throws with partly overlapping date range`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        db.transaction { tx ->
+            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+        }
 
         val overlappingIncome =
-            testIncome.let { it.copy(validFrom = it.validFrom.plusDays(10), validTo = null) }
-
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(overlappingIncome))
-                .responseString()
-        assertEquals(409, postResponse.statusCode)
+            testIncomeRequest().let {
+                it.copy(validFrom = it.validFrom.plusDays(10), validTo = null)
+            }
+        assertThrows<Conflict> { createIncome(overlappingIncome) }
     }
 
     @Test
     fun `createIncome throws with identical date range`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
-
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(testIncome))
-                .responseString()
-        assertEquals(409, postResponse.statusCode)
+        db.transaction { tx ->
+            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+        }
+        assertThrows<Conflict> { createIncome(testIncomeRequest()) }
     }
 
     @Test
     fun `createIncome throws with covering date range`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        db.transaction { tx ->
+            tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+        }
 
         val overlappingIncome =
-            testIncome.let {
+            testIncomeRequest().let {
                 it.copy(
                     validFrom = it.validTo!!.minusMonths(1),
                     validTo = it.validTo!!.plusYears(1)
                 )
             }
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(overlappingIncome))
-                .responseString()
-        assertEquals(409, postResponse.statusCode)
+        assertThrows<Conflict> { createIncome(overlappingIncome) }
     }
 
     @Test
     fun `createIncome removes data if effect is not INCOME`() {
-        val income = with(testIncome()) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
+        val income = with(testIncomeRequest()) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
+        createIncome(income)
 
-        val (_, postResponse, _) =
-            http
-                .post("/incomes?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(income))
-                .responseString()
-        assertEquals(200, postResponse.statusCode)
-
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(
-            listOf(
-                income.copy(
-                    data = emptyMap(),
-                    updatedBy = financeUserName,
-                    totalIncome = 0,
-                    totalExpenses = 0,
-                    total = 0
-                )
-            ),
-            deserializeResult(result.get())
-        )
+        val incomes = getPersonIncomes(testIncomeRequest().personId)
+        assertEquals(1, incomes.size)
+        with(incomes.first()) {
+            assertEquals(financeUserName, updatedBy)
+            assertEquals(0, totalIncome)
+            assertEquals(0, totalExpenses)
+            assertEquals(0, total)
+        }
     }
 
     @Test
     fun `updateIncome works with valid income`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        val incomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            }
 
-        val newIncomeData =
-            mapOf(
-                "MAIN_INCOME" to
-                    IncomeValue(
-                        1000,
-                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                        1,
-                        calculateMonthlyAmount(
-                            1000,
-                            coefficientMultiplierProvider.multiplier(
-                                IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                            )
+        val updateRequest =
+            testIncomeRequest()
+                .copy(
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(
+                                    1000,
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    1,
+                                    calculateMonthlyAmount(
+                                        1000,
+                                        coefficientMultiplierProvider.multiplier(
+                                            IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
+                                        )
+                                    )
+                                )
                         )
-                    )
-            )
-        val updated =
-            testIncome.copy(
-                data = newIncomeData,
-                totalIncome = calculateTotalIncome(newIncomeData, coefficientMultiplierProvider),
-                totalExpenses = calculateTotalExpense(newIncomeData, coefficientMultiplierProvider),
-                total = calculateIncomeTotal(newIncomeData, coefficientMultiplierProvider)
-            )
-        val (_, putResponse, _) =
-            http
-                .put("/incomes/${updated.id}?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .responseString()
-        assertEquals(200, putResponse.statusCode)
+                )
 
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
+        updateIncome(incomeId, updateRequest)
 
-        assertEqualEnough(
-            listOf(updated.copy(updatedBy = financeUserName)),
-            deserializeResult(result.get())
-        )
+        val incomes = getPersonIncomes(testIncomeRequest().personId)
+        assertEqualEnough(listOf(updateRequest), incomes)
+        with(incomes.first()) {
+            assertEquals(
+                calculateTotalIncome(updateRequest.data, coefficientMultiplierProvider),
+                totalIncome
+            )
+            assertEquals(
+                calculateTotalExpense(updateRequest.data, coefficientMultiplierProvider),
+                totalExpenses
+            )
+            assertEquals(
+                calculateIncomeTotal(updateRequest.data, coefficientMultiplierProvider),
+                total
+            )
+        }
     }
 
     @Test
     fun `updateIncome throws with invalid date rage`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        val incomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            }
 
-        val updated = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
-        val (_, putResponse, _) =
-            http
-                .put("/incomes/${updated.id}?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .responseString()
-        assertEquals(400, putResponse.statusCode)
+        val updated = testIncomeRequest().copy(validTo = testIncomeRequest().validFrom.minusDays(1))
+        assertThrows<BadRequest> { updateIncome(incomeId, updated) }
     }
 
     @Test
     fun `updateIncome throws with overlapping date rage`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        val incomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            }
 
         val anotherIncome =
-            with(testIncome) {
-                this.copy(
-                    id = IncomeId(UUID.randomUUID()),
-                    validFrom = validFrom.plusYears(1),
-                    validTo = validTo!!.plusYears(1)
-                )
+            with(testIncomeRequest()) {
+                this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
         db.transaction { tx ->
-            tx.upsertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
+            tx.insertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
         }
 
-        val updated = testIncome.copy(validTo = anotherIncome.validTo)
-        val (_, putResponse, _) =
-            http
-                .put("/incomes/${updated.id}?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .responseString()
-        assertEquals(409, putResponse.statusCode)
+        val updated = testIncomeRequest().copy(validTo = anotherIncome.validTo)
+        assertThrows<Conflict> { updateIncome(incomeId, updated) }
     }
 
     @Test
     fun `updateIncome removes data if effect is not INCOME`() {
-        val testIncome = testIncome()
-        db.transaction { tx -> tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId) }
+        val incomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
+            }
 
-        val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
-        val (_, putResponse, _) =
-            http
-                .put("/incomes/${updated.id}?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .responseString()
-        assertEquals(200, putResponse.statusCode)
+        val updated =
+            with(testIncomeRequest()) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
+        updateIncome(incomeId, updated)
 
-        val (_, response, result) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(
-            listOf(
-                updated.copy(
-                    data = emptyMap(),
-                    updatedBy = financeUserName,
-                    totalIncome = 0,
-                    totalExpenses = 0,
-                    total = 0
-                )
-            ),
-            deserializeResult(result.get())
-        )
-    }
-
-    @Test
-    fun `updateIncome nullify application_id`() {
-        val testIncome = testIncome()
-        db.transaction { tx ->
-            val application = tx.insertApplication()
-            tx.upsertIncome(
-                clock,
-                mapper,
-                testIncome.copy(applicationId = application.id),
-                financeUser.evakaUserId
-            )
+        val incomes = getPersonIncomes(testAdult_1.id)
+        assertEquals(1, incomes.size)
+        with(incomes.first()) {
+            assertEquals(financeUserName, updatedBy)
+            assertEquals(0, totalIncome)
+            assertEquals(0, totalExpenses)
+            assertEquals(0, total)
         }
-
-        val (_, responseBeforeUpdate, resultBeforeUpdate) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, responseBeforeUpdate.statusCode)
-
-        val beforeUpdate = deserializeResult(resultBeforeUpdate.get()).first()
-        assertNotNull(beforeUpdate.applicationId)
-
-        val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
-        val (_, putResponse, _) =
-            http
-                .put("/incomes/${updated.id}?personId=${testAdult_1.id}")
-                .asUser(financeUser)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .responseString()
-        assertEquals(200, putResponse.statusCode)
-
-        val (_, responseAfterUpdate, resultAfterUpdate) =
-            http.get("/incomes?personId=${testAdult_1.id}").asUser(financeUser).responseString()
-        assertEquals(200, responseAfterUpdate.statusCode)
-
-        val afterUpdate = deserializeResult(resultAfterUpdate.get()).first()
-        assertNull(afterUpdate.applicationId)
     }
 
     @Test
     fun `deleteIncome works with multiple incomes in DB`() {
-        val testIncome = testIncome()
-        val anotherIncome =
-            with(testIncome) {
-                this.copy(
-                    id = IncomeId(UUID.randomUUID()),
-                    validFrom = validFrom.plusYears(1),
-                    validTo = validTo!!.plusYears(1)
-                )
+        val incomeId =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, testIncomeRequest(), financeUser.evakaUserId)
             }
-        db.transaction { tx ->
-            tx.upsertIncome(clock, mapper, testIncome, financeUser.evakaUserId)
-            tx.upsertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
+        val anotherIncome =
+            with(testIncomeRequest()) {
+                this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
+            }
+        val incomeId2 =
+            db.transaction { tx ->
+                tx.insertIncome(clock, mapper, anotherIncome, financeUser.evakaUserId)
+            }
+
+        deleteIncome(incomeId)
+
+        assertEquals(
+            listOf(incomeId2),
+            getPersonIncomes(testIncomeRequest().personId).map { it.id }
+        )
+    }
+
+    private fun getPersonIncomes(personId: PersonId) =
+        incomeController.getPersonIncomes(dbInstance(), financeUser, mockClock, personId).map {
+            it.data
         }
 
-        val resultBeforeDelete =
-            db.transaction { tx ->
-                tx.getIncomesForPerson(
-                    mapper,
-                    incomeTypesProvider,
-                    coefficientMultiplierProvider,
-                    testIncome.personId
-                )
-            }
+    private fun createIncome(incomeRequest: IncomeRequest) =
+        incomeController.createIncome(dbInstance(), financeUser, mockClock, incomeRequest)
 
-        assertEquals(2, resultBeforeDelete.size)
+    private fun updateIncome(id: IncomeId, incomeRequest: IncomeRequest) =
+        incomeController.updateIncome(dbInstance(), financeUser, mockClock, id, incomeRequest)
 
-        val (_, deleteResponse, _) =
-            http.delete("/incomes/${testIncome.id}").asUser(financeUser).responseString()
-
-        assertEquals(200, deleteResponse.statusCode)
-
-        val resultAfterDelete =
-            db.transaction { tx ->
-                tx.getIncomesForPerson(
-                    mapper,
-                    incomeTypesProvider,
-                    coefficientMultiplierProvider,
-                    testIncome.personId
-                )
-            }
-
-        assertEquals(1, resultAfterDelete.size)
-    }
+    private fun deleteIncome(id: IncomeId) =
+        incomeController.deleteIncome(dbInstance(), financeUser, mockClock, id)
 }

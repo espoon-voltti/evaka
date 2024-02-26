@@ -11,11 +11,13 @@ import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
 import fi.espoo.evaka.invoicing.data.getIncome
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
+import fi.espoo.evaka.invoicing.data.insertIncome
 import fi.espoo.evaka.invoicing.data.splitEarlierIncome
-import fi.espoo.evaka.invoicing.data.upsertIncome
+import fi.espoo.evaka.invoicing.data.updateIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.IncomeRequest
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeNotification
@@ -26,7 +28,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -35,7 +36,6 @@ import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
-import java.util.UUID
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -56,14 +56,13 @@ class IncomeController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getIncome(
+    fun getPersonIncomes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): Wrapper<List<IncomeWithPermittedActions>> {
-        val incomes =
-            db.connect { dbc ->
+    ): List<IncomeWithPermittedActions> {
+        return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -85,15 +84,19 @@ class IncomeController(
                             tx,
                             user,
                             clock,
-                            incomes.mapNotNull { it.id }
+                            incomes.map { it.id }
                         )
                     incomes.map {
                         IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
                     }
                 }
             }
-        Audit.PersonIncomeRead.log(targetId = personId, meta = mapOf("count" to incomes.size))
-        return Wrapper(incomes)
+            .also { incomes ->
+                Audit.PersonIncomeRead.log(
+                    targetId = personId,
+                    meta = mapOf("count" to incomes.size)
+                )
+            }
     }
 
     data class IncomeWithPermittedActions(
@@ -104,9 +107,9 @@ class IncomeController(
     @PostMapping
     fun createIncome(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody income: Income
+        @RequestBody income: IncomeRequest
     ): IncomeId {
         val period =
             try {
@@ -125,11 +128,10 @@ class IncomeController(
                         income.personId
                     )
 
-                    val id = IncomeId(UUID.randomUUID())
                     val incomeTypes = incomeTypesProvider.get()
-                    val validIncome = validateIncome(income.copy(id = id), incomeTypes)
+                    val validIncome = validateIncome(income, incomeTypes)
                     tx.splitEarlierIncome(validIncome.personId, period)
-                    tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
+                    val id = tx.insertIncome(clock, mapper, validIncome, user.evakaUserId)
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),
@@ -160,10 +162,10 @@ class IncomeController(
     @PutMapping("/{incomeId}")
     fun updateIncome(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId,
-        @RequestBody income: Income
+        @RequestBody income: IncomeRequest
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -177,9 +179,8 @@ class IncomeController(
                         incomeId
                     )
                 val incomeTypes = incomeTypesProvider.get()
-                val validIncome =
-                    validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
-                tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
+                val validIncome = validateIncome(income, incomeTypes)
+                tx.updateIncome(clock, mapper, incomeId, validIncome, user.evakaUserId)
 
                 val expandedPeriod =
                     existing?.let {
@@ -217,7 +218,7 @@ class IncomeController(
     @DeleteMapping("/{incomeId}")
     fun deleteIncome(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId
     ) {
@@ -250,24 +251,49 @@ class IncomeController(
         Audit.PersonIncomeDelete.log(targetId = incomeId)
     }
 
+    data class IncomeOption(
+        val value: String,
+        val nameFi: String,
+        val multiplier: Int,
+        val withCoefficient: Boolean,
+        val isSubType: Boolean
+    )
+
+    data class IncomeTypeOptions(
+        val incomeTypes: List<IncomeOption>,
+        val expenseTypes: List<IncomeOption>,
+    )
+
     @GetMapping("/types")
-    fun getTypes(
+    fun getIncomeTypeOptions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Map<String, IncomeType> {
+    ): IncomeTypeOptions {
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(it, user, clock, Action.Global.READ_INCOME_TYPES)
             }
         }
-        return incomeTypesProvider.get()
+        return incomeTypesProvider
+            .get()
+            .map { (value, type) ->
+                IncomeOption(
+                    value = value,
+                    nameFi = type.nameFi,
+                    multiplier = type.multiplier,
+                    withCoefficient = type.withCoefficient,
+                    isSubType = type.isSubType
+                )
+            }
+            .partition { it.multiplier > 0 }
+            .let { IncomeTypeOptions(incomeTypes = it.first, expenseTypes = it.second) }
     }
 
     @GetMapping("/multipliers")
-    fun getMultipliers(
+    fun getIncomeMultipliers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): Map<IncomeCoefficient, BigDecimal> {
         db.connect { dbc ->
@@ -280,7 +306,7 @@ class IncomeController(
                 )
             }
         }
-        return IncomeCoefficient.values().associateWith {
+        return IncomeCoefficient.entries.associateWith {
             coefficientMultiplierProvider.multiplier(it)
         }
     }
@@ -288,12 +314,11 @@ class IncomeController(
     @GetMapping("/notifications")
     fun getIncomeNotifications(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): Wrapper<List<IncomeNotification>> {
-        val incomeNotifications =
-            db.connect { dbc ->
+    ): List<IncomeNotification> {
+        return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -305,15 +330,16 @@ class IncomeController(
                     tx.getIncomeNotifications(personId)
                 }
             }
-        Audit.PersonIncomeNotificationRead.log(
-            targetId = personId,
-            meta = mapOf("count" to incomeNotifications.size)
-        )
-        return Wrapper(incomeNotifications)
+            .also { incomeNotifications ->
+                Audit.PersonIncomeNotificationRead.log(
+                    targetId = personId,
+                    meta = mapOf("count" to incomeNotifications.size)
+                )
+            }
     }
 }
 
-fun validateIncome(income: Income, incomeTypes: Map<String, IncomeType>): Income {
+fun validateIncome(income: IncomeRequest, incomeTypes: Map<String, IncomeType>): IncomeRequest {
     return if (income.effect == IncomeEffect.INCOME) {
         income.copy(
             data =

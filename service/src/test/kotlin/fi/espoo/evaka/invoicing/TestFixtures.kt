@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
-import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -32,7 +31,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -178,20 +176,6 @@ val testDecision1 =
             ),
         created = HelsinkiDateTime.now(),
         difference = emptySet()
-    )
-
-val testIncome =
-    Income(
-        id = IncomeId(UUID.randomUUID()),
-        personId = PersonId(UUID.randomUUID()),
-        validFrom = LocalDate.of(2000, 1, 1),
-        validTo = null,
-        effect = IncomeEffect.INCOME,
-        data = mapOf(),
-        notes = "",
-        totalIncome = 0,
-        totalExpenses = 0,
-        total = 0
     )
 
 val testDecisionIncome =

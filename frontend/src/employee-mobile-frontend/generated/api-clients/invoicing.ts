@@ -15,11 +15,6 @@ import { FeeDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
 import { GenerateDecisionsBody } from 'lib-common/generated/api-types/invoicing'
-import { Income } from 'lib-common/generated/api-types/invoicing'
-import { IncomeCoefficient } from 'lib-common/generated/api-types/invoicing'
-import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
-import { IncomeType } from 'lib-common/generated/api-types/invoicing'
-import { IncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceCodes } from 'lib-common/generated/api-types/invoicing'
 import { InvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
@@ -46,8 +41,6 @@ import { deserializeJsonFeeAlterationWithPermittedActions } from 'lib-common/gen
 import { deserializeJsonFeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonFeeThresholdsWithId } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonIncomeNotification } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonIncomeWithPermittedActions } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoice } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonInvoiceDetailedResponse } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedFeeDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
@@ -306,121 +299,6 @@ export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.createIncome
-*/
-export async function createIncome(
-  request: {
-    body: Income
-  }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/incomes`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<Income>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.deleteIncome
-*/
-export async function deleteIncome(
-  request: {
-    incomeId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/incomes/${request.incomeId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncome
-*/
-export async function getIncome(
-  request: {
-    personId: UUID
-  }
-): Promise<Wrapper<IncomeWithPermittedActions[]>> {
-  const params = createUrlSearchParams(
-    ['personId', request.personId]
-  )
-  const { data: json } = await client.request<JsonOf<Wrapper<IncomeWithPermittedActions[]>>>({
-    url: uri`/incomes`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonWrapper((value: JsonOf<IncomeWithPermittedActions[]>) => value.map(e => deserializeJsonIncomeWithPermittedActions(e)), json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeNotifications
-*/
-export async function getIncomeNotifications(
-  request: {
-    personId: UUID
-  }
-): Promise<Wrapper<IncomeNotification[]>> {
-  const params = createUrlSearchParams(
-    ['personId', request.personId]
-  )
-  const { data: json } = await client.request<JsonOf<Wrapper<IncomeNotification[]>>>({
-    url: uri`/incomes/notifications`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonWrapper((value: JsonOf<IncomeNotification[]>) => value.map(e => deserializeJsonIncomeNotification(e)), json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getMultipliers
-*/
-export async function getMultipliers(): Promise<Record<IncomeCoefficient, number>> {
-  const { data: json } = await client.request<JsonOf<Record<IncomeCoefficient, number>>>({
-    url: uri`/incomes/multipliers`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getTypes
-*/
-export async function getTypes(): Promise<Record<string, IncomeType>> {
-  const { data: json } = await client.request<JsonOf<Record<string, IncomeType>>>({
-    url: uri`/incomes/types`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.updateIncome
-*/
-export async function updateIncome(
-  request: {
-    incomeId: UUID,
-    body: Income
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/incomes/${request.incomeId}`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<Income>
-  })
-  return json
 }
 
 

@@ -4,7 +4,7 @@
 
 import { query } from 'lib-common/query'
 
-import { getIncomeCoefficientMultipliers } from '../../api/income'
+import { getIncomeMultipliers } from '../../generated/api-clients/invoicing'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('personProfile', {
@@ -12,6 +12,6 @@ const queryKeys = createQueryKeys('personProfile', {
 })
 
 export const incomeCoefficientMultipliersQuery = query({
-  api: getIncomeCoefficientMultipliers,
+  api: getIncomeMultipliers,
   queryKey: queryKeys.incomeCoefficientMultipliers
 })

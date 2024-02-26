@@ -7,7 +7,7 @@ import sortBy from 'lodash/sortBy'
 import FiniteDateRange, { mergeDateRanges } from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
-type IncomeDates = { validFrom: LocalDate; validTo?: LocalDate }
+type IncomeDates = { validFrom: LocalDate; validTo: LocalDate | null }
 
 const getDateRangeBetweenIncomes = (
   firstIncome: IncomeDates,

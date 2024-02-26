@@ -9,13 +9,16 @@ import styled from 'styled-components'
 
 import { Failure, Result, wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { incomeEffects } from 'lib-common/api-types/income'
+import DateRange from 'lib-common/date-range'
 import {
+  Income,
   IncomeCoefficient,
   IncomeEffect,
-  incomeEffects,
+  IncomeRequest,
+  IncomeTypeOptions,
   IncomeValue
-} from 'lib-common/api-types/income'
-import DateRange from 'lib-common/date-range'
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -39,13 +42,9 @@ import {
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
-import {
-  IncomeCoefficientMultipliers,
-  IncomeTypeOptions
-} from '../../../api/income'
 import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
-import { Income, IncomeBody, IncomeFields } from '../../../types/income'
+import { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
@@ -67,12 +66,12 @@ export interface IncomeForm {
   isEntrepreneur: boolean
   worksAtECHA: boolean
   validFrom: LocalDate
-  validTo?: LocalDate
+  validTo: LocalDate | null
   notes: string
   attachments: Attachment[]
 }
 
-function incomeFormFromIncome(value: IncomeBody): IncomeForm {
+function incomeFormFromIncome(value: IncomeRequest): IncomeForm {
   return { ...value, data: tableDataFromIncomeFields(value.data) }
 }
 
@@ -83,7 +82,7 @@ const emptyIncome: IncomeForm = {
   worksAtECHA: false,
   notes: '',
   validFrom: LocalDate.todayInSystemTz(),
-  validTo: undefined,
+  validTo: null,
   attachments: []
 }
 
@@ -97,13 +96,14 @@ const calculateAmounts = (
   return {
     amount: parsed,
     coefficient,
-    monthlyAmount: Math.round(parsed * multiplier)
+    monthlyAmount: Math.round(parsed * multiplier),
+    multiplier
   }
 }
 
 function updateIncomeData(
   data: IncomeTableData,
-  coefficientMultipliers: IncomeCoefficientMultipliers
+  coefficientMultipliers: Record<IncomeCoefficient, number>
 ): [IncomeTableData, boolean] {
   let allValid = true
   const result: IncomeTableData = {}
@@ -131,59 +131,69 @@ function updateIncomeData(
 
 function formToIncomeBody(
   form: IncomeForm,
-  coefficientMultipliers: IncomeCoefficientMultipliers
-): IncomeBody | undefined {
+  coefficientMultipliers: Record<IncomeCoefficient, number>,
+  personId: UUID
+): IncomeRequest | undefined {
   const result: IncomeFields = {}
 
   for (const [key, value] of Object.entries(form.data)) {
     if (!value) continue
     const { amount, coefficient } = value
-    if (!amount) {
-      // Blank amount => delete the field
-      result[key] = undefined
-    } else {
+    if (amount) {
       const item = calculateAmounts(
         amount,
         coefficient,
         coefficientMultipliers[coefficient]
       )
-      if (!item) {
-        // Invalid amount, should not happen because the form has been validated
-        return undefined
+      if (item) {
+        result[key] = item
       }
-      result[key] = item
     }
   }
 
-  return { ...form, data: result }
+  return { ...form, data: result, personId }
 }
 
-interface Props {
-  baseIncome?: Income
+interface CommonProps {
+  personId: UUID
   incomeTypeOptions: IncomeTypeOptions
-  coefficientMultipliers: IncomeCoefficientMultipliers
+  coefficientMultipliers: Record<IncomeCoefficient, number>
   cancel: () => void
-  update: (income: Income) => Promise<Result<unknown>> | void
-  create: (income: IncomeBody) => Promise<Result<unknown>>
   onSuccess: () => void
   onFailure: (value: Failure<unknown>) => void
 }
 
-const IncomeItemEditor = React.memo(function IncomeItemEditor({
-  baseIncome,
-  incomeTypeOptions,
-  coefficientMultipliers,
-  cancel,
-  update,
-  create,
-  onSuccess,
-  onFailure
-}: Props) {
+interface CreateProps extends CommonProps {
+  create: (income: IncomeRequest) => Promise<Result<unknown>>
+}
+
+interface UpdateProps extends CommonProps {
+  baseIncome: Income
+  update: (income: IncomeRequest) => Promise<Result<unknown>>
+}
+
+type Props = CreateProps | UpdateProps
+
+function isUpdate(props: Props): props is UpdateProps {
+  return 'baseIncome' in props
+}
+
+const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
+  const {
+    personId,
+    incomeTypeOptions,
+    coefficientMultipliers,
+    cancel,
+    onSuccess,
+    onFailure
+  } = props
+
   const { i18n, lang } = useTranslation()
 
   const initialForm = useMemo(
-    () => (baseIncome ? incomeFormFromIncome(baseIncome) : emptyIncome),
-    [baseIncome]
+    () =>
+      isUpdate(props) ? incomeFormFromIncome(props.baseIncome) : emptyIncome,
+    [props]
   )
   const [editedIncome, setEditedIncome] = useState<IncomeForm>(initialForm)
   const [validationErrors, setValidationErrors] = useState<
@@ -209,9 +219,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           ...prev,
           validFrom: from,
           validTo:
-            to || from.isEqual(prevValidFrom)
-              ? to ?? undefined
-              : from.addYears(1).subDays(1)
+            to || from.isEqual(prevValidFrom) ? to : from.addYears(1).subDays(1)
         }))
         setPrevValidFrom(from)
       }
@@ -303,15 +311,15 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }
         />
       </div>
-      {baseIncome ? (
+      {isUpdate(props) ? (
         <>
           <Gap size="L" />
           <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
             <Label>{i18n.personProfile.income.details.updated}</Label>
-            <span>{baseIncome.updatedAt.toLocalDate().format()}</span>
+            <span>{props.baseIncome.updatedAt.toLocalDate().format()}</span>
 
             <Label>{i18n.personProfile.income.details.handler}</Label>
-            <span>{baseIncome.updatedBy}</span>
+            <span>{props.baseIncome.updatedBy}</span>
           </ListGrid>
         </>
       ) : null}
@@ -339,8 +347,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         </>
       ) : null}
       <IncomeAttachments
-        incomeId={baseIncome?.id ?? null}
-        attachments={baseIncome?.attachments ?? []}
+        incomeId={isUpdate(props) ? props.baseIncome.id : null}
+        attachments={isUpdate(props) ? props.baseIncome.attachments : []}
         onUploaded={(attachment) => {
           setEditedIncome((prev) => ({
             ...prev,
@@ -379,11 +387,13 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
             (retroactive && !confirmedRetroactive)
           }
           onClick={(): Promise<Result<unknown>> | void => {
-            const body = formToIncomeBody(editedIncome, coefficientMultipliers)
+            const body = formToIncomeBody(
+              editedIncome,
+              coefficientMultipliers,
+              personId
+            )
             if (!body) return
-            return !baseIncome
-              ? create(body)
-              : update({ ...baseIncome, ...body })
+            return isUpdate(props) ? props.update(body) : props.create(body)
           }}
           onSuccess={onSuccess}
           onFailure={onFailure}
