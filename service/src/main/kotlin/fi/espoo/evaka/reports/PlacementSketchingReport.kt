@@ -138,9 +138,7 @@ SELECT
      JOIN (SELECT unnest(preferredUnits) 
            FROM application_view view 
            WHERE view.id = application.id) pu ON daycare.id = pu.unnest) AS other_preferred_units,
-    (application.document -> 'additionalDetails' ->> 'otherInfo' <> ''
-        OR application.document -> 'additionalDetails' ->> 'dietType' <> ''
-        OR application.document -> 'additionalDetails' ->> 'allergyType' <> '') as hasAdditionalInfo,
+    (application.document -> 'additionalDetails' ->> 'otherInfo') as additionalInfo,
     unrestricted_corrected_child_address_details.childMovingDate,
     COALESCE(unrestricted_corrected_child_address_details.childCorrectedStreetAddress,'') as childCorrectedStreetAddress,
     COALESCE(unrestricted_corrected_child_address_details.childCorrectedPostalCode,'') as childCorrectedPostalCode,
@@ -203,7 +201,7 @@ data class PlacementSketchingReportRow(
     val guardianPhoneNumber: String?,
     val guardianEmail: String?,
     val otherPreferredUnits: List<String>,
-    val hasAdditionalInfo: Boolean,
+    val additionalInfo: String,
     val childMovingDate: LocalDate?,
     val childCorrectedStreetAddress: String,
     val childCorrectedPostalCode: String,

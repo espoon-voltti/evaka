@@ -548,6 +548,7 @@ export interface PlacementGuaranteeReportRow {
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
+  additionalInfo: string
   applicationId: UUID
   applicationStatus: ApplicationStatus
   areaName: string
@@ -567,7 +568,6 @@ export interface PlacementSketchingReportRow {
   currentUnitName: string | null
   guardianEmail: string | null
   guardianPhoneNumber: string | null
-  hasAdditionalInfo: boolean
   otherPreferredUnits: string[]
   preferredStartDate: LocalDate
   preparatoryEducation: boolean | null
