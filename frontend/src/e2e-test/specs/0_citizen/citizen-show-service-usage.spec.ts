@@ -260,7 +260,23 @@ describe('Service time alert', () => {
         })
         .save()
     }
-    i = 1
+
+    const calendarPage = await openCalendarPage()
+    const summary = await calendarPage.openMonthlySummary(
+      today.year,
+      today.month
+    )
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma 60 h / 75 h\n' +
+        'Toteuma 75 h 20 min / 75 h'
+    )
+  })
+
+  it('Too much reservations show info box initially', async () => {
+    let i = 1
     while (i < 15) {
       const date = LocalDate.of(2022, 2, i)
       i++
@@ -273,29 +289,16 @@ describe('Service time alert', () => {
         secondReservation: null
       }).save()
     }
-    i = 1
-    while (i < 10) {
-      const date = LocalDate.of(2022, 3, i)
-      i++
-      if (date.getIsoDayOfWeek() === 6 || date.getIsoDayOfWeek() === 7) continue
-      await Fixture.attendanceReservation({
-        type: 'RESERVATIONS',
-        date: date,
-        childId: enduserChildFixtureKaarina.id,
-        reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-        secondReservation: null
-      }).save()
-    }
 
     const calendarPage = await openCalendarPage()
-    await page.pause()
-    const summary = await calendarPage.openMonthlySummary(
-      today.year,
-      today.month
+    // Should be open initially, so we call getMonthlySummary instead of openMonthlySummary
+    const summary = calendarPage.getMonthlySummary(today.year, 2)
+    await summary.title.assertTextEquals('Läsnäolot 01.02. - 28.02.2022')
+    await summary.warningElement.assertTextEquals(
+      'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
     await summary.textElement.assertTextEquals(
-      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h'
+      'Kaarina\n' + '\n' + 'Suunnitelma 80 h / 75 h\n' + 'Toteuma - / 75 h'
     )
   })
 })

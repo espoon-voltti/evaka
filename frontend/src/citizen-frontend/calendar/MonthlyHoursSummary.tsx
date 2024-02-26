@@ -76,19 +76,19 @@ export default React.memo(function MonthSummary({
         ({ usedServiceMinutes, serviceNeedMinutes }) =>
           usedServiceMinutes > serviceNeedMinutes
       ) ? (
-        <>
+        <div data-qa="monthly-summary-warning">
           <LeftWarningIcon />
           Läsnäoloja sopimuksen ylittävä määrä:
-        </>
+        </div>
       ) : (
         childSummaries.some(
           ({ reservedMinutes, serviceNeedMinutes }) =>
             reservedMinutes > serviceNeedMinutes
         ) && (
-          <>
+          <div data-qa="monthly-summary-warning">
             <LeftWarningIcon />
-            Läsnäoloja suunniteltu sopimuksen ylittävä määrä
-          </>
+            Läsnäoloja suunniteltu sopimuksen ylittävä määrä:
+          </div>
         )
       )}
       {childSummaries.map((summary, index) => (

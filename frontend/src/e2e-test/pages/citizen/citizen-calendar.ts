@@ -101,14 +101,17 @@ export default class CitizenCalendarPage {
     await this.dayCell(date).click()
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
-
-  async openMonthlySummary(year: number, month: number) {
-    await this.monthlySummaryInfoButton(year, month).click()
+  getMonthlySummary(year: number, month: number) {
     return new MonthlySummary(
       this.page.findByDataQa(
         `monthly-summary-info-container-${month}-${year}-text`
       )
     )
+  }
+
+  async openMonthlySummary(year: number, month: number) {
+    await this.monthlySummaryInfoButton(year, month).click()
+    return this.getMonthlySummary(year, month)
   }
 
   async assertHoliday(date: LocalDate) {
@@ -560,6 +563,7 @@ class AbsencesModal {
 
 class MonthlySummary extends Element {
   title = this.findByDataQa('monthly-summary-info-title')
+  warningElement = this.findByDataQa('monthly-summary-warning')
   textElement = this.findByDataQa('monthly-summary-info-text')
 }
 
