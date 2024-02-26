@@ -567,12 +567,23 @@ fun computeUsedService(
         )
     }
 
+    // Five-year-olds get 4 hours for free
+    val freeMinutes =
+        when (placementType) {
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
+            else -> 0
+        }
+
     if (reservations.isEmpty() && attendances.isEmpty()) {
         val daysInMonth = 21
         return UsedServiceResult(
             reservedMinutes = 0,
             attendedMinutes = 0,
-            usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToLong(),
+            usedServiceMinutes =
+                maxOf(
+                    0,
+                    (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToLong() - freeMinutes
+                ),
             usedServiceRanges = emptyList()
         )
     }
@@ -583,7 +594,8 @@ fun computeUsedService(
     return UsedServiceResult(
         reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
         attendedMinutes = effectiveAttendances.ranges().sumOf { it.duration.toMinutes() },
-        usedServiceMinutes = usedService.ranges().sumOf { it.duration.toMinutes() },
+        usedServiceMinutes =
+            maxOf(0, usedService.ranges().sumOf { it.duration.toMinutes() } - freeMinutes),
         usedServiceRanges = usedService.ranges().toList()
     )
 }

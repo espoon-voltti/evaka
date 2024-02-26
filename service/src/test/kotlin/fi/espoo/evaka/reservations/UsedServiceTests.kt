@@ -54,6 +54,18 @@ class UsedServiceTests {
             assertEquals(it.usedServiceMinutes, (120.0 * 60 / 21).roundToLong())
             assertEquals(it.usedServiceRanges, emptyList())
         }
+
+        compute(
+                placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                absences = listOf(),
+                reservations = listOf(),
+                attendances = listOf()
+            )
+            .also {
+                // Five-year-olds get 4 hours for free
+                assertEquals((120.0 * 60 / 21).roundToLong() - 4 * 60, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
     }
 
     @Test
@@ -209,5 +221,40 @@ class UsedServiceTests {
                 attendances = listOf(range(9, 17))
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(8, 17))) }
+    }
+
+    @Test
+    fun `5 year olds with connected daycare get 4 hours for free`() {
+        compute(
+                placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                reservations = listOf(range(8, 16)),
+                attendances = listOf(range(9, 17))
+            )
+            .also {
+                assertEquals(5 * 60, it.usedServiceMinutes) // 9 hours - 4 hours = 5 hours
+                assertEquals(listOf(range(8, 17)), it.usedServiceRanges)
+            }
+
+        compute(
+                placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                attendances = listOf(range(10, 13))
+            )
+            .also {
+                assertEquals(0, it.usedServiceMinutes) // Will not be negative
+                assertEquals(listOf(range(10, 13)), it.usedServiceRanges)
+            }
+    }
+
+    @Test
+    fun `5 year olds with part time do not get anything for free`() {
+        compute(
+                placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+                reservations = listOf(range(8, 16)),
+                attendances = listOf(range(9, 17))
+            )
+            .also {
+                assertEquals(9 * 60, it.usedServiceMinutes)
+                assertEquals(listOf(range(8, 17)), it.usedServiceRanges)
+            }
     }
 }
