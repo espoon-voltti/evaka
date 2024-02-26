@@ -44,7 +44,7 @@ import {
   CalendarEventCountContainer
 } from './CalendarEventCount'
 import { HistoryOverlay } from './HistoryOverlay'
-import { getSummaryForMonth } from './MonthElem'
+import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
@@ -288,12 +288,24 @@ const Month = React.memo(function Month({
 }) {
   const i18n = useTranslation()
 
-  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(false)
+  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(() =>
+    childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+  )
   const onMonthlySummaryInfoClick = useCallback(
     () => setMonthlySummaryInfoOpen((prev) => !prev),
     []
   )
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
+  const displayAlert =
+    displaySummary &&
+    childSummaries.some(
+      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes ||
+        usedServiceMinutes > serviceNeedMinutes
+    )
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
       <MonthTitle>
@@ -307,6 +319,7 @@ const Month = React.memo(function Month({
             open={monthlySummaryInfoOpen}
           />
         )}
+        {displayAlert && <InlineWarningIcon />}
       </MonthTitle>
       {monthlySummaryInfoOpen && (
         <MonthSummaryInfoBox

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasExclamationTriangle } from 'Icons'
 import React, { useCallback, useState } from 'react'
 import styled, { css } from 'styled-components'
 
@@ -71,14 +73,26 @@ export default React.memo(function MonthElem({
 }: MonthProps) {
   const i18n = useTranslation()
 
-  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(false)
+  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(() =>
+    childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
+  )
   const onMonthlySummaryInfoClick = useCallback(
     () => setMonthlySummaryInfoOpen((prev) => !prev),
     []
   )
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
+  const displayAlert =
+    displaySummary &&
+    childSummaries.some(
+      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes ||
+        usedServiceMinutes > serviceNeedMinutes
+    )
   return (
-    <>
+    <div>
       <MonthSummaryContainer>
         <MonthTitle>
           {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
@@ -91,6 +105,8 @@ export default React.memo(function MonthElem({
               open={monthlySummaryInfoOpen}
             />
           )}
+
+          {displayAlert && <InlineWarningIcon />}
         </MonthTitle>
         {monthlySummaryInfoOpen && (
           <MonthlySummaryInfoBox
@@ -123,7 +139,7 @@ export default React.memo(function MonthElem({
           />
         </div>
       ))}
-    </>
+    </div>
   )
 })
 
@@ -195,3 +211,15 @@ const MonthlySummaryInfoBox = styled(ExpandingInfoBox)`
     padding-bottom: 0;
   }
 `
+const InlineIconContainer = styled.div`
+  margin-left: ${defaultMargins.xs};
+`
+
+export const InlineWarningIcon = () => (
+  <InlineIconContainer>
+    <FontAwesomeIcon
+      icon={fasExclamationTriangle}
+      color={colors.status.warning}
+    />
+  </InlineIconContainer>
+)
