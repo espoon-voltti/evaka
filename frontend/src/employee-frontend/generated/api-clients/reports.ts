@@ -96,21 +96,9 @@ export async function getApplicationsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionUnreadCount
+* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReport
 */
-export async function getAssistanceNeedDecisionUnreadCount(): Promise<number> {
-  const { data: json } = await client.request<JsonOf<number>>({
-    url: uri`/reports/assistance-need-decisions/unread-count`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisions
-*/
-export async function getAssistanceNeedDecisions(): Promise<AssistanceNeedDecisionsReportRow[]> {
+export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeedDecisionsReportRow[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionsReportRow[]>>({
     url: uri`/reports/assistance-need-decisions`.toString(),
     method: 'GET'
@@ -120,9 +108,21 @@ export async function getAssistanceNeedDecisions(): Promise<AssistanceNeedDecisi
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedReport
+* Generated from fi.espoo.evaka.reports.AssistanceNeedDecisionsReport.getAssistanceNeedDecisionsReportUnreadCount
 */
-export async function getAssistanceNeedReport(
+export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<number> {
+  const { data: json } = await client.request<JsonOf<number>>({
+    url: uri`/reports/assistance-need-decisions/unread-count`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReport
+*/
+export async function getAssistanceNeedsAndActionsReport(
   request: {
     date: LocalDate
   }
@@ -140,9 +140,9 @@ export async function getAssistanceNeedReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedReportByChild
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReportByChild
 */
-export async function getAssistanceNeedReportByChild(
+export async function getAssistanceNeedsAndActionsReportByChild(
   request: {
     date: LocalDate
   }
@@ -376,31 +376,29 @@ export async function getFamilyContactsReport(
 /**
 * Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.getFamilyDaycareMealReport
 */
-export async function getFamilyDaycareMealReport(): Promise<FamilyDaycareMealReportResult> {
+export async function getFamilyDaycareMealReport(
+  request: {
+    startDate: LocalDate,
+    endDate: LocalDate
+  }
+): Promise<FamilyDaycareMealReportResult> {
+  const params = createUrlSearchParams(
+    ['startDate', request.startDate.formatIso()],
+    ['endDate', request.endDate.formatIso()]
+  )
   const { data: json } = await client.request<JsonOf<FamilyDaycareMealReportResult>>({
     url: uri`/reports/family-daycare-meal-count`.toString(),
-    method: 'GET'
+    method: 'GET',
+    params
   })
   return json
 }
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolers
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersGroupsReport
 */
-export async function getFuturePreschoolers(): Promise<FuturePreschoolersReportRow[]> {
-  const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
-    url: uri`/reports/future-preschoolers`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getPreschoolGroups
-*/
-export async function getPreschoolGroups(
+export async function getFuturePreschoolersGroupsReport(
   request: {
     municipal: boolean
   }
@@ -412,6 +410,18 @@ export async function getPreschoolGroups(
     url: uri`/reports/future-preschoolers/groups`.toString(),
     method: 'GET',
     params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersReport
+*/
+export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
+  const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
+    url: uri`/reports/future-preschoolers`.toString(),
+    method: 'GET'
   })
   return json
 }
@@ -738,9 +748,9 @@ export async function getServiceNeedReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherValuesForAllUnits
+* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherReportForAllUnits
 */
-export async function getServiceVoucherValuesForAllUnits(
+export async function getServiceVoucherReportForAllUnits(
   request: {
     year: number,
     month: number,
@@ -762,9 +772,9 @@ export async function getServiceVoucherValuesForAllUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherValuesForUnit
+* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherReportForUnit
 */
-export async function getServiceVoucherValuesForUnit(
+export async function getServiceVoucherReportForUnit(
   request: {
     unitId: UUID,
     year: number,
@@ -841,9 +851,9 @@ export async function getUnitsReport(): Promise<UnitsReportRow[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaErrors
+* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaErrorsReport
 */
-export async function getVardaErrors(): Promise<VardaErrorReportRow[]> {
+export async function getVardaErrorsReport(): Promise<VardaErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaErrorReportRow[]>>({
     url: uri`/reports/varda-errors`.toString(),
     method: 'GET'

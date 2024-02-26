@@ -4,7 +4,7 @@
 
 import React, { useCallback, useContext, useState } from 'react'
 
-import { Result, Success } from 'lib-common/api'
+import { Result, Success, wrapResult } from 'lib-common/api'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
@@ -13,14 +13,21 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { getRawReport, PeriodFilters, sendPatuReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import {
+  getRawReport,
+  sendPatuReport
+} from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { PeriodFilters } from '../../types/reports'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
+
+const getRawReportResult = wrapResult(getRawReport)
+const sendPatuReportResult = wrapResult(sendPatuReport)
 
 export default React.memo(function Raw() {
   const { i18n } = useTranslation()
@@ -34,7 +41,10 @@ export default React.memo(function Raw() {
   const [report, setReport] = useState<Result<RawReportRow[]>>(Success.of([]))
   const { user } = useContext(UserContext)
 
-  const fetchRawReport = useCallback(() => getRawReport(filters), [filters])
+  const fetchRawReport = useCallback(
+    () => getRawReportResult(filters),
+    [filters]
+  )
 
   const mapYesNo = (value: boolean | null | undefined) => {
     if (value === true) {
@@ -49,7 +59,7 @@ export default React.memo(function Raw() {
   const mapFloat = (value: number | null) =>
     value?.toString().replace(/\./, ',') ?? null
 
-  const submitPatuReport = () => sendPatuReport(filters)
+  const submitPatuReport = () => sendPatuReportResult(filters)
 
   return (
     <Container>

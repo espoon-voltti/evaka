@@ -3709,11 +3709,16 @@ export const fi = {
         areaPlaceholder: 'Valitse palvelualue',
         type: 'Tyyppi',
         types: {
-          UNIT_CONFIRMED: 'Vahvistettu täyttöaste yksikössä',
-          UNIT_PLANNED: 'Suunniteltu täyttöaste yksikössä',
-          UNIT_REALIZED: 'Käyttöaste yksikössä',
-          GROUP_CONFIRMED: 'Vahvistettu täyttöaste ryhmissä',
-          GROUP_REALIZED: 'Käyttöaste ryhmissä'
+          UNITS: {
+            CONFIRMED: 'Vahvistettu täyttöaste yksikössä',
+            PLANNED: 'Suunniteltu täyttöaste yksikössä',
+            REALIZED: 'Käyttöaste yksikössä'
+          },
+          GROUPS: {
+            CONFIRMED: 'Vahvistettu täyttöaste ryhmissä',
+            PLANNED: 'Suunniteltu täyttöaste ryhmissä',
+            REALIZED: 'Käyttöaste ryhmissä'
+          }
         },
         valueOnReport: 'Näytä tiedot',
         valuesOnReport: {

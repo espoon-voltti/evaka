@@ -6,10 +6,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { boolean, openEndedLocalDateRange } from 'lib-common/form/fields'
-import { object, required } from 'lib-common/form/form'
+import { object, required, transformed } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationSuccess } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -25,10 +26,18 @@ import { renderResult } from '../async-rendering'
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { missingHeadOfFamilyReportQuery } from './queries'
 
-const filterForm = object({
-  range: required(openEndedLocalDateRange()),
-  showIntentionalDuplicates: boolean()
-})
+const filterForm = transformed(
+  object({
+    range: required(openEndedLocalDateRange()),
+    showIntentionalDuplicates: boolean()
+  }),
+  ({ range: { start, end }, showIntentionalDuplicates }) =>
+    ValidationSuccess.of({
+      from: start,
+      to: end,
+      showIntentionalDuplicates
+    })
+)
 
 export default React.memo(function MissingHeadOfFamily() {
   const { i18n, lang } = useTranslation()
@@ -46,7 +55,12 @@ export default React.memo(function MissingHeadOfFamily() {
   )
   const { range, showIntentionalDuplicates } = useFormFields(filters)
 
-  const rows = useQueryResult(missingHeadOfFamilyReportQuery(filters.value()))
+  const rows = useQueryResult(
+    queryOrDefault(
+      missingHeadOfFamilyReportQuery,
+      []
+    )(filters.isValid() ? filters.value() : null)
+  )
 
   return (
     <Container>
@@ -93,11 +107,13 @@ export default React.memo(function MissingHeadOfFamily() {
                   key: 'rangesWithoutHead'
                 }
               ]}
-              filename={`Puuttuvat päämiehet ${filters
-                .value()
-                .range.start.formatIso()}-${
-                filters.value().range.end?.formatIso() ?? ''
-              }.csv`}
+              filename={
+                filters.isValid()
+                  ? `Puuttuvat päämiehet ${filters.value().from.formatIso()}-${
+                      filters.value().to?.formatIso() ?? ''
+                    }.csv`
+                  : 'Puuttuvat päämiehet.csv'
+              }
             />
             <TableScrollable>
               <Thead>

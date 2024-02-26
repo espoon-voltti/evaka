@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/varda-errors")
-    fun getVardaErrors(
+    fun getVardaErrorsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock

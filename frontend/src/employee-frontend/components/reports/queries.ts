@@ -3,32 +3,31 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
 import {
+  getExceededServiceNeedReportRows,
+  getExceededServiceNeedReportUnits,
   getFamilyContactsReport,
+  getFuturePreschoolersGroupsReport,
   getFuturePreschoolersReport,
   getMissingHeadOfFamilyReport,
-  getNonSsnChildrenReport,
-  getOccupanciesReport,
+  getNonSsnChildrenReportRows,
+  getOccupancyGroupReport,
+  getOccupancyUnitReport,
   getPlacementGuaranteeReport,
-  getPreschoolGroupsReport,
+  getServiceVoucherReportForAllUnits,
   getUnitsReport,
-  getVardaErrorsReport,
-  getVoucherServiceProvidersReport,
-  MissingHeadOfFamilyReportFilters,
-  OccupancyReportFilters,
-  PlacementGuaranteeReportFilters,
-  resetVardaChild,
-  startVardaReset,
-  startVardaUpdate,
-  VoucherServiceProvidersFilters
-} from '../../api/reports'
-import {
-  getExceededServiceNeedReportRows,
-  getExceededServiceNeedReportUnits
+  getVardaErrorsReport
 } from '../../generated/api-clients/reports'
+import {
+  markChildForVardaReset,
+  runFullVardaReset,
+  runFullVardaUpdate
+} from '../../generated/api-clients/varda'
 import { createQueryKeys } from '../../query'
+
+import { OccupancyReportFilters } from './Occupancies'
 
 const queryKeys = createQueryKeys('reports', {
   exceededServiceNeedsUnits: () => ['exceededServiceNeedsUnits'],
@@ -37,23 +36,25 @@ const queryKeys = createQueryKeys('reports', {
     year: number
     month: number
   }) => ['exceededServiceNeedsReportRows', params],
-  familyContacts: (unitId: UUID) => ['familyContacts', unitId],
-  missingHeadOfFamily: (filters: MissingHeadOfFamilyReportFilters) => [
+  familyContacts: (filters: Arg0<typeof getFamilyContactsReport>) => [
+    'familyContacts',
+    filters
+  ],
+  missingHeadOfFamily: (filters: Arg0<typeof getMissingHeadOfFamilyReport>) => [
     'missingHeadOfFamily',
     filters
   ],
   occupancies: (filters: OccupancyReportFilters) => ['occupancies', filters],
-  placementGuarantee: (filters: PlacementGuaranteeReportFilters) => [
+  placementGuarantee: (filters: Arg0<typeof getPlacementGuaranteeReport>) => [
     'placementGuarantee',
     filters
   ],
-  voucherServiceProviders: (filters: VoucherServiceProvidersFilters) => [
-    'voucherServiceProviders',
-    filters
-  ],
+  voucherServiceProviders: (
+    filters: Arg0<typeof getServiceVoucherReportForAllUnits>
+  ) => ['voucherServiceProviders', filters],
   vardaErrors: () => ['vardaErrors'],
   futurePreschoolers: () => ['futurePreschoolers'],
-  preschoolGroups: () => ['preschoolGroups'],
+  futurePreschoolersGroups: () => ['futurePreschoolersGroups'],
   units: () => ['units']
 })
 
@@ -78,15 +79,17 @@ export const missingHeadOfFamilyReportQuery = query({
 })
 
 export const nonSsnChildrenReportQuery = query({
-  api: getNonSsnChildrenReport,
+  api: getNonSsnChildrenReportRows,
   queryKey: () => []
 })
 
 export const occupanciesReportQuery = query({
   api: (filters: OccupancyReportFilters) =>
-    filters.careAreaId !== null
-      ? getOccupanciesReport(filters)
-      : Promise.resolve([]),
+    filters.careAreaId === null
+      ? Promise.resolve([])
+      : filters.display === 'UNITS'
+        ? getOccupancyUnitReport(filters)
+        : getOccupancyGroupReport(filters),
   queryKey: queryKeys.occupancies
 })
 
@@ -96,27 +99,27 @@ export const placementGuaranteeReportQuery = query({
 })
 
 export const voucherServiceProvidersReportQuery = query({
-  api: getVoucherServiceProvidersReport,
+  api: getServiceVoucherReportForAllUnits,
   queryKey: queryKeys.voucherServiceProviders
 })
 
 export const vardaErrorsQuery = query({
-  api: () => getVardaErrorsReport(),
+  api: getVardaErrorsReport,
   queryKey: queryKeys.vardaErrors
 })
 
 export const startVardaUpdateMutation = mutation({
-  api: () => startVardaUpdate(),
+  api: runFullVardaUpdate,
   invalidateQueryKeys: () => [queryKeys.vardaErrors()]
 })
 
 export const startVardaResetMutation = mutation({
-  api: () => startVardaReset(),
+  api: runFullVardaReset,
   invalidateQueryKeys: () => [queryKeys.vardaErrors()]
 })
 
 export const resetVardaChildMutation = mutation({
-  api: (arg: { childId: UUID }) => resetVardaChild(arg.childId),
+  api: markChildForVardaReset,
   invalidateQueryKeys: () => [queryKeys.vardaErrors()]
 })
 
@@ -126,8 +129,8 @@ export const futurePreschoolersQuery = query({
 })
 
 export const preschoolGroupsQuery = query({
-  api: (municipal: boolean) => getPreschoolGroupsReport(municipal),
-  queryKey: queryKeys.preschoolGroups
+  api: getFuturePreschoolersGroupsReport,
+  queryKey: queryKeys.futurePreschoolersGroups
 })
 
 export const unitsReportQuery = query({

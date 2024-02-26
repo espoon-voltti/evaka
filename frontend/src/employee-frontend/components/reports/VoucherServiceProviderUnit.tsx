@@ -9,7 +9,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   VoucherReportRowType,
   ServiceVoucherUnitReport,
@@ -17,7 +17,7 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
@@ -44,16 +44,22 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faHome, faLockAlt } from 'lib-icons'
 
-import {
-  getVoucherServiceProviderUnitReport,
-  VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getServiceVoucherReportForUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getServiceVoucherReportForUnitResult = wrapResult(
+  getServiceVoucherReportForUnit
+)
+
+type VoucherServiceProviderUnitFilters = Omit<
+  Arg0<typeof getServiceVoucherReportForUnit>,
+  'unitId'
+>
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -166,12 +172,14 @@ export default React.memo(function VoucherServiceProviderUnit() {
 
   useEffect(() => {
     setReport(Loading.of())
-    void getVoucherServiceProviderUnitReport(unitId, filters).then((res) => {
-      setReport(res)
-      if (res.isSuccess && res.value.rows.length > 0) {
-        setUnitName(res.value.rows[0].unitName)
+    void getServiceVoucherReportForUnitResult({ unitId, ...filters }).then(
+      (res) => {
+        setReport(res)
+        if (res.isSuccess && res.value.rows.length > 0) {
+          setUnitName(res.value.rows[0].unitName)
+        }
       }
-    })
+    )
   }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

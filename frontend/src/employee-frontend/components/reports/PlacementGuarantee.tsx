@@ -7,12 +7,12 @@ import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import { PlacementGuaranteeReportFilters } from 'employee-frontend/api/reports'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -27,6 +27,11 @@ import { unitsQuery } from '../unit/queries'
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { placementGuaranteeReportQuery } from './queries'
+
+interface PlacementGuaranteeReportFilters {
+  date: LocalDate
+  unitId: UUID | null
+}
 
 const initialFilters: PlacementGuaranteeReportFilters = {
   date: LocalDate.todayInHelsinkiTz(),

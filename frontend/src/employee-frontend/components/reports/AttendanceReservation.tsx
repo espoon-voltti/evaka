@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Failure, Loading, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -31,16 +31,22 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 
-import {
-  AttendanceReservationReportFilters,
-  getAttendanceReservationReport
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getAttendanceReservationReportByUnit } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getAttendanceReservationReportByUnitResult = wrapResult(
+  getAttendanceReservationReportByUnit
+)
+
+interface AttendanceReservationReportFilters {
+  range: FiniteDateRange
+  groupIds: UUID[]
+}
 
 const dateFormat = 'EEEEEE d.M.'
 const timeFormat = 'HH:mm'
@@ -99,7 +105,12 @@ export default React.memo(function AttendanceReservation() {
       return Promise.resolve(Loading.of<AttendanceReservationReportRow[]>())
     } else {
       setReport(Loading.of())
-      return getAttendanceReservationReport(unitId, filters)
+      return getAttendanceReservationReportByUnitResult({
+        unitId,
+        start: filters.range.start,
+        end: filters.range.end,
+        groupIds: filters.groupIds
+      })
     }
   }, [unitId, filters, tooLongRange])
 

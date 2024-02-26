@@ -4,10 +4,15 @@
 
 import React, { createContext, useContext } from 'react'
 
-import { getAssistanceNeedDecisionUnreadCount } from 'employee-frontend/api/reports'
 import { UserContext } from 'employee-frontend/state/user'
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
+
+import { getAssistanceNeedDecisionsReportUnreadCount } from '../../generated/api-clients/reports'
+
+const getAssistanceNeedDecisionsReportUnreadCountResult = wrapResult(
+  getAssistanceNeedDecisionsReportUnreadCount
+)
 
 export interface AssistanceNeedDecisionReportState {
   assistanceNeedDecisionCounts: Result<number>
@@ -34,7 +39,7 @@ export const AssistanceNeedDecisionReportContextProvider = React.memo(
       useApiState(
         () =>
           user?.accessibleFeatures.assistanceNeedDecisionsReport
-            ? getAssistanceNeedDecisionUnreadCount()
+            ? getAssistanceNeedDecisionsReportUnreadCountResult()
             : Promise.resolve(Success.of(0)),
         [user]
       )

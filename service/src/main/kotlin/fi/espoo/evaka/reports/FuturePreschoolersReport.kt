@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class FuturePreschoolersReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/future-preschoolers")
-    fun getFuturePreschoolers(
+    fun getFuturePreschoolersReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
@@ -42,7 +42,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/reports/future-preschoolers/groups")
-    fun getPreschoolGroups(
+    fun getFuturePreschoolersGroupsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

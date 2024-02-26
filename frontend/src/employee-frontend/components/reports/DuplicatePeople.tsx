@@ -6,10 +6,10 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -23,15 +23,16 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
 import { deletePerson, mergePeople } from '../../api/person'
-import {
-  DuplicatePeopleFilters,
-  getDuplicatePeopleReport
-} from '../../api/reports'
 import { CHILD_AGE } from '../../constants'
+import { getDuplicatePeopleReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 import { FilterRow, TableScrollable } from './common'
+
+const getDuplicatePeopleReportResult = wrapResult(getDuplicatePeopleReport)
+
+type DuplicatePeopleFilters = Arg0<typeof getDuplicatePeopleReport>
 
 interface RowProps {
   odd: boolean
@@ -73,7 +74,7 @@ export default React.memo(function DuplicatePeople() {
 
   const loadData = useCallback(() => {
     setRows(Loading.of())
-    void getDuplicatePeopleReport(filters).then(setRows)
+    void getDuplicatePeopleReportResult(filters).then(setRows)
   }, [filters])
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export default React.memo(function DuplicatePeople() {
                 })
               }
               label={i18n.reports.common.filters.showIntentionalDuplicates}
-              checked={filters.showIntentionalDuplicates}
+              checked={filters.showIntentionalDuplicates ?? false}
             />
           </FilterRow>
         )}

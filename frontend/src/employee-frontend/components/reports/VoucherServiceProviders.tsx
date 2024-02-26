@@ -13,6 +13,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -26,7 +27,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faLockAlt, faSearch } from 'lib-icons'
 
-import { VoucherServiceProvidersFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -36,6 +36,12 @@ import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { voucherServiceProvidersReportQuery } from './queries'
+
+interface VoucherServiceProvidersFilters {
+  year: number
+  month: number
+  areaId?: UUID
+}
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

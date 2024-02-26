@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DefaultTheme, useTheme } from 'styled-components'
 
-import { Loading } from 'lib-common/api'
+import { Loading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
@@ -26,17 +26,23 @@ import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import { Translations } from 'lib-customizations/employee'
 
-import {
-  AttendanceReservationReportFilters,
-  getAssistanceReservationReportByChild
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getAttendanceReservationReportByUnitAndChild } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { AttendanceReservationReportTd } from './AttendanceReservation'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getAttendanceReservationReportByUnitAndChildResult = wrapResult(
+  getAttendanceReservationReportByUnitAndChild
+)
+
+interface AttendanceReservationReportFilters {
+  range: FiniteDateRange
+  groupIds: UUID[]
+}
 
 const dateFormat = 'EEEEEE d.M.'
 const timeFormat = 'HH:mm'
@@ -71,7 +77,12 @@ export default React.memo(function AttendanceReservationByChild() {
   const [report] = useApiState(
     () =>
       unitId !== null
-        ? getAssistanceReservationReportByChild(unitId, filters)
+        ? getAttendanceReservationReportByUnitAndChildResult({
+            unitId,
+            start: filters.range.start,
+            end: filters.range.end,
+            groupIds: filters.groupIds
+          })
         : Promise.resolve(
             Loading.of<AttendanceReservationReportByChildRow[]>()
           ),

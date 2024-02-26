@@ -6,8 +6,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { Arg0 } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -20,16 +22,19 @@ import {
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getMissingServiceNeedReport,
-  MissingServiceNeedReportFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getMissingServiceNeedReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const getMissingServiceNeedReportResult = wrapResult(
+  getMissingServiceNeedReport
+)
+
+type MissingServiceNeedReportFilters = Arg0<typeof getMissingServiceNeedReport>
 
 interface DisplayFilters {
   careArea: string
@@ -46,11 +51,11 @@ const Wrapper = styled.div`
 export default React.memo(function MissingServiceNeed() {
   const { i18n } = useTranslation()
   const [filters, setFilters] = useState<MissingServiceNeedReportFilters>({
-    startDate: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
-    endDate: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
+    from: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
+    to: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
   })
   const [rows] = useApiState(
-    () => getMissingServiceNeedReport(filters),
+    () => getMissingServiceNeedReportResult(filters),
     [filters]
   )
 
@@ -82,16 +87,16 @@ export default React.memo(function MissingServiceNeed() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
           <DatePickerDeprecated
-            date={filters.startDate}
-            onChange={(startDate) => setFilters({ ...filters, startDate })}
+            date={filters.from}
+            onChange={(from) => setFilters({ ...filters, from })}
           />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
           <DatePickerClearableDeprecated
-            date={filters.endDate}
-            onChange={(endDate) => setFilters({ ...filters, endDate })}
-            onCleared={() => setFilters({ ...filters, endDate: null })}
+            date={filters.to}
+            onChange={(to) => setFilters({ ...filters, to })}
+            onCleared={() => setFilters({ ...filters, to: null })}
           />
         </FilterRow>
 
@@ -150,8 +155,8 @@ export default React.memo(function MissingServiceNeed() {
                     key: 'daysWithoutServiceNeed'
                   }
                 ]}
-                filename={`Puuttuvat palveluntarpeet ${filters.startDate.formatIso()}-${
-                  filters.endDate?.formatIso() ?? ''
+                filename={`Puuttuvat palveluntarpeet ${filters.from.formatIso()}-${
+                  filters.to?.formatIso() ?? ''
                 }.csv`}
               />
               <TableScrollable>

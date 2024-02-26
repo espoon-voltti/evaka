@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -17,12 +17,15 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { DateFilters, getChildAgeLanguageReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getChildAgeLanguageReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { DateFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
+
+const getChildAgeLanguageReportResult = wrapResult(getChildAgeLanguageReport)
 
 interface DisplayFilters {
   careArea: string
@@ -53,7 +56,7 @@ export default React.memo(function ChildAgeLanguage() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getChildAgeLanguageReport(filters).then(setRows)
+    void getChildAgeLanguageReportResult(filters).then(setRows)
   }, [filters])
 
   const filteredRows: ChildAgeLanguageReportRow[] = useMemo(

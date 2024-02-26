@@ -13,8 +13,14 @@ import styled, { css } from 'styled-components'
 import { combine } from 'lib-common/api'
 import { formatDate } from 'lib-common/date'
 import { careTypes } from 'lib-common/generated/api-types/daycare'
+import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
+import {
+  OccupancyGroupReportResultRow,
+  OccupancyUnitReportResultRow
+} from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { Arg0 } from 'lib-common/types'
 import { mockNow } from 'lib-common/utils/helpers'
 import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
 import Title from 'lib-components/atoms/Title'
@@ -28,12 +34,11 @@ import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import {
-  OccupancyReportFilters,
-  OccupancyReportRow,
-  OccupancyReportType
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import {
+  getOccupancyGroupReport,
+  getOccupancyUnitReport
+} from '../../generated/api-clients/reports'
 import { Translations, useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
@@ -41,6 +46,21 @@ import { areaQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { occupanciesReportQuery } from './queries'
+
+type DisplayMode = 'UNITS' | 'GROUPS'
+export type OccupancyReportFilters =
+  | (Arg0<typeof getOccupancyUnitReport> & { display: 'UNITS' })
+  | (Arg0<typeof getOccupancyGroupReport> & { display: 'GROUPS' })
+
+type OccupancyReportRow =
+  | OccupancyUnitReportResultRow
+  | OccupancyGroupReportResultRow
+
+function isGroupRow(
+  row: OccupancyReportRow
+): row is OccupancyGroupReportResultRow {
+  return 'groupId' in row
+}
 
 const StyledTfoot = styled(Tfoot)`
   background-color: ${(props) => props.theme.colors.grayscale.g4};
@@ -78,15 +98,11 @@ const yearOptions = range(
   -1
 )
 
-function getDisplayDates(
-  year: number,
-  month: number,
-  type: OccupancyReportType
-) {
+function getDisplayDates(year: number, month: number, type: OccupancyType) {
   const fromDate = new Date(year, month - 1, 1)
   const now = mockNow() ?? new Date()
   let toDate = lastDayOfMonth(fromDate)
-  if (type.includes('REALIZED') && isAfter(toDate, now)) toDate = now
+  if (type === 'REALIZED' && isAfter(toDate, now)) toDate = now
   const dates: Date[] = []
   for (let date = fromDate; date <= toDate; date = addDays(date, 1)) {
     if (!isWeekend(date)) dates.push(date)
@@ -98,10 +114,11 @@ function getFilename(
   i18n: Translations,
   year: number,
   month: number,
-  type: OccupancyReportType,
+  display: DisplayMode,
+  type: OccupancyType,
   careAreaName: string
 ) {
-  const prefix = i18n.reports.occupancies.filters.types[type]
+  const prefix = i18n.reports.occupancies.filters.types[display][type]
   const time = LocalDate.of(year, month, 1).formatExotic('yyyy-MM')
   return `${prefix}-${time}-${careAreaName}.csv`.replace(/ /g, '_')
 }
@@ -343,6 +360,11 @@ function formatAverage(
   )
 }
 
+type ReportMode = {
+  display: DisplayMode
+  type: OccupancyType
+}
+
 export default React.memo(function Occupancies() {
   const { i18n } = useTranslation()
   const areas = useQueryResult(areaQuery())
@@ -351,13 +373,14 @@ export default React.memo(function Occupancies() {
     year: now.getFullYear(),
     month: now.getMonth() + 1,
     careAreaId: null,
-    type: 'UNIT_CONFIRMED',
+    display: 'UNITS',
+    type: 'CONFIRMED',
     providerType: unitProviderTypes.find((type) => type === 'MUNICIPAL'),
     unitTypes: ['CENTRE']
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
-  const rows = useQueryResult(occupanciesReportQuery(filters))
+  const rows = useQueryResult(occupanciesReportQuery({ ...filters }))
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
   const displayCells: DisplayCell[][] = rows
@@ -487,8 +510,8 @@ export default React.memo(function Occupancies() {
                       )
                     })
                   }
-                  value={careTypes.filter((unitType) =>
-                    filters.unitTypes.includes(unitType)
+                  value={careTypes.filter(
+                    (unitType) => filters.unitTypes?.includes(unitType) ?? true
                   )}
                   getOptionId={(unitType) => unitType}
                   getOptionLabel={(unitType) => i18n.common.types[unitType]}
@@ -499,46 +522,30 @@ export default React.memo(function Occupancies() {
             <FilterRow>
               <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
               <Wrapper>
-                <Combobox
+                <Combobox<ReportMode>
                   items={[
-                    {
-                      value: 'UNIT_CONFIRMED',
-                      label:
-                        i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
-                    },
-                    {
-                      value: 'UNIT_PLANNED',
-                      label: i18n.reports.occupancies.filters.types.UNIT_PLANNED
-                    },
-                    {
-                      value: 'UNIT_REALIZED',
-                      label:
-                        i18n.reports.occupancies.filters.types.UNIT_REALIZED
-                    },
-                    {
-                      value: 'GROUP_CONFIRMED',
-                      label:
-                        i18n.reports.occupancies.filters.types.GROUP_CONFIRMED
-                    },
-                    {
-                      value: 'GROUP_REALIZED',
-                      label:
-                        i18n.reports.occupancies.filters.types.GROUP_REALIZED
-                    }
+                    { display: 'UNITS', type: 'CONFIRMED' },
+                    { display: 'UNITS', type: 'PLANNED' },
+                    { display: 'UNITS', type: 'REALIZED' },
+                    { display: 'GROUPS', type: 'CONFIRMED' },
+                    { display: 'GROUPS', type: 'REALIZED' }
                   ]}
                   selectedItem={{
-                    value: filters.type,
-                    label: i18n.reports.occupancies.filters.types[filters.type]
+                    display: filters.display,
+                    type: filters.type
                   }}
                   onChange={(value) => {
                     if (value) {
                       setFilters({
                         ...filters,
-                        type: value.value as OccupancyReportType
+                        display: value.display,
+                        type: value.type
                       })
                     }
                   }}
-                  getItemLabel={(item) => item.label}
+                  getItemLabel={({ display, type }) =>
+                    i18n.reports.occupancies.filters.types[display][type]
+                  }
                 />
               </Wrapper>
             </FilterRow>
@@ -608,6 +615,7 @@ export default React.memo(function Occupancies() {
                     i18n,
                     filters.year,
                     filters.month,
+                    filters.display,
                     filters.type,
                     filters.careAreaId === undefined
                       ? i18n.common.all
@@ -700,9 +708,7 @@ export default React.memo(function Occupancies() {
                             (filters.careAreaId !== undefined ||
                               areasOpen[areaName]) && (
                               <Tr
-                                key={
-                                  'groupId' in row ? row.groupId : row.unitId
-                                }
+                                key={isGroupRow(row) ? row.groupId : row.unitId}
                               >
                                 <StyledTd>
                                   <Link to={`/units/${row.unitId}`}>

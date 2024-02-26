@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 
-import { Success } from 'lib-common/api'
+import { Success, wrapResult } from 'lib-common/api'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -14,12 +14,14 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { getSextetReport } from '../../api/reports'
+import { getSextetReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import ReportDownload from './ReportDownload'
 import { TableScrollable } from './common'
+
+const getSextetReportResult = wrapResult(getSextetReport)
 
 const years = (() => {
   const result: number[] = []
@@ -51,7 +53,7 @@ export default React.memo(function ReportSextet() {
   const [report] = useApiState(
     async () =>
       year !== null && placementType !== null
-        ? await getSextetReport(year, placementType)
+        ? await getSextetReportResult({ year, placementType })
         : Success.of([]),
     [year, placementType]
   )

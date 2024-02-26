@@ -194,7 +194,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 childId
             }
 
-        val groupReport = controller.getAssistanceNeedReport(dbInstance(), admin, clock, date)
+        val groupReport =
+            controller.getAssistanceNeedsAndActionsReport(dbInstance(), admin, clock, date)
         assertEquals(
             listOf(
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
@@ -242,7 +243,11 @@ class AssistanceNeedsAndActionsReportControllerTest :
 
         val childReport =
             db.transaction { tx ->
-                controller.getAssistanceNeedReportByChild(tx, date, AccessControlFilter.PermitAll)
+                controller.getAssistanceNeedsAndActionsReportByChild(
+                    tx,
+                    date,
+                    AccessControlFilter.PermitAll
+                )
             }
         assertEquals(
             listOf(

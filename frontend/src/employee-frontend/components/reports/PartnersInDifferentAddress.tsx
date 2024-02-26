@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { PartnersInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -15,12 +15,16 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { getPartnersInDifferentAddressReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getPartnersInDifferentAddressReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const getPartnersInDifferentAddressReportResult = wrapResult(
+  getPartnersInDifferentAddressReport
+)
 
 interface DisplayFilters {
   careArea: string
@@ -48,7 +52,7 @@ export default React.memo(function PartnersInDifferentAddress() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getPartnersInDifferentAddressReport().then(setRows)
+    void getPartnersInDifferentAddressReportResult().then(setRows)
   }, [])
 
   const filteredRows: PartnersInDifferentAddressReportRow[] = useMemo(

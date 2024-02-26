@@ -9,13 +9,14 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   PlacementCountAreaResult,
   PlacementCountReportResult
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -25,14 +26,15 @@ import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { unitProviderTypes } from 'lib-customizations/employee'
 
-import {
-  getPlacementCountReport,
-  PlacementCountReportFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getPlacementCountReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getPlacementCountReportResult = wrapResult(getPlacementCountReport)
+
+type PlacementCountReportFilters = Arg0<typeof getPlacementCountReport>
 
 interface DisplayFilters {
   careAreas: { areaId: string; areaName: string }[]
@@ -118,7 +120,7 @@ export default React.memo(function PlacementCount() {
   useEffect(() => {
     setResult(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getPlacementCountReport(filters).then(setResult)
+    void getPlacementCountReportResult(filters).then(setResult)
   }, [filters])
 
   const countTotalsFromAreaResults = (

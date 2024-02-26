@@ -26,7 +26,7 @@ export default React.memo(function FamilyContacts() {
   const { unitId } = useNonNullableParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
 
-  const rows = useQueryResult(familyContactsReportQuery(unitId))
+  const rows = useQueryResult(familyContactsReportQuery({ unitId }))
   const unit = useQueryResult(unitQuery({ daycareId: unitId }))
 
   return (
