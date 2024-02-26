@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
@@ -14,11 +15,13 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
-import { getPersonDependants } from '../../api/person'
+import { getPersonDependants } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getPersonDependantsResult = wrapResult(getPersonDependants)
 
 interface Props {
   id: UUID
@@ -31,7 +34,10 @@ export default React.memo(function PersonDependants({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [dependants] = useApiState(() => getPersonDependants(id), [id])
+  const [dependants] = useApiState(
+    () => getPersonDependantsResult({ personId: id }),
+    [id]
+  )
 
   return (
     <div>

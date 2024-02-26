@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -13,10 +14,12 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
-import { getGuardianDecisions } from '../../api/person'
+import { getDecisionsByGuardian } from '../../generated/api-clients/decision'
 import { useTranslation } from '../../state/i18n'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getDecisionsByGuardianResult = wrapResult(getDecisionsByGuardian)
 
 interface Props {
   id: UUID
@@ -29,7 +32,10 @@ const PersonDecisions = React.memo(function PersonDecisions({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [decisions] = useApiState(() => getGuardianDecisions(id), [id])
+  const [decisionsResponse] = useApiState(
+    () => getDecisionsByGuardianResult({ id }),
+    [id]
+  )
 
   return (
     <div>
@@ -41,7 +47,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
         paddingVertical="L"
         data-qa="person-decisions-collapsible"
       >
-        {renderResult(decisions, (decisions) => (
+        {renderResult(decisionsResponse, (decisionsResponse) => (
           <Table data-qa="table-of-decisions">
             <Thead>
               <Tr>
@@ -55,7 +61,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
             </Thead>
             <Tbody>
               {orderBy(
-                decisions,
+                decisionsResponse.decisions,
                 ['startDate', 'preferredUnitName', 'childName'],
                 ['desc', 'desc']
               ).map((decision: Decision) => (

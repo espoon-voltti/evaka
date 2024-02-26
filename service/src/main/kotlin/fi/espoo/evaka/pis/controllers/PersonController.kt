@@ -106,7 +106,7 @@ class PersonController(
     }
 
     @PostMapping("/{personId}/duplicate")
-    fun duplicate(
+    fun duplicatePerson(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -290,7 +290,7 @@ class PersonController(
     }
 
     @PostMapping("/search")
-    fun findBySearchTerms(
+    fun searchPerson(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,

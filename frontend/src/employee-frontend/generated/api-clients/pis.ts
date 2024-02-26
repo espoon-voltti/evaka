@@ -743,9 +743,9 @@ export async function disableSsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.duplicate
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.duplicatePerson
 */
-export async function duplicate(
+export async function duplicatePerson(
   request: {
     personId: UUID
   }
@@ -755,23 +755,6 @@ export async function duplicate(
     method: 'POST'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.findBySearchTerms
-*/
-export async function findBySearchTerms(
-  request: {
-    body: SearchPersonBody
-  }
-): Promise<PersonSummary[]> {
-  const { data: json } = await client.request<JsonOf<PersonSummary[]>>({
-    url: uri`/person/search`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<SearchPersonBody>
-  })
-  return json.map(e => deserializeJsonPersonSummary(e))
 }
 
 
@@ -902,6 +885,23 @@ export async function safeDeletePerson(
     method: 'DELETE'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.searchPerson
+*/
+export async function searchPerson(
+  request: {
+    body: SearchPersonBody
+  }
+): Promise<PersonSummary[]> {
+  const { data: json } = await client.request<JsonOf<PersonSummary[]>>({
+    url: uri`/person/search`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<SearchPersonBody>
+  })
+  return json.map(e => deserializeJsonPersonSummary(e))
 }
 
 

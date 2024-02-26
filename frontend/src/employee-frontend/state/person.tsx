@@ -21,9 +21,13 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getPersonDetails } from '../api/person'
-import { getFamilyByPerson, getParentships } from '../generated/api-clients/pis'
+import {
+  getFamilyByPerson,
+  getParentships,
+  getPerson
+} from '../generated/api-clients/pis'
 
+const getPersonResult = wrapResult(getPerson)
 const getFamilyByPersonResult = wrapResult(getFamilyByPerson)
 const getParentshipsResult = wrapResult(getParentships)
 
@@ -75,9 +79,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     },
     []
   )
-  const loadPerson = useRestApi(getPersonDetails, setFullPersonResponse)
+  const loadPerson = useRestApi(getPersonResult, setFullPersonResponse)
   useEffect(() => {
-    void loadPerson(id)
+    void loadPerson({ personId: id })
   }, [loadPerson, id])
 
   const [family, reloadFamily] = useApiState(

@@ -4,6 +4,7 @@
 
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -12,12 +13,18 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2, P } from 'lib-components/typography'
 
-import { getChildRecipients, updateChildRecipient } from '../../api/person'
+import {
+  editRecipient,
+  getRecipients
+} from '../../generated/api-clients/messaging'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
 import { renderResult } from '../async-rendering'
+
+const getRecipientsResult = wrapResult(getRecipients)
+const editRecipientResult = wrapResult(editRecipient)
 
 interface Props {
   id: UUID
@@ -30,7 +37,10 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
   const { setErrorMessage } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
   const [open, setOpen] = useState(startOpen)
-  const [recipients, loadData] = useApiState(() => getChildRecipients(id), [id])
+  const [recipients, loadData] = useApiState(
+    () => getRecipientsResult({ childId: id }),
+    [id]
+  )
   const [saving, setSaving] = useState(false)
 
   const allowUpdate = useMemo(
@@ -40,8 +50,12 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
   const onChange = useCallback(
     async (personId: UUID, checked: boolean) => {
       setSaving(true)
-      const res = await updateChildRecipient(id, personId, {
-        blocklisted: !checked
+      const res = await editRecipientResult({
+        childId: id,
+        personId,
+        body: {
+          blocklisted: !checked
+        }
       })
       if (res.isFailure) {
         setErrorMessage({

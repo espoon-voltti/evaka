@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -16,8 +17,8 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
-import { getChildApplicationSummaries } from '../../api/person'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
+import { getChildApplicationSummaries } from '../../generated/api-clients/application'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -25,6 +26,10 @@ import { RequireRole } from '../../utils/roles'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
+
+const getChildApplicationSummariesResult = wrapResult(
+  getChildApplicationSummaries
+)
 
 interface Props {
   id: UUID
@@ -36,7 +41,7 @@ export default React.memo(function ChildApplications({ id, startOpen }: Props) {
   const { person, guardians } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const [applications] = useApiState(
-    () => getChildApplicationSummaries(id),
+    () => getChildApplicationSummariesResult({ childId: id }),
     [id]
   )
   const [open, setOpen] = useState(startOpen)

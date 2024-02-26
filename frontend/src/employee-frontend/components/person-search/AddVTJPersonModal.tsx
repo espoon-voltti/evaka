@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import InputField from 'lib-components/atoms/form/InputField'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -14,9 +14,11 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { getOrCreatePersonBySsn } from '../../api/person'
+import { getOrCreatePersonBySsn } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { isSsnValid } from '../../utils/validation/validations'
+
+const getOrCreatePersonBySsnResult = wrapResult(getOrCreatePersonBySsn)
 
 export default React.memo(function VTJModal({
   closeModal
@@ -32,7 +34,9 @@ export default React.memo(function VTJModal({
   useEffect(() => {
     if (isSsnValid(ssn)) {
       setPerson(Loading.of())
-      void getOrCreatePersonBySsn(ssn, true).then(setPerson)
+      void getOrCreatePersonBySsnResult({ body: { ssn, readonly: true } }).then(
+        setPerson
+      )
     }
   }, [ssn])
 
@@ -44,7 +48,7 @@ export default React.memo(function VTJModal({
   const onConfirm = () => {
     setRequestInFlight(true)
     setSaveError(false)
-    getOrCreatePersonBySsn(ssn, false)
+    getOrCreatePersonBySsnResult({ body: { ssn, readonly: false } })
       .then((result) => {
         if (result.isSuccess) {
           closeModal()

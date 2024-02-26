@@ -6,6 +6,7 @@ import { set } from 'lodash/fp'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { getAge } from 'lib-common/utils/local-date'
@@ -17,9 +18,11 @@ import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { createPerson } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
+import { createPerson } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
+
+const createPersonResult = wrapResult(createPerson)
 
 type Form = Omit<CreatePersonBody, 'dateOfBirth'> & {
   dateOfBirth: LocalDate | null
@@ -49,7 +52,7 @@ export default React.memo(function CreatePersonModal({
     if (validForm !== undefined) {
       setRequestInFlight(true)
       setSaveError(false)
-      createPerson(validForm)
+      createPersonResult({ body: validForm })
         .then((result) => {
           if (result.isSuccess) {
             closeModal()

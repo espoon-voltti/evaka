@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import {
   ApplicationType,
   PersonApplicationSummary
@@ -18,10 +19,14 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
-import { getGuardianApplicationSummaries } from '../../api/person'
+import { getGuardianApplicationSummaries } from '../../generated/api-clients/application'
 import { useTranslation } from '../../state/i18n'
 import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getGuardianApplicationSummariesResult = wrapResult(
+  getGuardianApplicationSummaries
+)
 
 interface Props {
   id: UUID
@@ -35,7 +40,7 @@ export default React.memo(function PersonApplications({
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
   const [applications] = useApiState(
-    () => getGuardianApplicationSummaries(id),
+    () => getGuardianApplicationSummariesResult({ guardianId: id }),
     [id]
   )
 

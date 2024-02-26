@@ -7,12 +7,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import {
-  getPersonGuardiansAndBlockedGuardians,
-  GuardiansAndBlockedGuardians,
-  updateEvakaRights
-} from 'employee-frontend/api/person'
-import { Result, Success } from 'lib-common/api'
+import { combine, Result, Success, wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
@@ -28,46 +23,54 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen } from 'lib-icons'
 
+import {
+  getPersonBlockedGuardians,
+  getPersonGuardians,
+  updateGuardianEvakaRights
+} from '../../generated/api-clients/pis'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
+const getPersonGuardiansResult = wrapResult(getPersonGuardians)
+const getPersonBlockedGuardiansResult = wrapResult(getPersonBlockedGuardians)
+const updateGuardianEvakaRightsResult = wrapResult(updateGuardianEvakaRights)
+
 export default React.memo(function Guardians() {
   const { i18n } = useTranslation()
   const { childId, permittedActions } = useContext(ChildContext)
-  const [guardiansAndBlockedGuardians, reloadGuardiansAndBlockedGuardians] =
-    useApiState(
-      () =>
-        childId
-          ? getPersonGuardiansAndBlockedGuardians(childId, permittedActions)
-          : Promise.resolve(
-              Success.of<GuardiansAndBlockedGuardians>({
-                guardians: [],
-                blockedGuardians: []
-              })
-            ),
-      [childId, permittedActions]
-    )
-  const [editingEvakaRights, setEditingEvakaRights] = useState<UUID>()
-
+  const [guardians, reloadGuardians] = useApiState(
+    () =>
+      childId && permittedActions.has('READ_GUARDIANS')
+        ? getPersonGuardiansResult({ personId: childId })
+        : Promise.resolve(Success.of([])),
+    [childId, permittedActions]
+  )
+  const [blockedGuardians, reloadBlockedGuardians] = useApiState(
+    () =>
+      childId && permittedActions.has('READ_BLOCKED_GUARDIANS')
+        ? getPersonBlockedGuardiansResult({ personId: childId })
+        : Promise.resolve(Success.of([])),
+    [childId, permittedActions]
+  )
   const allGuardians: Result<(PersonJSON & { evakaRightsDenied: boolean })[]> =
-    guardiansAndBlockedGuardians.isSuccess
-      ? Success.of(
-          orderBy(
-            guardiansAndBlockedGuardians.value.guardians
-              .map((g) => ({ ...g, evakaRightsDenied: false }))
-              .concat(
-                guardiansAndBlockedGuardians.value.blockedGuardians.map(
-                  (g) => ({ ...g, evakaRightsDenied: true })
-                )
-              ),
-            ['lastName', 'firstName'],
-            ['asc']
-          )
-        )
-      : Success.of<(PersonJSON & { evakaRightsDenied: boolean })[]>([])
+    combine(guardians, blockedGuardians).map(([guardians, blockedGuardians]) =>
+      orderBy(
+        guardians
+          .map((g) => ({ ...g, evakaRightsDenied: false }))
+          .concat(
+            blockedGuardians.map((g) => ({ ...g, evakaRightsDenied: true }))
+          ),
+        ['lastName', 'firstName'],
+        ['asc']
+      )
+    )
+  const reloadAllGuardians = () =>
+    Promise.all([reloadGuardians(), reloadBlockedGuardians()])
+
+  const [editingEvakaRights, setEditingEvakaRights] = useState<UUID>()
 
   const stopEditing = useCallback(() => setEditingEvakaRights(undefined), [])
 
@@ -89,7 +92,7 @@ export default React.memo(function Guardians() {
             )
             .getOrElse(false)}
           stopEditing={stopEditing}
-          reloadGuardians={reloadGuardiansAndBlockedGuardians}
+          reloadGuardians={reloadAllGuardians}
         />
       )}
       <H3 noMargin>{i18n.personProfile.guardians}</H3>
@@ -193,7 +196,14 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
   )
 
   const update = useCallback(
-    () => updateEvakaRights(childId, guardianId, editState.denied),
+    () =>
+      updateGuardianEvakaRightsResult({
+        childId,
+        body: {
+          guardianId,
+          denied: editState.denied
+        }
+      }),
     [childId, guardianId, editState.denied]
   )
 

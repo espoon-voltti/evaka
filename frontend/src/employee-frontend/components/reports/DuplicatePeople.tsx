@@ -22,8 +22,8 @@ import { colors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faQuestion } from 'lib-icons'
 
-import { deletePerson, mergePeople } from '../../api/person'
 import { CHILD_AGE } from '../../constants'
+import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import { getDuplicatePeopleReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -31,6 +31,8 @@ import { UIContext } from '../../state/ui'
 import { FilterRow, TableScrollable } from './common'
 
 const getDuplicatePeopleReportResult = wrapResult(getDuplicatePeopleReport)
+const safeDeletePersonResult = wrapResult(safeDeletePerson)
+const mergePeopleResult = wrapResult(mergePeople)
 
 type DuplicatePeopleFilters = Arg0<typeof getDuplicatePeopleReport>
 
@@ -224,7 +226,9 @@ export default React.memo(function DuplicatePeople() {
                     setDuplicate(null)
 
                     if (masterId && duplicateId) {
-                      void mergePeople(masterId, duplicateId).then((res) => {
+                      void mergePeopleResult({
+                        body: { master: masterId, duplicate: duplicateId }
+                      }).then((res) => {
                         if (res.isFailure) {
                           setErrorMessage({
                             type: 'error',
@@ -254,7 +258,9 @@ export default React.memo(function DuplicatePeople() {
                 }}
                 resolve={{
                   action: () => {
-                    void deletePerson(deleteId).then(loadData)
+                    void safeDeletePersonResult({ personId: deleteId }).then(
+                      loadData
+                    )
                     setDeleteId(null)
                   },
                   label: i18n.common.remove

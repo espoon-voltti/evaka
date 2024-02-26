@@ -55,7 +55,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.STAFF))
 
         assertThrows<Forbidden> {
-            controller.duplicate(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
+            controller.duplicatePerson(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
         }
     }
 
@@ -64,7 +64,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
         assertThrows<NotFound> {
-            controller.duplicate(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
+            controller.duplicatePerson(dbInstance(), user, clock, PersonId(UUID.randomUUID()))
         }
     }
 
@@ -81,7 +81,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
 
-        assertThrows<BadRequest> { controller.duplicate(dbInstance(), user, clock, duplicate.id) }
+        assertThrows<BadRequest> {
+            controller.duplicatePerson(dbInstance(), user, clock, duplicate.id)
+        }
     }
 
     @Test
@@ -90,7 +92,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
         assertThat(person).extracting { it.identity }.isNotNull
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val original = controller.getPerson(dbInstance(), user, clock, person.id)
         val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
@@ -132,7 +134,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val original = controller.getPerson(dbInstance(), user, clock, person.id)
         val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
@@ -167,7 +169,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val original = controller.getPerson(dbInstance(), user, clock, person.id)
         val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
@@ -205,7 +207,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val original = controller.getPerson(dbInstance(), user, clock, person.id)
         val duplicate = controller.getPerson(dbInstance(), user, clock, duplicateId)
@@ -243,7 +245,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val original = childController.getAdditionalInfo(dbInstance(), user, clock, person.id)
         val duplicate = childController.getAdditionalInfo(dbInstance(), user, clock, duplicateId)
@@ -259,7 +261,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(DevGuardian(guardianId = guardianId, childId = person.id))
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
         assertThat(fosterParents)
@@ -276,7 +278,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(DevGuardian(guardianId = person.id, childId = childId))
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
         assertThat(fosterChildren).isEmpty()
@@ -298,7 +300,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val fosterParents = db.transaction { tx -> tx.getFosterParents(duplicateId) }
         assertThat(fosterParents)
@@ -322,7 +324,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val duplicateId = controller.duplicate(dbInstance(), user, clock, person.id)
+        val duplicateId = controller.duplicatePerson(dbInstance(), user, clock, person.id)
 
         val fosterChildren = db.transaction { tx -> tx.getFosterChildren(duplicateId) }
         assertThat(fosterChildren).isEmpty()
@@ -338,7 +340,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
 
         val response =
-            controller.findBySearchTerms(
+            controller.searchPerson(
                 dbInstance(),
                 user,
                 clock,
@@ -362,7 +364,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
 
         val response =
-            controller.findBySearchTerms(
+            controller.searchPerson(
                 dbInstance(),
                 user,
                 clock,
@@ -386,7 +388,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val person = createPerson()
 
         val response =
-            controller.findBySearchTerms(
+            controller.searchPerson(
                 dbInstance(),
                 user,
                 clock,
@@ -412,7 +414,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         // IDEOGRAPHIC SPACE, not supported by default in regexes
         // unless Java's Pattern.UNICODE_CHARACTER_CLASS-like functionality is enabled.
         val response =
-            controller.findBySearchTerms(
+            controller.searchPerson(
                 dbInstance(),
                 user,
                 clock,

@@ -24,11 +24,16 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getChildDetails, getPersonGuardians } from '../api/person'
 import { getChildBackupCares } from '../generated/api-clients/backupcare'
-import { getParentships } from '../generated/api-clients/pis'
+import { getChild } from '../generated/api-clients/daycare'
+import {
+  getParentships,
+  getPersonGuardians
+} from '../generated/api-clients/pis'
 import { getPlacements } from '../generated/api-clients/placement'
 
+const getChildResult = wrapResult(getChild)
+const getPersonGuardiansResult = wrapResult(getPersonGuardians)
 const getPlacementsResult = wrapResult(getPlacements)
 const getParentshipsResult = wrapResult(getParentships)
 
@@ -112,13 +117,13 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     },
     [updatePermittedActions]
   )
-  const loadChild = useRestApi(getChildDetails, setFullChildResponse)
+  const loadChild = useRestApi(getChildResult, setFullChildResponse)
   useEffect(() => {
-    void loadChild(id)
+    void loadChild({ childId: id })
   }, [loadChild, id])
 
   const reloadPermittedActions = useCallback(() => {
-    void getChildDetails(id).then(updatePermittedActions)
+    void getChildResult({ childId: id }).then(updatePermittedActions)
   }, [id, updatePermittedActions])
 
   const person = useMemo(
@@ -169,7 +174,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [guardians, reloadGuardians] = useApiState(
     async () =>
       permittedActions.has('READ_GUARDIANS')
-        ? await getPersonGuardians(id)
+        ? await getPersonGuardiansResult({ personId: id })
         : Loading.of<PersonJSON[]>(),
     [id, permittedActions]
   )

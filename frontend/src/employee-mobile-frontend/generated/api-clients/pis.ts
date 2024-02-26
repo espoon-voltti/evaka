@@ -663,9 +663,9 @@ export async function disableSsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.duplicate
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.duplicatePerson
 */
-export async function duplicate(
+export async function duplicatePerson(
   request: {
     personId: UUID
   }

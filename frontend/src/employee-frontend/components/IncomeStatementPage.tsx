@@ -38,16 +38,17 @@ import {
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
-import { getPerson } from '../api/person'
 import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
 } from '../generated/api-clients/incomestatement'
+import { getPersonIdentity } from '../generated/api-clients/pis'
 import { Translations, useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 const getIncomeStatementResult = wrapResult(getIncomeStatement)
 const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
@@ -60,7 +61,10 @@ export default React.memo(function IncomeStatementPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const [person] = useApiState(() => getPerson(personId), [personId])
+  const [person] = useApiState(
+    () => getPersonIdentityResult({ personId }),
+    [personId]
+  )
   const [incomeStatement, loadIncomeStatement] = useApiState(
     () => getIncomeStatementResult({ personId, incomeStatementId }),
     [personId, incomeStatementId]

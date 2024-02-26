@@ -11,11 +11,12 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
+import { Failure, Result, wrapResult } from 'lib-common/api'
 import {
   MessageReceiversResponse,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -24,8 +25,8 @@ import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'
-import { getPerson } from '../../api/person'
 import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
+import { getPersonIdentity } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
@@ -37,6 +38,7 @@ import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
 import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
 
 const PanelContainer = styled.div`
@@ -71,7 +73,10 @@ export default React.memo(function MessagesPage({
   const { i18n } = useTranslation()
 
   const [prefilledRecipientPerson] = useApiState(
-    () => getPerson(prefilledRecipient),
+    (): Promise<Result<PersonJSON>> =>
+      prefilledRecipient
+        ? getPersonIdentityResult({ personId: prefilledRecipient })
+        : Promise.resolve(Failure.of({ message: 'No person id given' })),
     [prefilledRecipient]
   )
 

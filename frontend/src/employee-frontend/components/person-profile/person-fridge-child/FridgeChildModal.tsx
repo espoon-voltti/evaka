@@ -15,10 +15,10 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
 
-import { getPerson } from '../../../api/person'
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
 import {
   createParentship,
+  getPersonIdentity,
   updateParentship
 } from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
@@ -28,6 +28,7 @@ import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
 
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const createParentshipResult = wrapResult(createParentship)
 const updateParentshipResult = wrapResult(updateParentship)
 
@@ -110,7 +111,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {
-    void getPerson(headPersonId).then(setPersonData)
+    void getPersonIdentityResult({ personId: headPersonId }).then(setPersonData)
   }, [headPersonId, setPersonData])
 
   const childFormActions = () => {

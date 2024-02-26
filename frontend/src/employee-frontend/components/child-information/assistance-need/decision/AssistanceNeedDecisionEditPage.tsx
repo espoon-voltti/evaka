@@ -13,7 +13,7 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import AutosaveStatusIndicator from 'employee-frontend/components/common/AutosaveStatusIndicator'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Failure, Result } from 'lib-common/api'
+import { Failure, Result, wrapResult } from 'lib-common/api'
 import {
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionLanguage
@@ -39,13 +39,15 @@ import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags, Translations } from 'lib-customizations/employee'
 
-import { getPerson } from '../../../../api/person'
+import { getPersonIdentity } from '../../../../generated/api-clients/pis'
 
 import AssistanceNeededDecisionForm, {
   FieldInfos
 } from './AssistanceNeededDecisionForm'
 import { useAssistanceNeedDecision } from './assistance-need-decision-form'
 import { FooterContainer } from './common'
+
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
 
 // straightforward required fields, more complex cases are handled
 // in missingFields and fieldInfos useMemos
@@ -87,7 +89,10 @@ const HorizontalLineWithoutBottomMargin = styled(HorizontalLine)`
 
 export default React.memo(function AssistanceNeedDecisionEditPage() {
   const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
-  const [child] = useApiState(() => getPerson(childId), [childId])
+  const [child] = useApiState(
+    () => getPersonIdentityResult({ personId: childId }),
+    [childId]
+  )
 
   const { i18n } = useTranslation()
 
