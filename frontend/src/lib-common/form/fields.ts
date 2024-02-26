@@ -227,7 +227,9 @@ export const localTime = () =>
 
 export type LocalTimeField = FieldType<typeof localTime>
 
-export const localTimeRange = () =>
+export const localTimeRange = ({
+  allowMidnightEnd = true
+}: { allowMidnightEnd?: boolean } = {}) =>
   transformed(
     object({
       startTime: localTime(),
@@ -239,6 +241,9 @@ export const localTimeRange = () =>
     }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
       if (startTime === undefined && endTime === undefined) {
         return ValidationSuccess.of(undefined)
+      }
+      if (!allowMidnightEnd && endTime && endTime.isEqual(LocalTime.MIDNIGHT)) {
+        return ValidationError.of('timeFormat')
       }
       const result =
         startTime !== undefined && endTime !== undefined
