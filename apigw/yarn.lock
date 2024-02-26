@@ -456,13 +456,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:1.6.4":
-  version: 1.6.4
-  resolution: "@datadog/native-iast-taint-tracking@npm:1.6.4"
+"@datadog/native-iast-taint-tracking@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@datadog/native-iast-taint-tracking@npm:1.7.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: a6af6fb529cf7ee44207da95e59de351af0628cce538ff4571a96ea87d286ba52c161557eaa82625e4c0e9e093ae6971eb5458eb40bfc70cb8f657752606102c
+  checksum: 35d9187610a005622c82f2299cd4ca773a722b893ca7aa57e71de13362ee65e3e47e96b69bf36755cac9a60656f01f04914122cbdb99c64bef588f9dd703d758
   languageName: node
   linkType: hard
 
@@ -2628,13 +2628,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.3.0":
-  version: 5.3.0
-  resolution: "dd-trace@npm:5.3.0"
+"dd-trace@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "dd-trace@npm:5.4.0"
   dependencies:
     "@datadog/native-appsec": "npm:7.0.0"
     "@datadog/native-iast-rewriter": "npm:2.2.3"
-    "@datadog/native-iast-taint-tracking": "npm:1.6.4"
+    "@datadog/native-iast-taint-tracking": "npm:1.7.0"
     "@datadog/native-metrics": "npm:^2.0.0"
     "@datadog/pprof": "npm:5.0.0"
     "@datadog/sketches-js": "npm:^2.1.0"
@@ -2664,7 +2664,7 @@ __metadata:
     semver: "npm:^7.5.4"
     shell-quote: "npm:^1.8.1"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: adc4bf61614a8f3b4df4289ffa110313b18d41077f7e2af30bf1aa5f43b8e12dcefc89a68d57c0b95e11007206cf12e5f57d53618efd7a6616d6fb733d2ceeda
+  checksum: ef46f32048346ed2744ed82e7e43a8ef983829990a8b47924185869d36a9b6f60de5b2db9a55373fe68912d28e53b36f59481da21d9e18eb947926188f442d6d
   languageName: node
   linkType: hard
 
@@ -3152,7 +3152,7 @@ __metadata:
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^3.3.0"
-    dd-trace: "npm:^5.3.0"
+    dd-trace: "npm:^5.4.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.1.2"
