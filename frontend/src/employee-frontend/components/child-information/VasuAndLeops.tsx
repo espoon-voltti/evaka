@@ -12,7 +12,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Result } from 'lib-common/api'
+import { combine, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   PlacementResponse,
@@ -39,12 +39,12 @@ import FormModal, {
 } from 'lib-components/molecules/modals/FormModal'
 import { defaultMargins } from 'lib-components/white-space'
 
+import { createDocument } from '../../generated/api-clients/vasu'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { VasuStateChip } from '../common/VasuStateChip'
-import { createVasuDocument } from '../vasu/api'
 import {
   deleteVasuDocumentMutation,
   updateDocumentStateMutation,
@@ -52,6 +52,8 @@ import {
 } from '../vasu/queries'
 import { getVasuTemplateSummaries } from '../vasu/templates/api'
 import { getLastPublished } from '../vasu/vasu-events'
+
+const createDocumentResult = wrapResult(createDocument)
 
 const StateCell = styled.div`
   display: flex;
@@ -180,7 +182,7 @@ function VasuInitialization({
       }),
     [navigate, i18n, setErrorMessage]
   )
-  const createVasu = useRestApi(createVasuDocument, handleVasuResult)
+  const createVasu = useRestApi(createDocumentResult, handleVasuResult)
 
   useEffect(
     function autoSelectTemplate() {
@@ -188,7 +190,10 @@ function VasuInitialization({
         filteredTemplates?.isSuccess &&
         filteredTemplates.value.length === 1
       ) {
-        void createVasu(childId, filteredTemplates.value[0].id)
+        void createVasu({
+          childId,
+          body: { templateId: filteredTemplates.value[0].id }
+        })
       }
     },
     [childId, createVasu, filteredTemplates]
@@ -225,7 +230,9 @@ function VasuInitialization({
               <TemplateSelectionModal
                 loading={initializing}
                 onClose={() => setTemplates(undefined)}
-                onSelect={(id) => createVasu(childId, id)}
+                onSelect={(id) =>
+                  createVasu({ childId, body: { templateId: id } })
+                }
                 templates={value}
               />
             )
@@ -243,7 +250,7 @@ interface Props {
 export default React.memo(function VasuAndLeops({ id: childId }: Props) {
   const { i18n } = useTranslation()
   const { placements } = useContext(ChildContext)
-  const vasus = useQueryResult(vasuDocumentSummariesQuery(childId))
+  const vasus = useQueryResult(vasuDocumentSummariesQuery({ childId }))
   const navigate = useNavigate()
 
   const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
@@ -314,9 +321,11 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                       <InlineMutateButton
                         mutation={updateDocumentStateMutation}
                         onClick={() => ({
+                          id: vasu.id,
                           childId,
-                          documentId: vasu.id,
-                          eventType: 'RETURNED_TO_REVIEWED' as const
+                          body: {
+                            eventType: 'RETURNED_TO_REVIEWED' as const
+                          }
                         })}
                         text={
                           i18n.vasu.transitions.RETURNED_TO_REVIEWED.buttonText
@@ -356,7 +365,7 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
           resolveMutation={deleteVasuDocumentMutation}
           resolveAction={() => ({
             childId,
-            documentId: confirmDelete
+            id: confirmDelete
           })}
           resolveLabel={i18n.common.remove}
           onSuccess={() => setConfirmDelete(undefined)}
