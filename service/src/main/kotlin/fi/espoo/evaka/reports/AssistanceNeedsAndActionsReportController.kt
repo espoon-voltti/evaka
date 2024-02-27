@@ -336,7 +336,26 @@ WITH actions AS (
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
-)
+), assistance_need_voucher_coefficient_counts AS (
+    SELECT
+        daycare_group_id,
+        child_id,
+        json_build_object('other_assistance_measure_counts',count)
+    FROM (
+        SELECT
+            gpl.daycare_group_id,
+            oam.child_id,
+            count(vc.child_id) AS count
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN assistance_need_voucher_coefficient vc ON vc.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND vc.validity_period @> ${bind(date)}
+        GROUP BY 1, 2
+    ) daycare_assistance_stats
+    GROUP BY daycare_group_id, child_id
+) 
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -351,7 +370,8 @@ SELECT
     coalesce(actions.other_action, '') AS other_action,
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
-    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
+    coalesce(assistance_need_voucher_coefficient_counts, '{}') AS assistance_need_voucher_coefficient_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -366,6 +386,7 @@ LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.dayc
     AND child.id = preschool_assistance_counts.child_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
     AND child.id = other_assistance_measure_counts.child_id
+LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id    
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
