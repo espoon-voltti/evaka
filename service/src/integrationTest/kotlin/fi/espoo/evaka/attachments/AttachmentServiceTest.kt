@@ -142,9 +142,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         clock.tick(Duration.ofDays(1) + Duration.ofSeconds(1))
-        db.transaction {
-            attachmentService.scheduleOrphanAttachmentDeletion(it, clock, dryRun = false)
-        }
+        db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
         clock.tick(Duration.ofSeconds(1))
         asyncJobRunner.runPendingJobsSync(clock)
 
