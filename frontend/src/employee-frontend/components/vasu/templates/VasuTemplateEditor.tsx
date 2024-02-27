@@ -12,7 +12,7 @@ import React, {
 import { unstable_usePrompt as usePrompt, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   CheckboxQuestion,
   DateQuestion,
@@ -55,6 +55,10 @@ import colors from 'lib-customizations/common'
 import { vasuTranslations } from 'lib-customizations/employee'
 import { faArrowDown, faArrowUp, faPlus, faTrash } from 'lib-icons'
 
+import {
+  getTemplate,
+  putTemplateContent
+} from '../../../generated/api-clients/vasu'
 import { useTranslation } from '../../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../../utils/useWarnOnUnsavedChanges'
 import { renderResult } from '../../async-rendering'
@@ -77,7 +81,9 @@ import {
 
 import CreateParagraphModal from './CreateParagraphModal'
 import CreateQuestionModal from './CreateQuestionModal'
-import { getVasuTemplate, updateVasuTemplateContents } from './api'
+
+const getTemplateResult = wrapResult(getTemplate)
+const putTemplateContentResult = wrapResult(putTemplateContent)
 
 export default React.memo(function VasuTemplateEditor() {
   const { id } = useNonNullableParams<{ id: UUID }>()
@@ -94,9 +100,9 @@ export default React.memo(function VasuTemplateEditor() {
   const [addingParagraph, setAddingParagraph] =
     useState<[number, number, VasuSection]>() // [section, question]
 
-  const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
+  const loadTemplate = useRestApi(getTemplateResult, setTemplate)
   useEffect(() => {
-    void loadTemplate(id)
+    void loadTemplate({ id })
   }, [id, loadTemplate])
   useWarnOnUnsavedChanges(dirty, i18n.vasuTemplates.unsavedWarning)
   usePrompt({
@@ -107,7 +113,7 @@ export default React.memo(function VasuTemplateEditor() {
   const onSave = useCallback(
     () =>
       template.isSuccess
-        ? updateVasuTemplateContents(id, template.value.content)
+        ? putTemplateContentResult({ id, body: template.value.content })
         : undefined,
     [id, template]
   )

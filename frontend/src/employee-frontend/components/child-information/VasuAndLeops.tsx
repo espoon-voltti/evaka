@@ -39,7 +39,7 @@ import FormModal, {
 } from 'lib-components/molecules/modals/FormModal'
 import { defaultMargins } from 'lib-components/white-space'
 
-import { createDocument } from '../../generated/api-clients/vasu'
+import { createDocument, getTemplates } from '../../generated/api-clients/vasu'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -50,10 +50,10 @@ import {
   updateDocumentStateMutation,
   vasuDocumentSummariesQuery
 } from '../vasu/queries'
-import { getVasuTemplateSummaries } from '../vasu/templates/api'
 import { getLastPublished } from '../vasu/vasu-events'
 
 const createDocumentResult = wrapResult(createDocument)
+const getTemplatesResult = wrapResult(getTemplates)
 
 const StateCell = styled.div`
   display: flex;
@@ -104,7 +104,8 @@ const InitializationContainer = styled.div`
   margin-bottom: ${defaultMargins.s};
 `
 
-const getValidVasuTemplateSummaries = () => getVasuTemplateSummaries(true)
+const getValidVasuTemplateSummaries = () =>
+  getTemplatesResult({ validOnly: true })
 
 const preschoolPlacementTypes: readonly PlacementType[] = [
   'PRESCHOOL',
