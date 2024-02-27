@@ -14,20 +14,19 @@ import {
   getClubTerms,
   updateClubTerm
 } from '../../generated/api-clients/daycare'
-import { createQueryKeys } from '../../query'
-
 import {
-  createFixedPeriodQuestionnaire,
   createHolidayPeriod,
+  createHolidayQuestionnaire,
   deleteHolidayPeriod,
-  deleteQuestionnaire,
+  deleteHolidayQuestionnaire,
   getHolidayPeriod,
   getHolidayPeriods,
   getQuestionnaire,
   getQuestionnaires,
-  updateFixedPeriodQuestionnaire,
-  updateHolidayPeriod
-} from './api'
+  updateHolidayPeriod,
+  updateHolidayQuestionnaire
+} from '../../generated/api-clients/holidayperiod'
+import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('holidayPeriods', {
   holidayPeriods: () => ['holidayPeriods'],
@@ -47,7 +46,7 @@ export const holidayPeriodsQuery = query({
 
 export const holidayPeriodQuery = query({
   api: getHolidayPeriod,
-  queryKey: queryKeys.holidayPeriod
+  queryKey: ({ id }) => queryKeys.holidayPeriod(id)
 })
 
 export const questionnairesQuery = query({
@@ -57,7 +56,7 @@ export const questionnairesQuery = query({
 
 export const questionnaireQuery = query({
   api: getQuestionnaire,
-  queryKey: queryKeys.questionnaire
+  queryKey: ({ id }) => queryKeys.questionnaire(id)
 })
 
 export const preschoolTermsQuery = query({
@@ -101,19 +100,19 @@ export const updateHolidayPeriodMutation = mutation({
 
 export const deleteHolidayPeriodMutation = mutation({
   api: deleteHolidayPeriod,
-  invalidateQueryKeys: (id) => [
+  invalidateQueryKeys: ({ id }) => [
     queryKeys.holidayPeriods(),
     queryKeys.holidayPeriod(id)
   ]
 })
 
 export const createFixedPeriodQuestionnaireMutation = mutation({
-  api: createFixedPeriodQuestionnaire,
+  api: createHolidayQuestionnaire,
   invalidateQueryKeys: () => [queryKeys.questionnaires()]
 })
 
 export const updateFixedPeriodQuestionnaireMutation = mutation({
-  api: updateFixedPeriodQuestionnaire,
+  api: updateHolidayQuestionnaire,
   invalidateQueryKeys: ({ id }) => [
     queryKeys.questionnaires(),
     queryKeys.questionnaire(id)
@@ -121,8 +120,8 @@ export const updateFixedPeriodQuestionnaireMutation = mutation({
 })
 
 export const deleteQuestionnaireMutation = mutation({
-  api: deleteQuestionnaire,
-  invalidateQueryKeys: (id) => [
+  api: deleteHolidayQuestionnaire,
+  invalidateQueryKeys: ({ id }) => [
     queryKeys.questionnaires(),
     queryKeys.questionnaire(id)
   ]

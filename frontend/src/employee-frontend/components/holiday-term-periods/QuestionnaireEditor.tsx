@@ -17,7 +17,7 @@ import { questionnaireQuery } from './queries'
 export default React.memo(function QuestionnaireEditor() {
   const { id } = useNonNullableParams<{ id: string }>()
 
-  const questionnaire = useQueryResult(questionnaireQuery(id), {
+  const questionnaire = useQueryResult(questionnaireQuery({ id }), {
     enabled: id !== 'new'
   })
 
