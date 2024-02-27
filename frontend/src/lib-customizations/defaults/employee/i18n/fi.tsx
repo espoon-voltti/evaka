@@ -3630,6 +3630,14 @@ export const fi = {
       missingServiceNeed: 'palveluntarve puuttuu',
       total: 'lapsia yhteensä'
     },
+    exceededServiceNeed: {
+      title: 'Palveluntarpeen ylitykset',
+      description:
+        'Raportti listaa lapset, joiden palveluntarpeen tunnit on ylitetty.',
+      serviceNeedHours: 'Palvelun tarve (h)',
+      usedServiceHours: 'Käytetty (h)',
+      excessHours: 'Ylitys (h)'
+    },
     units: {
       title: 'Yksiköt',
       description: 'Yhteenveto yksiköiden tiedoista.',

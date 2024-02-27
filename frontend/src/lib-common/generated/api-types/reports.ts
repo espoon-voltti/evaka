@@ -252,6 +252,26 @@ export interface EndedPlacementsReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.ExceededServiceNeedReportRow
+*/
+export interface ExceededServiceNeedReportRow {
+  childFirstName: string
+  childId: UUID
+  childLastName: string
+  excessHours: number
+  serviceNeedHoursPerMonth: number
+  usedServiceHours: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.ExceededServiceNeedReportUnit
+*/
+export interface ExceededServiceNeedReportUnit {
+  id: UUID
+  name: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.FamilyConflictReportRow
 */
 export interface FamilyConflictReportRow {
@@ -671,6 +691,7 @@ export type Report =
   | 'DECISIONS'
   | 'DUPLICATE_PEOPLE'
   | 'ENDED_PLACEMENTS'
+  | 'EXCEEDED_SERVICE_NEEDS'
   | 'FAMILY_CONFLICT'
   | 'FAMILY_DAYCARE_MEAL_REPORT'
   | 'INVOICE'

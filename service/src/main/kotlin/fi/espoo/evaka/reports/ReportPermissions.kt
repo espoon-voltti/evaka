@@ -23,6 +23,7 @@ enum class Report {
     DECISIONS,
     DUPLICATE_PEOPLE,
     ENDED_PLACEMENTS,
+    EXCEEDED_SERVICE_NEEDS,
     FAMILY_CONFLICT,
     FAMILY_DAYCARE_MEAL_REPORT,
     INVOICE,
@@ -105,6 +106,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.ENDED_PLACEMENTS.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_ENDED_PLACEMENTS_REPORT)
+                    },
+                    Report.EXCEEDED_SERVICE_NEEDS.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT
+                        )
                     },
                     Report.FAMILY_CONFLICT.takeIf {
                         permittedActionsForSomeUnit.contains(

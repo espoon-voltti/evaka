@@ -31,7 +31,7 @@ const LinkText = styled.span`
 interface Props<T> {
   data: T[]
   headers?: { label: string; key: keyof T }[]
-  filename: string
+  filename: string | (() => string)
   'data-qa'?: string
 }
 
@@ -43,6 +43,7 @@ function ReportDownload<T extends object>({
   'data-qa': dataQa
 }: Props<T>) {
   const { i18n } = useTranslation()
+  const filenameStr = typeof filename === 'function' ? filename() : filename
   const [reloadCSV, setReloadCSV] = useState(true)
 
   /*
@@ -51,7 +52,7 @@ function ReportDownload<T extends object>({
   */
   useLayoutEffect(() => {
     if (!reloadCSV) setReloadCSV(true)
-  }, [data, headers, filename]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data, headers, filenameStr]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = reloadCSV
@@ -73,7 +74,7 @@ function ReportDownload<T extends object>({
               key: String(key)
             }))}
             separator=";"
-            filename={filename}
+            filename={filenameStr}
           >
             <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
             <LinkText>{i18n.reports.downloadButton}</LinkText>

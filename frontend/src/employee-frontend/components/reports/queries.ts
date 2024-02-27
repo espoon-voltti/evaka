@@ -24,9 +24,19 @@ import {
   startVardaUpdate,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
+import {
+  getExceededServiceNeedReportRows,
+  getExceededServiceNeedReportUnits
+} from '../../generated/api-clients/reports'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('reports', {
+  exceededServiceNeedsUnits: () => ['exceededServiceNeedsUnits'],
+  exceededServiceNeedsRows: (params: {
+    unitId: UUID
+    year: number
+    month: number
+  }) => ['exceededServiceNeedsReportRows', params],
   familyContacts: (unitId: UUID) => ['familyContacts', unitId],
   missingHeadOfFamily: (filters: MissingHeadOfFamilyReportFilters) => [
     'missingHeadOfFamily',
@@ -45,6 +55,16 @@ const queryKeys = createQueryKeys('reports', {
   futurePreschoolers: () => ['futurePreschoolers'],
   preschoolGroups: () => ['preschoolGroups'],
   units: () => ['units']
+})
+
+export const exceededServiceNeedReportUnitsQuery = query({
+  api: getExceededServiceNeedReportUnits,
+  queryKey: queryKeys.exceededServiceNeedsUnits
+})
+
+export const exceededServiceNeedsReportRowsQuery = query({
+  api: getExceededServiceNeedReportRows,
+  queryKey: queryKeys.exceededServiceNeedsRows
 })
 
 export const familyContactsReportQuery = query({

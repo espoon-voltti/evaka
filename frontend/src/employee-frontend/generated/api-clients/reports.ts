@@ -18,6 +18,8 @@ import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-ty
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
+import { ExceededServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
+import { ExceededServiceNeedReportUnit } from 'lib-common/generated/api-types/reports'
 import { FamilyConflictReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/reports'
@@ -300,6 +302,42 @@ export async function getEndedPlacementsReport(
     params
   })
   return json.map(e => deserializeJsonEndedPlacementsReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportRows
+*/
+export async function getExceededServiceNeedReportRows(
+  request: {
+    unitId: UUID,
+    year: number,
+    month: number
+  }
+): Promise<ExceededServiceNeedReportRow[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportRow[]>>({
+    url: uri`/reports/exceeded-service-need/rows`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportUnits
+*/
+export async function getExceededServiceNeedReportUnits(): Promise<ExceededServiceNeedReportUnit[]> {
+  const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportUnit[]>>({
+    url: uri`/reports/exceeded-service-need/units`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 

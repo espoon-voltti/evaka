@@ -947,21 +947,9 @@ class DevApi(
         }
     }
 
-    data class DevHoliday(val date: LocalDate, val description: String)
-
     @PostMapping("/holiday")
     fun createHoliday(db: Database, @RequestBody holiday: DevHoliday) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                @Suppress("DEPRECATION")
-                tx.createUpdate(
-                        "INSERT INTO holiday(date, description) VALUES(:date, :description)"
-                    )
-                    .bind("date", holiday.date)
-                    .bind("description", holiday.description)
-                    .execute()
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> tx.insert(holiday) } }
     }
 
     @PostMapping("/holiday-period/questionnaire/{id}")
@@ -1743,6 +1731,8 @@ data class DevChild(
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = ""
 )
+
+data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
 
 data class DevDaycare(
     val id: DaycareId = DaycareId(UUID.randomUUID()),

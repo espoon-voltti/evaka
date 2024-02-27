@@ -551,7 +551,7 @@ export interface DevGuardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevHoliday
+* Generated from fi.espoo.evaka.shared.dev.DevHoliday
 */
 export interface DevHoliday {
   date: LocalDate
