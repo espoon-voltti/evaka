@@ -384,12 +384,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // then 2 absences with correct category types
         val absences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(4, absences.size)
         assertEquals(firstAbsence, absences[0].date)
         assertEquals(secondAbsence, absences[1].date)
@@ -437,12 +432,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // Verify that the future absences in new placement period has been deleted
         val updatedAbsences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(2, updatedAbsences.size)
         assertEquals(firstAbsence, updatedAbsences[0].date)
         assertEquals(secondAbsence, updatedAbsences[1].date)
@@ -611,12 +601,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // then 4 absences with correct category types
         val absences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(4, absences.size)
         assertEquals(firstAbsence, absences[0].date)
         assertEquals(secondAbsence, absences[1].date)
@@ -647,12 +632,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // Verify that the future absences in new placement period has been deleted
         val updatedAbsences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(2, updatedAbsences.size)
         assertEquals(firstAbsence, updatedAbsences[0].date)
         assertEquals(secondAbsence, updatedAbsences[1].date)
@@ -804,12 +784,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // then 2 absences with correct category types
         val absences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(4, absences.size)
         assertEquals(firstAbsence, absences[0].date)
         assertEquals(secondAbsence, absences[1].date)
@@ -828,12 +803,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         // Verify that the future absences in new placement period has been deleted
         val updatedAbsences =
-            db.read {
-                it.getAbsencesOfChildByRange(
-                    childId,
-                    DateRange(activePlacementStart, activePlacementEnd)
-                )
-            }
+            getAbsencesOfChildByRange(DateRange(activePlacementStart, activePlacementEnd))
         assertEquals(2, updatedAbsences.size)
         assertEquals(firstAbsence, updatedAbsences[0].date)
         assertEquals(secondAbsence, updatedAbsences[1].date)
@@ -1342,4 +1312,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .groupPlacements
             .filter { it.id != null }
     }
+
+    private fun getAbsencesOfChildByRange(range: DateRange) =
+        db.read {
+            it.getAbsencesOfChildByRange(
+                    childId,
+                    range,
+                )
+                .sortedWith(compareBy({ it.date }, { it.category }))
+        }
 }
