@@ -5,12 +5,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   settings as options,
   SettingType
 } from 'lib-common/generated/api-types/setting'
-import { JsonOf } from 'lib-common/json'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -20,9 +19,12 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { client } from '../api/client'
+import { getSettings, setSettings } from '../generated/api-clients/setting'
 
 import { renderResult } from './async-rendering'
+
+const getSettingsResult = wrapResult(getSettings)
+const setSettingsResult = wrapResult(setSettings)
 
 type Settings = Record<SettingType, string>
 
@@ -31,25 +33,17 @@ const defaultValues = options.reduce(
   {}
 )
 
-async function getSettings(): Promise<Result<Settings>> {
-  return client
-    .get<JsonOf<Settings>>('/settings')
-    .then((res) => Success.of({ ...defaultValues, ...res.data }))
-    .catch((e) => Failure.fromError(e))
-}
-
-async function putSettings(settings: Partial<Settings>): Promise<Result<void>> {
-  return client
-    .put<JsonOf<Settings>>(`/settings`, settings)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
 export default React.memo(function SettingsPage() {
   const { i18n } = useTranslation()
 
   const [settings, setSettings] = useState<Result<Settings>>(Loading.of())
-  const loadSettings = useRestApi(getSettings, setSettings)
+  const loadSettings = useRestApi(
+    () =>
+      getSettingsResult().then((res) =>
+        res.map((s) => ({ ...defaultValues, ...s }))
+      ),
+    setSettings
+  )
   useEffect(() => {
     void loadSettings()
   }, [loadSettings])
@@ -57,7 +51,7 @@ export default React.memo(function SettingsPage() {
   const submit = useCallback(() => {
     if (!settings.isSuccess) return
 
-    return putSettings(
+    return setSettingsResult(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       Object.fromEntries(
         Object.entries(settings.value)
