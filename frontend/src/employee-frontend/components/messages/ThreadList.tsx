@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
@@ -13,6 +13,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { faBoxArchive } from 'lib-icons'
 
+import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
@@ -26,7 +27,8 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
-import { archiveThread } from './api'
+
+const archiveThreadResult = wrapResult(archiveThread)
 
 export type ThreadListItem = {
   id: UUID
@@ -84,7 +86,9 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
                 aria-label={i18n.common.archive}
                 data-qa="delete-thread-btn"
                 className="delete-btn"
-                onClick={() => archiveThread(accountId, item.id)}
+                onClick={() =>
+                  archiveThreadResult({ accountId, threadId: item.id })
+                }
                 onSuccess={onArchive}
                 stopPropagation
               />

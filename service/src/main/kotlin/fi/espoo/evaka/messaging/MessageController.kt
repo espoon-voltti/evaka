@@ -433,7 +433,7 @@ class MessageController(
     }
 
     @GetMapping("/{accountId}/drafts")
-    fun getDrafts(
+    fun getDraftMessages(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -452,7 +452,7 @@ class MessageController(
     }
 
     @PostMapping("/{accountId}/drafts")
-    fun initDraft(
+    fun initDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -468,7 +468,7 @@ class MessageController(
     }
 
     @PutMapping("/{accountId}/drafts/{draftId}")
-    fun upsertDraft(
+    fun updateDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -484,7 +484,7 @@ class MessageController(
     }
 
     @DeleteMapping("/{accountId}/drafts/{draftId}")
-    fun deleteDraft(
+    fun deleteDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

@@ -4,7 +4,7 @@
 
 import { mutation } from 'lib-common/query'
 
-import { replyToThread } from './api'
+import { replyToThread } from '../../generated/api-clients/messaging'
 
 export const replyToThreadMutation = mutation({
   api: replyToThread

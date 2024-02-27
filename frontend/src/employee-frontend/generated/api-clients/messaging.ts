@@ -104,9 +104,9 @@ export async function createMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.deleteDraft
+* Generated from fi.espoo.evaka.messaging.MessageController.deleteDraftMessage
 */
-export async function deleteDraft(
+export async function deleteDraftMessage(
   request: {
     accountId: UUID,
     draftId: UUID
@@ -156,9 +156,9 @@ export async function getArchivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getDrafts
+* Generated from fi.espoo.evaka.messaging.MessageController.getDraftMessages
 */
-export async function getDrafts(
+export async function getDraftMessages(
   request: {
     accountId: UUID
   }
@@ -314,9 +314,9 @@ export async function getUnreadMessagesByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.initDraft
+* Generated from fi.espoo.evaka.messaging.MessageController.initDraftMessage
 */
-export async function initDraft(
+export async function initDraftMessage(
   request: {
     accountId: UUID
   }
@@ -408,9 +408,9 @@ export async function undoReply(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.upsertDraft
+* Generated from fi.espoo.evaka.messaging.MessageController.updateDraftMessage
 */
-export async function upsertDraft(
+export async function updateDraftMessage(
   request: {
     accountId: UUID,
     draftId: UUID,

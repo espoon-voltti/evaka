@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy'
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { sortReceivers } from 'lib-common/api-types/messaging'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -15,17 +15,19 @@ import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { getReceiversForNewMessage } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
-import { getReceivers } from './api'
 import {
   municipalMessageBoxes,
   personalMessageBoxes,
   serviceWorkerMessageBoxes
 } from './types-view'
+
+const getReceiversForNewMessageResult = wrapResult(getReceiversForNewMessage)
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -104,15 +106,17 @@ function Accounts({ setReceivers }: AccountsProps) {
   )
 
   useEffect(() => {
-    void getReceivers().then((result: Result<MessageReceiversResponse[]>) => {
-      if (result.isSuccess) {
-        const sortedReceivers = result.value.map((account) => ({
-          ...account,
-          receivers: sortReceivers(account.receivers)
-        }))
-        setReceivers(sortedReceivers)
+    void getReceiversForNewMessageResult().then(
+      (result: Result<MessageReceiversResponse[]>) => {
+        if (result.isSuccess) {
+          const sortedReceivers = result.value.map((account) => ({
+            ...account,
+            receivers: sortReceivers(account.receivers)
+          }))
+          setReceivers(sortedReceivers)
+        }
       }
-    })
+    )
   }, [setReceivers])
 
   const visibleGroupAccounts = selectedUnit

@@ -14,6 +14,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   Message,
   MessageChild,
@@ -44,12 +45,14 @@ import { faAngleLeft } from 'lib-icons'
 import { faBoxArchive } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
+import { archiveThread } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageContext } from './MessageContext'
-import { archiveThread } from './api'
 import { replyToThreadMutation } from './queries'
 import { View } from './types-view'
+
+const archiveThreadResult = wrapResult(archiveThread)
 
 const MessageContainer = styled.div`
   background-color: ${colors.grayscale.g0};
@@ -214,12 +217,14 @@ export function SingleThreadView({
 
   const onSubmitReply = useCallback(
     () => ({
-      content: replyContent,
+      accountId,
       messageId: messages.slice(-1)[0].id,
-      recipientAccountIds: recipients
-        .filter((r) => r.selected)
-        .map((r) => r.id),
-      accountId
+      body: {
+        content: replyContent,
+        recipientAccountIds: recipients
+          .filter((r) => r.selected)
+          .map((r) => r.id)
+      }
     }),
     [accountId, messages, recipients, replyContent]
   )
@@ -310,7 +315,7 @@ export function SingleThreadView({
                     aria-label={i18n.common.archive}
                     data-qa="delete-thread-btn"
                     className="delete-btn"
-                    onClick={() => archiveThread(accountId, threadId)}
+                    onClick={() => archiveThreadResult({ accountId, threadId })}
                     onSuccess={onArchived}
                     text={i18n.messages.archiveThread}
                     stopPropagation

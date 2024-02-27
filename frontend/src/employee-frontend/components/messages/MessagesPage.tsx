@@ -26,6 +26,12 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'
 import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
+import {
+  initDraftMessage,
+  updateDraftMessage,
+  createMessage,
+  deleteDraftMessage
+} from '../../generated/api-clients/messaging'
 import { getPersonIdentity } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -36,10 +42,13 @@ import { headerHeight } from '../Header'
 import { MessageContext } from './MessageContext'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
-import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
 const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const initDraftMessageResult = wrapResult(initDraftMessage)
+const updateDraftMessageResult = wrapResult(updateDraftMessage)
+const deleteDraftMessageResult = wrapResult(deleteDraftMessage)
+const createMessageResult = wrapResult(createMessage)
 
 const PanelContainer = styled.div`
   height: calc(
@@ -112,9 +121,12 @@ export default React.memo(function MessagesPage({
   const onSend = useCallback(
     (accountId: UUID, messageBody: PostMessageBody) => {
       setSending(true)
-      void postMessage(accountId, {
-        ...messageBody,
-        relatedApplicationId
+      void createMessageResult({
+        accountId,
+        body: {
+          ...messageBody,
+          relatedApplicationId
+        }
       }).then((res) => {
         if (res.isSuccess) {
           refreshMessages(accountId)
@@ -165,7 +177,9 @@ export default React.memo(function MessagesPage({
 
   const onDiscard = (accountId: UUID, draftId: UUID) => {
     hideEditor()
-    void deleteDraft(accountId, draftId).then(() => refreshMessages(accountId))
+    void deleteDraftMessageResult({ accountId, draftId }).then(() =>
+      refreshMessages(accountId)
+    )
   }
 
   const onHide = (didChanges: boolean) => {
@@ -232,12 +246,20 @@ export default React.memo(function MessagesPage({
               deleteAttachment={deleteAttachmentHandlerResult}
               draftContent={selectedDraft}
               getAttachmentUrl={getAttachmentUrl}
-              initDraftRaw={initDraft}
+              initDraftRaw={(accountId) =>
+                initDraftMessageResult({ accountId })
+              }
               accounts={accounts.value}
               onClose={onHide}
               onDiscard={onDiscard}
               onSend={onSend}
-              saveDraftRaw={saveDraft}
+              saveDraftRaw={(params) =>
+                updateDraftMessageResult({
+                  accountId: params.accountId,
+                  draftId: params.draftId,
+                  body: params.content
+                })
+              }
               saveMessageAttachment={saveMessageAttachment}
               sending={sending}
               defaultTitle={prefilledTitle ?? undefined}
