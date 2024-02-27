@@ -36,6 +36,10 @@ enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
     GroupCaretakerAllocation("group_caretaker_allocations", EspooBi.getGroupCaretakerAllocations),
     Group("groups", EspooBi.getGroups),
     GroupPlacement("group_placements", EspooBi.getGroupPlacements),
+    OtherAssistanceMeasureEntry(
+        "other_assistance_measure_entries",
+        EspooBi.getOtherAssistanceMeasureEntries
+    ),
     PedagogicalDocument("pedagogical_documents", EspooBi.getPedagogicalDocuments),
     Placement("placements", EspooBi.getPlacements),
     PreschoolAssistanceEntry("preschool_assistance_entries", EspooBi.getPreschoolAssistanceEntries),

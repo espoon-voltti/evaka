@@ -12,6 +12,7 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
@@ -65,6 +66,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -293,6 +295,20 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         val id =
             db.transaction { it.insert(DevPreschoolAssistance(childId = it.insertTestChild())) }
         assertSingleRowContainingId(EspooBi.getPreschoolAssistanceEntries, id)
+    }
+
+    @Test
+    fun getOtherAssistanceMeasureEntries() {
+        val id =
+            db.transaction {
+                it.insert(
+                    DevOtherAssistanceMeasure(
+                        childId = it.insertTestChild(),
+                        type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT
+                    )
+                )
+            }
+        assertSingleRowContainingId(EspooBi.getOtherAssistanceMeasureEntries, id)
     }
 
     @Test
