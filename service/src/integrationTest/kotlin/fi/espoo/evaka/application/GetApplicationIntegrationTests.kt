@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.application.persistence.daycare.OtherPerson
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -29,6 +31,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -271,6 +274,85 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
         val citizenResult = getApplication(applicationId, citizen)
         assertEquals(2, citizenResult.attachments.size)
+    }
+
+    @Test
+    fun `other guardian does not see sensitive info`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE,
+                    otherGuardianId = testAdult_2.id,
+                    allowOtherGuardianAccess = true,
+                )
+            }
+
+        db.transaction { tx ->
+            tx.insertTestApplicationForm(
+                applicationId = applicationId,
+                document =
+                    validDaycareForm.copy(
+                        apply =
+                            validDaycareForm.apply.copy(
+                                preferredUnits = listOf(testDaycare.id),
+                                siblingBasis = true,
+                                siblingSsn = "secret",
+                                siblingName = "secret"
+                            ),
+                        hasOtherChildren = true,
+                        otherChildren =
+                            listOf(
+                                OtherPerson(
+                                    firstName = "secret",
+                                    lastName = "secret",
+                                    socialSecurityNumber = "secret"
+                                )
+                            )
+                    )
+            )
+            tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id))
+        }
+
+        val guardianResult =
+            getApplication(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+            )
+        assertEquals(
+            listOf(PreferredUnit(id = testDaycare.id, name = testDaycare.name)),
+            guardianResult.form.preferences.preferredUnits
+        )
+        assertEquals(
+            SiblingBasis(siblingName = "secret", siblingSsn = "secret"),
+            guardianResult.form.preferences.siblingBasis
+        )
+        assertEquals(
+            listOf(
+                PersonBasics(
+                    firstName = "secret",
+                    lastName = "secret",
+                    socialSecurityNumber = "secret"
+                )
+            ),
+            guardianResult.form.otherChildren
+        )
+
+        val otherGuardianResult =
+            getApplication(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+            )
+        assertEquals(
+            listOf(PreferredUnit(id = testDaycare.id, name = testDaycare.name)),
+            otherGuardianResult.form.preferences.preferredUnits
+        )
+        assertEquals(
+            SiblingBasis(siblingName = "", siblingSsn = ""),
+            otherGuardianResult.form.preferences.siblingBasis
+        )
+        assertEquals(emptyList(), otherGuardianResult.form.otherChildren)
     }
 
     private fun getApplication(
