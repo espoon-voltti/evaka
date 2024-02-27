@@ -225,18 +225,6 @@ export async function getDaycares(): Promise<Daycare[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getFeatures
-*/
-export async function getFeatures(): Promise<UnitFeatures[]> {
-  const { data: json } = await client.request<JsonOf<UnitFeatures[]>>({
-    url: uri`/daycares/features`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getGroups
 */
 export async function getGroups(
@@ -256,6 +244,18 @@ export async function getGroups(
     params
   })
   return json.map(e => deserializeJsonDaycareGroup(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitFeatures
+*/
+export async function getUnitFeatures(): Promise<UnitFeatures[]> {
+  const { data: json } = await client.request<JsonOf<UnitFeatures[]>>({
+    url: uri`/daycares/features`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 
@@ -293,23 +293,6 @@ export async function getUnitNotifications(
   const { data: json } = await client.request<JsonOf<UnitNotifications>>({
     url: uri`/daycares/${request.daycareId}/notifications`.toString(),
     method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.postUnitFeatures
-*/
-export async function postUnitFeatures(
-  request: {
-    body: UpdateFeaturesRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/unit-features`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
   })
   return json
 }
@@ -385,6 +368,23 @@ export async function updateGroup(
     url: uri`/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<GroupUpdateRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateUnitFeatures
+*/
+export async function updateUnitFeatures(
+  request: {
+    body: UpdateFeaturesRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/daycares/unit-features`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
   })
   return json
 }
