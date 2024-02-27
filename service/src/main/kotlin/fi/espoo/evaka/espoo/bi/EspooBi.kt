@@ -47,7 +47,7 @@ FROM daycare_group
             sql(
                 """
 SELECT
-    id, created, updated, date_of_birth AS birth_date, language, language_at_home,
+    id, created, updated, first_name, last_name, date_of_birth AS birth_date, language, language_at_home,
     restricted_details_enabled AS vtj_non_disclosure, postal_code, post_office
 FROM child
 JOIN person USING (id)
@@ -111,7 +111,7 @@ FROM daycare_caretaker
             sql(
                 """
 SELECT
-    id, created, updated, type, transferapplication, origin, status, additionaldaycareapplication, sentdate,
+    id, created, updated, type, transferapplication, origin, status, additionaldaycareapplication, sentdate, duedate,
     (
       SELECT array_agg(e::UUID)
       FROM jsonb_array_elements_text(document -> 'apply' -> 'preferredUnits') e
@@ -130,7 +130,7 @@ WHERE status != 'CREATED'
         csvQuery<BiDecision> {
             sql(
                 """
-SELECT id, created, updated, application_id AS application, sent_date, status, type, start_date, end_date
+SELECT id, created, updated, application_id AS application, unit_id AS unit, sent_date, status, type, start_date, end_date
 FROM decision
 """
             )
@@ -140,7 +140,7 @@ FROM decision
         csvQuery<BiServiceNeedOption> {
             sql(
                 """
-SELECT id, created, updated, name_fi AS name, valid_placement_type
+SELECT id, created, updated, name_fi AS name, valid_placement_type, default_option, occupancy_coefficient, occupancy_coefficient_under_3y
 FROM service_need_option
 """
             )
@@ -174,7 +174,7 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
             sql(
                 """
 SELECT
-  id, created, updated, fee_decision_id AS fee_decision, placement_unit_id AS placement_unit,
+  id, created, updated, fee_decision_id AS fee_decision, child_id AS child, placement_unit_id AS placement_unit,
   service_need_option_id AS service_need_option,
   service_need_description_fi AS service_need_description, final_fee
 FROM fee_decision_child
@@ -188,8 +188,8 @@ FROM fee_decision_child
                 """
 SELECT
     id, created, updated, decision_number, status, decision_type AS type, family_size, valid_from, valid_to,
-    placement_unit_id AS placement_unit, service_need_fee_description_fi AS service_need_fee_description,
-    service_need_voucher_value_description_fi AS service_need_voucher_value_description,
+    child_id AS child, placement_unit_id AS placement_unit,
+    service_need_fee_description_fi AS service_need_fee_description, service_need_voucher_value_description_fi AS service_need_voucher_value_description,
     final_co_payment
 FROM voucher_value_decision
 WHERE status NOT IN ('DRAFT', 'IGNORED')
@@ -262,6 +262,18 @@ SELECT
     id, created, updated, child_id AS child, level,
     lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
 FROM preschool_assistance
+"""
+            )
+        }
+
+    val getOtherAssistanceMeasureEntries =
+        csvQuery<BiOtherAssistanceMeasureEntry> {
+            sql(
+                """
+SELECT
+    id, created, updated, child_id AS child, type,
+    lower(valid_during) AS start_date, upper(valid_during) - 1 AS end_date
+FROM other_assistance_measure
 """
             )
         }

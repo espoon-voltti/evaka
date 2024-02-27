@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
+import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
@@ -70,6 +71,8 @@ data class BiChild(
     val id: UUID,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
+    val firstName: String,
+    val lastName: String,
     val birthDate: LocalDate,
     val language: String?,
     val languageAtHome: String,
@@ -128,6 +131,7 @@ data class BiApplication(
     val status: ApplicationStatus,
     val additionalDaycareApplication: Boolean,
     val sentDate: LocalDate,
+    val dueDate: LocalDate?,
     val preferredUnits: List<UUID>,
     val preferredStartDate: LocalDate,
     val urgent: Boolean?,
@@ -140,6 +144,7 @@ data class BiDecision(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val application: UUID,
+    val unit: UUID,
     val sentDate: LocalDate?,
     val status: DecisionStatus,
     val type: DecisionType,
@@ -153,6 +158,9 @@ data class BiServiceNeedOption(
     val updated: HelsinkiDateTime,
     val name: String,
     val validPlacementType: PlacementType,
+    val defaultOption: Boolean,
+    val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficientUnder3Y: BigDecimal,
 )
 
 data class BiServiceNeed(
@@ -183,6 +191,7 @@ data class BiFeeDecisionChild(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val feeDecision: UUID,
+    val child: UUID,
     val placementUnit: UUID,
     val serviceNeedOption: UUID?,
     val serviceNeedDescription: String,
@@ -200,6 +209,7 @@ data class BiVoucherValueDecision(
     val validFrom: LocalDate,
     val validTo: LocalDate,
     val placementUnit: UUID,
+    val child: UUID,
     val serviceNeedFeeDescription: String,
     val serviceNeedVoucherValueDescription: String,
     val finalCoPayment: Int,
@@ -257,6 +267,16 @@ data class BiPreschoolAssistanceEntry(
     val updated: HelsinkiDateTime,
     val child: UUID,
     val level: PreschoolAssistanceLevel,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)
+
+data class BiOtherAssistanceMeasureEntry(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime,
+    val child: UUID,
+    val type: OtherAssistanceMeasureType,
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
