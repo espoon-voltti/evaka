@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -19,15 +20,23 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { P } from 'lib-components/typography'
 import { faQuestion } from 'lib-icons'
 
-import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
-
-import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
 import {
   createAssistanceNeedDecision,
   deleteAssistanceNeedDecision,
   getAssistanceNeedDecisions
-} from './assistance-need/decision/api'
+} from '../../generated/api-clients/assistanceneed'
+import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
+
+import AssistanceNeedDecisionSectionRow from './AssistanceNeedDecisionSectionRow'
+
+const createAssistanceNeedDecisionResult = wrapResult(
+  createAssistanceNeedDecision
+)
+const getAssistanceNeedDecisionsResult = wrapResult(getAssistanceNeedDecisions)
+const deleteAssistanceNeedDecisionResult = wrapResult(
+  deleteAssistanceNeedDecision
+)
 
 export const TitleRow = styled.div`
   display: flex;
@@ -52,7 +61,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
   const refSectionTop = useRef(null)
 
   const [assistanceNeedDecisions, reloadDecisions] = useApiState(
-    () => getAssistanceNeedDecisions(id),
+    () => getAssistanceNeedDecisionsResult({ childId: id }),
     [id]
   )
 
@@ -87,58 +96,63 @@ export default React.memo(function AssistanceNeedDecisionSection({
             text={i18n.childInformation.assistanceNeedDecision.create}
             onClick={() => {
               setIsCreatingDecision(true)
-              void createAssistanceNeedDecision(id, {
-                assistanceLevels: [],
-                careMotivation: null,
-                decisionMade: null,
-                decisionMaker: {
-                  employeeId: null,
-                  title: null
-                },
-                decisionNumber: null,
-                expertResponsibilities: null,
-                guardianInfo: [],
-                guardiansHeardOn: null,
-                language: 'FI',
-                motivationForDecision: null,
-                otherRepresentativeDetails: null,
-                otherRepresentativeHeard: false,
-                pedagogicalMotivation: null,
-                preparedBy1: {
-                  employeeId: null,
-                  title: null,
-                  phoneNumber: null
-                },
-                preparedBy2: {
-                  employeeId: null,
-                  title: null,
-                  phoneNumber: null
-                },
-                selectedUnit: null,
-                sentForDecision: null,
-                serviceOptions: {
-                  consultationSpecialEd: false,
-                  fullTimeSpecialEd: false,
-                  interpretationAndAssistanceServices: false,
-                  partTimeSpecialEd: false,
-                  specialAides: false
-                },
-                servicesMotivation: null,
-                status: 'DRAFT',
-                structuralMotivationDescription: null,
-                structuralMotivationOptions: {
-                  additionalStaff: false,
-                  childAssistant: false,
-                  groupAssistant: false,
-                  smallGroup: false,
-                  smallerGroup: false,
-                  specialGroup: false
-                },
-                validityPeriod: new DateRange(
-                  LocalDate.todayInHelsinkiTz(),
-                  null
-                ),
-                viewOfGuardians: null
+              void createAssistanceNeedDecisionResult({
+                childId: id,
+                body: {
+                  decision: {
+                    assistanceLevels: [],
+                    careMotivation: null,
+                    decisionMade: null,
+                    decisionMaker: {
+                      employeeId: null,
+                      title: null
+                    },
+                    decisionNumber: null,
+                    expertResponsibilities: null,
+                    guardianInfo: [],
+                    guardiansHeardOn: null,
+                    language: 'FI',
+                    motivationForDecision: null,
+                    otherRepresentativeDetails: null,
+                    otherRepresentativeHeard: false,
+                    pedagogicalMotivation: null,
+                    preparedBy1: {
+                      employeeId: null,
+                      title: null,
+                      phoneNumber: null
+                    },
+                    preparedBy2: {
+                      employeeId: null,
+                      title: null,
+                      phoneNumber: null
+                    },
+                    selectedUnit: null,
+                    sentForDecision: null,
+                    serviceOptions: {
+                      consultationSpecialEd: false,
+                      fullTimeSpecialEd: false,
+                      interpretationAndAssistanceServices: false,
+                      partTimeSpecialEd: false,
+                      specialAides: false
+                    },
+                    servicesMotivation: null,
+                    status: 'DRAFT',
+                    structuralMotivationDescription: null,
+                    structuralMotivationOptions: {
+                      additionalStaff: false,
+                      childAssistant: false,
+                      groupAssistant: false,
+                      smallGroup: false,
+                      smallerGroup: false,
+                      specialGroup: false
+                    },
+                    validityPeriod: new DateRange(
+                      LocalDate.todayInHelsinkiTz(),
+                      null
+                    ),
+                    viewOfGuardians: null
+                  }
+                }
               }).then((decision) => {
                 void reloadDecisions()
                 setIsCreatingDecision(false)
@@ -230,7 +244,7 @@ const DeleteDecisionModal = React.memo(function DeleteDecisionModal({
       }}
       resolve={{
         async action() {
-          await deleteAssistanceNeedDecision(decisionId)
+          await deleteAssistanceNeedDecisionResult({ id: decisionId })
           onClose(true)
         },
         label: i18n.childInformation.assistanceNeedDecision.modal.delete

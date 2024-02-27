@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { UserContext } from 'employee-frontend/state/user'
+import { wrapResult } from 'lib-common/api'
 import {
   AssistanceNeedDecision,
   AssistanceNeedDecisionStatus
@@ -38,9 +39,23 @@ import {
   getAssistanceNeedDecision,
   markAssistanceNeedDecisionAsOpened,
   updateAssistanceNeedDecisionDecisionMaker
-} from '../child-information/assistance-need/decision/api'
+} from '../../generated/api-clients/assistanceneed'
 
 import { AssistanceNeedDecisionReportContext } from './AssistanceNeedDecisionReportContext'
+
+const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)
+const decideAssistanceNeedDecisionResult = wrapResult(
+  decideAssistanceNeedDecision
+)
+const annulAssistanceNeedDecisionResult = wrapResult(
+  annulAssistanceNeedDecision
+)
+const markAssistanceNeedDecisionAsOpenedResult = wrapResult(
+  markAssistanceNeedDecisionAsOpened
+)
+const updateAssistanceNeedDecisionDecisionMakerResult = wrapResult(
+  updateAssistanceNeedDecisionDecisionMaker
+)
 
 const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
@@ -70,7 +85,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(
-    () => getAssistanceNeedDecision(id),
+    () => getAssistanceNeedDecisionResult({ id }),
     [id]
   )
 
@@ -86,7 +101,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
 
     void assistanceNeedDecision.map(async ({ decision }) => {
       if (decision.decisionMaker?.employeeId === user?.id) {
-        await markAssistanceNeedDecisionAsOpened(decision.id)
+        await markAssistanceNeedDecisionAsOpenedResult({ id: decision.id })
         refreshAssistanceNeedDecisionCounts()
       }
     })
@@ -316,10 +331,12 @@ const DecisionModal = React.memo(function DecisionModal({
       }}
       resolve={{
         async action() {
-          const result = await decideAssistanceNeedDecision(
-            decisionId,
-            decisionStatus
-          )
+          const result = await decideAssistanceNeedDecisionResult({
+            id: decisionId,
+            body: {
+              status: decisionStatus
+            }
+          })
           if (result.isFailure && result.statusCode === 409) {
             onFailed()
           } else {
@@ -382,7 +399,10 @@ const AnnulModal = React.memo(function AnnulModal({
       }}
       resolve={{
         async action() {
-          await annulAssistanceNeedDecision(decisionId, reason.trim())
+          await annulAssistanceNeedDecisionResult({
+            id: decisionId,
+            body: { reason: reason.trim() }
+          })
           onClose(true)
         },
         label: t.okBtn,
@@ -428,7 +448,10 @@ const MismatchDecisionMakerModal = React.memo(
         resolve={{
           async action() {
             if (title) {
-              await updateAssistanceNeedDecisionDecisionMaker(decisionId, title)
+              await updateAssistanceNeedDecisionDecisionMakerResult({
+                id: decisionId,
+                body: { title }
+              })
               onClose()
             }
           },
