@@ -9,6 +9,7 @@ import styled from 'styled-components'
 
 import { ChildState, ChildContext } from 'employee-frontend/state/child'
 import { UIContext } from 'employee-frontend/state/ui'
+import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
@@ -20,15 +21,22 @@ import { Table, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
+import {
+  deleteAssistanceNeedVoucherCoefficient,
+  getAssistanceNeedVoucherCoefficients
+} from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedVoucherCoefficientForm from './assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientForm'
 import AssistanceNeedVoucherCoefficientRow from './assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientRow'
-import {
-  deleteAssistanceNeedVoucherCoefficient,
+
+const getAssistanceNeedVoucherCoefficientsResult = wrapResult(
   getAssistanceNeedVoucherCoefficients
-} from './assistance-need/voucher-coefficient/api'
+)
+const deleteAssistanceNeedVoucherCoefficientResult = wrapResult(
+  deleteAssistanceNeedVoucherCoefficient
+)
 
 const TitleRow = styled.div`
   display: flex;
@@ -52,7 +60,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
   const [coefficients, reloadCoefficients] = useApiState(
-    () => getAssistanceNeedVoucherCoefficients(id),
+    () => getAssistanceNeedVoucherCoefficientsResult({ childId: id }),
     [id]
   )
 
@@ -168,7 +176,9 @@ const DeleteAssistanceNeedVoucherCoefficientModal = React.memo(
         }}
         resolve={{
           async action() {
-            await deleteAssistanceNeedVoucherCoefficient(coefficientId)
+            await deleteAssistanceNeedVoucherCoefficientResult({
+              id: coefficientId
+            })
             onClose(true)
           },
           label:
