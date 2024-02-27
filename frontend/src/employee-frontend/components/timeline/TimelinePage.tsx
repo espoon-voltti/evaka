@@ -54,7 +54,11 @@ export default React.memo(function TimelinePage() {
     []
   )
   const timelineResult = useQueryResult(
-    timelineQuery({ personId, range: timelineMaxRange })
+    timelineQuery({
+      personId,
+      from: timelineMaxRange.start,
+      to: timelineMaxRange.end
+    })
   )
 
   return (
