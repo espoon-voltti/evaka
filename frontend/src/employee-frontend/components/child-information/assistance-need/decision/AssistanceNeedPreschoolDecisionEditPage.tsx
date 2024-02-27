@@ -490,7 +490,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 
   const decisionMakersResult = useQueryResult(
     assistanceNeedPreschoolDecisionMakerOptionsQuery({
-      decisionId: decision.id,
+      id: decision.id,
       unitId: savedValue.selectedUnit
     })
   )
@@ -1006,7 +1006,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
     decisionId: UUID
   }>()
   const decisionResult = useQueryResult(
-    assistanceNeedPreschoolDecisionQuery(decisionId)
+    assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )
   const unitsResult = useQueryResult(
     unitsQuery({ areaIds: null, type: 'ALL', from: null })

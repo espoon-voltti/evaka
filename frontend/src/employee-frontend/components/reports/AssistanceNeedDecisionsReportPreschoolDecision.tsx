@@ -30,10 +30,10 @@ import {
 import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
 
+import { markAssistanceNeedDecisionAsOpened } from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
-import { putAssistanceNeedPreschoolDecisionMarkAsOpened } from '../child-information/assistance-need/decision/api-preschool'
 import {
   annulAssistanceNeedPreschoolDecisionMutation,
   assistanceNeedPreschoolDecisionQuery,
@@ -87,9 +87,11 @@ const AnnulModal = React.memo(function AnnulModal({
       resolveLabel={i18n.reports.assistanceNeedDecisions.annulModal.okBtn}
       resolveMutation={annulAssistanceNeedPreschoolDecisionMutation}
       resolveAction={() => ({
-        childId: decision.child.id,
         id: decision.id,
-        reason: reason.value()
+        childId: decision.child.id,
+        body: {
+          reason: reason.value()
+        }
       })}
       onSuccess={onClose}
       rejectLabel={i18n.common.cancel}
@@ -125,8 +127,8 @@ const DecisionView = React.memo(function DecisionView({
 
   useEffect(() => {
     if (!decision.decisionMakerHasOpened && isDecisionMaker) {
-      void putAssistanceNeedPreschoolDecisionMarkAsOpened(decision.id).then(
-        () => refreshAssistanceNeedDecisionCounts()
+      void markAssistanceNeedDecisionAsOpened({ id: decision.id }).then(() =>
+        refreshAssistanceNeedDecisionCounts()
       )
     }
   }, [decision, isDecisionMaker, refreshAssistanceNeedDecisionCounts])
@@ -165,7 +167,9 @@ const DecisionView = React.memo(function DecisionView({
                   decide({
                     childId: decision.child.id,
                     id: decision.id,
-                    status: 'NEEDS_WORK'
+                    body: {
+                      status: 'NEEDS_WORK'
+                    }
                   })
                 }
                 data-qa="return-for-edit-button"
@@ -199,7 +203,9 @@ const DecisionView = React.memo(function DecisionView({
             decide({
               childId: decision.child.id,
               id: decision.id,
-              status: 'REJECTED'
+              body: {
+                status: 'REJECTED'
+              }
             })
           }
           resolveLabel={i18n.reports.assistanceNeedDecisions.rejectModal.okBtn}
@@ -217,7 +223,9 @@ const DecisionView = React.memo(function DecisionView({
             decide({
               childId: decision.child.id,
               id: decision.id,
-              status: 'ACCEPTED'
+              body: {
+                status: 'ACCEPTED'
+              }
             })
           }
           resolveLabel={i18n.reports.assistanceNeedDecisions.approveModal.okBtn}
@@ -241,7 +249,7 @@ export default React.memo(
   function AssistanceNeedDecisionsReportPreschoolDecision() {
     const { decisionId } = useNonNullableParams<{ decisionId: UUID }>()
     const decisionResult = useQueryResult(
-      assistanceNeedPreschoolDecisionQuery(decisionId)
+      assistanceNeedPreschoolDecisionQuery({ id: decisionId })
     )
 
     return renderResult(decisionResult, (decisionResponse) => (
