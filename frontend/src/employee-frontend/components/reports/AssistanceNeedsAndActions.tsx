@@ -165,6 +165,7 @@ interface GroupingDataByGroup {
   actionCounts: Record<string, number>
   otherActionCount: number
   noActionCount: number
+  assistanceNeedVoucherCoefficientCount: number
 }
 
 const emptyGroupingDataByGroup = (
@@ -201,7 +202,8 @@ const emptyGroupingDataByGroup = (
     {}
   ),
   otherActionCount: 0,
-  noActionCount: 0
+  noActionCount: 0,
+  assistanceNeedVoucherCoefficientCount: 0
 })
 
 interface GroupingDataByChild {
@@ -640,7 +642,10 @@ const ReportByGroupTable = ({
               add
             ),
             otherActionCount: groupData.otherActionCount + row.otherActionCount,
-            noActionCount: groupData.noActionCount + row.noActionCount
+            noActionCount: groupData.noActionCount + row.noActionCount,
+            assistanceNeedVoucherCoefficientCount:
+              groupData.assistanceNeedVoucherCoefficientCount +
+              row.assistanceNeedVoucherCoefficientCount
           }
           return data
         },
@@ -732,6 +737,12 @@ const ReportByGroupTable = ({
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
             key: 'noActionCount'
+          },
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .assistanceNeedVoucherCoefficient,
+            key: 'assistanceNeedVoucherCoefficient'
           }
         ]}
         filename={filename}
@@ -786,6 +797,12 @@ const ReportByGroupTable = ({
               </Th>
             )}
             <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .assistanceNeedVoucherCoefficient
+              }
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -836,6 +853,7 @@ const ReportByGroupTable = ({
                     <Td>{data.otherActionCount}</Td>
                   )}
                   <Td>{data.noActionCount}</Td>
+                  <Td>{data.assistanceNeedVoucherCoefficientCount}</Td>
                 </Tr>
               )}
               {data.rows
@@ -876,6 +894,7 @@ const ReportByGroupTable = ({
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
+                    <Td>{row.assistanceNeedVoucherCoefficientCount}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -923,6 +942,12 @@ const ReportByGroupTable = ({
               </Td>
             )}
             <Td>{reducePropertySum(filteredRows, (r) => r.noActionCount)}</Td>
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.assistanceNeedVoucherCoefficientCount
+              )}
+            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>
@@ -1107,7 +1132,13 @@ const ReportByChildTable = ({
                   key: 'otherAction'
                 }
               ]
-            : [])
+            : []),
+          {
+            label:
+              i18n.reports.assistanceNeedsAndActions
+                .assistanceNeedVoucherCoefficient,
+            key: 'assistanceNeedVoucherCoefficient'
+          }
         ]}
         filename={filename}
       />
@@ -1149,6 +1180,12 @@ const ReportByChildTable = ({
               </Th>
             ))}
             <Th>{i18n.reports.assistanceNeedsAndActions.action}</Th>
+            <Th>
+              {
+                i18n.reports.assistanceNeedsAndActions
+                  .assistanceNeedVoucherCoefficient
+              }
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -1193,6 +1230,7 @@ const ReportByChildTable = ({
                       {data.otherAssistanceMeasureCounts[type] ?? 0}
                     </Td>
                   ))}
+                  <Td />
                   <Td />
                 </Tr>
               )}
@@ -1250,6 +1288,7 @@ const ReportByChildTable = ({
                           </span>
                         )}
                     </Td>
+                    <Td>{row.assistanceNeedVoucherCoefficient}</Td>
                   </Tr>
                 ))}
             </React.Fragment>
@@ -1285,6 +1324,12 @@ const ReportByChildTable = ({
               </Td>
             ))}
             <Td />
+            <Td>
+              {reducePropertySum(
+                filteredRows,
+                (r) => r.assistanceNeedVoucherCoefficient
+              )}
+            </Td>
           </Tr>
         </TableFooter>
       </TableScrollable>

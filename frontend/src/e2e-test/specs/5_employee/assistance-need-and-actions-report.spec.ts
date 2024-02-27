@@ -91,16 +91,24 @@ describe('Assistance need and actions report', () => {
       })
       .save()
 
+    await Fixture.assistanceNeedVoucherCoefficient()
+      .with({
+        childId,
+        validityPeriod: new FiniteDateRange(validDuring.start, validDuring.end),
+        coefficient: 1.5
+      })
+      .save()
+
     await page.goto(
       `${config.employeeUrl}/reports/assistance-needs-and-actions`
     )
     const report = new AssistanceNeedsAndActionsReport(page)
-    await report.assertUnitRow(0, 'Superkeskus,,,1,0,0,0,1,0,0,1,0,0')
+    await report.assertUnitRow(0, 'Superkeskus,,,1,0,0,0,1,0,0,1,0,0,1')
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
     await report.assertChildRow(
       0,
-      'Antero,Onni,Leevi,Aatu,Högfors,Kosmiset,Vakiot,10,1,0,0,0,1,0,0,a,test,assistance,action,option'
+      'Antero,Onni,Leevi,Aatu,Högfors,Kosmiset,Vakiot,10,1,0,0,0,1,0,0,a,test,assistance,action,option,1.5'
     )
   })
 })

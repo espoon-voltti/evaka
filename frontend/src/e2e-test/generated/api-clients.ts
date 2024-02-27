@@ -24,6 +24,7 @@ import { DevAssistanceAction } from './api-types'
 import { DevAssistanceFactor } from './api-types'
 import { DevAssistanceNeedDecision } from './api-types'
 import { DevAssistanceNeedPreschoolDecision } from './api-types'
+import { DevAssistanceNeedVoucherCoefficient } from './api-types'
 import { DevBackupCare } from './api-types'
 import { DevBackupPickup } from './api-types'
 import { DevCalendarEvent } from './api-types'
@@ -448,6 +449,27 @@ export async function createAssistanceNeedPreschoolDecisions(
       url: uri`/assistance-need-preschool-decisions`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevAssistanceNeedPreschoolDecision[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceNeedVoucherCoefficients
+*/
+export async function createAssistanceNeedVoucherCoefficients(
+  request: {
+    body: DevAssistanceNeedVoucherCoefficient[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/assistance-need-voucher-coefficients`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevAssistanceNeedVoucherCoefficient[]>
     })
     return json
   } catch (e) {

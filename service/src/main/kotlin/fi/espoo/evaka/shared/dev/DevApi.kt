@@ -120,6 +120,7 @@ import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
@@ -1352,6 +1353,16 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
+    @PostMapping("/assistance-need-voucher-coefficients")
+    fun createAssistanceNeedVoucherCoefficients(
+        db: Database,
+        @RequestBody assistanceNeedVoucherCoefficients: List<DevAssistanceNeedVoucherCoefficient>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> assistanceNeedVoucherCoefficients.forEach { tx.insert(it) } }
+        }
+    }
+
     @PostMapping("/attendances")
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
         db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
@@ -1888,6 +1899,15 @@ data class DevAssistanceAction(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),
     val otherAction: String = ""
+)
+
+data class DevAssistanceNeedVoucherCoefficient(
+    val id: AssistanceNeedVoucherCoefficientId =
+        AssistanceNeedVoucherCoefficientId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validityPeriod: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val coefficient: BigDecimal = BigDecimal(1.0)
 )
 
 data class DevPlacement(

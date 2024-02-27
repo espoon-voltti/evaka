@@ -74,6 +74,7 @@ export interface AssistanceNeedsAndActionsReportByChild {
 */
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>
+  assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   groupId: UUID
@@ -91,6 +92,7 @@ export interface AssistanceNeedsAndActionsReportRow {
 */
 export interface AssistanceNeedsAndActionsReportRowByChild {
   actions: string[]
+  assistanceNeedVoucherCoefficient: number
   careAreaName: string
   childAge: number
   childFirstName: string

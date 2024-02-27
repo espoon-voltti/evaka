@@ -243,6 +243,16 @@ export interface DevAssistanceNeedPreschoolDecision {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
+*/
+export interface DevAssistanceNeedVoucherCoefficient {
+  childId: UUID
+  coefficient: number
+  id: UUID
+  validityPeriod: FiniteDateRange
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevBackupCare
 */
 export interface DevBackupCare {
@@ -1080,6 +1090,14 @@ export function deserializeJsonDevAssistanceNeedPreschoolDecision(json: JsonOf<D
     decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
     form: deserializeJsonAssistanceNeedPreschoolDecisionForm(json.form),
     sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null
+  }
+}
+
+
+export function deserializeJsonDevAssistanceNeedVoucherCoefficient(json: JsonOf<DevAssistanceNeedVoucherCoefficient>): DevAssistanceNeedVoucherCoefficient {
+  return {
+    ...json,
+    validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
   }
 }
 

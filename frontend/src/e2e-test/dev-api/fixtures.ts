@@ -23,7 +23,8 @@ import {
 } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AssistanceNeedPreschoolDecisionForm,
-  AssistanceNeedPreschoolDecisionGuardian
+  AssistanceNeedPreschoolDecisionGuardian,
+  AssistanceNeedVoucherCoefficient
 } from 'lib-common/generated/api-types/assistanceneed'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import {
@@ -64,6 +65,7 @@ import {
   createAssistanceFactors,
   createAssistanceNeedDecisions,
   createAssistanceNeedPreschoolDecisions,
+  createAssistanceNeedVoucherCoefficients,
   createBackupCares,
   createCareAreas,
   createChildDocument,
@@ -2181,6 +2183,18 @@ export class Fixture {
       publishedContent: null
     })
   }
+
+  static assistanceNeedVoucherCoefficient(): AssistanceNeedVoucherCoefficientBuilder {
+    return new AssistanceNeedVoucherCoefficientBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      validityPeriod: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      coefficient: 1.0
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2573,6 +2587,17 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceN
   // Note: shallow copy
   copy() {
     return new AssistanceNeedDecisionBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<AssistanceNeedVoucherCoefficient> {
+  async save() {
+    await createAssistanceNeedVoucherCoefficients({ body: [this.data] })
+    return this
+  }
+
+  copy() {
+    return new AssistanceNeedVoucherCoefficientBuilder({ ...this.data })
   }
 }
 

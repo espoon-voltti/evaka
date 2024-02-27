@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -75,7 +76,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val noActionCount: Int,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
-        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
+        val assistanceNeedVoucherCoefficientCount: Int
     )
 
     @GetMapping("/reports/assistance-needs-and-actions/by-child")
@@ -135,7 +137,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val otherAction: String,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
-        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
+        val assistanceNeedVoucherCoefficient: BigDecimal
     )
 }
 
@@ -226,7 +229,18 @@ WITH action_counts AS (
         GROUP BY 1, 2
     ) daycare_assistance_stats
     GROUP BY daycare_group_id
-)
+), assistance_need_voucher_coefficient_counts AS (
+    SELECT
+        gpl.daycare_group_id,
+        count(vc.child_id) AS count
+    FROM daycare_group_placement gpl
+    JOIN placement pl ON pl.id = gpl.daycare_placement_id
+    JOIN assistance_need_voucher_coefficient vc ON vc.child_id = pl.child_id
+    WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND vc.validity_period @> ${bind(date)}
+    GROUP BY daycare_group_id
+) 
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -238,7 +252,8 @@ SELECT
     coalesce(no_action_count, 0) AS no_action_count,
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
-    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
+    coalesce(assistance_need_voucher_coefficient_counts.count, 0) AS assistance_need_voucher_coefficient_count
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -246,6 +261,7 @@ LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
 LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_group_id
 LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
+LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
@@ -336,25 +352,17 @@ WITH actions AS (
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
-), assistance_need_voucher_coefficient_counts AS (
-    SELECT
-        daycare_group_id,
-        child_id,
-        json_build_object('other_assistance_measure_counts',count)
-    FROM (
+), assistance_need_voucher_coefficient AS (
         SELECT
             gpl.daycare_group_id,
-            oam.child_id,
-            count(vc.child_id) AS count
+            vc.child_id,
+            vc.coefficient
         FROM daycare_group_placement gpl
         JOIN placement pl ON pl.id = gpl.daycare_placement_id
         JOIN assistance_need_voucher_coefficient vc ON vc.child_id = pl.child_id
         WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
         AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         AND vc.validity_period @> ${bind(date)}
-        GROUP BY 1, 2
-    ) daycare_assistance_stats
-    GROUP BY daycare_group_id, child_id
 ) 
 SELECT
     ca.name AS care_area_name,
@@ -371,7 +379,7 @@ SELECT
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
     coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
-    coalesce(assistance_need_voucher_coefficient_counts, '{}') AS assistance_need_voucher_coefficient_counts
+    coalesce(assistance_need_voucher_coefficient.coefficient, 1.0) AS assistance_need_voucher_coefficient
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -386,7 +394,8 @@ LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.dayc
     AND child.id = preschool_assistance_counts.child_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
     AND child.id = other_assistance_measure_counts.child_id
-LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id    
+LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_coefficient.daycare_group_id 
+   AND child.id = assistance_need_voucher_coefficient.child_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
