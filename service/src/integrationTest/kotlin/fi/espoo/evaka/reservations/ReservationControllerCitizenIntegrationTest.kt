@@ -887,8 +887,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val employee = DevEmployee()
 
         val adult = DevPerson()
-        val child1 = DevPerson()
-        val child2 = DevPerson()
+        val child1 = DevPerson(dateOfBirth = mockToday.minusYears(4))
+        val child2 = DevPerson(dateOfBirth = mockToday.minusYears(3))
 
         db.transaction { tx ->
             tx.insert(area)
