@@ -78,7 +78,7 @@ export default React.memo(function MonthSummary({
       ) ? (
         <div data-qa="monthly-summary-warning">
           <LeftWarningIcon />
-          Läsnäoloja sopimuksen ylittävä määrä:
+          {i18n.calendar.monthSummary.warningUsedServiceExceeded}
         </div>
       ) : (
         childSummaries.some(
@@ -87,7 +87,7 @@ export default React.memo(function MonthSummary({
         ) && (
           <div data-qa="monthly-summary-warning">
             <LeftWarningIcon />
-            Läsnäoloja suunniteltu sopimuksen ylittävä määrä:
+            {i18n.calendar.monthSummary.warningPlannedServiceExceeded}
           </div>
         )
       )}
