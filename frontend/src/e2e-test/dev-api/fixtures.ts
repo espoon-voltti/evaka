@@ -18,7 +18,6 @@ import {
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
 import {
-  AssistanceAction,
   AssistanceActionOption
 } from 'lib-common/generated/api-types/assistanceaction'
 import {
@@ -61,7 +60,7 @@ import {
   addDailyServiceTimeNotification,
   addPayment,
   addStaffAttendance,
-  addStaffAttendancePlan,
+  addStaffAttendancePlan, createAssistanceAction, createAssistanceActionOption,
   createAssistanceFactors,
   createAssistanceNeedDecisions,
   createAssistanceNeedPreschoolDecisions,
@@ -100,7 +99,7 @@ import {
 import {
   Caretaker,
   DecisionRequest,
-  DevAbsence,
+  DevAbsence, DevAssistanceAction,
   DevAssistanceNeedDecision,
   DevAssistanceNeedPreschoolDecision,
   DevBackupCare,
@@ -142,8 +141,6 @@ import {
 } from './types'
 
 import {
-  insertAssistanceActionFixtures,
-  insertAssistanceActionOptionFixtures,
   insertChildFixtures,
   insertDaycareFixtures,
   insertFeeThresholds,
@@ -2148,6 +2145,7 @@ export class Fixture {
     return new AssistanceActionBuilder({
       id: uuidv4(),
       childId: 'not_set',
+      updatedBy: 'not_set',
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
@@ -2985,9 +2983,9 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
   }
 }
 
-export class AssistanceActionBuilder extends FixtureBuilder<AssistanceAction> {
+export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction> {
   async save() {
-    await insertAssistanceActionFixtures([this.data])
+    await createAssistanceAction({body: [this.data]})
     return this
   }
 
@@ -2999,7 +2997,7 @@ export class AssistanceActionBuilder extends FixtureBuilder<AssistanceAction> {
 
 export class AssistanceActionOptionBuilder extends FixtureBuilder<AssistanceActionOption> {
   async save() {
-    await insertAssistanceActionOptionFixtures([this.data])
+    await createAssistanceActionOption({body: [this.data]})
     return this
   }
 

@@ -14,10 +14,6 @@ import { BaseError } from 'make-error-cause'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  AssistanceAction,
-  AssistanceActionOption
-} from 'lib-common/generated/api-types/assistanceaction'
-import {
   FeeDecision,
   FeeThresholds,
   IncomeNotification,
@@ -438,26 +434,6 @@ export async function insertVasuTemplateFixture(
   try {
     const { data } = await devClient.post<UUID>('/vasu/template', body)
     return data
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertAssistanceActionFixtures(
-  fixture: AssistanceAction[]
-): Promise<void> {
-  try {
-    await devClient.post(`/assistance-action`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertAssistanceActionOptionFixtures(
-  fixture: AssistanceActionOption[]
-): Promise<void> {
-  try {
-    await devClient.post(`/assistance-action-option`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }

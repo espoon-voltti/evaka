@@ -59,6 +59,7 @@ export interface AssistanceNeedDecisionsReportRow {
 export interface AssistanceNeedsAndActionsReport {
   actions: AssistanceActionOption[]
   rows: AssistanceNeedsAndActionsReportRow[]
+  showAssistanceNeedVoucherCoefficient: boolean
 }
 
 /**
@@ -67,6 +68,7 @@ export interface AssistanceNeedsAndActionsReport {
 export interface AssistanceNeedsAndActionsReportByChild {
   actions: AssistanceActionOption[]
   rows: AssistanceNeedsAndActionsReportRowByChild[]
+  showAssistanceNeedVoucherCoefficient: boolean
 }
 
 /**

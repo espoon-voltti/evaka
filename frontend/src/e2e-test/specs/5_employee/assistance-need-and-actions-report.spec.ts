@@ -9,7 +9,7 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import {daycareGroupFixture, EmployeeBuilder, Fixture} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
@@ -22,6 +22,7 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let childId: UUID
 let unitId: UUID
+let admin: EmployeeBuilder
 
 const mockedTime = LocalDate.of(2024, 2, 19)
 
@@ -55,7 +56,8 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await employeeLogin(page, (await Fixture.employeeAdmin().save()).data)
+  admin = await Fixture.employeeAdmin().save()
+  await employeeLogin(page, admin.data)
 })
 
 describe('Assistance need and actions report', () => {
@@ -85,6 +87,7 @@ describe('Assistance need and actions report', () => {
     await Fixture.assistanceAction()
       .with({
         childId,
+        updatedBy: admin.data.id,
         startDate: validDuring.start,
         endDate: validDuring.end,
         actions: ['ASSISTANCE_SERVICE_CHILD']

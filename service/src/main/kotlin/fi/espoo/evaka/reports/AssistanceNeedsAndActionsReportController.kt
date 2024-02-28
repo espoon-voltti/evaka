@@ -11,6 +11,7 @@ import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -29,7 +30,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedsAndActionsReportController(private val accessControl: AccessControl) {
+class AssistanceNeedsAndActionsReportController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedsAndActionsReport(
         db: Database,
@@ -49,7 +53,9 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
                         actions = it.getAssistanceActionOptions(),
-                        rows = it.getReportRows(date, filter)
+                        rows = it.getReportRows(date, filter),
+                        showAssistanceNeedVoucherCoefficient =
+                            !featureConfig.valueDecisionCapacityFactorEnabled
                     )
                 }
             }
@@ -62,7 +68,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
 
     data class AssistanceNeedsAndActionsReport(
         val actions: List<AssistanceActionOption>,
-        val rows: List<AssistanceNeedsAndActionsReportRow>
+        val rows: List<AssistanceNeedsAndActionsReportRow>,
+        val showAssistanceNeedVoucherCoefficient: Boolean
     )
 
     data class AssistanceNeedsAndActionsReportRow(
@@ -96,7 +103,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
                         )
-                    getAssistanceNeedsAndActionsReportByChild(it, date, filter)
+                    getAssistanceNeedsAndActionsReportByChild(it, date, filter, !featureConfig.valueDecisionCapacityFactorEnabled)
                 }
             }
             .also {
@@ -109,18 +116,21 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
     fun getAssistanceNeedsAndActionsReportByChild(
         tx: Database.Read,
         date: LocalDate,
-        filter: AccessControlFilter<DaycareId>
+        filter: AccessControlFilter<DaycareId>,
+        showAssistanceNeedVoucherCoefficient: Boolean
     ): AssistanceNeedsAndActionsReportByChild {
         tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
         return AssistanceNeedsAndActionsReportByChild(
             actions = tx.getAssistanceActionOptions(),
-            rows = tx.getReportRowsByChild(date, filter)
+            rows = tx.getReportRowsByChild(date, filter),
+            showAssistanceNeedVoucherCoefficient = showAssistanceNeedVoucherCoefficient
         )
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
         val actions: List<AssistanceActionOption>,
-        val rows: List<AssistanceNeedsAndActionsReportRowByChild>
+        val rows: List<AssistanceNeedsAndActionsReportRowByChild>,
+        val showAssistanceNeedVoucherCoefficient: Boolean
     )
 
     data class AssistanceNeedsAndActionsReportRowByChild(

@@ -7,8 +7,10 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.insertAssistanceActionOptions
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -37,6 +39,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
     FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var controller: AssistanceNeedsAndActionsReportController
+
+    val featureConfig: FeatureConfig = testFeatureConfig
     private lateinit var admin: AuthenticatedUser
 
     @BeforeEach
@@ -258,7 +262,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 controller.getAssistanceNeedsAndActionsReportByChild(
                     tx,
                     date,
-                    AccessControlFilter.PermitAll
+                    AccessControlFilter.PermitAll,
+                    true
                 )
             }
         assertEquals(
