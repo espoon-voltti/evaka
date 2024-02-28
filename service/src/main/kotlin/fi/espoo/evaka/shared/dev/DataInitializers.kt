@@ -433,6 +433,19 @@ fun Database.Transaction.insertTestApplication(
         .bind("transferApplication", transferApplication)
         .bind("allowOtherGuardianAccess", allowOtherGuardianAccess)
         .execute()
+
+    if (otherGuardianId != null) {
+        createUpdate<Any> {
+                sql(
+                    """
+            INSERT INTO application_other_guardian (application_id, guardian_id) 
+            VALUES (${bind(id)}, ${bind(otherGuardianId)})
+        """
+                )
+            }
+            .execute()
+    }
+
     return id
 }
 

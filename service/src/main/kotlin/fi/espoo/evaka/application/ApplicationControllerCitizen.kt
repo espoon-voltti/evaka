@@ -776,6 +776,14 @@ private fun hideCriticalApplicationInfoFromOtherGuardian(
                         phoneNumber = "",
                         email = ""
                     ),
+                preferences =
+                    application.form.preferences.copy(
+                        siblingBasis =
+                            application.form.preferences.siblingBasis?.copy(
+                                siblingName = "",
+                                siblingSsn = ""
+                            )
+                    ),
                 otherPartner = null,
                 otherChildren = emptyList(),
                 otherInfo = ""
