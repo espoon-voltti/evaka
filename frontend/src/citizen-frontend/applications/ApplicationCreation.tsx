@@ -117,17 +117,19 @@ export default React.memo(function ApplicationCreation() {
                 <Gap size="s" />
               </>
             )}
-            <ExpandingInfo
-              data-qa="club-expanding-info"
-              info={t.applications.creation.clubInfo}
-            >
-              <Radio
-                checked={selectedType === 'CLUB'}
-                onChange={() => setSelectedType('CLUB')}
-                label={t.applications.creation.clubLabel}
-                data-qa="type-radio-CLUB"
-              />
-            </ExpandingInfo>
+            {!featureFlags.hideClubApplication && (
+              <ExpandingInfo
+                data-qa="club-expanding-info"
+                info={t.applications.creation.clubInfo}
+              >
+                <Radio
+                  checked={selectedType === 'CLUB'}
+                  onChange={() => setSelectedType('CLUB')}
+                  label={t.applications.creation.clubLabel}
+                  data-qa="type-radio-CLUB"
+                />
+              </ExpandingInfo>
+            )}
             <Gap size="m" />
             {duplicateExists ? (
               <>
