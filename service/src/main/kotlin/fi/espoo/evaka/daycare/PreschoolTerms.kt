@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.placement.ScheduleType
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
@@ -43,7 +42,7 @@ data class PreschoolTerm(
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
-    return createQuery<DatabaseTable.PreschoolTerm> {
+    return createQuery {
             sql(
                 """
         SELECT
@@ -62,7 +61,7 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
 }
 
 fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
-    createQuery<DatabaseTable.PreschoolTerm> {
+    createQuery {
             sql(
                 """
         SELECT
@@ -90,7 +89,7 @@ fun Database.Transaction.insertPreschoolTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ): PreschoolTermId {
-    return createUpdate<DatabaseTable.PreschoolTerm> {
+    return createUpdate {
             sql(
                 """
         INSERT INTO preschool_term (
@@ -122,7 +121,7 @@ fun Database.Transaction.updatePreschoolTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ) =
-    createUpdate<DatabaseTable.PreschoolTerm> {
+    createUpdate {
             sql(
                 """
         UPDATE preschool_term 
@@ -139,7 +138,7 @@ fun Database.Transaction.updatePreschoolTerm(
         .updateExactlyOne()
 
 fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: PreschoolTermId) {
-    createUpdate<DatabaseTable.PreschoolTerm> {
+    createUpdate {
             sql(
                 """
            DELETE FROM preschool_term

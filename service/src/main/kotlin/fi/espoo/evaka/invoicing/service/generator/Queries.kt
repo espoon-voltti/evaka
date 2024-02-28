@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.getPlacementRangesByChild(childIds: Set<ChildId>) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
                 SELECT 
@@ -30,7 +30,7 @@ fun Database.Read.getPlacementRangesByChild(childIds: Set<ChildId>) =
         .groupBy { it.childId }
 
 fun Database.Read.getServiceNeedRangesByChild(childIds: Set<ChildId>) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT child_id, daterange(sn.start_date, sn.end_date, '[]') as finite_range, sn.option_id
@@ -44,7 +44,7 @@ fun Database.Read.getServiceNeedRangesByChild(childIds: Set<ChildId>) =
         .groupBy { it.childId }
 
 fun Database.Read.getVoucherValuesByServiceNeedOption() =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT

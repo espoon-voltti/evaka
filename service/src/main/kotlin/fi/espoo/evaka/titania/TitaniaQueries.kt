@@ -6,7 +6,6 @@ package fi.espoo.evaka.titania
 
 import fi.espoo.evaka.attendance.RawAttendance
 import fi.espoo.evaka.pis.NewEmployee
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -50,11 +49,11 @@ fun Database.Read.findStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null
 ): List<StaffAttendancePlan> =
-    createQuery<DatabaseTable> {
-            val employeeIdFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+    createQuery {
+            val employeeIdFilter: Predicate =
                 if (employeeIds == null) Predicate.alwaysTrue()
                 else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+            val daterangeFilter: Predicate =
                 if (period == null) Predicate.alwaysTrue()
                 else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
 
@@ -88,11 +87,11 @@ fun Database.Transaction.deleteStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null
 ): List<StaffAttendancePlan> =
-    createQuery<DatabaseTable> {
-            val employeeIdFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+    createQuery {
+            val employeeIdFilter: Predicate =
                 if (employeeIds == null) Predicate.alwaysTrue()
                 else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+            val daterangeFilter: Predicate =
                 if (period == null) Predicate.alwaysTrue()
                 else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
 
@@ -111,11 +110,11 @@ fun Database.Read.findStaffAttendancesBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null
 ): List<RawAttendance> =
-    createQuery<DatabaseTable> {
-            val employeeIdFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+    createQuery {
+            val employeeIdFilter: Predicate =
                 if (employeeIds == null) Predicate.alwaysTrue()
                 else Predicate { where("$it.employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate<DatabaseTable.StaffAttendancePlan> =
+            val daterangeFilter: Predicate =
                 if (period == null) Predicate.alwaysTrue()
                 else
                     Predicate {

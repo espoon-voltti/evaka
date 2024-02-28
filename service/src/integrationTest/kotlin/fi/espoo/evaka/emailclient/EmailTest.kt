@@ -7,7 +7,6 @@ package fi.espoo.evaka.emailclient
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.updateEnabledEmailTypes
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
@@ -65,7 +64,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         toAddress: String = "test@example.com"
     ): Email? {
         db.transaction { tx ->
-            tx.createUpdate<DatabaseTable> {
+            tx.createUpdate {
                     sql(
                         "UPDATE person SET email = ${bind(toAddress)} WHERE id = ${bind(testAdult_1.id)}"
                     )

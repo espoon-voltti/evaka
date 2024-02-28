@@ -40,7 +40,7 @@ class UnitsReportController(private val accessControl: AccessControl) {
 }
 
 private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
             SELECT 

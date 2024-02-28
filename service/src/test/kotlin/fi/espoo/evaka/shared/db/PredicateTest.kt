@@ -12,7 +12,7 @@ class PredicateTest {
     @Test
     fun `predicate builder allows only one where call`() {
         assertThrows<IllegalStateException> {
-            Predicate<Any> {
+            Predicate {
                     where("TRUE")
                     where("FALSE -- this fails")
                 }
@@ -22,7 +22,7 @@ class PredicateTest {
 
     @Test
     fun `a predicate generates correct SQL`() {
-        val predicate = Predicate<Any> { where("$it.some_column = '1'") }.forTable("some_table")
+        val predicate = Predicate { where("$it.some_column = '1'") }.forTable("some_table")
         assertEquals("(some_table.some_column = '1')", predicate.sql.toString())
         assertEquals(emptyList<ValueBinding<Any?>>(), predicate.bindings)
     }
@@ -31,15 +31,15 @@ class PredicateTest {
     fun `a predicate with parameter binding generates correct SQL`() {
         val value = "value"
         val predicate =
-            Predicate<Any> { where("$it.some_column = ${bind(value)}") }.forTable("some_table")
+            Predicate { where("$it.some_column = ${bind(value)}") }.forTable("some_table")
         assertEquals("(some_table.some_column = ?)", predicate.sql.toString())
         assertEquals(listOf(ValueBinding.of(value)), predicate.bindings)
     }
 
     @Test
     fun `or generates correct SQL`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = a.or(b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", predicate.sql.toString())
         assertEquals(
@@ -53,8 +53,8 @@ class PredicateTest {
 
     @Test
     fun `and generates correct SQL`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = a.and(b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", predicate.sql.toString())
         assertEquals(
@@ -68,8 +68,8 @@ class PredicateTest {
 
     @Test
     fun `any generates correct SQL`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = Predicate.any(a, b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", predicate.sql.toString())
         assertEquals(
@@ -83,8 +83,8 @@ class PredicateTest {
 
     @Test
     fun `all generates correct SQL`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = Predicate.all(a, b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", predicate.sql.toString())
         assertEquals(
@@ -98,12 +98,12 @@ class PredicateTest {
 
     @Test
     fun `Predicate alwaysTrue short-circuits or-any operations in the final table predicate`() {
-        val other = Predicate<Any> { where("$it.some_column = '1'") }
+        val other = Predicate { where("$it.some_column = '1'") }
 
-        fun assertAlwaysTrue(predicate: Predicate<*>) =
+        fun assertAlwaysTrue(predicate: Predicate) =
             assertEquals(PredicateSql.alwaysTrue(), predicate.forTable("some_table"))
 
-        val alwaysTrue = Predicate.alwaysTrue<Any>()
+        val alwaysTrue = Predicate.alwaysTrue()
         assertAlwaysTrue(other.or(alwaysTrue))
         assertAlwaysTrue(alwaysTrue.or(other))
         assertAlwaysTrue(Predicate.any(alwaysTrue, other))
@@ -112,8 +112,8 @@ class PredicateTest {
 
     @Test
     fun `Predicate alwaysTrue is automatically removed from and-all operations in the final table predicate`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val triple = Predicate.all(a, Predicate.alwaysTrue(), b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", triple.sql.toString())
         assertEquals(
@@ -127,12 +127,12 @@ class PredicateTest {
 
     @Test
     fun `Predicate alwaysFalse short-circuits and-all operations in the final table predicate`() {
-        val other = Predicate<Any> { where("$it.some_column = '1'") }
+        val other = Predicate { where("$it.some_column = '1'") }
 
-        fun assertAlwaysFalse(predicate: Predicate<*>) =
+        fun assertAlwaysFalse(predicate: Predicate) =
             assertEquals(PredicateSql.alwaysFalse(), predicate.forTable("some_table"))
 
-        val alwaysFalse = Predicate.alwaysFalse<Any>()
+        val alwaysFalse = Predicate.alwaysFalse()
         assertAlwaysFalse(other.and(alwaysFalse))
         assertAlwaysFalse(alwaysFalse.and(other))
         assertAlwaysFalse(Predicate.all(alwaysFalse, other))
@@ -141,8 +141,8 @@ class PredicateTest {
 
     @Test
     fun `Predicate alwaysFalse is automatically removed from or-any operations in the final table predicate`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
         val triple = Predicate.any(a, Predicate.alwaysFalse(), b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", triple.sql.toString())
         assertEquals(
@@ -156,14 +156,14 @@ class PredicateTest {
 
     @Test
     fun `complex predicate generates correct SQL`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }
-        val c = Predicate<Any> { where("$it.c = ${bind(3)}") }
+        val a = Predicate { where("$it.a = ${bind(1)}") }
+        val b = Predicate { where("$it.b = ${bind(2)}") }
+        val c = Predicate { where("$it.c = ${bind(3)}") }
         val predicate =
             Predicate.all(a, Predicate.alwaysTrue(), b)
-                .and(Predicate.alwaysTrue<Any>().or(a)) // this should get eliminated
+                .and(Predicate.alwaysTrue().or(a)) // this should get eliminated
                 .or(Predicate.any(c, Predicate.alwaysFalse(), b))
-                .or(Predicate.alwaysFalse<Any>().and(b)) // this should get eliminated
+                .or(Predicate.alwaysFalse().and(b)) // this should get eliminated
                 .forTable("some_table")
         assertEquals(
             "(((some_table.a = ?) AND (some_table.b = ?)) OR (some_table.c = ?) OR (some_table.b = ?))",
@@ -182,7 +182,7 @@ class PredicateTest {
 
     @Test
     fun `PredicateSql alwaysTrue short-circuits or-any operations`() {
-        val other = Predicate<Any> { where("$it.some_column = '1'") }.forTable("some_table")
+        val other = Predicate { where("$it.some_column = '1'") }.forTable("some_table")
         val alwaysTrue = PredicateSql.alwaysTrue()
         assertEquals(alwaysTrue, alwaysTrue.or(other))
         assertEquals(alwaysTrue, other.or(alwaysTrue))
@@ -192,8 +192,8 @@ class PredicateTest {
 
     @Test
     fun `PredicateSql alwaysTrue is automatically removed from and-all operations`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }.forTable("some_table")
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }.forTable("some_table")
+        val a = Predicate { where("$it.a = ${bind(1)}") }.forTable("some_table")
+        val b = Predicate { where("$it.b = ${bind(2)}") }.forTable("some_table")
         val alwaysTrue = PredicateSql.alwaysTrue()
         assertEquals(a, PredicateSql.all(alwaysTrue, a))
         assertEquals(b, PredicateSql.all(b, alwaysTrue))
@@ -211,7 +211,7 @@ class PredicateTest {
 
     @Test
     fun `PredicateSql alwaysFalse short-circuits and-all operations`() {
-        val other = Predicate<Any> { where("$it.some_column = '1'") }.forTable("some_table")
+        val other = Predicate { where("$it.some_column = '1'") }.forTable("some_table")
         val alwaysFalse = PredicateSql.alwaysFalse()
         assertEquals(alwaysFalse, alwaysFalse.and(other))
         assertEquals(alwaysFalse, other.and(alwaysFalse))
@@ -221,8 +221,8 @@ class PredicateTest {
 
     @Test
     fun `PredicateSql alwaysFalse is automatically removed from or-any operations`() {
-        val a = Predicate<Any> { where("$it.a = ${bind(1)}") }.forTable("some_table")
-        val b = Predicate<Any> { where("$it.b = ${bind(2)}") }.forTable("some_table")
+        val a = Predicate { where("$it.a = ${bind(1)}") }.forTable("some_table")
+        val b = Predicate { where("$it.b = ${bind(2)}") }.forTable("some_table")
         val alwaysFalse = PredicateSql.alwaysFalse()
         assertEquals(a, PredicateSql.any(alwaysFalse, a))
         assertEquals(b, PredicateSql.any(b, alwaysFalse))

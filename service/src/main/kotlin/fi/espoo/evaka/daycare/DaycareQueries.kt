@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -77,8 +76,8 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) =
-    QuerySql.of<DatabaseTable.Daycare> {
+fun daycaresQuery(predicate: Predicate) =
+    QuerySql.of {
         sql(
             """
 SELECT
@@ -469,7 +468,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
         .exactlyOneOrNull<UnitFeatures>()
 
 fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT EXISTS(

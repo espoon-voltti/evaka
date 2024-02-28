@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -28,7 +27,7 @@ WHERE acc.person_id = :personId AND acc.active = true
 fun Database.Read.getEmployeeMessageAccountIds(
     idFilter: AccessControlFilter<MessageAccountId>
 ): Set<MessageAccountId> {
-    return createQuery<DatabaseTable> {
+    return createQuery {
             sql(
                 """
 SELECT id
@@ -46,7 +45,7 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     municipalAccountName: String,
     serviceWorkerAccountName: String
 ): List<AuthorizedMessageAccount> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
 SELECT DISTINCT ON (acc.id)
@@ -100,7 +99,7 @@ fun Database.Read.getAccountNames(
 }
 
 fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
-    return createUpdate<Any> {
+    return createUpdate {
             sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
         }
         .executeAndReturnGeneratedKeys()

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -46,7 +45,7 @@ class FamilyConflictReportController(private val accessControl: AccessControl) {
 private fun Database.Read.getFamilyConflicts(
     unitFilter: AccessControlFilter<DaycareId>
 ): List<FamilyConflictReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
         WITH child_conflicts AS (

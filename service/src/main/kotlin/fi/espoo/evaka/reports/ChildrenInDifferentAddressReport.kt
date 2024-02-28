@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -50,7 +49,7 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
     clock: EvakaClock,
     unitFilter: AccessControlFilter<DaycareId>
 ): List<ChildrenInDifferentAddressReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
         SELECT

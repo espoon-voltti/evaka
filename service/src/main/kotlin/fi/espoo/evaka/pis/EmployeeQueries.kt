@@ -307,7 +307,7 @@ fun Database.Transaction.upsertEmployeeDaycareRoles(
 
 fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: List<UserRole>) {
     val updated =
-        createUpdate<Any> {
+        createUpdate {
                 sql(
                     """
         UPDATE employee
@@ -322,7 +322,7 @@ fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: 
 }
 
 fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
         DELETE FROM daycare_acl
@@ -334,7 +334,7 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: D
         }
         .execute()
 
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
         DELETE FROM daycare_group_acl

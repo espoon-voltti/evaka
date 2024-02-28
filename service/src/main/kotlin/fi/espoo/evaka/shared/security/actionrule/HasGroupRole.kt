@@ -21,9 +21,7 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
 private typealias GetGroupRoles =
-    QuerySql.Builder<IdRoleFeatures>.(
-        user: AuthenticatedUser.Employee, now: HelsinkiDateTime
-    ) -> QuerySql<IdRoleFeatures>
+    QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
 data class HasGroupRole(
     val oneOf: EnumSet<UserRole>,
@@ -45,7 +43,7 @@ data class HasGroupRole(
         when (ctx.user) {
             is AuthenticatedUser.Employee ->
                 ctx.tx
-                    .createQuery<Boolean> {
+                    .createQuery {
                         sql(
                             """
 SELECT EXISTS (
@@ -90,7 +88,7 @@ SELECT EXISTS (
                 is AuthenticatedUser.Employee -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
                     SELECT id, role, unit_features, unit_provider_type
@@ -119,7 +117,7 @@ SELECT EXISTS (
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
                     QuerySql.of {

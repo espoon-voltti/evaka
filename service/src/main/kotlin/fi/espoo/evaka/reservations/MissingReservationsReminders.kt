@@ -11,7 +11,6 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -46,7 +45,7 @@ class MissingReservationsReminders(
         val range = FiniteDateRange(monday, monday.plusDays(6))
 
         val guardians =
-            tx.createQuery<Any> {
+            tx.createQuery {
                     sql(
                         """
 SELECT DISTINCT missing.guardian_id
@@ -70,7 +69,7 @@ WHERE p.email IS NOT NULL
     fun sendReminder(db: Database.Connection, msg: AsyncJob.SendMissingReservationsReminder) {
         val language =
             db.read { tx ->
-                tx.createQuery<DatabaseTable> {
+                tx.createQuery {
                         sql(
                             """
 SELECT language
@@ -102,7 +101,7 @@ LIMIT 1
 }
 
 private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) =
-    QuerySql.of<PersonId> {
+    QuerySql.of {
         sql(
             """
 SELECT guardian_id

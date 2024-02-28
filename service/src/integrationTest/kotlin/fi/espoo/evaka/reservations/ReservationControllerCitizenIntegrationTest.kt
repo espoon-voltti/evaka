@@ -1940,7 +1940,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val expected = counts.map { QueryResult(it.first, it.second) }
         val actual =
             db.read {
-                it.createQuery<Any> {
+                it.createQuery {
                         sql(
                             """
                             SELECT date, COUNT(category) as count
@@ -1963,7 +1963,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         val expected = counts.map { QueryResult(it.first, it.second) }
         val actual =
             db.read {
-                it.createQuery<Any> {
+                it.createQuery {
                         sql(
                             """
                             SELECT date, COUNT(*) as count

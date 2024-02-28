@@ -151,7 +151,7 @@ RETURNING id
         .let(::AreaId)
 
 fun Database.Transaction.insert(holiday: DevHoliday) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 INSERT INTO holiday (date, description)
@@ -447,7 +447,7 @@ fun Database.Transaction.insertTestApplication(
         .execute()
 
     if (otherGuardianId != null) {
-        createUpdate<Any> {
+        createUpdate {
                 sql(
                     """
             INSERT INTO application_other_guardian (application_id, guardian_id) 

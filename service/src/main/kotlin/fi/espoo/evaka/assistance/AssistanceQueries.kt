@@ -14,8 +14,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 
-private fun getAssistanceFactors(predicate: Predicate<DatabaseTable.AssistanceFactor>) =
-    QuerySql.of<DatabaseTable.AssistanceFactor> {
+private fun getAssistanceFactors(predicate: Predicate) =
+    QuerySql.of {
         sql(
             """
 SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -34,7 +34,7 @@ fun Database.Read.getAssistanceFactorsByChildId(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceFactorId>
 ): List<AssistanceFactor> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -57,7 +57,7 @@ fun Database.Transaction.insertAssistanceFactor(
     child: ChildId,
     update: AssistanceFactorUpdate,
 ): AssistanceFactorId =
-    createUpdate<DatabaseTable.AssistanceFactor> {
+    createUpdate {
             sql(
                 """
 INSERT INTO assistance_factor (child_id, modified, modified_by, valid_during, capacity_factor)
@@ -75,7 +75,7 @@ fun Database.Transaction.updateAssistanceFactor(
     id: AssistanceFactorId,
     update: AssistanceFactorUpdate
 ) =
-    createUpdate<DatabaseTable.AssistanceFactor> {
+    createUpdate {
             sql(
                 """
 UPDATE assistance_factor
@@ -91,7 +91,7 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
-    createUpdate<DatabaseTable.AssistanceFactor> {
+    createUpdate {
             sql(
                 """
 DELETE FROM assistance_factor WHERE id = ${bind(id)}
@@ -106,7 +106,7 @@ fun Database.Read.getDaycareAssistanceByChildId(
     child: ChildId,
     filter: AccessControlFilter<DaycareAssistanceId>
 ): List<DaycareAssistance> =
-    createQuery<DatabaseTable.DaycareAssistance> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -123,7 +123,7 @@ fun Database.Transaction.insertDaycareAssistance(
     child: ChildId,
     update: DaycareAssistanceUpdate,
 ): DaycareAssistanceId =
-    createUpdate<DatabaseTable.DaycareAssistance> {
+    createUpdate {
             sql(
                 """
 INSERT INTO daycare_assistance (child_id, modified, modified_by, valid_during, level)
@@ -141,7 +141,7 @@ fun Database.Transaction.updateDaycareAssistance(
     id: DaycareAssistanceId,
     update: DaycareAssistanceUpdate
 ) =
-    createUpdate<DatabaseTable.DaycareAssistance> {
+    createUpdate {
             sql(
                 """
 UPDATE daycare_assistance
@@ -157,13 +157,10 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) =
-    createUpdate<DatabaseTable.DaycareAssistance> {
-            sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}")
-        }
-        .execute()
+    createUpdate { sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}") }.execute()
 
 fun Database.Read.getPreschoolAssistances(child: ChildId): List<PreschoolAssistance> =
-    createQuery<DatabaseTable.PreschoolAssistance> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -178,7 +175,7 @@ fun Database.Read.getPreschoolAssistanceByChildId(
     child: ChildId,
     filter: AccessControlFilter<PreschoolAssistanceId>
 ): List<PreschoolAssistance> =
-    createQuery<DatabaseTable.PreschoolAssistance> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, level, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -195,7 +192,7 @@ fun Database.Transaction.insertPreschoolAssistance(
     child: ChildId,
     update: PreschoolAssistanceUpdate,
 ): PreschoolAssistanceId =
-    createUpdate<DatabaseTable.PreschoolAssistance> {
+    createUpdate {
             sql(
                 """
 INSERT INTO preschool_assistance (child_id, modified, modified_by, valid_during, level)
@@ -213,7 +210,7 @@ fun Database.Transaction.updatePreschoolAssistance(
     id: PreschoolAssistanceId,
     update: PreschoolAssistanceUpdate
 ) =
-    createUpdate<DatabaseTable.PreschoolAssistance> {
+    createUpdate {
             sql(
                 """
 UPDATE preschool_assistance
@@ -229,13 +226,10 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) =
-    createUpdate<DatabaseTable.PreschoolAssistance> {
-            sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}")
-        }
-        .execute()
+    createUpdate { sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}") }.execute()
 
 fun Database.Read.getOtherAssistanceMeasures(child: ChildId): List<OtherAssistanceMeasure> =
-    createQuery<DatabaseTable.OtherAssistanceMeasure> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -250,7 +244,7 @@ fun Database.Read.getOtherAssistanceMeasuresByChildId(
     child: ChildId,
     filter: AccessControlFilter<OtherAssistanceMeasureId>
 ): List<OtherAssistanceMeasure> =
-    createQuery<DatabaseTable.OtherAssistanceMeasure> {
+    createQuery {
             sql(
                 """
 SELECT id, child_id, valid_during, type, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
@@ -267,7 +261,7 @@ fun Database.Transaction.insertOtherAssistanceMeasure(
     child: ChildId,
     update: OtherAssistanceMeasureUpdate,
 ): OtherAssistanceMeasureId =
-    createUpdate<DatabaseTable.OtherAssistanceMeasure> {
+    createUpdate {
             sql(
                 """
 INSERT INTO other_assistance_measure (child_id, modified, modified_by, valid_during, type)
@@ -285,7 +279,7 @@ fun Database.Transaction.updateOtherAssistanceMeasure(
     id: OtherAssistanceMeasureId,
     update: OtherAssistanceMeasureUpdate
 ) =
-    createUpdate<DatabaseTable.OtherAssistanceMeasure> {
+    createUpdate {
             sql(
                 """
 UPDATE other_assistance_measure
@@ -301,16 +295,13 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) =
-    createUpdate<DatabaseTable.OtherAssistanceMeasure> {
-            sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
-        }
-        .execute()
+    createUpdate { sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}") }.execute()
 
 fun Database.Read.getAssistanceActionsByChildId(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceActionId>
 ): List<AssistanceAction> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action

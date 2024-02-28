@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AreaId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -65,7 +64,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         mealTimes: MealReportConfig
     ): FamilyDaycareMealReportResult {
         val resultRows =
-            createQuery<DatabaseTable> {
+            createQuery {
                     sql(
                         """
 select a.id                                                          as area_id,

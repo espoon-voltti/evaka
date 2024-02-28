@@ -25,7 +25,7 @@ private fun logResult(description: String, violations: Int) {
 }
 
 fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         SELECT count(*)
@@ -38,7 +38,7 @@ fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int {
 }
 
 fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         SELECT count(*)
@@ -52,7 +52,7 @@ fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int {
 }
 
 fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         SELECT count(*)

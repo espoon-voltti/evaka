@@ -18,7 +18,6 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -97,7 +96,7 @@ fun Database.Read.duplicateApplicationExists(
     guardianId: PersonId,
     type: ApplicationType
 ): Boolean =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT EXISTS(
@@ -415,7 +414,7 @@ fun Database.Read.fetchApplicationSummaries(
         }.exhaust()
 
     val applicationSummaries =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
         SELECT
@@ -635,7 +634,7 @@ fun Database.Read.fetchApplicationSummariesForChild(
     childId: ChildId,
     filter: AccessControlFilter<ApplicationId>
 ): List<PersonApplicationSummary> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT
@@ -664,7 +663,7 @@ fun Database.Read.fetchApplicationSummariesForChild(
 fun Database.Read.fetchApplicationSummariesForCitizen(
     citizenId: PersonId
 ): List<CitizenApplicationSummary> =
-    createQuery<Any> {
+    createQuery {
             val useDecisionDateAsStartDate =
                 listOf(
                     ApplicationStatus.ACTIVE,
@@ -1071,7 +1070,7 @@ fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
     id: ApplicationId,
     allowOtherGuardianAccess: Boolean
 ) =
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql(
                 """
                     UPDATE application
@@ -1099,12 +1098,12 @@ fun Database.Transaction.updateApplicationOtherGuardian(
 }
 
 fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}")
         }
         .execute()
 
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql(
                 """
             INSERT INTO application_other_guardian (application_id, guardian_id)
@@ -1154,7 +1153,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 
     // language=SQL
     val applicationIds =
-        createQuery<DatabaseTable> {
+        createQuery {
                 sql(
                     "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
                 )
@@ -1297,7 +1296,7 @@ RETURNING id
         .toList<ApplicationId>()
 
 fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT COUNT(*)

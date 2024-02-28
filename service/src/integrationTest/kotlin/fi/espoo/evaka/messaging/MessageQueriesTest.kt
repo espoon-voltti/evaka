@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -836,9 +835,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun deletePlacement(placement: PlacementId) =
         db.transaction {
-            it.createUpdate<DatabaseTable> {
-                    sql("DELETE FROM placement WHERE id = ${bind(placement)}")
-                }
-                .execute()
+            it.createUpdate { sql("DELETE FROM placement WHERE id = ${bind(placement)}") }.execute()
         }
 }

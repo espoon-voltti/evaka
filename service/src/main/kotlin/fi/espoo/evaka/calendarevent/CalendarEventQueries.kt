@@ -9,7 +9,6 @@ import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -252,7 +251,7 @@ fun Database.Transaction.setCalendarEventContentModifiedAt(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime
 ) =
-    this.createUpdate<DatabaseTable.CalendarEvent> {
+    this.createUpdate {
             sql(
                 """
 UPDATE calendar_event
@@ -414,7 +413,7 @@ data class ParentWithEvents(
 )
 
 fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
 WITH matching_events AS (

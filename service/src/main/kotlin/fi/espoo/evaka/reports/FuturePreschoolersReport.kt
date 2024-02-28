@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -67,7 +66,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
 const val preschoolSelectionAge = 5
 
 fun Database.Read.getFuturePreschoolerRows(today: LocalDate): List<FuturePreschoolersReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 SELECT p.id, 
@@ -139,7 +138,7 @@ fun Database.Read.getPreschoolGroupsRows(
     today: LocalDate,
     municipal: Boolean
 ): List<PreschoolGroupsReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 SELECT dg.id, 

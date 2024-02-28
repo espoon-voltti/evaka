@@ -20,7 +20,7 @@ class KoskiDatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
             .forEach { placementType ->
                 assertNotNull(
                     db.read { tx ->
-                        tx.createQuery<Any> {
+                        tx.createQuery {
                                 sql("""
 SELECT ${bind(placementType)}::koski_study_right_type
 """)

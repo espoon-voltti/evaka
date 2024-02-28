@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getCapacityFactorsByChild(childId: ChildId): List<AssistanceNeedCapacityFactor> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT valid_during AS date_range, capacity_factor

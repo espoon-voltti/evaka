@@ -533,7 +533,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     private fun childImageCount(childId: ChildId): Int =
         db.read {
-            it.createQuery<Any> {
+            it.createQuery {
                     sql("SELECT COUNT(*) FROM child_images WHERE child_id = ${bind(childId)}")
                 }
                 .exactlyOne()

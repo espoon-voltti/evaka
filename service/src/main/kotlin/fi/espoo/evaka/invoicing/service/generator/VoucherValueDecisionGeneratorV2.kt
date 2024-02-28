@@ -461,7 +461,7 @@ private data class HeadOfChildRelation(
 ) : WithFiniteRange
 
 private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOfChildRelation> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
             SELECT head_of_child, daterange(start_date, end_date, '[]') as finite_range
@@ -474,7 +474,7 @@ private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOf
 }
 
 private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
             SELECT id, date_of_birth

@@ -16,7 +16,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -341,14 +340,14 @@ fun Database.Read.searchInvoices(
     sentAt: HelsinkiDateTimeRange? = null
 ): List<InvoiceDetailed> {
     val predicate =
-        Predicate.all<DatabaseTable.Invoice>(
+        Predicate.all(
             listOfNotNull(
                 if (status != null) Predicate { where("$it.status = ${bind(status)}") } else null,
                 if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null
             )
         )
 
-    return createQuery<DatabaseTable.Invoice> {
+    return createQuery {
             sql(
                 """
 $invoiceDetailedQueryBase

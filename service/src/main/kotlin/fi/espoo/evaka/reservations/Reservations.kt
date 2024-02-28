@@ -373,7 +373,7 @@ fun upsertChildDatePresence(
     val reservations =
         input.reservations.map { reservation ->
             val existingId =
-                tx.createQuery<Any> {
+                tx.createQuery {
                         sql(
                             """
             SELECT id 
@@ -477,7 +477,7 @@ private fun Database.Transaction.deleteReservations(
     childId: ChildId,
     skip: List<AttendanceReservationId>
 ): List<AttendanceReservationId> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         DELETE FROM attendance_reservation
@@ -495,7 +495,7 @@ private fun Database.Transaction.insertReservation(
     childId: ChildId,
     reservation: Reservation
 ): AttendanceReservationId {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         INSERT INTO attendance_reservation (child_id, created_by, date, start_time, end_time) 

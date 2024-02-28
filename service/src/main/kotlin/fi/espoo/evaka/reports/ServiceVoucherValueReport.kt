@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -158,7 +157,7 @@ fun getServiceVoucherReport(
         when (unitFilter) {
             AccessControlFilter.PermitAll -> null
             is AccessControlFilter.Some ->
-                tx.createQuery<DatabaseTable> {
+                tx.createQuery {
                         sql(
                             "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
                         )
