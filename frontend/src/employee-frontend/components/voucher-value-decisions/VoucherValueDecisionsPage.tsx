@@ -82,7 +82,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
     }
 
     const params: SearchVoucherValueDecisionRequest = {
-      page,
+      page: page - 1,
       pageSize,
       sortBy,
       sortDirection,

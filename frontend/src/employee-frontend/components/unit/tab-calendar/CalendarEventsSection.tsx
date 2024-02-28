@@ -52,7 +52,7 @@ import {
   createCalendarEvent,
   deleteCalendarEvent,
   getUnitCalendarEvents,
-  updateCalendarEvent
+  modifyCalendarEvent
 } from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
@@ -63,7 +63,7 @@ import { unitGroupDetailsQuery } from '../queries'
 
 const createCalendarEventResult = wrapResult(createCalendarEvent)
 const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
-const updateCalendarEventResult = wrapResult(updateCalendarEvent)
+const modifyCalendarEventResult = wrapResult(modifyCalendarEvent)
 const deleteCalendarEventResult = wrapResult(deleteCalendarEvent)
 
 const EventsWeekContainer = styled.div`
@@ -834,7 +834,7 @@ const EditEventModal = React.memo(function EditEventModal({
             <AsyncButton
               primary
               onClick={() =>
-                updateCalendarEventResult({ id: event.id, body: form })
+                modifyCalendarEventResult({ id: event.id, body: form })
               }
               onSuccess={() => onClose(true)}
               text={i18n.unit.calendar.events.edit.saveChanges}

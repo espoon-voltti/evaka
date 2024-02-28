@@ -328,6 +328,19 @@ export const InvoicingUIContextProvider = React.memo(
     >(defaultState.shared.financeDecisionHandlers)
     const availableAreas = useQueryResult(areaQuery(), { enabled: loggedIn })
 
+    const setFinanceDecisionHandlersFromResult = useCallback(
+      (employeesResult: Result<Employee[]>) =>
+        setFinanceDecisionHandlers(
+          employeesResult.map((employees) =>
+            employees.map((e) => ({
+              value: e.id,
+              label: [e.firstName, e.lastName].join(' ')
+            }))
+          )
+        ),
+      [setFinanceDecisionHandlers]
+    )
+
     const value = useMemo(
       () => ({
         feeDecisions: {
@@ -371,15 +384,7 @@ export const InvoicingUIContextProvider = React.memo(
           units,
           setUnits,
           financeDecisionHandlers,
-          setFinanceDecisionHandlers: (employeesResult: Result<Employee[]>) =>
-            setFinanceDecisionHandlers(
-              employeesResult.map((employees) =>
-                employees.map((e) => ({
-                  value: e.id,
-                  label: [e.firstName, e.lastName].join(' ')
-                }))
-              )
-            ),
+          setFinanceDecisionHandlers: setFinanceDecisionHandlersFromResult,
           availableAreas
         }
       }),
@@ -404,7 +409,8 @@ export const InvoicingUIContextProvider = React.memo(
         clearIncomeStatementSearchFilters,
         units,
         financeDecisionHandlers,
-        availableAreas
+        availableAreas,
+        setFinanceDecisionHandlersFromResult
       ]
     )
 

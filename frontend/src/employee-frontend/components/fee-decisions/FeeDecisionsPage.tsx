@@ -74,7 +74,7 @@ export default React.memo(function FeeDecisionsPage() {
     }
 
     const params: SearchFeeDecisionRequest = {
-      page,
+      page: page - 1,
       pageSize,
       sortBy,
       sortDirection,
