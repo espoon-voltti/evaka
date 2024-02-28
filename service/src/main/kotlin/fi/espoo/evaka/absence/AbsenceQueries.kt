@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.absence
 
+import fi.espoo.evaka.attendance.ChildAttendanceRow
+import fi.espoo.evaka.attendance.getChildAttendances
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
@@ -24,9 +26,9 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.LocalDate
-import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 
 data class AbsenceUpsert(
@@ -397,7 +399,7 @@ private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) =
     QuerySql.of<Any> {
         sql(
             """
-SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range, p.type
+SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range
 FROM daycare_group_placement AS gp
 JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
@@ -405,7 +407,7 @@ AND gp.daycare_group_id = ${bind(groupId)}
 
 UNION ALL
 
-SELECT bc.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') AS date_range, p.type
+SELECT bc.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') AS date_range
 FROM backup_care bc
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
@@ -427,8 +429,10 @@ fun Database.Read.getPlacementsByRange(
 ): Map<Child, List<AbsencePlacement>> {
     data class QueryResult(
         @Nested("child") val child: Child,
-        val dateRange: FiniteDateRange,
-        val type: PlacementType
+        val range: FiniteDateRange,
+        val placementType: PlacementType,
+        val dailyPreschoolTime: TimeRange?,
+        val dailyPreparatoryTime: TimeRange?,
     )
     return createQuery<Any> {
             sql(
@@ -437,21 +441,33 @@ WITH all_placements AS (
   ${subquery(placementsQuery(range, groupId))}
 )
 SELECT
-  all_placements.date_range,
-  all_placements.type,
+  all_placements.date_range AS range,
   all_placements.child_id,
+  placement.type AS placement_type,
+  daycare.daily_preschool_time,
+  daycare.daily_preparatory_time,
   person.first_name AS child_first_name,
   person.last_name AS child_last_name,
   person.date_of_birth AS child_date_of_birth
 FROM all_placements
-JOIN person ON child_id = person.id
+JOIN person ON person.id = all_placements.child_id
+JOIN placement ON placement.child_id = all_placements.child_id AND daterange(placement.start_date, placement.end_date, '[]') && all_placements.date_range
+JOIN daycare ON daycare.id = placement.unit_id
 """
             )
         }
         .toList<QueryResult>()
         .groupBy { it.child }
         .map { (child, queryResults) ->
-            child to queryResults.map { AbsencePlacement(it.dateRange, it.type) }
+            child to
+                queryResults.map {
+                    AbsencePlacement(
+                        it.range,
+                        it.placementType,
+                        it.dailyPreschoolTime,
+                        it.dailyPreparatoryTime
+                    )
+                }
         }
         .toMap()
 }
@@ -603,34 +619,23 @@ AND EXISTS (
         .groupBy({ it.first }, { it.second })
 }
 
-data class ChildAttendance(
-    val childId: ChildId,
-    val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime
-)
-
 fun Database.Read.getGroupAttendances(
     groupId: GroupId,
     dateRange: FiniteDateRange
-): List<ChildAttendance> =
-    createQuery<Any> {
-            sql(
+): List<ChildAttendanceRow> =
+    getChildAttendances(
+        Predicate {
+            where(
                 """
-WITH all_placements AS (
-  ${subquery(placementsQuery(dateRange, groupId))}
-)
-SELECT a.child_id, a.date, a.start_time, a.end_time FROM child_attendance a
-WHERE between_start_and_end(${bind(dateRange)}, a.date) AND a.end_time IS NOT NULL
+between_start_and_end(${bind(dateRange)}, $it.date)
 AND EXISTS (
-    SELECT 1 FROM all_placements p
-    WHERE a.child_id = p.child_id
-    AND between_start_and_end(p.date_range, a.date)
+    SELECT FROM (${subquery(placementsQuery(dateRange, groupId))}) p
+    WHERE $it.child_id = p.child_id AND between_start_and_end(p.date_range, $it.date)
 )
 """
             )
         }
-        .toList<ChildAttendance>()
+    )
 
 fun Database.Read.getGroupDailyServiceTimes(
     groupId: GroupId,

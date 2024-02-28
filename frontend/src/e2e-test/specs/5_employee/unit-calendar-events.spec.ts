@@ -19,8 +19,7 @@ import {
   resetDatabase
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
-import { UnitPage } from '../../pages/employee/units/unit'
-import { UnitCalendarPage } from '../../pages/employee/units/unit-attendances-page'
+import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -125,7 +124,7 @@ beforeEach(async () => {
 
 describe('Calendar events', () => {
   test('Employee can add event for group', async () => {
-    await calendarPage.selectMode('week')
+    await calendarPage.weekModeButton.click()
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
     await creationModal.title.fill('Test event (G)')
@@ -146,7 +145,7 @@ describe('Calendar events', () => {
     const startDate = mockedToday.addDays(1)
     const endDate = mockedToday.addDays(2)
 
-    await calendarPage.selectMode('week')
+    await calendarPage.weekModeButton.click()
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
     await waitUntilTrue(() => creationModal.submitButton.disabled)

@@ -5,17 +5,22 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
+import { insertReservationFixtures } from '../../dev-api'
 import {
   careAreaFixture,
   daycareFixture,
   DaycareGroupBuilder,
   daycareGroupFixture,
+  EmployeeBuilder,
+  enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   Fixture
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
+  postAttendances,
   resetDatabase
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -27,6 +32,7 @@ let unitPage: UnitPage
 
 const today = LocalDate.of(2023, 3, 1)
 let group: DaycareGroupBuilder
+let unitSupervisor: EmployeeBuilder
 
 beforeEach(async () => {
   await resetDatabase()
@@ -38,18 +44,19 @@ beforeEach(async () => {
   await Fixture.child(enduserChildFixtureKaarina.id).save()
   group = await Fixture.daycareGroup().with(daycareGroupFixture).save()
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(
+  unitSupervisor = await Fixture.employeeUnitSupervisor(
     daycareFixture.id
   ).save()
 
   page = await Page.open({
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0)),
+    employeeCustomizations: { featureFlags: { timeUsageInfo: true } }
   })
   await employeeLogin(page, unitSupervisor.data)
   unitPage = new UnitPage(page)
 })
 
-describe('Employee - Absences', () => {
+describe('Employee - Unit month calendar', () => {
   test('Child is not shown in calendar for term break days', async () => {
     const term = new FiniteDateRange(today, today.addYears(1))
     const monday = LocalDate.of(2023, 3, 6)
@@ -339,6 +346,121 @@ describe('Employee - Absences', () => {
       await monthCalendarPage
         .absenceCell(enduserChildFixtureKaarina.id, holidayStart)
         .missingHolidayReservation.waitUntilHidden()
+    })
+  })
+
+  test('Total reservations and attendances/used service', async () => {
+    const serviceNeedOption140h = await Fixture.serviceNeedOption()
+      .with({ daycareHoursPerMonth: 140 })
+      .save()
+    const serviceNeedOptionDaycare35 = await Fixture.serviceNeedOption()
+      .with({ daycareHoursPerWeek: 35 })
+      .save()
+
+    const placementStart = today.addMonths(-1)
+    const placementEnd = today.addMonths(1)
+
+    const kaarinaPlacement = await Fixture.placement()
+      .with({
+        childId: enduserChildFixtureKaarina.id,
+        unitId: daycareFixture.id,
+        type: 'DAYCARE',
+        startDate: placementStart,
+        endDate: placementEnd
+      })
+      .save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: kaarinaPlacement.data.id,
+        optionId: serviceNeedOption140h.data.id,
+        startDate: placementStart,
+        endDate: placementEnd,
+        confirmedBy: unitSupervisor.data.id
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withPlacement(kaarinaPlacement)
+      .withGroup(group)
+      .save()
+
+    await Fixture.person().with(enduserChildFixtureJari).save()
+    await Fixture.child(enduserChildFixtureJari.id).save()
+    const jariPlacement = await Fixture.placement()
+      .with({
+        childId: enduserChildFixtureJari.id,
+        unitId: daycareFixture.id,
+        type: 'DAYCARE',
+        startDate: placementStart,
+        endDate: placementEnd
+      })
+      .save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: jariPlacement.data.id,
+        optionId: serviceNeedOptionDaycare35.data.id,
+        startDate: placementStart,
+        endDate: placementEnd,
+        confirmedBy: unitSupervisor.data.id
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .withPlacement(jariPlacement)
+      .withGroup(group)
+      .save()
+
+    const lastMonthWeekdays = [
+      ...new FiniteDateRange(today.addMonths(-1), today.addDays(-1)).dates()
+    ].filter((date) => !date.isWeekend())
+    await insertReservationFixtures(
+      lastMonthWeekdays.flatMap((date) =>
+        [enduserChildFixtureKaarina.id, enduserChildFixtureJari.id].map(
+          (childId) => ({
+            childId,
+            date,
+            type: 'RESERVATIONS',
+            reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            secondReservation: null
+          })
+        )
+      )
+    )
+    await postAttendances({
+      body: lastMonthWeekdays.flatMap((date) =>
+        date.isWeekend()
+          ? []
+          : [enduserChildFixtureKaarina.id, enduserChildFixtureJari.id].map(
+              (childId) => ({
+                childId,
+                unitId: daycareFixture.id,
+                date,
+                arrived: LocalTime.of(8, 15),
+                departed: LocalTime.of(16, 30)
+              })
+            )
+      )
+    })
+
+    await unitPage.navigateToUnit(daycareFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    const groupSection = await groupsPage.openGroupCollapsible(
+      daycareGroupFixture.id
+    )
+    const monthCalendarPage = await groupSection.openMonthCalendar()
+    await monthCalendarPage.previousWeekButton.click()
+    await monthCalendarPage.assertChildTotalHours(
+      enduserChildFixtureKaarina.id,
+      {
+        reservedHours: 160,
+        reservedHoursWarning: true,
+        usedHours: 170,
+        usedHoursWarning: true
+      }
+    )
+    await monthCalendarPage.assertChildTotalHours(enduserChildFixtureJari.id, {
+      reservedHours: 160,
+      reservedHoursWarning: false,
+      usedHours: 165,
+      usedHoursWarning: true
     })
   })
 })

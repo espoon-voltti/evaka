@@ -38,7 +38,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface DailyReservationRequest {
@@ -519,14 +519,14 @@ private fun Database.Transaction.insertReservation(
 }
 
 data class UsedServiceResult(
-    val reservedMinutes: Int,
-    val attendedMinutes: Int,
-    val usedServiceMinutes: Int,
+    val reservedMinutes: Long,
+    val attendedMinutes: Long,
+    val usedServiceMinutes: Long,
     val usedServiceRanges: List<TimeRange>
 )
 
 fun computeUsedService(
-    isFuture: Boolean,
+    isDateInFuture: Boolean,
     serviceNeedHours: Int,
     placementType: PlacementType,
     preschoolTime: TimeRange?,
@@ -543,9 +543,9 @@ fun computeUsedService(
             )
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
-    if (isFuture) {
+    if (isDateInFuture) {
         return UsedServiceResult(
-            reservedMinutes = effectiveReservations.ranges().sumOf { it.durationInMinutes() },
+            reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
             attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
@@ -572,7 +572,7 @@ fun computeUsedService(
         return UsedServiceResult(
             reservedMinutes = 0,
             attendedMinutes = 0,
-            usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToInt(),
+            usedServiceMinutes = (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToLong(),
             usedServiceRanges = emptyList()
         )
     }
@@ -581,9 +581,9 @@ fun computeUsedService(
     val usedService = effectiveReservations + effectiveAttendances
 
     return UsedServiceResult(
-        reservedMinutes = effectiveReservations.ranges().sumOf { it.durationInMinutes() },
-        attendedMinutes = effectiveAttendances.ranges().sumOf { it.durationInMinutes() },
-        usedServiceMinutes = usedService.ranges().sumOf { it.durationInMinutes() },
+        reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
+        attendedMinutes = effectiveAttendances.ranges().sumOf { it.duration.toMinutes() },
+        usedServiceMinutes = usedService.ranges().sumOf { it.duration.toMinutes() },
         usedServiceRanges = usedService.ranges().toList()
     )
 }

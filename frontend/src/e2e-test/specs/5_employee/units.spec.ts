@@ -167,8 +167,8 @@ describe('Employee - Units', () => {
 
   test('Unit occupancy rates cannot be determined when no caretaker', async () => {
     const unitPage = await UnitPage.openUnit(page, unitFixture.id)
-    const unitAttendancePage = await unitPage.openCalendarPage()
-    await unitAttendancePage.attendancesSection.occupancies.assertNoValidValues()
+    const unitAttendancePage = await unitPage.openWeekCalendar()
+    await unitAttendancePage.occupancies.assertNoValidValues()
   })
 
   test('Unit occupancy rates are correct with properly set caretaker counts', async () => {
@@ -181,13 +181,13 @@ describe('Employee - Units', () => {
       .save()
 
     const unitPage = await UnitPage.openUnit(page, unitFixture.id)
-    const unitAttendancePage = await unitPage.openCalendarPage()
-    await unitAttendancePage.attendancesSection.selectPeriod('3 months')
-    await unitAttendancePage.attendancesSection.occupancies.assertConfirmed(
+    const unitAttendancePage = await unitPage.openWeekCalendar()
+    await unitAttendancePage.selectPeriod('3 months')
+    await unitAttendancePage.occupancies.assertConfirmed(
       'Min. 14,3 %',
       'Max. 14,3 %'
     )
-    await unitAttendancePage.attendancesSection.occupancies.assertPlanned(
+    await unitAttendancePage.occupancies.assertPlanned(
       'Min. 14,3 %',
       'Max. 14,3 %'
     )

@@ -22,18 +22,16 @@ import {
 import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
-  UnitAttendancesSection,
-  UnitCalendarPage,
+  UnitWeekCalendarPage,
   UnitStaffAttendancesTable
-} from '../../pages/employee/units/unit-attendances-page'
+} from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-let attendancesSection: UnitAttendancesSection
-let calendarPage: UnitCalendarPage
+let attendancesSection: UnitWeekCalendarPage
 let child1Fixture: Child
 let child1DaycarePlacementId: UUID
 let daycare: Daycare
@@ -129,11 +127,10 @@ beforeEach(async () => {
   await employeeLogin(page, unitSupervisor)
 })
 
-const openAttendancesSection = async (): Promise<UnitAttendancesSection> => {
+const openWeekCalendar = async (): Promise<UnitWeekCalendarPage> => {
   unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
-  calendarPage = await unitPage.openCalendarPage()
-  return calendarPage.attendancesSection
+  return await unitPage.openWeekCalendar()
 }
 
 describe('Realtime staff attendances', () => {
@@ -147,7 +144,7 @@ describe('Realtime staff attendances', () => {
       })
       .save()
 
-    attendancesSection = await openAttendancesSection()
+    attendancesSection = await openWeekCalendar()
     await attendancesSection.occupancies.assertGraphIsVisible()
     await attendancesSection.setFilterStartDate(LocalDate.of(2022, 3, 1))
     await attendancesSection.occupancies.assertGraphHasNoData()
@@ -157,7 +154,7 @@ describe('Realtime staff attendances', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     beforeEach(async () => {
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup('staff')
       staffAttendances = attendancesSection.staffAttendances
     })
@@ -188,7 +185,7 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
+      await attendancesSection.changeWeekToDate(mockedToday.subWeeks(1))
       await staffAttendances.assertTableRow({
         rowIx: 0,
         nth: 6,
@@ -218,7 +215,7 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
       const staffAttendances = attendancesSection.staffAttendances
 
@@ -248,7 +245,7 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
       const staffAttendances = attendancesSection.staffAttendances
 
@@ -321,7 +318,7 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
       const staffAttendances = attendancesSection.staffAttendances
 
@@ -364,7 +361,7 @@ describe('Realtime staff attendances', () => {
           departed: null
         })
         .save()
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup('staff')
       staffAttendances = attendancesSection.staffAttendances
     }
@@ -607,7 +604,7 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       staffAttendances = attendancesSection.staffAttendances
     })
 
@@ -628,7 +625,7 @@ describe('Realtime staff attendances', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     beforeEach(async () => {
-      attendancesSection = await openAttendancesSection()
+      attendancesSection = await openWeekCalendar()
       staffAttendances = attendancesSection.staffAttendances
     })
 

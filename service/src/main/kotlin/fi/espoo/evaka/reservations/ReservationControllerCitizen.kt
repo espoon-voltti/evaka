@@ -504,7 +504,7 @@ data class ReservationChild(
                             MonthSummary(
                                 year = yearMonth.first,
                                 month = yearMonth.second,
-                                serviceNeedMinutes = daycareHoursPerMonth * 60,
+                                serviceNeedMinutes = daycareHoursPerMonth.toLong() * 60,
                                 reservedMinutes =
                                     childDays.sumOf { it.usedService?.reservedMinutes ?: 0 },
                                 usedServiceMinutes =
@@ -533,9 +533,9 @@ data class ReservationChild(
 data class MonthSummary(
     val year: Int,
     val month: Int,
-    val serviceNeedMinutes: Int,
-    val reservedMinutes: Int,
-    val usedServiceMinutes: Int
+    val serviceNeedMinutes: Long,
+    val reservedMinutes: Long,
+    val usedServiceMinutes: Long
 )
 
 data class ReservationResponseDay(

@@ -82,6 +82,7 @@ export interface ChildReservation {
 */
 export interface ChildServiceNeedInfo {
   childId: UUID
+  daycareHoursPerMonth: number | null
   hasContractDays: boolean
   optionName: string
   shiftCare: ShiftCareType
@@ -118,6 +119,7 @@ export interface GroupMonthCalendarChild {
   id: UUID
   lastName: string
   reservationTotalHours: number
+  usedService: UsedServiceTotals | null
 }
 
 /**
@@ -159,6 +161,15 @@ export interface Presence {
   category: AbsenceCategory
   childId: UUID
   date: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.absence.UsedServiceTotals
+*/
+export interface UsedServiceTotals {
+  reservedHours: number
+  serviceNeedHours: number
+  usedServiceHours: number
 }
 
 

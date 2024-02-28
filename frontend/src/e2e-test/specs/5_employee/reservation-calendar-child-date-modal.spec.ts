@@ -15,10 +15,7 @@ import {
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import {
-  UnitCalendarPage,
-  UnitChildReservationsTable
-} from '../../pages/employee/units/unit-attendances-page'
+import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -30,9 +27,6 @@ let unitSupervisor: DevEmployee
 let daycareServiceNeedOptionId: UUID
 
 let page: Page
-let unitPage: UnitPage
-let calendarPage: UnitCalendarPage
-let reservationsTable: UnitChildReservationsTable
 
 const today = LocalDate.of(2023, 9, 13) // Wed
 
@@ -93,11 +87,11 @@ const setupTestData = async ({
   ).data
 }
 
-const navigateToTestView = async ({
+async function navigateToTestView({
   intermittentShiftCareEnabled = false
 }: {
   intermittentShiftCareEnabled?: boolean
-} = {}) => {
+} = {}): Promise<UnitWeekCalendarPage> {
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
@@ -107,16 +101,15 @@ const navigateToTestView = async ({
     }
   })
   await employeeLogin(page, unitSupervisor)
-  unitPage = new UnitPage(page)
+  const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycareId)
-  calendarPage = await unitPage.openCalendarPage()
-  await calendarPage.selectMode('week')
-  reservationsTable = calendarPage.attendancesSection.childReservations
+  return await unitPage.openWeekCalendar()
 }
 
 test('Add two reservations for tomorrow then update one and remove other', async () => {
   await setupTestData()
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.addDays(1)
   const modal = await reservationsTable.openChildDateModal(childId, date)
   await modal.addReservationBtn.click()
@@ -150,7 +143,8 @@ test('Add two reservations for tomorrow then update one and remove other', async
 
 test('Add two attendances for yesterday then update one and remove other', async () => {
   await setupTestData()
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.subDays(1)
   const modal = await reservationsTable.openChildDateModal(childId, date)
   await modal.addAttendanceBtn.click()
@@ -180,7 +174,8 @@ test('Add two attendances for yesterday then update one and remove other', async
 
 test('Add absences for child in preschool daycare for tomorrow then update one and remove other', async () => {
   await setupTestData({ placementType: 'PRESCHOOL_DAYCARE' })
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.addDays(1)
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
@@ -246,7 +241,8 @@ test('Add absences for child in preschool daycare for tomorrow then update one a
 
 test('Add absence for child in preschool for yesterday', async () => {
   await setupTestData({ placementType: 'PRESCHOOL' })
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.subDays(1)
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
@@ -264,7 +260,8 @@ test('Add absence for child in preschool for yesterday', async () => {
 
 test('Add absence for child in daycare for yesterday', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.subDays(1)
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
@@ -284,7 +281,8 @@ test('Add absence for child in daycare for yesterday', async () => {
 
 test('Absence warnings for child in daycare', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.subDays(1)
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
@@ -302,7 +300,8 @@ test('Absence warnings for child in daycare', async () => {
 
 test('Absence warnings for child in preschool daycare', async () => {
   await setupTestData({ placementType: 'PRESCHOOL_DAYCARE' })
-  await navigateToTestView()
+  const weekCalendar = await navigateToTestView()
+  const reservationsTable = weekCalendar.childReservations
   const date = today.subDays(1)
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
@@ -358,7 +357,10 @@ test('Intermittent shift care outside opening times', async () => {
       confirmedBy: unitSupervisor.id
     })
     .save()
-  await navigateToTestView({ intermittentShiftCareEnabled: true })
+  const weekCalendar = await navigateToTestView({
+    intermittentShiftCareEnabled: true
+  })
+  const reservationsTable = weekCalendar.childReservations
 
   // date 1 - before opening time
   const modal = await reservationsTable.openChildDateModal(childId, date1)
@@ -390,8 +392,8 @@ test('Intermittent shift care outside opening times', async () => {
     .nth(0)
     .assertTextEquals('-\n-')
 
-  await calendarPage.selectMode('month')
-  await calendarPage.assertDayTooltip(childId, date1, [
+  const monthCalendar = await weekCalendar.openMonthCalendar()
+  await monthCalendar.assertTooltipContains(childId, date1, [
     'Ilta-/vuorohoito Odottaa varasijoitusta'
   ])
 })
@@ -424,7 +426,10 @@ test('Intermittent shift care on a holiday', async () => {
       confirmedBy: unitSupervisor.id
     })
     .save()
-  await navigateToTestView({ intermittentShiftCareEnabled: true })
+  const weekCalendar = await navigateToTestView({
+    intermittentShiftCareEnabled: true
+  })
+  const reservationsTable = weekCalendar.childReservations
 
   // date 1 - before opening time
   const modal = await reservationsTable.openChildDateModal(childId, date1)
@@ -446,8 +451,8 @@ test('Intermittent shift care on a holiday', async () => {
     .nth(0)
     .assertTextEquals('')
 
-  await calendarPage.selectMode('month')
-  await calendarPage.assertDayTooltip(childId, date1, [
+  const monthCalendar = await weekCalendar.openMonthCalendar()
+  await monthCalendar.assertTooltipContains(childId, date1, [
     'Ilta-/vuorohoito Odottaa varasijoitusta'
   ])
 })
@@ -465,7 +470,10 @@ test('Intermittent shift care on a weekend', async () => {
       confirmedBy: unitSupervisor.id
     })
     .save()
-  await navigateToTestView({ intermittentShiftCareEnabled: true })
+  const weekCalendar = await navigateToTestView({
+    intermittentShiftCareEnabled: true
+  })
+  const reservationsTable = weekCalendar.childReservations
 
   const modal = await reservationsTable.openChildDateModal(childId, date)
   await modal.addReservationBtn.click()
@@ -478,8 +486,8 @@ test('Intermittent shift care on a weekend', async () => {
     .nth(0)
     .assertTextEquals('Tee varasijoitus ')
 
-  await calendarPage.selectMode('month')
-  await calendarPage.assertDayTooltip(childId, date, [
+  const monthCalendar = await weekCalendar.openMonthCalendar()
+  await monthCalendar.assertTooltipContains(childId, date, [
     'Ilta-/vuorohoito Odottaa varasijoitusta'
   ])
 })
