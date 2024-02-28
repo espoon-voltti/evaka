@@ -34,7 +34,6 @@ import {
 import { Translations } from '../../state/i18n'
 import {
   FamilySize,
-  FeeThresholdsWithId,
   familySizes,
   FeeThresholdsSaveError
 } from '../../types/finance-basics'
@@ -43,6 +42,11 @@ import { FormState } from './FeesSection'
 
 const createFeeThresholdsResult = wrapResult(createFeeThresholds)
 const updateFeeThresholdsResult = wrapResult(updateFeeThresholds)
+
+interface FeeThresholdsWithId {
+  id: string
+  thresholds: FeeThresholds
+}
 
 export default React.memo(function FeeThresholdsEditor({
   i18n,

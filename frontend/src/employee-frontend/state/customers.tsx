@@ -17,9 +17,14 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import { searchPerson } from '../generated/api-clients/pis'
 import { SearchOrder } from '../types'
-import { SearchColumn } from '../types/person'
 
 const searchPersonResult = wrapResult(searchPerson)
+
+export type SearchColumn =
+  | 'last_name,first_name'
+  | 'date_of_birth'
+  | 'street_address'
+  | 'social_security_number'
 
 export interface CustomersState {
   customers: Result<PersonSummary[]>

@@ -35,10 +35,11 @@ import {
 } from '../../generated/api-clients/absence'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
+import { AbsenceUpdate } from '../../types/absence'
 import { renderResult } from '../async-rendering'
 
 import { AbsenceLegend } from './AbsenceLegend'
-import AbsenceModal, { AbsenceUpdate } from './AbsenceModal'
+import AbsenceModal from './AbsenceModal'
 import MonthCalendarTable from './MonthCalendarTable'
 
 const groupMonthCalendarResult = wrapResult(groupMonthCalendar)

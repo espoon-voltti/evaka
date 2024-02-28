@@ -17,20 +17,11 @@ import { Label } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import {
-  absenceCategories,
-  defaultAbsenceCategories,
-  defaultAbsenceType
-} from '../../types/absence'
+import { AbsenceUpdate } from '../../types/absence'
 
-export type AbsenceUpdate =
-  | {
-      type: 'absence'
-      absenceType: AbsenceType
-      absenceCategories: AbsenceCategory[]
-    }
-  | { type: 'noAbsence'; absenceCategories: AbsenceCategory[] }
-  | { type: 'missingHolidayReservation' }
+const defaultAbsenceType = 'SICKLEAVE'
+const defaultAbsenceCategories: AbsenceCategory[] = []
+const absenceCategories: AbsenceCategory[] = ['NONBILLABLE', 'BILLABLE']
 
 type AbsenceTypeState =
   | { type: 'absence'; absenceType: AbsenceType }
