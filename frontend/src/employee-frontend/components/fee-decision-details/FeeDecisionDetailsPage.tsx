@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   FeeDecisionDetailed,
   FeeDecisionType
@@ -16,7 +16,10 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faQuestion } from 'lib-icons'
 
-import { confirmFeeDecisions, getFeeDecision } from '../../api/invoicing'
+import {
+  confirmFeeDecisionDrafts,
+  getFeeDecision
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
@@ -25,6 +28,9 @@ import Actions from './Actions'
 import ChildSection from './ChildSection'
 import Heading from './Heading'
 import Summary from './Summary'
+
+const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
+const getFeeDecisionResult = wrapResult(getFeeDecision)
 
 export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
@@ -41,7 +47,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
   const loadDecision = useCallback(
-    () => getFeeDecision(id).then((dec) => setDecision(dec)),
+    () => getFeeDecisionResult({ id }).then(setDecision),
     [id]
   )
   useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -88,10 +94,10 @@ export default React.memo(function FeeDecisionDetailsPage() {
             {showHandlerSelectModal && (
               <FinanceDecisionHandlerSelectModal
                 onResolve={async (decisionHandlerId) => {
-                  const result = await confirmFeeDecisions(
-                    [decision.value.id],
-                    decisionHandlerId
-                  )
+                  const result = await confirmFeeDecisionDraftsResult({
+                    decisionHandlerId,
+                    body: [decision.value.id]
+                  })
                   if (result.isSuccess) {
                     await loadDecision()
                     setShowHandlerSelectModal(false)

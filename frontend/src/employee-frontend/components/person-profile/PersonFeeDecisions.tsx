@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { PersonContext } from 'employee-frontend/state/person'
+import { wrapResult } from 'lib-common/api'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
@@ -24,13 +25,20 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import {
-  createRetroactiveFeeDecisions,
-  getPersonFeeDecisions
-} from '../../api/invoicing'
+  generateRetroactiveFeeDecisions,
+  getHeadOfFamilyFeeDecisions
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { DateTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getHeadOfFamilyFeeDecisionsResult = wrapResult(
+  getHeadOfFamilyFeeDecisions
+)
+const generateRetroactiveFeeDecisionsResult = wrapResult(
+  generateRetroactiveFeeDecisions
+)
 
 interface Props {
   id: UUID
@@ -46,7 +54,7 @@ export default React.memo(function PersonFeeDecisions({
   const { permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
   const [feeDecisions, reloadFeeDecisions] = useApiState(
-    () => getPersonFeeDecisions(id),
+    () => getHeadOfFamilyFeeDecisionsResult({ id }),
     [id]
   )
 
@@ -137,7 +145,10 @@ const Modal = React.memo(function Modal({
 
   const resolve = useCallback(() => {
     if (date) {
-      return createRetroactiveFeeDecisions(headOfFamily, date)
+      return generateRetroactiveFeeDecisionsResult({
+        id: headOfFamily,
+        body: { from: date }
+      })
     }
     return
   }, [headOfFamily, date])

@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -12,11 +13,13 @@ import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { deletePayments } from '../../api/invoicing'
+import { deleteDraftPayments } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 
 import { PaymentsActions } from './payments-state'
+
+const deleteDraftPaymentsResult = wrapResult(deleteDraftPayments)
 
 const CheckedRowsInfo = styled.div`
   color: ${colors.grayscale.g35};
@@ -53,7 +56,7 @@ const Actions = React.memo(function Actions({
       <AsyncButton
         text={i18n.payments.buttons.deletePayment(checkedIds.length)}
         disabled={checkedIds.length === 0}
-        onClick={() => deletePayments(checkedIds)}
+        onClick={() => deleteDraftPaymentsResult({ body: checkedIds })}
         onSuccess={() => {
           actions.clearChecked()
           reloadPayments()

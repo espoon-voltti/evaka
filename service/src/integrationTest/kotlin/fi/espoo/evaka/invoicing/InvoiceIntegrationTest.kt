@@ -912,7 +912,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 id,
             )
             .data
-            .data
     }
 
     private fun updateInvoice(invoice: Invoice) {

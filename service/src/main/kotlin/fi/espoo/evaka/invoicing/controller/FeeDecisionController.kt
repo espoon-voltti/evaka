@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -82,7 +81,7 @@ class FeeDecisionController(
     @PostMapping("/search")
     fun searchFeeDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest
     ): PagedFeeDecisionSummaries {
@@ -215,7 +214,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setFeeDecisionSent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
@@ -237,7 +236,7 @@ class FeeDecisionController(
     @GetMapping("/pdf/{decisionId}")
     fun getFeeDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable decisionId: FeeDecisionId
     ): ResponseEntity<Any> {
@@ -274,63 +273,55 @@ class FeeDecisionController(
             .also { Audit.FeeDecisionPdfRead.log(targetId = decisionId) }
     }
 
-    @GetMapping("/{uuid}")
+    @GetMapping("/{id}")
     fun getFeeDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable uuid: FeeDecisionId
-    ): Wrapper<FeeDecisionDetailed> {
-        val res =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.FeeDecision.READ,
-                        uuid
-                    )
-                    it.getFeeDecision(uuid)
-                }
-            } ?: throw NotFound("No fee decision found with given ID ($uuid)")
-        Audit.FeeDecisionRead.log(targetId = uuid)
-        return Wrapper(res)
+        @PathVariable id: FeeDecisionId
+    ): FeeDecisionDetailed {
+        return db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.READ, id)
+                it.getFeeDecision(id)
+            }
+        }
+            ?: throw NotFound("No fee decision found with given ID ($id)").also {
+                Audit.FeeDecisionRead.log(targetId = id)
+            }
     }
 
     @GetMapping("/head-of-family/{id}")
     fun getHeadOfFamilyFeeDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId
-    ): Wrapper<List<FeeDecision>> {
-        return Wrapper(
-            db.connect { dbc ->
-                    dbc.read {
-                        accessControl.requirePermissionFor(
-                            it,
-                            user,
-                            clock,
-                            Action.Person.READ_FEE_DECISIONS,
-                            id
-                        )
-                        it.findFeeDecisionsForHeadOfFamily(id, null, null)
-                    }
-                }
-                .also {
-                    Audit.FeeDecisionHeadOfFamilyRead.log(
-                        targetId = id,
-                        meta = mapOf("count" to it.size)
+    ): List<FeeDecision> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_FEE_DECISIONS,
+                        id
                     )
+                    it.findFeeDecisionsForHeadOfFamily(id, null, null)
                 }
-        )
+            }
+            .also {
+                Audit.FeeDecisionHeadOfFamilyRead.log(
+                    targetId = id,
+                    meta = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveFeeDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
@@ -350,21 +341,21 @@ class FeeDecisionController(
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
     }
 
-    @PostMapping("/set-type/{uuid}")
+    @PostMapping("/set-type/{id}")
     fun setFeeDecisionType(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable uuid: FeeDecisionId,
+        @PathVariable id: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.UPDATE, uuid)
-                service.setType(it, uuid, request.type)
+                accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.UPDATE, id)
+                service.setType(it, id, request.type)
             }
         }
-        Audit.FeeDecisionSetType.log(targetId = uuid, meta = mapOf("type" to request.type))
+        Audit.FeeDecisionSetType.log(targetId = id, meta = mapOf("type" to request.type))
     }
 }
 

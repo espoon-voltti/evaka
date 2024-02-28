@@ -4,20 +4,34 @@
 
 import React, { useCallback, useContext } from 'react'
 
-import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { wrapResult } from 'lib-common/api'
+import {
+  VoucherValueDecisionDetailed,
+  VoucherValueDecisionType
+} from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
+import StickyActionBar from '../../components/common/StickyActionBar'
 import {
   markVoucherValueDecisionSent,
-  sendVoucherValueDecisions,
-  setVoucherDecisionType
-} from '../../api/invoicing'
-import StickyActionBar from '../../components/common/StickyActionBar'
+  sendVoucherValueDecisionDrafts,
+  setVoucherValueDecisionType
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+
+const sendVoucherValueDecisionDraftsResult = wrapResult(
+  sendVoucherValueDecisionDrafts
+)
+const setVoucherValueDecisionTypeResult = wrapResult(
+  setVoucherValueDecisionType
+)
+const markVoucherValueDecisionSentResult = wrapResult(
+  markVoucherValueDecisionSent
+)
 
 type Props = {
   decision: VoucherValueDecisionDetailed
@@ -25,7 +39,7 @@ type Props = {
   loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
-  newDecisionType: string
+  newDecisionType: VoucherValueDecisionType
   onHandlerSelectModal: () => void
 }
 
@@ -41,7 +55,11 @@ export default React.memo(function VoucherValueDecisionActionBar({
   const { i18n } = useTranslation()
   const { setErrorMessage, clearErrorMessage } = useContext(UIContext)
   const updateType = useCallback(
-    () => setVoucherDecisionType(decision.id, newDecisionType),
+    () =>
+      setVoucherValueDecisionTypeResult({
+        id: decision.id,
+        body: { type: newDecisionType }
+      }),
     [decision.id, newDecisionType]
   )
   const reloadDecision = useCallback(
@@ -49,7 +67,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
     [loadDecision, setModified]
   )
   const sendDecision = useCallback(
-    () => sendVoucherValueDecisions([decision.id]),
+    () => sendVoucherValueDecisionDraftsResult({ body: [decision.id] }),
     [decision.id]
   )
 
@@ -127,7 +145,9 @@ export default React.memo(function VoucherValueDecisionActionBar({
             data-qa="button-mark-decision-sent"
             primary
             text={i18n.valueDecisions.buttons.markSent}
-            onClick={() => markVoucherValueDecisionSent([decision.id])}
+            onClick={() =>
+              markVoucherValueDecisionSentResult({ body: [decision.id] })
+            }
             disabled={modified}
             onSuccess={loadDecision}
           />

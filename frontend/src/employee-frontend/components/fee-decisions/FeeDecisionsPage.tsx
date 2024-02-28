@@ -4,11 +4,12 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   FeeDecisionSortParam,
   FeeDecisionSummary,
   PagedFeeDecisionSummaries,
+  SearchFeeDecisionRequest,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -16,10 +17,9 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  FeeDecisionSearchParams,
-  confirmFeeDecisions,
-  getFeeDecisions
-} from '../../api/invoicing'
+  confirmFeeDecisionDrafts,
+  searchFeeDecisions
+} from '../../generated/api-clients/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
@@ -27,6 +27,9 @@ import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecis
 import Actions from './Actions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import FeeDecisions from './FeeDecisions'
+
+const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
+const searchFeeDecisionsResult = wrapResult(searchFeeDecisions)
 
 const pageSize = 200
 
@@ -53,7 +56,10 @@ export default React.memo(function FeeDecisionsPage() {
     },
     [page, setTotalDecisions, setTotalPages, setDecisions]
   )
-  const reloadDecisions = useRestApi(getFeeDecisions, setDecisionsResult)
+  const reloadDecisions = useRestApi(
+    searchFeeDecisionsResult,
+    setDecisionsResult
+  )
 
   const {
     feeDecisions: { searchFilters, debouncedSearchTerms }
@@ -67,19 +73,23 @@ export default React.memo(function FeeDecisionsPage() {
       return
     }
 
-    const params: FeeDecisionSearchParams = {
+    const params: SearchFeeDecisionRequest = {
+      page,
+      pageSize,
+      sortBy,
+      sortDirection,
       statuses: searchFilters.statuses,
       area: searchFilters.area,
-      unit: searchFilters.unit,
+      unit: searchFilters.unit ?? null,
       distinctions: searchFilters.distinctiveDetails,
-      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      startDate,
-      endDate,
+      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
+      startDate: startDate ?? null,
+      endDate: endDate ?? null,
       searchByStartDate: searchFilters.searchByStartDate,
-      financeDecisionHandlerId: searchFilters.financeDecisionHandlerId,
+      financeDecisionHandlerId: searchFilters.financeDecisionHandlerId ?? null,
       difference: searchFilters.difference
     }
-    void reloadDecisions(page, pageSize, sortBy, sortDirection, params)
+    void reloadDecisions({ body: params })
   }, [
     page,
     sortBy,
@@ -121,10 +131,10 @@ export default React.memo(function FeeDecisionsPage() {
       {showHandlerSelectModal && (
         <FinanceDecisionHandlerSelectModal
           onResolve={async (decisionHandlerId) => {
-            const result = await confirmFeeDecisions(
-              checkedIds,
-              decisionHandlerId
-            )
+            const result = await confirmFeeDecisionDraftsResult({
+              decisionHandlerId,
+              body: checkedIds
+            })
             if (result.isSuccess) {
               checkedState.clearChecked()
               loadDecisions()

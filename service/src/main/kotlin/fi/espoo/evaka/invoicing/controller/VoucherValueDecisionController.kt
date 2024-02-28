@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -77,7 +76,7 @@ class VoucherValueDecisionController(
     @PostMapping("/search")
     fun searchVoucherValueDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): PagedVoucherValueDecisionSummaries {
@@ -117,31 +116,31 @@ class VoucherValueDecisionController(
     @GetMapping("/{id}")
     fun getVoucherValueDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
-    ): Wrapper<VoucherValueDecisionDetailed> {
-        val res =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.VoucherValueDecision.READ,
-                        id
-                    )
-                    it.getVoucherValueDecision(id)
-                }
-            } ?: throw NotFound("No voucher value decision found with given ID ($id)")
-        Audit.VoucherValueDecisionRead.log(targetId = id)
-        return Wrapper(res)
+    ): VoucherValueDecisionDetailed {
+        return db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.READ,
+                    id
+                )
+                it.getVoucherValueDecision(id)
+            }
+        }
+            ?: throw NotFound("No voucher value decision found with given ID ($id)").also {
+                Audit.VoucherValueDecisionRead.log(targetId = id)
+            }
     }
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
-    fun getHeadOfFamilyDecisions(
+    fun getHeadOfFamilyVoucherValueDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
@@ -195,7 +194,7 @@ class VoucherValueDecisionController(
     @PostMapping("/mark-sent")
     fun markVoucherValueDecisionSent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>
     ) {
@@ -221,7 +220,7 @@ class VoucherValueDecisionController(
     @GetMapping("/pdf/{decisionId}")
     fun getVoucherValueDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
@@ -315,12 +314,12 @@ class VoucherValueDecisionController(
         Audit.VoucherValueDecisionUnignore.log(targetId = voucherValueDecisionIds)
     }
 
-    @PostMapping("/set-type/{uuid}")
+    @PostMapping("/set-type/{id}")
     fun setVoucherValueDecisionType(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable uuid: VoucherValueDecisionId,
+        @PathVariable id: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
     ) {
         db.connect { dbc ->
@@ -330,18 +329,18 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.UPDATE,
-                    uuid
+                    id
                 )
-                valueDecisionService.setType(it, uuid, request.type)
+                valueDecisionService.setType(it, id, request.type)
             }
         }
-        Audit.VoucherValueDecisionSetType.log(targetId = uuid)
+        Audit.VoucherValueDecisionSetType.log(targetId = id)
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveVoucherValueDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody

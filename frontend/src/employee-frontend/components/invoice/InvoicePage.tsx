@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   InvoiceCodes,
   InvoiceDetailedResponse,
@@ -16,7 +16,10 @@ import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
-import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
+import {
+  getInvoice,
+  getInvoiceCodes
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { totalPrice } from '../../utils/pricing'
@@ -26,6 +29,9 @@ import InvoiceDetailsSection from './InvoiceDetailsSection'
 import InvoiceHeadOfFamilySection from './InvoiceHeadOfFamilySection'
 import InvoiceRowsSection from './InvoiceRowsSection'
 import Sum from './Sum'
+
+const getInvoiceResult = wrapResult(getInvoice)
+const getInvoiceCodesResult = wrapResult(getInvoiceCodes)
 
 export default React.memo(function InvoiceDetailsPage() {
   const { id } = useNonNullableParams<{ id: string }>()
@@ -38,9 +44,12 @@ export default React.memo(function InvoiceDetailsPage() {
   )
   const { setTitle } = useContext<TitleState>(TitleContext)
 
-  const loadInvoice = useCallback(() => getInvoice(id).then(setInvoice), [id])
+  const loadInvoice = useCallback(
+    () => getInvoiceResult({ id }).then(setInvoice),
+    [id]
+  )
   useEffect(() => void loadInvoice(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => void getInvoiceCodes().then(setInvoiceCodes), [])
+  useEffect(() => void getInvoiceCodesResult().then(setInvoiceCodes), [])
 
   useEffect(() => {
     if (invoice.isSuccess) {

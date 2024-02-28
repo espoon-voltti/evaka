@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { FeeDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -12,14 +13,18 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
-  confirmFeeDecisions,
+  confirmFeeDecisionDrafts,
   ignoreFeeDecisionDrafts,
   unignoreFeeDecisionDrafts
-} from '../../api/invoicing'
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 import { IgnoreDraftModal } from '../finance-decisions/IgnoreDraftModal'
+
+const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
+const ignoreFeeDecisionDraftsResult = wrapResult(ignoreFeeDecisionDrafts)
+const unignoreFeeDecisionDraftsResult = wrapResult(unignoreFeeDecisionDrafts)
 
 const ErrorMessage = styled.div`
   color: ${(p) => p.theme.colors.accents.a2orangeDark};
@@ -51,7 +56,7 @@ const Actions = React.memo(function Actions({
         <AsyncButton
           text={i18n.feeDecisions.buttons.unignoreDrafts(checkedIds.length)}
           disabled={checkedIds.length === 0}
-          onClick={() => unignoreFeeDecisionDrafts(checkedIds)}
+          onClick={() => unignoreFeeDecisionDraftsResult({ body: checkedIds })}
           onSuccess={() => {
             setError(undefined)
             clearChecked()
@@ -97,7 +102,9 @@ const Actions = React.memo(function Actions({
                   checkedIds.length
                 )}
                 disabled={checkedIds.length === 0}
-                onClick={() => confirmFeeDecisions(checkedIds)}
+                onClick={() =>
+                  confirmFeeDecisionDraftsResult({ body: checkedIds })
+                }
                 onSuccess={() => {
                   setError(undefined)
                   clearChecked()
@@ -118,7 +125,9 @@ const Actions = React.memo(function Actions({
         </StickyActionBar>
         {showIgnoreModal && (
           <IgnoreDraftModal
-            onConfirm={() => ignoreFeeDecisionDrafts(checkedIds)}
+            onConfirm={() =>
+              ignoreFeeDecisionDraftsResult({ body: checkedIds })
+            }
             onCancel={() => setShowIgnoreModal(false)}
             onSuccess={() => {
               setShowIgnoreModal(false)

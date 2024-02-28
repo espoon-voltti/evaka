@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
@@ -16,8 +16,8 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import {
   getVoucherValueDecision,
-  sendVoucherValueDecisions
-} from '../../api/invoicing'
+  sendVoucherValueDecisionDrafts
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecisionHandlerSelectModal'
@@ -26,6 +26,11 @@ import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
+
+const getVoucherValueDecisionResult = wrapResult(getVoucherValueDecision)
+const sendVoucherValueDecisionDraftsResult = wrapResult(
+  sendVoucherValueDecisionDrafts
+)
 
 export default React.memo(function VoucherValueDecisionPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
@@ -41,7 +46,7 @@ export default React.memo(function VoucherValueDecisionPage() {
     useState<VoucherValueDecisionType>('NORMAL')
 
   const loadDecision = useCallback(
-    () => getVoucherValueDecision(id).then(setDecision),
+    () => getVoucherValueDecisionResult({ id }).then(setDecision),
     [id]
   )
   useEffect(() => void loadDecision(), [loadDecision])
@@ -84,10 +89,10 @@ export default React.memo(function VoucherValueDecisionPage() {
           {showHandlerSelectModal && (
             <FinanceDecisionHandlerSelectModal
               onResolve={async (decisionHandlerId) => {
-                const result = await sendVoucherValueDecisions(
-                  [decision.value.id],
-                  decisionHandlerId
-                )
+                const result = await sendVoucherValueDecisionDraftsResult({
+                  decisionHandlerId,
+                  body: [decision.value.id]
+                })
                 if (result.isSuccess) {
                   await loadDecision()
                   setShowHandlerSelectModal(false)

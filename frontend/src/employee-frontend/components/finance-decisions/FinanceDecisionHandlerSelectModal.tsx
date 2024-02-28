@@ -5,9 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { getSelectableFinanceDecisionHandlers } from 'employee-frontend/api/invoicing'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -15,6 +14,12 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faArrowRight } from 'lib-icons'
+
+import { getSelectableFinanceDecisionHandlers } from '../../generated/api-clients/invoicing'
+
+const getSelectableFinanceDecisionHandlersResult = wrapResult(
+  getSelectableFinanceDecisionHandlers
+)
 
 interface Props {
   onResolve: (decisionHandlerId: UUID | undefined) => Promise<Result<void>>
@@ -34,7 +39,7 @@ export default React.memo(function FinanceDecisionHandlerSelectModal(
   const [selectedFinanceDecisionHandler, setFinanceDecisionHandler] =
     useState<string>()
   const [financeDecisionHandlersResult] = useApiState(
-    getSelectableFinanceDecisionHandlers,
+    getSelectableFinanceDecisionHandlersResult,
     []
   )
   const [error, setError] = useState<string>()

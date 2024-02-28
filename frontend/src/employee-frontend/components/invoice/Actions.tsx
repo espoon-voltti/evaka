@@ -5,11 +5,18 @@
 import React, { useCallback } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
+import { wrapResult } from 'lib-common/api'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
+import {
+  markInvoicesSent,
+  putInvoice
+} from '../../generated/api-clients/invoicing'
+
+const putInvoiceResult = wrapResult(putInvoice)
+const markInvoicesSentResult = wrapResult(markInvoicesSent)
 
 type Props = {
   invoice: InvoiceDetailed
@@ -23,9 +30,21 @@ const Actions = React.memo(function Actions({
   editable
 }: Props) {
   const { i18n } = useTranslation()
-  const saveChanges = () => updateInvoice(invoice)
+  const saveChanges = () =>
+    putInvoiceResult({
+      id: invoice.id,
+      body: {
+        ...invoice,
+        headOfFamily: invoice.headOfFamily.id,
+        codebtor: invoice.codebtor?.id ?? null,
+        rows: invoice.rows.map((row) => ({
+          ...row,
+          child: row.child.id
+        }))
+      }
+    })
   const markSent = useCallback(
-    () => markInvoiceSent([invoice.id]),
+    () => markInvoicesSentResult({ body: [invoice.id] }),
     [invoice.id]
   )
 

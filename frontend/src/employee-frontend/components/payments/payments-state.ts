@@ -12,7 +12,7 @@ import {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   PagedPayments,
   Payment,
@@ -24,10 +24,14 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import {
   createPaymentDrafts,
-  getPayments,
+  searchPayments,
   sendPayments
-} from '../../api/invoicing'
+} from '../../generated/api-clients/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+
+const createPaymentDraftsResult = wrapResult(createPaymentDrafts)
+const searchPaymentsResult = wrapResult(searchPayments)
+const sendPaymentsResult = wrapResult(sendPayments)
 
 const pageSize = 200
 
@@ -139,7 +143,7 @@ export function usePaymentsState() {
     [setState, state.page] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const loadPayments = useRestApi(getPayments, setPaymentsResult)
+  const loadPayments = useRestApi(searchPaymentsResult, setPaymentsResult)
   const reloadPayments = useCallback(() => {
     const { paymentDateStart, paymentDateEnd } = searchFilters
     if (
@@ -151,12 +155,14 @@ export function usePaymentsState() {
     }
 
     void loadPayments({
-      ...searchFilters,
-      searchTerms: debouncedSearchTerms,
-      page: state.page,
-      pageSize,
-      sortBy: state.sortBy,
-      sortDirection: state.sortDirection
+      body: {
+        ...searchFilters,
+        searchTerms: debouncedSearchTerms,
+        page: state.page,
+        pageSize,
+        sortBy: state.sortBy,
+        sortDirection: state.sortDirection
+      }
     })
   }, [
     state.page,
@@ -168,7 +174,7 @@ export function usePaymentsState() {
   ])
 
   const createPayments = useCallback(async () => {
-    await createPaymentDrafts()
+    await createPaymentDraftsResult()
     reloadPayments()
   }, [reloadPayments])
 
@@ -180,7 +186,13 @@ export function usePaymentsState() {
       paymentDate: LocalDate
       dueDate: LocalDate
     }) =>
-      sendPayments(Object.keys(state.checkedPayments), paymentDate, dueDate),
+      sendPaymentsResult({
+        body: {
+          paymentIds: Object.keys(state.checkedPayments),
+          paymentDate,
+          dueDate
+        }
+      }),
     [state.checkedPayments]
   )
 

@@ -134,26 +134,11 @@ export type UserRole =
   | 'MOBILE'
   | 'GROUP_STAFF'
 
-/**
-* Generated from fi.espoo.evaka.shared.controllers.Wrapper
-*/
-export interface Wrapper<T> {
-  data: T
-}
-
 
 export function deserializeJsonHelsinkiDateTimeRange(json: JsonOf<HelsinkiDateTimeRange>): HelsinkiDateTimeRange {
   return {
     ...json,
     end: HelsinkiDateTime.parseIso(json.end),
     start: HelsinkiDateTime.parseIso(json.start)
-  }
-}
-
-
-export function deserializeJsonWrapper<T>(deserializeT: (value: JsonOf<T>) => T, json: JsonOf<Wrapper<T>>): Wrapper<T> {
-  return {
-    ...json,
-    data: deserializeT(json.data)
   }
 }

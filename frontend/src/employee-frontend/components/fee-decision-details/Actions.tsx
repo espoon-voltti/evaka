@@ -4,18 +4,26 @@
 
 import React, { useCallback } from 'react'
 
-import { FeeDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
+import { wrapResult } from 'lib-common/api'
+import {
+  FeeDecisionDetailed,
+  FeeDecisionType
+} from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
-  confirmFeeDecisions,
-  markFeeDecisionSent,
+  confirmFeeDecisionDrafts,
+  setFeeDecisionSent,
   setFeeDecisionType
-} from '../../api/invoicing'
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
+
+const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
+const setFeeDecisionSentResult = wrapResult(setFeeDecisionSent)
+const setFeeDecisionTypeResult = wrapResult(setFeeDecisionType)
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -23,7 +31,7 @@ interface Props {
   loadDecision(): Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
-  newDecisionType: string
+  newDecisionType: FeeDecisionType
   onHandlerSelectModal: () => void
 }
 
@@ -38,15 +46,19 @@ const Actions = React.memo(function Actions({
 }: Props) {
   const { i18n } = useTranslation()
   const updateType = useCallback(
-    () => setFeeDecisionType(decision.id, newDecisionType),
+    () =>
+      setFeeDecisionTypeResult({
+        id: decision.id,
+        body: { type: newDecisionType }
+      }),
     [decision.id, newDecisionType]
   )
   const confirmDecision = useCallback(
-    () => confirmFeeDecisions([decision.id]),
+    () => confirmFeeDecisionDraftsResult({ body: [decision.id] }),
     [decision.id]
   )
   const markSent = useCallback(
-    () => markFeeDecisionSent([decision.id]),
+    () => setFeeDecisionSentResult({ body: [decision.id] }),
     [decision.id]
   )
 

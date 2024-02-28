@@ -183,7 +183,7 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
     data class NoteUpdateBody(val note: String)
 
     @PostMapping("/{id}/note")
-    fun updateNote(
+    fun updateInvoiceCorrectionNote(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,

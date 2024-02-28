@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { formatPersonName } from 'employee-frontend/utils'
-import { combine, Result, Success } from 'lib-common/api'
+import { combine, Result, Success, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
@@ -41,12 +41,22 @@ import {
   getInvoiceCodes,
   getPersonInvoiceCorrections,
   updateInvoiceCorrectionNote
-} from '../../api/invoicing'
+} from '../../generated/api-clients/invoicing'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import InvoiceRowSectionRow from '../invoice/InvoiceRowsSectionRow'
+
+const createInvoiceCorrectionResult = wrapResult(createInvoiceCorrection)
+const deleteInvoiceCorrectionResult = wrapResult(deleteInvoiceCorrection)
+const getInvoiceCodesResult = wrapResult(getInvoiceCodes)
+const getPersonInvoiceCorrectionsResult = wrapResult(
+  getPersonInvoiceCorrections
+)
+const updateInvoiceCorrectionNoteResult = wrapResult(
+  updateInvoiceCorrectionNote
+)
 
 interface Props {
   id: string
@@ -60,9 +70,9 @@ export default React.memo(function PersonInvoiceCorrections({
   const { i18n } = useTranslation()
   const { fridgeChildren, permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
-  const [invoiceCodes] = useApiState(getInvoiceCodes, [])
+  const [invoiceCodes] = useApiState(getInvoiceCodesResult, [])
   const [corrections, reloadCorrections] = useApiState(
-    () => getPersonInvoiceCorrections(id),
+    () => getPersonInvoiceCorrectionsResult({ personId: id }),
     [id]
   )
   const { editState, updateState, cancelEditing, addNewRow } =
@@ -121,11 +131,16 @@ export default React.memo(function PersonInvoiceCorrections({
     if (editState.periodStart.isAfter(editState.periodEnd)) return undefined
 
     return () =>
-      createInvoiceCorrection({
-        ...editState,
-        headOfFamilyId: id,
-        unitId,
-        period: new FiniteDateRange(editState.periodStart, editState.periodEnd)
+      createInvoiceCorrectionResult({
+        body: {
+          ...editState,
+          headOfFamilyId: id,
+          unitId,
+          period: new FiniteDateRange(
+            editState.periodStart,
+            editState.periodEnd
+          )
+        }
       })
   }, [id, editState])
 
@@ -135,7 +150,8 @@ export default React.memo(function PersonInvoiceCorrections({
   }, [cancelEditing, reloadCorrections])
 
   const deleteCorrection = useCallback(
-    (id: UUID) => void deleteInvoiceCorrection(id).then(reloadCorrections),
+    (id: UUID) =>
+      void deleteInvoiceCorrectionResult({ id }).then(reloadCorrections),
     [reloadCorrections]
   )
 
@@ -151,7 +167,10 @@ export default React.memo(function PersonInvoiceCorrections({
       setNoteModalState(undefined)
       return
     } else {
-      return updateInvoiceCorrectionNote(noteModalState.id, noteModalState.note)
+      return updateInvoiceCorrectionNoteResult({
+        id: noteModalState.id,
+        body: { note: noteModalState.note }
+      })
     }
   }, [noteModalState, updateState])
 
