@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -111,12 +112,42 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
 
-            tx.insertAttendance(testChild_1.id, testDaycare.id, today, LocalTime.of(8, 30, 0))
-            tx.insertAttendance(testChild_2.id, testDaycare.id, today, LocalTime.of(9, 0, 0))
-            tx.insertAttendance(testChild_3.id, testDaycare.id, today, LocalTime.of(9, 30, 0))
-            tx.insertAttendance(testChild_4.id, testDaycare.id, today, LocalTime.of(10, 0, 0))
-            tx.insertAttendance(testChild_5.id, testDaycare.id, today, LocalTime.of(10, 15, 0))
-            tx.insertAttendance(testChild_6.id, testDaycare.id, today, LocalTime.of(10, 30, 0))
+            tx.insertAttendance(
+                testChild_1.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(8, 30), null)
+            )
+            tx.insertAttendance(
+                testChild_2.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(9, 0), null)
+            )
+            tx.insertAttendance(
+                testChild_3.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(9, 30), null)
+            )
+            tx.insertAttendance(
+                testChild_4.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(10, 0), null)
+            )
+            tx.insertAttendance(
+                testChild_5.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(10, 15), null)
+            )
+            tx.insertAttendance(
+                testChild_6.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(10, 30), null)
+            )
 
             val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
             tx.insert(
@@ -174,7 +205,12 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     groupId = groupId
                 )
             )
-            tx.insertAttendance(child.id, testDaycare.id, today, LocalTime.of(6, 0, 0, 0))
+            tx.insertAttendance(
+                child.id,
+                testDaycare.id,
+                today,
+                TimeInterval(LocalTime.of(6, 0), null)
+            )
         }
         val unitInfo = fetchUnitInfo(testDaycare.id)
         val allUnitStats = fetchUnitStats(listOf(testDaycare.id))
