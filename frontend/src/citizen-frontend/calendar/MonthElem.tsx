@@ -26,9 +26,9 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../localization'
 
 import DayElem from './DayElem'
-import { useSummaryInfo } from './MonthInfoOpenHook'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { ChildImageData } from './RoundChildImages'
+import { useSummaryInfo } from './hooks'
 
 export function getSummaryForMonth(
   childData: ReservationChild[],
@@ -75,14 +75,9 @@ export default React.memo(function MonthElem({
   const i18n = useTranslation()
 
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
-  const displayAlert =
-    displaySummary &&
-    childSummaries.some(
-      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes ||
-        usedServiceMinutes > serviceNeedMinutes
-    )
-  const { summaryInfoOpen, toggleSummaryInfo } = useSummaryInfo(childSummaries)
+
+  const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
+    useSummaryInfo(childSummaries)
   return (
     <div>
       <MonthSummaryContainer>

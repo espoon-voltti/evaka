@@ -44,11 +44,11 @@ import {
 } from './CalendarEventCount'
 import { HistoryOverlay } from './HistoryOverlay'
 import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
-import { useSummaryInfo } from './MonthInfoOpenHook'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
+import { useSummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
 
@@ -289,14 +289,8 @@ const Month = React.memo(function Month({
   const i18n = useTranslation()
 
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
-  const displayAlert =
-    displaySummary &&
-    childSummaries.some(
-      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes ||
-        usedServiceMinutes > serviceNeedMinutes
-    )
-  const { summaryInfoOpen, toggleSummaryInfo } = useSummaryInfo(childSummaries)
+  const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
+    useSummaryInfo(childSummaries)
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
       <MonthTitle>
