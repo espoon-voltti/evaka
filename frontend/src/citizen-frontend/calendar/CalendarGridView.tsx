@@ -9,8 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
-  useState
+  useRef
 } from 'react'
 import styled, { css, useTheme } from 'styled-components'
 
@@ -45,6 +44,7 @@ import {
 } from './CalendarEventCount'
 import { HistoryOverlay } from './HistoryOverlay'
 import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
+import { useSummaryInfo } from './MonthInfoOpenHook'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
@@ -288,16 +288,6 @@ const Month = React.memo(function Month({
 }) {
   const i18n = useTranslation()
 
-  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(() =>
-    childSummaries.some(
-      ({ reservedMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes
-    )
-  )
-  const onMonthlySummaryInfoClick = useCallback(
-    () => setMonthlySummaryInfoOpen((prev) => !prev),
-    []
-  )
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   const displayAlert =
     displaySummary &&
@@ -306,22 +296,23 @@ const Month = React.memo(function Month({
         reservedMinutes > serviceNeedMinutes ||
         usedServiceMinutes > serviceNeedMinutes
     )
+  const { summaryInfoOpen, toggleSummaryInfo } = useSummaryInfo(childSummaries)
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
       <MonthTitle>
         {`${i18n.common.datetime.months[month - 1]} ${year}`}
         {displaySummary && (
           <InlineInfoButton
-            onClick={onMonthlySummaryInfoClick}
+            onClick={toggleSummaryInfo}
             aria-label={i18n.common.openExpandingInfo}
             margin="zero"
             data-qa={`monthly-summary-info-button-${month}-${year}`}
-            open={monthlySummaryInfoOpen}
+            open={summaryInfoOpen}
           />
         )}
         {displayAlert && <InlineWarningIcon />}
       </MonthTitle>
-      {monthlySummaryInfoOpen && (
+      {summaryInfoOpen && (
         <MonthSummaryInfoBox
           info={
             <MonthlyHoursSummary
@@ -331,7 +322,7 @@ const Month = React.memo(function Month({
             />
           }
           data-qa={`monthly-summary-info-container-${month}-${year}`}
-          close={() => setMonthlySummaryInfoOpen(false)}
+          close={toggleSummaryInfo}
         />
       )}
       <CalendarHeader includeWeekends={includeWeekends}>

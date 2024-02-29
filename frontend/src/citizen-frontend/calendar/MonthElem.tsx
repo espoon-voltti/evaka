@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'Icons'
-import React, { useCallback, useEffect, useState } from 'react'
+import React from 'react'
 import styled, { css } from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -26,6 +26,7 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../localization'
 
 import DayElem from './DayElem'
+import { useSummaryInfo } from './MonthInfoOpenHook'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { ChildImageData } from './RoundChildImages'
 
@@ -73,20 +74,6 @@ export default React.memo(function MonthElem({
 }: MonthProps) {
   const i18n = useTranslation()
 
-  const [summaryExplicitlyClosed, setSummaryExplicitlyClosed] = useState(false)
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
-    childSummaries.some(
-      ({ reservedMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes
-    )
-  )
-  const onMonthlySummaryInfoClick = useCallback(() => {
-    if (summaryInfoOpen) {
-      setSummaryExplicitlyClosed(true)
-      setSummaryInfoOpen(false)
-    }
-    setSummaryInfoOpen(true)
-  }, [summaryInfoOpen])
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   const displayAlert =
     displaySummary &&
@@ -95,17 +82,7 @@ export default React.memo(function MonthElem({
         reservedMinutes > serviceNeedMinutes ||
         usedServiceMinutes > serviceNeedMinutes
     )
-  useEffect(() => {
-    if (
-      !summaryExplicitlyClosed &&
-      childSummaries.some(
-        ({ reservedMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes
-      )
-    ) {
-      setSummaryInfoOpen(true)
-    }
-  }, [childSummaries, summaryExplicitlyClosed])
+  const { summaryInfoOpen, toggleSummaryInfo } = useSummaryInfo(childSummaries)
   return (
     <div>
       <MonthSummaryContainer>
@@ -113,7 +90,7 @@ export default React.memo(function MonthElem({
           {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
           {displaySummary && (
             <InlineInfoButton
-              onClick={onMonthlySummaryInfoClick}
+              onClick={toggleSummaryInfo}
               aria-label={i18n.common.openExpandingInfo}
               margin="zero"
               data-qa={`mobile-monthly-summary-info-button-${calendarMonth.monthNumber}-${calendarMonth.year}`}
@@ -133,10 +110,7 @@ export default React.memo(function MonthElem({
               />
             }
             data-qa={`mobile-monthly-summary-info-container-${calendarMonth.monthNumber}-${calendarMonth.year}`}
-            close={() => {
-              setSummaryExplicitlyClosed(true)
-              setSummaryInfoOpen(false)
-            }}
+            close={toggleSummaryInfo}
           />
         )}
       </MonthSummaryContainer>
