@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasExclamationTriangle } from 'Icons'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -73,16 +73,20 @@ export default React.memo(function MonthElem({
 }: MonthProps) {
   const i18n = useTranslation()
 
-  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(() =>
+  const [summaryExplicitlyClosed, setSummaryExplicitlyClosed] = useState(false)
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
     childSummaries.some(
       ({ reservedMinutes, serviceNeedMinutes }) =>
         reservedMinutes > serviceNeedMinutes
     )
   )
-  const onMonthlySummaryInfoClick = useCallback(
-    () => setMonthlySummaryInfoOpen((prev) => !prev),
-    []
-  )
+  const onMonthlySummaryInfoClick = useCallback(() => {
+    if (summaryInfoOpen) {
+      setSummaryExplicitlyClosed(true)
+      setSummaryInfoOpen(false)
+    }
+    setSummaryInfoOpen(true)
+  }, [summaryInfoOpen])
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   const displayAlert =
     displaySummary &&
@@ -91,6 +95,17 @@ export default React.memo(function MonthElem({
         reservedMinutes > serviceNeedMinutes ||
         usedServiceMinutes > serviceNeedMinutes
     )
+  useEffect(() => {
+    if (
+      !summaryExplicitlyClosed &&
+      childSummaries.some(
+        ({ reservedMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes
+      )
+    ) {
+      setSummaryInfoOpen(true)
+    }
+  }, [childSummaries, summaryExplicitlyClosed])
   return (
     <div>
       <MonthSummaryContainer>
@@ -102,13 +117,13 @@ export default React.memo(function MonthElem({
               aria-label={i18n.common.openExpandingInfo}
               margin="zero"
               data-qa={`mobile-monthly-summary-info-button-${calendarMonth.monthNumber}-${calendarMonth.year}`}
-              open={monthlySummaryInfoOpen}
+              open={summaryInfoOpen}
             />
           )}
 
           {displayAlert && <InlineWarningIcon />}
         </MonthTitle>
-        {monthlySummaryInfoOpen && (
+        {summaryInfoOpen && (
           <MonthlySummaryInfoBox
             info={
               <MonthlyHoursSummary
@@ -118,7 +133,10 @@ export default React.memo(function MonthElem({
               />
             }
             data-qa={`mobile-monthly-summary-info-container-${calendarMonth.monthNumber}-${calendarMonth.year}`}
-            close={() => setMonthlySummaryInfoOpen(false)}
+            close={() => {
+              setSummaryExplicitlyClosed(true)
+              setSummaryInfoOpen(false)
+            }}
           />
         )}
       </MonthSummaryContainer>
