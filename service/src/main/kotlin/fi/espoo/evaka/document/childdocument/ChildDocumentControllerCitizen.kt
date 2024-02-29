@@ -94,7 +94,7 @@ class ChildDocumentControllerCitizen(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/unread-count")
-    fun getUnreadCount(
+    fun getUnreadDocumentsCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock

@@ -47,7 +47,7 @@ const TopButtonRow = styled(FixedSpaceRow)`
 export default React.memo(function ChildDocumentPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
 
-  const decision = useQueryResult(childDocumentDetailsQuery(id))
+  const decision = useQueryResult(childDocumentDetailsQuery({ documentId: id }))
   const i18n = useTranslation()
 
   return (
@@ -82,7 +82,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
 
   const { mutateAsync: markRead } = useMutation(childDocumentReadMutation)
   useEffect(() => {
-    void markRead(document.id)
+    void markRead({ documentId: document.id })
   }, [markRead, document.id])
 
   const bind = useForm(

@@ -145,6 +145,8 @@ export interface Translations {
     preferredStartDate: string
     timeFormat: string
     timeRequired: string
+    dateTooEarly: string
+    dateTooLate: string
     unitNotSelected: string
     emailsDoNotMatch: string
     httpUrl: string

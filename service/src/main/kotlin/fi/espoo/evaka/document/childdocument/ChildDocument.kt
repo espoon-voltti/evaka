@@ -81,6 +81,14 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
             return question is Question.StaticTextDisplayQuestion
         }
     }
+
+    @JsonTypeName("DATE")
+    data class DateAnswer(override val questionId: String, override val answer: LocalDate?) :
+        AnsweredQuestion<LocalDate?>(QuestionType.DATE) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            return question is Question.DateQuestion
+        }
+    }
 }
 
 @Json

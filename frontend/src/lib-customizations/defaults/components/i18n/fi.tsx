@@ -165,6 +165,8 @@ const components: Translations = {
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',

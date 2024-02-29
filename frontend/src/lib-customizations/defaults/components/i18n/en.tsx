@@ -169,6 +169,8 @@ const components: Translations = {
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Check',
     timeRequired: 'Required',
+    dateTooEarly: 'Pick a later date',
+    dateTooLate: 'Pick an earlier date',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',

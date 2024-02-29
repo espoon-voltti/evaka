@@ -17,6 +17,7 @@ import {
 
 import CheckboxGroupQuestionDescriptor from './question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from './question-descriptors/CheckboxQuestionDescriptor'
+import DateQuestionDescriptor from './question-descriptors/DateQuestionDescriptor'
 import RadioButtonGroupQuestionDescriptor from './question-descriptors/RadioButtonGroupQuestionDescriptor'
 import StaticTextDisplayQuestionDescriptor from './question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from './question-descriptors/TextQuestionDescriptor'
@@ -26,7 +27,8 @@ export const documentQuestionForm = union({
   CHECKBOX: CheckboxQuestionDescriptor.document.form,
   CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.document.form,
   RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.document.form,
-  STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.document.form
+  STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.document.form,
+  DATE: DateQuestionDescriptor.document.form
 })
 
 export const documentSectionForm = mapped(
@@ -93,6 +95,13 @@ export const DocumentQuestionView = React.memo(function DocumentQuestionView({
           readOnly={readOnly}
         />
       )
+    case 'DATE':
+      return (
+        <DateQuestionDescriptor.document.Component
+          bind={form}
+          readOnly={readOnly}
+        />
+      )
   }
 })
 
@@ -145,6 +154,14 @@ export const getDocumentQuestionInitialState = (
       return StaticTextDisplayQuestionDescriptor.document.getInitialState(
         question
       )
+    case 'DATE':
+      if (answeredQuestion?.type === question.type) {
+        return DateQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return DateQuestionDescriptor.document.getInitialState(question)
   }
 }
 

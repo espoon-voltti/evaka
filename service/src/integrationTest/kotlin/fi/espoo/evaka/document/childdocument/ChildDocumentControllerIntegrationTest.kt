@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -94,7 +95,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                     id = "q5",
                                     label = "tekstikappale",
                                     text = "lorem ipsum"
-                                )
+                                ),
+                                Question.DateQuestion(id = "q6", label = "päiväys")
                             )
                     )
                 )
@@ -330,7 +332,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                             listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("c"))
                         ),
                         AnsweredQuestion.RadioButtonGroupAnswer("q4", "b"),
-                        AnsweredQuestion.StaticTextDisplayAnswer("q5", null)
+                        AnsweredQuestion.StaticTextDisplayAnswer("q5", null),
+                        AnsweredQuestion.DateAnswer("q6", LocalDate.of(2022, 1, 7))
                     )
             )
         controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)

@@ -185,7 +185,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
         assertEquals(updatedContent, getDocument(documentId).content)
     }
 
-    private fun getUnreadCount() = controller.getUnreadCount(dbInstance(), citizen, clock)
+    private fun getUnreadCount() = controller.getUnreadDocumentsCount(dbInstance(), citizen, clock)
 
     private fun getDocumentsByChild(childId: ChildId) =
         controller.getDocuments(dbInstance(), citizen, clock, childId)

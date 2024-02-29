@@ -169,6 +169,8 @@ const components: Translations = {
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
+    dateTooEarly: 'Välj ett senare datum',
+    dateTooLate: 'Välj ett tidigare datum',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',

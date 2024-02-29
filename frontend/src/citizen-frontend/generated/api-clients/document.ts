@@ -52,9 +52,9 @@ export async function getDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadCount
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
 */
-export async function getUnreadCount(): Promise<Record<UUID, number>> {
+export async function getUnreadDocumentsCount(): Promise<Record<UUID, number>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, number>>>({
     url: uri`/citizen/child-documents/unread-count`.toString(),
     method: 'GET'

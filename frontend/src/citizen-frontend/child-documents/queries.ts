@@ -5,14 +5,13 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../query'
-
 import {
-  getChildDocumentDetails,
-  getChildDocumentSummaries,
-  getUnreadChildDocumentsCount,
-  markChildDocumentRead
-} from './api'
+  getDocument,
+  getDocuments,
+  getUnreadDocumentsCount,
+  putDocumentRead
+} from '../generated/api-clients/document'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('childDocuments', {
   summaries: () => ['summaries'],
@@ -21,21 +20,21 @@ const queryKeys = createQueryKeys('childDocuments', {
 })
 
 export const childDocumentSummariesQuery = query({
-  api: getChildDocumentSummaries,
+  api: getDocuments,
   queryKey: queryKeys.summaries
 })
 
 export const childDocumentDetailsQuery = query({
-  api: getChildDocumentDetails,
-  queryKey: queryKeys.details
+  api: getDocument,
+  queryKey: ({ documentId }) => queryKeys.details(documentId)
 })
 
 export const unreadChildDocumentsCountQuery = query({
-  api: getUnreadChildDocumentsCount,
+  api: getUnreadDocumentsCount,
   queryKey: queryKeys.unreadCount
 })
 
 export const childDocumentReadMutation = mutation({
-  api: markChildDocumentRead,
+  api: putDocumentRead,
   invalidateQueryKeys: () => [queryKeys.unreadCount()]
 })

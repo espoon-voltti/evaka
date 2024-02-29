@@ -70,6 +70,7 @@ import { VoucherValueDecisionType } from 'lib-common/generated/api-types/invoici
 import { deserializeJsonApplicationForm } from 'lib-common/generated/api-types/application'
 import { deserializeJsonAssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { deserializeJsonChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonDocumentContent } from 'lib-common/generated/api-types/document'
 import { deserializeJsonIncomeStatementBody } from 'lib-common/generated/api-types/incomestatement'
 
 /**
@@ -1091,8 +1092,10 @@ export function deserializeJsonDevChildAttendance(json: JsonOf<DevChildAttendanc
 export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>): DevChildDocument {
   return {
     ...json,
+    content: deserializeJsonDocumentContent(json.content),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
-    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null
+    publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
+    publishedContent: (json.publishedContent != null) ? deserializeJsonDocumentContent(json.publishedContent) : null
   }
 }
 

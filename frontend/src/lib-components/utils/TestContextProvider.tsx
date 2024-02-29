@@ -150,6 +150,8 @@ export const testTranslations: Translations = {
     preferredStartDate: '',
     timeFormat: '',
     timeRequired: '',
+    dateTooEarly: '',
+    dateTooLate: '',
     unitNotSelected: '',
     emailsDoNotMatch: '',
     httpUrl: '',
