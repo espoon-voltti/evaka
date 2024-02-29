@@ -18,6 +18,7 @@ import {
 import CheckboxGroupQuestionDescriptor from './question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from './question-descriptors/CheckboxQuestionDescriptor'
 import DateQuestionDescriptor from './question-descriptors/DateQuestionDescriptor'
+import GroupedTextFieldsQuestionDescriptor from './question-descriptors/GroupedTextFieldsQuestionDescriptor'
 import RadioButtonGroupQuestionDescriptor from './question-descriptors/RadioButtonGroupQuestionDescriptor'
 import StaticTextDisplayQuestionDescriptor from './question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from './question-descriptors/TextQuestionDescriptor'
@@ -28,7 +29,8 @@ export const documentQuestionForm = union({
   CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.document.form,
   RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.document.form,
   STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.document.form,
-  DATE: DateQuestionDescriptor.document.form
+  DATE: DateQuestionDescriptor.document.form,
+  GROUPED_TEXT_FIELDS: GroupedTextFieldsQuestionDescriptor.document.form
 })
 
 export const documentSectionForm = mapped(
@@ -102,6 +104,13 @@ export const DocumentQuestionView = React.memo(function DocumentQuestionView({
           readOnly={readOnly}
         />
       )
+    case 'GROUPED_TEXT_FIELDS':
+      return (
+        <GroupedTextFieldsQuestionDescriptor.document.Component
+          bind={form}
+          readOnly={readOnly}
+        />
+      )
   }
 })
 
@@ -162,6 +171,16 @@ export const getDocumentQuestionInitialState = (
         )
       }
       return DateQuestionDescriptor.document.getInitialState(question)
+    case 'GROUPED_TEXT_FIELDS':
+      if (answeredQuestion?.type === question.type) {
+        return GroupedTextFieldsQuestionDescriptor.document.getInitialState(
+          question,
+          answeredQuestion.answer
+        )
+      }
+      return GroupedTextFieldsQuestionDescriptor.document.getInitialState(
+        question
+      )
   }
 }
 

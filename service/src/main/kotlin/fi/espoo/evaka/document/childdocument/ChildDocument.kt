@@ -89,6 +89,19 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
             return question is Question.DateQuestion
         }
     }
+
+    @JsonTypeName("GROUPED_TEXT_FIELDS")
+    data class GroupedTextFieldsAnswer(
+        override val questionId: String,
+        override val answer: List<List<String>>
+    ) : AnsweredQuestion<List<List<String>>>(QuestionType.GROUPED_TEXT_FIELDS) {
+        override fun isStructurallyValid(question: Question): Boolean {
+            if (question !is Question.GroupedTextFieldsQuestion) return false
+            if (answer.isEmpty()) return false
+            if (!question.allowMultipleRows && answer.size > 1) return false
+            return answer.all { row -> row.size == question.fieldLabels.size }
+        }
+    }
 }
 
 @Json

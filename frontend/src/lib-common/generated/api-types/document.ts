@@ -41,6 +41,15 @@ export namespace AnsweredQuestion {
   }
 
   /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.GroupedTextFieldsAnswer
+  */
+  export interface GroupedTextFieldsAnswer {
+    type: 'GROUPED_TEXT_FIELDS'
+    answer: string[][]
+    questionId: string
+  }
+
+  /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
   */
   export interface RadioButtonGroupAnswer {
@@ -71,7 +80,7 @@ export namespace AnsweredQuestion {
 /**
 * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
 */
-export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.DateAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
+export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.DateAnswer | AnsweredQuestion.GroupedTextFieldsAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
 
 
 /**
@@ -301,6 +310,18 @@ export namespace Question {
   }
 
   /**
+  * Generated from fi.espoo.evaka.document.Question.GroupedTextFieldsQuestion
+  */
+  export interface GroupedTextFieldsQuestion {
+    type: 'GROUPED_TEXT_FIELDS'
+    allowMultipleRows: boolean
+    fieldLabels: string[]
+    id: string
+    infoText: string
+    label: string
+  }
+
+  /**
   * Generated from fi.espoo.evaka.document.Question.RadioButtonGroupQuestion
   */
   export interface RadioButtonGroupQuestion {
@@ -337,7 +358,7 @@ export namespace Question {
 /**
 * Generated from fi.espoo.evaka.document.Question
 */
-export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.DateQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
+export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.DateQuestion | Question.GroupedTextFieldsQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
 
 
 /**
@@ -349,7 +370,8 @@ export const questionTypes = [
   'CHECKBOX_GROUP',
   'RADIO_BUTTON_GROUP',
   'STATIC_TEXT_DISPLAY',
-  'DATE'
+  'DATE',
+  'GROUPED_TEXT_FIELDS'
 ] as const
 
 export type QuestionType = typeof questionTypes[number]

@@ -46,6 +46,10 @@ export interface Translations {
       options: string
       multiline: string
       text: string
+      textFields: string
+      addTextField: string
+      allowMultipleRows: string
+      addRow: string
     }
     noSelection: string
     documentStates: Record<DocumentStatus, string>

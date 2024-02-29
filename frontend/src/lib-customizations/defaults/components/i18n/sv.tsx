@@ -43,7 +43,11 @@ const components: Translations = {
       infoText: 'info text',
       multiline: 'Tillåt flerradssvar',
       withText: 'Med extra info',
-      text: 'Textinnehåll'
+      text: 'Textinnehåll',
+      textFields: 'Textfält',
+      addTextField: 'Lägg till ett textfält',
+      allowMultipleRows: 'Tillåt flera svar',
+      addRow: 'Lägg till ny rad'
     },
     noSelection: 'inget val',
     documentStates: {

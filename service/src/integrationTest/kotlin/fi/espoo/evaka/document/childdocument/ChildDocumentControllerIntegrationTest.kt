@@ -96,7 +96,19 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                     label = "tekstikappale",
                                     text = "lorem ipsum"
                                 ),
-                                Question.DateQuestion(id = "q6", label = "päiväys")
+                                Question.DateQuestion(id = "q6", label = "päiväys"),
+                                Question.GroupedTextFieldsQuestion(
+                                    id = "q7",
+                                    label = "vastuullinen",
+                                    fieldLabels = listOf("etunimi", "sukunimi"),
+                                    allowMultipleRows = false
+                                ),
+                                Question.GroupedTextFieldsQuestion(
+                                    id = "q8",
+                                    label = "huoltajat",
+                                    fieldLabels = listOf("etunimi", "sukunimi"),
+                                    allowMultipleRows = true
+                                ),
                             )
                     )
                 )
@@ -333,7 +345,15 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         ),
                         AnsweredQuestion.RadioButtonGroupAnswer("q4", "b"),
                         AnsweredQuestion.StaticTextDisplayAnswer("q5", null),
-                        AnsweredQuestion.DateAnswer("q6", LocalDate.of(2022, 1, 7))
+                        AnsweredQuestion.DateAnswer("q6", LocalDate.of(2022, 1, 7)),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            "q7",
+                            listOf(listOf("testi", "testaaja"))
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            "q8",
+                            listOf(listOf("donald", "duck"), listOf("mickey", "mouse"))
+                        )
                     )
             )
         controller.updateDocumentContent(dbInstance(), employeeUser, clock, documentId, content)

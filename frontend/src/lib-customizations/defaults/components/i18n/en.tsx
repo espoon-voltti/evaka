@@ -43,7 +43,11 @@ const components: Translations = {
       infoText: 'Info text',
       multiline: 'Allow multiline answer',
       withText: 'With extra info',
-      text: 'Text content'
+      text: 'Text content',
+      textFields: 'Text fields',
+      addTextField: 'Add a text field',
+      allowMultipleRows: 'Allow multiple answers',
+      addRow: 'Add new row'
     },
     noSelection: 'No selection',
     documentStates: {

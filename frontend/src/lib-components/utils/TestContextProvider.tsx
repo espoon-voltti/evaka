@@ -46,7 +46,11 @@ export const testTranslations: Translations = {
       withText: '',
       options: '',
       multiline: '',
-      text: ''
+      text: '',
+      textFields: '',
+      addTextField: '',
+      allowMultipleRows: '',
+      addRow: ''
     },
     noSelection: '',
     documentStates: {

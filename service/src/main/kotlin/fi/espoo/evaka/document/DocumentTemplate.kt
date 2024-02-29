@@ -19,7 +19,8 @@ enum class QuestionType {
     CHECKBOX_GROUP,
     RADIO_BUTTON_GROUP,
     STATIC_TEXT_DISPLAY,
-    DATE
+    DATE,
+    GROUPED_TEXT_FIELDS
 }
 
 @JsonTypeInfo(
@@ -72,6 +73,15 @@ sealed class Question(val type: QuestionType) {
     @JsonTypeName("DATE")
     data class DateQuestion(override val id: String, val label: String, val infoText: String = "") :
         Question(QuestionType.DATE)
+
+    @JsonTypeName("GROUPED_TEXT_FIELDS")
+    data class GroupedTextFieldsQuestion(
+        override val id: String,
+        val label: String,
+        val fieldLabels: List<String>,
+        val infoText: String = "",
+        val allowMultipleRows: Boolean
+    ) : Question(QuestionType.GROUPED_TEXT_FIELDS)
 }
 
 data class CheckboxGroupQuestionOption(

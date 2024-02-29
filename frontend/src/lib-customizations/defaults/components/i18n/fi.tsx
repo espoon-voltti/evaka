@@ -42,7 +42,11 @@ const components: Translations = {
       infoText: 'Ohjeteksti',
       multiline: 'Salli monirivinen vastaus',
       withText: 'Pyydetään lisätietoja',
-      text: 'Tekstisisältö'
+      text: 'Tekstisisältö',
+      textFields: 'Tekstikentät',
+      addTextField: 'Lisää tekstikenttä',
+      allowMultipleRows: 'Salli useampi vastaus',
+      addRow: 'Lisää rivi'
     },
     noSelection: 'Ei valintaa',
     documentStates: {
