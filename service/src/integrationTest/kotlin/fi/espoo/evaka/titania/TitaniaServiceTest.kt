@@ -19,6 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
@@ -332,6 +333,94 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     type = expectedType,
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 42)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 44)),
+                    description = null
+                )
+            )
+    }
+
+    @Test
+    fun `deduplicates identical events in the request`() {
+        val employeeId =
+            db.transaction { tx ->
+                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+            }
+
+        lateinit var response: TitaniaUpdateResponse
+        assertDoesNotThrow {
+            response =
+                db.transaction { tx ->
+                    titaniaService.updateWorkingTimeEventsInternal(
+                        tx,
+                        UpdateWorkingTimeEventsRequest(
+                            period =
+                                TitaniaPeriod(
+                                    beginDate = LocalDate.of(2022, 10, 12),
+                                    endDate = LocalDate.of(2022, 10, 12)
+                                ),
+                            schedulingUnit =
+                                listOf(
+                                    TitaniaSchedulingUnit(
+                                        code = "",
+                                        occupation =
+                                            listOf(
+                                                TitaniaOccupation(
+                                                    code = "",
+                                                    name = "",
+                                                    person =
+                                                        listOf(
+                                                            TitaniaPerson(
+                                                                employeeId = "176716",
+                                                                name = "",
+                                                                actualWorkingTimeEvents =
+                                                                    TitaniaWorkingTimeEvents(
+                                                                        event =
+                                                                            listOf(
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0800",
+                                                                                    endTime = "0900"
+                                                                                ),
+                                                                                TitaniaWorkingTimeEvent(
+                                                                                    date =
+                                                                                        LocalDate
+                                                                                            .of(
+                                                                                                2022,
+                                                                                                10,
+                                                                                                12
+                                                                                            ),
+                                                                                    beginTime =
+                                                                                        "0800",
+                                                                                    endTime = "0900"
+                                                                                )
+                                                                            )
+                                                                    )
+                                                            )
+                                                        )
+                                                )
+                                            )
+                                    )
+                                )
+                        )
+                    )
+                }
+        }
+
+        assertThat(response.deleted).isEmpty()
+        assertThat(response.inserted).hasSize(1)
+        assertThat(response.inserted)
+            .containsExactlyInAnyOrder(
+                StaffAttendancePlan(
+                    employeeId = employeeId,
+                    type = StaffAttendanceType.PRESENT,
+                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(8, 0)),
+                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 0)),
                     description = null
                 )
             )

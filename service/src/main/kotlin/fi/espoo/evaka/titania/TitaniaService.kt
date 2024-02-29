@@ -131,7 +131,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                             } else {
                                 plans.add(next)
                             }
-                            plans
+                            plans.distinct().toMutableList()
                         }
                 }
 
