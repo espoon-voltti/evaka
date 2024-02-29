@@ -230,6 +230,13 @@ class SystemController(
                                     permittedGlobalActions.contains(
                                         Action.Global.CREATE_DRAFT_INVOICES
                                     ),
+                                createPlacements =
+                                    accessControl.isPermittedForSomeTarget(
+                                        tx,
+                                        user,
+                                        clock,
+                                        Action.Unit.CREATE_PLACEMENT
+                                    ),
                                 submitPatuReport =
                                     permittedGlobalActions.contains(
                                         Action.Global.SUBMIT_PATU_REPORT
