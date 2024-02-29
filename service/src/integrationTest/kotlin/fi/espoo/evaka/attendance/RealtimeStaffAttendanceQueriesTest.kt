@@ -370,4 +370,43 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             )
         }
     }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture won't add a departure when attendance is to a normal unit and attendance is less than 12h`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        db.transaction { tx ->
+            tx.markStaffArrival(
+                employee1Id,
+                group1.id,
+                now.minusHours(11),
+                BigDecimal(7.0)
+            )
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(null, staffAttendances.first { it.employeeId == employee1Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure when attendance is to a normal unit and attendance is more than 12h`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        val arrival = now.minusHours(12 + 1)
+
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                arrival.plusHours(12),
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
+            assertTrue(staffAttendances.first().departedAutomatically)
+        }
+    }
 }
