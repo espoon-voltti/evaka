@@ -524,36 +524,28 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
         .bind("now", now)
         .execute()
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate<Any> {
+            sql(
+                """
 UPDATE staff_attendance_realtime a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
         """
-                .trimIndent()
-        )
-        .bind("now", now)
+            )
+        }
         .execute()
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate<Any> {
+            sql(
+                """
 UPDATE staff_attendance_external a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
         """
-                .trimIndent()
-        )
-        .bind("now", now)
+            )
+        }
         .execute()
 }
 
