@@ -50,8 +50,6 @@ const getTemplateInitialValues = (
 
 type Answer = string
 
-const getAnswerInitialValue = (): Answer => ''
-
 const questionForm = mapped(
   object({
     template: templateForm,
@@ -65,6 +63,10 @@ const questionForm = mapped(
 )
 
 type QuestionForm = typeof questionForm
+
+const getAnswerState = (
+  answer?: Answer | undefined
+): StateOf<QuestionForm>['answer'] => (answer !== undefined ? answer : '')
 
 const View = React.memo(function View({
   bind,
@@ -117,7 +119,7 @@ const Preview = React.memo(function Preview({
 
   const getInitialPreviewState = () => ({
     template: bind.state,
-    answer: getAnswerInitialValue()
+    answer: getAnswerState()
   })
 
   const mockBind = useForm(
@@ -189,7 +191,7 @@ const documentQuestionDescriptor: DocumentQuestionDescriptor<
     branch: questionType,
     state: {
       template: getTemplateInitialValues(question),
-      answer: answer ?? getAnswerInitialValue()
+      answer: getAnswerState(answer)
     }
   }),
   Component: View

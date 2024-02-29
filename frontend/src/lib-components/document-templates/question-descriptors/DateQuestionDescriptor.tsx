@@ -65,7 +65,7 @@ type QuestionForm = typeof questionForm
 const getAnswerState = (
   answer?: Answer | undefined
 ): StateOf<QuestionForm>['answer'] =>
-  answer ? localDate.fromDate(answer) : localDate.fromDate(null)
+  answer !== undefined ? localDate.fromDate(answer) : localDate.fromDate(null)
 
 const View = React.memo(function View({
   bind,
