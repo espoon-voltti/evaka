@@ -20,7 +20,7 @@ import { getServiceNeedOptions } from '../../generated/api-clients/serviceneed'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -33,6 +33,7 @@ interface Props {
 
 export default React.memo(function Placements({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
   const {
     placements,
     loadPlacements,
@@ -57,22 +58,14 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
         <Gap size="m" />
         <FlexRow justifyContent="space-between">
           <H3 noMargin>{i18n.childInformation.placements.placements}</H3>
-          <RequireRole
-            oneOf={[
-              'SERVICE_WORKER',
-              'UNIT_SUPERVISOR',
-              'FINANCE_ADMIN',
-              'ADMIN',
-              'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-            ]}
-          >
+          {user?.accessibleFeatures.createPlacements ? (
             <AddButtonRow
               text={i18n.childInformation.placements.createPlacement.btn}
               onClick={() => toggleUiMode('create-new-placement')}
               disabled={uiMode === 'create-new-placement'}
               data-qa="create-new-placement-button"
             />
-          </RequireRole>
+          ) : null}
         </FlexRow>
         {renderResult(
           combine(serviceNeedOptions, placements),
