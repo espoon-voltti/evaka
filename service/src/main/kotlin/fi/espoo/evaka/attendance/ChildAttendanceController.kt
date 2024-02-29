@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
@@ -208,7 +209,7 @@ class ChildAttendanceController(
                         childId = childId,
                         unitId = unitId,
                         date = clock.today(),
-                        startTime = body.arrived
+                        range = TimeInterval(body.arrived, null)
                     )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -352,7 +353,12 @@ class ChildAttendanceController(
                             }
                             .filter { (_, startTime, endTime) -> startTime != endTime }
                             .forEach { (date, startTime, endTime) ->
-                                tx.insertAttendance(childId, unitId, date, startTime, endTime)
+                                tx.insertAttendance(
+                                    childId,
+                                    unitId,
+                                    date,
+                                    TimeInterval(startTime, endTime)
+                                )
                             }
                     }
                 } catch (e: Exception) {

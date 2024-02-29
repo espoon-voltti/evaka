@@ -248,7 +248,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.DAYCARE)
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = mockClock.now().toLocalTime().minusMinutes(20)
+        val departed = mockClock.now().toLocalTime().minusMinutes(20).withSecond(0).withNano(0)
         markDeparted(departed, null, null)
 
         val child = expectOneAttendanceStatus()
@@ -260,7 +260,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.DAYCARE)
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = mockClock.now().toLocalTime().minusMinutes(40)
+        val departed = mockClock.now().toLocalTime().withSecond(0).withNano(0).minusMinutes(40)
         markDeparted(departed, null, null)
 
         val child = expectOneAttendanceStatus()

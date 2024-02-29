@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -29,27 +30,20 @@ fun Database.Transaction.insertAttendance(
     childId: ChildId,
     unitId: DaycareId,
     date: LocalDate,
-    startTime: LocalTime,
-    endTime: LocalTime? = null
+    range: TimeInterval
 ): ChildAttendanceId {
     // language=sql
-    val sql =
-        """
-        INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
-        VALUES (:childId, :unitId, :date, :startTime, :endTime)
-        RETURNING id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .bind("startTime", startTime.withSecond(0).withNano(0))
-        .bind("endTime", endTime?.withSecond(0)?.withNano(0))
+    return createUpdate<Any> {
+            sql(
+                """
+                INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
+                VALUES (${bind(childId)}, ${bind(unitId)}, ${bind(date)}, ${bind(range.start)}, ${bind(range.end)})
+                RETURNING id
+                """
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<ChildAttendanceId>()
+        .exactlyOne()
 }
 
 fun Database.Read.getChildAttendanceId(

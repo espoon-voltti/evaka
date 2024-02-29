@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
@@ -154,16 +155,6 @@ data class ReservationRow(
     val reservation: Reservation,
     val staffCreated: Boolean
 )
-
-data class TimeInterval(val start: LocalTime, val end: LocalTime?) : Comparable<TimeInterval> {
-    override fun compareTo(other: TimeInterval): Int {
-        return start.compareTo(other.start).let {
-            if (it != 0) it else (end ?: LocalTime.MAX).compareTo(other.end ?: LocalTime.MAX)
-        }
-    }
-
-    fun asTimeRange(): TimeRange? = end?.let { TimeRange(start, it) }
-}
 
 data class CreateReservationsResult(
     val deletedAbsences: List<AbsenceId>,
@@ -418,8 +409,7 @@ fun upsertChildDatePresence(
                 input.childId,
                 input.unitId,
                 input.date,
-                attendance.start,
-                attendance.end
+                TimeInterval(attendance.start, attendance.end)
             )
         }
 
@@ -454,24 +444,23 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
         if (r2.range.overlaps(r1.range)) throw BadRequest("Overlapping reservation times")
     }
 
-    attendances.forEach { a ->
-        if (a.end != null && !a.end.isAfter(a.start)) throw BadRequest("Inverted time range")
-    }
     attendances.zipWithNext().forEach { (a1, a2) ->
-        if (a1.end == null || a2.start.isBefore(a1.end))
-            throw BadRequest("Overlapping attendance times")
+        if (a1.overlaps(a2)) throw BadRequest("Overlapping attendance times")
     }
-    attendances
-        .flatMap { listOfNotNull(it.start, it.end) }
-        .map { HelsinkiDateTime.of(date, it) }
-        .forEach {
-            if (it.isAfter(now.plusMinutes(30))) {
-                throw BadRequest(
-                    "Cannot mark attendances into future",
-                    errorCode = "attendanceInFuture"
-                )
-            }
+
+    val threshold = now.toLocalTime().plusMinutes(30)
+    attendances.forEach {
+        if (
+            date == now.toLocalDate() &&
+                (it.end == null && it.startsAfter(threshold) ||
+                    it.end != null && it.overlaps(TimeInterval(threshold, null)))
+        ) {
+            throw BadRequest(
+                "Cannot mark attendances into future",
+                errorCode = "attendanceInFuture"
+            )
         }
+    }
 
     if (
         (absenceBillable != null &&
