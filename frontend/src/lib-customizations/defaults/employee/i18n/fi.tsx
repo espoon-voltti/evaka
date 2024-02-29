@@ -2839,7 +2839,7 @@ export const fi = {
       sendPayments: (count: number) =>
         count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`,
       deletePayment: (count: number) =>
-        count === 1 ? 'Poista ${count} maksu' : 'Poista ${count} maksua'
+        count === 1 ? `Poista ${count} maksu` : `Poista ${count} maksua`
     },
     status: {
       DRAFT: 'Luonnos',
