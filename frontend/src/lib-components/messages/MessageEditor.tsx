@@ -135,7 +135,7 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
   return (
     <UlNoMargin>
       <li>{i18n.messageEditor.flags.urgent.info}</li>
-      <li>{i18n.messageEditor.flags.sensitive.info}</li>)
+      <li>{i18n.messageEditor.flags.sensitive.info}</li>
     </UlNoMargin>
   )
 })

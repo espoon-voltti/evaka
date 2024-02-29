@@ -191,3 +191,114 @@ describe('Service time usage', () => {
       )
   })
 })
+describe('Service time alert', () => {
+  beforeEach(async () => {
+    await resetDatabase()
+
+    await Fixture.careArea().with(careAreaFixture).save()
+    await Fixture.daycare().with(daycareFixture).save()
+    const guardian = await Fixture.person().with(enduserGuardianFixture).save()
+    const child = await Fixture.person().with(enduserChildFixtureKaarina).save()
+    await Fixture.child(enduserChildFixtureKaarina.id).save()
+    await Fixture.guardian(child, guardian).save()
+
+    const daycareSupervisor = await Fixture.employeeUnitSupervisor(
+      daycareFixture.id
+    ).save()
+
+    const serviceNeedOption = await Fixture.serviceNeedOption()
+      .with({
+        validPlacementType: 'DAYCARE',
+        defaultOption: false,
+        nameFi: 'Kokopäiväinen',
+        nameSv: 'Kokopäiväinen (sv)',
+        nameEn: 'Kokopäiväinen (en)',
+        daycareHoursPerMonth: 75
+      })
+      .save()
+
+    const placement = await Fixture.placement()
+      .with({
+        childId: enduserChildFixtureKaarina.id,
+        unitId: daycareFixture.id,
+        type: 'DAYCARE',
+        startDate: LocalDate.of(2022, 1, 1),
+        endDate: today.addYears(1)
+      })
+      .save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: placement.data.id,
+        startDate: LocalDate.of(2022, 1, 1),
+        endDate: today.addYears(1),
+        optionId: serviceNeedOption.data.id,
+        confirmedBy: daycareSupervisor.data.id
+      })
+      .save()
+  })
+
+  it('Service time alert shown in month heading', async () => {
+    let i = 1
+    while (i < 31) {
+      const date = LocalDate.of(2022, 1, i)
+      i++
+      if (date.getIsoDayOfWeek() === 6 || date.getIsoDayOfWeek() === 7) continue
+      await Fixture.attendanceReservation({
+        type: 'RESERVATIONS',
+        date: date,
+        childId: enduserChildFixtureKaarina.id,
+        reservation: new TimeRange(LocalTime.of(12, 0), LocalTime.of(15, 0)),
+        secondReservation: null
+      }).save()
+      await Fixture.childAttendance()
+        .with({
+          childId: enduserChildFixtureKaarina.id,
+          unitId: daycareFixture.id,
+          date: date,
+          arrived: LocalTime.of(8, 0),
+          departed: LocalTime.of(15, 32)
+        })
+        .save()
+    }
+
+    const calendarPage = await openCalendarPage()
+    const summary = await calendarPage.openMonthlySummary(
+      today.year,
+      today.month
+    )
+    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' +
+        '\n' +
+        'Suunnitelma 60 h / 75 h\n' +
+        'Toteuma 75 h 20 min / 75 h'
+    )
+  })
+
+  it('Too much reservations show info box initially', async () => {
+    let i = 1
+    while (i < 15) {
+      const date = LocalDate.of(2022, 2, i)
+      i++
+      if (date.getIsoDayOfWeek() === 6 || date.getIsoDayOfWeek() === 7) continue
+      await Fixture.attendanceReservation({
+        type: 'RESERVATIONS',
+        date: date,
+        childId: enduserChildFixtureKaarina.id,
+        reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+        secondReservation: null
+      }).save()
+    }
+
+    const calendarPage = await openCalendarPage()
+    // Should be open initially, so we call getMonthlySummary instead of openMonthlySummary
+    const summary = calendarPage.getMonthlySummary(today.year, 2)
+    await summary.title.assertTextEquals('Läsnäolot 01.02. - 28.02.2022')
+    await summary.warningElement.assertTextEquals(
+      'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
+    )
+    await summary.textElement.assertTextEquals(
+      'Kaarina\n' + '\n' + 'Suunnitelma 80 h / 75 h\n' + 'Toteuma - / 75 h'
+    )
+  })
+})

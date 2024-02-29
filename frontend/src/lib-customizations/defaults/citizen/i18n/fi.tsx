@@ -441,7 +441,10 @@ export default {
       reserved: 'Suunnitelma',
       usedService: 'Toteuma',
       minutes: 'min',
-      hours: 'h'
+      hours: 'h',
+      warningUsedServiceExceeded: 'Läsnäoloja sopimuksen ylittävä määrä:',
+      warningPlannedServiceExceeded:
+        'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
     }
   },
   messages: {

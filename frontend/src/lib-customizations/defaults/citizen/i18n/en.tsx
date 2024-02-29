@@ -444,7 +444,10 @@ const en: Translations = {
       reserved: 'Reservations',
       usedService: 'Realized',
       minutes: 'min',
-      hours: 'h'
+      hours: 'h',
+      warningUsedServiceExceeded: 'Attendance in excess of the contract:',
+      warningPlannedServiceExceeded:
+        'Attendance planned in excess of the contract:'
     }
   },
   messages: {

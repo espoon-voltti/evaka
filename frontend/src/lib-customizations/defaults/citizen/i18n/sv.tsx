@@ -440,7 +440,9 @@ const sv: Translations = {
       reserved: 'Reserverad tid',
       usedService: 'Förverkligad tid',
       minutes: 'min',
-      hours: 'h'
+      hours: 'h',
+      warningUsedServiceExceeded: 'Närvaro utöver vad som anges i avtalet:',
+      warningPlannedServiceExceeded: 'Planerad närvaro utöver kontraktet:'
     }
   },
   messages: {

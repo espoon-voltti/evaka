@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasExclamationTriangle } from 'Icons'
+import React from 'react'
 import styled, { css } from 'styled-components'
 
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -26,6 +28,7 @@ import { useTranslation } from '../localization'
 import DayElem from './DayElem'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { ChildImageData } from './RoundChildImages'
+import { useSummaryInfo } from './hooks'
 
 export function getSummaryForMonth(
   childData: ReservationChild[],
@@ -71,28 +74,28 @@ export default React.memo(function MonthElem({
 }: MonthProps) {
   const i18n = useTranslation()
 
-  const [monthlySummaryInfoOpen, setMonthlySummaryInfoOpen] = useState(false)
-  const onMonthlySummaryInfoClick = useCallback(
-    () => setMonthlySummaryInfoOpen((prev) => !prev),
-    []
-  )
   const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
+
+  const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
+    useSummaryInfo(childSummaries)
   return (
-    <>
+    <div>
       <MonthSummaryContainer>
         <MonthTitle>
           {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
           {displaySummary && (
             <InlineInfoButton
-              onClick={onMonthlySummaryInfoClick}
+              onClick={toggleSummaryInfo}
               aria-label={i18n.common.openExpandingInfo}
               margin="zero"
               data-qa={`mobile-monthly-summary-info-button-${calendarMonth.monthNumber}-${calendarMonth.year}`}
-              open={monthlySummaryInfoOpen}
+              open={summaryInfoOpen}
             />
           )}
+
+          {displayAlert && <InlineWarningIcon />}
         </MonthTitle>
-        {monthlySummaryInfoOpen && (
+        {summaryInfoOpen && (
           <MonthlySummaryInfoBox
             info={
               <MonthlyHoursSummary
@@ -102,7 +105,7 @@ export default React.memo(function MonthElem({
               />
             }
             data-qa={`mobile-monthly-summary-info-container-${calendarMonth.monthNumber}-${calendarMonth.year}`}
-            close={() => setMonthlySummaryInfoOpen(false)}
+            close={toggleSummaryInfo}
           />
         )}
       </MonthSummaryContainer>
@@ -123,7 +126,7 @@ export default React.memo(function MonthElem({
           />
         </div>
       ))}
-    </>
+    </div>
   )
 })
 
@@ -195,3 +198,15 @@ const MonthlySummaryInfoBox = styled(ExpandingInfoBox)`
     padding-bottom: 0;
   }
 `
+const InlineIconContainer = styled.div`
+  margin-left: ${defaultMargins.xs};
+`
+
+export const InlineWarningIcon = () => (
+  <InlineIconContainer>
+    <FontAwesomeIcon
+      icon={fasExclamationTriangle}
+      color={colors.status.warning}
+    />
+  </InlineIconContainer>
+)

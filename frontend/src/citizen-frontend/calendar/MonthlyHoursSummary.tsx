@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasExclamationTriangle } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
 import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../localization'
 
@@ -68,6 +71,26 @@ export default React.memo(function MonthSummary({
         {i18n.calendar.monthSummary.title}{' '}
         {`${start.format('dd.MM.')} - ${end.format()}`}
       </Title>
+      {}
+      {childSummaries.some(
+        ({ usedServiceMinutes, serviceNeedMinutes }) =>
+          usedServiceMinutes > serviceNeedMinutes
+      ) ? (
+        <div data-qa="monthly-summary-warning">
+          <LeftWarningIcon />
+          {i18n.calendar.monthSummary.warningUsedServiceExceeded}
+        </div>
+      ) : (
+        childSummaries.some(
+          ({ reservedMinutes, serviceNeedMinutes }) =>
+            reservedMinutes > serviceNeedMinutes
+        ) && (
+          <div data-qa="monthly-summary-warning">
+            <LeftWarningIcon />
+            {i18n.calendar.monthSummary.warningPlannedServiceExceeded}
+          </div>
+        )
+      )}
       {childSummaries.map((summary, index) => (
         <SummaryContainer key={index} data-qa="monthly-summary-info-text">
           <p>
@@ -99,3 +122,17 @@ export default React.memo(function MonthSummary({
     </>
   )
 })
+
+const LeftIconContainer = styled.div`
+  position: absolute;
+  margin-left: -34px;
+`
+
+const LeftWarningIcon = () => (
+  <LeftIconContainer>
+    <FontAwesomeIcon
+      icon={fasExclamationTriangle}
+      color={colors.status.warning}
+    />
+  </LeftIconContainer>
+)
