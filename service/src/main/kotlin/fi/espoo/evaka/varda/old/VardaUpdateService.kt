@@ -510,22 +510,21 @@ private fun getChildVardaGuardians(
     childId: ChildId
 ): List<VardaGuardianWithId> {
     return db.read {
-        @Suppress("DEPRECATION")
-        it.createQuery(
-                """
-            SELECT
-                id,
-                first_name AS etunimet,
-                last_name as sukunimi,
-                social_security_number AS henkilotunnus,
-                nullif(trim(oph_person_oid), '') AS henkilo_oid,
-                residence_code AS asuinpaikantunnus
-            FROM person 
-            WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)
+        it.createQuery {
+                sql(
+                    """
+SELECT
+    id,
+    first_name AS etunimet,
+    last_name as sukunimi,
+    social_security_number AS henkilotunnus,
+    nullif(trim(oph_person_oid), '') AS henkilo_oid,
+    residence_code AS asuinpaikantunnus
+FROM person 
+WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(childId)})
             """
-                    .trimIndent()
-            )
-            .bind("id", childId)
+                )
+            }
             .toList<VardaGuardianWithId>()
     }
 }

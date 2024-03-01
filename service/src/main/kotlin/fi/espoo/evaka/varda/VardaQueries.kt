@@ -22,34 +22,33 @@ private val VARDA_SERVICE_NEED_CUTOFF_DATE: String = "2019-01-01"
 private val VARDA_FINANCIAL_DECICION_CUTOFF_DATE: String = "2019-09-01"
 
 fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) =
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            "UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id"
-        )
-        .bind("id", evakaChildId)
+    this.createUpdate {
+            sql(
+                "UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = ${bind(evakaChildId)}"
+            )
+        }
         .execute()
 
 fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
-        SELECT EXISTS (
-            SELECT evaka_service_need_id FROM varda_service_need
-            WHERE evaka_child_id = :evaka_child_id
-        )
-        """
-                .trimIndent()
-        )
-        .bind("evaka_child_id", evakaChildId)
+    this.createQuery {
+            sql(
+                """
+                SELECT EXISTS (
+                    SELECT evaka_service_need_id FROM varda_service_need
+                    WHERE evaka_child_id = ${bind(evakaChildId)}
+                )
+                """
+            )
+        }
         .exactlyOne<Boolean>()
 
 fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,
     upsertErrors: List<String> = listOf()
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO varda_service_need (
     evaka_service_need_id, 
     evaka_service_need_updated, 
@@ -61,98 +60,95 @@ INSERT INTO varda_service_need (
     update_failed, 
     errors) 
 VALUES (
-    :evakaServiceNeedId, 
-    :evakaServiceNeedUpdated, 
-    :evakaChildId, 
-    :vardaChildId, 
-    :vardaDecisionId, 
-    :vardaPlacementId, 
-    :vardaFeeDataIds, 
-    :errorsNotEmpty, 
-    :upsertErrors
+    ${bind(vardaServiceNeed.evakaServiceNeedId)}, 
+    ${bind(vardaServiceNeed.evakaServiceNeedUpdated)}, 
+    ${bind(vardaServiceNeed.evakaChildId)}, 
+    ${bind(vardaServiceNeed.vardaChildId)}, 
+    ${bind(vardaServiceNeed.vardaDecisionId)}, 
+    ${bind(vardaServiceNeed.vardaPlacementId)}, 
+    ${bind(vardaServiceNeed.vardaFeeDataIds)}, 
+    ${bind(upsertErrors.isNotEmpty())}, 
+    ${bind(upsertErrors)}
 ) ON CONFLICT (evaka_service_need_id) DO UPDATE 
-    SET evaka_service_need_updated = :evakaServiceNeedUpdated, 
-        evaka_child_id = :evakaChildId, 
-        varda_child_id = :vardaChildId,
-        varda_decision_id = :vardaDecisionId, 
-        varda_placement_id = :vardaPlacementId, 
-        varda_fee_data_ids = :vardaFeeDataIds,
-        update_failed = :errorsNotEmpty,
-        errors = :upsertErrors
+    SET evaka_service_need_updated = ${bind(vardaServiceNeed.evakaServiceNeedUpdated)}, 
+        evaka_child_id = ${bind(vardaServiceNeed.evakaChildId)}, 
+        varda_child_id = ${bind(vardaServiceNeed.vardaChildId)},
+        varda_decision_id = ${bind(vardaServiceNeed.vardaDecisionId)}, 
+        varda_placement_id = ${bind(vardaServiceNeed.vardaPlacementId)}, 
+        varda_fee_data_ids = ${bind(vardaServiceNeed.vardaFeeDataIds)},
+        update_failed = ${bind(upsertErrors.isNotEmpty())},
+        errors = ${bind(upsertErrors)}
 """
-        )
-        .bindKotlin(vardaServiceNeed)
-        .bind("upsertErrors", upsertErrors)
-        .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
+            )
+        }
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: ServiceNeedId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM varda_service_need
-WHERE evaka_service_need_id = :serviceNeedId    
-        """
-        )
-        .bind("serviceNeedId", serviceNeedId)
+    createUpdate {
+            sql(
+                """
+                DELETE FROM varda_service_need
+                WHERE evaka_service_need_id = ${bind(serviceNeedId)}    
+                """
+            )
+        }
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM varda_service_need
-WHERE varda_child_id = :vardaChildId
-        """
-        )
-        .bind("vardaChildId", vardaChildId)
+    createUpdate {
+            sql(
+                """
+                DELETE FROM varda_service_need
+                WHERE varda_child_id = ${bind(vardaChildId)}
+                """
+            )
+        }
         .execute()
 
 fun Database.Transaction.deleteVardaServiceNeedByEvakaChildId(evakaChildId: ChildId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM varda_service_need
-WHERE evaka_child_id = :evakaChildId
-        """
-        )
-        .bind("evakaChildId", evakaChildId)
+    createUpdate {
+            sql(
+                """
+                DELETE FROM varda_service_need
+                WHERE evaka_child_id = ${bind(evakaChildId)}
+                """
+            )
+        }
         .execute()
 
 fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM varda_organizer_child
-WHERE varda_child_id = :vardaChildId
-        """
-        )
-        .bind("vardaChildId", vardaChildId)
+    createUpdate {
+            sql(
+                """
+                DELETE FROM varda_organizer_child
+                WHERE varda_child_id = ${bind(vardaChildId)}
+                """
+            )
+        }
         .execute()
 
 fun Database.Transaction.markVardaServiceNeedUpdateFailed(
     serviceNeedId: ServiceNeedId,
     errors: List<String>
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE varda_service_need
-SET update_failed = true, errors = :errors
-WHERE evaka_service_need_id = :serviceNeedId    
-        """
-        )
-        .bind("serviceNeedId", serviceNeedId)
-        .bind("errors", errors)
+    createUpdate {
+            sql(
+                """
+                UPDATE varda_service_need
+                SET update_failed = true, errors = ${bind(errors)}
+                WHERE evaka_service_need_id = ${bind(serviceNeedId)}    
+                """
+            )
+        }
         .execute()
 
 fun Database.Read.getEvakaServiceNeedChanges(
     clock: EvakaClock,
     feeDecisionMinDate: LocalDate
 ): List<ChangedChildServiceNeed> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 WITH potential_missing_varda_service_needs AS (
     SELECT
         sn.id AS service_need_id,
@@ -167,12 +163,12 @@ WITH potential_missing_varda_service_needs AS (
     JOIN varda_reset_child vrc ON vrc.evaka_child_id = p.child_id
     LEFT JOIN varda_service_need vsn ON sn.id = vsn.evaka_service_need_id
     WHERE
-        p.type = ANY(:vardaPlacementTypes::placement_type[])
+        p.type = ANY(${bind(vardaPlacementTypes)}::placement_type[])
         AND d.upload_children_to_varda = true
         AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
         AND sno.daycare_hours_per_week >= 1
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
-        AND sn.start_date <= :today
+        AND sn.start_date <= ${bind(clock.today())}
         AND vrc.reset_timestamp IS NOT NULL
 ), service_need_fee_decision AS (
     SELECT
@@ -221,7 +217,7 @@ FROM potential_missing_varda_service_needs a
     LEFT JOIN service_need_fee_decision fd on a.service_need_id = fd.service_need_id
     LEFT JOIN service_need_voucher_decision vd on a.service_need_id = vd.service_need_id
 WHERE invoiced_by_municipality = false
-   OR a.service_need_end_date < :feeDecisionMinDate
+   OR a.service_need_end_date < ${bind(feeDecisionMinDate)}
    OR fd.fee_decision_id IS NOT NULL
    OR vd.voucher_decision_id IS NOT NULL
 UNION
@@ -235,18 +231,15 @@ SELECT
     vsn.evaka_service_need_id
 FROM varda_service_need vsn
 WHERE update_failed = true       
-        """
-                .trimIndent()
-        )
-        .bind("today", clock.today())
-        .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .bind("feeDecisionMinDate", feeDecisionMinDate)
+"""
+            )
+        }
         .toList<ChangedChildServiceNeed>()
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     evaka_child_id,
     evaka_service_need_id,
@@ -258,18 +251,18 @@ SELECT
     update_failed,
     errors
 FROM varda_service_need
-WHERE evaka_child_id = :evakaChildId
+WHERE evaka_child_id = ${bind(evakaChildId)}
 """
-        )
-        .bind("evakaChildId", evakaChildId)
+            )
+        }
         .toList<VardaServiceNeed>()
 
 fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
     eVakaServiceNeedId: ServiceNeedId
 ): VardaServiceNeed? =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     evaka_child_id,
     evaka_service_need_id,
@@ -281,10 +274,10 @@ SELECT
     update_failed,
     errors
 FROM varda_service_need
-WHERE evaka_service_need_id = :eVakaServiceNeedId
+WHERE evaka_service_need_id = ${bind(eVakaServiceNeedId)}
 """
-        )
-        .bind("eVakaServiceNeedId", eVakaServiceNeedId)
+            )
+        }
         .exactlyOneOrNull<VardaServiceNeed>()
 
 fun Database.Read.getServiceNeedFeeData(
@@ -300,9 +293,9 @@ private fun Database.Read.getServiceNeedFeeDataQuery(
     feeDecisionStatus: FeeDecisionStatus,
     voucherValueDecisionStatus: VoucherValueDecisionStatus
 ): List<FeeDataByServiceNeed> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 WITH child_fees AS (
     SELECT
         fd.id AS fee_decision_id,
@@ -310,7 +303,7 @@ WITH child_fees AS (
         fd.valid_during
     FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
-    WHERE fd.status = :feeDecisionStatus
+    WHERE fd.status = ${bind(feeDecisionStatus)}
         AND daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', null) && fd.valid_during
 ), service_need_fees AS (
     SELECT
@@ -338,7 +331,7 @@ WITH child_fees AS (
             AND daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', null) && daterange(vvd.valid_from, vvd.valid_to, '[]')
             AND sn.end_date >= '$VARDA_FINANCIAL_DECICION_CUTOFF_DATE'
     WHERE d.upload_children_to_varda = true
-        AND vvd.status = :voucherValueDecisionStatus
+        AND vvd.status = ${bind(voucherValueDecisionStatus)}
     GROUP BY service_need_id, p.child_id
 )
 SELECT
@@ -349,64 +342,58 @@ SELECT
 FROM service_need_fees 
     FULL OUTER JOIN service_need_vouchers ON 
         service_need_fees.service_need_id = service_need_vouchers.service_need_id
-WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) = :serviceNeedId
-        """
-        )
-        .bind("serviceNeedId", serviceNeedId)
-        .bind("feeDecisionStatus", feeDecisionStatus)
-        .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
+WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) = ${bind(serviceNeedId)}
+"""
+            )
+        }
         .toList<FeeDataByServiceNeed>()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
     // The default application date is set to be 15 days before the start because it's the minimum
     // for Varda to not deduce the application as urgent
-    // language=sql
-    val sql =
-        """
-        SELECT
-            sn.id,
-            p.child_id AS child_id,
-            sn.start_date,
-            sn.end_date,
-            LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
-            COALESCE((application_match.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
-            sno.daycare_hours_per_week AS hours_per_week,
-            CASE 
-                WHEN sno.valid_placement_type = ANY(:vardaTemporaryPlacementTypes::placement_type[]) THEN true
-                ELSE false
-            END AS temporary,
-            NOT(sno.part_week) AS daily,
-            sn.shift_care = 'FULL' as shift_care,
-            d.provider_type,
-            d.oph_organizer_oid,
-            d.oph_unit_oid,
-            sn.updated AS service_need_updated
-        FROM service_need sn
-        JOIN service_need_option sno on sn.option_id = sno.id
-        JOIN placement p ON p.id = sn.placement_id
-        JOIN daycare d ON p.unit_id = d.id
-        LEFT JOIN LATERAL (
-            SELECT a.id, a.sentdate, a.created, a.document
-            FROM application a
-            WHERE child_id = p.child_id
-              AND a.status IN ('ACTIVE')
-              AND EXISTS (
-                    SELECT 1
-                    FROM placement_plan pp
-                    WHERE pp.unit_id = p.unit_id AND pp.application_id = a.id
-                      AND daterange(pp.start_date, pp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-                )
-            ORDER BY a.sentdate, a.id
-            LIMIT 1
-            ) application_match ON true
-        WHERE sn.id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
+    return createQuery {
+            sql(
+                """
+SELECT
+    sn.id,
+    p.child_id AS child_id,
+    sn.start_date,
+    sn.end_date,
+    LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
+    COALESCE((application_match.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
+    sno.daycare_hours_per_week AS hours_per_week,
+    CASE 
+        WHEN sno.valid_placement_type = ANY(${bind(vardaTemporaryPlacementTypes)}::placement_type[]) THEN true
+        ELSE false
+    END AS temporary,
+    NOT(sno.part_week) AS daily,
+    sn.shift_care = 'FULL' as shift_care,
+    d.provider_type,
+    d.oph_organizer_oid,
+    d.oph_unit_oid,
+    sn.updated AS service_need_updated
+FROM service_need sn
+JOIN service_need_option sno on sn.option_id = sno.id
+JOIN placement p ON p.id = sn.placement_id
+JOIN daycare d ON p.unit_id = d.id
+LEFT JOIN LATERAL (
+    SELECT a.id, a.sentdate, a.created, a.document
+    FROM application a
+    WHERE child_id = p.child_id
+      AND a.status IN ('ACTIVE')
+      AND EXISTS (
+            SELECT 1
+            FROM placement_plan pp
+            WHERE pp.unit_id = p.unit_id AND pp.application_id = a.id
+              AND daterange(pp.start_date, pp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+        )
+    ORDER BY a.sentdate, a.id
+    LIMIT 1
+    ) application_match ON true
+WHERE sn.id = ${bind(id)}
+"""
+            )
+        }
         .exactlyOneOrNull<EvakaServiceNeedInfoForVarda>()
         ?: throw NotFound("Service need $id not found")
 }
@@ -415,32 +402,30 @@ fun Database.Transaction.setVardaResetChildResetTimestamp(
     evakaChildId: ChildId,
     resetTimestamp: Instant
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
-WHERE evaka_child_id = :evakaChildId
-        """
-        )
-        .bind("evakaChildId", evakaChildId)
-        .bind("resetTimestamp", resetTimestamp)
+    createUpdate {
+            sql(
+                """
+UPDATE varda_reset_child SET reset_timestamp = ${bind(resetTimestamp)}
+WHERE evaka_child_id = ${bind(evakaChildId)}
+"""
+            )
+        }
         .execute()
 
 fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeedId): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-            SELECT true
-            FROM service_need sn 
-                LEFT JOIN placement p ON sn.placement_id = p.id
-                LEFT JOIN daycare d ON d.id = p.unit_id
-            WHERE
-                sn.id = :serviceNeedId 
-                AND d.invoiced_by_municipality = true
-    """
-                .trimIndent()
-        )
-        .bind("serviceNeedId", serviceNeedId)
+    createQuery {
+            sql(
+                """
+                SELECT true
+                FROM service_need sn 
+                    LEFT JOIN placement p ON sn.placement_id = p.id
+                    LEFT JOIN daycare d ON d.id = p.unit_id
+                WHERE
+                    sn.id = ${bind(serviceNeedId)} 
+                    AND d.invoiced_by_municipality = true
+                """
+            )
+        }
         .toList<Boolean>()
         .isNotEmpty()
 
@@ -448,67 +433,62 @@ fun Database.Read.getServiceNeedsForVardaByChild(
     clock: EvakaClock,
     childId: ChildId
 ): List<ServiceNeedId> {
-    // language=SQL
-    val sql =
-        """
-        SELECT sn.id
-        FROM service_need sn
-        JOIN placement pl ON pl.id = sn.placement_id
-        JOIN daycare d ON d.id = pl.unit_id
-        JOIN service_need_option sno ON sn.option_id = sno.id
-        WHERE pl.child_id = :childId
-        AND pl.type = ANY(:vardaPlacementTypes::placement_type[])
-        AND d.upload_children_to_varda = true
-        AND sno.daycare_hours_per_week >= 1
-        AND sn.start_date <= :today
-        AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("today", clock.today())
-        .bind("childId", childId)
-        .bind("vardaPlacementTypes", vardaPlacementTypes)
+    return createQuery {
+            sql(
+                """
+                SELECT sn.id
+                FROM service_need sn
+                JOIN placement pl ON pl.id = sn.placement_id
+                JOIN daycare d ON d.id = pl.unit_id
+                JOIN service_need_option sno ON sn.option_id = sno.id
+                WHERE pl.child_id = ${bind(childId)}
+                AND pl.type = ANY(${bind(vardaPlacementTypes)}::placement_type[])
+                AND d.upload_children_to_varda = true
+                AND sno.daycare_hours_per_week >= 1
+                AND sn.start_date <= ${bind(clock.today())}
+                AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
+                """
+            )
+        }
         .toList<ServiceNeedId>()
 }
 
 fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
+    createQuery {
+            sql("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NOT NULL")
+        }
         .toList<ChildId>()
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-        UPDATE varda_reset_child
-        SET reset_timestamp = null
-        WHERE evaka_child_id = ANY(:childIds)
-        """
-                .trimIndent()
-        )
-        .bind("childIds", childIds)
+    createUpdate {
+            sql(
+                """
+                UPDATE varda_reset_child
+                SET reset_timestamp = null
+                WHERE evaka_child_id = ANY(${bind(childIds)})
+                """
+            )
+        }
         .execute()
 
 fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-        SELECT varda_child_id, evaka_person_id evaka_child_id
-        FROM varda_organizer_child
-        WHERE varda_child_id IS NOT NULL
-        """
-                .trimIndent()
-        )
+    createQuery {
+            sql(
+                """
+                SELECT varda_child_id, evaka_person_id evaka_child_id
+                FROM varda_organizer_child
+                WHERE varda_child_id IS NOT NULL
+                """
+            )
+        }
         .toMap { columnPair("varda_child_id", "evaka_child_id") }
 
 fun Database.Read.getDistinctVardaPersonOidsByEvakaPersonId(id: PersonId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            "SELECT DISTINCT varda_person_oid FROM varda_organizer_child WHERE evaka_person_id = :id"
-        )
-        .bind("id", id)
+    createQuery {
+            sql(
+                "SELECT DISTINCT varda_person_oid FROM varda_organizer_child WHERE evaka_person_id = ${bind(id)}"
+            )
+        }
         .toList<String>()
 
 fun Database.Transaction.getVardaChildrenToReset(
@@ -520,58 +500,57 @@ fun Database.Transaction.getVardaChildrenToReset(
         if (!addNewChildren) {
             0
         } else {
-            @Suppress("DEPRECATION")
-            createUpdate(
-                    """
-        with varda_daycare as (
-            select id, name from daycare
-            where upload_children_to_varda = true
-            order by name asc
-        ),
-        child_daycare as (
-            select distinct p.child_id, d.name
-            from placement p
-            join varda_daycare d on d.id = p.unit_id
-            where not exists (
-                select 1 from varda_reset_child where evaka_child_id = p.child_id
-            )
-            order by d.name asc
-            limit :limit
-        ),
-        last_daycare as (
-            select name from child_daycare order by name desc limit 1
-        ),
-        daycare_count as (
-            select count(distinct name) from child_daycare
-        )
-        insert into varda_reset_child(evaka_child_id)
-        select distinct child_id
-        from child_daycare
-        where name not in (select name from last_daycare)
-        or 1 in (select count from daycare_count)
-            """
-                        .trimIndent()
-                )
-                .bind("limit", limit)
+            createUpdate {
+                    sql(
+                        """
+                        with varda_daycare as (
+                            select id, name from daycare
+                            where upload_children_to_varda = true
+                            order by name asc
+                        ),
+                        child_daycare as (
+                            select distinct p.child_id, d.name
+                            from placement p
+                            join varda_daycare d on d.id = p.unit_id
+                            where not exists (
+                                select 1 from varda_reset_child where evaka_child_id = p.child_id
+                            )
+                            order by d.name asc
+                            limit ${bind(limit)}
+                        ),
+                        last_daycare as (
+                            select name from child_daycare order by name desc limit 1
+                        ),
+                        daycare_count as (
+                            select count(distinct name) from child_daycare
+                        )
+                        insert into varda_reset_child(evaka_child_id)
+                        select distinct child_id
+                        from child_daycare
+                        where name not in (select name from last_daycare)
+                        or 1 in (select count from daycare_count)
+                        """
+                    )
+                }
                 .execute()
         }
 
     if (updateCount > 0) logger.info("VardaUpdate: added $updateCount new children to be reset")
 
-    @Suppress("DEPRECATION")
-    return createQuery(
-            "SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit"
-        )
-        .bind("limit", limit)
+    return createQuery {
+            sql(
+                "SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT ${bind(limit)}"
+            )
+        }
         .toList<ChildId>()
 }
 
 fun Database.Read.calculateDeletedChildServiceNeeds(
     clock: EvakaClock
 ): Map<ChildId, List<ServiceNeedId>> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    this.createQuery {
+            sql(
+                """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
 FROM varda_service_need vsn
 WHERE NOT EXISTS (
@@ -586,16 +565,14 @@ JOIN placement p ON sn.placement_id = p.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 JOIN daycare d ON p.unit_id = d.id
 WHERE
-  p.type = ANY(:vardaPlacementTypes::placement_type[])
+  p.type = ANY(${bind(vardaPlacementTypes)}::placement_type[])
   AND d.upload_children_to_varda = true
   AND sno.daycare_hours_per_week >= 1
-  AND sn.start_date <= :today
+  AND sn.start_date <= ${bind(clock.today())}
   AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
 )
 GROUP BY evaka_child_id
-        """
-                .trimIndent()
-        )
-        .bind("today", clock.today())
-        .bind("vardaPlacementTypes", vardaPlacementTypes)
+"""
+            )
+        }
         .toMap { columnPair("child_id", "service_need_ids") }

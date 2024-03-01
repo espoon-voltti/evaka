@@ -70,16 +70,16 @@ private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
     evakaPersonId: ChildId
 ): List<VardaChildOrganizerRow> {
-    val sql =
-        """
-        SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
-        FROM varda_organizer_child
-        WHERE evaka_person_id = :evakaPersonId
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql).bind("evakaPersonId", evakaPersonId).toList<VardaChildOrganizerRow>()
+    return tx.createQuery {
+            sql(
+                """
+                SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
+                FROM varda_organizer_child
+                WHERE evaka_person_id = ${bind(evakaPersonId)}
+                """
+            )
+        }
+        .toList<VardaChildOrganizerRow>()
 }
 
 private fun createVardaPersonAndChild(
@@ -234,24 +234,22 @@ private fun getVardaPersonPayload(
     evakaChildId: ChildId,
     organizerOid: String
 ) =
-    @Suppress("DEPRECATION")
-    tx.createQuery(
-            """
-            SELECT 
-                p.id,
-                p.first_name,
-                p.last_name,
-                p.social_security_number         AS ssn,
-                p.oph_person_oid                 AS person_oid,
-                split_part(p.first_name, ' ', 1) AS nick_name,
-                :organizerOid
-            FROM person p
-            WHERE id = :evakaPersonId
-        """
-                .trimIndent()
-        )
-        .bind("evakaPersonId", evakaChildId)
-        .bind("organizerOid", organizerOid)
+    tx.createQuery {
+            sql(
+                """
+                SELECT 
+                    p.id,
+                    p.first_name,
+                    p.last_name,
+                    p.social_security_number         AS ssn,
+                    p.oph_person_oid                 AS person_oid,
+                    split_part(p.first_name, ' ', 1) AS nick_name,
+                    ${bind(organizerOid)}
+                FROM person p
+                WHERE id = ${bind(evakaChildId)}
+                """
+            )
+        }
         .toList<VardaPerson>()
         .first()
 
@@ -263,21 +261,20 @@ fun insertVardaOrganizerChild(
     vardaPersonOid: String,
     organizerOid: String
 ) {
-    // language=SQL
-    val sql =
-        """
-    INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_id, varda_person_oid, organizer_oid)
-    VALUES (:evakaPersonId, :vardaChildId, :vardaPersonId, :vardaPersonOid, :organizerOid)
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    tx.createUpdate(sql)
-        .bind("evakaPersonId", evakaPersonId)
-        .bind("vardaChildId", vardaChildId)
-        .bind("vardaPersonId", vardaPersonId)
-        .bind("vardaPersonOid", vardaPersonOid)
-        .bind("organizerOid", organizerOid)
+    tx.createUpdate {
+            sql(
+                """
+                INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_id, varda_person_oid, organizer_oid)
+                VALUES (
+                    ${bind(evakaPersonId)},
+                    ${bind(vardaChildId)},
+                    ${bind(vardaPersonId)},
+                    ${bind(vardaPersonOid)},
+                    ${bind(organizerOid)}
+                )
+                """
+            )
+        }
         .execute()
 }
 

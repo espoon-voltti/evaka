@@ -218,16 +218,15 @@ private fun getVardaChildIdsByEvakaChildId(
     evakaChildId: ChildId
 ): List<Long> {
     return db.read {
-        @Suppress("DEPRECATION")
-        it.createQuery(
-                """
-            select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId and varda_child_id is not null 
-            union
-            select varda_child_id from varda_organizer_child where evaka_person_id = :evakaChildId
-            """
-                    .trimIndent()
-            )
-            .bind("evakaChildId", evakaChildId)
+        it.createQuery {
+                sql(
+                    """
+                    select varda_child_id from varda_service_need where evaka_child_id = ${bind(evakaChildId)} and varda_child_id is not null 
+                    union
+                    select varda_child_id from varda_organizer_child where evaka_person_id = ${bind(evakaChildId)}
+                    """
+                )
+            }
             .toList<Long>()
     }
 }
@@ -460,22 +459,21 @@ private fun getChildVardaGuardians(
     childId: ChildId
 ): List<VardaGuardianWithId> {
     return db.read {
-        @Suppress("DEPRECATION")
-        it.createQuery(
-                """
-            SELECT
-                id,
-                first_name AS etunimet,
-                last_name as sukunimi,
-                social_security_number AS henkilotunnus,
-                nullif(trim(oph_person_oid), '') AS henkilo_oid,
-                residence_code AS asuinpaikantunnus
-            FROM person 
-            WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)
-            """
-                    .trimIndent()
-            )
-            .bind("id", childId)
+        it.createQuery {
+                sql(
+                    """
+                    SELECT
+                        id,
+                        first_name AS etunimet,
+                        last_name as sukunimi,
+                        social_security_number AS henkilotunnus,
+                        nullif(trim(oph_person_oid), '') AS henkilo_oid,
+                        residence_code AS asuinpaikantunnus
+                    FROM person 
+                    WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(childId)})
+                    """
+                )
+            }
             .toList<VardaGuardianWithId>()
     }
 }

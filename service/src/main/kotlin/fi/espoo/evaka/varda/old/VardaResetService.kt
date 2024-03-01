@@ -171,16 +171,15 @@ private fun getVardaChildIdsByEvakaChildId(
     evakaChildId: ChildId
 ): List<Long> {
     return db.read {
-        @Suppress("DEPRECATION")
-        it.createQuery(
-                """
-            select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId and varda_child_id is not null 
-            union
-            select varda_child_id from varda_organizer_child where evaka_person_id = :evakaChildId
-            """
-                    .trimIndent()
-            )
-            .bind("evakaChildId", evakaChildId)
+        it.createQuery {
+                sql(
+                    """
+select varda_child_id from varda_service_need where evaka_child_id = ${bind(evakaChildId)} and varda_child_id is not null 
+union
+select varda_child_id from varda_organizer_child where evaka_person_id = ${bind(evakaChildId)}
+"""
+                )
+            }
             .toList<Long>()
     }
 }
