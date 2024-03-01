@@ -936,9 +936,9 @@ private fun Database.Read.getChildData(
 ): Map<ChildId, ChildData> {
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
 
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     p.id,
     p.first_name,
@@ -954,7 +954,7 @@ SELECT
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar 
         JOIN evaka_user eu ON ar.created_by = eu.id
-        WHERE ar.child_id = p.id AND between_start_and_end(:dateRange, ar.date)
+        WHERE ar.child_id = p.id AND between_start_and_end(${bind(dateRange)}, ar.date)
     ), '[]'::jsonb) AS reservations,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
@@ -962,7 +962,7 @@ SELECT
             'startTime', att.start_time,
             'endTime', att.end_time
         ) ORDER BY att.date, att.start_time)
-        FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(:dateRange, att.date)
+        FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(${bind(dateRange)}, att.date)
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(json_build_object(
@@ -975,15 +975,13 @@ SELECT
         ) ORDER BY a.date)
         FROM absence a
         JOIN evaka_user eu ON a.modified_by = eu.id 
-        WHERE a.child_id = p.id AND between_start_and_end(:dateRange, a.date)
+        WHERE a.child_id = p.id AND between_start_and_end(${bind(dateRange)}, a.date)
     ), '[]'::jsonb) AS absences
 FROM person p
-WHERE p.id = ANY(:childIds)
+WHERE p.id = ANY(${bind(childIds)})
 """
-        )
-        .bind("unitId", unitId)
-        .bind("dateRange", dateRange)
-        .bind("childIds", childIds)
+            )
+        }
         .toList<ChildDataQueryResult>()
         .map { row ->
             ChildData(

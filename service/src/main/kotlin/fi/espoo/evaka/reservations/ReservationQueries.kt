@@ -33,12 +33,11 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
     questionnaireId: HolidayQuestionnaireId,
     childIds: Set<ChildId>
 ) {
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
-        )
-        .bind("childIds", childIds)
-        .bind("questionnaireId", questionnaireId)
+    createUpdate {
+            sql(
+                "DELETE FROM absence WHERE child_id = ANY(${bind(childIds)}) AND questionnaire_id = ${bind(questionnaireId)}"
+            )
+        }
         .execute()
 }
 
@@ -61,26 +60,25 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
     childId: ChildId,
     range: DateRange
 ): Int {
-    @Suppress("DEPRECATION")
-    return this.createUpdate(
-            """
-            DELETE FROM attendance_reservation
-            WHERE child_id = :childId
-            AND between_start_and_end(:range, date)
-            AND NOT EXISTS (SELECT 1 FROM holiday_period hp WHERE period @> date)
-            """
-        )
-        .bind("childId", childId)
-        .bind("range", range)
+    return createUpdate {
+            sql(
+                """
+                DELETE FROM attendance_reservation
+                WHERE child_id = ${bind(childId)}
+                AND between_start_and_end(${bind(range)}, date)
+                AND NOT EXISTS (SELECT 1 FROM holiday_period hp WHERE period @> date)
+                """
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(:range, date)"
-        )
-        .bind("range", range)
+    createUpdate {
+            sql(
+                "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(${bind(range)}, date)"
+            )
+        }
         .execute()
 }
 
@@ -108,34 +106,25 @@ fun Database.Transaction.insertValidReservations(
     reservations: List<ReservationInsert>
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
-        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-        SELECT :childId, :date, :start, :end, :userId
-        FROM realized_placement_all(:date) rp
-        JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-        LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
-        WHERE 
-            rp.child_id = :childId AND
-            (sn.shift_care = 'INTERMITTENT' OR (
-                extract(isodow FROM :date) = ANY(d.operation_days) AND
-                (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = :date))
-            )) AND
-            NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date)
-        ON CONFLICT DO NOTHING
-        RETURNING id
-        """
-            )
-            .bind("userId", userId)
-            .bind("childId", it.childId)
-            .bind("date", it.date)
-            .run {
-                if (it.range == null) {
-                    bind<LocalTime?>("start", null).bind<LocalTime?>("end", null)
-                } else {
-                    bind("start", it.range.start).bind("end", it.range.end)
-                }
+        createQuery {
+                sql(
+                    """
+INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(userId)}
+FROM realized_placement_all(${bind(it.date)}) rp
+JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(it.date)}
+WHERE 
+    rp.child_id = ${bind(it.childId)} AND
+    (sn.shift_care = 'INTERMITTENT' OR (
+        extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND
+        (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
+    )) AND
+    NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = ${bind(it.childId)} AND ab.date = ${bind(it.date)})
+ON CONFLICT DO NOTHING
+RETURNING id
+"""
+                )
             }
             .exactlyOneOrNull<AttendanceReservationId>()
     }
@@ -191,18 +180,17 @@ fun Database.Read.getChildAttendanceReservationStartDatesByRange(
     childId: ChildId,
     range: DateRange
 ): List<LocalDate> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-        SELECT date
-        FROM attendance_reservation
-        WHERE between_start_and_end(:range, date)
-        AND child_id = :childId
-        AND (start_time IS NULL OR start_time != '00:00'::time)  -- filter out overnight reservations
-        """
-        )
-        .bind("range", range)
-        .bind("childId", childId)
+    return createQuery {
+            sql(
+                """
+                SELECT date
+                FROM attendance_reservation
+                WHERE between_start_and_end(${bind(range)}, date)
+                AND child_id = ${bind(childId)}
+                AND (start_time IS NULL OR start_time != '00:00'::time)  -- filter out overnight reservations
+                """
+            )
+        }
         .toList<LocalDate>()
 }
 
@@ -212,17 +200,16 @@ fun Database.Read.getReservationDatesForChildrenInRange(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, Set<LocalDate>> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-        SELECT child_id, date
-        FROM attendance_reservation
-        WHERE between_start_and_end(:range, date)
-        AND child_id = ANY (:childIds)
-        """
-        )
-        .bind("range", range)
-        .bind("childIds", childIds)
+    return createQuery {
+            sql(
+                """
+                SELECT child_id, date
+                FROM attendance_reservation
+                WHERE between_start_and_end(${bind(range)}, date)
+                AND child_id = ANY (${bind(childIds)})
+                """
+            )
+        }
         .toList<ChildReservationDateRow>()
         .groupBy({ it.childId }, { it.date })
         .mapValues { (_, value) -> value.toSet() }
@@ -278,13 +265,13 @@ fun Database.Read.getReservationChildren(
     guardianId: PersonId,
     today: LocalDate
 ): List<ReservationChildRow> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :guardianId
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
     UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :guardianId AND valid_during @> :today
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(guardianId)} AND valid_during @> ${bind(today)}
 )
 SELECT
     p.id,
@@ -298,9 +285,8 @@ LEFT JOIN child_images ci ON ci.child_id = p.id
 WHERE p.id = ANY (SELECT child_id FROM children)
 ORDER BY p.date_of_birth, p.duplicate_of
         """
-        )
-        .bind("guardianId", guardianId)
-        .bind("today", today)
+            )
+        }
         .toList<ReservationChildRow>()
 }
 
@@ -400,24 +386,23 @@ fun Database.Read.getReservationBackupPlacements(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, List<ReservationBackupPlacement>> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     bc.child_id,
-    daterange(bc.start_date, bc.end_date, '[]') * :range AS range,
+    daterange(bc.start_date, bc.end_date, '[]') * ${bind(range)} AS range,
     u.operation_times
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 
 WHERE
-    bc.child_id = ANY (:childIds) AND
-    daterange(bc.start_date, bc.end_date, '[]') && :range AND
+    bc.child_id = ANY (${bind(childIds)}) AND
+    daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)} AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-        )
-        .bind("childIds", childIds)
-        .bind("range", range)
+            )
+        }
         .toList<ReservationBackupPlacement>()
         .groupBy { it.childId }
 }
@@ -489,19 +474,19 @@ fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
     unitId: DaycareId
 ): List<DailyChildReservationInfoRow> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT pcd.child_id,
        p.date_of_birth,
        p.first_name,
        p.last_name,
        p.preferred_name,
        CASE -- affected group in the examination unit
-           WHEN (pcd.unit_id <> :unitId) THEN pcd.placement_group_id
+           WHEN (pcd.unit_id <> ${bind(unitId)}) THEN pcd.placement_group_id
            ELSE pcd.group_id END                                       AS group_id,
        CASE
-           WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = :unitId)
+           WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = ${bind(unitId)})
            THEN unit_id END                                            AS backup_unit_id,
         pcd.placement_type,
         -- reservation roll up
@@ -513,7 +498,7 @@ SELECT pcd.child_id,
                 FROM attendance_reservation ar
                 JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id
-                AND ar.date = :examinationDate) s)
+                AND ar.date = ${bind(day)}) s)
            AS reservations,
        -- absence roll up
        (SELECT coalesce(jsonb_agg(json_build_object(
@@ -522,19 +507,17 @@ SELECT pcd.child_id,
               FROM absence ab
               JOIN evaka_user eu ON ab.modified_by = eu.id
               WHERE ab.child_id = pcd.child_id
-                AND ab.date = :examinationDate) s)
+                AND ab.date = ${bind(day)}) s)
            AS absences
-FROM realized_placement_one(:examinationDate) pcd
+FROM realized_placement_one(${bind(day)}) pcd
          JOIN person p ON pcd.child_id = p.id
   -- show placed children and children of both backup directions
-WHERE (pcd.unit_id = :unitId OR pcd.placement_unit_id = :unitId)
+WHERE (pcd.unit_id = ${bind(unitId)} OR pcd.placement_unit_id = ${bind(unitId)})
   -- only show groupless children if they are on back up care in another unit
-  AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> :unitId)
-            """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("examinationDate", day)
+  AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> ${bind(unitId)})
+"""
+            )
+        }
         .toList<DailyChildReservationInfoRow>()
 }
 
@@ -550,9 +533,9 @@ fun Database.Read.getReservationStatisticsForUnit(
     confirmedDays: List<LocalDate>,
     unitId: DaycareId
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 select date,
        count(1) FILTER ( WHERE NOT a.child_in_unit ) AS absent,
        count(1) FILTER ( WHERE a.child_in_unit )     AS present,
@@ -561,12 +544,12 @@ select date,
        affected_group_id                             AS group_id
 from (SELECT d                                     AS date,
              CASE -- affected group in the examination unit
-                 WHEN (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId) THEN rp.placement_group_id
+                 WHEN (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = ${bind(unitId)}) THEN rp.placement_group_id
                  ELSE rp.group_id END              AS affected_group_id,
              CASE -- whether child in examination unit at given date
                  WHEN ( -- absence or backup care
                              absence.categories @> absence_categories(rp.placement_type) OR
-                             (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId)) THEN false
+                             (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = ${bind(unitId)})) THEN false
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false
                  ELSE true
@@ -585,7 +568,7 @@ from (SELECT d                                     AS date,
                      END
                  END                               AS occupancy_coefficient,
              coalesce(af.capacity_factor, 1.00)    AS capacity_factor
-      FROM unnest(:confirmedDays) d
+      FROM unnest(${bind(confirmedDays)}) d
                LEFT JOIN realized_placement_one(d) rp
                          ON TRUE
                JOIN LATERAL ( select coalesce(array_agg(ab.category), '{}'::absence_category[]) as categories
@@ -593,7 +576,7 @@ from (SELECT d                                     AS date,
                               where ab.child_id = rp.child_id
                                 and ab.date = d) absence on true
                JOIN daycare u
-                    ON u.id = :unitId
+                    ON u.id = ${bind(unitId)}
                JOIN person p
                     ON rp.child_id = p.id
                LEFT JOIN service_need sn
@@ -608,14 +591,12 @@ from (SELECT d                                     AS date,
                              AND af.valid_during @> d
                LEFT JOIN club_term ct ON rp.placement_type IN ('CLUB') AND ct.term_breaks @> d
                LEFT JOIN preschool_term pt ON rp.placement_type IN ('PRESCHOOL', 'PREPARATORY') AND pt.term_breaks @> d
-      WHERE (rp.unit_id = :unitId OR rp.placement_unit_id = :unitId)) a
+      WHERE (rp.unit_id = ${bind(unitId)} OR rp.placement_unit_id = ${bind(unitId)})) a
 WHERE a.affected_group_id IS NOT NULL
 GROUP BY a.date, a.affected_group_id
-            """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("confirmedDays", confirmedDays)
+"""
+            )
+        }
         .toList<GroupReservationStatisticsRow>()
         .groupBy { it.date }
 }
