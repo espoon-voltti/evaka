@@ -337,16 +337,15 @@ class PlacementPlanService(
     }
 
     fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
-        @Suppress("DEPRECATION")
-        return tx.createQuery(
-                """
-            SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi
-            FROM daycare d LEFT JOIN care_area ca ON d.care_area_id = ca.id
-            WHERE d.id = :unitId
-            """
-                    .trimIndent()
-            )
-            .bind("unitId", unitId)
+        return tx.createQuery {
+                sql(
+                    """
+                    SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi
+                    FROM daycare d LEFT JOIN care_area ca ON d.care_area_id = ca.id
+                    WHERE d.id = ${bind(unitId)}
+                    """
+                )
+            }
             .exactlyOne<Boolean>()
     }
 }

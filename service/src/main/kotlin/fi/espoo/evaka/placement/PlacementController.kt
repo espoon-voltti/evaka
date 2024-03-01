@@ -499,26 +499,26 @@ class PlacementController(
                         Action.Person.READ_CHILD_PLACEMENT_PERIODS,
                         adultId
                     )
-                    @Suppress("DEPRECATION")
-                    tx.createQuery(
-                            """
+                    tx.createQuery {
+                            sql(
+                                """
 WITH all_fridge_children AS (
     SELECT child_id, start_date, end_date
-    FROM fridge_child WHERE head_of_child = :adultId
+    FROM fridge_child WHERE head_of_child = ${bind(adultId)}
 
     UNION ALL
 
     SELECT fc.child_id, greatest(fc.start_date, fp2.start_date) AS start_date, least(fc.end_date, coalesce(fp2.end_date, fc.end_date)) AS end_date
     FROM fridge_partner fp1
-    JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = :adultId
+    JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = ${bind(adultId)}
     JOIN fridge_child fc ON fc.head_of_child = fp2.person_id AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp2.start_date, fp2.end_date, '[]')
 )
 SELECT greatest(p.start_date, fc.start_date) AS start, least(p.end_date, fc.end_date) AS end
 FROM placement p
 JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
 """
-                        )
-                        .bind("adultId", adultId)
+                            )
+                        }
                         .toList { FiniteDateRange(column("start"), column("end")) }
                 }
             }
