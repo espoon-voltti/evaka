@@ -35,20 +35,21 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
         clock: EvakaClock,
         userId: PersonId
     ): Boolean {
-        // language=sql
-        val sql =
-            """
+        val today = clock.today()
+        return createQuery {
+                sql(
+                    """
 WITH children AS (
-    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
-    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 )
 SELECT EXISTS (
     SELECT 1
     FROM children c
     JOIN placement pl ON c.child_id = pl.child_id
     JOIN daycare u ON pl.unit_id = u.id
-    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :today
+    WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     AND NOT EXISTS (
         SELECT 1
@@ -63,13 +64,11 @@ SELECT EXISTS (
     JOIN message_recipients mr ON ma.id = mr.recipient_id
     JOIN message m ON mr.message_id = m.id
     JOIN application app ON p.id = app.guardian_id
-    WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
+    WHERE app.status = 'SENT' AND p.id = ${bind(userId)} AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
 )
 """
-        @Suppress("DEPRECATION")
-        return createQuery(sql)
-            .bind("today", clock.today())
-            .bind("userId", userId)
+                )
+            }
             .exactlyOne<Boolean>()
     }
 
@@ -77,25 +76,24 @@ SELECT EXISTS (
         clock: EvakaClock,
         userId: PersonId
     ): Boolean {
-        // language=sql
-        val sql =
-            """
+        val today = clock.today()
+        return createQuery {
+                sql(
+                    """
 WITH children AS (
-    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
-    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 )
 SELECT EXISTS (
     SELECT 1
     FROM children c
     JOIN placement pl ON c.child_id = pl.child_id
-    WHERE daterange(pl.start_date, pl.end_date, '[]') @> :today
+    WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
 )
 """
-        @Suppress("DEPRECATION")
-        return createQuery(sql)
-            .bind("today", clock.today())
-            .bind("userId", userId)
+                )
+            }
             .exactlyOne<Boolean>()
     }
 
@@ -104,27 +102,25 @@ SELECT EXISTS (
         userId: PersonId,
         calendarOpenBeforePlacementDays: Int = 0
     ): Boolean {
-        // language=sql
-        val sql =
-            """
+        val today = clock.today()
+        return createQuery {
+                sql(
+                    """
 WITH children AS (
-    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
-    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 )
 SELECT EXISTS (
     SELECT 1
     FROM children c
-    JOIN placement pl ON c.child_id = pl.child_id AND daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> :today
+    JOIN placement pl ON c.child_id = pl.child_id AND daterange((pl.start_date - ${bind(calendarOpenBeforePlacementDays)}), pl.end_date, '[]') @> ${bind(today)}
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
 """
-        @Suppress("DEPRECATION")
-        return createQuery(sql)
-            .bind("today", clock.today())
-            .bind("userId", userId)
-            .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
+                )
+            }
             .exactlyOne<Boolean>()
     }
 
@@ -132,26 +128,25 @@ SELECT EXISTS (
         clock: EvakaClock,
         userId: PersonId
     ): Boolean {
-        // language=sql
-        val sql =
-            """
+        val today = clock.today()
+        return createQuery {
+                sql(
+                    """
 WITH children AS (
-    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
-    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 )
 SELECT EXISTS (
     SELECT 1
     FROM children c
-    JOIN placement pl ON c.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
+    JOIN placement pl ON c.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
 """
-        @Suppress("DEPRECATION")
-        return createQuery(sql)
-            .bind("today", clock.today())
-            .bind("userId", userId)
+                )
+            }
             .exactlyOne<Boolean>()
     }
 }
