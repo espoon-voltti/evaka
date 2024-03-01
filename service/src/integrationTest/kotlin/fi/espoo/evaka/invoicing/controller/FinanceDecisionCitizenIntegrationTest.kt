@@ -97,8 +97,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 )
 
             tx.insertServiceNeedOptions()
-            tx.insert(area = testArea)
-            tx.insert(daycare = testDaycare)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
 
             tx.insert(headOfFamily, DevPersonType.ADULT)
             tx.insert(partner, DevPersonType.ADULT)
