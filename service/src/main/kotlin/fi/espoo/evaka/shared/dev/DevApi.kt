@@ -298,9 +298,9 @@ class DevApi(
     fun deleteDaycareCostCenter(db: Database, @PathVariable daycareId: DaycareId) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                @Suppress("DEPRECATION")
-                tx.createUpdate("UPDATE daycare SET cost_center = NULL WHERE id = :daycareId")
-                    .bind("daycareId", daycareId)
+                tx.createUpdate {
+                        sql("UPDATE daycare SET cost_center = NULL WHERE id = ${bind(daycareId)}")
+                    }
                     .execute()
             }
         }
@@ -396,18 +396,17 @@ class DevApi(
     )
 
     @PostMapping("/placement/terminate")
-    fun terminatePlacement(
-        db: Database,
-        @RequestBody terminationRequest: DevTerminatePlacementRequest
-    ) {
+    fun terminatePlacement(db: Database, @RequestBody req: DevTerminatePlacementRequest) {
         db.connect { dbc ->
             dbc.transaction {
-                    @Suppress("DEPRECATION")
-                    it.createUpdate(
-                        "UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId "
-                    )
+                    it.createUpdate {
+                        sql(
+                            """
+UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date = ${bind(req.terminationRequestedDate)}, terminated_by = ${bind(req.terminatedBy)} WHERE id = ${bind(req.placementId)}
+"""
+                        )
+                    }
                 }
-                .bindKotlin(terminationRequest)
                 .execute()
         }
     }
@@ -573,10 +572,11 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction {
                 val id = it.createIncomeNotification(body.receiverId, body.notificationType)
-                @Suppress("DEPRECATION")
-                it.createUpdate("UPDATE income_notification SET created = :created WHERE id = :id")
-                    .bind("id", id)
-                    .bind("created", body.created)
+                it.createUpdate {
+                        sql(
+                            "UPDATE income_notification SET created = ${bind(body.created)} WHERE id = ${bind(id)}"
+                        )
+                    }
                     .execute()
             }
         }
@@ -756,9 +756,11 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val uuid =
-                    @Suppress("DEPRECATION")
-                    tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
-                        .bind("ssn", person.socialSecurityNumber)
+                    tx.createQuery {
+                            sql(
+                                "SELECT id FROM person WHERE social_security_number = ${bind(person.socialSecurityNumber)}"
+                            )
+                        }
                         .exactlyOneOrNull<PersonId>()
 
                 uuid?.let {
@@ -937,10 +939,11 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
-                    @Suppress("DEPRECATION")
-                    tx.createUpdate("UPDATE holiday_period SET id = :id WHERE id = :prevId")
-                        .bind("id", id)
-                        .bind("prevId", it.id)
+                    tx.createUpdate {
+                            sql(
+                                "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
+                            )
+                        }
                         .execute()
                 }
             }
@@ -961,12 +964,11 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createFixedPeriodQuestionnaire(body).let {
-                    @Suppress("DEPRECATION")
-                    tx.createUpdate(
-                            "UPDATE holiday_period_questionnaire SET id = :id WHERE id = :prevId"
-                        )
-                        .bind("id", id)
-                        .bind("prevId", it)
+                    tx.createUpdate {
+                            sql(
+                                "UPDATE holiday_period_questionnaire SET id = ${bind(id)} WHERE id = ${bind(it)}"
+                            )
+                        }
                         .execute()
                 }
             }
@@ -1191,10 +1193,7 @@ class DevApi(
     @DeleteMapping("/vasu/templates")
     fun deleteVasuTemplates(db: Database) {
         db.connect { dbc ->
-            dbc.transaction {
-                @Suppress("DEPRECATION")
-                it.createUpdate("DELETE FROM curriculum_template").execute()
-            }
+            dbc.transaction { it.createUpdate { sql("DELETE FROM curriculum_template") }.execute() }
         }
     }
 
@@ -1342,11 +1341,11 @@ class DevApi(
     fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
         db.connect { dbc ->
             dbc.transaction {
-                @Suppress("DEPRECATION")
-                it.createUpdate(
-                        "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, :resetTimestamp)"
-                    )
-                    .bindKotlin(body)
+                it.createUpdate {
+                        sql(
+                            "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (${bind(body.evakaChildId)}, ${bind(body.resetTimestamp)})"
+                        )
+                    }
                     .execute()
             }
         }
@@ -1364,12 +1363,14 @@ class DevApi(
     fun createVardaServiceNeed(db: Database, @RequestBody body: DevVardaServiceNeed) {
         db.connect { dbc ->
             dbc.transaction {
-                @Suppress("DEPRECATION")
-                it.createUpdate(
-                        "INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors) " +
-                            "VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :updateFailed, :errors)"
-                    )
-                    .bindKotlin(body)
+                it.createUpdate {
+                        sql(
+                            """
+INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors)
+VALUES (${bind(body.evakaServiceNeedId)}, ${bind(body.evakaServiceNeedUpdated)}, ${bind(body.evakaChildId)}, ${bind(body.updateFailed)}, ${bind(body.errors)})
+"""
+                        )
+                    }
                     .execute()
             }
         }
@@ -1382,16 +1383,15 @@ class DevApi(
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                @Suppress("DEPRECATION")
-                it.createUpdate(
-                        """
-                    INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
-                    VALUES (:unitId, :employeeId, :coefficient)
-                    ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
-                    """
-                            .trimIndent()
-                    )
-                    .bindKotlin(body)
+                it.createUpdate {
+                        sql(
+                            """
+INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
+VALUES (${bind(body.unitId)}, ${bind(body.employeeId)}, ${bind(body.coefficient)})
+ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
+"""
+                        )
+                    }
                     .execute()
             }
         }
@@ -1420,15 +1420,14 @@ class DevApi(
     ) =
         db.connect { dbc ->
             dbc.transaction {
-                @Suppress("DEPRECATION")
-                it.createUpdate(
-                        """
-                    INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-                    VALUES (:id, :guardianId, :dailyServiceTimeId, :dateFrom, :hasDeletedReservations)
-                    """
-                            .trimIndent()
-                    )
-                    .bindKotlin(body)
+                it.createUpdate {
+                        sql(
+                            """
+INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
+VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTimeId)}, ${bind(body.dateFrom)}, ${bind(body.hasDeletedReservations)})
+"""
+                        )
+                    }
                     .execute()
             }
         }
@@ -1625,28 +1624,28 @@ private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
 }
 
 private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
 WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
 AND state != 'idle'
     """
-                .trimIndent()
-        )
+            )
+        }
         .toList<ActiveConnection>()
 
 fun Database.Transaction.ensureFakeAdminExists() {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
-        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
-        ON CONFLICT DO NOTHING
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") createUpdate(sql).bind("id", fakeAdmin.id).execute()
+    createUpdate {
+            sql(
+                """
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
+VALUES (${bind(fakeAdmin.id)}, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || ${bind(fakeAdmin.id)}, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
+ON CONFLICT DO NOTHING
+"""
+            )
+        }
+        .execute()
     upsertEmployeeUser(fakeAdmin.id)
 }
 
@@ -1695,15 +1694,13 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
 }
 
 fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE fee_decision SET sent_at = :sentAt WHERE id = :id    
-    """
-                .trimIndent()
-        )
-        .bind("id", feeDecision.id)
-        .bind("sentAt", feeDecision.sentAt)
+    createUpdate {
+            sql(
+                """
+UPDATE fee_decision SET sent_at = ${bind(feeDecision.sentAt)} WHERE id = ${bind(feeDecision.id)}    
+"""
+            )
+        }
         .execute()
 
 data class DevCareArea(
