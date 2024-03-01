@@ -30,10 +30,9 @@ fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
     includeStaffOccupancy: Boolean
 ): List<DaycareAclRow> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+    createQuery {
+            sql(
+                """
 SELECT e.id,
        e.first_name,
        e.last_name,
@@ -43,7 +42,7 @@ SELECT e.id,
        coalesce(group_ids, array []::uuid[]) AS group_ids,
        temporary_in_unit_id IS NOT NULL      AS temporary,
        CASE
-            WHEN (:includeStaffOccupancy IS TRUE) THEN
+            WHEN (${bind(includeStaffOccupancy)} IS TRUE) THEN
                 (soc.coefficient IS NOT NULL and soc.coefficient > 0)
             ELSE NULL END                   as hasStaffOccupancyEffect
 FROM daycare_acl
@@ -53,26 +52,23 @@ FROM daycare_acl
                              JOIN daycare_group dg ON acl.daycare_group_id = dg.id
                     GROUP BY daycare_id, employee_id) groups USING (daycare_id, employee_id)
          LEFT JOIN staff_occupancy_coefficient soc USING (daycare_id, employee_id)
-WHERE daycare_id = :daycareId
+WHERE daycare_id = ${bind(daycareId)}
     """
-                .trimIndent()
-        )
-        .bind("daycareId", daycareId)
-        .bind("includeStaffOccupancy", includeStaffOccupancy)
+            )
+        }
         .toList<DaycareAclRow>()
 
 fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
         SELECT EXISTS(
             SELECT 1 FROM daycare_acl
-            WHERE employee_id = :employeeId
+            WHERE employee_id = ${bind(employeeId)}
         )
     """
-                .trimIndent()
-        )
-        .bind("employeeId", employeeId)
+            )
+        }
         .exactlyOne<Boolean>()
 
 fun Database.Transaction.insertDaycareAclRow(
@@ -80,19 +76,15 @@ fun Database.Transaction.insertDaycareAclRow(
     employeeId: EmployeeId,
     role: UserRole
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_acl (daycare_id, employee_id, role)
-VALUES (:daycareId, :employeeId, :role)
+VALUES (${bind(daycareId)}, ${bind(employeeId)}, ${bind(role)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role
     """
-                .trimIndent()
-        )
-        .bind("daycareId", daycareId)
-        .bind("employeeId", employeeId)
-        .bind("role", role)
+            )
+        }
         .execute()
 
 fun Database.Transaction.deleteDaycareAclRow(
@@ -100,33 +92,28 @@ fun Database.Transaction.deleteDaycareAclRow(
     employeeId: EmployeeId,
     role: UserRole
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 DELETE FROM daycare_acl
-WHERE daycare_id = :daycareId
-AND employee_id = :employeeId
-AND role = :role
+WHERE daycare_id = ${bind(daycareId)}
+AND employee_id = ${bind(employeeId)}
+AND role = ${bind(role)}
     """
-                .trimIndent()
-        )
-        .bind("daycareId", daycareId)
-        .bind("employeeId", employeeId)
-        .bind("role", role)
+            )
+        }
         .execute()
 
 fun Database.Transaction.clearDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 DELETE FROM daycare_group_acl
-WHERE employee_id = :employeeId
-AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = :daycareId)
+WHERE employee_id = ${bind(employeeId)}
+AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)})
 """
-        )
-        .bind("daycareId", daycareId)
-        .bind("employeeId", employeeId)
+            )
+        }
         .execute()
 
 fun Database.Transaction.insertDaycareGroupAcl(
