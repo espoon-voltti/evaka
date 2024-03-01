@@ -30,9 +30,7 @@ class DatabaseHealthIndicator(private val jdbi: Jdbi, private val tracer: Tracer
     override fun doHealthCheck(builder: Health.Builder) {
         try {
             Database(jdbi, tracer).connect { db ->
-                db.read { tx ->
-                    @Suppress("DEPRECATION") tx.createQuery("SELECT 1").exactlyOne<Int>()
-                }
+                db.read { tx -> tx.createQuery { sql("SELECT 1") }.exactlyOne<Int>() }
             }
             builder.up()
         } catch (e: JdbiException) {
