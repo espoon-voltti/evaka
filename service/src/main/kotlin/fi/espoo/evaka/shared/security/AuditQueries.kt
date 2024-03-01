@@ -10,43 +10,43 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Transaction.upsertCitizenUser(id: PersonId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO evaka_user (id, type, citizen_id, name)
 SELECT id, 'CITIZEN', id, last_name || ' ' || first_name
 FROM person
-WHERE id = :id
+WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-        )
-        .bind("id", id)
+            )
+        }
         .execute()
 
 fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO evaka_user (id, type, employee_id, name)
 SELECT id, 'EMPLOYEE', id, last_name || ' ' || coalesce(preferred_first_name, first_name)
 FROM employee
-WHERE id = :id
+WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-        )
-        .bind("id", id)
+            )
+        }
         .execute()
 
 fun Database.Transaction.upsertMobileDeviceUser(id: MobileDeviceId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO evaka_user (id, type, mobile_device_id, name)
 SELECT id, 'MOBILE_DEVICE', id, name
 FROM mobile_device
-WHERE id = :id
+WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-        )
-        .bind("id", id)
+            )
+        }
         .execute()
