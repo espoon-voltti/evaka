@@ -41,9 +41,9 @@ class VardaErrorReport(private val accessControl: AccessControl) {
 }
 
 private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     vsn.evaka_service_need_id AS service_need_id,
     sn.start_date as service_need_start_date,
@@ -61,8 +61,8 @@ LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
 WHERE vsn.update_failed = true AND vrc.reset_timestamp IS NOT NULL
 ORDER BY vsn.updated DESC
     """
-                .trimIndent()
-        )
+            )
+        }
         .toList<VardaErrorReportRow>()
 
 data class VardaErrorReportRow(

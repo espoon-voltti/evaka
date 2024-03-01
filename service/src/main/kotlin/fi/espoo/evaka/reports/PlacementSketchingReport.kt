@@ -94,9 +94,9 @@ private fun Database.Read.getPlacementSketchingReportRows(
     earliestApplicationSentDate: LocalDate?,
     latestApplicationSentDate: LocalDate?
 ): List<PlacementSketchingReportRow> {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 WITH active_placements AS (
 SELECT
     placement.child_id AS child_id,
@@ -106,8 +106,8 @@ FROM
     placement,
     daycare
 WHERE
-    start_date <= :placementStartDate
-    AND end_date >= :placementStartDate
+    start_date <= ${bind(placementStartDate)}
+    AND end_date >= ${bind(placementStartDate)}
     AND placement.unit_id = daycare.id
 )
 SELECT
@@ -159,21 +159,15 @@ LEFT JOIN LATERAL (select (application.document -> 'child' ->> 'childMovingDate'
                            application.document -> 'child' -> 'correctingAddress' ->> 'city'       as childCorrectedCity
 ) as unrestricted_corrected_child_address_details on child.restricted_details_enabled IS FALSE
 WHERE
-    (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
-    AND application.status = ANY(:applicationStatuses::application_status_type[])
+    (application.startDate >= ${bind(earliestPreferredStartDate)} OR application.startDate IS NULL)
+    AND application.status = ANY(${bind(applicationStatuses.ifEmpty { defaultApplicationStatuses })}::application_status_type[])
     AND application.type = 'PRESCHOOL'
-    AND daterange(:earliestApplicationSentDate, :latestApplicationSentDate, '[]') @> application.sentdate
+    AND daterange(${bind(earliestApplicationSentDate)}, ${bind(latestApplicationSentDate)}, '[]') @> application.sentdate
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
         """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("placementStartDate", placementStartDate)
-        .bind("earliestPreferredStartDate", earliestPreferredStartDate)
-        .bind("applicationStatuses", applicationStatuses.ifEmpty { defaultApplicationStatuses })
-        .bind("earliestApplicationSentDate", earliestApplicationSentDate)
-        .bind("latestApplicationSentDate", latestApplicationSentDate)
+            )
+        }
         .toList<PlacementSketchingReportRow>()
 }
 

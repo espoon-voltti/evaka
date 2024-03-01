@@ -58,12 +58,12 @@ fun Database.Read.sextetReport(
     to: LocalDate,
     placementType: PlacementType
 ): List<SextetReportRow> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
-    FROM generate_series(:from, :to, '1 day'::interval) date
+    FROM generate_series(${bind(from)}, ${bind(to)}, '1 day'::interval) date
     JOIN daycare ON extract(isodow from date) = ANY(daycare.operation_days)
     WHERE
        date <> ALL (SELECT date FROM holiday)
@@ -106,14 +106,12 @@ WHERE NOT EXISTS (
     WHERE child_id = ep.child_id AND date = ep.date
     HAVING count(category) >= cardinality(absence_categories(ep.placement_type))
 )
-AND ep.placement_type = :placementType
+AND ep.placement_type = ${bind(placementType)}
 GROUP BY ep.unit_id, d.name, ep.placement_type
 ORDER BY d.name
     """
-        )
-        .bind("from", from)
-        .bind("to", to)
-        .bind("placementType", placementType)
+            )
+        }
         .toList<SextetReportRow>()
 }
 

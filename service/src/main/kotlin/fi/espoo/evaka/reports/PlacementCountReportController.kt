@@ -69,9 +69,10 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         providerTypes: List<ProviderType>,
         placementTypes: List<PlacementType>
     ): PlacementCountReportResult {
-        // language=sql
-        val sql =
-            """
+        val resultRows =
+            createQuery {
+                    sql(
+                        """
 SELECT ca.id                                                             AS area_id,
        ca.name                                                           AS area_name,
        d.id                                                              AS daycare_id,
@@ -90,33 +91,28 @@ FROM daycare d
          JOIN care_area ca
               ON d.care_area_id = ca.id
          JOIN placement pl
-              ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date, '[]') @> :examinationDate::date
+              ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(examinationDate)}::date
          LEFT JOIN service_need sn
-              ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :examinationDate::date
+              ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(examinationDate)}::date
          LEFT JOIN service_need_option sno
               ON sn.option_id = sno.id
          LEFT JOIN service_need_option default_sno
               ON pl.type = default_sno.valid_placement_type AND default_sno.default_option
-         LEFT JOIN assistance_factor an ON an.child_id = pl.child_id AND an.valid_during @> :examinationDate
-         JOIN LATERAL (SELECT date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
+         LEFT JOIN assistance_factor an ON an.child_id = pl.child_id AND an.valid_during @> ${bind(examinationDate)}
+         JOIN LATERAL (SELECT date_part('year', age(${bind(examinationDate)}, p.date_of_birth)) AS age_in_years
                        FROM person p
                        WHERE p.id = pl.child_id) cwa
               ON TRUE
-WHERE d.opening_date <= :examinationDate
-  AND (d.closing_date IS NULL OR d.closing_date >= :examinationDate)
+WHERE d.opening_date <= ${bind(examinationDate)}
+  AND (d.closing_date IS NULL OR d.closing_date >= ${bind(examinationDate)})
   AND d.provider_type = ANY
-      (:providerTypes::unit_provider_type[])
-  AND pl.type = ANY(:placementTypes::placement_type[])
+      (${bind(providerTypes)}::unit_provider_type[])
+  AND pl.type = ANY(${bind(placementTypes)}::placement_type[])
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
-ORDER BY ca.name, d.name ASC;
+ORDER BY ca.name, d.name ASC
             """
-                .trimIndent()
-        val resultRows =
-            @Suppress("DEPRECATION")
-            createQuery(sql)
-                .bind("examinationDate", examinationDate)
-                .bind("providerTypes", providerTypes)
-                .bind("placementTypes", placementTypes)
+                    )
+                }
                 .toList<PlacementCountReportRow>()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()

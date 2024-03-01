@@ -65,11 +65,11 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                                and transfer_decision.sent_date > connected_decision.sent_date)
                         AND NOT EXISTS(select from person per where per.duplicate_of = p.id)
                     """
-                        .trimIndent()
             }
 
-        val sql =
-            """
+        return createQuery {
+                sql(
+                    """
 select conn_app.id                                           as application_id,
        p.id                                                  as child_id,
        p.first_name                                          as child_first_name,
@@ -106,11 +106,11 @@ from decision connected_decision
       and connected_decision.unit_id <> pre_d.unit_id ) preschool_decision on true
 where connected_decision.type = 'PRESCHOOL_DAYCARE'
   and connected_decision.status = 'ACCEPTED'
-  $showDuplicatedWhereClause;
+  $showDuplicatedWhereClause
             """
-                .trimIndent()
-
-        @Suppress("DEPRECATION") return createQuery(sql).toList<ManualDuplicationReportRow>()
+                )
+            }
+            .toList<ManualDuplicationReportRow>()
     }
 
     data class ManualDuplicationReportRow(
