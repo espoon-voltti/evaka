@@ -73,6 +73,7 @@ import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDif
 import ReportDecisions from './components/reports/Decisions'
 import ReportDuplicatePeople from './components/reports/DuplicatePeople'
 import ReportEndedPlacements from './components/reports/EndedPlacements'
+import ReportExceededServiceNeeds from './components/reports/ExceededServiceNeeds'
 import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
 import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
@@ -573,6 +574,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <ReportEndedPlacements />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/exceeded-service-needs',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportExceededServiceNeeds />
             </EmployeeRoute>
           )
         },

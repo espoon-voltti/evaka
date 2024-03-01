@@ -52,6 +52,7 @@ const TitleRow = styled.div`
   display: flex;
   justify-content: flex-start;
   align-items: center;
+
   > * {
     margin-right: ${defaultMargins.s};
   }
@@ -220,6 +221,14 @@ export default React.memo(function Reports() {
                 color={colors.main.m2}
                 icon={faChild}
                 i18n={i18n.reports.serviceNeeds}
+              />
+            )}
+            {reports.has('EXCEEDED_SERVICE_NEEDS') && (
+              <Report
+                path="/reports/exceeded-service-needs"
+                color={colors.main.m2}
+                icon={faChild}
+                i18n={i18n.reports.exceededServiceNeed}
               />
             )}
             {reports.has('ASSISTANCE_NEEDS_AND_ACTIONS') && (

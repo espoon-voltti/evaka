@@ -150,6 +150,18 @@ RETURNING id
         )
         .let(::AreaId)
 
+fun Database.Transaction.insert(holiday: DevHoliday) {
+    createUpdate<Any> {
+            sql(
+                """
+INSERT INTO holiday (date, description)
+VALUES (${bind(holiday.date)}, ${bind(holiday.description)})
+"""
+            )
+        }
+        .execute()
+}
+
 fun Database.Transaction.insert(daycare: DevDaycare): DaycareId =
     insertTestDataRow(
             daycare,
