@@ -167,35 +167,30 @@ fun validateServiceNeed(
         throw BadRequest("Start date cannot be before end date.")
     }
 
-    // language=sql
-    val sql =
-        """
-        SELECT 1
-        FROM placement pl
-        JOIN service_need_option sno ON sno.valid_placement_type = pl.type
-        WHERE pl.id = :placementId AND sno.id = :optionId
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    db.createQuery(sql)
-        .bind("placementId", placementId)
-        .bind("optionId", optionId)
+    db.createQuery {
+            sql(
+                """
+                SELECT 1
+                FROM placement pl
+                JOIN service_need_option sno ON sno.valid_placement_type = pl.type
+                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)}
+                """
+            )
+        }
         .toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
 
-    // language=sql
-    val sql2 =
-        """
-        SELECT 1
-        FROM placement pl
-        WHERE pl.id = :placementId AND daterange(pl.start_date, pl.end_date, '[]') @> daterange(:startDate, :endDate, '[]')
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    db.createQuery(sql2)
-        .bind("placementId", placementId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    db.createQuery {
+            sql(
+                """
+                SELECT 1
+                FROM placement pl
+                WHERE
+                    pl.id = ${bind(placementId)} AND
+                    daterange(pl.start_date, pl.end_date, '[]') @> daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
+                """
+            )
+        }
         .toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }

@@ -20,22 +20,22 @@ import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
 fun Database.Read.getServiceNeedsByChild(childId: ChildId): List<ServiceNeed> {
-    // language=SQL
-    val sql =
-        """
-        SELECT 
-            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
-            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
-        FROM service_need sn
-        JOIN service_need_option sno on sno.id = sn.option_id
-        JOIN placement pl ON pl.id = sn.placement_id
-        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
-        WHERE pl.child_id = :childId
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") return createQuery(sql).bind("childId", childId).toList<ServiceNeed>()
+    return createQuery {
+            sql(
+                """
+SELECT 
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
+    sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
+FROM service_need sn
+JOIN service_need_option sno on sno.id = sn.option_id
+JOIN placement pl ON pl.id = sn.placement_id
+LEFT JOIN evaka_user u on u.id = sn.confirmed_by
+WHERE pl.child_id = ${bind(childId)}
+"""
+            )
+        }
+        .toList<ServiceNeed>()
 }
 
 fun Database.Read.getServiceNeedsByUnit(
@@ -43,32 +43,28 @@ fun Database.Read.getServiceNeedsByUnit(
     startDate: LocalDate?,
     endDate: LocalDate?
 ): List<ServiceNeed> {
-    // language=SQL
-    val sql =
-        """
-        SELECT 
-            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
-            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
-        FROM service_need sn
-        JOIN service_need_option sno on sno.id = sn.option_id
-        JOIN placement pl ON pl.id = sn.placement_id
-        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
-        WHERE pl.unit_id = :unitId AND daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("start", startDate)
-        .bind("end", endDate)
+    return createQuery {
+            sql(
+                """
+SELECT 
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
+    sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
+FROM service_need sn
+JOIN service_need_option sno on sno.id = sn.option_id
+JOIN placement pl ON pl.id = sn.placement_id
+LEFT JOIN evaka_user u on u.id = sn.confirmed_by
+WHERE pl.unit_id = ${bind(unitId)} AND daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+"""
+            )
+        }
         .toList<ServiceNeed>()
 }
 
 fun Database.Read.getServiceNeedSummary(childId: ChildId): List<ServiceNeedSummary> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     sn.start_date,
     sn.end_date,
@@ -83,48 +79,43 @@ FROM service_need sn
 JOIN service_need_option sno ON sno.id = sn.option_id
 JOIN placement p ON p.id = sn.placement_id
 JOIN daycare u ON u.id = p.unit_id
-WHERE p.child_id = :childId
+WHERE p.child_id = ${bind(childId)}
 """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("childId", childId).toList<ServiceNeedSummary>()
+            )
+        }
+        .toList<ServiceNeedSummary>()
 }
 
 fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
-    // language=sql
-    val sql =
-        """
-        SELECT 
-            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
-            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
-        FROM service_need sn
-        JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
-        WHERE sn.id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeed>()
-        ?: throw NotFound("Service need $id not found")
+    return createQuery {
+            sql(
+                """
+SELECT 
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
+    sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
+FROM service_need sn
+JOIN service_need_option sno on sn.option_id = sno.id
+LEFT JOIN evaka_user u on u.id = sn.confirmed_by
+WHERE sn.id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull<ServiceNeed>() ?: throw NotFound("Service need $id not found")
 }
 
 fun Database.Read.getServiceNeedChildRange(id: ServiceNeedId): ServiceNeedChildRange {
-    // language=sql
-    val sql =
-        """
-        SELECT p.child_id, daterange(sn.start_date, sn.end_date, '[]')
-        FROM service_need sn
-        JOIN placement p on sn.placement_id = p.id
-        WHERE sn.id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<ServiceNeedChildRange>()
-        ?: throw NotFound("Service need $id not found")
+    return createQuery {
+            sql(
+                """
+SELECT p.child_id, daterange(sn.start_date, sn.end_date, '[]')
+FROM service_need sn
+JOIN placement p on sn.placement_id = p.id
+WHERE sn.id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull<ServiceNeedChildRange>() ?: throw NotFound("Service need $id not found")
 }
 
 fun Database.Transaction.insertServiceNeed(
@@ -136,23 +127,15 @@ fun Database.Transaction.insertServiceNeed(
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ): ServiceNeedId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
-        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt)
-        RETURNING id;
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("placementId", placementId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("optionId", optionId)
-        .bind("shiftCare", shiftCare)
-        .bind("confirmedBy", confirmedBy)
-        .bind("confirmedAt", confirmedAt)
+    return createQuery {
+            sql(
+                """
+INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
+VALUES (${bind(placementId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
+RETURNING id;
+"""
+            )
+        }
         .exactlyOne<ServiceNeedId>()
 }
 
@@ -165,30 +148,20 @@ fun Database.Transaction.updateServiceNeed(
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ) {
-    // language=sql
-    val sql =
-        """
-        UPDATE service_need
-        SET start_date = :startDate, end_date = :endDate, option_id = :optionId, shift_care = :shiftCare, confirmed_by = :confirmedBy, confirmed_at = :confirmedAt
-        WHERE id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("optionId", optionId)
-        .bind("shiftCare", shiftCare)
-        .bind("confirmedBy", confirmedBy)
-        .bind("confirmedAt", confirmedAt)
+    createUpdate {
+            sql(
+                """
+UPDATE service_need
+SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, option_id = ${bind(optionId)}, shift_care = ${bind(shiftCare)}, confirmed_by = ${bind(confirmedBy)}, confirmed_at = ${bind(confirmedAt)}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.deleteServiceNeed(id: ServiceNeedId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM service_need WHERE id = :id").bind("id", id).execute()
+    createUpdate { sql("DELETE FROM service_need WHERE id = ${bind(id)}") }.execute()
 }
 
 fun Database.Read.getOverlappingServiceNeeds(
@@ -197,33 +170,28 @@ fun Database.Read.getOverlappingServiceNeeds(
     endDate: LocalDate,
     excluding: ServiceNeedId?
 ): List<ServiceNeed> {
-    // language=sql
-    val sql =
-        """
-        SELECT 
-            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
-            sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
-            sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
-        FROM service_need sn
-        JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN evaka_user u on u.id = sn.confirmed_by
-        WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("placementId", placementId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    return createQuery {
+            sql(
+                """
+SELECT 
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
+    sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
+FROM service_need sn
+JOIN service_need_option sno on sn.option_id = sno.id
+LEFT JOIN evaka_user u on u.id = sn.confirmed_by
+WHERE placement_id = ${bind(placementId)} AND daterange(sn.start_date, sn.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
+"""
+            )
+        }
         .toList<ServiceNeed>()
         .filter { it.id != excluding }
 }
 
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     name_fi,
@@ -250,15 +218,15 @@ SELECT
 FROM service_need_option
 ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_fi
         """
-                .trimIndent()
-        )
+            )
+        }
         .toList<ServiceNeedOption>()
 }
 
 fun Database.Read.findServiceNeedOptionById(id: ServiceNeedOptionId): ServiceNeedOption? {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     name_fi,
@@ -283,31 +251,29 @@ SELECT
     active,
     updated
 FROM service_need_option
-WHERE id = :id
+WHERE id = ${bind(id)}
         """
-                .trimIndent()
-        )
-        .bind("id", id)
+            )
+        }
         .exactlyOneOrNull<ServiceNeedOption>()
 }
 
 fun Database.Read.getServiceNeedOptionPublicInfos(
     placementTypes: List<PlacementType>
 ): List<ServiceNeedOptionPublicInfo> {
-    val sql =
-        """
-        SELECT
-            id,
-            name_fi, name_sv, name_en,
-            valid_placement_type
-        FROM service_need_option
-        WHERE default_option IS FALSE AND show_for_citizen IS TRUE AND valid_placement_type = ANY(:placementTypes::placement_type[])
-        ORDER BY display_order
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("placementTypes", placementTypes)
+    return createQuery {
+            sql(
+                """
+SELECT
+    id,
+    name_fi, name_sv, name_en,
+    valid_placement_type
+FROM service_need_option
+WHERE default_option IS FALSE AND show_for_citizen IS TRUE AND valid_placement_type = ANY(${bind(placementTypes)}::placement_type[])
+ORDER BY display_order
+"""
+            )
+        }
         .toList<ServiceNeedOptionPublicInfo>()
 }
 
@@ -316,9 +282,9 @@ fun Database.Read.getChildServiceNeedInfos(
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange
 ): List<ChildServiceNeedInfo> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
     SELECT p.child_id,
            sno.contract_days_per_month IS NOT NULL     AS has_contract_days,
            sno.daycare_hours_per_month,
@@ -328,7 +294,7 @@ fun Database.Read.getChildServiceNeedInfos(
     FROM placement p
     JOIN service_need sn ON sn.placement_id = p.id
     JOIN service_need_option sno ON sn.option_id = sno.id
-    WHERE p.child_id = ANY(:childIds) AND p.unit_id = :unitId AND daterange(sn.start_date, sn.end_date, '[]') && :dateRange
+    WHERE p.child_id = ANY(${bind(childIds)}) AND p.unit_id = ${bind(unitId)} AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(dateRange)}
     
     UNION ALL
     
@@ -343,15 +309,13 @@ fun Database.Read.getChildServiceNeedInfos(
         AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
     JOIN service_need sn ON sn.placement_id = p.id
     JOIN service_need_option sno ON sn.option_id = sno.id
-    WHERE bc.child_id = ANY(:childIds) AND bc.unit_id = :unitId 
+    WHERE bc.child_id = ANY(${bind(childIds)}) AND bc.unit_id = ${bind(unitId)} 
         AND (daterange(p.start_date, p.end_date, '[]') 
         * daterange(bc.start_date, bc.end_date, '[]') 
-        * daterange(sn.start_date, sn.end_date, '[]')) && :dateRange
+        * daterange(sn.start_date, sn.end_date, '[]')) && ${bind(dateRange)}
 """
-        )
-        .bind("unitId", unitId)
-        .bind("dateRange", dateRange)
-        .bind("childIds", childIds)
+            )
+        }
         .toList<ChildServiceNeedInfo>()
 }
 
@@ -359,8 +323,9 @@ fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
     groupId: GroupId,
     range: FiniteDateRange
 ): List<ChildServiceNeedInfo> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     p.child_id,
     sno.contract_days_per_month IS NOT NULL AS has_contract_days,
@@ -373,9 +338,9 @@ JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p
 JOIN service_need sn ON sn.placement_id = p.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE
-    daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :range AND
-    daterange(sn.start_date, sn.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :range AND
-    gp.daycare_group_id = :groupId
+    daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)} AND
+    daterange(sn.start_date, sn.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)} AND
+    gp.daycare_group_id = ${bind(groupId)}
 
 UNION ALL
 
@@ -391,24 +356,21 @@ JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end
 JOIN service_need sn ON sn.placement_id = p.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE
-    daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :range AND
-    daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :range AND
-    group_id = :groupId
+    daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)} AND
+    daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND
+    group_id = ${bind(groupId)}
 
 ORDER BY child_id, valid_during
-        """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("groupId", groupId)
-        .bind("range", range)
+"""
+            )
+        }
         .toList<ChildServiceNeedInfo>()
 }
 
 fun Database.Read.getServiceNeedOptionFees(from: LocalDate): List<ServiceNeedOptionFee> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     service_need_option_id,
     validity,
@@ -418,18 +380,17 @@ SELECT
     sibling_discount_2_plus,
     sibling_fee_2_plus
 FROM service_need_option_fee
-WHERE validity && daterange(:from, null, '[]')
-        """
-                .trimIndent()
-        )
-        .bind("from", from)
+WHERE validity && daterange(${bind(from)}, null, '[]')
+"""
+            )
+        }
         .toList<ServiceNeedOptionFee>()
 }
 
 fun Database.Read.getServiceNeedOptionFees(): List<ServiceNeedOptionFee> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     service_need_option_id,
     validity,
@@ -440,7 +401,7 @@ SELECT
     sibling_fee_2_plus
 FROM service_need_option_fee
         """
-                .trimIndent()
-        )
+            )
+        }
         .toList<ServiceNeedOptionFee>()
 }
