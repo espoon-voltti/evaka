@@ -16,47 +16,44 @@ data class Recipient(
 )
 
 fun Database.Transaction.addToBlocklist(childId: ChildId, recipientId: PersonId) {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO messaging_blocklist (child_id, blocked_recipient)
-        VALUES (:childId, :recipient)
-        ON CONFLICT DO NOTHING
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
+    createUpdate {
+            sql(
+                """
+INSERT INTO messaging_blocklist (child_id, blocked_recipient)
+VALUES (${bind(childId)}, ${bind(recipientId)})
+ON CONFLICT DO NOTHING
+"""
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.removeFromBlocklist(childId: ChildId, recipientId: PersonId) {
-    // language=sql
-    val sql =
-        """
-        DELETE FROM messaging_blocklist
-        WHERE child_id = :childId AND blocked_recipient = :recipient
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
+    createUpdate {
+            sql(
+                """
+DELETE FROM messaging_blocklist
+WHERE child_id = ${bind(childId)} AND blocked_recipient = ${bind(recipientId)}
+"""
+            )
+        }
+        .execute()
 }
 
 fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         SELECT 
             g.guardian_id as person_id,
             p.first_name,
             p.last_name,
-            EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = :childId AND bl.blocked_recipient = g.guardian_id) AS blocklisted
+            EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = ${bind(childId)} AND bl.blocked_recipient = g.guardian_id) AS blocklisted
         FROM guardian g
         JOIN person p ON g.guardian_id = p.id
-        WHERE g.child_id = :childId
+        WHERE g.child_id = ${bind(childId)}
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql).bind("childId", childId).toList<Recipient>()
+            )
+        }
+        .toList<Recipient>()
 }

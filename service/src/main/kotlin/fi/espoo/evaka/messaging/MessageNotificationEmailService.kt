@@ -36,35 +36,34 @@ class MessageNotificationEmailService(
         tx: Database.Transaction,
         messageIds: List<MessageId>
     ): List<AsyncJob.SendMessageNotificationEmail> {
-        @Suppress("DEPRECATION")
-        return tx.createQuery(
-                """
-            SELECT DISTINCT
-                m.thread_id,
-                m.id AS message_id,
-                mr.id as message_recipient_id,
-                mr.recipient_id,
-                p.id as person_id,
-                CASE 
-                    WHEN lower(p.language) = 'fi' THEN 'fi'
-                    WHEN lower(p.language) = 'sv' THEN 'sv'
-                    WHEN lower(p.language) = 'en' THEN 'en'
-                    ELSE 'fi'
-                END language,   
-                t.urgent
-            FROM message m
-            JOIN message_recipients mr ON mr.message_id = m.id
-            JOIN message_account ma ON ma.id = mr.recipient_id 
-            JOIN person p ON p.id = ma.person_id
-            JOIN message_thread t ON m.thread_id = t.id
-            WHERE m.id = ANY(:messageIds)
-              AND mr.read_at IS NULL
-              AND mr.email_notification_sent_at IS NULL
-              AND p.email IS NOT NULL
-            """
-                    .trimIndent()
-            )
-            .bind("messageIds", messageIds)
+        return tx.createQuery {
+                sql(
+                    """
+SELECT DISTINCT
+    m.thread_id,
+    m.id AS message_id,
+    mr.id as message_recipient_id,
+    mr.recipient_id,
+    p.id as person_id,
+    CASE 
+        WHEN lower(p.language) = 'fi' THEN 'fi'
+        WHEN lower(p.language) = 'sv' THEN 'sv'
+        WHEN lower(p.language) = 'en' THEN 'en'
+        ELSE 'fi'
+    END language,   
+    t.urgent
+FROM message m
+JOIN message_recipients mr ON mr.message_id = m.id
+JOIN message_account ma ON ma.id = mr.recipient_id 
+JOIN person p ON p.id = ma.person_id
+JOIN message_thread t ON m.thread_id = t.id
+WHERE m.id = ANY(${bind(messageIds)})
+  AND mr.read_at IS NULL
+  AND mr.email_notification_sent_at IS NULL
+  AND p.email IS NOT NULL
+"""
+                )
+            }
             .toList<AsyncJob.SendMessageNotificationEmail>()
     }
 

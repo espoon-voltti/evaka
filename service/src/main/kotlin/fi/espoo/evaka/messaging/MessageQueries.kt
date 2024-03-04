@@ -61,26 +61,26 @@ fun Database.Read.getUnreadMessagesCounts(
 fun Database.Read.getUnreadMessagesCountsByDaycare(
     daycareId: DaycareId
 ): Set<UnreadCountByAccountAndGroup> {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            acc.id as account_id,
-            acc.daycare_group_id as group_id,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
-        FROM message_account acc
-        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
-        LEFT JOIN message m ON mr.message_id = m.id
-        LEFT JOIN message_thread mt ON m.thread_id = mt.id
-        JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
-        WHERE acc.active = true AND m.sent_at IS NOT NULL
-        GROUP BY acc.id, acc.daycare_group_id
-    """
-            .trimIndent()
 
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql).bind("daycareId", daycareId).toSet<UnreadCountByAccountAndGroup>()
+    return createQuery {
+            sql(
+                """
+SELECT
+    acc.id as account_id,
+    acc.daycare_group_id as group_id,
+    SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
+    SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
+FROM message_account acc
+LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
+LEFT JOIN message m ON mr.message_id = m.id
+LEFT JOIN message_thread mt ON m.thread_id = mt.id
+JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = ${bind(daycareId)}
+WHERE acc.active = true AND m.sent_at IS NOT NULL
+GROUP BY acc.id, acc.daycare_group_id
+"""
+            )
+        }
+        .toSet<UnreadCountByAccountAndGroup>()
 }
 
 fun Database.Transaction.markThreadRead(
@@ -88,24 +88,20 @@ fun Database.Transaction.markThreadRead(
     accountId: MessageAccountId,
     threadId: MessageThreadId
 ): Int {
-    // language=SQL
-    val sql =
-        """
+    val now = clock.now()
+    return createUpdate {
+            sql(
+                """
 UPDATE message_recipients rec
-SET read_at = :now
+SET read_at = ${bind(now)}
 FROM message msg
 WHERE rec.message_id = msg.id
-  AND msg.thread_id = :threadId
-  AND rec.recipient_id = :accountId
-  AND read_at IS NULL;
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return this.createUpdate(sql)
-        .bind("now", clock.now())
-        .bind("accountId", accountId)
-        .bind("threadId", threadId)
+  AND msg.thread_id = ${bind(threadId)}
+  AND rec.recipient_id = ${bind(accountId)}
+  AND read_at IS NULL
+"""
+            )
+        }
         .execute()
 }
 
@@ -116,22 +112,20 @@ fun Database.Transaction.archiveThread(
     var archiveFolderId = getArchiveFolderId(accountId)
     if (archiveFolderId == null) {
         archiveFolderId =
-            @Suppress("DEPRECATION")
-            this.createUpdate(
-                    "INSERT INTO message_thread_folder (owner_id, name) VALUES (:accountId, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
-                )
-                .bind("accountId", accountId)
+            createUpdate {
+                    sql(
+                        "INSERT INTO message_thread_folder (owner_id, name) VALUES (${bind(accountId)}, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                    )
+                }
                 .executeAndReturnGeneratedKeys()
                 .exactlyOne<MessageThreadFolderId>()
     }
 
-    @Suppress("DEPRECATION")
-    return this.createUpdate(
-            "UPDATE message_thread_participant SET folder_id = :archiveFolderId WHERE thread_id = :threadId AND participant_id = :accountId"
-        )
-        .bind("accountId", accountId)
-        .bind("threadId", threadId)
-        .bind("archiveFolderId", archiveFolderId)
+    return createUpdate {
+            sql(
+                "UPDATE message_thread_participant SET folder_id = ${bind(archiveFolderId)} WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}"
+            )
+        }
         .execute()
 }
 
@@ -147,39 +141,29 @@ fun Database.Transaction.insertMessage(
         null, // Only needed because some tests bypass the message service and controllers
     repliesToMessageId: MessageId? = null
 ): MessageId {
-    // language=SQL
-    val insertMessageSql =
-        """
-        INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
-        SELECT
-            :now,
-            :contentId,
-            :threadId,
-            :senderId,
-            CASE 
-                WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName 
-                WHEN name_view.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName 
-                ELSE name_view.name 
-            END,
-            :repliesToId,
-            :sentAt,
-            :recipientNames
-        FROM message_account_view name_view
-        WHERE name_view.id = :senderId
-        RETURNING id
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(insertMessageSql)
-        .bind("now", now)
-        .bind("contentId", contentId)
-        .bind("threadId", threadId)
-        .bind("repliesToId", repliesToMessageId)
-        .bind("senderId", sender)
-        .bind("sentAt", sentAt)
-        .bind("recipientNames", recipientNames)
-        .bind("municipalAccountName", municipalAccountName)
-        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
+    return createQuery {
+            sql(
+                """
+INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+SELECT
+    ${bind(now)},
+    ${bind(contentId)},
+    ${bind(threadId)},
+    ${bind(sender)},
+    CASE 
+        WHEN name_view.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)} 
+        WHEN name_view.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} 
+        ELSE name_view.name 
+    END,
+    ${bind(repliesToMessageId)},
+    ${bind(sentAt)},
+    ${bind(recipientNames)}
+FROM message_account_view name_view
+WHERE name_view.id = ${bind(sender)}
+RETURNING id
+"""
+            )
+        }
         .exactlyOne<MessageId>()
 }
 
@@ -187,13 +171,11 @@ fun Database.Transaction.insertMessageContent(
     content: String,
     sender: MessageAccountId
 ): MessageContentId {
-    // language=SQL
-    val messageContentSql =
-        "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
-    @Suppress("DEPRECATION")
-    return createQuery(messageContentSql)
-        .bind("content", content)
-        .bind("authorId", sender)
+    return createQuery {
+            sql(
+                "INSERT INTO message_content (content, author_id) VALUES (${bind(content)}, ${bind(sender)}) RETURNING id"
+            )
+        }
         .exactlyOne<MessageContentId>()
 }
 
@@ -215,11 +197,10 @@ fun Database.Transaction.insertRecipients(
 fun Database.Transaction.insertMessageThreadChildren(
     childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
 ) {
-    // language=SQL
     val insertChildrenSql =
         "INSERT INTO message_thread_children (thread_id, child_id) VALUES (:threadId, :childId)"
 
-    val batch = this.prepareBatch(insertChildrenSql)
+    val batch = prepareBatch(insertChildrenSql)
     childrenThreadPairs.forEach { (children, threadId) ->
         children.forEach { child -> batch.bind("threadId", threadId).bind("childId", child).add() }
     }
@@ -249,42 +230,41 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
     contentId: MessageContentId,
     now: HelsinkiDateTime
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
-        SELECT m.thread_id, mr.recipient_id, :now, :now
-        FROM message m
-        JOIN message_recipients mr ON mr.message_id = m.id
-        WHERE m.content_id = :contentId
-        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
+    createUpdate {
+            sql(
+                """
+INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
+SELECT m.thread_id, mr.recipient_id, ${bind(now)}, ${bind(now)}
+FROM message m
+JOIN message_recipients mr ON mr.message_id = m.id
+WHERE m.content_id = ${bind(contentId)}
+ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = ${bind(now)}, last_received_timestamp = ${bind(now)}
 """
-        )
-        .bind("now", now)
-        .bind("contentId", contentId)
+            )
+        }
         .execute()
 
     // If the receiver has archived the thread, move it back to inbox
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-        UPDATE message_thread_participant mtp
-        SET folder_id = NULL
-        WHERE
-            (thread_id, participant_id) = ANY(
-                SELECT m.thread_id, mr.recipient_id
-                FROM message m
-                JOIN message_recipients mr ON mr.message_id = m.id
-                WHERE m.content_id = :contentId
-            )
-            AND folder_id = (
-                SELECT id FROM message_thread_folder mtf
-                WHERE mtf.owner_id = mtp.participant_id
-                AND mtf.name = 'ARCHIVE'
-            )
+    createUpdate {
+            sql(
+                """
+UPDATE message_thread_participant mtp
+SET folder_id = NULL
+WHERE
+    (thread_id, participant_id) = ANY(
+        SELECT m.thread_id, mr.recipient_id
+        FROM message m
+        JOIN message_recipients mr ON mr.message_id = m.id
+        WHERE m.content_id = ${bind(contentId)}
+    )
+    AND folder_id = (
+        SELECT id FROM message_thread_folder mtf
+        WHERE mtf.owner_id = mtp.participant_id
+        AND mtf.name = 'ARCHIVE'
+    )
 """
-        )
-        .bind("contentId", contentId)
+            )
+        }
         .execute()
 }
 
@@ -292,16 +272,15 @@ fun Database.Transaction.markMessagesAsSent(
     contentId: MessageContentId,
     sentAt: HelsinkiDateTime
 ): List<MessageId> =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE message SET sent_at = :sentAt
-WHERE content_id = :contentId
+    createUpdate {
+            sql(
+                """
+UPDATE message SET sent_at = ${bind(sentAt)}
+WHERE content_id = ${bind(contentId)}
 RETURNING id
 """
-        )
-        .bind("sentAt", sentAt)
-        .bind("contentId", contentId)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .toList<MessageId>()
 
@@ -376,16 +355,11 @@ fun Database.Transaction.insertThread(
     sensitive: Boolean,
     isCopy: Boolean
 ): MessageThreadId {
-    // language=SQL
-    val insertThreadSql =
-        "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (:messageType, :title, :urgent, :sensitive, :isCopy) RETURNING id"
-    @Suppress("DEPRECATION")
-    return createQuery(insertThreadSql)
-        .bind("messageType", type)
-        .bind("title", title)
-        .bind("urgent", urgent)
-        .bind("sensitive", sensitive)
-        .bind("isCopy", isCopy)
+    return createQuery {
+            sql(
+                "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (${bind(type)}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}) RETURNING id"
+            )
+        }
         .exactlyOne<MessageThreadId>()
 }
 
@@ -393,20 +367,18 @@ fun Database.Transaction.reAssociateMessageAttachments(
     attachmentIds: Set<AttachmentId>,
     messageContentId: MessageContentId
 ): Int {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    return createUpdate {
+            sql(
+                """
 UPDATE attachment
 SET
-    message_content_id = :messageContentId,
+    message_content_id = ${bind(messageContentId)},
     message_draft_id = NULL
 WHERE
-    id = ANY(:attachmentIds)
-        """
-                .trimIndent()
-        )
-        .bind("attachmentIds", attachmentIds)
-        .bind("messageContentId", messageContentId)
+    id = ANY(${bind(attachmentIds)})
+"""
+            )
+        }
         .execute()
 }
 
@@ -450,9 +422,9 @@ fun Database.Read.getThreads(
     serviceWorkerAccountName: String
 ): PagedMessageThreads {
     val threads =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
@@ -474,15 +446,13 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
-WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
-AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
+WHERE tp.participant_id = ${bind(accountId)} AND tp.folder_id IS NULL
+AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
-LIMIT :pageSize OFFSET :offset
-        """
-            )
-            .bind("accountId", accountId)
-            .bind("pageSize", pageSize)
-            .bind("offset", (page - 1) * pageSize)
+LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
+"""
+                )
+            }
             .mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
@@ -505,9 +475,9 @@ fun Database.Read.getReceivedThreads(
     folderId: MessageThreadFolderId? = null
 ): PagedMessageThreads {
     val threads =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
@@ -530,25 +500,22 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE
-    tp.participant_id = :accountId AND
+    tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
     NOT t.is_copy AND
     ${
         if (folderId == null) {
             "tp.folder_id IS NULL"
         } else {
-            "tp.folder_id = :folderId"
+            "tp.folder_id = ${bind(folderId)}"
         }
     } AND
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
 ORDER BY tp.last_message_timestamp DESC
-LIMIT :pageSize OFFSET :offset
+LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """
-            )
-            .bind("accountId", accountId)
-            .bind("pageSize", pageSize)
-            .bind("offset", (page - 1) * pageSize)
-            .bind("folderId", folderId)
+                )
+            }
             .mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
@@ -568,9 +535,9 @@ private fun Database.Read.getThreadMessages(
     serviceWorkerAccountName: String
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     m.id,
     m.thread_id,
@@ -581,8 +548,8 @@ SELECT
         SELECT jsonb_build_object(
             'id', mav.id,
             'name', CASE 
-                WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName
-                WHEN mav.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName
+                WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)}
+                WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
                 ELSE mav.name 
             END,
             'type', mav.type
@@ -595,8 +562,8 @@ SELECT
             jsonb_build_object(
                 'id', mav.id,
                 'name', CASE
-                    WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName 
-                    WHEN mav.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName
+                    WHEN mav.type = 'MUNICIPAL' THEN ${bind(municipalAccountName)} 
+                    WHEN mav.type = 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
                     ELSE mav.name
                 END,
                 'type', mav.type
@@ -613,22 +580,19 @@ SELECT
     ), '[]'::jsonb) AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
-LEFT JOIN message_recipients mr_self ON mr_self.message_id = m.id AND mr_self.recipient_id = :accountId
+LEFT JOIN message_recipients mr_self ON mr_self.message_id = m.id AND mr_self.recipient_id = ${bind(accountId)}
 WHERE
-    m.thread_id = ANY(:threadIds) AND
-    (m.sender_id = :accountId OR EXISTS (
+    m.thread_id = ANY(${bind(threadIds)}) AND
+    (m.sender_id = ${bind(accountId)} OR EXISTS (
         SELECT 1
         FROM message_recipients mr
-        WHERE mr.message_id = m.id AND mr.recipient_id = :accountId
+        WHERE mr.message_id = m.id AND mr.recipient_id = ${bind(accountId)}
     )) AND
-    (m.sender_id = :accountId OR m.sent_at IS NOT NULL)
+    (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL)
 ORDER BY m.sent_at
-            """
-        )
-        .bind("accountId", accountId)
-        .bind("threadIds", threadIds)
-        .bind("municipalAccountName", municipalAccountName)
-        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
+"""
+            )
+        }
         .toList<Message>()
         .groupBy { it.threadId }
 }
@@ -693,9 +657,10 @@ fun Database.Read.getMessageCopiesByAccount(
     pageSize: Int,
     page: Int
 ): PagedMessageCopies {
-    // language=SQL
-    val sql =
-        """
+
+    return createQuery {
+            sql(
+                """
 SELECT
     COUNT(*) OVER () AS count,
     t.id AS thread_id,
@@ -730,16 +695,12 @@ JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = :accountId AND t.is_copy AND m.sent_at IS NOT NULL
+WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT NULL
 ORDER BY m.sent_at DESC
-LIMIT :pageSize OFFSET :offset
+LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("accountId", accountId)
-        .bind("offset", (page - 1) * pageSize)
-        .bind("pageSize", pageSize)
+            )
+        }
         .mapToPaged(::PagedMessageCopies, pageSize)
 }
 
@@ -748,20 +709,21 @@ fun Database.Read.getSentMessage(
     messageId: MessageId,
     serviceWorkerAccountName: String
 ): Message {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     m.id,
     m.thread_id,
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     mc.content,
     (
-        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN :serviceWorkerAccountName ELSE mav.name END, 'type', mav.type)
+        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type)
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN :serviceWorkerAccountName ELSE mav.name END, 'type', mav.type))
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type))
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
@@ -773,13 +735,10 @@ SELECT
     ), '[]'::jsonb) AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
-WHERE m.id = :messageId AND m.sender_id = :senderId
+WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
 """
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .bind("messageId", messageId)
-        .bind("senderId", senderId)
-        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
+            )
+        }
         .exactlyOne<Message>()
 }
 
@@ -793,11 +752,12 @@ fun Database.Read.getCitizenReceivers(
         val type: AccountType,
         val childId: ChildId
     )
-    // language=SQL
-    val sql =
-        """
+
+    return createQuery {
+            sql(
+                """
 WITH user_account AS (
-    SELECT * FROM message_account WHERE id = :accountId
+    SELECT * FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
     SELECT g.child_id, g.guardian_id AS parent_id, true AS guardian_relationship
     FROM user_account acc
@@ -808,12 +768,12 @@ WITH user_account AS (
 
     SELECT fp.child_id, fp.parent_id, false AS guardian_relationship
     FROM user_account acc
-    JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> :today
+    JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
     WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
 ), backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM children c
-    JOIN backup_care p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    JOIN backup_care p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
     WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
@@ -821,7 +781,7 @@ WITH user_account AS (
 ), placements AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM children c
-    JOIN placement p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    JOIN placement p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
     WHERE NOT EXISTS (
         SELECT 1 FROM backup_care_placements bc
         WHERE bc.child_id = p.child_id
@@ -851,7 +811,7 @@ personal_accounts AS (
 group_accounts AS (
     SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
     FROM placements p
-    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND :today BETWEEN dgp.start_date AND dgp.end_date
+    JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND ${bind(today)} BETWEEN dgp.start_date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 
@@ -869,18 +829,18 @@ citizen_accounts AS (
     JOIN message_account acc ON g.guardian_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
     WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
-    AND acc.id != :accountId
+    AND acc.id != ${bind(accountId)}
     AND c.guardian_relationship
 
     UNION ALL
 
     SELECT acc.id, acc_name.name, 'CITIZEN' AS type, c.child_id
     FROM children c
-    JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> :today
+    JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> ${bind(today)}
     JOIN message_account acc ON fp.parent_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
     WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
-    AND acc.id != :accountId
+    AND acc.id != ${bind(accountId)}
     AND NOT c.guardian_relationship
 ),
 mixed_accounts AS (
@@ -892,13 +852,9 @@ mixed_accounts AS (
 )
 SELECT id, name, type, child_id FROM mixed_accounts
 ORDER BY type, name  -- groups first
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .bind("accountId", accountId)
-        .bind("today", today)
+"""
+            )
+        }
         .toList<MessageAccountWithChildId>()
         .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
@@ -915,9 +871,9 @@ fun Database.Read.getMessagesSentByAccount(
     pageSize: Int,
     page: Int
 ): PagedSentMessages {
-    // language=SQL
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 WITH pageable_messages AS (
     SELECT
         m.content_id,
@@ -930,10 +886,10 @@ WITH pageable_messages AS (
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
-    WHERE sender_id = :accountId
+    WHERE sender_id = ${bind(accountId)}
     GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
     ORDER BY sent_at DESC
-    LIMIT :pageSize OFFSET :offset
+    LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 )
 SELECT
     msg.count,
@@ -956,14 +912,9 @@ FROM pageable_messages msg
 JOIN message_content mc ON msg.content_id = mc.id
 GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title
 ORDER BY msg.sent_at DESC
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .bind("accountId", accountId)
-        .bind("offset", (page - 1) * pageSize)
-        .bind("pageSize", pageSize)
+"""
+            )
+        }
         .mapToPaged(::PagedSentMessages, pageSize)
 }
 
@@ -977,26 +928,25 @@ data class ThreadWithParticipants(
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
-    val sql =
-        """
-        SELECT
-            t.id AS threadId,
-            t.message_type AS type,
-            t.is_copy,
-            t.application_id,
-            (SELECT array_agg(m2.sender_id)) as senders,
-            (SELECT array_agg(rec.recipient_id)) as recipients
-            FROM message m
-            JOIN message_thread t ON m.thread_id = t.id
-            JOIN message m2 ON m2.thread_id = t.id
-            JOIN message_recipients rec ON rec.message_id = m2.id
-            WHERE m.id = :messageId
-            GROUP BY t.id, t.message_type
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .bind("messageId", messageId)
+    return createQuery {
+            sql(
+                """
+SELECT
+    t.id AS threadId,
+    t.message_type AS type,
+    t.is_copy,
+    t.application_id,
+    (SELECT array_agg(m2.sender_id)) as senders,
+    (SELECT array_agg(rec.recipient_id)) as recipients
+    FROM message m
+    JOIN message_thread t ON m.thread_id = t.id
+    JOIN message m2 ON m2.thread_id = t.id
+    JOIN message_recipients rec ON rec.message_id = m2.id
+    WHERE m.id = ${bind(messageId)}
+    GROUP BY t.id, t.message_type
+"""
+            )
+        }
         .exactlyOneOrNull<ThreadWithParticipants>()
 }
 
@@ -1007,35 +957,34 @@ fun Database.Read.getMessageThread(
     serviceWorkerAccountName: String
 ): MessageThread {
     val thread =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT
-            t.id,
-            t.title,
-            t.message_type AS type,
-            t.urgent,
-            t.sensitive,
-            t.is_copy,
-            coalesce((
-                         SELECT jsonb_agg(jsonb_build_object(
-                                 'childId', mtc.child_id,
-                                 'firstName', p.first_name,
-                                 'lastName', p.last_name,
-                                 'preferredName', p.preferred_name
-                             ))
-                         FROM message_thread_children mtc
-                                  JOIN person p ON p.id = mtc.child_id
-                         WHERE mtc.thread_id = t.id
-                     ), '[]'::jsonb) AS children
+    t.id,
+    t.title,
+    t.message_type AS type,
+    t.urgent,
+    t.sensitive,
+    t.is_copy,
+    coalesce((
+         SELECT jsonb_agg(jsonb_build_object(
+             'childId', mtc.child_id,
+             'firstName', p.first_name,
+             'lastName', p.last_name,
+             'preferredName', p.preferred_name
+         ))
+         FROM message_thread_children mtc
+         JOIN person p ON p.id = mtc.child_id
+         WHERE mtc.thread_id = t.id
+     ), '[]'::jsonb) AS children
 FROM message_thread t
 JOIN message_thread_participant tp on t.id = tp.thread_id
-WHERE t.id = :threadId AND tp.participant_id = :accountId
-  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
-        """
-            )
-            .bind("accountId", accountId)
-            .bind("threadId", threadId)
+WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
+  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
+"""
+                )
+            }
             .exactlyOneOrNull<ReceivedThread>() ?: throw NotFound()
 
     val messagesByThread =
@@ -1061,9 +1010,9 @@ fun Database.Read.getMessageThreadByApplicationId(
     serviceWorkerAccountName: String
 ): MessageThread? {
     val thread =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT
     t.id,
     t.title,
@@ -1072,25 +1021,24 @@ SELECT
     t.sensitive,
     t.is_copy,
     coalesce((
-                 SELECT jsonb_agg(jsonb_build_object(
-                         'childId', mtc.child_id,
-                         'firstName', p.first_name,
-                         'lastName', p.last_name,
-                         'preferredName', p.preferred_name
-                     ))
-                 FROM message_thread_children mtc
-                          JOIN person p ON p.id = mtc.child_id
-                 WHERE mtc.thread_id = t.id
-             ), '[]'::jsonb) AS children
+         SELECT jsonb_agg(jsonb_build_object(
+             'childId', mtc.child_id,
+             'firstName', p.first_name,
+             'lastName', p.last_name,
+             'preferredName', p.preferred_name
+         ))
+         FROM message_thread_children mtc
+         JOIN person p ON p.id = mtc.child_id
+         WHERE mtc.thread_id = t.id
+     ), '[]'::jsonb) AS children
 FROM message_thread t
-WHERE t.application_id = :applicationId
-  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
+WHERE t.application_id = ${bind(applicationId)}
+  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 GROUP BY t.id
 LIMIT 1
         """
-            )
-            .bind("accountId", accountId)
-            .bind("applicationId", applicationId)
+                )
+            }
             .exactlyOneOrNull<ReceivedThread>()
 
     if (thread != null) {
@@ -1279,19 +1227,25 @@ fun Database.Read.getMessageAccountsForRecipients(
     date: LocalDate
 ): List<Pair<MessageAccountId, ChildId?>> {
     val groupedRecipients = recipients.groupBy { it.type }
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
+    val areaRecipients = groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
+    val unitRecipients = groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
+    val groupRecipients = groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf()
+    val childRecipients = groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
+    val citizenRecipients =
+        groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
+    return createQuery {
+            sql(
+                """
 WITH sender AS (
-    SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = :senderId
+    SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
     SELECT DISTINCT pl.child_id
-    FROM realized_placement_all(:date) pl
+    FROM realized_placement_all(${bind(date)}) pl
     JOIN daycare d ON pl.unit_id = d.id
-    WHERE (d.care_area_id = ANY(:areaRecipients) OR pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
+    WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
     AND EXISTS (
         SELECT 1
-        FROM child_daycare_acl(:date)
+        FROM child_daycare_acl(${bind(date)})
         JOIN mobile_device_daycare_acl_view USING (daycare_id)
         WHERE mobile_device_id = (SELECT sender.employee_id FROM sender)
         AND child_id = pl.child_id
@@ -1299,7 +1253,7 @@ WITH sender AS (
         UNION ALL
 
         SELECT 1
-        FROM employee_child_daycare_acl(:date)
+        FROM employee_child_daycare_acl(${bind(date)})
         WHERE employee_id = (SELECT sender.employee_id FROM sender)
         AND child_id = pl.child_id
 
@@ -1331,7 +1285,7 @@ UNION
 
 SELECT acc.id AS account_id, c.child_id
 FROM children c
-JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> :date
+JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> ${bind(date)}
 JOIN message_account acc ON fp.parent_id = acc.person_id
 WHERE NOT EXISTS (
     SELECT 1 FROM messaging_blocklist bl
@@ -1344,31 +1298,10 @@ UNION
 SELECT acc.id AS account_id, NULL as child_id
 FROM person p
 JOIN message_account acc ON p.id = acc.person_id
-WHERE p.id = ANY(:citizenRecipients)
+WHERE p.id = ANY(${bind(citizenRecipients)})
 """
-        )
-        .bind("senderId", accountId)
-        .bind("date", date)
-        .bind(
-            "areaRecipients",
-            groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
-        )
-        .bind(
-            "unitRecipients",
-            groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
-        )
-        .bind(
-            "groupRecipients",
-            groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf()
-        )
-        .bind(
-            "childRecipients",
-            groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
-        )
-        .bind(
-            "citizenRecipients",
-            groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
-        )
+            )
+        }
         .toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
 }
 
@@ -1376,15 +1309,16 @@ fun Database.Transaction.markEmailNotificationAsSent(
     id: MessageRecipientId,
     timestamp: HelsinkiDateTime
 ) {
-    val sql =
-        """
-        UPDATE message_recipients
-        SET email_notification_sent_at = :timestamp
-        WHERE id = :id
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
+    createUpdate {
+            sql(
+                """
+UPDATE message_recipients
+SET email_notification_sent_at = ${bind(timestamp)}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .execute()
 }
 
 fun Database.Read.getStaffCopyRecipients(
@@ -1396,7 +1330,7 @@ fun Database.Read.getStaffCopyRecipients(
     val groupIds = recipients.mapNotNull { it.toGroupId() }
     if (areaIds.isEmpty() && unitIds.isEmpty() && groupIds.isEmpty()) return emptySet()
 
-    return this.createQuery {
+    return createQuery {
             sql(
                 """
 SELECT receiver_acc.id
@@ -1414,11 +1348,11 @@ AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g
 }
 
 fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            "SELECT id FROM message_thread_folder WHERE owner_id = :accountId AND name = 'ARCHIVE'"
-        )
-        .bind("accountId", accountId)
+    createQuery {
+            sql(
+                "SELECT id FROM message_thread_folder WHERE owner_id = ${bind(accountId)} AND name = 'ARCHIVE'"
+            )
+        }
         .exactlyOneOrNull<MessageThreadFolderId>()
 
 data class UndoReplyTarget(
@@ -1462,7 +1396,7 @@ fun Database.Transaction.undoNewMessages(
 ): MessageDraftId {
     lockMessageContentForUpdate(contentId)
 
-    this.createQuery {
+    createQuery {
             sql(
                 """
             SELECT created
@@ -1482,18 +1416,18 @@ fun Database.Transaction.undoNewMessages(
         } ?: throw BadRequest("No messages found with contentId $contentId")
 
     val draftContent =
-        @Suppress("DEPRECATION")
-        this.createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
 FROM message_content c
 JOIN message m ON c.id = m.content_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE c.id = :contentId
+WHERE c.id = ${bind(contentId)}
 LIMIT 1 -- all threads with same content are identical in regards to this query
 """
-            )
-            .bind("contentId", contentId)
+                )
+            }
             .exactlyOne<UpdatableDraftContent>()
 
     this.deleteMessages(contentId, deleteThreads = true)
@@ -1504,13 +1438,13 @@ LIMIT 1 -- all threads with same content are identical in regards to this query
 }
 
 fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThreads: Boolean) {
-    this.createUpdate {
+    createUpdate {
             sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
         }
         .execute()
 
     if (deleteThreads) {
-        this.createUpdate {
+        createUpdate {
                 sql(
                     """
                 DELETE FROM message_thread mt
@@ -1526,27 +1460,26 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThrea
     }
 
     // cascade deletes from message and message_recipients
-    this.createUpdate { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }.execute()
+    createUpdate { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }.execute()
 }
 
 fun Database.Transaction.resetSenderThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId
 ) {
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE message_thread_participant SET
     last_message_timestamp = (
         SELECT MAX(sent_at) FROM message m JOIN message_recipients r ON m.id = r.message_id
-        WHERE m.thread_id = :threadId AND (m.sender_id = :senderId OR r.recipient_id = :senderId)
+        WHERE m.thread_id = ${bind(threadId)} AND (m.sender_id = ${bind(senderId)} OR r.recipient_id = ${bind(senderId)})
     ),
-    last_sent_timestamp = (SELECT MAX(sent_at) FROM message m WHERE m.thread_id = :threadId AND m.sender_id = :senderId)
-WHERE thread_id = :threadId AND participant_id = :senderId
+    last_sent_timestamp = (SELECT MAX(sent_at) FROM message m WHERE m.thread_id = ${bind(threadId)} AND m.sender_id = ${bind(senderId)})
+WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(senderId)}
 """
-        )
-        .bind("threadId", threadId)
-        .bind("senderId", senderId)
+            )
+        }
         .execute()
 }
 
@@ -1574,7 +1507,6 @@ SELECT id, message_type AS type, title, urgent, sensitive, is_copy
 FROM message_thread
 WHERE id = ${bind(id)}
     """
-                    .trimIndent()
             )
         }
         .exactlyOne<MessageThreadStub>()
