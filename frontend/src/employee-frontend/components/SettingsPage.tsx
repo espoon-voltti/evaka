@@ -19,12 +19,12 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { getSettings, setSettings } from '../generated/api-clients/setting'
+import { getSettings, putSettings } from '../generated/api-clients/setting'
 
 import { renderResult } from './async-rendering'
 
 const getSettingsResult = wrapResult(getSettings)
-const setSettingsResult = wrapResult(setSettings)
+const putSettingsResult = wrapResult(putSettings)
 
 type Settings = Record<SettingType, string>
 
@@ -51,14 +51,13 @@ export default React.memo(function SettingsPage() {
   const submit = useCallback(() => {
     if (!settings.isSuccess) return
 
-    return setSettingsResult(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      Object.fromEntries(
-        Object.entries(settings.value)
-          .map(([key, value]) => [key, value.trim()])
-          .filter(([, value]) => value !== '')
-      )
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const body: Record<SettingType, string> = Object.fromEntries(
+      Object.entries(settings.value)
+        .map(([key, value]) => [key, value.trim()])
+        .filter(([, value]) => value !== '')
     )
+    return putSettingsResult({ body })
   }, [settings])
 
   const onChange = useCallback(
