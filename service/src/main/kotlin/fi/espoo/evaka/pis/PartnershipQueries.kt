@@ -20,9 +20,9 @@ import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
-    // language=SQL
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         SELECT
             fp1.partnership_id,
             fp1.start_date,
@@ -38,45 +38,40 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
-        WHERE fp1.partnership_id = :id
+        WHERE fp1.partnership_id = ${bind(id)}
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull(toPartnership("p1", "p2"))
+            )
+        }
+        .exactlyOneOrNull(toPartnership("p1", "p2"))
 }
 
 fun Database.Read.getPartnershipsForPerson(
     personId: PersonId,
     includeConflicts: Boolean = false
 ): List<Partnership> {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            fp1.partnership_id,
-            fp1.start_date,
-            fp1.end_date,
-            fp1.conflict,
-            ${aliasedPersonColumns("p1")},
-            ${aliasedPersonColumns("p2")},
-            fp1.created_at,
-            fp1.created_by,
-            fp1.modified_at,
-            fp1.modified_by
-        FROM fridge_partner fp1
-        JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
-        JOIN person p1 ON fp1.person_id = p1.id
-        JOIN person p2 ON fp2.person_id = p2.id
-        WHERE fp1.person_id = :personId OR fp2.person_id = :personId
-        AND (:includeConflicts OR fp1.conflict = false)
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("personId", personId)
-        .bind("includeConflicts", includeConflicts)
+    return createQuery {
+            sql(
+                """
+SELECT
+    fp1.partnership_id,
+    fp1.start_date,
+    fp1.end_date,
+    fp1.conflict,
+    ${aliasedPersonColumns("p1")},
+    ${aliasedPersonColumns("p2")},
+    fp1.created_at,
+    fp1.created_by,
+    fp1.modified_at,
+    fp1.modified_by
+FROM fridge_partner fp1
+JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx = 1 AND fp2.indx = 2
+JOIN person p1 ON fp1.person_id = p1.id
+JOIN person p2 ON fp2.person_id = p2.id
+WHERE fp1.person_id = ${bind(personId)} OR fp2.person_id = ${bind(personId)}
+AND (${bind(includeConflicts)} OR fp1.conflict = false)
+"""
+            )
+        }
         .toList(toPartnership("p1", "p2"))
 }
 
@@ -85,32 +80,26 @@ fun Database.Read.getPartnersForPerson(
     includeConflicts: Boolean,
     period: DateRange? = null
 ): List<Partner> {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            fp.*,
-            ${aliasedPersonColumns("p")},
-            (SELECT name FROM evaka_user WHERE id = fp.created_by) AS created_by_name,
-            (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS modified_by_name,
-            a.type AS created_from_application_type,
-            a.created AS created_from_application_created
-        FROM fridge_partner fp
-        JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
-        JOIN person p ON partner.person_id = p.id
-        LEFT JOIN application a ON fp.created_from_application = a.id
-        WHERE fp.person_id = :personId
-        AND daterange(fp.start_date, fp.end_date, '[]') && daterange(:from, :to, '[]')
-        AND (:includeConflicts OR fp.conflict = false)
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("personId", personId)
-        .bind("from", period?.start)
-        .bind("to", period?.end)
-        .bind("includeConflicts", includeConflicts)
+    return createQuery {
+            sql(
+                """
+SELECT
+    fp.*,
+    ${aliasedPersonColumns("p")},
+    (SELECT name FROM evaka_user WHERE id = fp.created_by) AS created_by_name,
+    (SELECT name FROM evaka_user WHERE id = fp.modified_by) AS modified_by_name,
+    a.type AS created_from_application_type,
+    a.created AS created_from_application_created
+FROM fridge_partner fp
+JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
+JOIN person p ON partner.person_id = p.id
+LEFT JOIN application a ON fp.created_from_application = a.id
+WHERE fp.person_id = ${bind(personId)}
+AND daterange(fp.start_date, fp.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
+AND (${bind(includeConflicts)} OR fp.conflict = false)
+"""
+            )
+        }
         .toList(toPartner("p"))
 }
 
@@ -212,13 +201,13 @@ fun Database.Transaction.retryPartnership(
 }
 
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
-    // language=SQL
-    val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).mapTo<PartnershipId>().useIterable {
-        it.firstOrNull()
-    } != null
+    return createQuery {
+            sql(
+                "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
+            )
+        }
+        .mapTo<PartnershipId>()
+        .useIterable { it.firstOrNull() } != null
 }
 
 private val toPartnership: (String, String) -> Row.() -> Partnership =

@@ -24,9 +24,9 @@ private fun Database.Read.getFosterParentRelationships(
 ): List<FosterParentRelationship> {
     if (parentId == null && childId == null) error("Either parentId or childId must be provided")
 
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     fp.id AS relationship_id,
     fp.valid_during,
@@ -49,22 +49,21 @@ SELECT
 FROM foster_parent fp
 JOIN person c ON fp.child_id = c.id
 JOIN person p ON fp.parent_id = p.id
-WHERE fp.parent_id = :parentId OR fp.child_id = :childId
+WHERE fp.parent_id = ${bind(parentId)} OR fp.child_id = ${bind(childId)}
 """
-        )
-        .bind("parentId", parentId)
-        .bind("childId", childId)
+            )
+        }
         .toList<FosterParentRelationship>()
 }
 
 fun Database.Transaction.createFosterParentRelationship(
     data: CreateFosterParentRelationshipBody
 ): FosterParentId =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "INSERT INTO foster_parent (child_id, parent_id, valid_during) VALUES (:childId, :parentId, :validDuring) RETURNING id"
-        )
-        .bindKotlin(data)
+    createUpdate {
+            sql(
+                "INSERT INTO foster_parent (child_id, parent_id, valid_during) VALUES (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}) RETURNING id"
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<FosterParentId>()
 
@@ -72,10 +71,11 @@ fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,
     validDuring: DateRange
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE foster_parent SET valid_during = :validDuring WHERE id = :id")
-        .bind("id", id)
-        .bind("validDuring", validDuring)
+    createUpdate {
+            sql(
+                "UPDATE foster_parent SET valid_during = ${bind(validDuring)} WHERE id = ${bind(id)}"
+            )
+        }
         .execute()
         .also {
             if (it != 1)
@@ -83,7 +83,6 @@ fun Database.Transaction.updateFosterParentRelationshipValidity(
         }
 
 fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) =
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM foster_parent WHERE id = :id").bind("id", id).execute().also {
-        if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id")
-    }
+    createUpdate { sql("DELETE FROM foster_parent WHERE id = ${bind(id)}") }
+        .execute()
+        .also { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }

@@ -189,33 +189,30 @@ private fun Database.Transaction.updateFamilyContactPriority(
         "SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED"
     )
 
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
+    this.createUpdate {
+            sql(
+                """
 WITH deleted_contact AS (
-    DELETE FROM family_contact WHERE child_id = :childId AND contact_person_id = :contactPersonId RETURNING priority AS old_priority
+    DELETE FROM family_contact WHERE child_id = ${bind(childId)} AND contact_person_id = ${bind(contactPersonId)} RETURNING priority AS old_priority
 )
 UPDATE family_contact SET priority = priority - 1
 FROM deleted_contact
-WHERE child_id = :childId AND priority > old_priority
+WHERE child_id = ${bind(childId)} AND priority > old_priority
 """
-        )
-        .bind("childId", childId)
-        .bind("contactPersonId", contactPersonId)
+            )
+        }
         .execute()
 
     if (priority == null) return
 
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
-UPDATE family_contact SET priority = priority + 1 WHERE child_id = :childId AND priority >= :priority;
-INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:childId, :contactPersonId, :priority);
+    this.createUpdate {
+            sql(
+                """
+UPDATE family_contact SET priority = priority + 1 WHERE child_id = ${bind(childId)} AND priority >= ${bind(priority)};
+INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (${bind(childId)}, ${bind(contactPersonId)}, ${bind(priority)});
 """
-        )
-        .bind("childId", childId)
-        .bind("contactPersonId", contactPersonId)
-        .bind("priority", priority)
+            )
+        }
         .execute()
 }
 
@@ -224,35 +221,33 @@ fun Database.Read.isFamilyContactForChild(
     childId: ChildId,
     personId: PersonId
 ): Boolean {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT EXISTS (
     -- is a guardian
     SELECT 1 FROM guardian
-    WHERE child_id = :childId AND guardian_id = :personId
+    WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(personId)}
 ) OR EXISTS (
     -- is either a head of child or their partner
     SELECT 1 FROM fridge_child fc
     WHERE 
-        fc.child_id = :childId
-        AND daterange(fc.start_date, fc.end_date, '[]') @> :today 
+        fc.child_id = ${bind(childId)}
+        AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)} 
         AND (
-            fc.head_of_child = :personId 
+            fc.head_of_child = ${bind(personId)} 
             OR EXISTS (
                 SELECT 1 FROM fridge_partner_view fp
                 WHERE 
                     fp.person_id = fc.head_of_child 
-                    AND fp.partner_person_id = :personId 
-                    AND daterange(fp.start_date, fp.end_date, '[]') @> :today
+                    AND fp.partner_person_id = ${bind(personId)} 
+                    AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
             )
         )
 )
 """
-        )
-        .bind("today", today)
-        .bind("childId", childId)
-        .bind("personId", personId)
+            )
+        }
         .exactlyOne<Boolean>()
 }
 

@@ -21,54 +21,51 @@ fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: Lis
     insertGuardians(guardianIds.map { GuardianChildPair(it, childId) })
 
 fun Database.Read.isGuardianBlocked(guardianId: PersonId, childId: ChildId): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT EXISTS (
     SELECT 1
     FROM guardian_blocklist
-    WHERE guardian_id = :guardianId
-    AND child_id = :childId
+    WHERE guardian_id = ${bind(guardianId)}
+    AND child_id = ${bind(childId)}
 )
-        """
-                .trimIndent()
-        )
-        .bind("guardianId", guardianId)
-        .bind("childId", childId)
+"""
+            )
+        }
         .exactlyOne<Boolean>()
 
 fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT guardian_id FROM guardian_blocklist WHERE child_id = :childId")
-        .bind("childId", childId)
+    return createQuery {
+            sql("SELECT guardian_id FROM guardian_blocklist WHERE child_id = ${bind(childId)}")
+        }
         .toList<PersonId>()
 }
 
 fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (:childId, :guardianId)"
-        )
-        .bind("childId", childId)
-        .bind("guardianId", guardianId)
+    createUpdate {
+            sql(
+                "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (${bind(childId)}, ${bind(guardianId)})"
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.deleteFromGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "DELETE FROM guardian_blocklist WHERE child_id = :childId AND guardian_id = :guardianId"
-        )
-        .bind("childId", childId)
-        .bind("guardianId", guardianId)
+    createUpdate {
+            sql(
+                "DELETE FROM guardian_blocklist WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}"
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.deleteGuardianRelationship(childId: ChildId, guardianId: PersonId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM guardian WHERE child_id = :childId AND guardian_id = :guardianId")
-        .bind("childId", childId)
-        .bind("guardianId", guardianId)
+    createUpdate {
+            sql(
+                "DELETE FROM guardian WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}"
+            )
+        }
         .execute()
 }
 
@@ -82,69 +79,67 @@ private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<Gu
 }
 
 fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
-    // language=sql
-    val sql =
-        """
-        select guardian_id
-        from guardian
-        where child_id = :childId
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") return createQuery(sql).bind("childId", childId).toList<PersonId>()
+    return createQuery {
+            sql(
+                """
+                select guardian_id
+                from guardian
+                where child_id = ${bind(childId)}
+                """
+            )
+        }
+        .toList<PersonId>()
 }
 
 fun Database.Read.getChildGuardiansAndFosterParents(
     childId: ChildId,
     today: LocalDate
 ): List<PersonId> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-    SELECT guardian_id AS id FROM guardian WHERE child_id = :childId
-    UNION
-    SELECT parent_id AS id FROM foster_parent WHERE child_id = :childId AND valid_during @> :today
-    """
-        )
-        .bind("childId", childId)
-        .bind("today", today)
+    return createQuery {
+            sql(
+                """
+SELECT guardian_id AS id FROM guardian WHERE child_id = ${bind(childId)}
+UNION
+SELECT parent_id AS id FROM foster_parent WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
+"""
+            )
+        }
         .toList<PersonId>()
 }
 
 fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
-    // language=sql
-    val sql =
-        """
-        select child_id
-        from guardian
-        where guardian_id = :guardianId
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("guardianId", guardianId).toList<ChildId>()
+    return createQuery {
+            sql(
+                """
+                select child_id
+                from guardian
+                where guardian_id = ${bind(guardianId)}
+                """
+            )
+        }
+        .toList<ChildId>()
 }
 
 fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {
-    // language=sql
-    val sql =
-        """
-        DELETE FROM guardian
-        WHERE guardian_id = :guardianId
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") return createUpdate(sql).bind("guardianId", guardianId).execute()
+    return createUpdate {
+            sql(
+                """
+                DELETE FROM guardian
+                WHERE guardian_id = ${bind(guardianId)}
+                """
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int {
-    // language=sql
-    val sql =
-        """
-        DELETE FROM guardian
-        WHERE child_id = :childId
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") return createUpdate(sql).bind("childId", childId).execute()
+    return createUpdate {
+            sql(
+                """
+                DELETE FROM guardian
+                WHERE child_id = ${bind(childId)}
+                """
+            )
+        }
+        .execute()
 }

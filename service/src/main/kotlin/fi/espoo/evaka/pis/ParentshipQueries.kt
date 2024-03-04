@@ -17,22 +17,21 @@ import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            fc.*,
-            ${aliasedPersonColumns("child")},
-            ${aliasedPersonColumns("head")}
-        FROM fridge_child fc
-        JOIN person child ON fc.child_id = child.id
-        JOIN person head ON fc.head_of_child = head.id
-        WHERE fc.id = :id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull(toParentship("child", "head"))
+    return createQuery {
+            sql(
+                """
+                SELECT
+                    fc.*,
+                    ${aliasedPersonColumns("child")},
+                    ${aliasedPersonColumns("head")}
+                FROM fridge_child fc
+                JOIN person child ON fc.child_id = child.id
+                JOIN person head ON fc.head_of_child = head.id
+                WHERE fc.id = ${bind(id)}
+                """
+            )
+        }
+        .exactlyOneOrNull(toParentship("child", "head"))
 }
 
 fun Database.Read.getParentships(
@@ -44,30 +43,23 @@ fun Database.Read.getParentships(
     if (headOfChildId == null && childId == null)
         throw BadRequest("Must give either headOfChildId or childId")
 
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            fc.*,
-            ${aliasedPersonColumns("child")},
-            ${aliasedPersonColumns("head")}
-        FROM fridge_child fc
-        JOIN person child ON fc.child_id = child.id
-        JOIN person head ON fc.head_of_child = head.id
-        WHERE (:headOfChild::uuid IS NULL OR head_of_child = :headOfChild)
-        AND (:child::uuid IS NULL OR child_id = :child)
-        AND daterange(fc.start_date, fc.end_date, '[]') && daterange(:from, :to, '[]')
-        AND (:includeConflicts OR conflict = false)
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("headOfChild", headOfChildId)
-        .bind("child", childId)
-        .bind("from", period?.start)
-        .bind("to", period?.end)
-        .bind("includeConflicts", includeConflicts)
+    return createQuery {
+            sql(
+                """
+SELECT
+    fc.*,
+    ${aliasedPersonColumns("child")},
+    ${aliasedPersonColumns("head")}
+FROM fridge_child fc
+JOIN person child ON fc.child_id = child.id
+JOIN person head ON fc.head_of_child = head.id
+WHERE (${bind(headOfChildId)}::uuid IS NULL OR head_of_child = ${bind(headOfChildId)})
+AND (${bind(childId)}::uuid IS NULL OR child_id = ${bind(childId)})
+AND daterange(fc.start_date, fc.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
+AND (${bind(includeConflicts)} OR conflict = false)
+"""
+            )
+        }
         .toList(toParentship("child", "head"))
 }
 
@@ -78,31 +70,24 @@ fun Database.Transaction.createParentship(
     endDate: LocalDate,
     conflict: Boolean = false
 ): Parentship {
-    // language=sql
-    val sql =
-        """
-        WITH new_fridge_child AS (
-            INSERT INTO fridge_child (child_id, head_of_child, start_date, end_date, conflict)
-            VALUES (:childId, :headOfChild, :startDate, :endDate, :conflict)
-            RETURNING *
-        )
-        SELECT
-            fc.*,
-            ${aliasedPersonColumns("child")},
-            ${aliasedPersonColumns("head")}
-        FROM new_fridge_child fc
-        JOIN person child ON fc.child_id = child.id
-        JOIN person head ON fc.head_of_child = head.id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("headOfChild", headOfChildId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("conflict", conflict)
+    return createQuery {
+            sql(
+                """
+WITH new_fridge_child AS (
+    INSERT INTO fridge_child (child_id, head_of_child, start_date, end_date, conflict)
+    VALUES (${bind(childId)}, ${bind(headOfChildId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)})
+    RETURNING *
+)
+SELECT
+    fc.*,
+    ${aliasedPersonColumns("child")},
+    ${aliasedPersonColumns("head")}
+FROM new_fridge_child fc
+JOIN person child ON fc.child_id = child.id
+JOIN person head ON fc.head_of_child = head.id
+"""
+            )
+        }
         .exactlyOne(toParentship("child", "head"))
 }
 
@@ -111,43 +96,34 @@ fun Database.Transaction.updateParentshipDuration(
     startDate: LocalDate,
     endDate: LocalDate
 ): Boolean {
-    // language=sql
-    val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("id", id)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    return createUpdate {
+            sql(
+                "UPDATE fridge_child SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)} WHERE id = ${bind(id)}"
+            )
+        }
         .execute() > 0
 }
 
 fun Database.Transaction.retryParentship(id: ParentshipId) {
-    // language=SQL
-    val sql = "UPDATE fridge_child SET conflict = false WHERE id = :id"
-    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).execute()
+    createUpdate { sql("UPDATE fridge_child SET conflict = false WHERE id = ${bind(id)}") }
+        .execute()
 }
 
 fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
-    // language=SQL
-    val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<ParentshipId>() != null
+    return createQuery { sql("DELETE FROM fridge_child WHERE id = ${bind(id)} RETURNING id") }
+        .exactlyOneOrNull<ParentshipId>() != null
 }
 
 fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT EXISTS(
-    SELECT * FROM fridge_child WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> :date AND NOT conflict
+    SELECT * FROM fridge_child WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]') @> ${bind(date)} AND NOT conflict
 )
-        """
-                .trimIndent()
-        )
-        .bind("personId", personId)
-        .bind("date", date)
+"""
+            )
+        }
         .exactlyOne<Boolean>()
 }
 
