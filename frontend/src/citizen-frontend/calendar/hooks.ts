@@ -18,11 +18,13 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
     )
   )
   const [summaryExplicitlyClosed, setSummaryExplicitlyClosed] = useState(false)
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
-    childSummaries.some(
-      ({ reservedMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes
-    )
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(
+    () =>
+      featureFlags.timeUsageInfo &&
+      childSummaries.some(
+        ({ reservedMinutes, serviceNeedMinutes }) =>
+          reservedMinutes > serviceNeedMinutes
+      )
   )
 
   const toggleSummaryInfo = useCallback(() => {
@@ -37,6 +39,7 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
 
   useEffect(() => {
     if (
+      featureFlags.timeUsageInfo &&
       !summaryExplicitlyClosed &&
       childSummaries.some(
         ({ reservedMinutes, serviceNeedMinutes }) =>
