@@ -84,18 +84,12 @@ type QuestionForm = typeof questionForm
 const getAnswerState = (
   numberOfFields: number,
   answer?: Answer | undefined
-): StateOf<QuestionForm>['answer'] => {
-  const emptyRow = Array<string>(numberOfFields).fill('')
-  if (answer === undefined) {
-    return [emptyRow]
-  } else {
-    return answer
-  }
-}
+): StateOf<QuestionForm>['answer'] =>
+  answer !== undefined ? answer : [Array<string>(numberOfFields).fill('')]
 
-const FixedWidthDiv = styled.div<{ questionCount: number }>`
-  width: ${(p) => (p.questionCount > 3 ? 200 : 270)}px;
-  max-width: ${(p) => (p.questionCount > 3 ? 200 : 270)}px;
+const FixedWidthDiv = styled.div<{ $questionCount: number }>`
+  width: ${(p) => (p.$questionCount > 3 ? 200 : 270)}px;
+  max-width: ${(p) => (p.$questionCount > 3 ? 200 : 270)}px;
 `
 
 const Indentation = styled.div`
@@ -125,7 +119,7 @@ const View = React.memo(function View({
                 {fieldLabels.state.map((label) => (
                   <FixedWidthDiv
                     key={label}
-                    questionCount={fieldLabels.state.length}
+                    $questionCount={fieldLabels.state.length}
                   >
                     <Label>{label}</Label>
                   </FixedWidthDiv>
@@ -135,7 +129,7 @@ const View = React.memo(function View({
                 {row.map((value, j) => (
                   <FixedWidthDiv
                     key={j}
-                    questionCount={fieldLabels.state.length}
+                    $questionCount={fieldLabels.state.length}
                   >
                     {value || '-'}
                   </FixedWidthDiv>
@@ -159,7 +153,7 @@ const View = React.memo(function View({
                 {fieldLabels.state.map((label) => (
                   <FixedWidthDiv
                     key={label}
-                    questionCount={fieldLabels.state.length}
+                    $questionCount={fieldLabels.state.length}
                   >
                     <Label>{label}</Label>
                   </FixedWidthDiv>
@@ -209,7 +203,7 @@ const QuestionRow = React.memo(function Foo({
   return (
     <FixedSpaceRow>
       {fields.map((field, i) => (
-        <FixedWidthDiv key={i} questionCount={fields.length}>
+        <FixedWidthDiv key={i} $questionCount={fields.length}>
           <InputFieldF bind={field} />
         </FixedWidthDiv>
       ))}
