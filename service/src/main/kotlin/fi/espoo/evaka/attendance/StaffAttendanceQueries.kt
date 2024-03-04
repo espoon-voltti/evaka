@@ -524,7 +524,7 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
         .bind("now", now)
         .execute()
 
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE staff_attendance_realtime a
@@ -536,7 +536,7 @@ WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
         }
         .execute()
 
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE staff_attendance_external a
