@@ -4287,7 +4287,9 @@ export const fi = {
       CHECKBOX: 'Rasti',
       CHECKBOX_GROUP: 'Monivalinta',
       RADIO_BUTTON_GROUP: 'Monivalinta (valitse yksi)',
-      STATIC_TEXT_DISPLAY: 'Tekstikappale ilman kysymystä'
+      STATIC_TEXT_DISPLAY: 'Tekstikappale ilman kysymystä',
+      DATE: 'Päivämäärä',
+      GROUPED_TEXT_FIELDS: 'Nimettyjä tekstikenttiä'
     },
     ...components.documentTemplates
   },

@@ -43,7 +43,11 @@ const components: Translations = {
       infoText: 'Info text',
       multiline: 'Allow multiline answer',
       withText: 'With extra info',
-      text: 'Text content'
+      text: 'Text content',
+      textFields: 'Text fields',
+      addTextField: 'Add a text field',
+      allowMultipleRows: 'Allow multiple answers',
+      addRow: 'Add new row'
     },
     noSelection: 'No selection',
     documentStates: {
@@ -169,6 +173,8 @@ const components: Translations = {
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Check',
     timeRequired: 'Required',
+    dateTooEarly: 'Pick a later date',
+    dateTooLate: 'Pick an earlier date',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',

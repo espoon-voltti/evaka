@@ -16,6 +16,8 @@ import {
 } from 'lib-common/generated/api-types/document'
 import CheckboxGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxGroupQuestionDescriptor'
 import CheckboxQuestionDescriptor from 'lib-components/document-templates/question-descriptors/CheckboxQuestionDescriptor'
+import DateQuestionDescriptor from 'lib-components/document-templates/question-descriptors/DateQuestionDescriptor'
+import GroupedTextFieldsQuestionDescriptor from 'lib-components/document-templates/question-descriptors/GroupedTextFieldsQuestionDescriptor'
 import RadioButtonGroupQuestionDescriptor from 'lib-components/document-templates/question-descriptors/RadioButtonGroupQuestionDescriptor'
 import StaticTextDisplayQuestionDescriptor from 'lib-components/document-templates/question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
@@ -26,7 +28,9 @@ export const templateQuestionForm = mapped(
     CHECKBOX: CheckboxQuestionDescriptor.template.form,
     CHECKBOX_GROUP: CheckboxGroupQuestionDescriptor.template.form,
     RADIO_BUTTON_GROUP: RadioButtonGroupQuestionDescriptor.template.form,
-    STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.template.form
+    STATIC_TEXT_DISPLAY: StaticTextDisplayQuestionDescriptor.template.form,
+    DATE: DateQuestionDescriptor.template.form,
+    GROUPED_TEXT_FIELDS: GroupedTextFieldsQuestionDescriptor.template.form
   }),
   (output): Question => {
     switch (output.branch) {
@@ -51,6 +55,16 @@ export const templateQuestionForm = mapped(
           ...output.value
         }
       case 'STATIC_TEXT_DISPLAY':
+        return {
+          type: output.branch,
+          ...output.value
+        }
+      case 'DATE':
+        return {
+          type: output.branch,
+          ...output.value
+        }
+      case 'GROUPED_TEXT_FIELDS':
         return {
           type: output.branch,
           ...output.value
@@ -95,6 +109,12 @@ export const TemplateQuestionConfigView = React.memo(
         return (
           <StaticTextDisplayQuestionDescriptor.template.Component bind={form} />
         )
+      case 'DATE':
+        return <DateQuestionDescriptor.template.Component bind={form} />
+      case 'GROUPED_TEXT_FIELDS':
+        return (
+          <GroupedTextFieldsQuestionDescriptor.template.Component bind={form} />
+        )
     }
   }
 )
@@ -132,6 +152,14 @@ export const TemplateQuestionPreview = React.memo(
             bind={form}
           />
         )
+      case 'DATE':
+        return <DateQuestionDescriptor.template.PreviewComponent bind={form} />
+      case 'GROUPED_TEXT_FIELDS':
+        return (
+          <GroupedTextFieldsQuestionDescriptor.template.PreviewComponent
+            bind={form}
+          />
+        )
     }
   }
 )
@@ -152,6 +180,12 @@ export const getTemplateQuestionInitialState = (question: Question) => {
       return StaticTextDisplayQuestionDescriptor.template.getInitialState(
         question
       )
+    case 'DATE':
+      return DateQuestionDescriptor.template.getInitialState(question)
+    case 'GROUPED_TEXT_FIELDS':
+      return GroupedTextFieldsQuestionDescriptor.template.getInitialState(
+        question
+      )
   }
 }
 
@@ -167,6 +201,10 @@ export const getTemplateQuestionInitialStateByType = (type: QuestionType) => {
       return RadioButtonGroupQuestionDescriptor.template.getInitialState()
     case 'STATIC_TEXT_DISPLAY':
       return StaticTextDisplayQuestionDescriptor.template.getInitialState()
+    case 'DATE':
+      return DateQuestionDescriptor.template.getInitialState()
+    case 'GROUPED_TEXT_FIELDS':
+      return GroupedTextFieldsQuestionDescriptor.template.getInitialState()
   }
 }
 

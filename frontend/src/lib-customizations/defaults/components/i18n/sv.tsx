@@ -43,7 +43,11 @@ const components: Translations = {
       infoText: 'info text',
       multiline: 'Tillåt flerradssvar',
       withText: 'Med extra info',
-      text: 'Textinnehåll'
+      text: 'Textinnehåll',
+      textFields: 'Textfält',
+      addTextField: 'Lägg till ett textfält',
+      allowMultipleRows: 'Tillåt flera svar',
+      addRow: 'Lägg till ny rad'
     },
     noSelection: 'inget val',
     documentStates: {
@@ -169,6 +173,8 @@ const components: Translations = {
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
+    dateTooEarly: 'Välj ett senare datum',
+    dateTooLate: 'Välj ett tidigare datum',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',

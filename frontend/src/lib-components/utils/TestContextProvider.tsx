@@ -46,7 +46,11 @@ export const testTranslations: Translations = {
       withText: '',
       options: '',
       multiline: '',
-      text: ''
+      text: '',
+      textFields: '',
+      addTextField: '',
+      allowMultipleRows: '',
+      addRow: ''
     },
     noSelection: '',
     documentStates: {
@@ -150,6 +154,8 @@ export const testTranslations: Translations = {
     preferredStartDate: '',
     timeFormat: '',
     timeRequired: '',
+    dateTooEarly: '',
+    dateTooLate: '',
     unitNotSelected: '',
     emailsDoNotMatch: '',
     httpUrl: '',

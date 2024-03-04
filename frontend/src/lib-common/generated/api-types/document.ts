@@ -32,6 +32,24 @@ export namespace AnsweredQuestion {
   }
 
   /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.DateAnswer
+  */
+  export interface DateAnswer {
+    type: 'DATE'
+    answer: LocalDate | null
+    questionId: string
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.GroupedTextFieldsAnswer
+  */
+  export interface GroupedTextFieldsAnswer {
+    type: 'GROUPED_TEXT_FIELDS'
+    answer: string[][]
+    questionId: string
+  }
+
+  /**
   * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
   */
   export interface RadioButtonGroupAnswer {
@@ -62,7 +80,7 @@ export namespace AnsweredQuestion {
 /**
 * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
 */
-export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
+export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.DateAnswer | AnsweredQuestion.GroupedTextFieldsAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
 
 
 /**
@@ -282,6 +300,28 @@ export namespace Question {
   }
 
   /**
+  * Generated from fi.espoo.evaka.document.Question.DateQuestion
+  */
+  export interface DateQuestion {
+    type: 'DATE'
+    id: string
+    infoText: string
+    label: string
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.document.Question.GroupedTextFieldsQuestion
+  */
+  export interface GroupedTextFieldsQuestion {
+    type: 'GROUPED_TEXT_FIELDS'
+    allowMultipleRows: boolean
+    fieldLabels: string[]
+    id: string
+    infoText: string
+    label: string
+  }
+
+  /**
   * Generated from fi.espoo.evaka.document.Question.RadioButtonGroupQuestion
   */
   export interface RadioButtonGroupQuestion {
@@ -318,7 +358,7 @@ export namespace Question {
 /**
 * Generated from fi.espoo.evaka.document.Question
 */
-export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
+export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.DateQuestion | Question.GroupedTextFieldsQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
 
 
 /**
@@ -329,7 +369,9 @@ export const questionTypes = [
   'CHECKBOX',
   'CHECKBOX_GROUP',
   'RADIO_BUTTON_GROUP',
-  'STATIC_TEXT_DISPLAY'
+  'STATIC_TEXT_DISPLAY',
+  'DATE',
+  'GROUPED_TEXT_FIELDS'
 ] as const
 
 export type QuestionType = typeof questionTypes[number]
@@ -360,6 +402,21 @@ export interface StatusChangeRequest {
 }
 
 
+
+export function deserializeJsonAnsweredQuestionDateAnswer(json: JsonOf<AnsweredQuestion.DateAnswer>): AnsweredQuestion.DateAnswer {
+  return {
+    ...json,
+    answer: (json.answer != null) ? LocalDate.parseIso(json.answer) : null
+  }
+}
+export function deserializeJsonAnsweredQuestion(json: JsonOf<AnsweredQuestion>): AnsweredQuestion {
+  switch (json.type) {
+    case 'DATE': return deserializeJsonAnsweredQuestionDateAnswer(json)
+    default: return json
+  }
+}
+
+
 export function deserializeJsonChildBasics(json: JsonOf<ChildBasics>): ChildBasics {
   return {
     ...json,
@@ -372,6 +429,7 @@ export function deserializeJsonChildDocumentCitizenDetails(json: JsonOf<ChildDoc
   return {
     ...json,
     child: deserializeJsonChildBasics(json.child),
+    content: deserializeJsonDocumentContent(json.content),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
     template: deserializeJsonDocumentTemplate(json.template)
   }
@@ -390,7 +448,9 @@ export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDe
   return {
     ...json,
     child: deserializeJsonChildBasics(json.child),
+    content: deserializeJsonDocumentContent(json.content),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
+    publishedContent: (json.publishedContent != null) ? deserializeJsonDocumentContent(json.publishedContent) : null,
     template: deserializeJsonDocumentTemplate(json.template)
   }
 }
@@ -417,6 +477,14 @@ export function deserializeJsonChildDocumentWithPermittedActions(json: JsonOf<Ch
   return {
     ...json,
     data: deserializeJsonChildDocumentDetails(json.data)
+  }
+}
+
+
+export function deserializeJsonDocumentContent(json: JsonOf<DocumentContent>): DocumentContent {
+  return {
+    ...json,
+    answers: json.answers.map(e => deserializeJsonAnsweredQuestion(e))
   }
 }
 

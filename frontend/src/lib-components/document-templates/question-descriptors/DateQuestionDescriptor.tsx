@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
+import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { boolean, string } from 'lib-common/form/fields'
-import { mapped, object, validated, value } from 'lib-common/form/form'
+import { localDate, string } from 'lib-common/form/fields'
+import { mapped, nullBlank, object, validated } from 'lib-common/form/form'
 import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
@@ -15,26 +15,25 @@ import {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
-import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import LocalDate from 'lib-common/local-date'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
 import { useTranslations } from '../../i18n'
+import { DatePickerF } from '../../molecules/date-picker/DatePicker'
 
 import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
 
-const questionType: QuestionType = 'TEXT'
+const questionType: QuestionType = 'DATE'
 
-type ApiQuestion = Question.TextQuestion
+type ApiQuestion = Question.DateQuestion
 
 const templateForm = object({
   id: validated(string(), nonBlank),
   label: validated(string(), nonBlank),
-  infoText: string(),
-  multiline: boolean()
+  infoText: string()
 })
 
 type TemplateForm = typeof templateForm
@@ -44,16 +43,15 @@ const getTemplateInitialValues = (
 ): StateOf<TemplateForm> => ({
   id: question?.id ?? uuidv4(),
   label: question?.label ?? '',
-  infoText: question?.infoText ?? '',
-  multiline: question?.multiline ?? true
+  infoText: question?.infoText ?? ''
 })
 
-type Answer = string
+type Answer = LocalDate | null
 
 const questionForm = mapped(
   object({
     template: templateForm,
-    answer: value<Answer>()
+    answer: nullBlank(localDate())
   }),
   (output): AnsweredQuestion => ({
     questionId: output.template.id,
@@ -66,7 +64,8 @@ type QuestionForm = typeof questionForm
 
 const getAnswerState = (
   answer?: Answer | undefined
-): StateOf<QuestionForm>['answer'] => (answer !== undefined ? answer : '')
+): StateOf<QuestionForm>['answer'] =>
+  answer !== undefined ? localDate.fromDate(answer) : localDate.fromDate(null)
 
 const View = React.memo(function View({
   bind,
@@ -76,34 +75,18 @@ const View = React.memo(function View({
   readOnly: boolean
 }) {
   const { template, answer } = useFormFields(bind)
-  const { label, infoText, multiline } = useFormFields(template)
+  const { label, infoText } = useFormFields(template)
   return readOnly ? (
     <FixedSpaceColumn data-qa="document-question-preview">
       <Label>{label.state}</Label>
-      <div>
-        {answer.state.split('\n').map((line, i) => (
-          <Fragment key={i}>
-            {line}
-            <br />
-          </Fragment>
-        ))}
-      </div>
+      <div>{answer.value()?.format() ?? '-'}</div>
     </FixedSpaceColumn>
   ) : (
     <FixedSpaceColumn fullWidth data-qa="document-question">
       <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
-      {multiline.state ? (
-        <TextAreaF bind={answer} readonly={false} data-qa="answer-input" />
-      ) : (
-        <InputFieldF
-          bind={answer}
-          readonly={false}
-          width="L"
-          data-qa="answer-input"
-        />
-      )}
+      <DatePickerF bind={answer} locale="fi" data-qa="answer-input" />
     </FixedSpaceColumn>
   )
 })
@@ -119,7 +102,7 @@ const Preview = React.memo(function Preview({
 
   const getInitialPreviewState = () => ({
     template: bind.state,
-    answer: getAnswerState()
+    answer: getAnswerState(null)
   })
 
   const mockBind = useForm(
@@ -142,7 +125,7 @@ const TemplateView = React.memo(function TemplateView({
   bind: BoundForm<TemplateForm>
 }) {
   const i18n = useTranslations()
-  const { label, infoText, multiline } = useFormFields(bind)
+  const { label, infoText } = useFormFields(bind)
 
   return (
     <FixedSpaceColumn>
@@ -158,10 +141,6 @@ const TemplateView = React.memo(function TemplateView({
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
         <InputFieldF bind={infoText} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
-      <CheckboxF
-        bind={multiline}
-        label={i18n.documentTemplates.templateQuestions.multiline}
-      />
     </FixedSpaceColumn>
   )
 })

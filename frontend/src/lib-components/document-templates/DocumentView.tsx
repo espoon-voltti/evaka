@@ -25,7 +25,7 @@ export default React.memo(function DocumentView({ bind, readOnly }: Props) {
 
   return (
     <div>
-      <FixedSpaceColumn>
+      <FixedSpaceColumn spacing="XL">
         {sectionElems.map((section) => (
           <DocumentSectionView
             key={section.state.id}
@@ -53,7 +53,7 @@ export const DocumentSectionView = React.memo(function DocumentSectionView({
       <ExpandingInfo info={readOnly ? undefined : infoText.state}>
         <H2>{label.value()}</H2>
       </ExpandingInfo>
-      <FixedSpaceColumn>
+      <FixedSpaceColumn spacing="L">
         {questionElems.map((question) => (
           <DocumentQuestionView
             bind={question}
