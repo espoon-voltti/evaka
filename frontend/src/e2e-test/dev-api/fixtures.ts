@@ -17,9 +17,7 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
-import {
-  AssistanceActionOption
-} from 'lib-common/generated/api-types/assistanceaction'
+import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionGuardian,
@@ -60,7 +58,9 @@ import {
   addDailyServiceTimeNotification,
   addPayment,
   addStaffAttendance,
-  addStaffAttendancePlan, createAssistanceAction, createAssistanceActionOption,
+  addStaffAttendancePlan,
+  createAssistanceAction,
+  createAssistanceActionOption,
   createAssistanceFactors,
   createAssistanceNeedDecisions,
   createAssistanceNeedPreschoolDecisions,
@@ -99,7 +99,8 @@ import {
 import {
   Caretaker,
   DecisionRequest,
-  DevAbsence, DevAssistanceAction,
+  DevAbsence,
+  DevAssistanceAction,
   DevAssistanceNeedDecision,
   DevAssistanceNeedPreschoolDecision,
   DevBackupCare,
@@ -2985,7 +2986,7 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 
 export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction> {
   async save() {
-    await createAssistanceAction({body: [this.data]})
+    await createAssistanceAction({ body: [this.data] })
     return this
   }
 
@@ -2997,7 +2998,7 @@ export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction>
 
 export class AssistanceActionOptionBuilder extends FixtureBuilder<AssistanceActionOption> {
   async save() {
-    await createAssistanceActionOption({body: [this.data]})
+    await createAssistanceActionOption({ body: [this.data] })
     return this
   }
 

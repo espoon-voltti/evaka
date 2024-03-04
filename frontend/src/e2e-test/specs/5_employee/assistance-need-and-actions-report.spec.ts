@@ -9,7 +9,11 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {daycareGroupFixture, EmployeeBuilder, Fixture} from '../../dev-api/fixtures'
+import {
+  daycareGroupFixture,
+  EmployeeBuilder,
+  Fixture
+} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
@@ -106,12 +110,15 @@ describe('Assistance need and actions report', () => {
       `${config.employeeUrl}/reports/assistance-needs-and-actions`
     )
     const report = new AssistanceNeedsAndActionsReport(page)
-    await report.assertUnitRow(0, 'Superkeskus,,,1,0,0,0,1,0,0,1,0,0,1')
+    await report.needsAndActionsRows
+      .nth(0)
+      .assertTextEquals('Superkeskus\n' + '\t\t1\t0\t0\t0\t1\t0\t0\t1\t0\t0\t1')
     await report.selectCareAreaFilter('Superkeskus')
     await report.openUnit('Alkuräjähdyksen päiväkoti')
-    await report.assertChildRow(
-      0,
-      'Antero,Onni,Leevi,Aatu,Högfors,Kosmiset,Vakiot,10,1,0,0,0,1,0,0,a,test,assistance,action,option,1.5'
-    )
+    await report.childRows
+      .nth(0)
+      .assertTextEquals(
+        'Antero Onni Leevi Aatu Högfors\tKosmiset Vakiot\t10\t1\t0\t0\t0\t1\t0\t0\ta test assistance action option\t1.5'
+      )
   })
 })

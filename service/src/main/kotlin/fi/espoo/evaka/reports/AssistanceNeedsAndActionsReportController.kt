@@ -103,7 +103,12 @@ class AssistanceNeedsAndActionsReportController(
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
                         )
-                    getAssistanceNeedsAndActionsReportByChild(it, date, filter, !featureConfig.valueDecisionCapacityFactorEnabled)
+                    getAssistanceNeedsAndActionsReportByChild(
+                        it,
+                        date,
+                        filter,
+                        !featureConfig.valueDecisionCapacityFactorEnabled
+                    )
                 }
             }
             .also {
