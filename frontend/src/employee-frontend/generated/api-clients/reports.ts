@@ -603,14 +603,14 @@ export async function getPartnersInDifferentAddressReport(): Promise<PartnersInD
 export async function getPlacementCountReport(
   request: {
     examinationDate: LocalDate,
-    providerTypes: ProviderType[],
-    placementTypes: PlacementType[]
+    providerTypes?: ProviderType[] | null,
+    placementTypes?: PlacementType[] | null
   }
 ): Promise<PlacementCountReportResult> {
   const params = createUrlSearchParams(
     ['examinationDate', request.examinationDate.formatIso()],
-    ...(request.providerTypes.map((e): [string, string | null | undefined] => ['providerTypes', e.toString()])),
-    ...(request.placementTypes.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]))
+    ...(request.providerTypes?.map((e): [string, string | null | undefined] => ['providerTypes', e.toString()]) ?? []),
+    ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<PlacementCountReportResult>>({
     url: uri`/reports/placement-count`.toString(),

@@ -31,10 +31,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         @RequestParam("examinationDate")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         examinationDate: LocalDate,
-        @RequestParam(name = "providerTypes")
-        requestedProviderTypes: List<ProviderType> = emptyList(),
-        @RequestParam(name = "placementTypes")
-        requestedPlacementTypes: List<PlacementType> = emptyList()
+        @RequestParam(name = "providerTypes") requestedProviderTypes: List<ProviderType>?,
+        @RequestParam(name = "placementTypes") requestedPlacementTypes: List<PlacementType>?
     ): PlacementCountReportResult {
         return db.connect { dbc ->
                 dbc.read {
@@ -47,8 +45,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementCountReportRows(
                         examinationDate,
-                        requestedProviderTypes.ifEmpty { ProviderType.values().toList() },
-                        requestedPlacementTypes.ifEmpty { PlacementType.values().toList() }
+                        requestedProviderTypes ?: ProviderType.entries,
+                        requestedPlacementTypes ?: PlacementType.entries
                     )
                 }
             }

@@ -94,8 +94,8 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                 adminLoginUser,
                 mockToday,
                 mockToday.today(),
-                emptyList(),
-                emptyList(),
+                null,
+                null,
             )
         assertEquals(2, reportAll.placementCount)
         assertEquals(1, reportAll.placementCount3vAndOver)
@@ -107,7 +107,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                 adminLoginUser,
                 mockToday,
                 mockToday.today(),
-                emptyList(),
+                null,
                 listOf(PlacementType.PRESCHOOL)
             )
         assertEquals(1, reportPreschool.placementCount)
