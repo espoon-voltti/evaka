@@ -19,7 +19,7 @@
     "prepack": "exit 1"
   },
   "dependencies": {
-    "@node-saml/node-saml": "^4.0.5",
+    "@node-saml/node-saml": "^5.0.0",
     "@node-saml/passport-saml": "^4.0.4",
     "axios": "^1.6.0",
     "connect-redis": "^7.1.0",
