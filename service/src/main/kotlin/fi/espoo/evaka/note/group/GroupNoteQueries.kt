@@ -14,30 +14,27 @@ fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
 }
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-    SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
-    FROM group_note gn
-    WHERE group_id = ANY(:groupIds)
-    """
-                .trimIndent()
-        )
-        .bind("groupIds", groupIds)
+    createQuery {
+            sql(
+                """
+SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
+FROM group_note gn
+WHERE group_id = ANY(${bind(groupIds)})
+"""
+            )
+        }
         .toList<GroupNote>()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    return createUpdate {
+            sql(
+                """
 INSERT INTO group_note (group_id, note, expires)
-VALUES (:groupId, :note, :expires)
+VALUES (${bind(groupId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
         """
-                .trimIndent()
-        )
-        .bindKotlin(note)
-        .bind("groupId", groupId)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNoteId>()
 }
@@ -47,26 +44,23 @@ fun Database.Transaction.updateGroupNote(
     id: GroupNoteId,
     note: GroupNoteBody
 ): GroupNote {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    val now = clock.now()
+    return createUpdate {
+            sql(
+                """
 UPDATE group_note SET
-    note = :note,
-    expires = :expires,
-    modified_at = :now
-WHERE id = :id
+    note = ${bind(note.note)},
+    expires = ${bind(note.expires)},
+    modified_at = ${bind(now)}
+WHERE id = ${bind(id)}
 RETURNING *
         """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
-        .bindKotlin(note)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNote>()
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM group_note WHERE id = :noteId").bind("noteId", noteId).execute()
+    createUpdate { sql("DELETE FROM group_note WHERE id = ${bind(noteId)}") }.execute()
 }

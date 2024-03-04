@@ -55,17 +55,15 @@ fun Database.Transaction.createChildStickyNote(
     childId: ChildId,
     note: ChildStickyNoteBody
 ): ChildStickyNoteId {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    return createUpdate {
+            sql(
+                """
 INSERT INTO child_sticky_note (child_id, note, expires)
-VALUES (:childId, :note, :expires)
+VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
-        """
-                .trimIndent()
-        )
-        .bindKotlin(note)
-        .bind("childId", childId)
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildStickyNoteId>()
 }
@@ -75,28 +73,23 @@ fun Database.Transaction.updateChildStickyNote(
     id: ChildStickyNoteId,
     note: ChildStickyNoteBody
 ): ChildStickyNote {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    val now = clock.now()
+    return createUpdate {
+            sql(
+                """
 UPDATE child_sticky_note SET
-    note = :note,
-    expires = :expires,
-    modified_at = :now
-WHERE id = :id
+    note = ${bind(note.note)},
+    expires = ${bind(note.expires)},
+    modified_at = ${bind(now)}
+WHERE id = ${bind(id)}
 RETURNING *
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
-        .bindKotlin(note)
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildStickyNote>()
 }
 
 fun Database.Transaction.deleteChildStickyNote(noteId: ChildStickyNoteId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM child_sticky_note WHERE id = :noteId")
-        .bind("noteId", noteId)
-        .execute()
+    createUpdate { sql("DELETE FROM child_sticky_note WHERE id = ${bind(noteId)}") }.execute()
 }
