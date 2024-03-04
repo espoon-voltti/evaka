@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDaycare
@@ -27,6 +28,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class RealtimeStaffAttendanceControllerIntegrationTest :
@@ -107,6 +109,58 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
             }
         }
+    }
+
+    @Test
+    fun attendanceCannotBeInFuture() {
+        assertThrows<BadRequest> {
+            upsertDailyStaffAttendances(
+                testDaycare.id,
+                groupId1,
+                now.minusHours(3),
+                now.plusMinutes(1)
+            )
+        }
+        assertThrows<BadRequest> {
+            upsertDailyStaffAttendances(testDaycare.id, groupId1, now.plusMinutes(3), null)
+        }
+        assertThrows<BadRequest> {
+            upsertDailyStaffAttendances(
+                testDaycare.id,
+                groupId1,
+                now.plusHours(22),
+                now.plusHours(23)
+            )
+        }
+        upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(7), now.minusHours(3))
+        upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(2), null)
+
+        assertThrows<BadRequest> {
+            upsertDailyExternalAttendances(
+                testDaycare.id,
+                groupId1,
+                now.minusHours(3),
+                now.plusMinutes(1)
+            )
+        }
+        assertThrows<BadRequest> {
+            upsertDailyExternalAttendances(testDaycare.id, groupId1, now.plusMinutes(3), null)
+        }
+        assertThrows<BadRequest> {
+            upsertDailyExternalAttendances(
+                testDaycare.id,
+                groupId1,
+                now.plusHours(22),
+                now.plusHours(23)
+            )
+        }
+        upsertDailyExternalAttendances(
+            testDaycare.id,
+            groupId1,
+            now.minusHours(7),
+            now.minusHours(3)
+        )
+        upsertDailyExternalAttendances(testDaycare.id, groupId1, now.minusHours(2), null)
     }
 
     @Test
@@ -194,6 +248,34 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = arrived,
                             departed = departed,
                             type = StaffAttendanceType.PRESENT
+                        )
+                    )
+            )
+        )
+    }
+
+    private fun upsertDailyExternalAttendances(
+        unitId: DaycareId,
+        groupId: GroupId,
+        arrived: HelsinkiDateTime,
+        departed: HelsinkiDateTime?
+    ) {
+        realtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances(
+            dbInstance(),
+            unitSupervisor,
+            MockEvakaClock(now),
+            RealtimeStaffAttendanceController.ExternalAttendanceBody(
+                unitId = unitId,
+                date = now.toLocalDate(),
+                name = "test",
+                entries =
+                    listOf(
+                        RealtimeStaffAttendanceController.ExternalAttendanceUpsert(
+                            id = null,
+                            groupId = groupId,
+                            hasStaffOccupancyEffect = false,
+                            arrived = arrived,
+                            departed = departed
                         )
                     )
             )
