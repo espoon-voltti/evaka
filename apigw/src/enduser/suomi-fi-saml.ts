@@ -26,15 +26,12 @@ export function createSuomiFiStrategy(
   config: SamlConfig
 ): Strategy {
   return createSamlStrategy(sessions, config, Profile, async (profile) => {
-    const asString = (value: unknown) =>
-      value == null ? undefined : String(value)
-
-    const socialSecurityNumber = asString(profile[SUOMI_FI_SSN_KEY])
+    const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
     const person = await citizenLogin({
       socialSecurityNumber,
-      firstName: asString(profile[SUOMI_FI_GIVEN_NAME_KEY]) ?? '',
-      lastName: asString(profile[SUOMI_FI_SURNAME_KEY]) ?? ''
+      firstName: profile[SUOMI_FI_GIVEN_NAME_KEY] ?? '',
+      lastName: profile[SUOMI_FI_SURNAME_KEY] ?? ''
     })
     return {
       id: person.id,

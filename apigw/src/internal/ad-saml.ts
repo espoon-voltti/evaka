@@ -31,17 +31,14 @@ export function createAdSamlStrategy(
     [AD_EMPLOYEE_NUMBER_KEY]: z.string().toLowerCase().optional()
   })
   return createSamlStrategy(sessions, samlConfig, Profile, async (profile) => {
-    const asString = (value: unknown) =>
-      value == null ? undefined : String(value)
-
     const aad = profile[config.userIdKey]
     if (!aad) throw Error('No user ID in SAML data')
     const person = await employeeLogin({
       externalId: `${config.externalIdPrefix}:${aad}`,
-      firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',
-      lastName: asString(profile[AD_FAMILY_NAME_KEY]) ?? '',
-      email: asString(profile[AD_EMAIL_KEY]),
-      employeeNumber: asString(profile[AD_EMPLOYEE_NUMBER_KEY])
+      firstName: profile[AD_GIVEN_NAME_KEY] ?? '',
+      lastName: profile[AD_FAMILY_NAME_KEY] ?? '',
+      email: profile[AD_EMAIL_KEY],
+      employeeNumber: profile[AD_EMPLOYEE_NUMBER_KEY]
     })
     return {
       id: person.id,

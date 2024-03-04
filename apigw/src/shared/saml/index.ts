@@ -11,7 +11,7 @@ import {
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
-import { logError, logWarn } from '../logging.js'
+import { logError } from '../logging.js'
 import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
 import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
 import { readFileSync } from 'node:fs'
@@ -71,26 +71,23 @@ const SamlProfileId = z.object({
   sessionIndex: z.string().optional()
 })
 
-export function createSamlStrategy(
+export function createSamlStrategy<T>(
   sessions: Sessions,
   config: SamlConfig,
-  profileSchema: z.AnyZodObject,
-  login: (profile: Profile) => Promise<EvakaSessionUser>
+  profileSchema: z.ZodType<T>,
+  login: (profile: T) => Promise<EvakaSessionUser>
 ): SamlStrategy {
   const loginVerify: VerifyWithRequest = (req, profile, done) => {
     if (!profile) return done(null, undefined)
     const parseResult = profileSchema.safeParse(profile)
     if (!parseResult.success) {
-      logWarn(
-        `SAML profile parsing failed: ${parseResult.error.message}`,
-        undefined,
-        {
-          issuer: profile.issuer
-        },
-        parseResult.error
+      return done(
+        new Error(
+          `SAML ${profile.issuer} profile parsing failed: ${parseResult.error.message}`
+        )
       )
     }
-    login(profile)
+    login(parseResult.data)
       .then((user) => {
         // Despite what the typings say, passport-saml assumes
         // we give it back a valid Profile, including at least some of these
